@@ -59,11 +59,11 @@ definitions:
             type: string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           parent_id:
             type:
-              - 'null'
+              - "null"
               - string
   memberships_stream:
     $ref: "#/definitions/base_stream"
@@ -82,35 +82,35 @@ definitions:
             type: string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           birth_country:
             type:
-              - 'null'
+              - "null"
               - string
           birthdate:
             type:
-              - 'null'
+              - "null"
               - string
           nationality:
             type:
-              - 'null'
+              - "null"
               - string
           residence_country:
             type:
-              - 'null'
+              - "null"
               - string
           role:
             type:
-              - 'null'
+              - "null"
               - string
           ubo:
             type:
-              - 'null'
+              - "null"
               - boolean
   transactions_stream:
     $ref: "#/definitions/base_stream"
@@ -130,137 +130,137 @@ definitions:
         properties:
           transaction_id:
             type:
-              - 'null'
+              - "null"
               - string
           subject_type:
             type:
-              - 'null'
+              - "null"
               - string
           transfer:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties: {}
           amount:
             type:
-              - 'null'
+              - "null"
               - number
           amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           settled_balance:
             type:
-              - 'null'
+              - "null"
               - number
           settled_balance_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           attachment_ids:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           local_amount:
             type:
-              - 'null'
+              - "null"
               - number
           local_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           side:
             type:
-              - 'null'
+              - "null"
               - string
           operation_type:
             type:
-              - 'null'
+              - "null"
               - string
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           local_currency:
             type:
-              - 'null'
+              - "null"
               - string
           label:
             type:
-              - 'null'
+              - "null"
               - string
           settled_at:
             type:
-              - 'null'
+              - "null"
               - string
           emitted_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           note:
             type:
-              - 'null'
+              - "null"
               - string
           reference:
             type:
-              - 'null'
+              - "null"
               - string
           vat_amount:
             type:
-              - 'null'
+              - "null"
               - number
           vat_amount_cents:
             type:
-              - 'null'
+              - "null"
               - number
           vat_rate:
             type:
-              - 'null'
+              - "null"
               - number
           initiator_id:
             type:
-              - 'null'
+              - "null"
               - string
           label_ids:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           attachment_lost:
             type:
-              - 'null'
+              - "null"
               - boolean
           attachment_required:
             type:
-              - 'null'
+              - "null"
               - boolean
           card_last_digits:
             type:
-              - 'null'
+              - "null"
               - string
           category:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/labels_stream"

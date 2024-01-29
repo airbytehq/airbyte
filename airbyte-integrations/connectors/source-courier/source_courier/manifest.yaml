@@ -68,7 +68,7 @@ definitions:
       paginator:
         $ref: "#/definitions/cursor_paginator"
 
-  ## MESSAGE INFO / HISTORY / OUTPUT STREAMS ##
+    ## MESSAGE INFO / HISTORY / OUTPUT STREAMS ##
     schema_loader:
       type: InlineSchemaLoader
       schema:

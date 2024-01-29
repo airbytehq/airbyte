@@ -55,7 +55,7 @@ definitions:
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
@@ -63,15 +63,15 @@ definitions:
             format: email
           activated:
             type:
-              - 'null'
+              - "null"
               - boolean
           default_mailbox_id:
             type:
-              - 'null'
+              - "null"
               - string
           salesforce_id:
             type:
-              - 'null'
+              - "null"
               - string
   leads_stream:
     $ref: "#/definitions/base_stream"
@@ -86,7 +86,7 @@ definitions:
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
@@ -95,116 +95,116 @@ definitions:
               - string
           bounced:
             type:
-              - 'null'
+              - "null"
               - boolean
           owner_id:
             type:
               - string
           creator_id:
             type:
-              - 'null'
+              - "null"
               - string
           optedout:
             type:
-              - 'null'
+              - "null"
               - boolean
           sent_count:
             type:
-              - 'null'
+              - "null"
               - integer
           replied_count:
             type:
-              - 'null'
+              - "null"
               - integer
           last_sent_at:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           data:
             company_name:
               type:
-                - 'null'
+                - "null"
                 - string
             email:
               type:
-                - 'null'
+                - "null"
                 - string
               format: email
             first_name:
               type:
-                - 'null'
+                - "null"
                 - string
             last_name:
               type:
-                - 'null'
+                - "null"
                 - string
             address:
               type:
-                - 'null'
+                - "null"
                 - string
             city:
               type:
-                - 'null'
+                - "null"
                 - string
             state:
               type:
-                - 'null'
+                - "null"
                 - string
             phone:
               type:
-                - 'null'
+                - "null"
                 - string
             title:
               type:
-                - 'null'
+                - "null"
                 - string
             industry:
               type:
-                - 'null'
+                - "null"
                 - string
             snippet:
               type:
-                - 'null'
+                - "null"
                 - string
             snippet1:
               type:
-                - 'null'
+                - "null"
                 - string
             snippet2:
               type:
-                - 'null'
+                - "null"
                 - string
             snippet3:
               type:
-                - 'null'
+                - "null"
                 - string
             snippet4:
               type:
-                - 'null'
+                - "null"
                 - string
             twitch_name:
               type:
-                - 'null'
+                - "null"
                 - string
             linkedin:
               type:
-                - 'null'
+                - "null"
                 - string
             twitter:
               type:
-                - 'null'
+                - "null"
                 - string
             facebook:
               type:
-                - 'null'
+                - "null"
                 - string
             salesforce_id:
               type:
-                - 'null'
+                - "null"
                 - string
   campaigns_stream:
     $ref: "#/definitions/base_stream"
@@ -225,57 +225,57 @@ definitions:
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           creator:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           stats:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               prospects_contacted:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               prospects_reached:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               prospects_opened:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               prospects_replied:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               prospects_bounced:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               prospects_optedout:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               total_contacted:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
 streams:
   - "#/definitions/users_stream"

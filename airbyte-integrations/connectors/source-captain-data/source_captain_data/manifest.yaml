@@ -62,39 +62,39 @@ definitions:
         properties:
           project_uid:
             type:
-              - 'null'
+              - "null"
               - string
           current_month_end:
             type:
-              - 'null'
+              - "null"
               - string
           current_month_start:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           plan_name:
             type:
-              - 'null'
+              - "null"
               - string
           tasks_left:
             type:
-              - 'null'
+              - "null"
               - integer
           tasks_max:
             type:
-              - 'null'
+              - "null"
               - integer
           tasks_used:
             type:
-              - 'null'
+              - "null"
               - integer
   workflows_stream:
     $ref: "#/definitions/base_stream"
@@ -103,7 +103,7 @@ definitions:
       primary_key: "uid"
       path: "/workflows"
 
-  # Sliced streams
+    # Sliced streams
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -113,40 +113,40 @@ definitions:
         properties:
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           project_id:
             type:
-              - 'null'
+              - "null"
               - integer
           steps:
             items:
               properties:
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 step_uid:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 uid:
                   type:
-                    - 'null'
+                    - "null"
                     - string
               type: object
             type: array
           template_uid:
             type:
-              - 'null'
+              - "null"
               - string
           uid:
             type:
-              - 'null'
+              - "null"
               - string
   jobs_stream:
     $ref: "#/definitions/base_stream"
@@ -176,72 +176,72 @@ definitions:
           accounts:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           configuration:
             type:
-              - 'null'
+              - "null"
               - object
           error_message:
             type:
-              - 'null'
+              - "null"
               - string
           finish_time:
             type:
-              - 'null'
+              - "null"
               - string
           main_job_uid:
             type:
-              - 'null'
+              - "null"
               - string
           main_job_name:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           number_inputs:
             type:
-              - 'null'
+              - "null"
               - integer
           row_count:
             type:
-              - 'null'
+              - "null"
               - integer
           scheduled_time:
             type:
-              - 'null'
+              - "null"
               - string
           start_time:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           step_uid:
             type:
-              - 'null'
+              - "null"
               - string
           total_row_count:
             type:
-              - 'null'
+              - "null"
               - integer
           uid:
             type:
-              - 'null'
+              - "null"
               - string
           workflow_name:
             type:
-              - 'null'
+              - "null"
               - string
           workflow_uid:
             type:
-              - 'null'
+              - "null"
               - string
   successful_jobs_stream:
     $ref: "#/definitions/base_stream"
@@ -310,19 +310,19 @@ definitions:
         properties:
           job_uid:
             type:
-              - 'null'
+              - "null"
               - string
           job_result_id:
             type:
-              - 'null'
+              - "null"
               - string
           results:
             type:
-              - 'null'
+              - "null"
               - object
           extracted_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: datetime
 streams:

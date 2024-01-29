@@ -88,129 +88,129 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           players:
             type:
-              - 'null'
+              - "null"
               - integer
           messageable_players:
             type:
-              - 'null'
+              - "null"
               - integer
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           gcm_key:
             type:
-              - 'null'
+              - "null"
               - string
           chrome_key:
             type:
-              - 'null'
+              - "null"
               - string
           chrome_web_key:
             type:
-              - 'null'
+              - "null"
               - string
           chrome_web_origin:
             type:
-              - 'null'
+              - "null"
               - string
           chrome_web_gcm_sender_id:
             type:
-              - 'null'
+              - "null"
               - string
           chrome_web_default_notification_icon:
             type:
-              - 'null'
+              - "null"
               - string
           chrome_web_sub_domain:
             type:
-              - 'null'
+              - "null"
               - string
           apns_env:
             type:
-              - 'null'
+              - "null"
               - string
           apns_certificates:
             type:
-              - 'null'
+              - "null"
               - string
           safari_apns_certificate:
             type:
-              - 'null'
+              - "null"
               - string
           safari_site_origin:
             type:
-              - 'null'
+              - "null"
               - string
           safari_push_id:
             type:
-              - 'null'
+              - "null"
               - string
           safari_icon_16_16:
             type:
-              - 'null'
+              - "null"
               - string
           safari_icon_32_32:
             type:
-              - 'null'
+              - "null"
               - string
           safari_icon_64_64:
             type:
-              - 'null'
+              - "null"
               - string
           safari_icon_128_128:
             type:
-              - 'null'
+              - "null"
               - string
           safari_icon_256_256:
             type:
-              - 'null'
+              - "null"
               - string
           site_name:
             type:
-              - 'null'
+              - "null"
               - string
           basic_auth_key:
             type:
-              - 'null'
+              - "null"
               - string
           additional_data_is_root_payload:
             type:
-              - 'null'
+              - "null"
               - boolean
           apns_key_id:
             type:
-              - 'null'
+              - "null"
               - integer
           fcm_v1_service_account_json:
             type:
-              - 'null'
+              - "null"
               - string
           apns_p8:
             type:
-              - 'null'
+              - "null"
               - string
           apns_bundle_id:
             type:
-              - 'null'
+              - "null"
               - integer
           apns_team_id:
             type:
-              - 'null'
+              - "null"
               - integer
   incremental_sync_base:
     type: DatetimeBasedCursor
@@ -250,84 +250,84 @@ definitions:
             type: string
           identifier:
             type:
-              - 'null'
+              - "null"
               - string
           session_count:
             type:
-              - 'null'
+              - "null"
               - integer
           language:
             type:
-              - 'null'
+              - "null"
               - string
           timezone:
             type:
-              - 'null'
+              - "null"
               - integer
           game_version:
             type:
-              - 'null'
+              - "null"
               - string
           device_os:
             type:
-              - 'null'
+              - "null"
               - string
           device_type:
             type:
-              - 'null'
+              - "null"
               - integer
           device_model:
             type:
-              - 'null'
+              - "null"
               - string
           ad_id:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
           last_active:
             type:
-              - 'null'
+              - "null"
               - integer
           amount_spent:
             type:
-              - 'null'
+              - "null"
               - number
           created_at:
             type:
-              - 'null'
+              - "null"
               - integer
           invalid_identifier:
             type:
-              - 'null'
+              - "null"
               - boolean
           badge_count:
             type:
-              - 'null'
+              - "null"
               - integer
           playtime:
             type:
-              - 'null'
+              - "null"
               - integer
           sdk:
             type:
-              - 'null'
+              - "null"
               - string
           test_type:
             type:
-              - 'null'
+              - "null"
               - string
           ip:
             type:
-              - 'null'
+              - "null"
               - string
           external_user_id:
             type:
-              - 'null'
+              - "null"
               - string
   notifications_stream:
     $ref: "#/definitions/rest_api_key_auth_base_stream"
@@ -351,235 +351,235 @@ definitions:
         properties:
           adm_big_picture:
             type:
-              - 'null'
+              - "null"
               - string
           adm_group:
             type:
-              - 'null'
+              - "null"
               - string
           adm_group_message:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               en:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           adm_large_icon:
             type:
-              - 'null'
+              - "null"
               - string
           adm_small_icon:
             type:
-              - 'null'
+              - "null"
               - string
           adm_sound:
             type:
-              - 'null'
+              - "null"
               - string
           spoken_text:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
           alexa_ssml:
             type:
-              - 'null'
+              - "null"
               - string
           alexa_display_title:
             type:
-              - 'null'
+              - "null"
               - string
           amazon_background_data:
             type:
-              - 'null'
+              - "null"
               - boolean
           android_accent_color:
             type:
-              - 'null'
+              - "null"
               - string
           android_group:
             type:
-              - 'null'
+              - "null"
               - string
           android_group_message:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               en:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           android_led_color:
             type:
-              - 'null'
+              - "null"
               - string
           android_sound:
             type:
-              - 'null'
+              - "null"
               - string
           android_visibility:
             type:
-              - 'null'
+              - "null"
               - integer
           app_id:
             type: string
           big_picture:
             type:
-              - 'null'
+              - "null"
               - string
           buttons:
             type:
-              - 'null'
+              - "null"
               - string
           canceled:
             type:
-              - 'null'
+              - "null"
               - boolean
           chrome_big_picture:
             type:
-              - 'null'
+              - "null"
               - string
           chrome_icon:
             type:
-              - 'null'
+              - "null"
               - string
           chrome_web_icon:
             type:
-              - 'null'
+              - "null"
               - string
           chrome_web_image:
             type:
-              - 'null'
+              - "null"
               - string
           chrome_web_badge:
             type:
-              - 'null'
+              - "null"
               - string
           content_available:
             type:
-              - 'null'
+              - "null"
               - boolean
           name:
             type:
-              - 'null'
+              - "null"
               - string
           contents:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               en:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           converted:
             type:
-              - 'null'
+              - "null"
               - integer
           data:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
           delayed_option:
             type:
-              - 'null'
+              - "null"
               - string
           delivery_time_of_day:
             type:
-              - 'null'
+              - "null"
               - string
           errored:
             type:
-              - 'null'
+              - "null"
               - integer
           excluded_segments:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           failed:
             type:
-              - 'null'
+              - "null"
               - integer
           firefox_icon:
             type:
-              - 'null'
+              - "null"
               - string
           global_image:
             type:
-              - 'null'
+              - "null"
               - string
           headings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               en:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           huawei_accent_color:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_big_picture:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_channel_id:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_existing_channel_id:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_group:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_group_message:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_large_icon:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_led_color:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_msg_type:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_small_icon:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_sound:
             type:
-              - 'null'
+              - "null"
               - string
           huawei_visibility:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type: string
           include_player_ids:
             type:
-              - 'null'
+              - "null"
               - string
           include_external_user_ids:
             type:
-              - 'null'
+              - "null"
               - string
           included_segments:
             type: array
@@ -587,178 +587,178 @@ definitions:
               type: string
           thread_id:
             type:
-              - 'null'
+              - "null"
               - string
           ios_badgeCount:
             type:
-              - 'null'
+              - "null"
               - integer
           ios_badgeType:
             type:
-              - 'null'
+              - "null"
               - string
           ios_category:
             type:
-              - 'null'
+              - "null"
               - string
           ios_interruption_level:
             type:
-              - 'null'
+              - "null"
               - string
           ios_relevance_score:
             type:
-              - 'null'
+              - "null"
               - number
           ios_sound:
             type:
-              - 'null'
+              - "null"
               - string
           apns_alert:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
           target_content_identifier:
             type:
-              - 'null'
+              - "null"
               - string
           isAdm:
             type:
-              - 'null'
+              - "null"
               - boolean
           isAndroid:
             type:
-              - 'null'
+              - "null"
               - boolean
           isChrome:
             type:
-              - 'null'
+              - "null"
               - boolean
           isChromeWeb:
             type:
-              - 'null'
+              - "null"
               - boolean
           isAlexa:
             type:
-              - 'null'
+              - "null"
               - boolean
           isFirefox:
             type:
-              - 'null'
+              - "null"
               - boolean
           isIos:
             type:
-              - 'null'
+              - "null"
               - boolean
           isSafari:
             type:
-              - 'null'
+              - "null"
               - boolean
           isWP:
             type:
-              - 'null'
+              - "null"
               - boolean
           isWP_WNS:
             type:
-              - 'null'
+              - "null"
               - boolean
           isEdge:
             type:
-              - 'null'
+              - "null"
               - boolean
           isHuawei:
             type:
-              - 'null'
+              - "null"
               - boolean
           isSMS:
             type:
-              - 'null'
+              - "null"
               - boolean
           large_icon:
             type:
-              - 'null'
+              - "null"
               - string
           priority:
             type:
-              - 'null'
+              - "null"
               - integer
           queued_at:
             type: integer
           remaining:
             type:
-              - 'null'
+              - "null"
               - integer
           send_after:
             type:
-              - 'null'
+              - "null"
               - integer
           completed_at:
             type:
-              - 'null'
+              - "null"
               - integer
           small_icon:
             type:
-              - 'null'
+              - "null"
               - string
           successful:
             type:
-              - 'null'
+              - "null"
               - integer
           received:
             type:
-              - 'null'
+              - "null"
               - integer
           tags:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
           filters:
             type:
-              - 'null'
+              - "null"
               - string
           template_id:
             type:
-              - 'null'
+              - "null"
               - string
           ttl:
             type:
-              - 'null'
+              - "null"
               - integer
           url:
             type:
-              - 'null'
+              - "null"
               - string
           web_url:
             type:
-              - 'null'
+              - "null"
               - string
           app_url:
             type:
-              - 'null'
+              - "null"
               - string
           web_buttons:
             type:
-              - 'null'
+              - "null"
               - string
           web_push_topic:
             type:
-              - 'null'
+              - "null"
               - string
           wp_sound:
             type:
-              - 'null'
+              - "null"
               - string
           wp_wns_sound:
             type:
-              - 'null'
+              - "null"
               - string
           platform_delivery_stats:
             type: object
             properties:
               android:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   successful:
@@ -773,7 +773,7 @@ definitions:
                     type: integer
               ios:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   successful:
@@ -788,36 +788,36 @@ definitions:
                     type: integer
           ios_attachments:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           throttle_rate_per_minute:
             type:
-              - 'null'
+              - "null"
               - integer
           sms_from:
             type:
-              - 'null'
+              - "null"
               - string
           sms_media_urls:
             type:
-              - 'null'
+              - "null"
               - string
           email_click_tracking_disabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           fcap_group_ids:
             type:
-              - 'null'
+              - "null"
               - string
           fcap_status:
             type:
-              - 'null'
+              - "null"
               - string
   outcomes_stream:
     $ref: "#/definitions/rest_api_key_auth_base_stream"

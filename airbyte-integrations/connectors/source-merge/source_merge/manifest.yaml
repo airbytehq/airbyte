@@ -67,39 +67,39 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           integration:
             type:
-              - 'null'
+              - "null"
               - string
           integration_slug:
             type:
-              - 'null'
+              - "null"
               - string
           category:
             type:
-              - 'null'
+              - "null"
               - string
           end_user_origin_id:
             type:
-              - 'null'
+              - "null"
               - string
           end_user_organization_name:
             type:
-              - 'null'
+              - "null"
               - string
           end_user_email_address:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           webhook_listener_url:
             type:
-              - 'null'
+              - "null"
               - string
           is_duplicate: {}
   activities_stream:
@@ -119,83 +119,83 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           user:
             type:
-              - 'null'
+              - "null"
               - string
           remote_created_at:
             type:
-              - 'null'
+              - "null"
               - string
           activity_type:
             type:
-              - 'null'
+              - "null"
               - string
           subject:
             type:
-              - 'null'
+              - "null"
               - string
           body:
             type:
-              - 'null'
+              - "null"
               - string
           visibility:
             type:
-              - 'null'
+              - "null"
               - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   applications_stream:
     $ref: "#/definitions/base_stream"
@@ -214,91 +214,91 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           candidate:
             type:
-              - 'null'
+              - "null"
               - string
           job:
             type:
-              - 'null'
+              - "null"
               - string
           applied_at:
             type:
-              - 'null'
+              - "null"
               - string
           rejected_at:
             type:
-              - 'null'
+              - "null"
               - string
           source:
             type:
-              - 'null'
+              - "null"
               - string
           credited_to:
             type:
-              - 'null'
+              - "null"
               - string
           current_stage:
             type:
-              - 'null'
+              - "null"
               - string
           reject_reason:
             type:
-              - 'null'
+              - "null"
               - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   attachments_stream:
     $ref: "#/definitions/base_stream"
@@ -317,73 +317,73 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           file_name:
             type:
-              - 'null'
+              - "null"
               - string
           file_url:
             type:
-              - 'null'
+              - "null"
               - string
           candidate:
             type:
-              - 'null'
+              - "null"
               - string
           attachment_type:
             type:
-              - 'null'
+              - "null"
               - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type: array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   candidates_stream:
     $ref: "#/definitions/base_stream"
@@ -402,178 +402,178 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           company:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           remote_created_at:
             type:
-              - 'null'
+              - "null"
               - string
           remote_updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           last_interaction_at:
             type:
-              - 'null'
+              - "null"
               - string
           is_private:
             type:
-              - 'null'
+              - "null"
               - boolean
           can_email:
             type:
-              - 'null'
+              - "null"
               - boolean
           locations:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           phone_numbers:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 phone_number_type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           email_addresses:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 email_address_type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           urls:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url_type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           applications:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           attachments:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   departments_stream:
     $ref: "#/definitions/base_stream"
@@ -591,63 +591,63 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   eeocs_stream:
     $ref: "#/definitions/base_stream"
@@ -666,83 +666,83 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           candidate:
             type:
-              - 'null'
+              - "null"
               - string
           submitted_at:
             type:
-              - 'null'
+              - "null"
               - string
           race:
             type:
-              - 'null'
+              - "null"
               - string
           gender:
             type:
-              - 'null'
+              - "null"
               - string
           veteran_status:
             type:
-              - 'null'
+              - "null"
               - string
           disability_status:
             type:
-              - 'null'
+              - "null"
               - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   interviews_stream:
     $ref: "#/definitions/base_stream"
@@ -761,103 +761,103 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           application:
             type:
-              - 'null'
+              - "null"
               - string
           job_interview_stage:
             type:
-              - 'null'
+              - "null"
               - string
           organizer:
             type:
-              - 'null'
+              - "null"
               - string
           interviewers:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           location:
             type:
-              - 'null'
+              - "null"
               - string
           start_at:
             type:
-              - 'null'
+              - "null"
               - string
           end_at:
             type:
-              - 'null'
+              - "null"
               - string
           remote_created_at:
             type:
-              - 'null'
+              - "null"
               - string
           remote_updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   job-interview-stages_stream:
     $ref: "#/definitions/base_stream"
@@ -876,71 +876,71 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           modified_at:
             type:
-              - 'null'
+              - "null"
               - string
           job:
             type:
-              - 'null'
+              - "null"
               - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   jobs_stream:
     $ref: "#/definitions/base_stream"
@@ -959,136 +959,136 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           code:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           job_posting_urls:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url_type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           remote_created_at:
             type:
-              - 'null'
+              - "null"
               - string
           remote_updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           confidential:
             type:
-              - 'null'
+              - "null"
               - boolean
           departments:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           offices:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           hiring_managers:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           recruiters:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   offices_stream:
     $ref: "#/definitions/base_stream"
@@ -1107,67 +1107,67 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           location:
             type:
-              - 'null'
+              - "null"
               - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   offers_stream:
     $ref: "#/definitions/base_stream"
@@ -1186,87 +1186,87 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           application:
             type:
-              - 'null'
+              - "null"
               - string
           creator:
             type:
-              - 'null'
+              - "null"
               - string
           remote_created_at:
             type:
-              - 'null'
+              - "null"
               - string
           closed_at:
             type:
-              - 'null'
+              - "null"
               - string
           sent_at:
             type:
-              - 'null'
+              - "null"
               - string
           start_date:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               organization_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               linked_account_defined_targets:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   custom_key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 path:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 data:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   sync_status_stream:
     $ref: "#/definitions/base_stream"
@@ -1285,24 +1285,24 @@ definitions:
         properties:
           model_name:
             type:
-              - 'null'
+              - "null"
               - string
           model_id:
             type:
-              - 'null'
+              - "null"
               - string
           last_sync_start:
             type:
-              - 'null'
+              - "null"
               - string
           next_sync_start: {}
           status:
             type:
-              - 'null'
+              - "null"
               - string
           is_initial_sync:
             type:
-              - 'null'
+              - "null"
               - boolean
   users_stream:
     $ref: "#/definitions/base_stream"
@@ -1321,68 +1321,68 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           remote_data:
             type:
-              - 'null'
+              - "null"
               - string
           modified_at:
             type:
-              - 'null'
+              - "null"
               - string
           field_mappings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               linked_account_defined_targets: {}
           remote_id:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           disabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           remote_created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           access_role:
             type:
-              - 'null'
+              - "null"
               - string
           remote_was_deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
         field_mappings:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             organization_defined_targets:
               type:
-                - 'null'
+                - "null"
                 - object
               properties: {}
             linked_account_defined_targets:
               type:
-                - 'null'
+                - "null"
                 - object
               properties: {}
 streams:

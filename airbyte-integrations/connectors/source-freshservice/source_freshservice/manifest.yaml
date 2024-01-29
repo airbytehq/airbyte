@@ -70,153 +70,153 @@ definitions:
         properties:
           attachments:
             type:
-              - 'null'
+              - "null"
               - array
           cc_emails:
             type:
-              - 'null'
+              - "null"
               - array
           department_id:
             type:
-              - 'null'
+              - "null"
               - integer
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - object
           deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           description:
             type:
-              - 'null'
+              - "null"
               - string
           description_text:
             type:
-              - 'null'
+              - "null"
               - string
           due_by:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           email_config_id:
             type:
-              - 'null'
+              - "null"
               - integer
           fr_due_by:
             type:
-              - 'null'
+              - "null"
               - string
           fr_escalated:
             type:
-              - 'null'
+              - "null"
               - boolean
           fwd_emails:
             type:
-              - 'null'
+              - "null"
               - array
           group_id:
             type:
-              - 'null'
+              - "null"
               - integer
           id:
             type: integer
           is_escalated:
             type:
-              - 'null'
+              - "null"
               - boolean
           name:
             type:
-              - 'null'
+              - "null"
               - string
           phone:
             type:
-              - 'null'
+              - "null"
               - string
           priority:
             type:
-              - 'null'
+              - "null"
               - integer
           category:
             type:
-              - 'null'
+              - "null"
               - string
           sub_category:
             type:
-              - 'null'
+              - "null"
               - string
           item_category:
             type:
-              - 'null'
+              - "null"
               - string
           reply_cc_emails:
             type:
-              - 'null'
+              - "null"
               - array
           requester_id:
             type:
-              - 'null'
+              - "null"
               - integer
           responder_id:
             type:
-              - 'null'
+              - "null"
               - integer
           source:
             type:
-              - 'null'
+              - "null"
               - integer
           spam:
             type:
-              - 'null'
+              - "null"
               - boolean
           status:
             type:
-              - 'null'
+              - "null"
               - integer
           subject:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
           to_emails:
             type:
-              - 'null'
+              - "null"
               - array
           type:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           urgency:
             type:
-              - 'null'
+              - "null"
               - integer
           impact:
             type:
-              - 'null'
+              - "null"
               - integer
           workspace_id:
             type:
-              - 'null'
+              - "null"
               - integer
           requested_for_id:
             type:
-              - 'null'
+              - "null"
               - integer
   satisfaction_survey_responses_stream:
     name: "satisfaction_survey_responses"
@@ -244,61 +244,61 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           overall_rating:
             type:
-              - 'null'
+              - "null"
               - integer
           overall_rating_text:
             type:
-              - 'null'
+              - "null"
               - string
           primary_question:
             type:
-              - 'null'
+              - "null"
               - string
           questionnaire_responses:
             type:
-              - 'null'
+              - "null"
               - object
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
               properties:
                 question:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   additionalProperties: true
                   properties:
                     question_text:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                 answers:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     - type:
-                        - 'null'
+                        - "null"
                         - object
                       additionalProperties: true
                       properties:
                         answer_text:
                           type:
-                            - 'null'
+                            - "null"
                             - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
   requested_items_stream:
     name: "requested_items"
@@ -332,55 +332,55 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           quantity:
             type:
-              - 'null'
+              - "null"
               - integer
           stage:
             type:
-              - 'null'
+              - "null"
               - integer
           loaned:
             type:
-              - 'null'
+              - "null"
               - boolean
           cost_per_request:
             type:
-              - 'null'
+              - "null"
               - number
           remarks:
             type:
-              - 'null'
+              - "null"
               - string
           delivery_time:
             type:
-              - 'null'
+              - "null"
               - number
           is_parent:
             type:
-              - 'null'
+              - "null"
               - boolean
           service_item_id:
             type:
-              - 'null'
+              - "null"
               - integer
           service_item_name:
             type:
-              - 'null'
+              - "null"
               - string
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
   problems_stream:
@@ -402,81 +402,81 @@ definitions:
             type: integer
           agent_id:
             type:
-              - 'null'
+              - "null"
               - integer
           requester_id:
             type:
-              - 'null'
+              - "null"
               - integer
           group_id:
             type:
-              - 'null'
+              - "null"
               - integer
           description:
             type:
-              - 'null'
+              - "null"
               - string
           description_text:
             type:
-              - 'null'
+              - "null"
               - string
           priority:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - integer
           impact:
             type:
-              - 'null'
+              - "null"
               - integer
           known_error:
             type:
-              - 'null'
+              - "null"
               - boolean
           subject:
             type:
-              - 'null'
+              - "null"
               - string
           due_by:
             type:
-              - 'null'
+              - "null"
               - string
           department_id:
             type:
-              - 'null'
+              - "null"
               - integer
           category:
             type:
-              - 'null'
+              - "null"
               - string
           sub_category:
             type:
-              - 'null'
+              - "null"
               - string
           item_category:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           associated_change:
             type:
-              - 'null'
+              - "null"
               - integer
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
           analysis_fields:
@@ -484,31 +484,31 @@ definitions:
             additionalProperties: true
           planned_start_date:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           planned_end_date:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           planned_effort:
             type:
               - string
-              - 'null'
+              - "null"
           attachments:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               additionalProperties: true
           workspace_id:
             type:
-              - 'null'
+              - "null"
               - integer
           assets:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               additionalProperties: true
@@ -531,128 +531,128 @@ definitions:
             type: integer
           agent_id:
             type:
-              - 'null'
+              - "null"
               - integer
           description:
             type:
-              - 'null'
+              - "null"
               - string
           description_text:
             type:
-              - 'null'
+              - "null"
               - string
           requester_id:
             type:
-              - 'null'
+              - "null"
               - integer
           group_id:
             type:
-              - 'null'
+              - "null"
               - integer
           priority:
             type:
-              - 'null'
+              - "null"
               - integer
           impact:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - integer
           risk:
             type:
-              - 'null'
+              - "null"
               - integer
           change_type:
             type:
-              - 'null'
+              - "null"
               - integer
           approval_status:
             type:
-              - 'null'
+              - "null"
               - integer
           planned_start_date:
             type:
-              - 'null'
+              - "null"
               - string
           planned_end_date:
             type:
-              - 'null'
+              - "null"
               - string
           subject:
             type:
-              - 'null'
+              - "null"
               - string
           department_id:
             type:
-              - 'null'
+              - "null"
               - integer
           category:
             type:
-              - 'null'
+              - "null"
               - string
           sub_category:
             type:
-              - 'null'
+              - "null"
               - string
           item_category:
             type:
-              - 'null'
+              - "null"
               - string
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
           maintenance_window:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
           blackout_window:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           planned_effort:
             type:
               - string
-              - 'null'
+              - "null"
           attachments:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               additionalProperties: true
           impacted_services:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               additionalProperties: true
           workspace_id:
             type:
-              - 'null'
+              - "null"
               - integer
           change_window_id:
             type:
-              - 'null'
+              - "null"
               - integer
           assets:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               additionalProperties: true
@@ -676,83 +676,83 @@ definitions:
             type: integer
           agent_id:
             type:
-              - 'null'
+              - "null"
               - integer
           group_id:
             type:
-              - 'null'
+              - "null"
               - integer
           priority:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - integer
           release_type:
             type:
-              - 'null'
+              - "null"
               - integer
           subject:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           planned_start_date:
             type:
-              - 'null'
+              - "null"
               - string
           planned_end_date:
             type:
-              - 'null'
+              - "null"
               - string
           work_start_date:
             type:
-              - 'null'
+              - "null"
               - string
           work_end_date:
             type:
-              - 'null'
+              - "null"
               - string
           department_id:
             type:
-              - 'null'
+              - "null"
               - integer
           category:
             type:
-              - 'null'
+              - "null"
               - string
           sub_category:
             type:
-              - 'null'
+              - "null"
               - string
           item_category:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           associated_assets:
             type:
-              - 'null'
+              - "null"
               - array
           associated_changes:
             type:
-              - 'null'
+              - "null"
               - array
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - object
           planning_fields:
             type: object
@@ -775,115 +775,115 @@ definitions:
             type: integer
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           job_title:
             type:
-              - 'null'
+              - "null"
               - string
           primary_email:
             type:
-              - 'null'
+              - "null"
               - string
           secondary_emails:
             type:
-              - 'null'
+              - "null"
               - array
           work_phone_number:
             type:
-              - 'null'
+              - "null"
               - string
           mobile_phone_number:
             type:
-              - 'null'
+              - "null"
               - string
           department_ids:
             type:
-              - 'null'
+              - "null"
               - array
           can_see_all_tickets_from_associated_departments:
             type:
-              - 'null'
+              - "null"
               - boolean
           reporting_manager_id:
             type:
-              - 'null'
+              - "null"
               - integer
           address:
             type:
-              - 'null'
+              - "null"
               - string
           time_zone:
             type:
-              - 'null'
+              - "null"
               - string
           time_format:
             type:
-              - 'null'
+              - "null"
               - string
           language:
             type:
-              - 'null'
+              - "null"
               - string
           location_id:
             type:
-              - 'null'
+              - "null"
               - integer
           background_information:
             type:
-              - 'null'
+              - "null"
               - string
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - object
           active:
             type:
-              - 'null'
+              - "null"
               - boolean
           has_logged_in:
             type:
-              - 'null'
+              - "null"
               - boolean
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           is_agent:
             type:
-              - 'null'
+              - "null"
               - boolean
           department_names:
             type:
-              - 'null'
+              - "null"
               - array
           vip_user:
             type:
-              - 'null'
+              - "null"
               - boolean
           external_id:
             type:
-              - 'null'
+              - "null"
               - string
           can_see_all_changes_from_associated_departments:
             type:
-              - 'null'
+              - "null"
               - boolean
           location_name:
             type:
-              - 'null'
+              - "null"
               - string
           work_schedule_id:
             type:
-              - 'null'
+              - "null"
               - integer
   agents_stream:
     $ref: "#/definitions/base_stream"
@@ -904,197 +904,197 @@ definitions:
             type: integer
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           occasional:
             type:
-              - 'null'
+              - "null"
               - boolean
           job_title:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           work_phone_number:
             type:
-              - 'null'
+              - "null"
               - string
           mobile_phone_number:
             type:
-              - 'null'
+              - "null"
               - string
           member_of_pending_approval:
             type:
-              - 'null'
+              - "null"
               - array
           observer_of_pending_approval:
             type:
-              - 'null'
+              - "null"
               - array
           department_ids:
             type:
-              - 'null'
+              - "null"
               - array
           can_see_all_tickets_from_associated_departments:
             type:
-              - 'null'
+              - "null"
               - boolean
           reporting_manager_id:
             type:
-              - 'null'
+              - "null"
               - integer
           address:
             type:
-              - 'null'
+              - "null"
               - string
           time_zone:
             type:
-              - 'null'
+              - "null"
               - string
           time_format:
             type:
-              - 'null'
+              - "null"
               - string
           language:
             type:
-              - 'null'
+              - "null"
               - string
           location_id:
             type:
-              - 'null'
+              - "null"
               - integer
           background_information:
             type:
-              - 'null'
+              - "null"
               - string
           scoreboard_level_id:
             type:
-              - 'null'
+              - "null"
               - integer
           scoreboard_points:
             type:
-              - 'null'
+              - "null"
               - integer
           ticket_scope:
             type:
-              - 'null'
+              - "null"
               - string
           problem_scope:
             type:
-              - 'null'
+              - "null"
               - string
           change_scope:
             type:
-              - 'null'
+              - "null"
               - string
           release_scope:
             type:
-              - 'null'
+              - "null"
               - string
           group_ids:
             type:
-              - 'null'
+              - "null"
               - array
           member_of:
             type:
-              - 'null'
+              - "null"
               - array
           observer_of:
             type:
-              - 'null'
+              - "null"
               - array
           role_ids:
             type:
-              - 'null'
+              - "null"
               - array
           roles:
             type:
-              - 'null'
+              - "null"
               - array
           last_login_at:
             type:
-              - 'null'
+              - "null"
               - string
           last_active_at:
             type:
-              - 'null'
+              - "null"
               - string
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - object
           has_logged_in:
             type:
-              - 'null'
+              - "null"
               - boolean
           active:
             type:
-              - 'null'
+              - "null"
               - boolean
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           location_name:
             type:
-              - 'null'
+              - "null"
               - string
           department_names:
             type:
-              - 'null'
+              - "null"
               - array
           scopes:
             type:
-              - 'null'
+              - "null"
               - object
           auto_assign_status_changed_at:
             type:
-              - 'null'
+              - "null"
               - string
           workspace_id:
             type:
-              - 'null'
+              - "null"
               - integer
           signature:
             type:
-              - 'null'
+              - "null"
               - string
           vip_user:
             type:
-              - 'null'
+              - "null"
               - boolean
           auto_assign_tickets:
             type:
-              - 'null'
+              - "null"
               - boolean
           external_id:
             type:
-              - 'null'
+              - "null"
               - string
           workspace_ids:
             type:
-              - 'null'
+              - "null"
               - array
           workspace_info:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               additionalProperties: true
           work_schedule_id:
             type:
-              - 'null'
+              - "null"
               - integer
   locations_stream:
     $ref: "#/definitions/base_stream"
@@ -1115,15 +1115,15 @@ definitions:
             type: integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           parent_location_id:
             type:
-              - 'null'
+              - "null"
               - integer
           primary_contact_id:
             type:
-              - 'null'
+              - "null"
               - integer
           address:
             type: object
@@ -1131,47 +1131,47 @@ definitions:
             properties:
               line1:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               line2:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               zipcode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           phone:
             type:
-              - 'null'
+              - "null"
               - string
           contact_name:
             type:
-              - 'null'
+              - "null"
               - string
   products_stream:
     $ref: "#/definitions/base_stream"
@@ -1191,43 +1191,43 @@ definitions:
             type: integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           asset_type_id:
             type:
-              - 'null'
+              - "null"
               - integer
           manufacturer:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           mode_of_procurement:
             type:
-              - 'null'
+              - "null"
               - string
           depreciation_type_id:
             type:
-              - 'null'
+              - "null"
               - integer
           description:
             type:
-              - 'null'
+              - "null"
               - string
           description_text:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
   vendors_stream:
     $ref: "#/definitions/base_stream"
@@ -1248,35 +1248,35 @@ definitions:
             type: integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           contact_name:
             type:
-              - 'null'
+              - "null"
               - string
           mobile:
             type:
-              - 'null'
+              - "null"
               - integer
           phone:
             type:
-              - 'null'
+              - "null"
               - integer
           primary_contact_id:
             type:
-              - 'null'
+              - "null"
               - integer
           email:
             type:
-              - 'null'
+              - "null"
               - string
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - object
           address:
             type: object
@@ -1284,31 +1284,31 @@ definitions:
             properties:
               line1:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               zipcode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
   assets_stream:
     $ref: "#/definitions/base_stream"
@@ -1329,77 +1329,77 @@ definitions:
             type: integer
           display_id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           asset_type_id:
             type:
-              - 'null'
+              - "null"
               - integer
           asset_tag:
             type:
-              - 'null'
+              - "null"
               - string
           impact:
             type:
-              - 'null'
+              - "null"
               - string
           author_type:
             type:
-              - 'null'
+              - "null"
               - string
           usage_type:
             type:
-              - 'null'
+              - "null"
               - string
           user_id:
             type:
-              - 'null'
+              - "null"
               - integer
           location_id:
             type:
-              - 'null'
+              - "null"
               - integer
           department_id:
             type:
-              - 'null'
+              - "null"
               - integer
           agent_id:
             type:
-              - 'null'
+              - "null"
               - integer
           group_id:
             type:
-              - 'null'
+              - "null"
               - integer
           assigned_on:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           discovery_enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           end_of_life:
             type:
-              - 'null'
+              - "null"
               - string
-            format: '%Y-%m-%d'
+            format: "%Y-%m-%d"
   software_stream:
     $ref: "#/definitions/base_stream"
     name: "software"
@@ -1419,65 +1419,65 @@ definitions:
             type: integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           application_type:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           publisher_id:
             type:
-              - 'null'
+              - "null"
               - integer
           managed_by_id:
             type:
-              - 'null'
+              - "null"
               - integer
           notes:
             type:
-              - 'null'
+              - "null"
               - string
           category:
             type:
-              - 'null'
+              - "null"
               - string
           sources:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               additionalProperties: true
           user_count:
             type:
-              - 'null'
+              - "null"
               - integer
           installation_count:
             type:
-              - 'null'
+              - "null"
               - integer
           workspace_id:
             type:
-              - 'null'
+              - "null"
               - integer
           additional_data:
             type:
-              - 'null'
+              - "null"
               - object
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
   purchase_orders_stream:
     $ref: "#/definitions/base_stream"
@@ -1498,85 +1498,85 @@ definitions:
             type: integer
           vendor_id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           po_number:
             type:
-              - 'null'
+              - "null"
               - string
           vendor_details:
             type:
-              - 'null'
+              - "null"
               - string
           expected_delivery_date:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           created_by:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - integer
           shipping_address:
             type:
-              - 'null'
+              - "null"
               - string
           billing_same_as_shipping:
             type:
-              - 'null'
+              - "null"
               - integer
           billing_address:
             type:
-              - 'null'
+              - "null"
               - string
           currency_code:
             type:
-              - 'null'
+              - "null"
               - string
           conversion_rate:
             type: number
           department_id:
             type:
-              - 'null'
+              - "null"
               - integer
           discount_percentage:
             type:
-              - 'null'
+              - "null"
               - integer
           tax_percentage:
             type:
-              - 'null'
+              - "null"
               - integer
           shipping_cost:
             type:
-              - 'null'
+              - "null"
               - integer
           workspace_id:
             type:
-              - 'null'
+              - "null"
               - integer
           total_cost:
             type:
-              - 'null'
+              - "null"
               - number
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - object
           purchase_items:
             type: array

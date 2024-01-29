@@ -40,39 +40,39 @@ definitions:
         properties:
           v:
             type:
-              - 'null'
+              - "null"
               - number
           vw:
             type:
-              - 'null'
+              - "null"
               - number
           otc:
             type:
-              - 'null'
+              - "null"
               - boolean
           o:
             type:
-              - 'null'
+              - "null"
               - number
           c:
             type:
-              - 'null'
+              - "null"
               - number
           h:
             type:
-              - 'null'
+              - "null"
               - number
           l:
             type:
-              - 'null'
+              - "null"
               - number
           t:
             type:
-              - 'null'
+              - "null"
               - integer
           n:
             type:
-              - 'null'
+              - "null"
               - number
 streams:
   - "#/definitions/stock_api_stream"

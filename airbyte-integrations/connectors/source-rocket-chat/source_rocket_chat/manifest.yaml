@@ -62,39 +62,39 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - integer
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
           createdBy:
             type:
-              - 'null'
+              - "null"
               - object
           _updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
           roomId:
             type:
-              - 'null'
+              - "null"
               - string
           rooms:
             type:
-              - 'null'
+              - "null"
               - integer
           numberOfUsers:
             type:
-              - 'null'
+              - "null"
               - integer
   rooms_stream:
     $ref: "#/definitions/base_stream"
@@ -112,79 +112,79 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           fname:
             type:
-              - 'null'
+              - "null"
               - string
           customFields:
             type:
-              - 'null'
+              - "null"
               - object
           description:
             type:
-              - 'null'
+              - "null"
               - string
           broadcast:
             type:
-              - 'null'
+              - "null"
               - boolean
           encrypted:
             type:
-              - 'null'
+              - "null"
               - boolean
           federated:
             type:
-              - 'null'
+              - "null"
               - boolean
           name:
             type:
-              - 'null'
+              - "null"
               - string
           t:
             type:
-              - 'null'
+              - "null"
               - string
           msgs:
             type:
-              - 'null'
+              - "null"
               - integer
           usersCount:
             type:
-              - 'null'
+              - "null"
               - integer
           u:
             type:
-              - 'null'
+              - "null"
               - object
           ts:
             type:
-              - 'null'
+              - "null"
               - string
           ro:
             type:
-              - 'null'
+              - "null"
               - boolean
           default:
             type:
-              - 'null'
+              - "null"
               - boolean
           sysMes:
             type:
-              - 'null'
+              - "null"
               - boolean
           _updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
           lastMessage:
             type:
-              - 'null'
+              - "null"
               - object
           lm:
             type:
-              - 'null'
+              - "null"
               - string
   channels_stream:
     $ref: "#/definitions/base_stream"
@@ -200,71 +200,71 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           fname:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           broadcast:
             type:
-              - 'null'
+              - "null"
               - boolean
           encrypted:
             type:
-              - 'null'
+              - "null"
               - boolean
           teamMain:
             type:
-              - 'null'
+              - "null"
               - boolean
           name:
             type:
-              - 'null'
+              - "null"
               - string
           t:
             type:
-              - 'null'
+              - "null"
               - string
           msgs:
             type:
-              - 'null'
+              - "null"
               - integer
           usersCount:
             type:
-              - 'null'
+              - "null"
               - integer
           u:
             type:
-              - 'null'
+              - "null"
               - object
           ts:
             type:
-              - 'null'
+              - "null"
               - string
           ro:
             type:
-              - 'null'
+              - "null"
               - boolean
           teamId:
             type:
-              - 'null'
+              - "null"
               - string
           default:
             type:
-              - 'null'
+              - "null"
               - boolean
           sysMes:
             type:
-              - 'null'
+              - "null"
               - boolean
           _updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
   roles_stream:
     $ref: "#/definitions/base_stream"
@@ -287,27 +287,27 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           scope:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           mandatory2fa:
             type:
-              - 'null'
+              - "null"
               - boolean
           name:
             type:
-              - 'null'
+              - "null"
               - string
           protected:
             type:
-              - 'null'
+              - "null"
               - boolean
   subscriptions_stream:
     $ref: "#/definitions/base_stream"
@@ -325,63 +325,63 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           open:
             type:
-              - 'null'
+              - "null"
               - boolean
           alert:
             type:
-              - 'null'
+              - "null"
               - boolean
           unread:
             type:
-              - 'null'
+              - "null"
               - integer
           userMentions:
             type:
-              - 'null'
+              - "null"
               - integer
           groupMentions:
             type:
-              - 'null'
+              - "null"
               - integer
           ts:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           t:
             type:
-              - 'null'
+              - "null"
               - string
           fname:
             type:
-              - 'null'
+              - "null"
               - string
           ls:
             type:
-              - 'null'
+              - "null"
               - string
           u:
             type:
-              - 'null'
+              - "null"
               - object
           rid:
             type:
-              - 'null'
+              - "null"
               - string
           _updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
           roles:
             type:
-              - 'null'
+              - "null"
               - array
   users_stream:
     $ref: "#/definitions/base_stream"
@@ -398,47 +398,47 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           active:
             type:
-              - 'null'
+              - "null"
               - boolean
           name:
             type:
-              - 'null'
+              - "null"
               - string
           username:
             type:
-              - 'null'
+              - "null"
               - string
           emails:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
           roles:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           lastLogin:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           nameInsensitive:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/teams_stream"

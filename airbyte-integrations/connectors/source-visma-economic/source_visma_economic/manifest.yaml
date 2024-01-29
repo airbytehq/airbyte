@@ -81,11 +81,11 @@ definitions:
             description: Determines if the account can be manually updated with entries.
           department:
             type:
-              - 'null'
+              - "null"
               - object
           departmentalDistribution:
             type:
-              - 'null'
+              - "null"
               - object
           contraAccount:
             type: object
@@ -172,7 +172,7 @@ definitions:
             description: A unique reference to the account resource.
           openingAccount:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               accountNumber:
@@ -209,7 +209,7 @@ definitions:
             description: The outstanding amount for this customer.
           dueAmount:
             type:
-              - 'null'
+              - "null"
               - number
           barred:
             type: boolean
@@ -261,7 +261,7 @@ definitions:
             type: string
             sortable: true
             filterable: true
-            description: 'Customer e-mail address where e-conomic invoices should be emailed. Note: you can specify multiple email addresses in this field, separated by a space. If you need to send a copy of the invoice or write to other e-mail addresses, you can also create one or more customer contacts.'
+            description: "Customer e-mail address where e-conomic invoices should be emailed. Note: you can specify multiple email addresses in this field, separated by a space. If you need to send a copy of the invoice or write to other e-mail addresses, you can also create one or more customer contacts."
           lastUpdated:
             type: string
             format: full-date
@@ -396,7 +396,7 @@ definitions:
                 description: A unique link reference to the employee resource.
           vatZone:
             type: object
-            description: 'Indicates in which VAT-zone the customer is located (e.g.: domestically, in Europe or elsewhere abroad).'
+            description: "Indicates in which VAT-zone the customer is located (e.g.: domestically, in Europe or elsewhere abroad)."
             properties:
               vatZoneNumber:
                 type: integer
@@ -407,7 +407,7 @@ definitions:
                 description: A unique link reference to the VAT-zone item.
           templates:
             type: object
-            description: ''
+            description: ""
             properties:
               invoice:
                 type: string
@@ -423,7 +423,7 @@ definitions:
                 description: A unique link reference to the templates resource.
           totals:
             type: object
-            description: ''
+            description: ""
             properties:
               drafts:
                 type: string
@@ -439,7 +439,7 @@ definitions:
                 description: A unique link reference to the totals resource for this customer.
           invoices:
             type: object
-            description: ''
+            description: ""
             properties:
               drafts:
                 type: string
@@ -509,11 +509,11 @@ definitions:
             description: This is the unit net price that will appear on invoice lines when a product is added to an invoice line.
           minimumStock:
             type:
-              - 'null'
+              - "null"
               - number
           pricing:
             type:
-              - 'null'
+              - "null"
               - object
           barCode:
             type: string
@@ -1058,15 +1058,15 @@ definitions:
             description: A reference number for the booked invoice document.
           exchangeRate:
             type:
-              - 'null'
+              - "null"
               - number
           orderNumber:
             type:
-              - 'null'
+              - "null"
               - integer
           grossAmountInBaseCurrency:
             type:
-              - 'null'
+              - "null"
               - number
           date:
             type: string
@@ -1077,7 +1077,7 @@ definitions:
             description: Invoice issue date. Format according to ISO-8601 (YYYY-MM-DD).
           currency:
             type: string
-            pattern: '[a-zA-Z]{3}'
+            pattern: "[a-zA-Z]{3}"
             filterable: true
             sortable: true
             description: The ISO 4217 currency code of the invoice.
@@ -1432,7 +1432,7 @@ definitions:
             description: A reference number for the booked invoice document.
           orderNumber:
             type:
-              - 'null'
+              - "null"
               - integer
           date:
             type: string
@@ -1443,7 +1443,7 @@ definitions:
             description: Invoice issue date. Format according to ISO-8601 (YYYY-MM-DD).
           currency:
             type: string
-            pattern: '[a-zA-Z]{3}'
+            pattern: "[a-zA-Z]{3}"
             filterable: true
             sortable: true
             description: The ISO 4217 currency code of the invoice.
@@ -1813,7 +1813,7 @@ definitions:
             description: A reference number for the booked invoice document.
           orderNumber:
             type:
-              - 'null'
+              - "null"
               - integer
           date:
             type: string
@@ -1824,7 +1824,7 @@ definitions:
             description: Invoice issue date. Format according to ISO-8601 (YYYY-MM-DD).
           currency:
             type: string
-            pattern: '[a-zA-Z]{3}'
+            pattern: "[a-zA-Z]{3}"
             filterable: true
             sortable: true
             description: The ISO 4217 currency code of the invoice.

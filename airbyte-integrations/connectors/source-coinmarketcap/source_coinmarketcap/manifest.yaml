@@ -47,47 +47,47 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           num_tokens:
             type:
-              - 'null'
+              - "null"
               - integer
           avg_price_change:
             type:
-              - 'null'
+              - "null"
               - number
           market_cap:
             type:
-              - 'null'
+              - "null"
               - number
           market_cap_change:
             type:
-              - 'null'
+              - "null"
               - number
           volume:
             type:
-              - 'null'
+              - "null"
               - number
           volume_change:
             type:
-              - 'null'
+              - "null"
               - number
           last_updated:
             type:
-              - 'null'
+              - "null"
               - string
   listing_stream:
     $ref: "#/definitions/base_stream"
@@ -103,73 +103,73 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           symbol:
             type:
-              - 'null'
+              - "null"
               - string
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           num_market_pairs:
             type:
-              - 'null'
+              - "null"
               - integer
           date_added:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           max_supply:
             type:
-              - 'null'
+              - "null"
               - number
           circulating_supply:
             type:
-              - 'null'
+              - "null"
               - number
           total_supply:
             type:
-              - 'null'
+              - "null"
               - number
           platform:
             type:
-              - 'null'
+              - "null"
               - object
           cmc_rank:
             type:
-              - 'null'
+              - "null"
               - integer
           self_reported_circulating_supply:
             type:
-              - 'null'
+              - "null"
               - number
           self_reported_market_cap:
             type:
-              - 'null'
+              - "null"
               - number
           tvl_ratio:
             type:
-              - 'null'
+              - "null"
               - number
           last_updated:
             type:
-              - 'null'
+              - "null"
               - string
           quote:
             type:
-              - 'null'
+              - "null"
               - object
   quotes_stream:
     $ref: "#/definitions/base_stream"
@@ -207,15 +207,15 @@ definitions:
             type: integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           sign:
             type:
-              - 'null'
+              - "null"
               - string
           symbol:
             type:
-              - 'null'
+              - "null"
               - string
   exchange_stream:
     $ref: "#/definitions/base_stream"
@@ -232,27 +232,27 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           is_active:
             type:
-              - 'null'
+              - "null"
               - integer
           first_historical_data:
             type:
-              - 'null'
+              - "null"
               - string
           last_historical_data:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/categories_stream"

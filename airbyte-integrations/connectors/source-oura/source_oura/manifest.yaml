@@ -67,141 +67,141 @@ definitions:
           class_5_min:
             type:
               - string
-              - 'null'
+              - "null"
           score:
             type:
               - number
-              - 'null'
+              - "null"
           active_calories:
             type:
               - number
-              - 'null'
+              - "null"
           average_met_minutes:
             type:
               - number
-              - 'null'
+              - "null"
           contributors:
             type: object
             properties:
               meet_daily_targets:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               move_every_hour:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               recovery_time:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               stay_active:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               training_frequency:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               training_volume:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           equivalent_walking_distance:
             type:
               - number
-              - 'null'
+              - "null"
           high_activity_met_minutes:
             type:
               - number
-              - 'null'
+              - "null"
           high_activity_time:
             type:
               - number
-              - 'null'
+              - "null"
           inactivity_alerts:
             type:
               - number
-              - 'null'
+              - "null"
           low_activity_met_minutes:
             type:
               - number
-              - 'null'
+              - "null"
           low_activity_time:
             type:
               - number
-              - 'null'
+              - "null"
           medium_activity_met_minutes:
             type:
               - number
-              - 'null'
+              - "null"
           medium_activity_time:
             type:
               - number
-              - 'null'
+              - "null"
           met:
             type: object
             properties:
               interval:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               items:
                 type: array
                 items:
                   type:
                     - number
-                    - 'null'
+                    - "null"
               timestamp:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
           meters_to_target:
             type:
               - number
-              - 'null'
+              - "null"
           non_wear_time:
             type:
               - number
-              - 'null'
+              - "null"
           resting_time:
             type:
               - number
-              - 'null'
+              - "null"
           sedentary_met_minutes:
             type:
               - number
-              - 'null'
+              - "null"
           sedentary_time:
             type:
               - number
-              - 'null'
+              - "null"
           steps:
             type:
               - number
-              - 'null'
+              - "null"
           target_calories:
             type:
               - number
-              - 'null'
+              - "null"
           target_meters:
             type:
               - number
-              - 'null'
+              - "null"
           total_calories:
             type:
               - number
-              - 'null'
+              - "null"
           day:
             type:
               - string
-              - 'null'
+              - "null"
             format: date
           timestamp:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   daily_readiness_stream:
     $ref: "#/definitions/date_stream"
@@ -221,53 +221,53 @@ definitions:
               activity_balance:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               body_temperature:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               hrv_balance:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               previous_day_activity: {}
               previous_night:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               recovery_index:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               resting_heart_rate:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sleep_balance:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           day:
             type:
               - string
-              - 'null'
+              - "null"
             format: date
           score:
             type:
               - number
-              - 'null'
+              - "null"
           temperature_deviation:
             type:
               - number
-              - 'null'
+              - "null"
           temperature_trend_deviation:
             type:
               - number
-              - 'null'
+              - "null"
           timestamp:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   daily_sleep_stream:
     $ref: "#/definitions/date_stream"
@@ -287,44 +287,44 @@ definitions:
               deep_sleep:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               efficiency:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               latency:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               rem_sleep:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               restfulness:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               timing:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               total_sleep:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           day:
             type:
               - string
-              - 'null'
+              - "null"
             format: date
           score:
             type:
               - number
-              - 'null'
+              - "null"
           timestamp:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   heart_rate_stream:
     $ref: "#/definitions/datetime_stream"
@@ -341,15 +341,15 @@ definitions:
           bpm:
             type:
               - number
-              - 'null'
+              - "null"
           source:
             type:
               - string
-              - 'null'
+              - "null"
           timestamp:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   sessions_stream:
     $ref: "#/definitions/date_stream"
@@ -366,22 +366,22 @@ definitions:
           day:
             type:
               - string
-              - 'null'
+              - "null"
             format: date
           start_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           end_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           type:
             type:
               - string
-              - 'null'
+              - "null"
           heart_rate: {}
           heart_rate_variability: {}
           mood: {}
@@ -391,17 +391,17 @@ definitions:
               interval:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               items:
                 type: array
                 items:
                   type:
                     - number
-                    - 'null'
+                    - "null"
               timestamp:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
   sleep_periods_stream:
     $ref: "#/definitions/date_stream"
@@ -418,59 +418,59 @@ definitions:
           average_breath:
             type:
               - number
-              - 'null'
+              - "null"
           average_heart_rate:
             type:
               - number
-              - 'null'
+              - "null"
           average_hrv:
             type:
               - number
-              - 'null'
+              - "null"
           awake_time:
             type:
               - number
-              - 'null'
+              - "null"
           bedtime_end:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           bedtime_start:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           day:
             type:
               - string
-              - 'null'
+              - "null"
             format: date
           deep_sleep_duration:
             type:
               - number
-              - 'null'
+              - "null"
           efficiency:
             type:
               - number
-              - 'null'
+              - "null"
           heart_rate:
             type: object
             properties:
               interval:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               items:
                 type: array
                 items:
                   type:
                     - number
-                    - 'null'
+                    - "null"
               timestamp:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
           hrv:
             type: object
@@ -478,69 +478,69 @@ definitions:
               interval:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               items:
                 type: array
                 items:
                   type:
                     - number
-                    - 'null'
+                    - "null"
               timestamp:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
           latency:
             type:
               - number
-              - 'null'
+              - "null"
           light_sleep_duration:
             type:
               - number
-              - 'null'
+              - "null"
           low_battery_alert:
             type: boolean
           lowest_heart_rate:
             type:
               - number
-              - 'null'
+              - "null"
           movement_30_sec:
             type:
               - string
-              - 'null'
+              - "null"
           period:
             type:
               - number
-              - 'null'
+              - "null"
           readiness_score_delta:
             type:
               - number
-              - 'null'
+              - "null"
           rem_sleep_duration:
             type:
               - number
-              - 'null'
+              - "null"
           restless_periods:
             type:
               - number
-              - 'null'
+              - "null"
           sleep_phase_5_min:
             type:
               - string
-              - 'null'
+              - "null"
           sleep_score_delta:
             type:
               - number
-              - 'null'
+              - "null"
           time_in_bed:
             type:
               - number
-              - 'null'
+              - "null"
           total_sleep_duration: {}
           type:
             type:
               - string
-              - 'null'
+              - "null"
   tags_stream:
     $ref: "#/definitions/date_stream"
     $parameters:
@@ -556,23 +556,23 @@ definitions:
           day:
             type:
               - string
-              - 'null'
+              - "null"
             format: date
           text:
             type:
               - string
-              - 'null'
+              - "null"
           timestamp:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           tags:
             type: array
             items:
               type:
                 - string
-                - 'null'
+                - "null"
   workouts_stream:
     $ref: "#/definitions/date_stream"
     $parameters:
@@ -589,38 +589,38 @@ definitions:
           activity:
             type:
               - string
-              - 'null'
+              - "null"
           calories:
             type:
               - number
-              - 'null'
+              - "null"
           day:
             type:
               - string
-              - 'null'
+              - "null"
             format: date
           distance:
             type:
               - number
-              - 'null'
+              - "null"
           end_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           intensity:
             type:
               - string
-              - 'null'
+              - "null"
           label: {}
           source:
             type:
               - string
-              - 'null'
+              - "null"
           start_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
 streams:
   - "#/definitions/daily_activity_stream"

@@ -70,47 +70,47 @@ definitions:
         properties:
           author:
             type:
-              - 'null'
+              - "null"
               - object
           remoteAddress:
             type:
-              - 'null'
+              - "null"
               - string
           creationDate:
             type:
-              - 'null'
+              - "null"
               - integer
           summary:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           category:
             type:
-              - 'null'
+              - "null"
               - string
           sysAdmin:
             type:
-              - 'null'
+              - "null"
               - boolean
           superAdmin:
             type:
-              - 'null'
+              - "null"
               - boolean
           affectedObject:
             type:
-              - 'null'
+              - "null"
               - object
           changedValues:
             type:
-              - 'null'
+              - "null"
               - array
           associatedObjects:
             type:
-              - 'null'
+              - "null"
               - array
   blogposts_stream:
     $ref: "#/definitions/base_stream"
@@ -136,19 +136,19 @@ definitions:
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               accountId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               email:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               publicName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           content:
             type: object
             properties:
@@ -166,7 +166,7 @@ definitions:
               operations:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               restrictions:
                 user:
                   type: object
@@ -174,14 +174,14 @@ definitions:
                     results:
                       type: array
                       items:
-                        $ref: '#/definitions/user'
+                        $ref: "#/definitions/user"
           usersUserKeys:
             type: object
             properties:
               users:
                 type: array
                 items:
-                  $ref: '#/definitions/user'
+                  $ref: "#/definitions/user"
               userKeys:
                 type: array
                 items:
@@ -190,30 +190,30 @@ definitions:
             type: object
             properties:
               by:
-                $ref: '#/definitions/user'
+                $ref: "#/definitions/user"
               when:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
               friendlyWhen:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               message:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               number:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               minorEdit:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               collaborators:
-                $ref: '#/definitions/usersUserKeys'
+                $ref: "#/definitions/usersUserKeys"
         type: object
         additionalProperties: true
         properties:
@@ -231,7 +231,7 @@ definitions:
               latest:
                 type: boolean
               createdBy:
-                $ref: '#/definitions/user'
+                $ref: "#/definitions/user"
               createdDate:
                 type: string
                 format: date-time
@@ -239,11 +239,11 @@ definitions:
                 type: object
                 properties:
                   publishers:
-                    $ref: '#/definitions/usersUserKeys'
+                    $ref: "#/definitions/usersUserKeys"
               previousVersion:
-                $ref: '#/definitions/version'
+                $ref: "#/definitions/version"
           version:
-            $ref: '#/definitions/version'
+            $ref: "#/definitions/version"
           descendants:
             type: object
             properties:
@@ -253,12 +253,12 @@ definitions:
                   results:
                     type: array
                     items:
-                      $ref: '#/definitions/content'
+                      $ref: "#/definitions/content"
           restrictions:
             type: object
             properties:
               read:
-                $ref: '#/definitions/contentRestriction'
+                $ref: "#/definitions/contentRestriction"
           _expandable:
             type: object
             properties:
@@ -298,19 +298,19 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           _links:
             type:
-              - 'null'
+              - "null"
               - object
   pages_stream:
     $ref: "#/definitions/base_stream"
@@ -336,19 +336,19 @@ definitions:
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               accountId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               email:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               publicName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           content:
             type: object
             properties:
@@ -366,7 +366,7 @@ definitions:
               operations:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               restrictions:
                 user:
                   type: object
@@ -374,14 +374,14 @@ definitions:
                     results:
                       type: array
                       items:
-                        $ref: '#/definitions/user'
+                        $ref: "#/definitions/user"
           usersUserKeys:
             type: object
             properties:
               users:
                 type: array
                 items:
-                  $ref: '#/definitions/user'
+                  $ref: "#/definitions/user"
               userKeys:
                 type: array
                 items:
@@ -390,30 +390,30 @@ definitions:
             type: object
             properties:
               by:
-                $ref: '#/definitions/user'
+                $ref: "#/definitions/user"
               when:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
               friendlyWhen:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               message:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               number:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               minorEdit:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               collaborators:
-                $ref: '#/definitions/usersUserKeys'
+                $ref: "#/definitions/usersUserKeys"
         type: object
         additionalProperties: true
         properties:
@@ -431,7 +431,7 @@ definitions:
               latest:
                 type: boolean
               createdBy:
-                $ref: '#/definitions/user'
+                $ref: "#/definitions/user"
               createdDate:
                 type: string
                 format: date-time
@@ -439,11 +439,11 @@ definitions:
                 type: object
                 properties:
                   publishers:
-                    $ref: '#/definitions/usersUserKeys'
+                    $ref: "#/definitions/usersUserKeys"
               previousVersion:
-                $ref: '#/definitions/version'
+                $ref: "#/definitions/version"
           version:
-            $ref: '#/definitions/version'
+            $ref: "#/definitions/version"
           descendants:
             type: object
             properties:
@@ -453,7 +453,7 @@ definitions:
                   results:
                     type: array
                     items:
-                      $ref: '#/definitions/content'
+                      $ref: "#/definitions/content"
           body:
             type: object
             properties:
@@ -493,7 +493,7 @@ definitions:
             type: object
             properties:
               read:
-                $ref: '#/definitions/contentRestriction'
+                $ref: "#/definitions/contentRestriction"
           _expandable:
             type: object
             properties:
@@ -534,43 +534,43 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           key:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           permissions:
             type:
-              - 'null'
+              - "null"
               - array
           icon:
             type:
-              - 'null'
+              - "null"
               - object
           description:
             type:
-              - 'null'
+              - "null"
               - object
           _expandable:
             type:
-              - 'null'
+              - "null"
               - object
           _links:
             type:
-              - 'null'
+              - "null"
               - object
 streams:
   - "#/definitions/audit_stream"

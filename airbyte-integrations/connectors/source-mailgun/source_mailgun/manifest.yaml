@@ -79,79 +79,79 @@ definitions:
         properties:
           dkim_key_size:
             type:
-              - 'null'
+              - "null"
               - integer
           force_dkim_authority:
             type:
-              - 'null'
+              - "null"
               - boolean
           ips:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           pool:
             type:
-              - 'null'
+              - "null"
               - string
           smtp_password:
             type:
-              - 'null'
+              - "null"
               - string
           spam_action:
             type:
-              - 'null'
+              - "null"
               - string
           web_scheme:
             type:
-              - 'null'
+              - "null"
               - string
           wildcard:
             type:
-              - 'null'
+              - "null"
               - boolean
           state:
             type:
-              - 'null'
+              - "null"
               - string
           skip_verification:
             type:
-              - 'null'
+              - "null"
               - boolean
           type:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           require_tls:
             type:
-              - 'null'
+              - "null"
               - boolean
           is_disabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           smtp_login:
             type:
-              - 'null'
+              - "null"
               - string
           web_prefix:
             type:
-              - 'null'
+              - "null"
               - string
   events_stream:
     $ref: "#/definitions/base_stream"
@@ -176,281 +176,281 @@ definitions:
         properties:
           campaigns:
             type:
-              - 'null'
+              - "null"
               - array
           client-info:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               client-name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               client-os:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               client-type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               device-type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               user-agent:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           delivery-status:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               attempt-no:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               certificate-verified:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               code:
                 type:
-                  - 'null'
+                  - "null"
                   - number
                   - string
               description:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               message:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               mx-host:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               retry-seconds:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               session-seconds:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               tls:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               utf8:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
           envelop:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               sender:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               sending-ip:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               targets:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               transport:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           event:
             type: string
           flags:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               is-authenticated:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               is-delayed-bounce:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               is-routed:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               is-system-test:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               is-test-mode:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
           geolocation:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               region:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           id:
             type: string
           ip:
             type:
-              - 'null'
+              - "null"
               - string
           log-level:
             type:
-              - 'null'
+              - "null"
               - string
           message:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               attachments:
                 type:
-                  - 'null'
+                  - "null"
                   - array
               headers:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   from:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   message-id:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   subject:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   to:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               recipients:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
               size:
                 type:
-                  - 'null'
+                  - "null"
                   - number
           method:
             type:
-              - 'null'
+              - "null"
               - string
           routes:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 expression:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 match:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     recipient:
                       type:
-                        - 'null'
+                        - "null"
                         - string
           storage:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               key:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               url:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           reason:
             type:
-              - 'null'
+              - "null"
               - string
           reject:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               description:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               reason:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           recipient:
             type:
-              - 'null'
+              - "null"
               - string
           recipient-domain:
             type:
-              - 'null'
+              - "null"
               - string
           severity:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           timestamp:
             type: number
           user-variables:
             type:
-              - 'null'
+              - "null"
               - object
 streams:
   - "#/definitions/domains_stream"

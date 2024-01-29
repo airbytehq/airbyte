@@ -50,7 +50,7 @@ definitions:
       paginator:
         $ref: "#/definitions/increment_paginator"
 
-  # API Docs: https://developers.mailerlite.com/docs/segments.html
+    # API Docs: https://developers.mailerlite.com/docs/segments.html
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -77,13 +77,13 @@ definitions:
           ip_address:
             type:
               - string
-              - 'null'
+              - "null"
           subscribed_at:
             type: string
           unsubscribed_at:
             type:
               - string
-              - 'null'
+              - "null"
           created_at:
             type: string
           updated_at:
@@ -96,31 +96,31 @@ definitions:
               last_name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               company:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               country:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               city:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               phone:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               state:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               z_i_p:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             required:
               - name
               - last_name
@@ -133,11 +133,11 @@ definitions:
           opted_in_at:
             type:
               - string
-              - 'null'
+              - "null"
           optin_ip:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
           - email
@@ -170,7 +170,7 @@ definitions:
           type: "PageIncrement"
           page_size: 50
 
-  # API Docs: https://developers.mailerlite.com/docs/automations.html
+    # API Docs: https://developers.mailerlite.com/docs/automations.html
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -225,7 +225,7 @@ definitions:
           type: "PageIncrement"
           page_size: 10
 
-  # API Docs: https://developers.mailerlite.com/docs/campaigns.html
+    # API Docs: https://developers.mailerlite.com/docs/campaigns.html
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -299,15 +299,15 @@ definitions:
                     plain_text:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     screenshot_url:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     preview_url:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     created_at:
                       type: string
                     updated_at:
@@ -421,7 +421,7 @@ definitions:
                     send_after:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     track_opens:
                       type: boolean
                   required:
@@ -458,7 +458,7 @@ definitions:
                 google_analytics:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 tracking_was_disabled:
                   type: boolean
                 description:
@@ -486,7 +486,7 @@ definitions:
                     url:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                   required:
                     - id
                     - name
@@ -522,7 +522,7 @@ definitions:
           first_email_screenshot_url:
             type:
               - string
-              - 'null'
+              - "null"
           stats:
             type: object
             properties:
@@ -557,7 +557,7 @@ definitions:
               unique_opens_count:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               open_rate:
                 type: object
                 properties:
@@ -573,7 +573,7 @@ definitions:
               unique_clicks_count:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               click_rate:
                 type: object
                 properties:
@@ -685,7 +685,7 @@ definitions:
       paginator:
         $ref: "#/definitions/increment_paginator"
 
-  # API Docs: https://developers.mailerlite.com/docs/timezones.html
+    # API Docs: https://developers.mailerlite.com/docs/timezones.html
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -767,22 +767,22 @@ definitions:
           queued_at:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           started_at:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           finished_at:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           stopped_at:
             type:
               - string
-              - 'null'
+              - "null"
           default_email_id:
             type: string
           emails:
@@ -810,7 +810,7 @@ definitions:
                 name:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 subject:
                   type: string
                 plain_text:
@@ -818,11 +818,11 @@ definitions:
                 screenshot_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 preview_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 created_at:
                   type: string
                   format: date-time
@@ -834,7 +834,7 @@ definitions:
                 language_id:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 is_winner:
                   type: boolean
                 stats:
@@ -950,7 +950,7 @@ definitions:
                 send_after:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 track_opens:
                   type: boolean
               required:
@@ -1093,19 +1093,19 @@ definitions:
           has_winner:
             type:
               - string
-              - 'null'
+              - "null"
           winner_version_for_human:
             type:
               - string
-              - 'null'
+              - "null"
           winner_sending_time_for_humans:
             type:
               - string
-              - 'null'
+              - "null"
           winner_selected_manually_at:
             type:
               - string
-              - 'null'
+              - "null"
           uses_ecommerce:
             type: boolean
           uses_survey:
@@ -1119,7 +1119,7 @@ definitions:
           initial_created_at:
             type:
               - string
-              - 'null'
+              - "null"
           is_currently_sending_out:
             type: boolean
         required:
@@ -1163,7 +1163,7 @@ definitions:
       primary_key: "id"
       path: "/timezones"
 
-  # API Docs: https://developers.mailerlite.com/docs/forms.html
+    # API Docs: https://developers.mailerlite.com/docs/forms.html
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1196,7 +1196,7 @@ definitions:
       paginator:
         $ref: "#/definitions/increment_paginator"
 
-  # API Docs: https://developers.mailerlite.com/docs/forms.html
+    # API Docs: https://developers.mailerlite.com/docs/forms.html
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1255,7 +1255,7 @@ definitions:
                   type: string
               url_list_strict:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               hide_on:
                 type: array
@@ -1280,7 +1280,7 @@ definitions:
           last_registration_at:
             type:
               - string
-              - 'null'
+              - "null"
           active:
             type: boolean
           is_broken:
@@ -1303,11 +1303,11 @@ definitions:
           double_optin:
             type:
               - boolean
-              - 'null'
+              - "null"
           screenshot_url:
             type:
               - string
-              - 'null'
+              - "null"
           has_missing_groups:
             type: boolean
           groups:
@@ -1401,7 +1401,7 @@ definitions:
       paginator:
         $ref: "#/definitions/increment_paginator"
 
-  # API Docs: https://developers.mailerlite.com/docs/forms.html
+    # API Docs: https://developers.mailerlite.com/docs/forms.html
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1443,7 +1443,7 @@ definitions:
               - groot_id
           last_registration_at:
             type:
-              - 'null'
+              - "null"
               - string
           active:
             type: boolean
@@ -1621,7 +1621,7 @@ definitions:
               url_list_strict:
                 type:
                   - array
-                  - 'null'
+                  - "null"
                 items:
                   type: string
               hide_on:
@@ -1655,7 +1655,7 @@ definitions:
           last_registration_at:
             type:
               - string
-              - 'null'
+              - "null"
           active:
             type: boolean
           is_broken:
@@ -1678,7 +1678,7 @@ definitions:
           double_optin:
             type:
               - string
-              - 'null'
+              - "null"
           screenshot_url:
             type: string
           has_missing_groups:

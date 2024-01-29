@@ -54,31 +54,31 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           full_title:
             type:
-              - 'null'
+              - "null"
               - string
           shortcode:
             type:
-              - 'null'
+              - "null"
               - string
           code:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           department:
             type:
-              - 'null'
+              - "null"
               - string
           department_hierarchy:
             type: array
@@ -92,52 +92,52 @@ definitions:
             minItems: 0
           url:
             type:
-              - 'null'
+              - "null"
               - string
           application_url:
             type:
-              - 'null'
+              - "null"
               - string
           shortlink:
             type:
-              - 'null'
+              - "null"
               - string
           location:
             type: object
             properties:
               location_str:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country_code:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               region:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               region_code:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               zip_code:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               telecommuting:
                 type: boolean
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
   candidates_stream: # https://workable.readme.io/reference/job-candidates-index
     $ref: "#/definitions/base_stream"
@@ -154,23 +154,23 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           headline:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           role:
             type:
-              - 'null'
+              - "null"
               - string
   stages_stream: # https://workable.readme.io/reference/stages
     $ref: "#/definitions/base_stream"
@@ -187,19 +187,19 @@ definitions:
         properties:
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           kind:
             type:
-              - 'null'
+              - "null"
               - string
           position:
             type:
-              - 'null'
+              - "null"
               - number
   recruiters_stream: # https://workable.readme.io/reference/recruiters
     $ref: "#/definitions/base_stream"
@@ -216,15 +216,15 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
 
 streams:

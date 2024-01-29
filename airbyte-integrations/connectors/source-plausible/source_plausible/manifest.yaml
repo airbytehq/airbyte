@@ -49,7 +49,7 @@ definitions:
           bounce_rate:
             type:
               - integer
-              - 'null'
+              - "null"
             title: Bounce Rate
             description: Bounce rate percentage.
           date:
@@ -63,7 +63,7 @@ definitions:
           visit_duration:
             type:
               - integer
-              - 'null'
+              - "null"
             title: Visit Duration
             description: Visit duration in seconds.
           visitors:

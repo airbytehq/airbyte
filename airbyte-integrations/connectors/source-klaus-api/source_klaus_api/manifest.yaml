@@ -66,7 +66,7 @@ definitions:
         $schema: http://json-schema.org/schema#
         type:
           - object
-          - 'null'
+          - "null"
         additionalProperties: true
         properties:
           comments:
@@ -75,478 +75,478 @@ definitions:
                 comment:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 created:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 createdISO:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 owner:
                   properties:
                     avatar:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     email:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     groups:
                       items:
                         properties:
                           id:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           name:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                         type:
                           - object
-                          - 'null'
+                          - "null"
                       type: array
                     name:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                   type:
                     - object
-                    - 'null'
+                    - "null"
                 tags:
                   type:
                     - array
-                    - 'null'
+                    - "null"
                 thread:
                   items:
                     properties:
                       comment:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       created:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       createdISO:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       id:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       owner:
                         properties:
                           avatar:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           email:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           groups:
                             type:
                               - array
-                              - 'null'
+                              - "null"
                           name:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                         type:
                           - object
-                          - 'null'
+                          - "null"
                       tags:
                         items:
                           properties:
                             tag:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             user:
                               properties:
                                 avatar:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 email:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 groups:
                                   items:
                                     properties:
                                       id:
                                         type:
                                           - string
-                                          - 'null'
+                                          - "null"
                                       name:
                                         type:
                                           - string
-                                          - 'null'
+                                          - "null"
                                     type:
                                       - object
-                                      - 'null'
+                                      - "null"
                                   type:
                                     - array
-                                    - 'null'
+                                    - "null"
                                 name:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                               type:
                                 - object
-                                - 'null'
+                                - "null"
                           type:
                             - object
-                            - 'null'
+                            - "null"
                         type:
                           - array
-                          - 'null'
+                          - "null"
                       thread:
                         type:
                           - array
-                          - 'null'
+                          - "null"
                       updated:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       updatedISO:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                     type:
                       - object
-                      - 'null'
+                      - "null"
                   type:
                     - array
-                    - 'null'
+                    - "null"
                 updated:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 updatedISO:
                   type:
                     - string
-                    - 'null'
+                    - "null"
               type:
                 - object
-                - 'null'
+                - "null"
             type:
               - array
-              - 'null'
+              - "null"
           createdAt:
             type:
               - string
-              - 'null'
+              - "null"
           createdAtISO:
             type:
               - string
-              - 'null'
+              - "null"
           externalId:
             type:
               - string
-              - 'null'
+              - "null"
           externalUrl:
             type:
               - string
-              - 'null'
+              - "null"
           lastUpdatedISO:
             type:
               - string
-              - 'null'
+              - "null"
           reviews:
             items:
               properties:
                 comment:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 created:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 createdISO:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 ratings:
                   items:
                     properties:
                       categoryId:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       categoryName:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       cause:
-                        type: 'null'
+                        type: "null"
                       critical:
                         type:
                           - boolean
-                          - 'null'
+                          - "null"
                       score:
                         type:
                           - integer
-                          - 'null'
+                          - "null"
                       weight:
                         type:
                           - number
-                          - 'null'
+                          - "null"
                     type:
                       - object
-                      - 'null'
+                      - "null"
                   type:
                     - array
-                    - 'null'
+                    - "null"
                 received:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 reviewTime:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 reviewee:
                   properties:
                     avatar:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     email:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     groups:
                       items:
                         properties:
                           id:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           name:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                         type:
                           - object
-                          - 'null'
+                          - "null"
                       type:
                         - array
-                        - 'null'
+                        - "null"
                     name:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                   type:
                     - object
-                    - 'null'
+                    - "null"
                 reviewer:
                   properties:
                     avatar:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     email:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     groups:
                       items:
                         properties:
                           id:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           name:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                         type:
                           - object
-                          - 'null'
+                          - "null"
                       type:
                         - array
-                        - 'null'
+                        - "null"
                     name:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                   type:
                     - object
-                    - 'null'
+                    - "null"
                 score:
                   type:
                     - number
-                    - 'null'
+                    - "null"
                 scorecard:
-                  type: 'null'
+                  type: "null"
                 tags:
                   type:
                     - array
-                    - 'null'
+                    - "null"
                 thread:
                   items:
                     properties:
                       comment:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       created:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       createdISO:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       id:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       owner:
                         properties:
                           avatar:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           email:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           groups:
                             items:
                               properties:
                                 id:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 name:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                               type:
                                 - object
-                                - 'null'
+                                - "null"
                             type:
                               - array
-                              - 'null'
+                              - "null"
                           name:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                         type:
                           - object
-                          - 'null'
+                          - "null"
                       tags:
                         items:
                           properties:
                             tag:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             user:
                               properties:
                                 avatar:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 email:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 groups:
                                   items:
                                     properties:
                                       id:
                                         type:
                                           - string
-                                          - 'null'
+                                          - "null"
                                       name:
                                         type:
                                           - string
-                                          - 'null'
+                                          - "null"
                                     type:
                                       - object
-                                      - 'null'
+                                      - "null"
                                   type:
                                     - array
-                                    - 'null'
+                                    - "null"
                                 name:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                               type:
                                 - object
-                                - 'null'
+                                - "null"
                           type:
                             - object
-                            - 'null'
+                            - "null"
                         type:
                           - array
-                          - 'null'
+                          - "null"
                       thread:
                         type:
                           - array
-                          - 'null'
+                          - "null"
                       updated:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       updatedISO:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                     type:
                       - object
-                      - 'null'
+                      - "null"
                   type:
                     - array
-                    - 'null'
+                    - "null"
                 updated:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 updatedISO:
                   type:
                     - string
-                    - 'null'
+                    - "null"
               type:
                 - object
-                - 'null'
+                - "null"
             type:
               - array
-              - 'null'
+              - "null"
           sourceType:
             type:
               - string
-              - 'null'
+              - "null"
           updated_at:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           workspaceId:
             type:
               - string
-              - 'null'
+              - "null"
   users_stream:
     type: DeclarativeStream
     $parameters:
@@ -568,15 +568,15 @@ definitions:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           email:
             type:
               - string
-              - 'null'
+              - "null"
   categories_stream:
     type: DeclarativeStream
     $parameters:
@@ -598,31 +598,31 @@ definitions:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           description:
             type:
               - string
-              - 'null'
+              - "null"
           critical:
             type:
               - boolean
-              - 'null'
+              - "null"
           archived:
             type:
               - boolean
-              - 'null'
+              - "null"
           weight:
             type:
               - number
-              - 'null'
+              - "null"
           maxRating:
             type:
               - integer
-              - 'null'
+              - "null"
           scorecards:
             type: array
             items:
@@ -634,19 +634,19 @@ definitions:
           position:
             type:
               - integer
-              - 'null'
+              - "null"
           groupId:
             type:
               - string
-              - 'null'
+              - "null"
           groupName:
             type:
               - string
-              - 'null'
+              - "null"
           groupPosition:
             type:
               - integer
-              - 'null'
+              - "null"
 streams:
   - "#/definitions/reviews_stream"
   - "#/definitions/users_stream"

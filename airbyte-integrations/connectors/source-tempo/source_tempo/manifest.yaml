@@ -69,14 +69,14 @@ definitions:
             type: boolean
           monthlyBudget:
             type:
-              - 'null'
+              - "null"
               - integer
           lead:
             type: object
             properties:
               self:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               accountId:
                 type: string
@@ -107,7 +107,7 @@ definitions:
                     type: string
           customer:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               self:
@@ -203,13 +203,13 @@ definitions:
             readOnly: true
           startTime:
             type:
-              - 'null'
+              - "null"
               - string
             description: Start time of the worklog
             readOnly: true
           description:
             type:
-              - 'null'
+              - "null"
               - string
             description: Description of the worklog
             readOnly: true
@@ -229,7 +229,7 @@ definitions:
                 type: string
               self:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             readOnly: true
           attributes:
@@ -239,7 +239,7 @@ definitions:
                 type: string
               values:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type: object
@@ -248,13 +248,13 @@ definitions:
                       type: string
                     value:
                       type:
-                        - 'null'
+                        - "null"
                         - string
             description: Additional attribute of the worklog
             readOnly: true
           billableSeconds:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Billable time spent working
   workload_schemes_stream:

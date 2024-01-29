@@ -34,194 +34,194 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           amount:
             type:
-              - 'null'
+              - "null"
               - number
           children_amount:
             type:
-              - 'null'
+              - "null"
               - number
           placed:
             type:
-              - 'null'
+              - "null"
               - number
           placed_manually:
             type:
-              - 'null'
+              - "null"
               - number
           start:
             type:
-              - 'null'
+              - "null"
               - number
           end:
             type:
-              - 'null'
+              - "null"
               - number
           length:
             type:
-              - 'null'
+              - "null"
               - number
           status:
             type:
-              - 'null'
+              - "null"
               - string
           arrived:
             type:
-              - 'null'
+              - "null"
               - number
           all_seated:
             type:
-              - 'null'
+              - "null"
               - number
           guest_left:
             type:
-              - 'null'
+              - "null"
               - number
           comment:
             type:
-              - 'null'
+              - "null"
               - string
           confirmed:
             type:
-              - 'null'
+              - "null"
               - number
           waitinbar:
             type:
-              - 'null'
+              - "null"
               - number
           internet_booking:
             type:
-              - 'null'
+              - "null"
               - number
           internet_booking_confirmed:
             type:
-              - 'null'
+              - "null"
               - number
           paid:
             type:
-              - 'null'
+              - "null"
               - number
           langid:
             type:
-              - 'null'
+              - "null"
               - number
           meal:
             type:
-              - 'null'
+              - "null"
               - string
           tables:
             type:
-              - 'null'
+              - "null"
               - number
           meal_abbr:
             type:
-              - 'null'
+              - "null"
               - string
           table_ids:
             type:
-              - 'null'
+              - "null"
               - number
           products:
             type:
-              - 'null'
+              - "null"
               - number
           waitinlist:
             type:
-              - 'null'
+              - "null"
               - number
           date:
             type:
-              - 'null'
+              - "null"
               - string
           time:
             type:
-              - 'null'
+              - "null"
               - string
           guest:
             type: object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               firstname:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               lastname:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               postalcode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               company:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               telephone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               mobile:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               comment:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               other_contact:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               restaurant_newsletter:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
           booking_date:
             type:
-              - 'null'
+              - "null"
               - number
           payStarted:
             type:
-              - 'null'
+              - "null"
               - boolean
           payClosed:
             type:
-              - 'null'
+              - "null"
               - boolean
           payCharged:
             type:
-              - 'null'
+              - "null"
               - boolean
           payActivated:
             type:
-              - 'null'
+              - "null"
               - boolean
           has_message:
             type:
-              - 'null'
+              - "null"
               - number
 streams:
   - "#/definitions/booking_stream"

@@ -51,152 +51,152 @@ definitions:
               - string
           external_id:
             type:
-              - 'null'
+              - "null"
               - string
           external_ids:
             type:
-              - 'null'
+              - "null"
               - array
           data_source_uuid:
             type:
-              - 'null'
+              - "null"
               - string
           data_source_uuids:
             type:
-              - 'null'
+              - "null"
               - array
           name:
             type:
-              - 'null'
+              - "null"
               - string
           company:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           lead_created_at:
             type:
-              - 'null'
+              - "null"
               - string
           free_trial_started_at:
             type:
-              - 'null'
+              - "null"
               - string
           customer_since:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - string
           zip:
             type:
-              - 'null'
+              - "null"
               - string
           attributes:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               tags:
                 type:
-                  - 'null'
+                  - "null"
                   - array
               stripe:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   brandID:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   brandName:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   createdAt:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   platformName:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               clearbit:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties: {}
               custom:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties: {}
           address:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address_zip:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           mrr:
             type:
-              - 'null'
+              - "null"
               - integer
           arr:
             type:
-              - 'null'
+              - "null"
               - integer
           billing-system-url:
             type:
-              - 'null'
+              - "null"
               - string
           chartmogul-url:
             type:
-              - 'null'
+              - "null"
               - string
           billing-system-type:
             type:
-              - 'null'
+              - "null"
               - string
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           currency-sign:
             type:
-              - 'null'
+              - "null"
               - string
   activities_stream:
     retriever:
@@ -233,55 +233,55 @@ definitions:
         properties:
           description:
             type:
-              - 'null'
+              - "null"
               - string
           activity-mrr-movement:
             type:
-              - 'null'
+              - "null"
               - integer
           activity-mrr:
             type:
-              - 'null'
+              - "null"
               - integer
           activity-arr:
             type:
-              - 'null'
+              - "null"
               - integer
           date:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           subscription-external-id:
             type:
-              - 'null'
+              - "null"
               - string
           plan-external-id:
             type:
-              - 'null'
+              - "null"
               - string
           customer-name:
             type:
-              - 'null'
+              - "null"
               - string
           customer-uuid:
             type:
-              - 'null'
+              - "null"
               - string
           customer-external-id:
             type:
-              - 'null'
+              - "null"
               - string
           billing-connector-uuid:
             type:
-              - 'null'
+              - "null"
               - string
           uuid:
             type:

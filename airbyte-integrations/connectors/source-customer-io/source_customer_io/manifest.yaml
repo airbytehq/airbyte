@@ -46,121 +46,121 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           start_hour:
             type:
-              - 'null'
+              - "null"
               - integer
           timezone:
             type:
-              - 'null'
+              - "null"
               - string
           date_attribute:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             additionalProperties: true
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           event_name:
             type:
-              - 'null'
+              - "null"
               - string
           trigger_segment_ids:
             type:
-              - 'null'
+              - "null"
               - array
             additionalProperties: true
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           first_started:
             type:
-              - 'null'
+              - "null"
               - integer
           frequency:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           start_minutes:
             type:
-              - 'null'
+              - "null"
               - integer
           use_customer_timezone:
             type:
-              - 'null'
+              - "null"
               - boolean
           updated:
             type:
-              - 'null'
+              - "null"
               - integer
           deduplicate_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           active:
             type:
-              - 'null'
+              - "null"
               - boolean
           msg_templates:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           actions:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           created_by:
             type:
-              - 'null'
+              - "null"
               - string
           created:
             type:
-              - 'null'
+              - "null"
               - integer
   campaigns_actions_partition_router:
     type: SubstreamPartitionRouter
@@ -187,116 +187,116 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         type:
           - object
-          - 'null'
+          - "null"
         additionalProperties: true
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           recipient_environment_id:
             type:
-              - 'null'
+              - "null"
               - integer
           language:
             type:
-              - 'null'
+              - "null"
               - string
           layout:
             type:
-              - 'null'
+              - "null"
               - string
           recipient:
             type:
-              - 'null'
+              - "null"
               - string
           campaign_id:
             type:
-              - 'null'
+              - "null"
               - integer
           editor:
             type:
-              - 'null'
+              - "null"
               - string
           preheader_text:
             type:
-              - 'null'
+              - "null"
               - string
           from_id:
             type:
-              - 'null'
+              - "null"
               - string
           bcc:
             type:
-              - 'null'
+              - "null"
               - string
           subject:
             type:
-              - 'null'
+              - "null"
               - string
           reply_to:
             type:
-              - 'null'
+              - "null"
               - string
           reply_to_id:
             type:
-              - 'null'
+              - "null"
               - string
           sending_state:
             type:
-              - 'null'
+              - "null"
               - string
           fake_bcc:
             type:
-              - 'null'
+              - "null"
               - boolean
           request_method:
             type:
-              - 'null'
+              - "null"
               - string
           headers:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           from:
             type:
-              - 'null'
+              - "null"
               - string
           preprocessor:
             type:
-              - 'null'
+              - "null"
               - string
           parent_action_id:
             type:
-              - 'null'
+              - "null"
               - integer
           deduplicate_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           created:
             type:
-              - 'null'
+              - "null"
               - integer
           updated:
             type:
-              - 'null'
+              - "null"
               - integer
           body:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
   newsletters_stream:
     $ref: "#/definitions/base_stream"
@@ -315,57 +315,57 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           content_ids:
             type:
-              - 'null'
+              - "null"
               - array
             additionalProperties: true
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           sent_at:
             type:
-              - 'null'
+              - "null"
               - array
             additionalProperties: true
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             additionalProperties: true
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           deduplicate_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           updated:
             type:
-              - 'null'
+              - "null"
               - integer
           created:
             type:
-              - 'null'
+              - "null"
               - integer
 streams:
   - "#/definitions/campaigns_stream"

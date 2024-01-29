@@ -77,7 +77,7 @@ definitions:
             type: array
           description:
             type:
-              - 'null'
+              - "null"
               - string
           columns:
             type: array

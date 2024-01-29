@@ -75,195 +75,195 @@ definitions:
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           href:
             type:
-              - 'null'
+              - "null"
               - string
           browserLink:
             type:
-              - 'null'
+              - "null"
               - string
           icon:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               browserLink:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           owner:
             type:
-              - 'null'
+              - "null"
               - string
           ownerName:
             type:
-              - 'null'
+              - "null"
               - string
           docSize:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               totalRowCount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               tableViewCount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               pageCount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               overApiSizeLimit:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
           sourceDoc:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               totalRowCount:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               href:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               browserLink:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
           published:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               description:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               browserLink:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               imageLink:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               discoverable:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               earnCredit:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               mode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               categories:
                 type:
-                  - 'null'
+                  - "null"
                   - string
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           folder:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               browserLink:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           workspace:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               organizationId:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               browserLink:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           workspaceId:
             type:
-              - 'null'
+              - "null"
               - string
           folderId:
             type:
-              - 'null'
+              - "null"
               - string
   categories_stream:
     $ref: "#/definitions/parent_base_stream"
@@ -277,13 +277,13 @@ definitions:
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           name:
             type:
-              - 'null'
+              - "null"
               - string
   permissions_stream:
     $parameters:
@@ -303,30 +303,30 @@ definitions:
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           access:
             type:
-              - 'null'
+              - "null"
               - string
           principal:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   pages_stream:
     $parameters:
@@ -346,7 +346,7 @@ definitions:
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
@@ -365,9 +365,9 @@ definitions:
           createdBy:
             type: object
             properties:
-              '@context':
+              "@context":
                 type: string
-              '@type':
+              "@type":
                 type: string
               additionalType:
                 type: string
@@ -377,16 +377,16 @@ definitions:
                 type: string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
           updatedBy:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
-              '@context':
+              "@context":
                 type: string
-              '@type':
+              "@type":
                 type: string
               additionalType:
                 type: string
@@ -396,11 +396,11 @@ definitions:
                 type: string
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
           icon:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               name:
@@ -411,7 +411,7 @@ definitions:
                 type: string
           image:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               width:
@@ -424,7 +424,7 @@ definitions:
                 type: string
           parent:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
@@ -441,7 +441,7 @@ definitions:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
@@ -458,12 +458,12 @@ definitions:
               type: array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
-                  '@context':
+                  "@context":
                     type: string
-                  '@type':
+                  "@type":
                     type: string
                   additionalType:
                     type: string
@@ -475,12 +475,12 @@ definitions:
                 type: string
               updatedBy:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
-                  '@context':
+                  "@context":
                     type: string
-                  '@type':
+                  "@type":
                     type: string
                   additionalType:
                     type: string
@@ -490,12 +490,12 @@ definitions:
                     type: string
               createdBy:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
-                  '@context':
+                  "@context":
                     type: string
-                  '@type':
+                  "@type":
                     type: string
                   additionalType:
                     type: string
@@ -505,21 +505,21 @@ definitions:
                     type: string
           contentType:
             type:
-              - 'null'
+              - "null"
               - string
             enum:
               - canvas
               - embed
           authors:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
               properties:
-                '@context':
+                "@context":
                   type: string
-                '@type':
+                "@type":
                   type: string
                 additionalType:
                   type: string
@@ -545,58 +545,58 @@ definitions:
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           tableType:
             type:
-              - 'null'
+              - "null"
               - string
           href:
             type:
-              - 'null'
+              - "null"
               - string
           browserLink:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           parent:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               href:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               browserLink:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   formulas_stream:
     $parameters:
@@ -616,50 +616,50 @@ definitions:
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           href:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           parent:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               href:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               browserLink:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   controls_stream:
     $parameters:
@@ -679,50 +679,50 @@ definitions:
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           href:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           parent:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               href:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               browserLink:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   rows_stream:
     $parameters:
@@ -771,7 +771,7 @@ definitions:
                   - object
                   - array
                   - boolean
-                  - 'null'
+                  - "null"
 streams:
   - "#/definitions/docs_stream"
   - "#/definitions/permissions_stream"

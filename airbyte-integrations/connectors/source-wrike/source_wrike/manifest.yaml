@@ -52,85 +52,85 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         type:
           - object
-          - 'null'
+          - "null"
         additionalProperties: true
         properties:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           accountId:
             type:
               - string
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
           spaceId:
             type:
-              - 'null'
+              - "null"
               - string
           sharedIds:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           settings:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               inheritanceType:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               values:
                 type:
                   - array
-                  - 'null'
+                  - "null"
                 items:
                   type:
                     - string
                     - integer
                     - number
                     - boolean
-                    - 'null'
+                    - "null"
               decimalPlaces:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               useThousandsSeparator:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               readOnly:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               allowTime:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               allowOtherValues:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               aggregation:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               currency:
                 type:
                   - string
-                  - 'null'
+                  - "null"
   contacts_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
@@ -144,102 +144,102 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         type:
           - object
-          - 'null'
+          - "null"
         additionalProperties: true
         properties:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           firstName:
             type:
               - string
-              - 'null'
+              - "null"
           lastName:
             type:
               - string
-              - 'null'
+              - "null"
           avatarUrl:
             type:
               - string
-              - 'null'
+              - "null"
           timezone:
             type:
               - string
-              - 'null'
+              - "null"
           locale:
             type:
               - string
-              - 'null'
+              - "null"
           deleted:
             type:
               - boolean
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           profiles:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 accountId:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 role:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 external:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 admin:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 owner:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 email:
                   type:
                     - string
-                    - 'null'
+                    - "null"
           title:
             type:
-              - 'null'
+              - "null"
               - string
           me:
             type:
-              - 'null'
+              - "null"
               - boolean
           companyName:
             type:
-              - 'null'
+              - "null"
               - string
           phone:
             type:
-              - 'null'
+              - "null"
               - string
           myTeam:
             type:
-              - 'null'
+              - "null"
               - boolean
           memberIds:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
   workflows_stream:
     $ref: "#/definitions/base_stream"
     name: "workflows"
@@ -253,66 +253,66 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         type:
           - object
-          - 'null'
+          - "null"
         additionalProperties: true
         properties:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           standard:
             type:
               - string
-              - 'null'
+              - "null"
           hidden:
             type:
               - string
-              - 'null'
+              - "null"
           customStatuses:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 name:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 standardName:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 color:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 standard:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 group:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 hidden:
                   type:
                     - string
-                    - 'null'
+                    - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
   comments_stream:
     $ref: "#/definitions/base_stream"
     name: "comments"
@@ -326,33 +326,33 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         type:
           - object
-          - 'null'
+          - "null"
         additionalProperties: true
         properties:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           authorId:
             type:
               - string
-              - 'null'
+              - "null"
           text:
             type:
               - string
-              - 'null'
+              - "null"
           taskId:
             type:
               - string
-              - 'null'
+              - "null"
           createdDate:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           updatedDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
   folders_stream:
@@ -368,64 +368,64 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         type:
           - object
-          - 'null'
+          - "null"
         additionalProperties: true
         properties:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           scope:
             type:
               - string
-              - 'null'
+              - "null"
           createdDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           childIds:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           space:
             type:
               - boolean
-              - 'null'
+              - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
           project:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               authorId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               customStatusId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               createdDate:
                 type:
-                  - 'null'
+                  - "null"
                   - string
                 format: date-time
               ownerIds:
                 type:
                   - array
-                  - 'null'
+                  - "null"
                 items:
                   type:
                     - string
-                    - 'null'
+                    - "null"
   tasks_stream:
     $ref: "#/definitions/base_stream"
     name: "tasks"
@@ -439,116 +439,116 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         type:
           - object
-          - 'null'
+          - "null"
         additionalProperties: true
         properties:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           accountId:
             type:
               - string
-              - 'null'
+              - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           importance:
             type:
               - string
-              - 'null'
+              - "null"
           scope:
             type:
               - string
-              - 'null'
+              - "null"
           briefDescription:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           customStatusId:
             type:
               - string
-              - 'null'
+              - "null"
           permalink:
             type:
               - string
-              - 'null'
+              - "null"
           priority:
             type:
               - string
-              - 'null'
+              - "null"
           createdDate:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           responsibleIds:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           parentIds:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           superTaskIds:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           authorIds:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           customFields:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 value:
                   type:
                     - string
-                    - 'null'
+                    - "null"
           dates:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           updatedDate:
             type: string
             format: date-time

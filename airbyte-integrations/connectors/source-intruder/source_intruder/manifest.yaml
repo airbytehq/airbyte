@@ -46,39 +46,39 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           severity:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           remediation:
             type:
-              - 'null'
+              - "null"
               - string
           snoozed:
             type:
-              - 'null'
+              - "null"
               - boolean
           snooze_reason:
             type:
-              - 'null'
+              - "null"
               - string
           snooze_until:
             type:
-              - 'null'
+              - "null"
               - string
           occurrences:
             type:
-              - 'null'
+              - "null"
               - string
   issue_partition_router:
     type: SubstreamPartitionRouter
@@ -108,35 +108,35 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           target:
             type:
-              - 'null'
+              - "null"
               - string
           port:
             type:
-              - 'null'
+              - "null"
               - integer
           extra_info:
             type:
-              - 'null'
+              - "null"
               - object
           age:
             type:
-              - 'null'
+              - "null"
               - string
           snoozed:
             type:
-              - 'null'
+              - "null"
               - boolean
           snooze_reason:
             type:
-              - 'null'
+              - "null"
               - string
           snooze_until:
             type:
-              - 'null'
+              - "null"
               - string
   scans_stream:
     $ref: "#/definitions/base_stream"
@@ -152,15 +152,15 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
   targets_stream:
     $ref: "#/definitions/base_stream"
@@ -177,15 +177,15 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           address:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
 streams:
   - "#/definitions/issues_stream"

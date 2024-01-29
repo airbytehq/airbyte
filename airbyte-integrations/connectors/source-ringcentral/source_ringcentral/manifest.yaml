@@ -65,98 +65,98 @@ definitions:
         title: User business hours Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           weeklyRanges:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               monday:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     from:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     to:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               tuesday:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     from:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     to:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               wednesday:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     from:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     to:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               thursday:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     from:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     to:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               friday:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     from:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     to:
                       type:
-                        - 'null'
+                        - "null"
                         - string
   company_business_hours_stream:
     $parameters:
@@ -172,98 +172,98 @@ definitions:
         title: Business hours Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           weeklyRanges:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               monday:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     from:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     to:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               tuesday:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     from:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     to:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               wednesday:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     from:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     to:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               thursday:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     from:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     to:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               friday:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     from:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     to:
                       type:
-                        - 'null'
+                        - "null"
                         - string
   callblock_settings_stream:
     $parameters:
@@ -279,29 +279,29 @@ definitions:
         title: Callblock settings Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           preset:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               uri:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   blocked_allowed_phonenumbers_stream:
     $parameters:
@@ -318,28 +318,28 @@ definitions:
         title: Blocked_Allowed phoneNumber Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           uri:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           phoneNumber:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           label:
             type:
-              - 'null'
+              - "null"
               - string
   forwarding_numbers_stream:
     $parameters:
@@ -356,36 +356,36 @@ definitions:
         title: Forwarding numbers Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           phoneNumber:
             type:
-              - 'null'
+              - "null"
               - string
           label:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           features:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           flipNumber:
             type:
-              - 'null'
+              - "null"
               - string
   company_call_handling_rules_stream:
     $parameters:
@@ -402,28 +402,28 @@ definitions:
         title: Company call handling rules
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           uri:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
   user_call_records_stream:
     $parameters:
@@ -440,91 +440,91 @@ definitions:
         title: User Call Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           uri:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           sessionId:
             type:
-              - 'null'
+              - "null"
               - string
           telephonySessionId:
             type:
-              - 'null'
+              - "null"
               - string
           startTime:
             type:
-              - 'null'
+              - "null"
               - string
           duration:
             type:
-              - 'null'
+              - "null"
               - number
           type:
             type:
-              - 'null'
+              - "null"
               - string
           direction:
             type:
-              - 'null'
+              - "null"
               - string
           action:
             type:
-              - 'null'
+              - "null"
               - string
           result:
             type:
-              - 'null'
+              - "null"
               - string
           to:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               phoneNumber:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               location:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           from:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               phoneNumber:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           message:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               uri:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   user_active_calls_stream:
     $parameters:
@@ -541,91 +541,91 @@ definitions:
         title: User Call Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           uri:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           sessionId:
             type:
-              - 'null'
+              - "null"
               - string
           telephonySessionId:
             type:
-              - 'null'
+              - "null"
               - string
           startTime:
             type:
-              - 'null'
+              - "null"
               - string
           duration:
             type:
-              - 'null'
+              - "null"
               - number
           type:
             type:
-              - 'null'
+              - "null"
               - string
           direction:
             type:
-              - 'null'
+              - "null"
               - string
           action:
             type:
-              - 'null'
+              - "null"
               - string
           result:
             type:
-              - 'null'
+              - "null"
               - string
           to:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               phoneNumber:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               location:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           from:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               phoneNumber:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           message:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               uri:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   call_monitoring_groups_stream:
     $parameters:
@@ -645,11 +645,11 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
   call_queues_stream:
     $parameters:
@@ -669,19 +669,19 @@ definitions:
         properties:
           uri:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           extensionNumber:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
   call_record_settings_stream:
     $parameters:
@@ -700,11 +700,11 @@ definitions:
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           mode:
             type:
-              - 'null'
+              - "null"
               - string
   greetings_stream:
     $parameters:
@@ -721,40 +721,40 @@ definitions:
         title: Greetings Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           uri:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           usageType:
             type:
-              - 'null'
+              - "null"
               - string
           contentUri:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           category:
             type:
-              - 'null'
+              - "null"
               - string
           text:
             type:
-              - 'null'
+              - "null"
               - string
   ivr_prompts_stream:
     $parameters:
@@ -771,48 +771,48 @@ definitions:
         title: IVR Prompts
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           uri:
             type:
-              - 'null'
+              - "null"
               - string
           contentType:
             type:
-              - 'null'
+              - "null"
               - string
           filename:
             type:
-              - 'null'
+              - "null"
               - string
           contentUri:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           text:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           usageType:
             type:
-              - 'null'
+              - "null"
               - string
           category:
             type:
-              - 'null'
+              - "null"
               - string
   fax_cover_stream:
     $parameters:
@@ -832,11 +832,11 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/user_business_hours_stream"

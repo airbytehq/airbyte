@@ -119,27 +119,27 @@ definitions:
             type: object
           environmentId:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           color:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           order:
             type:
-              - 'null'
+              - "null"
               - integer
           reasonRequired:
             type:
-              - 'null'
+              - "null"
               - boolean
   organization_partition_router:
     type: SubstreamPartitionRouter

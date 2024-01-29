@@ -49,55 +49,55 @@ definitions:
         properties:
           lago_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           code:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           aggregation_type:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           field_name:
             type:
-              - 'null'
+              - "null"
               - string
           group:
             type:
-              - 'null'
+              - "null"
               - object
           active_subscriptions_count:
             type:
-              - 'null'
+              - "null"
               - integer
           draft_invoices_count:
             type:
-              - 'null'
+              - "null"
               - integer
           plans_count:
             type:
-              - 'null'
+              - "null"
               - integer
           recurring:
             type:
-              - 'null'
+              - "null"
               - boolean
           weighted_interval:
             type:
-              - 'null'
+              - "null"
               - integer
   plans_stream:
     $ref: "#/definitions/base_stream"
@@ -114,51 +114,51 @@ definitions:
         properties:
           lago_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           code:
             type:
-              - 'null'
+              - "null"
               - string
           interval:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           amount_currency:
             type:
-              - 'null'
+              - "null"
               - string
           trial_period:
             type:
-              - 'null'
+              - "null"
               - number
           pay_in_advance:
             type:
-              - 'null'
+              - "null"
               - boolean
           bill_charges_monthly:
             type:
-              - 'null'
+              - "null"
               - boolean
           active_subscriptions_count:
             type:
-              - 'null'
+              - "null"
               - integer
           charges:
             items:
@@ -166,83 +166,83 @@ definitions:
               properties:
                 billable_metric_code:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 charge_model:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 created_at:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 group_properties:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                 invoiceable:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
                 lago_billable_metric_id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 lago_id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 min_amount_cents:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 pay_in_advance:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
                 properties:
                   additionalProperties: true
                   properties:
                     amount:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                   type:
-                    - 'null'
+                    - "null"
                     - object
                 prorated:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
                 taxes:
                   type:
-                    - 'null'
+                    - "null"
                     - array
               type:
-                - 'null'
+                - "null"
                 - object
             type:
-              - 'null'
+              - "null"
               - array
           customers_count:
             type:
-              - 'null'
+              - "null"
               - integer
           draft_invoices_count:
             type:
-              - 'null'
+              - "null"
               - integer
           invoice_display_name:
             type:
-              - 'null'
+              - "null"
               - string
           parent_id:
             type:
-              - 'null'
+              - "null"
               - integer
           taxes:
             type:
-              - 'null'
+              - "null"
               - array
   coupons_stream:
     $ref: "#/definitions/base_stream"
@@ -259,83 +259,83 @@ definitions:
         properties:
           lago_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           code:
             type:
-              - 'null'
+              - "null"
               - string
           coupon_type:
             type:
-              - 'null'
+              - "null"
               - string
           amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           amount_currency:
             type:
-              - 'null'
+              - "null"
               - string
           percentage_rate:
             type:
-              - 'null'
+              - "null"
               - string
           frequency:
             type:
-              - 'null'
+              - "null"
               - string
           frequency_duration:
             type:
-              - 'null'
+              - "null"
               - integer
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           expiration:
             type:
-              - 'null'
+              - "null"
               - string
           expiration_date:
             type:
-              - 'null'
+              - "null"
               - string
           billable_metric_codes:
             type:
-              - 'null'
+              - "null"
               - array
           description:
             type:
-              - 'null'
+              - "null"
               - string
           expiration_at:
             type:
-              - 'null'
+              - "null"
               - string
           limited_billable_metrics:
             type:
-              - 'null'
+              - "null"
               - boolean
           limited_plans:
             type:
-              - 'null'
+              - "null"
               - boolean
           plan_codes:
             type:
-              - 'null'
+              - "null"
               - array
           reusable:
             type:
-              - 'null'
+              - "null"
               - boolean
           terminated_at:
             type:
-              - 'null'
+              - "null"
               - string
   add_ons_stream:
     $ref: "#/definitions/base_stream"
@@ -352,40 +352,40 @@ definitions:
         properties:
           lago_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           invoice_display_name:
             type:
-              - 'null'
+              - "null"
               - string
           code:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           amount_currency:
             type:
-              - 'null'
+              - "null"
               - string
           taxes:
             type:
               - array
-              - 'null'
+              - "null"
   invoices_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -401,269 +401,269 @@ definitions:
         properties:
           lago_id:
             type:
-              - 'null'
+              - "null"
               - string
           sequential_id:
             type:
-              - 'null'
+              - "null"
               - integer
           number:
             type:
-              - 'null'
+              - "null"
               - string
           issuing_date:
             type:
-              - 'null'
+              - "null"
               - string
           invoice_type:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           amount_currency:
             type:
-              - 'null'
+              - "null"
               - string
           vat_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           vat_amount_currency:
             type:
-              - 'null'
+              - "null"
               - string
           total_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           total_amount_currency:
             type:
-              - 'null'
+              - "null"
               - string
           file_url:
             type:
-              - 'null'
+              - "null"
               - string
           applied_taxes:
             type:
-              - 'null'
+              - "null"
               - array
           coupons_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           credit_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           credit_amount_currency:
             type:
-              - 'null'
+              - "null"
               - string
           credit_notes_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           customer:
             additionalProperties: true
             properties:
               address_line1:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address_line2:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               applicable_timezone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               billing_configuration:
                 additionalProperties: true
                 properties:
                   document_locale:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   invoice_grace_period:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   payment_provider:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   provider_customer_id:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   provider_payment_methods:
                     items:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     type:
-                      - 'null'
+                      - "null"
                       - array
                   vat_rate:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                 type: object
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               currency:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               external_id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               external_salesforce_id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               lago_id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               legal_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               legal_number:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               logo_url:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               metadata:
                 type:
-                  - 'null'
+                  - "null"
                   - array
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               net_payment_term:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               phone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               sequential_id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               slug:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               tax_identification_number:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               timezone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               updated_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               url:
-                type: 'null'
+                type: "null"
               zipcode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type: object
           fees_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           legacy:
             type:
-              - 'null'
+              - "null"
               - boolean
           metadata:
             type:
-              - 'null'
+              - "null"
               - array
           net_payment_term:
             type:
-              - 'null'
+              - "null"
               - integer
           payment_due_date:
             type:
-              - 'null'
+              - "null"
               - string
           payment_status:
             type:
-              - 'null'
+              - "null"
               - string
           prepaid_credit_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           sub_total_excluding_taxes_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           sub_total_including_taxes_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           sub_total_vat_excluded_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           sub_total_vat_included_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           taxes_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           version_number:
             type:
-              - 'null'
+              - "null"
               - integer
   customers_stream:
     $ref: "#/definitions/base_stream"
@@ -680,147 +680,147 @@ definitions:
         properties:
           lago_id:
             type:
-              - 'null'
+              - "null"
               - string
           external_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           sequential_id:
             type:
-              - 'null'
+              - "null"
               - integer
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           vat_rate:
             type:
-              - 'null'
+              - "null"
               - number
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           address_line1:
             type:
-              - 'null'
+              - "null"
               - string
           address_line2:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           phone:
             type:
-              - 'null'
+              - "null"
               - string
           logo_url:
             type:
-              - 'null'
+              - "null"
               - string
           legal_name:
             type:
-              - 'null'
+              - "null"
               - string
           legal_number:
             type:
-              - 'null'
+              - "null"
               - string
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           applicable_timezone:
             type:
-              - 'null'
+              - "null"
               - string
           billing_configuration:
             additionalProperties: true
             properties:
               document_locale:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               invoice_grace_period:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               payment_provider:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               provider_customer_id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               provider_payment_methods:
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 type:
-                  - 'null'
+                  - "null"
                   - array
               vat_rate:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
             type: object
           country:
             type:
-              - 'null'
+              - "null"
               - string
           external_salesforce_id:
             type:
-              - 'null'
+              - "null"
               - integer
           metadata:
             type:
-              - 'null'
+              - "null"
               - array
           net_payment_term:
             type:
-              - 'null'
+              - "null"
               - integer
           tax_identification_number:
             type:
-              - 'null'
+              - "null"
               - integer
           taxes:
             type:
-              - 'null'
+              - "null"
               - array
           timezone:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           zipcode:
             type:
-              - 'null'
+              - "null"
               - string
   customer_partition_router:
     type: SubstreamPartitionRouter
@@ -851,75 +851,75 @@ definitions:
         properties:
           lago_id:
             type:
-              - 'null'
+              - "null"
               - string
           external_id:
             type:
-              - 'null'
+              - "null"
               - string
           lago_customer_id:
             type:
-              - 'null'
+              - "null"
               - string
           external_customer_id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           plan_code:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           billing_time:
             type:
-              - 'null'
+              - "null"
               - string
           subscription_date:
             type:
-              - 'null'
+              - "null"
               - string
           started_at:
             type:
-              - 'null'
+              - "null"
               - string
           terminated_at:
             type:
-              - 'null'
+              - "null"
               - string
           canceled_at:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           previous_plan_code:
             type:
-              - 'null'
+              - "null"
               - string
           next_plan_code:
             type:
-              - 'null'
+              - "null"
               - string
           downgrade_plan_date:
             type:
-              - 'null'
+              - "null"
               - string
           ending_at:
             type:
-              - 'null'
+              - "null"
               - string
           subscription_at:
             type:
-              - 'null'
+              - "null"
               - string
   wallets_stream:
     $ref: "#/definitions/base_stream"
@@ -936,63 +936,63 @@ definitions:
         properties:
           lago_id:
             type:
-              - 'null'
+              - "null"
               - string
           lago_customer_id:
             type:
-              - 'null'
+              - "null"
               - string
           external_customer_id:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           rate_amount:
             type:
-              - 'null'
+              - "null"
               - string
           credits_balance:
             type:
-              - 'null'
+              - "null"
               - string
           balance_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           consumed_credits:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           expiration_at:
             type:
-              - 'null'
+              - "null"
               - string
           last_balance_sync_at:
             type:
-              - 'null'
+              - "null"
               - string
           last_consumed_credit_at:
             type:
-              - 'null'
+              - "null"
               - string
           terminated_at:
             type:
-              - 'null'
+              - "null"
               - string
   customer_usage_stream:
     name: "customer_usage"
@@ -1016,127 +1016,127 @@ definitions:
         properties:
           from_datetime:
             type:
-              - 'null'
+              - "null"
               - string
           to_datetime:
             type:
-              - 'null'
+              - "null"
               - string
           issuing_date:
             type:
-              - 'null'
+              - "null"
               - string
           lago_invoice_id:
             type:
-              - 'null'
+              - "null"
               - string
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           taxes_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           total_amount_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           charges_usage:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 units:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 events_count:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 amount_cents:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 amount_currency:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 charge:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     lago_id:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     charge_model:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                 billable_metric:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     lago_id:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     name:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     code:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     aggregation_type:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                 groups:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     properties:
                       lago_id:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       key:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       value:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       units:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       events_count:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                       amount_cents:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
 streams:
   - "#/definitions/billable_metrics_stream"

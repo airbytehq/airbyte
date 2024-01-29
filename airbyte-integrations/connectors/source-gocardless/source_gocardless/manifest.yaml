@@ -49,92 +49,92 @@ streams:
       type: InlineSchemaLoader
       schema:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           charge_date:
             type:
-              - 'null'
+              - "null"
               - string
           amount:
             type:
-              - 'null'
+              - "null"
               - integer
           description:
             type:
-              - 'null'
+              - "null"
               - string
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           reference:
             type:
-              - 'null'
+              - "null"
               - string
           metadata:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               order_dispatch_date:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           amount_refunded:
             type:
-              - 'null'
+              - "null"
               - integer
           fx:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               fx_currency:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               fx_amount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               exchange_rate:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               estimated_exchange_rate:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               mandate:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               creditor:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           retry_if_possible:
             type:
-              - 'null'
+              - "null"
               - boolean
     retriever:
       $ref: "#/definitions/retriever"
@@ -149,68 +149,68 @@ streams:
       type: InlineSchemaLoader
       schema:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           amount:
             type:
-              - 'null'
+              - "null"
               - integer
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           reference:
             type:
-              - 'null'
+              - "null"
               - string
           metadata:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               reason:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           fx:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               fx_currency:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               fx_amount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               exchange_rate:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               estimated_exchange_rate:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               payment:
                 type:
-                  - 'null'
+                  - "null"
                   - string
     retriever:
       $ref: "#/definitions/retriever"
@@ -225,60 +225,60 @@ streams:
       type: InlineSchemaLoader
       schema:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           reference:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           scheme:
             type:
-              - 'null'
+              - "null"
               - string
           next_possible_charge_date:
             type:
-              - 'null'
+              - "null"
               - string
             format: date
           metadata:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               contract:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               customer_bank_account:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               creditor:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               customer:
                 type:
-                  - 'null'
+                  - "null"
                   - string
     retriever:
       $ref: "#/definitions/retriever"
@@ -293,92 +293,92 @@ streams:
       type: InlineSchemaLoader
       schema:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           amount:
             type:
-              - 'null'
+              - "null"
               - integer
           arrival_date:
             type:
-              - 'null'
+              - "null"
               - string
             format: date
           deducted_fees:
             type:
-              - 'null'
+              - "null"
               - integer
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           payout_type:
             type:
-              - 'null'
+              - "null"
               - string
           reference:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           fx:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               fx_currency:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               fx_amount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               exchange_rate:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               estimated_exchange_rate:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           tax_currency:
             type:
-              - 'null'
+              - "null"
               - string
           metadata:
             type:
-              - 'null'
+              - "null"
               - object
           amount_refunded:
             type:
-              - 'null'
+              - "null"
               - integer
           links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               creditor_bank_account:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               creditor:
                 type:
-                  - 'null'
+                  - "null"
                   - string
     retriever:
       $ref: "#/definitions/retriever"

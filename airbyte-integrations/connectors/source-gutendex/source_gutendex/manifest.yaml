@@ -62,11 +62,11 @@ definitions:
                 birth_year:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 death_year:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
               required:
                 - name
                 - birth_year
@@ -81,11 +81,11 @@ definitions:
                 birth_year:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 death_year:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
               required:
                 - name
                 - birth_year
@@ -105,7 +105,7 @@ definitions:
           copyright:
             type:
               - boolean
-              - 'null'
+              - "null"
           media_type:
             type: string
           formats:
@@ -178,7 +178,7 @@ spec:
         examples:
           - true
           - false
-          - 
+          -
       languages:
         type: string
         description: (Optional) Use this to find books in any of a list of languages. They must be comma-separated, two-character language codes.

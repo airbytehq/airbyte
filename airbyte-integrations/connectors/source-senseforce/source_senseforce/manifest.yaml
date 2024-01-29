@@ -84,7 +84,7 @@ definitions:
             type: string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           airbyte_cursor:
             type: number

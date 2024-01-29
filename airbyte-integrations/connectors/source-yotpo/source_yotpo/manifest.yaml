@@ -84,77 +84,77 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           title:
             type:
-              - 'null'
+              - "null"
               - string
           incentive_type:
             type:
-              - 'null'
+              - "null"
               - string
           content:
             type:
-              - 'null'
+              - "null"
               - string
           score:
             type:
-              - 'null'
+              - "null"
               - number
           votes_up:
             type:
-              - 'null'
+              - "null"
               - number
           votes_down:
             type:
-              - 'null'
+              - "null"
               - number
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           sentiment:
             type:
-              - 'null'
+              - "null"
               - number
           sku:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           reviewer_type:
             type:
-              - 'null'
+              - "null"
               - string
           deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           archived:
             type:
-              - 'null'
+              - "null"
               - boolean
           escalated:
             type:
-              - 'null'
+              - "null"
               - boolean
           is_incentivized:
             type:
-              - 'null'
+              - "null"
               - boolean
   email_analytics_stream:
     $parameters:
@@ -174,20 +174,20 @@ definitions:
         properties:
           since:
             type:
-              - 'null'
+              - "null"
               - string
           until:
             type:
-              - 'null'
+              - "null"
               - string
           values:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               done:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
   raw_data_stream:
     $parameters:
@@ -207,87 +207,87 @@ definitions:
         properties:
           email_address:
             type:
-              - 'null'
+              - "null"
               - string
           order_id:
             type:
-              - 'null'
+              - "null"
               - string
           order_timestamp:
             type:
-              - 'null'
+              - "null"
               - string
           product_id:
             type:
-              - 'null'
+              - "null"
               - string
           sku:
             type:
-              - 'null'
+              - "null"
               - number
           email_type:
             type:
-              - 'null'
+              - "null"
               - string
           reminder_num:
             type:
-              - 'null'
+              - "null"
               - number
           trr_bundle_id:
             type:
-              - 'null'
+              - "null"
               - string
           trr_bundle_subject:
             type:
-              - 'null'
+              - "null"
               - string
           review_type:
             type:
-              - 'null'
+              - "null"
               - string
           coupon_code:
             type:
-              - 'null'
+              - "null"
               - number
           email_sent_timestamp:
             type:
-              - 'null'
+              - "null"
               - string
           opened_timestamp:
             type:
-              - 'null'
+              - "null"
               - string
           clicked_through_timestamp:
             type:
-              - 'null'
+              - "null"
               - string
           content_creation_timestamp:
             type:
-              - 'null'
+              - "null"
               - string
           platform:
             type:
-              - 'null'
+              - "null"
               - string
           invalid_address_timestamp:
             type:
-              - 'null'
+              - "null"
               - string
           failed_timestamp:
             type:
-              - 'null'
+              - "null"
               - string
           unsubscribed_timestamp:
             type:
-              - 'null'
+              - "null"
               - string
           marked_spam_timestamp:
             type:
-              - 'null'
+              - "null"
               - string
           arrived_early_timestamp:
             type:
-              - 'null'
+              - "null"
               - string
   unsubscribers_stream:
     $parameters:
@@ -308,19 +308,19 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           user_email:
             type:
-              - 'null'
+              - "null"
               - string
           email_type_id:
             type:
-              - 'null'
+              - "null"
               - number
           unsubscribed_by_name:
             type:
-              - 'null'
+              - "null"
               - string
   webhook_events_stream:
     $parameters:
@@ -341,11 +341,11 @@ definitions:
         properties:
           name:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
   webhooks_stream:
     $parameters:
@@ -363,28 +363,28 @@ definitions:
         title: Webhooks Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           webhook_event_id:
             type:
-              - 'null'
+              - "null"
               - number
           webhook_event_name:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           version:
             type:
-              - 'null'
+              - "null"
               - number
 streams:
   - "#/definitions/email_analytics_stream"

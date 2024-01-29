@@ -40,89 +40,89 @@ definitions:
         type: object
         properties:
           kind:
-            $id: '#root/kind'
+            $id: "#root/kind"
             title: Kind
             type: string
-            default: ''
+            default: ""
             pattern: ^.*$
           items:
-            $id: '#root/items'
+            $id: "#root/items"
             title: Items
             type: array
             default: []
             items:
-              $id: '#root/items/items'
+              $id: "#root/items/items"
               title: Items
               type: object
               properties:
                 family:
-                  $id: '#root/items/items/family'
+                  $id: "#root/items/items/family"
                   title: Family
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 variants:
-                  $id: '#root/items/items/variants'
+                  $id: "#root/items/items/variants"
                   title: Variants
                   type: array
                   default: []
                   items:
-                    $id: '#root/items/items/variants/items'
+                    $id: "#root/items/items/variants/items"
                     title: Items
                     type: string
-                    default: ''
+                    default: ""
                     pattern: ^.*$
                 subsets:
-                  $id: '#root/items/items/subsets'
+                  $id: "#root/items/items/subsets"
                   title: Subsets
                   type: array
                   default: []
                   items:
-                    $id: '#root/items/items/subsets/items'
+                    $id: "#root/items/items/subsets/items"
                     title: Items
                     type: string
-                    default: ''
+                    default: ""
                     pattern: ^.*$
                 version:
-                  $id: '#root/items/items/version'
+                  $id: "#root/items/items/version"
                   title: Version
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 lastModified:
-                  $id: '#root/items/items/lastModified'
+                  $id: "#root/items/items/lastModified"
                   title: Lastmodified
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 files:
-                  $id: '#root/items/items/files'
+                  $id: "#root/items/items/files"
                   title: Files
                   type: object
                   properties:
                     regular:
-                      $id: '#root/items/items/files/regular'
+                      $id: "#root/items/items/files/regular"
                       title: Regular
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     italic:
-                      $id: '#root/items/items/files/italic'
+                      $id: "#root/items/items/files/italic"
                       title: Italic
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                 category:
-                  $id: '#root/items/items/category'
+                  $id: "#root/items/items/category"
                   title: Category
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 kind:
-                  $id: '#root/items/items/kind'
+                  $id: "#root/items/items/kind"
                   title: Kind
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
 streams:
   - "#/definitions/fonts_stream"

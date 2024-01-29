@@ -44,7 +44,7 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/increment_paginator"
-  # API Docs: https://smaily.com/help/api/segments/list-segments/
+    # API Docs: https://smaily.com/help/api/segments/list-segments/
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -55,30 +55,30 @@ definitions:
           email:
             type:
               - string
-              - 'null'
+              - "null"
           first_name:
             type:
               - string
-              - 'null'
+              - "null"
           last_name:
             type:
               - string
-              - 'null'
+              - "null"
           is_owner:
             type:
               - boolean
-              - 'null'
+              - "null"
           role:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               id:
                 type: integer
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
         required:
           - id
   segments_stream:
@@ -87,7 +87,7 @@ definitions:
       name: "segments"
       primary_key: "id"
       path: "/list.php"
-  # API Docs: https://smaily.com/help/api/campaigns-3/list-campaigns/
+    # API Docs: https://smaily.com/help/api/campaigns-3/list-campaigns/
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -98,11 +98,11 @@ definitions:
           name:
             type:
               - string
-              - 'null'
+              - "null"
           subscribers_count:
             type:
               - integer
-              - 'null'
+              - "null"
         required:
           - id
   campaigns_stream:
@@ -111,7 +111,7 @@ definitions:
       name: "campaigns"
       primary_key: "id"
       path: "/campaign.php"
-  # API Docs: https://smaily.com/help/api/templates-2/list-templates/
+    # API Docs: https://smaily.com/help/api/templates-2/list-templates/
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -122,40 +122,40 @@ definitions:
           name:
             type:
               - string
-              - 'null'
+              - "null"
           template:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               id:
                 type: string
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               preview_url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           tags:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: string
           created_at:
             type:
               - string
-              - 'null'
+              - "null"
           completed_at:
             type:
               - string
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
   templates_stream:
@@ -171,7 +171,7 @@ definitions:
         pagination_strategy:
           type: PageIncrement
           page_size: 1000
-  # API Docs: https://smaily.com/help/api/automations-2/list-automation-workflows/
+    # API Docs: https://smaily.com/help/api/automations-2/list-automation-workflows/
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -182,23 +182,23 @@ definitions:
           type:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           created_at:
             type:
               - string
-              - 'null'
+              - "null"
           modified_at:
             type:
               - string
-              - 'null'
+              - "null"
           preview_url:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
   automations_stream:
@@ -207,7 +207,7 @@ definitions:
       name: "automations"
       primary_key: "id"
       path: "/autoresponder.php"
-  # API Docs: https://smaily.com/help/api/a-b-tests/list-a-b-tests/
+    # API Docs: https://smaily.com/help/api/a-b-tests/list-a-b-tests/
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -218,11 +218,11 @@ definitions:
           name:
             type:
               - string
-              - 'null'
+              - "null"
           sections:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: object
               properties:
@@ -231,22 +231,22 @@ definitions:
                 subject:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 template:
                   type:
                     - object
-                    - 'null'
+                    - "null"
                   properties:
                     id:
                       type: integer
                     name:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     preview_url:
                       type:
                         - string
-                        - 'null'
+                        - "null"
         required:
           - id
   ab_tests_stream:
@@ -266,11 +266,11 @@ definitions:
           name:
             type:
               - string
-              - 'null'
+              - "null"
           sections:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: object
               properties:
@@ -279,42 +279,42 @@ definitions:
                 subject:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 template:
                   type:
                     - object
-                    - 'null'
+                    - "null"
                   properties:
                     id:
                       type: integer
                     name:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     preview_url:
                       type:
                         - string
-                        - 'null'
+                        - "null"
           tags:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           created_at:
             type:
               - string
-              - 'null'
+              - "null"
           completed_at:
             type:
               - string
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
 streams:

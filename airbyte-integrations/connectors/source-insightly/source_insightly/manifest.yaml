@@ -91,31 +91,31 @@ definitions:
           NAME:
             type:
               - string
-              - 'null'
+              - "null"
           FOR_CONTACTS:
             type:
               - boolean
-              - 'null'
+              - "null"
           FOR_ORGANISATIONS:
             type:
               - boolean
-              - 'null'
+              - "null"
           FOR_OPPORTUNITIES:
             type:
               - boolean
-              - 'null'
+              - "null"
           FOR_PROJECTS:
             type:
               - boolean
-              - 'null'
+              - "null"
           FOR_LEADS:
             type:
               - boolean
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           ACTIVITIES:
             type: array
             items:
@@ -124,115 +124,115 @@ definitions:
                 ACTIVITY_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ACTIVITYSET_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ACTIVITY_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 ACTIVITY_DETAILS:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 ACTIVITY_TYPE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 CATEGORY_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 REMINDER:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 REMINDER_DAYS_BEFORE_DUE:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 REMINDER_TIME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 PUBLICLY_VISIBLE:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 OWNER_VISIBLE:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 OWNER_USER_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 RESPONSIBLE_USER_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ASSIGNED_TEAM_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 SKIP_SUN:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 SKIP_MON:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 SKIP_TUE:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 SKIP_WED:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 SKIP_THU:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 SKIP_FRI:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 SKIP_SAT:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 DUE_DAYS_AFTER_START:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 DUE_DAYS_BEFORE_END:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 EVENT_DAYS_AFTER_START:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 EVENT_DAYS_BEFORE_END:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 EVENT_TIME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 ALL_DAY:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 DURATION:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
   contacts_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "contacts"
@@ -252,159 +252,159 @@ definitions:
           SALUTATION:
             type:
               - string
-              - 'null'
+              - "null"
           FIRST_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           LAST_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           IMAGE_URL:
             type:
               - string
-              - 'null'
+              - "null"
           BACKGROUND:
             type:
               - string
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           SOCIAL_LINKEDIN:
             type:
               - string
-              - 'null'
+              - "null"
           SOCIAL_FACEBOOK:
             type:
               - string
-              - 'null'
+              - "null"
           SOCIAL_TWITTER:
             type:
               - string
-              - 'null'
+              - "null"
           DATE_OF_BIRTH:
             type:
               - string
-              - 'null'
+              - "null"
           PHONE:
             type:
               - string
-              - 'null'
+              - "null"
           PHONE_HOME:
             type:
               - string
-              - 'null'
+              - "null"
           PHONE_MOBILE:
             type:
               - string
-              - 'null'
+              - "null"
           PHONE_OTHER:
             type:
               - string
-              - 'null'
+              - "null"
           PHONE_ASSISTANT:
             type:
               - string
-              - 'null'
+              - "null"
           PHONE_FAX:
             type:
               - string
-              - 'null'
+              - "null"
           EMAIL_ADDRESS:
             type:
               - string
-              - 'null'
+              - "null"
           ASSISTANT_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_MAIL_STREET:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_MAIL_CITY:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_MAIL_STATE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_MAIL_POSTCODE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_MAIL_COUNTRY:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_OTHER_STREET:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_OTHER_CITY:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_OTHER_STATE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_OTHER_POSTCODE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_OTHER_COUNTRY:
             type:
               - string
-              - 'null'
+              - "null"
           LAST_ACTIVITY_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           NEXT_ACTIVITY_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           CREATED_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           ORGANISATION_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           TITLE:
             type:
               - string
-              - 'null'
+              - "null"
           VISIBLE_TEAM_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           VISIBLE_TO:
             type:
               - string
-              - 'null'
+              - "null"
           EMAIL_OPTED_OUT:
             type:
               - boolean
-              - 'null'
+              - "null"
           CUSTOMFIELDS:
             type: array
             items:
@@ -413,7 +413,7 @@ definitions:
                 FIELD_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 FIELD_VALUE:
                   type: object
           TAGS:
@@ -424,7 +424,7 @@ definitions:
                 TAG_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
           DATES:
             type: array
             items:
@@ -433,23 +433,23 @@ definitions:
                 DATE_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 OCCASION_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 OCCASION_DATE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 REPEAT_YEARLY:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 CREATE_TASK_YEARLY:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
           LINKS:
             type: array
             items:
@@ -458,39 +458,39 @@ definitions:
                 LINK_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ROLE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 DETAILS:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 RELATIONSHIP_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 IS_FORWARD:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
   countries_stream:
     $ref: "#/definitions/base_stream"
     name: "countries"
@@ -524,7 +524,7 @@ definitions:
           CURRENCY_SYMBOL:
             type:
               - string
-              - 'null'
+              - "null"
   emails_stream:
     $ref: "#/definitions/base_stream"
     name: "emails"
@@ -543,42 +543,42 @@ definitions:
           EMAIL_FROM:
             type:
               - string
-              - 'null'
+              - "null"
           SUBJECT:
             type:
               - string
-              - 'null'
+              - "null"
           EMAIL_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           FORMAT:
             type:
               - string
-              - 'null'
+              - "null"
           SIZE:
             type:
               - integer
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           QUEUED_SEND_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           CREATED_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           TAGS:
             type: array
             items:
@@ -587,7 +587,7 @@ definitions:
                 TAG_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
           LINKS:
             type: array
             items:
@@ -596,39 +596,39 @@ definitions:
                 LINK_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ROLE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 DETAILS:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 RELATIONSHIP_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 IS_FORWARD:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
   events_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "events"
@@ -647,52 +647,52 @@ definitions:
           TITLE:
             type:
               - string
-              - 'null'
+              - "null"
           LOCATION:
             type:
               - string
-              - 'null'
+              - "null"
           START_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           END_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           ALL_DAY:
             type:
               - boolean
-              - 'null'
+              - "null"
           DETAILS:
             type:
               - string
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           REMINDER_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           REMINDER_SENT:
             type:
               - boolean
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           CUSTOMFIELDS:
             type: array
             items:
@@ -701,7 +701,7 @@ definitions:
                 FIELD_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 FIELD_VALUE:
                   type: object
           LINKS:
@@ -712,39 +712,39 @@ definitions:
                 LINK_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ROLE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 DETAILS:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 RELATIONSHIP_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 IS_FORWARD:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
   knowledge_article_categories_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "knowledge_article_categories"
@@ -763,24 +763,24 @@ definitions:
           CATEGORY_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           DESCRIPTION:
             type:
               - string
-              - 'null'
+              - "null"
           CREATED_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   knowledge_article_folders_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -800,32 +800,32 @@ definitions:
           FOLDER_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           CATEGORY_ID:
             type:
               - string
-              - 'null'
+              - "null"
           VISIBILITY:
             type:
               - string
-              - 'null'
+              - "null"
           ORDER_ARTICLES:
             type:
               - string
-              - 'null'
+              - "null"
           CREATED_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   knowledge_articles_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -845,88 +845,88 @@ definitions:
           CATEGORY_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           FOLDER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           ARTICLE_NO:
             type:
               - integer
-              - 'null'
+              - "null"
           ArticleVersion:
             type:
               - string
-              - 'null'
+              - "null"
           Status:
             type:
               - string
-              - 'null'
+              - "null"
           Language:
             type:
               - string
-              - 'null'
+              - "null"
           Title:
             type:
               - string
-              - 'null'
+              - "null"
           Body:
             type:
               - string
-              - 'null'
+              - "null"
           URL_SLUG:
             type:
               - string
-              - 'null'
+              - "null"
           DOWNVOTE_COUNT:
             type:
               - integer
-              - 'null'
+              - "null"
           UPVOTE_COUNT:
             type:
               - integer
-              - 'null'
+              - "null"
           PROMOTED:
             type:
               - boolean
-              - 'null'
+              - "null"
           FIRST_PUBLISHED_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           LAST_PUBLISHED_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           ARCHIVED_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           CREATED_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           ExternalLinkCount:
             type:
               - string
-              - 'null'
+              - "null"
           CUSTOMFIELDS:
             type: array
             items:
@@ -935,7 +935,7 @@ definitions:
                 FIELD_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 FIELD_VALUE:
                   type: object
           TAGS:
@@ -946,7 +946,7 @@ definitions:
                 TAG_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
   leads_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "leads"
@@ -972,15 +972,15 @@ definitions:
           LEAD_SOURCE:
             type:
               - string
-              - 'null'
+              - "null"
           DEFAULT_VALUE:
             type:
               - boolean
-              - 'null'
+              - "null"
           FIELD_ORDER:
             type:
               - integer
-              - 'null'
+              - "null"
   lead_statuses_stream:
     $ref: "#/definitions/base_stream"
     name: "lead_statuses"
@@ -999,19 +999,19 @@ definitions:
           LEAD_STATUS:
             type:
               - string
-              - 'null'
+              - "null"
           DEFAULT_STATUS:
             type:
               - boolean
-              - 'null'
+              - "null"
           STATUS_TYPE:
             type:
               - integer
-              - 'null'
+              - "null"
           FIELD_ORDER:
             type:
               - integer
-              - 'null'
+              - "null"
   milestones_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "milestones"
@@ -1030,42 +1030,42 @@ definitions:
           TITLE:
             type:
               - string
-              - 'null'
+              - "null"
           COMPLETED:
             type:
               - boolean
-              - 'null'
+              - "null"
           DUE_DATE:
             type:
               - string
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           COMPLETED_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           PROJECT_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           RESPONSIBLE_USER:
             type:
               - integer
-              - 'null'
+              - "null"
   notes_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "notes"
@@ -1084,25 +1084,25 @@ definitions:
           TITLE:
             type:
               - string
-              - 'null'
+              - "null"
           BODY:
             type:
               - string
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           LINKS:
             type: array
             items:
@@ -1111,39 +1111,39 @@ definitions:
                 LINK_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ROLE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 DETAILS:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 RELATIONSHIP_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 IS_FORWARD:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
   opportunities_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "opportunities"
@@ -1163,113 +1163,113 @@ definitions:
           OPPORTUNITY_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           OPPORTUNITY_DETAILS:
             type:
               - string
-              - 'null'
+              - "null"
           OPPORTUNITY_STATE:
             type:
               - string
-              - 'null'
+              - "null"
           RESPONSIBLE_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           CATEGORY_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           IMAGE_URL:
             type:
               - string
-              - 'null'
+              - "null"
           BID_CURRENCY:
             type:
               - string
-              - 'null'
+              - "null"
           BID_AMOUNT:
             type:
               - number
-              - 'null'
+              - "null"
           BID_TYPE:
             type:
               - string
-              - 'null'
+              - "null"
           BID_DURATION:
             type:
               - integer
-              - 'null'
+              - "null"
           ACTUAL_CLOSE_DATE:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           OPPORTUNITY_VALUE:
             type:
               - number
-              - 'null'
+              - "null"
           PROBABILITY:
             type:
               - integer
-              - 'null'
+              - "null"
           FORECAST_CLOSE_DATE:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           LAST_ACTIVITY_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           NEXT_ACTIVITY_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           PIPELINE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           STAGE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           CREATED_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           ORGANISATION_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           PRICEBOOK_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           VISIBLE_TEAM_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           VISIBLE_TO:
             type:
               - string
-              - 'null'
+              - "null"
           CUSTOMFIELDS:
             type: array
             items:
@@ -1278,7 +1278,7 @@ definitions:
                 FIELD_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 FIELD_VALUE:
                   type: object
           TAGS:
@@ -1289,7 +1289,7 @@ definitions:
                 TAG_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
               required:
                 - TAG_NAME
           LINKS:
@@ -1300,39 +1300,39 @@ definitions:
                 LINK_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ROLE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 DETAILS:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 RELATIONSHIP_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 IS_FORWARD:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
   opportunity_categories_stream:
     $ref: "#/definitions/base_stream"
     name: "opportunity_categories"
@@ -1351,15 +1351,15 @@ definitions:
           CATEGORY_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           ACTIVE:
             type:
               - boolean
-              - 'null'
+              - "null"
           BACKGROUND_COLOR:
             type:
               - string
-              - 'null'
+              - "null"
   opportunity_products_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "opportunity_products"
@@ -1385,11 +1385,11 @@ definitions:
           STATE_REASON:
             type:
               - string
-              - 'null'
+              - "null"
           FOR_OPPORTUNITY_STATE:
             type:
               - string
-              - 'null'
+              - "null"
   organisations_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "organisations"
@@ -1409,115 +1409,115 @@ definitions:
           ORGANISATION_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           BACKGROUND:
             type:
               - string
-              - 'null'
+              - "null"
           IMAGE_URL:
             type:
               - string
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           LAST_ACTIVITY_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           NEXT_ACTIVITY_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           CREATED_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           PHONE:
             type:
               - string
-              - 'null'
+              - "null"
           PHONE_FAX:
             type:
               - string
-              - 'null'
+              - "null"
           WEBSITE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_BILLING_STREET:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_BILLING_CITY:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_BILLING_STATE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_BILLING_COUNTRY:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_BILLING_POSTCODE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_SHIP_STREET:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_SHIP_CITY:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_SHIP_STATE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_SHIP_POSTCODE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_SHIP_COUNTRY:
             type:
               - string
-              - 'null'
+              - "null"
           SOCIAL_LINKEDIN:
             type:
               - string
-              - 'null'
+              - "null"
           SOCIAL_FACEBOOK:
             type:
               - string
-              - 'null'
+              - "null"
           SOCIAL_TWITTER:
             type:
               - string
-              - 'null'
+              - "null"
           VISIBLE_TEAM_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           VISIBLE_TO:
             type:
               - string
-              - 'null'
+              - "null"
           CUSTOMFIELDS:
             type: array
             items:
@@ -1526,7 +1526,7 @@ definitions:
                 FIELD_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 FIELD_VALUE:
                   type: object
           TAGS:
@@ -1537,7 +1537,7 @@ definitions:
                 TAG_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
           DATES:
             type: array
             items:
@@ -1546,23 +1546,23 @@ definitions:
                 DATE_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 OCCASION_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 OCCASION_DATE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 REPEAT_YEARLY:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 CREATE_TASK_YEARLY:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
           EMAILDOMAINS:
             type: array
             items:
@@ -1571,11 +1571,11 @@ definitions:
                 EMAIL_DOMAIN_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 EMAIL_DOMAIN:
                   type:
                     - string
-                    - 'null'
+                    - "null"
           LINKS:
             type: array
             items:
@@ -1584,39 +1584,39 @@ definitions:
                 LINK_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ROLE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 DETAILS:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 RELATIONSHIP_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 IS_FORWARD:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
   pipelines_stream:
     $ref: "#/definitions/base_stream"
     name: "pipelines"
@@ -1635,19 +1635,19 @@ definitions:
           PIPELINE_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           FOR_OPPORTUNITIES:
             type:
               - boolean
-              - 'null'
+              - "null"
           FOR_PROJECTS:
             type:
               - boolean
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
   pipeline_stages_stream:
     $ref: "#/definitions/base_stream"
     name: "pipeline_stages"
@@ -1666,23 +1666,23 @@ definitions:
           PIPELINE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           STAGE_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           STAGE_ORDER:
             type:
               - integer
-              - 'null'
+              - "null"
           ACTIVITYSET_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
   pricebook_entries_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "price_book_entries"
@@ -1722,15 +1722,15 @@ definitions:
           CATEGORY_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           ACTIVE:
             type:
               - boolean
-              - 'null'
+              - "null"
           BACKGROUND_COLOR:
             type:
               - string
-              - 'null'
+              - "null"
   projects_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "projects"
@@ -1750,83 +1750,83 @@ definitions:
           PROJECT_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           STATUS:
             type:
               - string
-              - 'null'
+              - "null"
           PROJECT_DETAILS:
             type:
               - string
-              - 'null'
+              - "null"
           STARTED_DATE:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           COMPLETED_DATE:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           OPPORTUNITY_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           CATEGORY_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           PIPELINE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           STAGE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           IMAGE_URL:
             type:
               - string
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           LAST_ACTIVITY_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
           NEXT_ACTIVITY_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
           CREATED_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           RESPONSIBLE_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           VISIBLE_TEAM_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           VISIBLE_TO:
             type:
               - string
-              - 'null'
+              - "null"
           CUSTOMFIELDS:
             type: array
             items:
@@ -1835,7 +1835,7 @@ definitions:
                 FIELD_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 FIELD_VALUE:
                   type: object
           TAGS:
@@ -1846,7 +1846,7 @@ definitions:
                 TAG_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
           LINKS:
             type: array
             items:
@@ -1855,39 +1855,39 @@ definitions:
                 LINK_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ROLE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 DETAILS:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 RELATIONSHIP_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 IS_FORWARD:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
   prospects_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "prospects"
@@ -1906,143 +1906,143 @@ definitions:
           LEAD_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           CONTACT_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           ORGANISATION_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           SALUTATION:
             type:
               - string
-              - 'null'
+              - "null"
           FIRST_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           LAST_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           ORGANISATION_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           TITLE:
             type:
               - string
-              - 'null'
+              - "null"
           EMAIL_ADDRESS:
             type:
               - string
-              - 'null'
+              - "null"
           PHONE:
             type:
               - string
-              - 'null'
+              - "null"
           MOBILE:
             type:
               - string
-              - 'null'
+              - "null"
           FAX:
             type:
               - string
-              - 'null'
+              - "null"
           WEBSITE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_STREET:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_CITY:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_STATE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_POSTCODE:
             type:
               - string
-              - 'null'
+              - "null"
           ADDRESS_COUNTRY:
             type:
               - string
-              - 'null'
+              - "null"
           INDUSTRY:
             type:
               - string
-              - 'null'
+              - "null"
           EMPLOYEE_COUNT:
             type:
               - integer
-              - 'null'
+              - "null"
           SCORE:
             type:
               - integer
-              - 'null'
+              - "null"
           GRADE:
             type:
               - string
-              - 'null'
+              - "null"
           DESCRIPTION:
             type:
               - string
-              - 'null'
+              - "null"
           DO_NOT_EMAIL:
             type:
               - boolean
-              - 'null'
+              - "null"
           DO_NOT_CALL:
             type:
               - boolean
-              - 'null'
+              - "null"
           OPTED_OUT:
             type:
               - boolean
-              - 'null'
+              - "null"
           LAST_ACTIVITY_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           CREATED_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DO_NOT_SYNC:
             type:
               - boolean
-              - 'null'
+              - "null"
           LEAD_CONVERSION_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           GRADE_PROFILE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           CUSTOMFIELDS:
             type: array
             items:
@@ -2051,7 +2051,7 @@ definitions:
                 FIELD_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 FIELD_VALUE:
                   type: object
           TAGS:
@@ -2062,7 +2062,7 @@ definitions:
                 TAG_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
   quote_products_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "quote_products"
@@ -2095,27 +2095,27 @@ definitions:
           FORWARD_TITLE:
             type:
               - string
-              - 'null'
+              - "null"
           FORWARD:
             type:
               - string
-              - 'null'
+              - "null"
           REVERSE_TITLE:
             type:
               - string
-              - 'null'
+              - "null"
           REVERSE:
             type:
               - string
-              - 'null'
+              - "null"
           FOR_CONTACTS:
             type:
               - boolean
-              - 'null'
+              - "null"
           FOR_ORGANISATIONS:
             type:
               - boolean
-              - 'null'
+              - "null"
   tags_stream:
     $ref: "#/definitions/base_stream"
     name: "tags"
@@ -2141,15 +2141,15 @@ definitions:
           CATEGORY_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           ACTIVE:
             type:
               - boolean
-              - 'null'
+              - "null"
           BACKGROUND_COLOR:
             type:
               - string
-              - 'null'
+              - "null"
   tasks_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "tasks"
@@ -2169,126 +2169,126 @@ definitions:
           TITLE:
             type:
               - string
-              - 'null'
+              - "null"
           CATEGORY_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           DUE_DATE:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           COMPLETED_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           COMPLETED:
             type:
               - boolean
-              - 'null'
+              - "null"
           DETAILS:
             type:
               - string
-              - 'null'
+              - "null"
           STATUS:
             type:
               - string
-              - 'null'
+              - "null"
           PRIORITY:
             type:
               - integer
-              - 'null'
+              - "null"
           PERCENT_COMPLETE:
             type:
               - integer
-              - 'null'
+              - "null"
           PUBLICLY_VISIBLE:
             type:
-              - 'null'
+              - "null"
               - boolean
           START_DATE:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           MILESTONE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           RESPONSIBLE_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           OWNER_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           EMAIL_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           PROJECT_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           REMINDER_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           REMINDER_SENT:
             type:
               - boolean
-              - 'null'
+              - "null"
           OWNER_VISIBLE:
             type:
               - boolean
-              - 'null'
+              - "null"
           STAGE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           ASSIGNED_BY_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           PARENT_TASK_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           RECURRENCE:
             type:
               - string
-              - 'null'
+              - "null"
           OPPORTUNITY_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           ASSIGNED_TEAM_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           ASSIGNED_DATE_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           CREATED_USER_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           CUSTOMFIELDS:
             type: array
             items:
@@ -2297,7 +2297,7 @@ definitions:
                 FIELD_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 FIELD_VALUE:
                   type: object
           LINKS:
@@ -2308,39 +2308,39 @@ definitions:
                 LINK_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_NAME:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 LINK_OBJECT_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 ROLE:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 DETAILS:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 RELATIONSHIP_ID:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 IS_FORWARD:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
   team_members_stream:
     $ref: "#/definitions/base_stream"
     name: "team_members"
@@ -2357,11 +2357,11 @@ definitions:
           PERMISSION_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           TEAM_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           MEMBER_USER_ID:
             type: integer
   teams_stream:
@@ -2383,20 +2383,20 @@ definitions:
           TEAM_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           ANONYMOUS_TEAM:
             type:
               - boolean
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           TEAMMEMBERS:
             type: array
@@ -2425,81 +2425,81 @@ definitions:
           CONTACT_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           FIRST_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           LAST_NAME:
             type:
               - string
-              - 'null'
+              - "null"
           TIMEZONE_ID:
             type:
               - string
-              - 'null'
+              - "null"
           EMAIL_ADDRESS:
             type:
               - string
-              - 'null'
+              - "null"
           EMAIL_DROPBOX_IDENTIFIER:
             type:
               - string
-              - 'null'
+              - "null"
           EMAIL_DROPBOX_ADDRESS:
             type:
               - string
-              - 'null'
+              - "null"
           ADMINISTRATOR:
             type:
               - boolean
-              - 'null'
+              - "null"
           ACCOUNT_OWNER:
             type:
               - boolean
-              - 'null'
+              - "null"
           ACTIVE:
             type:
               - boolean
-              - 'null'
+              - "null"
           DATE_CREATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           DATE_UPDATED_UTC:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           USER_CURRENCY:
             type:
               - string
-              - 'null'
+              - "null"
           CONTACT_DISPLAY:
             type:
               - string
-              - 'null'
+              - "null"
           CONTACT_ORDER:
             type:
               - string
-              - 'null'
+              - "null"
           TASK_WEEK_START:
             type:
               - integer
-              - 'null'
+              - "null"
           INSTANCE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           PROFILE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
           ROLE_ID:
             type:
               - integer
-              - 'null'
+              - "null"
 streams:
   - "#/definitions/activity_sets_stream"
   - "#/definitions/contacts_stream"

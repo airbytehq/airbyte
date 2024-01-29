@@ -51,24 +51,24 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           rate:
             type:
-              - 'null'
+              - "null"
               - number
           metadata:
             type:
-              - 'null'
+              - "null"
               - string
           createdDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           label:
@@ -90,27 +90,27 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           allDay:
             type:
-              - 'null'
+              - "null"
               - boolean
           scale:
             type:
-              - 'null'
+              - "null"
               - string
           start:
             type: string
@@ -118,15 +118,15 @@ definitions:
             type: string
           categoryTemplateId:
             type:
-              - 'null'
+              - "null"
               - string
           categoryName:
             type:
-              - 'null'
+              - "null"
               - string
           stateValue:
             type:
-              - 'null'
+              - "null"
               - integer
           resource:
             type: string
@@ -134,54 +134,54 @@ definitions:
             type: string
           note:
             type:
-              - 'null'
+              - "null"
               - string
           details:
             properties:
               offDaysCount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               workDaysCount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               holidayCount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               workWeekDetails:
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 type:
-                  - 'null'
+                  - "null"
                   - array
               bookedMinutes:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               budgetBookedAmount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
             type:
-              - 'null'
+              - "null"
               - object
           createdDate:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           updatedDate:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           metadata:
             type:
-              - 'null'
+              - "null"
               - string
           customFields:
             items:
@@ -194,11 +194,11 @@ definitions:
                   type: string
                 templateLabel:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 choices:
                   items:
@@ -209,19 +209,19 @@ definitions:
                         type: string
                       value:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                     type:
-                      - 'null'
+                      - "null"
                       - object
                   type:
-                    - 'null'
+                    - "null"
                     - array
               type:
-                - 'null'
+                - "null"
                 - object
             type:
-              - 'null'
+              - "null"
               - array
           bookingRate:
             properties:
@@ -229,42 +229,42 @@ definitions:
                 properties:
                   defaultRateId:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                 type:
-                  - 'null'
+                  - "null"
                   - object
               internal:
                 properties:
                   defaultRateId:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                 type:
-                  - 'null'
+                  - "null"
                   - object
             type:
-              - 'null'
+              - "null"
               - object
           bookingCreatorId:
             type:
-              - 'null'
+              - "null"
               - string
           lastUpdatedById:
             type:
-              - 'null'
+              - "null"
               - string
           deletedById:
             type:
-              - 'null'
+              - "null"
               - string
           billable:
             type:
-              - 'null'
+              - "null"
               - boolean
           backgroundColor:
             type:
-              - 'null'
+              - "null"
               - string
   clients_stream:
     $ref: "#/definitions/base_stream"
@@ -281,31 +281,31 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type: string
           company:
             type:
-              - 'null'
+              - "null"
               - string
           __v:
             type:
-              - 'null'
+              - "null"
               - integer
           createdDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
   events_stream:
     $ref: "#/definitions/base_stream"
@@ -322,29 +322,29 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type: string
           createdDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           backgroundColor:
             type:
-              - 'null'
+              - "null"
               - string
           label:
             type: string
           metadata:
             type:
-              - 'null'
+              - "null"
               - string
   holidays_stream:
     $ref: "#/definitions/base_stream"
@@ -361,27 +361,27 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type: string
           date:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           metadata:
             type:
-              - 'null'
+              - "null"
               - string
           createdDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
   projects_stream:
@@ -399,241 +399,241 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type: string
           links:
             properties: {}
             type:
-              - 'null'
+              - "null"
               - object
           notes:
             type:
-              - 'null'
+              - "null"
               - string
           createdDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           timeEntryEnabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           timeEntryLocked:
             type:
-              - 'null'
+              - "null"
               - boolean
           timeEntryApproval:
             type:
-              - 'null'
+              - "null"
               - boolean
           resourceRates:
             items:
               properties:
                 resource:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 companyBillingRateId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 companyBillingRate:
                   type:
-                    - 'null'
+                    - "null"
                     - number
               type:
-                - 'null'
+                - "null"
                 - object
             type:
-              - 'null'
+              - "null"
               - array
           includeBookedTimeReports:
             type:
-              - 'null'
+              - "null"
               - boolean
           includeBookedTimeGrid:
             type:
-              - 'null'
+              - "null"
               - boolean
           projectManagers:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type:
-              - 'null'
+              - "null"
               - array
           resources:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type:
-              - 'null'
+              - "null"
               - array
           workDays:
             items:
               type:
-                - 'null'
+                - "null"
                 - boolean
             type:
-              - 'null'
+              - "null"
               - array
           useProjectDays:
             type:
-              - 'null'
+              - "null"
               - boolean
           budget:
             properties:
               hasBudget:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               projectHours:
                 properties:
                   active:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   hours:
                     type:
-                      - 'null'
+                      - "null"
                       - number
                 type:
-                  - 'null'
+                  - "null"
                   - object
               cashAmount:
                 properties:
                   active:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   amount:
                     type:
-                      - 'null'
+                      - "null"
                       - number
                   currency:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   billingRate:
                     properties:
                       useDefault:
                         type:
-                          - 'null'
+                          - "null"
                           - boolean
                       rate:
                         type:
-                          - 'null'
+                          - "null"
                           - number
                       id:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                     type:
-                      - 'null'
+                      - "null"
                       - object
                 type:
-                  - 'null'
+                  - "null"
                   - object
             type:
-              - 'null'
+              - "null"
               - object
           companyBillingRateId:
             type:
-              - 'null'
+              - "null"
               - string
           budgetHours:
             type:
-              - 'null'
+              - "null"
               - number
           budgetCashAmount:
             type:
-              - 'null'
+              - "null"
               - number
           budgetCurrency:
             type:
-              - 'null'
+              - "null"
               - string
           useStatusColor:
             type:
-              - 'null'
+              - "null"
               - boolean
           status:
             type:
-              - 'null'
+              - "null"
               - string
           useProjectDuration:
             type:
-              - 'null'
+              - "null"
               - boolean
           start:
             type:
-              - 'null'
+              - "null"
               - string
           end:
             type:
-              - 'null'
+              - "null"
               - string
           backgroundColor:
             type:
-              - 'null'
+              - "null"
               - string
           projectCode:
             type:
-              - 'null'
+              - "null"
               - string
           metadata:
             type:
-              - 'null'
+              - "null"
               - string
           defaultCategory:
             type:
-              - 'null'
+              - "null"
               - string
           categoryGroups:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           customers:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           budgetCategories:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
           private:
             type:
-              - 'null'
+              - "null"
               - boolean
           billable:
             type:
-              - 'null'
+              - "null"
               - boolean
           fixedCosts:
             type:
-              - 'null'
+              - "null"
               - array
           customFields:
             items:
@@ -646,11 +646,11 @@ definitions:
                   type: string
                 templateLabel:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 choices:
                   items:
@@ -661,23 +661,23 @@ definitions:
                         type: string
                       value:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                     type:
-                      - 'null'
+                      - "null"
                       - object
                   type:
-                    - 'null'
+                    - "null"
                     - array
               type:
-                - 'null'
+                - "null"
                 - object
             type:
-              - 'null'
+              - "null"
               - array
           timeEntryNoteRequired:
             type:
-              - 'null'
+              - "null"
               - boolean
           projectRate:
             properties:
@@ -685,31 +685,31 @@ definitions:
                 properties:
                   defaultRateId:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   customRates:
                     items:
                       properties:
                         _id:
                           type:
-                            - 'null'
+                            - "null"
                             - string
                         id:
                           type:
-                            - 'null'
+                            - "null"
                             - string
                         resourceId:
                           type:
-                            - 'null'
+                            - "null"
                             - string
                       type:
-                        - 'null'
+                        - "null"
                         - object
                     type:
-                      - 'null'
+                      - "null"
                       - array
                 type:
-                  - 'null'
+                  - "null"
                   - object
               internal:
                 properties:
@@ -718,43 +718,43 @@ definitions:
                       properties:
                         _id:
                           type:
-                            - 'null'
+                            - "null"
                             - string
                         id:
                           type:
-                            - 'null'
+                            - "null"
                             - string
                         resourceId:
                           type:
-                            - 'null'
+                            - "null"
                             - string
                       type:
-                        - 'null'
+                        - "null"
                         - object
                     type:
-                      - 'null'
+                      - "null"
                       - array
                   defaultRateId:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type:
-                  - 'null'
+                  - "null"
                   - object
             type:
-              - 'null'
+              - "null"
               - object
           note:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             items:
               type:
-                - 'null'
+                - "null"
                 - object
             type:
-              - 'null'
+              - "null"
               - array
   resources_stream:
     $ref: "#/definitions/base_stream"
@@ -771,81 +771,81 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           metadata:
             type:
-              - 'null'
+              - "null"
               - string
           createdDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           note:
             type:
-              - 'null'
+              - "null"
               - string
           firstName:
             type: string
           lastName:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           role:
             type:
-              - 'null'
+              - "null"
               - string
           links:
             properties: {}
             type:
-              - 'null'
+              - "null"
               - object
           billable:
             type:
-              - 'null'
+              - "null"
               - boolean
           calendarIds:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           isApprover:
             type:
-              - 'null'
+              - "null"
               - boolean
           billing:
             properties:
               useDefault:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               rate:
                 type:
-                  - 'null'
+                  - "null"
                   - number
             type:
-              - 'null'
+              - "null"
               - object
           useCustomAvailability:
             type:
-              - 'null'
+              - "null"
               - boolean
           customFields:
             items:
@@ -858,11 +858,11 @@ definitions:
                   type: string
                 templateLabel:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 choices:
                   items:
@@ -873,19 +873,19 @@ definitions:
                         type: string
                       value:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                     type:
-                      - 'null'
+                      - "null"
                       - object
                   type:
-                    - 'null'
+                    - "null"
                     - array
               type:
-                - 'null'
+                - "null"
                 - object
             type:
-              - 'null'
+              - "null"
               - array
           resourceRates:
             properties:
@@ -893,34 +893,34 @@ definitions:
                 items:
                   properties: {}
                   type:
-                    - 'null'
+                    - "null"
                     - object
                 type:
-                  - 'null'
+                  - "null"
                   - array
               internal:
                 items:
                   properties: {}
                   type:
-                    - 'null'
+                    - "null"
                     - object
                 type:
-                  - 'null'
+                  - "null"
                   - array
             type:
-              - 'null'
+              - "null"
               - object
           isProjectManager:
             type:
-              - 'null'
+              - "null"
               - boolean
           tags:
             items:
               type:
-                - 'null'
+                - "null"
                 - object
             type:
-              - 'null'
+              - "null"
               - array
 streams:
   - "#/definitions/billing_rates_stream"

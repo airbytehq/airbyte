@@ -52,7 +52,7 @@ streams:
         properties:
           totals:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
@@ -127,7 +127,7 @@ streams:
             type: string
           payout_date:
             description: ISO 8601 formatted date-time string
-            example: '2016-12-14T07:52:26Z'
+            example: "2016-12-14T07:52:26Z"
             type: string
             format: date-time
           currency_code:
@@ -204,19 +204,19 @@ streams:
             format: int64
           merchant_id:
             type:
-              - 'null'
+              - "null"
               - string
           shipping_address_country:
             type:
-              - 'null'
+              - "null"
               - string
           consumer_vat:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
               properties: {}
@@ -229,7 +229,7 @@ streams:
             type: string
           sale_date:
             description: ISO 8601 formatted date-time string
-            example: '2016-12-14T07:52:26Z'
+            example: "2016-12-14T07:52:26Z"
             type: string
             format: date-time
           type:
@@ -252,7 +252,7 @@ streams:
               - RELEASE
           capture_date:
             description: ISO 8601 formatted date-time string
-            example: '2016-12-14T07:52:26Z'
+            example: "2016-12-14T07:52:26Z"
             type: string
             format: date-time
           payment_reference:

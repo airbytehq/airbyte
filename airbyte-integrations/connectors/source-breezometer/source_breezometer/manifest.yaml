@@ -31,45 +31,45 @@ definitions:
         properties:
           datetime:
             type:
-              - 'null'
+              - "null"
               - string
           data_available:
             type:
-              - 'null'
+              - "null"
               - boolean
           indexes:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               baqi:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   display_name:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   aqi:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   aqi_display:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   color:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   category:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   dominant_pollutant:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   air_quality_forecast_stream:
     retriever:
@@ -98,45 +98,45 @@ definitions:
         properties:
           datetime:
             type:
-              - 'null'
+              - "null"
               - string
           data_available:
             type:
-              - 'null'
+              - "null"
               - boolean
           indexes:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               baqi:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   display_name:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   aqi:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   aqi_display:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   color:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   category:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   dominant_pollutant:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   air_quality_historical_stream:
     retriever:
@@ -165,45 +165,45 @@ definitions:
         properties:
           datetime:
             type:
-              - 'null'
+              - "null"
               - string
           data_available:
             type:
-              - 'null'
+              - "null"
               - boolean
           indexes:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               baqi:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   display_name:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   aqi:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   aqi_display:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   color:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   category:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   dominant_pollutant:
                     type:
-                      - 'null'
+                      - "null"
                       - string
   pollen_forecast_stream:
     retriever:
@@ -232,122 +232,122 @@ definitions:
         properties:
           date:
             type:
-              - 'null'
+              - "null"
               - string
           index_id:
             type:
-              - 'null'
+              - "null"
               - string
           index_display_name:
             type:
-              - 'null'
+              - "null"
               - string
           types:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               grass:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   display_name:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   in_season:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   data_available:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   index:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     properties:
                       value:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                       category:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       color:
                         type:
-                          - 'null'
+                          - "null"
                           - string
               tree:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   display_name:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   in_season:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   data_available:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   index:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     properties:
                       value:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                       category:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       color:
                         type:
-                          - 'null'
+                          - "null"
                           - string
               weed:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   display_name:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   in_season:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   data_available:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   index:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     properties:
                       value:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                       category:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       color:
                         type:
-                          - 'null'
+                          - "null"
                           - string
   weather_current_stream:
     retriever:
@@ -375,149 +375,149 @@ definitions:
         properties:
           datetime:
             type:
-              - 'null'
+              - "null"
               - string
           is_day_time:
             type:
-              - 'null'
+              - "null"
               - boolean
           icon_code:
             type:
-              - 'null'
+              - "null"
               - integer
           weather_text:
             type:
-              - 'null'
+              - "null"
               - string
           temperature:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               value:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               units:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           feels_like_temperature:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               value:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               units:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           relative_humidity:
             type:
-              - 'null'
+              - "null"
               - integer
           precipitation:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               precipitation_probability:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               total_precipitation:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - number
                   units:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           wind:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               speed:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - number
                   units:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               direction:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           wind_gust:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               value:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               units:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           pressure:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               value:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               units:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           visibility:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               value:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               units:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           dew_point:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               value:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               units:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           cloud_cover:
             type:
-              - 'null'
+              - "null"
               - integer
   weather_forecast_stream:
     retriever:
@@ -545,45 +545,45 @@ definitions:
         properties:
           start_date:
             type:
-              - 'null'
+              - "null"
               - string
           sun:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               sunrise_time:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               sunset_time:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           moon:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               moonrise_time:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               moonset_time:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               moon_phase:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               moon_age:
                 type:
-                  - 'null'
+                  - "null"
                   - number
           max_uv_index:
             type:
-              - 'null'
+              - "null"
               - integer
   wildfire_burnt_area_stream:
     retriever:
@@ -611,78 +611,78 @@ definitions:
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           features:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 properties:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     CurrentLat:
                       type:
-                        - 'null'
+                        - "null"
                         - number
                     CurrentLon:
                       type:
-                        - 'null'
+                        - "null"
                         - number
                     DiscoveryDateTime:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     EventDescription:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     LastUpdated:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                 geometry:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     type:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     coordinates:
                       type:
-                        - 'null'
+                        - "null"
                         - array
                       items:
                         type:
-                          - 'null'
+                          - "null"
                           - array
                         items:
                           type:
-                            - 'null'
+                            - "null"
                             - array
                           items:
                             type:
-                              - 'null'
+                              - "null"
                               - array
                             items:
                               type:
-                                - 'null'
+                                - "null"
                                 - number
   wildfire_locate_stream:
     retriever:
@@ -710,78 +710,78 @@ definitions:
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           features:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 properties:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     CurrentLat:
                       type:
-                        - 'null'
+                        - "null"
                         - number
                     CurrentLon:
                       type:
-                        - 'null'
+                        - "null"
                         - number
                     DiscoveryDateTime:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     EventDescription:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     LastUpdated:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                 geometry:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     type:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     coordinates:
                       type:
-                        - 'null'
+                        - "null"
                         - array
                       items:
                         type:
-                          - 'null'
+                          - "null"
                           - array
                         items:
                           type:
-                            - 'null'
+                            - "null"
                             - array
                           items:
                             type:
-                              - 'null'
+                              - "null"
                               - array
                             items:
                               type:
-                                - 'null'
+                                - "null"
                                 - number
 streams:
   - "#/definitions/air_quality_current_stream"

@@ -45,46 +45,46 @@ definitions:
         additionalProperties: true
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           organization:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               identifier:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               description:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               tags:
                 type:
                   - object
-                  - 'null'
+                  - "null"
                 properties:
                   identifier:
                     type:
                       - string
-                      - 'null'
+                      - "null"
           createdAt:
             type:
               - number
-              - 'null'
+              - "null"
           lastModifiedAt:
             type:
               - number
-              - 'null'
+              - "null"
           harnessManaged:
             type:
               - boolean
-              - 'null'
+              - "null"
 streams:
   - "#/definitions/organizations_stream"
 

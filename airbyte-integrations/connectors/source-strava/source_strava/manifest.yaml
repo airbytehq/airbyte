@@ -39,287 +39,287 @@ streams:
       schema:
         $schema: https://json-schema.org/draft-07/schema#
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           biggest_ride_distance:
             type:
-              - 'null'
+              - "null"
               - number
           biggest_climb_elevation_gain:
             type:
-              - 'null'
+              - "null"
               - number
           recent_ride_totals:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               distance:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               moving_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elapsed_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elevation_gain:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               achievement_count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           recent_run_totals:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               distance:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               moving_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elapsed_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elevation_gain:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               achievement_count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           recent_swim_totals:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               distance:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               moving_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elapsed_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elevation_gain:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               achievement_count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           ytd_ride_totals:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               distance:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               moving_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elapsed_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elevation_gain:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               achievement_count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           ytd_run_totals:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               distance:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               moving_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elapsed_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elevation_gain:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               achievement_count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           ytd_swim_totals:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               distance:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               moving_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elapsed_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elevation_gain:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               achievement_count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           all_ride_totals:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               distance:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               moving_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elapsed_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elevation_gain:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               achievement_count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           all_run_totals:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               distance:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               moving_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elapsed_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elevation_gain:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               achievement_count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           all_swim_totals:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               distance:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               moving_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elapsed_time:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               elevation_gain:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               achievement_count:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
   - type: DeclarativeStream
     name: activities
@@ -389,7 +389,7 @@ streams:
             type: integer
           external_id:
             type:
-              - 'null'
+              - "null"
               - string
           athlete:
             type: object
@@ -397,99 +397,99 @@ streams:
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               resource_state:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           distance:
             type:
-              - 'null'
+              - "null"
               - number
           moving_time:
             type:
-              - 'null'
+              - "null"
               - integer
           elapsed_time:
             type:
-              - 'null'
+              - "null"
               - integer
           total_elevation_gain:
             type:
-              - 'null'
+              - "null"
               - number
           elev_high:
             type:
-              - 'null'
+              - "null"
               - number
           elev_low:
             type:
-              - 'null'
+              - "null"
               - number
           type:
             type:
-              - 'null'
+              - "null"
               - string
           start_date:
             type:
-              - 'null'
+              - "null"
               - string
           start_date_local:
             type:
-              - 'null'
+              - "null"
               - string
           timezone:
             type:
-              - 'null'
+              - "null"
               - string
           utc_offset:
             type:
-              - 'null'
+              - "null"
               - number
           start_latlng:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - number
           end_latlng:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - number
           achievement_count:
             type:
-              - 'null'
+              - "null"
               - integer
           kudos_count:
             type:
-              - 'null'
+              - "null"
               - integer
           comment_count:
             type:
-              - 'null'
+              - "null"
               - integer
           athlete_count:
             type:
-              - 'null'
+              - "null"
               - integer
           photo_count:
             type:
-              - 'null'
+              - "null"
               - integer
           total_photo_count:
             type:
-              - 'null'
+              - "null"
               - integer
           map:
             type: object
@@ -497,135 +497,135 @@ streams:
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               summary_polyline:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               resource_state:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           trainer:
             type:
-              - 'null'
+              - "null"
               - boolean
           commute:
             type:
-              - 'null'
+              - "null"
               - boolean
           manual:
             type:
-              - 'null'
+              - "null"
               - boolean
           private:
             type:
-              - 'null'
+              - "null"
               - boolean
           flagged:
             type:
-              - 'null'
+              - "null"
               - boolean
           workout_type:
             type:
-              - 'null'
+              - "null"
               - integer
           upload_id_str:
             type:
-              - 'null'
+              - "null"
               - string
           average_speed:
             type:
-              - 'null'
+              - "null"
               - number
           max_speed:
             type:
-              - 'null'
+              - "null"
               - number
           has_kudoed:
             type:
-              - 'null'
+              - "null"
               - boolean
           gear_id:
             type:
-              - 'null'
+              - "null"
               - string
           kilojoules:
             type:
-              - 'null'
+              - "null"
               - number
           average_watts:
             type:
-              - 'null'
+              - "null"
               - number
           device_watts:
             type:
-              - 'null'
+              - "null"
               - boolean
           max_watts:
             type:
-              - 'null'
+              - "null"
               - integer
           weighted_average_watts:
             type:
-              - 'null'
+              - "null"
               - integer
           upload_id:
             type:
-              - 'null'
+              - "null"
               - integer
           location_city:
             type:
-              - 'null'
+              - "null"
               - string
           location_state:
             type:
-              - 'null'
+              - "null"
               - string
           location_country:
             type:
-              - 'null'
+              - "null"
               - string
           start_latitude:
             type:
-              - 'null'
+              - "null"
               - number
           start_longitude:
             type:
-              - 'null'
+              - "null"
               - number
           visibility:
             type:
-              - 'null'
+              - "null"
               - string
           from_accepted_tag:
             type:
-              - 'null'
+              - "null"
               - boolean
           average_temp:
             type:
-              - 'null'
+              - "null"
               - number
           has_heartrate:
             type:
-              - 'null'
+              - "null"
               - boolean
           heartrate_opt_out:
             type:
-              - 'null'
+              - "null"
               - boolean
           display_hide_heartrate_option:
             type:
-              - 'null'
+              - "null"
               - boolean
           pr_count:
             type:
-              - 'null'
+              - "null"
               - integer
           resource_state:
             type:
-              - 'null'
+              - "null"
               - integer
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/strava

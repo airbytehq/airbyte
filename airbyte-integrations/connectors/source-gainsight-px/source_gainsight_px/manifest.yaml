@@ -70,90 +70,90 @@ definitions:
         title: Accounts Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           trackedSubscriptionId:
             type:
-              - 'null'
+              - "null"
               - string
           sfdcId:
             type:
-              - 'null'
+              - "null"
               - string
           lastSeenDate:
             type:
-              - 'null'
+              - "null"
               - string
           dunsNumber:
             type:
-              - 'null'
+              - "null"
               - string
           industry:
             type:
-              - 'null'
+              - "null"
               - string
           numberOfEmployees:
             type:
-              - 'null'
+              - "null"
               - string
           sicCode:
             type:
-              - 'null'
+              - "null"
               - string
           website:
             type:
-              - 'null'
+              - "null"
               - string
           naicsCode:
             type:
-              - 'null'
+              - "null"
               - string
           plan:
             type:
-              - 'null'
+              - "null"
               - string
           location:
             type:
-              - 'null'
+              - "null"
               - string
           numberOfUsers:
             type:
-              - 'null'
+              - "null"
               - string
           propertyKeys:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               location:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           createDate:
             type:
-              - 'null'
+              - "null"
               - string
           lastModifiedDate:
             type:
-              - 'null'
+              - "null"
               - string
           customAttributes:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
           parentGroupId:
             type:
-              - 'null'
+              - "null"
               - string
   admin_attributes_stream:
     $parameters:
@@ -169,52 +169,52 @@ definitions:
         title: User Attributes Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           apiName:
             type:
-              - 'null'
+              - "null"
               - string
           internalName:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           origin:
             type:
-              - 'null'
+              - "null"
               - string
           createdDate:
             type:
-              - 'null'
+              - "null"
               - number
           modifiedDate:
             type:
-              - 'null'
+              - "null"
               - number
           defaultValue:
             type:
-              - 'null'
+              - "null"
               - string
   articles_stream:
     $parameters:
@@ -233,76 +233,76 @@ definitions:
         title: Articles Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           modifiedBy:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           articleKCs:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
               properties:
                 kcId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 kcName:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           articleName:
             type:
-              - 'null'
+              - "null"
               - string
           author:
             type:
-              - 'null'
+              - "null"
               - string
           createdDate:
             type:
-              - 'null'
+              - "null"
               - number
           modifiedDate:
             type:
-              - 'null'
+              - "null"
               - number
           productId:
             type:
-              - 'null'
+              - "null"
               - string
           productName:
             type:
-              - 'null'
+              - "null"
               - string
           releaseDate:
             type:
-              - 'null'
+              - "null"
               - string
           viewType:
             type:
-              - 'null'
+              - "null"
               - string
   feature_stream:
     $parameters:
@@ -321,56 +321,56 @@ definitions:
         title: Feature Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
             enum:
               - FEATURE
               - MODULE
           parentFeatureId:
             type:
-              - 'null'
+              - "null"
               - string
           propertyKey:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
             enum:
               - ACTIVATED
               - DELETED
           featureLabels:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               color:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   segments_stream:
     $parameters:
@@ -388,16 +388,16 @@ definitions:
         title: Segment Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
   kcbot_stream:
     $parameters:
@@ -416,80 +416,80 @@ definitions:
         title: KCBot Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           createdBy:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           createdDate:
             type:
-              - 'null'
+              - "null"
               - number
           description:
             type:
-              - 'null'
+              - "null"
               - string
           environments:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           modifiedBy:
             additionalProperties: true
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           modifiedDate:
             type:
-              - 'null'
+              - "null"
               - number
           name:
             type:
-              - 'null'
+              - "null"
               - string
           priority:
             type:
-              - 'null'
+              - "null"
               - number
           productId:
             type:
-              - 'null'
+              - "null"
               - string
           productName:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
   user_attributes_stream:
     $parameters:
@@ -505,52 +505,52 @@ definitions:
         title: User Attributes Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           apiName:
             type:
-              - 'null'
+              - "null"
               - string
           internalName:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           origin:
             type:
-              - 'null'
+              - "null"
               - string
           createdDate:
             type:
-              - 'null'
+              - "null"
               - number
           modifiedDate:
             type:
-              - 'null'
+              - "null"
               - number
           defaultValue:
             type:
-              - 'null'
+              - "null"
               - string
   users_stream:
     $parameters:
@@ -569,20 +569,20 @@ definitions:
         title: Users Schema
         additionalProperties: true
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           aptrinsicId:
             type:
-              - 'null'
+              - "null"
               - string
           identifyId:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
             enum:
               - LEAD
@@ -591,7 +591,7 @@ definitions:
               - EMPTY_USER_TYPE
           gender:
             type:
-              - 'null'
+              - "null"
               - string
             enum:
               - MALE
@@ -600,197 +600,197 @@ definitions:
               - EMPTY_GENDER
           email:
             type:
-              - 'null'
+              - "null"
               - string
           firstName:
             type:
-              - 'null'
+              - "null"
               - string
           lastName:
             type:
-              - 'null'
+              - "null"
               - string
           lastSeenDate:
             type:
-              - 'null'
+              - "null"
               - integer
             format: int64
           signUpDate:
             type:
-              - 'null'
+              - "null"
               - integer
             format: int64
           firstVisitDate:
             type:
-              - 'null'
+              - "null"
               - integer
             format: int64
           title:
             type:
-              - 'null'
+              - "null"
               - string
           phone:
             type:
-              - 'null'
+              - "null"
               - string
           score:
             type:
-              - 'null'
+              - "null"
               - integer
             format: int64
           role:
             type:
-              - 'null'
+              - "null"
               - string
           subscriptionId:
             type:
-              - 'null'
+              - "null"
               - string
           accountId:
             type:
-              - 'null'
+              - "null"
               - string
           numberOfVisits:
             type:
-              - 'null'
+              - "null"
               - integer
             format: int32
           location:
             type:
-              - 'null'
+              - "null"
               - string
           propertyKeys:
             type:
-              - 'null'
+              - "null"
               - array
             description: Aptrinsic Tag Key, at least one is required
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             examples:
-              -   - AP-XXXXXXXXXX-2
+              - - AP-XXXXXXXXXX-2
           createDate:
             type:
-              - 'null'
+              - "null"
               - integer
             format: int64
           lastModifiedDate:
             type:
-              - 'null'
+              - "null"
               - integer
             format: int64
           globalUnsubscribe:
             type:
-              - 'null'
+              - "null"
               - boolean
           sfdcContactId:
             type:
-              - 'null'
+              - "null"
               - string
           lastVisitedUserAgentData:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               propertyKey:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               userAgent:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 additionalProperties: true
                 properties:
                   rawUserAgent:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   device:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   platformType:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   platformVersion:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   browserType:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   browserVersion:
                     type:
-                      - 'null'
+                      - "null"
                       - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
             description: Synonym for identifyId, output only, not filterable
           lastInferredLocation:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               countryName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               countryCode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               stateName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               stateCode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               street:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               postalCode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               continent:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               regionName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               timeZone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               coordinates:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 additionalProperties: true
                 properties:
                   latitude:
                     type:
-                      - 'null'
+                      - "null"
                       - number
                   longitude:
                     type:
-                      - 'null'
+                      - "null"
                       - number
 streams:
   - "#/definitions/accounts_stream"

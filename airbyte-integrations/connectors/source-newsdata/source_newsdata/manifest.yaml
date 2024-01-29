@@ -60,69 +60,69 @@ definitions:
         properties:
           title:
             type:
-              - 'null'
+              - "null"
               - string
           link:
             type:
-              - 'null'
+              - "null"
               - string
           source_id:
             type:
-              - 'null'
+              - "null"
               - string
           keywords:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           creator:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           image_url:
             type:
-              - 'null'
+              - "null"
               - string
           video_url:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           pubDate:
             type:
-              - 'null'
+              - "null"
               - string
           content:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           category:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           language:
             type:
-              - 'null'
+              - "null"
               - string
   sources_stream:
     $ref: "#/definitions/base_stream"
@@ -147,39 +147,39 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           category:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           language:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           country:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
 streams:
   - "#/definitions/latest_stream"

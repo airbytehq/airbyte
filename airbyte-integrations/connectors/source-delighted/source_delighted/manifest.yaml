@@ -91,30 +91,30 @@ definitions:
             type: string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           phone_number:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type: integer
           last_sent_at:
             type:
               - integer
-              - 'null'
+              - "null"
           last_responded_at:
             type:
               - integer
-              - 'null'
+              - "null"
           next_survey_scheduled_at:
             type:
               - integer
-              - 'null'
+              - "null"
   bounces:
     $ref: "#/definitions/base_stream"
     primary_key: "person_id"
@@ -134,7 +134,7 @@ definitions:
             type: string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           bounced_at:
             type: integer
@@ -157,7 +157,7 @@ definitions:
             type: string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           unsubscribed_at:
             type: integer
@@ -194,7 +194,7 @@ definitions:
             type: integer
           comment:
             type:
-              - 'null'
+              - "null"
               - string
           permalink:
             type: string
@@ -202,28 +202,28 @@ definitions:
             type: integer
           updated_at:
             type:
-              - 'null'
+              - "null"
               - integer
           person_properties:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               Delighted Source:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               Delighted Device Type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               Delighted Operating System:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               Delighted Browser:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           notes:
             type: array
@@ -234,7 +234,7 @@ definitions:
           additional_answers:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: object
               properties:
@@ -245,16 +245,16 @@ definitions:
                   properties:
                     free_response:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     scale:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     select_one:
                       type:
                         - object
-                        - 'null'
+                        - "null"
                       properties:
                         id:
                           type: string
@@ -263,7 +263,7 @@ definitions:
                     select_many:
                       type:
                         - array
-                        - 'null'
+                        - "null"
                       items:
                         type: object
                         properties:
@@ -311,8 +311,8 @@ spec:
         type: string
         description: The date from which you'd like to replicate the data
         examples:
-          - '2022-05-30T04:50:23Z'
-          - '2022-05-30 04:50:23'
+          - "2022-05-30T04:50:23Z"
+          - "2022-05-30 04:50:23"
         pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(\.\d+)?Z?$
         order: 1
         format: date-time

@@ -56,169 +56,169 @@ definitions:
         properties:
           activeWorkspace:
             type:
-              - 'null'
+              - "null"
               - string
           customFields:
             type:
-              - 'null'
+              - "null"
               - array
           defaultWorkspace:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           memberships:
             type:
-              - 'null'
+              - "null"
               - array
           name:
             type:
-              - 'null'
+              - "null"
               - string
           profilePicture:
             type:
-              - 'null'
+              - "null"
               - string
           settings:
             properties:
               alerts:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               approval:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               collapseAllProjectLists:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               dashboardPinToTop:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               dashboardSelection:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               dashboardViewType:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               dateFormat:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               groupSimilarEntriesDisabled:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               isCompactViewOn:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               lang:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               longRunning:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               multiFactorEnabled:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               myStartOfDay:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               onboarding:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               projectListCollapse:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               projectPickerTaskFilter:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               pto:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               reminders:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               scheduledReports:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               scheduling:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               sendNewsletter:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               showOnlyWorkingDays:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               summaryReportSettings:
                 properties:
                   group:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   subgroup:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type:
-                  - 'null'
+                  - "null"
                   - object
               theme:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               timeFormat:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               timeTrackingManual:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               timeZone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               weekStart:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               weeklyUpdates:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
             type:
-              - 'null'
+              - "null"
               - object
           status:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
   projects_stream:
@@ -236,68 +236,68 @@ definitions:
         properties:
           archived:
             type:
-              - 'null'
+              - "null"
               - boolean
           billable:
             type:
-              - 'null'
+              - "null"
               - boolean
           budgetEstimate:
             anyOf:
-              - type: 'null'
+              - type: "null"
               - type: integer
               - properties:
                   estimate:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   type:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   resetOption:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   active:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                 type:
-                  - 'null'
+                  - "null"
                   - object
           clientId:
             type:
-              - 'null'
+              - "null"
               - string
           clientName:
             type:
-              - 'null'
+              - "null"
               - string
           color:
             type:
-              - 'null'
+              - "null"
               - string
           costRate:
             anyOf:
-              - type: 'null'
+              - type: "null"
               - type: string
               - properties:
                   amount:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                       - integer
                   currency:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type:
-                  - 'null'
+                  - "null"
                   - object
           duration:
             type:
-              - 'null'
+              - "null"
               - string
           estimate:
             properties:
@@ -306,112 +306,112 @@ definitions:
               type:
                 type: string
             type:
-              - 'null'
+              - "null"
               - object
           hourlyRate:
             properties:
               amount:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               currency:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type:
-              - 'null'
+              - "null"
               - object
           id:
             type:
-              - 'null'
+              - "null"
               - string
           memberships:
             items:
               properties:
                 costRate:
                   type:
-                    - 'null'
+                    - "null"
                 hourlyRate:
                   anyOf:
-                    - type: 'null'
+                    - type: "null"
                     - properties:
                         amount:
                           type:
-                            - 'null'
+                            - "null"
                             - integer
                         currency:
                           type:
-                            - 'null'
+                            - "null"
                             - string
                       type:
-                        - 'null'
+                        - "null"
                         - object
                 membershipStatus:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 membershipType:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 targetId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 userId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
               type:
-                - 'null'
+                - "null"
                 - object
             type:
-              - 'null'
+              - "null"
               - array
           name:
             type:
-              - 'null'
+              - "null"
               - string
           note:
             type:
-              - 'null'
+              - "null"
               - string
           public:
             type:
-              - 'null'
+              - "null"
               - boolean
           template:
             type:
-              - 'null'
+              - "null"
               - boolean
           timeEstimate:
             properties:
               active:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               estimate:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               includeNonBillable:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               resetOption:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type:
-              - 'null'
+              - "null"
               - object
           workspaceId:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
   clients_stream:
@@ -429,31 +429,31 @@ definitions:
         properties:
           address:
             type:
-              - 'null'
+              - "null"
               - string
           archived:
             type:
-              - 'null'
+              - "null"
               - boolean
           id:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           note:
             type:
-              - 'null'
+              - "null"
               - string
           workspaceId:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
   tags_stream:
@@ -471,19 +471,19 @@ definitions:
         properties:
           archived:
             type:
-              - 'null'
+              - "null"
               - boolean
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           workspaceId:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
   user_groups_stream:
@@ -501,23 +501,23 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           userIds:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type:
-              - 'null'
+              - "null"
               - array
           workspaceId:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
   users_partition_router:
@@ -546,74 +546,74 @@ definitions:
         properties:
           billable:
             type:
-              - 'null'
+              - "null"
               - boolean
           customFieldValues:
             type:
-              - 'null'
+              - "null"
               - array
           description:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           isLocked:
             type:
-              - 'null'
+              - "null"
               - boolean
           kioskId:
             type:
-              - 'null'
+              - "null"
               - string
           projectId:
             type:
-              - 'null'
+              - "null"
               - string
           tagIds:
             anyOf:
-              - type: 'null'
+              - type: "null"
               - items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 type:
-                  - 'null'
+                  - "null"
                   - array
           taskId:
             type:
-              - 'null'
+              - "null"
               - string
           timeInterval:
             properties:
               duration:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               end:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               start:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type:
-              - 'null'
+              - "null"
               - object
           type:
             type:
-              - 'null'
+              - "null"
               - string
           userId:
             type:
-              - 'null'
+              - "null"
               - string
           workspaceId:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
   projects_partition_router:
@@ -642,83 +642,83 @@ definitions:
         properties:
           budgetEstimate:
             type:
-              - 'null'
+              - "null"
               - number
           assigneeId:
             type:
-              - 'null'
+              - "null"
               - string
           assigneeIds:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type:
-              - 'null'
+              - "null"
               - array
           billable:
             type:
-              - 'null'
+              - "null"
               - boolean
           costRate:
             anyOf:
-              - type: 'null'
+              - type: "null"
               - type: string
               - properties:
                   amount:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                       - integer
                   currency:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type:
-                  - 'null'
+                  - "null"
                   - object
           duration:
             type:
-              - 'null'
+              - "null"
               - string
           estimate:
             type:
-              - 'null'
+              - "null"
               - string
           hourlyRate:
             anyOf:
-              - type: 'null'
+              - type: "null"
               - properties:
                   amount:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   currency:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type:
-                  - 'null'
+                  - "null"
                   - object
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           projectId:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           userGroupIds:
             type:
-              - 'null'
+              - "null"
               - array
         type: object
 streams:

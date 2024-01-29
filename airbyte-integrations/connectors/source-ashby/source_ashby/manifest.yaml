@@ -55,49 +55,49 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           candidate:
             type:
-              - 'null'
+              - "null"
               - object
           status:
             type:
-              - 'null'
+              - "null"
               - string
           creditedToUser:
             type:
-              - 'null'
+              - "null"
               - object
           customFields:
             type:
-              - 'null'
+              - "null"
               - array
           currentInterviewStage:
             type:
-              - 'null'
+              - "null"
               - object
           archiveReason:
             type:
-              - 'null'
+              - "null"
               - string
           job:
             type:
-              - 'null'
+              - "null"
               - object
           hiringTeam:
             type:
-              - 'null'
+              - "null"
               - array
   archive_reasons_stream:
     $ref: "#/definitions/base_stream"
@@ -113,19 +113,19 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           text:
             type:
-              - 'null'
+              - "null"
               - string
           reasonType:
             type:
-              - 'null'
+              - "null"
               - string
           isArchived:
             type:
-              - 'null'
+              - "null"
               - boolean
   candidate_tags_stream:
     $ref: "#/definitions/base_stream"
@@ -141,15 +141,15 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           isArchived:
             type:
-              - 'null'
+              - "null"
               - boolean
   candidates_stream:
     $ref: "#/definitions/base_stream"
@@ -165,59 +165,59 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           primaryEmailAddress:
             type:
-              - 'null'
+              - "null"
               - object
           emailAddresses:
             type:
-              - 'null'
+              - "null"
               - array
           phoneNumbers:
             type:
-              - 'null'
+              - "null"
               - array
           socialLinks:
             type:
-              - 'null'
+              - "null"
               - array
           tags:
             type:
-              - 'null'
+              - "null"
               - array
           position:
             type:
-              - 'null'
+              - "null"
               - string
           company:
             type:
-              - 'null'
+              - "null"
               - string
           school:
             type:
-              - 'null'
+              - "null"
               - string
           applicationIds:
             type:
-              - 'null'
+              - "null"
               - array
           resumeFileHandle:
             type:
-              - 'null'
+              - "null"
               - object
           fileHandles:
             type:
-              - 'null'
+              - "null"
               - array
           customFields:
             type:
-              - 'null'
+              - "null"
               - array
   custom_fields_stream:
     $ref: "#/definitions/base_stream"
@@ -233,23 +233,23 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           objectType:
             type:
-              - 'null'
+              - "null"
               - string
           isArchived:
             type:
-              - 'null'
+              - "null"
               - boolean
           fieldType:
             type:
-              - 'null'
+              - "null"
               - string
   departments_stream:
     $ref: "#/definitions/base_stream"
@@ -265,19 +265,19 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           parentId:
             type:
-              - 'null'
+              - "null"
               - string
           isArchived:
             type:
-              - 'null'
+              - "null"
               - boolean
   feedback_form_definitions_stream:
     $ref: "#/definitions/base_stream"
@@ -293,31 +293,31 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           organizationId:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           isArchived:
             type:
-              - 'null'
+              - "null"
               - boolean
           isDefaultForm:
             type:
-              - 'null'
+              - "null"
               - boolean
           formDefinition:
             type:
-              - 'null'
+              - "null"
               - object
           interviewId:
             type:
-              - 'null'
+              - "null"
               - string
   interview_schedules_stream:
     $ref: "#/definitions/base_stream"
@@ -339,19 +339,19 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           applicationId:
             type:
-              - 'null'
+              - "null"
               - string
           interviewStageId:
             type:
-              - 'null'
+              - "null"
               - string
   job_postings_stream:
     $ref: "#/definitions/base_stream"
@@ -367,48 +367,48 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           jobId:
             type:
-              - 'null'
+              - "null"
               - string
           departmentName:
             type:
-              - 'null'
+              - "null"
               - string
           teamName:
             type:
-              - 'null'
+              - "null"
               - string
           locationName:
             type:
-              - 'null'
+              - "null"
               - string
           employmentType:
             type:
-              - 'null'
+              - "null"
               - string
           isListed:
             type:
-              - 'null'
+              - "null"
               - boolean
           publishedDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           externalLink:
             type:
-              - 'null'
+              - "null"
               - string
           locationIds:
             type:
-              - 'null'
+              - "null"
               - object
   jobs_stream:
     $ref: "#/definitions/base_stream"
@@ -424,55 +424,55 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           confidential:
             type:
-              - 'null'
+              - "null"
               - boolean
           status:
             type:
-              - 'null'
+              - "null"
               - string
           employmentType:
             type:
-              - 'null'
+              - "null"
               - string
           locationId:
             type:
-              - 'null'
+              - "null"
               - string
           departmentId:
             type:
-              - 'null'
+              - "null"
               - string
           defaultInterviewPlanId:
             type:
-              - 'null'
+              - "null"
               - string
           interviewPlanIds:
             type:
-              - 'null'
+              - "null"
               - array
           jobPostingIds:
             type:
-              - 'null'
+              - "null"
               - array
           hiringTeam:
             type:
-              - 'null'
+              - "null"
               - array
           customFields:
             type:
-              - 'null'
+              - "null"
               - array
           customRequisitionId:
             type:
-              - 'null'
+              - "null"
               - string
   locations_stream:
     $ref: "#/definitions/base_stream"
@@ -488,23 +488,23 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           isArchived:
             type:
-              - 'null'
+              - "null"
               - boolean
           address:
             type:
-              - 'null'
+              - "null"
               - object
           isRemote:
             type:
-              - 'null'
+              - "null"
               - boolean
   offers_stream:
     $ref: "#/definitions/base_stream"
@@ -520,24 +520,24 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           decidedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           applicationId:
             type:
-              - 'null'
+              - "null"
               - string
           acceptanceStatus:
             type:
-              - 'null'
+              - "null"
               - string
           latestVersion:
             type:
-              - 'null'
+              - "null"
               - object
   sources_stream:
     $ref: "#/definitions/base_stream"
@@ -553,15 +553,15 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           isArchived:
             type:
-              - 'null'
+              - "null"
               - boolean
   users_stream:
     $ref: "#/definitions/base_stream"
@@ -578,19 +578,19 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           firstName:
             type:
-              - 'null'
+              - "null"
               - string
           lastName:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/applications_stream"

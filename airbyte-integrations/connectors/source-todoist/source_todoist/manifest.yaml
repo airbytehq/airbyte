@@ -39,100 +39,100 @@ definitions:
         properties:
           assignee_id:
             type:
-              - 'null'
+              - "null"
               - string
           assigner_id:
             type:
-              - 'null'
+              - "null"
               - string
           comment_count:
             type:
-              - 'null'
+              - "null"
               - integer
           content:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           creator_id:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           due:
             anyOf:
               - type:
-                  - 'null'
+                  - "null"
                   - object
               - properties:
                   date:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   is_recurring:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   lang:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   string:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type:
-                  - 'null'
+                  - "null"
                   - object
           id:
             type:
-              - 'null'
+              - "null"
               - string
           duration:
             type:
-              - 'null'
+              - "null"
               - string
           is_completed:
             type:
-              - 'null'
+              - "null"
               - boolean
           labels:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           order:
             type:
-              - 'null'
+              - "null"
               - integer
           parent_id:
             type:
-              - 'null'
+              - "null"
               - string
           priority:
             type:
-              - 'null'
+              - "null"
               - integer
           project_id:
             type:
-              - 'null'
+              - "null"
               - string
           section_id:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
   projects_stream:
     $ref: "#/definitions/base_stream"
@@ -149,51 +149,51 @@ definitions:
         properties:
           color:
             type:
-              - 'null'
+              - "null"
               - string
           comment_count:
             type:
-              - 'null'
+              - "null"
               - integer
           id:
             type:
-              - 'null'
+              - "null"
               - string
           is_favorite:
             type:
-              - 'null'
+              - "null"
               - boolean
           is_inbox_project:
             type:
-              - 'null'
+              - "null"
               - boolean
           is_shared:
             type:
-              - 'null'
+              - "null"
               - boolean
           is_team_inbox:
             type:
-              - 'null'
+              - "null"
               - boolean
           name:
             type:
-              - 'null'
+              - "null"
               - string
           order:
             type:
-              - 'null'
+              - "null"
               - integer
           parent_id:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           view_style:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/tasks_stream"

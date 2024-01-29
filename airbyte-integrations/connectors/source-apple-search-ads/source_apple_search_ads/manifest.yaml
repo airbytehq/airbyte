@@ -64,7 +64,7 @@ definitions:
             type: string
           budgetAmount:
             anyOf:
-              - type: 'null'
+              - type: "null"
               - properties:
                   amount:
                     type: string
@@ -93,7 +93,7 @@ definitions:
           displayStatus:
             type: string
           endTime:
-            type: 'null'
+            type: "null"
           id:
             type: integer
           locInvoiceDetails:
@@ -106,11 +106,11 @@ definitions:
                 type: string
               clientName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               orderNumber:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type: object
           modificationTime:
@@ -124,7 +124,7 @@ definitions:
           sapinLawResponse:
             type: string
           servingStateReasons:
-            type: 'null'
+            type: "null"
           servingStatus:
             type: string
           startTime:
@@ -163,7 +163,7 @@ definitions:
           campaignId:
             type: integer
           cpaGoal:
-            type: 'null'
+            type: "null"
           creationTime:
             type: string
           defaultBidAmount:
@@ -178,7 +178,7 @@ definitions:
           displayStatus:
             type: string
           endTime:
-            type: 'null'
+            type: "null"
           id:
             type: integer
           modificationTime:
@@ -191,7 +191,7 @@ definitions:
             type: string
           servingStateReasons:
             anyOf:
-              - type: 'null'
+              - type: "null"
               - items:
                   type: string
                 type: array
@@ -205,7 +205,7 @@ definitions:
             properties:
               adminArea:
                 anyOf:
-                  - type: 'null'
+                  - type: "null"
                   - properties:
                       included:
                         items:
@@ -214,17 +214,17 @@ definitions:
                     type: object
               age:
                 anyOf:
-                  - type: 'null'
+                  - type: "null"
                   - properties:
                       included:
                         items:
                           properties:
                             maxAge:
-                              type: 'null'
+                              type: "null"
                             minAge:
                               type:
                                 - integer
-                                - 'null'
+                                - "null"
                           type: object
                         type: array
                     type: object
@@ -232,13 +232,13 @@ definitions:
                 properties:
                   excluded:
                     anyOf:
-                      - type: 'null'
+                      - type: "null"
                       - items:
                           type: integer
                         type: array
                   included:
                     anyOf:
-                      - type: 'null'
+                      - type: "null"
                       - items:
                           type: integer
                         type: array
@@ -256,7 +256,7 @@ definitions:
                 type: object
               country:
                 anyOf:
-                  - type: 'null'
+                  - type: "null"
                   - properties:
                       included:
                         items:
@@ -264,7 +264,7 @@ definitions:
                         type: array
                     type: object
               daypart:
-                type: 'null'
+                type: "null"
               deviceClass:
                 properties:
                   included:
@@ -273,10 +273,10 @@ definitions:
                     type: array
                 type: object
               gender:
-                type: 'null'
+                type: "null"
               locality:
                 anyOf:
-                  - type: 'null'
+                  - type: "null"
                   - properties:
                       included:
                         items:
@@ -490,7 +490,7 @@ definitions:
               orgId:
                 type: integer
               servingStateReasons:
-                type: 'null'
+                type: "null"
               servingStatus:
                 type: string
               supplySources:
@@ -499,7 +499,7 @@ definitions:
                 type: array
               totalBudget:
                 anyOf:
-                  - type: 'null'
+                  - type: "null"
                   - properties:
                       amount:
                         type: string
@@ -606,7 +606,7 @@ definitions:
               adGroupName:
                 type: string
               adGroupServingStateReasons:
-                type: 'null'
+                type: "null"
               adGroupServingStatus:
                 type: string
               adGroupStatus:
@@ -618,7 +618,7 @@ definitions:
               countryOrRegion:
                 type: string
               cpaGoal:
-                type: 'null'
+                type: "null"
               defaultBidAmount:
                 properties:
                   amount:
@@ -629,7 +629,7 @@ definitions:
               deleted:
                 type: boolean
               endTime:
-                type: 'null'
+                type: "null"
               modificationTime:
                 type: string
               orgId:
@@ -735,7 +735,7 @@ definitions:
                 properties:
                   bidMax:
                     anyOf:
-                      - type: 'null'
+                      - type: "null"
                       - properties:
                           amount:
                             type: string
@@ -744,7 +744,7 @@ definitions:
                         type: object
                   bidMin:
                     anyOf:
-                      - type: 'null'
+                      - type: "null"
                       - properties:
                           amount:
                             type: string

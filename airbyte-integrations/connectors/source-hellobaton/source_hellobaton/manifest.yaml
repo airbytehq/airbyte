@@ -77,56 +77,56 @@ definitions:
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           group:
             type:
               - string
-              - 'null'
+              - "null"
           parent:
             type:
               - string
-              - 'null'
+              - "null"
           child:
             type:
               - string
-              - 'null'
+              - "null"
           actor:
             type:
               - string
-              - 'null'
+              - "null"
           project:
             type:
               - string
-              - 'null'
+              - "null"
           parent_type:
             type:
               - string
-              - 'null'
+              - "null"
           child_type:
             type:
               - string
-              - 'null'
+              - "null"
           meta:
             type:
               - object
-              - 'null'
+              - "null"
           created:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           modified:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   companies_stream:
     $ref: "#/definitions/base_stream"
@@ -144,28 +144,28 @@ definitions:
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           created:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           modified:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   milestones_stream:
     $ref: "#/definitions/base_stream"
@@ -183,118 +183,118 @@ definitions:
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
           description:
             type:
               - string
-              - 'null'
+              - "null"
           project:
             type:
               - string
-              - 'null'
+              - "null"
           task_list:
             type:
               - string
-              - 'null'
+              - "null"
           phase:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               id:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               _self:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               created:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
               modified:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
           deadline_fixed:
             type:
               - boolean
-              - 'null'
+              - "null"
           deadline_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           risk_profiles:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 id:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 risk_level:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 formula:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 over_run:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
           start_datetime:
             type:
               - string
-              - 'null'
+              - "null"
           finish_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           created_from:
             type:
               - string
-              - 'null'
+              - "null"
           duration:
             type:
               - integer
-              - 'null'
+              - "null"
           feedback_list:
             type:
               - string
-              - 'null'
+              - "null"
           created:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           modified:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   phases_stream:
     $ref: "#/definitions/base_stream"
@@ -312,28 +312,28 @@ definitions:
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           order:
             type:
               - integer
-              - 'null'
+              - "null"
           created:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           modified:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   project_attachments_stream:
     $ref: "#/definitions/base_stream"
@@ -351,48 +351,48 @@ definitions:
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           project:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           label:
             type:
               - string
-              - 'null'
+              - "null"
           created_by:
             type:
               - string
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           is_sow:
             type:
               - boolean
-              - 'null'
+              - "null"
           original_filename:
             type:
               - string
-              - 'null'
+              - "null"
           created:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           modified:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   projects_stream:
     $ref: "#/definitions/base_stream"
@@ -410,190 +410,190 @@ definitions:
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           annual_contract_value:
             type:
               - string
-              - 'null'
+              - "null"
           archived:
             type:
               - boolean
-              - 'null'
+              - "null"
           attachment_list:
             type:
               - string
-              - 'null'
+              - "null"
           client_systems:
             type:
               - string
-              - 'null'
+              - "null"
           companies:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           completed_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           cost:
             type:
               - integer
-              - 'null'
+              - "null"
           created:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           created_from:
             type:
               - string
-              - 'null'
+              - "null"
           created_from_template:
             type:
               - string
-              - 'null'
+              - "null"
           creator:
             type:
               - string
-              - 'null'
+              - "null"
           custom_field_list:
             type:
               - string
-              - 'null'
+              - "null"
           deadline_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           estimated_duration:
             type:
               - integer
-              - 'null'
+              - "null"
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           implementation_budget:
             type:
               - string
-              - 'null'
+              - "null"
           milestone_feedback_list:
             type:
               - string
-              - 'null'
+              - "null"
           milestone_list:
             type:
               - string
-              - 'null'
+              - "null"
           modified:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           phase:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               id:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               _self:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               order:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               created:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
               modified:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
           project_phases_list:
             type:
               - string
-              - 'null'
+              - "null"
           project_user_list:
             type:
               - string
-              - 'null'
+              - "null"
           risk_profiles:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 id:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 risk_score:
                   type:
                     - number
-                    - 'null'
+                    - "null"
                 level:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 variance:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 formula:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 projected_golive_datetime:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                   format: date-time
           start_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           started_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           status:
             type:
               - string
-              - 'null'
+              - "null"
           task_list:
             type:
               - string
-              - 'null'
+              - "null"
           time_entry_list:
             type:
               - string
-              - 'null'
+              - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
   tasks_stream:
     $ref: "#/definitions/base_stream"
     name: "tasks"
@@ -610,147 +610,147 @@ definitions:
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
           description:
             type:
               - string
-              - 'null'
+              - "null"
           project:
             type:
               - string
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           dependencies:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           start_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           due_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           started_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           finished_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           started_overridden_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           finished_overridden_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           estimated_duration:
             type:
               - integer
-              - 'null'
+              - "null"
           milestone:
             type:
               - string
-              - 'null'
+              - "null"
           created_by:
             type:
               - string
-              - 'null'
+              - "null"
           assigned_to:
             type:
               - string
-              - 'null'
+              - "null"
           created_from:
             type:
               - string
-              - 'null'
+              - "null"
           risk_profiles:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 id:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 risk_level:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 formula:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 over_run:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 task_variance:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 cool_down:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 reason:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 duration:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 estimated_duration:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
           time_entry_list:
             type:
               - string
-              - 'null'
+              - "null"
           attachment_list:
             type:
               - string
-              - 'null'
+              - "null"
           created:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           modified:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
   task_attachments_stream:
     $ref: "#/definitions/base_stream"
@@ -768,59 +768,59 @@ definitions:
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           task:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           label:
             type:
               - string
-              - 'null'
+              - "null"
           deliverable:
             type:
               - boolean
-              - 'null'
+              - "null"
           requires_approval:
             type:
               - boolean
-              - 'null'
+              - "null"
           approved:
             type:
               - boolean
-              - 'null'
+              - "null"
           revision_task:
             type:
               - string
-              - 'null'
+              - "null"
           original_filename:
             type:
               - string
-              - 'null'
+              - "null"
           created_by:
             type:
               - string
-              - 'null'
+              - "null"
           created:
             type:
               - string
-              - 'null'
+              - "null"
           modified:
             type:
               - string
-              - 'null'
+              - "null"
   templates_stream:
     $ref: "#/definitions/base_stream"
     name: "templates"
@@ -837,102 +837,102 @@ definitions:
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           cost:
             type:
               - string
-              - 'null'
+              - "null"
           annual_contract_value:
             type:
               - string
-              - 'null'
+              - "null"
           implementation_budget:
             type:
               - string
-              - 'null'
+              - "null"
           estimated_duration:
             type:
               - integer
-              - 'null'
+              - "null"
           created_from_template:
             type:
               - string
-              - 'null'
+              - "null"
           created_from:
             type:
               - string
-              - 'null'
+              - "null"
           start_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           started_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           deadline_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           completed_datetime:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           client_systems:
             type:
               - string
-              - 'null'
+              - "null"
           phase:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               id:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               _self:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               order:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               created:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
               modified:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
           creator:
             type:
               - string
-              - 'null'
+              - "null"
           task_list:
             type:
               - string
-              - 'null'
+              - "null"
   time_entries_stream:
     $ref: "#/definitions/base_stream"
     name: "time_entries"
@@ -949,71 +949,71 @@ definitions:
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           user:
             type:
               - string
-              - 'null'
+              - "null"
           created_by:
             type:
               - string
-              - 'null'
+              - "null"
           project:
             type:
               - string
-              - 'null'
+              - "null"
           task:
             type:
               - string
-              - 'null'
+              - "null"
           rate:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               id:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               hourly_rate:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           started_at:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           ended_at:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           reference_date:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           billable:
             type:
               - boolean
-              - 'null'
+              - "null"
           calculated_duration:
             type:
               - integer
-              - 'null'
+              - "null"
           inputted_duration:
             type:
               - integer
-              - 'null'
+              - "null"
           notes:
             type:
               - string
-              - 'null'
+              - "null"
   users_stream:
     $ref: "#/definitions/base_stream"
     name: "users"
@@ -1030,65 +1030,65 @@ definitions:
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           _self:
             type:
               - string
-              - 'null'
+              - "null"
           first_name:
             type:
               - string
-              - 'null'
+              - "null"
           last_name:
             type:
               - string
-              - 'null'
+              - "null"
           capacity:
             type:
               - integer
-              - 'null'
+              - "null"
           department:
             type:
               - object
-              - 'null'
+              - "null"
           email:
             type:
               - string
-              - 'null'
+              - "null"
           account_type:
             type:
               - string
-              - 'null'
+              - "null"
           job_title:
             type:
               - string
-              - 'null'
+              - "null"
           company:
             type:
               - string
-              - 'null'
+              - "null"
           avatar_url:
             type:
               - string
-              - 'null'
+              - "null"
           created_by:
             type:
               - string
-              - 'null'
+              - "null"
           signed_up_at:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           created:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           modified:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
 streams:
   - "#/definitions/activity_stream"

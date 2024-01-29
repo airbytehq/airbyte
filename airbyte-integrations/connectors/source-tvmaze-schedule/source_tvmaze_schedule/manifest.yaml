@@ -58,172 +58,172 @@ definitions:
           id:
             type:
               - number
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           season:
             type:
               - number
-              - 'null'
+              - "null"
           number:
             type:
               - number
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           airdate:
             type:
               - string
-              - 'null'
+              - "null"
           airtime:
             type:
               - string
-              - 'null'
+              - "null"
           airstamp:
             type:
               - string
-              - 'null'
+              - "null"
           runtime:
             type:
               - number
-              - 'null'
+              - "null"
           rating:
             type: object
             properties:
               average:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           image:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               medium:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               original:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           summary:
             type:
               - string
-              - 'null'
+              - "null"
           show:
             type: object
             properties:
               id:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               language:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               genres:
                 type: array
                 items:
                   type:
                     - string
-                    - 'null'
+                    - "null"
               status:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               runtime:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               averageRuntime:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               premiered:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ended:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               officialSite:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               schedule:
                 type: object
                 properties:
                   time:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   days:
                     type: array
                     items:
                       type:
                         - string
-                        - 'null'
+                        - "null"
               rating:
                 type: object
                 properties:
                   average:
                     type:
                       - number
-                      - 'null'
+                      - "null"
               weight:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               network:
                 type:
                   - object
-                  - 'null'
+                  - "null"
                 properties:
                   id:
                     type:
                       - number
-                      - 'null'
+                      - "null"
                   name:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   country:
                     type: object
                     properties:
                       name:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       code:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       timezone:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                   officialSite: {}
               webChannel: {}
               dvdCountry: {}
@@ -233,36 +233,36 @@ definitions:
                   tvrage:
                     type:
                       - number
-                      - 'null'
+                      - "null"
                   thetvdb:
                     type:
                       - number
-                      - 'null'
+                      - "null"
                   imdb:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               image:
                 type:
                   - object
-                  - 'null'
+                  - "null"
                 properties:
                   medium:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   original:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               summary:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               updated:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               _links:
                 type: object
                 properties:
@@ -272,14 +272,14 @@ definitions:
                       href:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                   previousepisode:
                     type: object
                     properties:
                       href:
                         type:
                           - string
-                          - 'null'
+                          - "null"
           _links:
             type: object
             properties:
@@ -289,7 +289,7 @@ definitions:
                   href:
                     type:
                       - string
-                      - 'null'
+                      - "null"
   web_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -305,109 +305,109 @@ definitions:
           id:
             type:
               - number
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           season:
             type:
               - number
-              - 'null'
+              - "null"
           number:
             type:
               - number
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           airdate:
             type:
               - string
-              - 'null'
+              - "null"
           airtime:
             type:
               - string
-              - 'null'
+              - "null"
           airstamp:
             type:
               - string
-              - 'null'
+              - "null"
           runtime:
             type:
               - number
-              - 'null'
+              - "null"
           rating:
             type: object
             properties:
               average:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           image:
             type:
               - object
-              - 'null'
+              - "null"
           summary:
             type:
               - string
-              - 'null'
+              - "null"
           show:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               id:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               language:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               genres:
                 type: array
                 items:
                   type:
                     - string
-                    - 'null'
+                    - "null"
               status:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               runtime:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               averageRuntime:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               premiered:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ended:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               officialSite: {}
               schedule:
                 type: object
@@ -415,50 +415,50 @@ definitions:
                   time:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   days:
                     type: array
                     items:
                       type:
                         - string
-                        - 'null'
+                        - "null"
               rating:
                 type: object
                 properties:
                   average:
                     type:
                       - number
-                      - 'null'
+                      - "null"
               weight:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               network:
                 type: object
                 properties:
                   id:
                     type:
                       - number
-                      - 'null'
+                      - "null"
                   name:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   country:
                     type: object
                     properties:
                       name:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       code:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       timezone:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                   officialSite: {}
               webChannel: {}
               dvdCountry: {}
@@ -469,32 +469,32 @@ definitions:
                   thetvdb:
                     type:
                       - number
-                      - 'null'
+                      - "null"
                   imdb:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               image:
                 type:
                   - object
-                  - 'null'
+                  - "null"
                 properties:
                   medium:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   original:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               summary:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               updated:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               _links:
                 type: object
                 properties:
@@ -504,14 +504,14 @@ definitions:
                       href:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                   previousepisode:
                     type: object
                     properties:
                       href:
                         type:
                           - string
-                          - 'null'
+                          - "null"
           _links:
             type: object
             properties:
@@ -521,7 +521,7 @@ definitions:
                   href:
                     type:
                       - string
-                      - 'null'
+                      - "null"
   future_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -538,43 +538,43 @@ definitions:
           id:
             type:
               - number
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           season:
             type:
               - number
-              - 'null'
+              - "null"
           number:
             type:
               - number
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           airdate:
             type:
               - string
-              - 'null'
+              - "null"
           airtime:
             type:
               - string
-              - 'null'
+              - "null"
           airstamp:
             type:
               - string
-              - 'null'
+              - "null"
           runtime:
             type:
               - number
-              - 'null'
+              - "null"
           rating:
             type: object
             properties:
@@ -583,56 +583,56 @@ definitions:
           summary:
             type:
               - string
-              - 'null'
+              - "null"
           show:
             type: object
             properties:
               id:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               language:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               genres:
                 type: array
                 items:
                   type:
                     - string
-                    - 'null'
+                    - "null"
               status:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               runtime:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               averageRuntime:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               premiered:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ended:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               officialSite: {}
               schedule:
                 type: object
@@ -640,13 +640,13 @@ definitions:
                   time:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   days:
                     type: array
                     items:
                       type:
                         - string
-                        - 'null'
+                        - "null"
               rating:
                 type: object
                 properties:
@@ -654,33 +654,33 @@ definitions:
               weight:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               network:
                 type: object
                 properties:
                   id:
                     type:
                       - number
-                      - 'null'
+                      - "null"
                   name:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   country:
                     type: object
                     properties:
                       name:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       code:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       timezone:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                   officialSite: {}
               webChannel: {}
               dvdCountry: {}
@@ -691,30 +691,30 @@ definitions:
                   thetvdb:
                     type:
                       - number
-                      - 'null'
+                      - "null"
                   imdb:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               image:
                 type: object
                 properties:
                   medium:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   original:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               summary:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               updated:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               _links:
                 type: object
                 properties:
@@ -724,14 +724,14 @@ definitions:
                       href:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                   previousepisode:
                     type: object
                     properties:
                       href:
                         type:
                           - string
-                          - 'null'
+                          - "null"
           _links:
             type: object
             properties:
@@ -741,7 +741,7 @@ definitions:
                   href:
                     type:
                       - string
-                      - 'null'
+                      - "null"
 streams:
   - "#/definitions/domestic_stream"
   - "#/definitions/web_stream"

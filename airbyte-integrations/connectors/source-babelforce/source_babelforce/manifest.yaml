@@ -82,7 +82,7 @@ streams:
             maxLength: 32
             type:
               - string
-              - 'null'
+              - "null"
           sessionId:
             maxLength: 32
             type: string
@@ -96,12 +96,12 @@ streams:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           dateFinished:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           lastUpdated:
             type: string
             format: date-time
@@ -114,11 +114,11 @@ streams:
           from:
             type:
               - string
-              - 'null'
+              - "null"
           to:
             type:
               - string
-              - 'null'
+              - "null"
           type:
             maxLength: 256
             type: string
@@ -131,15 +131,15 @@ streams:
           duration:
             type:
               - integer
-              - 'null'
+              - "null"
           anonymous:
             type:
               - boolean
-              - 'null'
+              - "null"
           recordings:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: object
               properties:
@@ -163,7 +163,7 @@ streams:
                 file:
                   type:
                     - object
-                    - 'null'
+                    - "null"
                   properties:
                     id:
                       maxLength: 32
@@ -171,19 +171,19 @@ streams:
                     state:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     name:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     size:
                       type:
                         - integer
-                        - 'null'
+                        - "null"
                     contentType:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                 state:
                   maxLength: 256
                   type: string
@@ -193,32 +193,32 @@ streams:
                     id:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     name:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     number:
                       type:
                         - string
-                        - 'null'
+                        - "null"
           bridged:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               id:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               number:
                 type:
                   - string
-                  - 'null'
+                  - "null"
 spec:
   documentation_url: https://example.org
   type: Spec

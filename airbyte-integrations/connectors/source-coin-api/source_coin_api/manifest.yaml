@@ -41,47 +41,47 @@ definitions:
         properties:
           time_period_start:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           time_period_end:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           time_open:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           time_close:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           price_open:
             type:
-              - 'null'
+              - "null"
               - number
           price_high:
             type:
-              - 'null'
+              - "null"
               - number
           price_low:
             type:
-              - 'null'
+              - "null"
               - number
           price_close:
             type:
-              - 'null'
+              - "null"
               - number
           volume_traded:
             type:
-              - 'null'
+              - "null"
               - number
           trades_count:
             type:
-              - 'null'
+              - "null"
               - integer
   trades_historical_data_stream:
     $ref: "#/definitions/base_stream"
@@ -97,38 +97,38 @@ definitions:
         properties:
           symbol_id:
             type:
-              - 'null'
+              - "null"
               - string
           time_period_end:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           time_exchange:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           time_coinapi:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           uuid:
             type:
-              - 'null'
+              - "null"
               - string
           price:
             type:
-              - 'null'
+              - "null"
               - number
           size:
             type:
-              - 'null'
+              - "null"
               - number
           taker_side:
             type:
-              - 'null'
+              - "null"
               - string
   quotes_historical_data_stream:
     $ref: "#/definitions/base_stream"
@@ -144,33 +144,33 @@ definitions:
         properties:
           symbol_id:
             type:
-              - 'null'
+              - "null"
               - string
           time_exchange:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           time_coinapi:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           ask_price:
             type:
-              - 'null'
+              - "null"
               - number
           ask_size:
             type:
-              - 'null'
+              - "null"
               - number
           big_price:
             type:
-              - 'null'
+              - "null"
               - number
           big_size:
             type:
-              - 'null'
+              - "null"
               - number
 streams:
   - "#/definitions/ohlcv_historical_data_stream"

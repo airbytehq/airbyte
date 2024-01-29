@@ -63,7 +63,7 @@ definitions:
               - Worker Email
               - Worker ID
             properties:
-              '[c]Worker Custom Fields':
+              "[c]Worker Custom Fields":
                 type: string
                 description: "Custom fields found on the worker.\nIf there are many custom fields, there will be many\ncolumns.Column header format will be: \n\"[c]modulename_custom field name\" (i.e. [c] followed by\nmodule custom text lowercase with no spaces, followed by\nunderscore, followed by the custom field name text as\ndefined by users in the SAP Fieldglass application.)"
                 maxLength: 4000
@@ -71,14 +71,14 @@ definitions:
                 type: string
                 description: 14-character alphanumeric SAP Fieldglass Job Seeker ID.
                 maxLength: 14
-              '[c]Buyer or Supplier custom fields':
+              "[c]Buyer or Supplier custom fields":
                 type: string
                 description: "Custom fields found on the supplier. (For supplier side\ndownload, only those fields required by buyer for supplier\nto be entered and viewed are downloaded.)If there are many\ncustom fields, there will be many columns.Column header\nformat will be: \n?[c]modulename_custom field name? (i.e. [c] followed by\nmodule custom text lowercase with no spaces, followed by\nunderscore, followed by the custom field name text as\ndefined by users in the SAP Fieldglass application.)"
                 maxLength: 4000
               Billable Per Diem:
                 type: integer
                 format: float
-                description: ''
+                description: ""
               First Name:
                 type: string
                 description: First name of the Worker as defined in SAP Fieldglass.
@@ -119,7 +119,7 @@ definitions:
                 type: string
                 description: ISO currency designation (ex. USD).
                 maxLength: 100
-              '[c]Work Order Custom Fields':
+              "[c]Work Order Custom Fields":
                 type: string
                 description: "Custom fields found on the work order/work order revision. \nIf there are many custom fields, there will be many columns.\nColumn header format will be:\n?[c]modulename_custom field name? (i.e. [c] followed by\nmodule custom text lowercase with no spaces, followed by\nunderscore, followed by the custom field name text as\ndefined by users in the SAP Fieldglass application.)"
                 maxLength: 4000
@@ -166,7 +166,7 @@ definitions:
                 type: string
                 description: Cost Center Code in SAP Fieldglass.
                 maxLength: 200
-              '[c]Worker User Person Custom Fields':
+              "[c]Worker User Person Custom Fields":
                 type: string
                 description: "Custom fields found on the worker user person\nIf there are many custom fields, there will be many columns.\nColumn header format will be: \n?[c]modulename_custom field name? (i.e. [c] followed by\nmodule custom text lowercase with no spaces, followed by\nunderscore, followed by the custom field name text as\ndefined by users in the SAP Fieldglass application.)"
                 maxLength: 4000

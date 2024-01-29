@@ -129,11 +129,11 @@ definitions:
           CreatedAt:
             type: string
           UpdatedAt:
-            type: 'null'
+            type: "null"
           ArchivedAt:
-            type: 'null'
+            type: "null"
           ExpectedPurgeDate:
-            type: 'null'
+            type: "null"
           SubscriptionManagementConfiguration:
             type: object
             properties:
@@ -282,7 +282,7 @@ definitions:
                 Email:
                   type: string
                 Name:
-                  type: 'null'
+                  type: "null"
           Cc:
             type: array
             items: {}

@@ -53,483 +53,483 @@ streams:
         properties:
           invoice_id:
             type:
-              - 'null'
+              - "null"
               - string
           suggestion_id:
             type:
-              - 'null'
+              - "null"
               - integer
           locked:
             type:
-              - 'null'
+              - "null"
               - boolean
           creator_id:
             type:
-              - 'null'
+              - "null"
               - integer
           state:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
           timestamps:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           created_id:
             type:
-              - 'null'
+              - "null"
               - integer
           hour_rate_in_cents:
             type:
-              - 'null'
+              - "null"
               - number
           deleted:
             type:
-              - 'null'
+              - "null"
               - boolean
           to:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
             airbyte_type: timestamp_with_timezone
           estimated_cost:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               amount:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               formatted:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               fractional:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           billable:
             type:
-              - 'null'
+              - "null"
               - boolean
           updater_id:
             type:
-              - 'null'
+              - "null"
               - integer
           label_ids:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           forecast_id:
             type:
-              - 'null'
+              - "null"
               - string
           user_ids:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           timer_stopped_on:
             type:
-              - 'null'
+              - "null"
               - integer
           day:
             type:
-              - 'null'
+              - "null"
               - string
             format: date
           external_id:
             type:
-              - 'null'
+              - "null"
               - integer
           cost:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               amount:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               formatted:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               fractional:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           billed_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
             airbyte_type: timestamp_with_timezone
           sequence:
             type:
-              - 'null'
+              - "null"
               - integer
           created_at:
             type:
-              - 'null'
+              - "null"
               - integer
           project:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               required_label_ids:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
               labels:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
               invoice_by_budget:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               budget_percent:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               budget:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               hour_rate:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               budget_scope:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               budget_calculation:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               has_recurrence:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               label_ids:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
               enable_labels:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               required_labels:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               required_notes:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               client:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 additionalProperties: true
                 properties:
                   external_id:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   active:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   name:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   updated_at:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                     format: date-time
                     airbyte_type: timestamp_with_timezone
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
               account_id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               updated_at:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               budget_progress:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               budget_expired_on:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               external_id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               hour_rate_in_cents:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               active:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               rate_type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               color:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               budget_type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               billable:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           user:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               updated_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
                 format: date-time
                 airbyte_type: timestamp_with_timezone
               avatar:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 additionalProperties: true
                 properties:
                   medium:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   medium_retina:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   timeline:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   large:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   large_retina:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           estimated:
             type:
-              - 'null'
+              - "null"
               - boolean
           note:
             type:
-              - 'null'
+              - "null"
               - string
           estimated_duration:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               total_minutes:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               total_seconds:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               formatted:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               total_hours:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               seconds:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               minutes:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               hours:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           draft:
             type:
-              - 'null'
+              - "null"
               - boolean
           from:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
             airbyte_type: timestamp_with_timezone
           uid:
             type:
-              - 'null'
+              - "null"
               - string
           timer_state:
             type:
-              - 'null'
+              - "null"
               - string
           manage:
             type:
-              - 'null'
+              - "null"
               - boolean
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           duration:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               total_minutes:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               total_seconds:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               formatted:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               total_hours:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               correctedHours:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               seconds:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               minutes:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               hours:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           billed:
             type:
-              - 'null'
+              - "null"
               - boolean
           locked_reason:
             type:
-              - 'null'
+              - "null"
               - string
           entry_ids:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           hour_rate:
             type:
-              - 'null'
+              - "null"
               - number
           updated_from:
             type:
-              - 'null'
+              - "null"
               - string
           created_from:
             type:
-              - 'null'
+              - "null"
               - string
           timer_started_on:
             type:
-              - 'null'
+              - "null"
               - integer
           updated_at:
             type:
-              - 'null'
+              - "null"
               - integer
 spec:
   type: Spec

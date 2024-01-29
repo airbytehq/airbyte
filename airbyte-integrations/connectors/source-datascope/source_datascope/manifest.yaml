@@ -72,47 +72,47 @@ definitions:
           description:
             type:
               - string
-              - 'null'
+              - "null"
           code:
             type:
               - string
-              - 'null'
+              - "null"
           address:
             type:
               - string
-              - 'null'
+              - "null"
           city:
             type:
               - string
-              - 'null'
+              - "null"
           country:
             type:
               - string
-              - 'null'
+              - "null"
           latitude:
             type:
               - number
-              - 'null'
+              - "null"
           longitude:
             type:
               - number
-              - 'null'
+              - "null"
           region:
             type:
               - string
-              - 'null'
+              - "null"
           phone:
             type:
               - string
-              - 'null'
+              - "null"
           company_code:
             type:
               - string
-              - 'null'
+              - "null"
           company_name:
             type:
               - string
-              - 'null'
+              - "null"
   answers_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -132,7 +132,7 @@ definitions:
           form_state:
             type:
               - string
-              - 'null'
+              - "null"
           user_name:
             type: string
           user_identifier:
@@ -148,16 +148,16 @@ definitions:
           latitude:
             type:
               - number
-              - 'null'
+              - "null"
           longitude:
             type:
               - number
-              - 'null'
-          '[question_name1]':
+              - "null"
+          "[question_name1]":
             type: string
-          '[question_name2]':
+          "[question_name2]":
             type: string
-          '[question_name3]':
+          "[question_name3]":
             type: string
   lists_stream:
     $ref: "#/definitions/base_stream"

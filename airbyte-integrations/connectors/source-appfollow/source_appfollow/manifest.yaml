@@ -49,27 +49,27 @@ definitions:
         properties:
           name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           updated:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - string
           role:
             type:
-              - 'null'
+              - "null"
               - string
   app_collections_stream:
     $ref: "#/definitions/base_stream"
@@ -91,39 +91,39 @@ definitions:
         properties:
           title_normalized:
             type:
-              - 'null'
+              - "null"
               - string
           created:
             type:
-              - 'null'
+              - "null"
               - string
           count_apps:
             type:
-              - 'null'
+              - "null"
               - integer
           languages:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           countries:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
   apps_partition_router:
@@ -168,48 +168,48 @@ definitions:
         properties:
           app:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
           has_reply_integration:
             type:
-              - 'null'
+              - "null"
               - integer
           created:
             type:
-              - 'null'
+              - "null"
               - string
           is_favorite:
             type:
-              - 'null'
+              - "null"
               - integer
           count_whatsnew:
             type:
-              - 'null'
+              - "null"
               - integer
           store:
             type:
-              - 'null'
+              - "null"
               - string
           watch_url:
             type:
-              - 'null'
+              - "null"
               - string
           ext_id:
             type:
-              - 'null'
+              - "null"
               - string
           app_id:
             type:
-              - 'null'
+              - "null"
               - integer
           count_reviews:
             type:
-              - 'null'
+              - "null"
               - integer
           app_collection_id:
             type:
-              - 'null'
+              - "null"
               - integer
   ext_id_partition_router:
     type: SubstreamPartitionRouter
@@ -241,45 +241,45 @@ definitions:
         properties:
           store:
             type:
-              - 'null'
+              - "null"
               - string
           reviews_stat:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               store:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               title:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               reviews:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               from:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               to:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               app_id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               replies:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           ext_id:
             type:
-              - 'null'
+              - "null"
               - string
   ratings_stream:
     $ref: "#/definitions/base_stream"
@@ -309,7 +309,7 @@ definitions:
           ratings:
             list:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 properties:
@@ -334,15 +334,15 @@ definitions:
                   rating:
                     type: number
                 type:
-                  - 'null'
+                  - "null"
                   - object
             ext_id:
               type:
-                - 'null'
+                - "null"
                 - string
             store:
               type:
-                - 'null'
+                - "null"
                 - string
 streams:
   - "#/definitions/users_stream"

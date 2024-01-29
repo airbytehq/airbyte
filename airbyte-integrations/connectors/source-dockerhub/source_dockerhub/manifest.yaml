@@ -64,91 +64,91 @@ streams:
         properties:
           user:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           namespace:
             type:
-              - 'null'
+              - "null"
               - string
           repository_type:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - integer
           description:
             type:
-              - 'null'
+              - "null"
               - string
           is_private:
             type:
-              - 'null'
+              - "null"
               - boolean
           is_automated:
             type:
-              - 'null'
+              - "null"
               - boolean
           can_edit:
             type:
-              - 'null'
+              - "null"
               - boolean
           star_count:
             type:
-              - 'null'
+              - "null"
               - integer
           pull_count:
             type:
-              - 'null'
+              - "null"
               - integer
           date_registered:
             type:
-              - 'null'
+              - "null"
               - string
           status_description:
             type:
-              - 'null'
+              - "null"
               - string
           content_types:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           media_types:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           last_updated:
             type:
-              - 'null'
+              - "null"
               - string
           is_migrated:
             type:
-              - 'null'
+              - "null"
               - boolean
           collaborator_count:
             type:
-              - 'null'
+              - "null"
               - integer
           affiliation:
             type:
-              - 'null'
+              - "null"
               - string
           hub_user:
             type:
-              - 'null'
+              - "null"
               - string
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/dockerhub

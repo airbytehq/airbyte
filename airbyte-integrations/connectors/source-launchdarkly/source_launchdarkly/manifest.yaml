@@ -47,27 +47,27 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           key:
             type:
-              - 'null'
+              - "null"
               - string
           includeInSnippetByDefault:
             type:
-              - 'null'
+              - "null"
               - boolean
           defaultClientSideAvailability:
             type:
-              - 'null'
+              - "null"
               - object
           name:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
   project_partition_router:
     type: SubstreamPartitionRouter
@@ -97,59 +97,59 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           _pubnub:
             type:
-              - 'null'
+              - "null"
               - object
           key:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           apiKey:
             type:
-              - 'null'
+              - "null"
               - string
           mobileKey:
             type:
-              - 'null'
+              - "null"
               - string
           color:
             type:
-              - 'null'
+              - "null"
               - string
           defaultTtl:
             type:
-              - 'null'
+              - "null"
               - integer
           secureMode:
             type:
-              - 'null'
+              - "null"
               - boolean
           defaultTrackEvents:
             type:
-              - 'null'
+              - "null"
               - boolean
           requireComments:
             type:
-              - 'null'
+              - "null"
               - boolean
           confirmChanges:
             type:
-              - 'null'
+              - "null"
               - boolean
           tags:
             type:
-              - 'null'
+              - "null"
               - array
           approvalSettings:
             type:
-              - 'null'
+              - "null"
               - object
   metrics_stream:
     $ref: "#/definitions/base_stream"
@@ -173,79 +173,79 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           key:
             type:
-              - 'null'
+              - "null"
               - string
           experimentCount:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           kind:
             type:
-              - 'null'
+              - "null"
               - string
           _attachedFlagCount:
             type:
-              - 'null'
+              - "null"
               - integer
           _links:
             type:
-              - 'null'
+              - "null"
               - object
           _site:
             type:
-              - 'null'
+              - "null"
               - object
           _access:
             type:
-              - 'null'
+              - "null"
               - object
           tags:
             type:
-              - 'null'
+              - "null"
               - array
           _creationDate:
             type:
-              - 'null'
+              - "null"
               - integer
           lastModified:
             type:
-              - 'null'
+              - "null"
               - object
           maintainerId:
             type:
-              - 'null'
+              - "null"
               - string
           _maintainer:
             type:
-              - 'null'
+              - "null"
               - object
           description:
             type:
-              - 'null'
+              - "null"
               - string
           isNumeric:
             type:
-              - 'null'
+              - "null"
               - boolean
           successCriteria:
             type:
-              - 'null'
+              - "null"
               - string
           unit:
             type:
-              - 'null'
+              - "null"
               - string
           eventKey:
             type:
-              - 'null'
+              - "null"
               - string
   members_stream:
     $ref: "#/definitions/base_stream"
@@ -261,63 +261,63 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           firstName:
             type:
-              - 'null'
+              - "null"
               - string
           lastName:
             type:
-              - 'null'
+              - "null"
               - string
           role:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           _pendingInvite:
             type:
-              - 'null'
+              - "null"
               - boolean
           _verified:
             type:
-              - 'null'
+              - "null"
               - boolean
           isBeta:
             type:
-              - 'null'
+              - "null"
               - boolean
           customRoles:
             type:
-              - 'null'
+              - "null"
               - array
           mfa:
             type:
-              - 'null'
+              - "null"
               - string
           excludedDashboards:
             type:
-              - 'null'
+              - "null"
               - array
           _lastSeen:
             type:
-              - 'null'
+              - "null"
               - integer
           _lastSeenMetadata:
             type:
-              - 'null'
+              - "null"
               - object
           creationDate:
             type:
-              - 'null'
+              - "null"
               - integer
           oauthProviders:
             type:
-              - 'null'
+              - "null"
               - array
   audit_log_stream:
     $ref: "#/definitions/base_stream"
@@ -333,51 +333,51 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           _accountId:
             type:
-              - 'null'
+              - "null"
               - string
           date:
             type:
-              - 'null'
+              - "null"
               - integer
           accesses:
             type:
-              - 'null'
+              - "null"
               - array
           kind:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           shortDescription:
             type:
-              - 'null'
+              - "null"
               - string
           comment:
             type:
-              - 'null'
+              - "null"
               - string
           member:
             type:
-              - 'null'
+              - "null"
               - object
           titleVerb:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
   flags_stream:
     $ref: "#/definitions/base_stream"
@@ -402,75 +402,75 @@ definitions:
         properties:
           _maintainer:
             type:
-              - 'null'
+              - "null"
               - object
           _version:
             type:
-              - 'null'
+              - "null"
               - integer
           archived:
             type:
-              - 'null'
+              - "null"
               - boolean
           clientSideAvailability:
             type:
-              - 'null'
+              - "null"
               - object
           creationDate:
             type:
-              - 'null'
+              - "null"
               - integer
           customProperties:
             type:
-              - 'null'
+              - "null"
               - object
           description:
             type:
-              - 'null'
+              - "null"
               - string
           environments:
             type:
-              - 'null'
+              - "null"
               - object
           experiments:
             type:
-              - 'null'
+              - "null"
               - object
           goalIds:
             type:
-              - 'null'
+              - "null"
               - array
           includeInSnippet:
             type:
-              - 'null'
+              - "null"
               - boolean
           key:
             type:
-              - 'null'
+              - "null"
               - string
           maintainerId:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
           temporary:
             type:
-              - 'null'
+              - "null"
               - boolean
           variationJsonSchema:
             type:
-              - 'null'
+              - "null"
               - object
           variations:
             type:
-              - 'null'
+              - "null"
               - array
 streams:
   - "#/definitions/projects_stream"

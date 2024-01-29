@@ -71,93 +71,93 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           fullName:
             type:
-              - 'null'
+              - "null"
               - string
           username:
             type:
-              - 'null'
+              - "null"
               - string
           blocked:
             type:
-              - 'null'
+              - "null"
               - boolean
           verified:
             type:
-              - 'null'
+              - "null"
               - boolean
           role:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           timeZone:
             type:
-              - 'null'
+              - "null"
               - string
           locale:
             type:
-              - 'null'
+              - "null"
               - string
           userAddress:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               line:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               zipCode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           invitationDisabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           details:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
             additionalProperties: true
           skypeUsername:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
   teams_stream:
@@ -175,28 +175,28 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               web:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               api:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   services_stream:
     $ref: "#/definitions/base_stream"
@@ -213,42 +213,42 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           teamId:
             type:
-              - 'null'
+              - "null"
               - string
           isExternal:
             type:
-              - 'null'
+              - "null"
               - boolean
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               web:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               api:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   integrations_stream:
     $ref: "#/definitions/base_stream"
@@ -266,31 +266,31 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           type:
             type:
-              - 'null'
+              - "null"
               - string
           teamId:
             type:
-              - 'null'
+              - "null"
               - string
           version:
             type:
-              - 'null'
+              - "null"
               - string
           advanced:
             type:
-              - 'null'
+              - "null"
               - boolean
   incidents_stream:
     $ref: "#/definitions/base_stream"
@@ -307,90 +307,90 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           tinyId:
             type:
-              - 'null'
+              - "null"
               - string
           message:
             type:
-              - 'null'
+              - "null"
               - string
           note:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           priority:
             type:
-              - 'null'
+              - "null"
               - string
           responders:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           impactedServices:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           statusPageEntry:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               title:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               detail:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           details:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
             additionalProperties: true
           notifyStakeholders:
             type:
-              - 'null'
+              - "null"
               - boolean
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
   alerts_stream:
@@ -423,195 +423,195 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           tinyId:
             type:
-              - 'null'
+              - "null"
               - string
           alias:
             type:
-              - 'null'
+              - "null"
               - string
           message:
             type:
-              - 'null'
+              - "null"
               - string
           note:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           acknowledged:
             type:
-              - 'null'
+              - "null"
               - boolean
           seen:
             type:
-              - 'null'
+              - "null"
               - boolean
           isSeen:
             type:
-              - 'null'
+              - "null"
               - boolean
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           snoozed:
             type:
-              - 'null'
+              - "null"
               - boolean
           snoozedUntil:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           count:
             type:
-              - 'null'
+              - "null"
               - number
           lastOccurredAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           source:
             type:
-              - 'null'
+              - "null"
               - string
           owner:
             type:
-              - 'null'
+              - "null"
               - string
           user:
             type:
-              - 'null'
+              - "null"
               - string
           priority:
             type:
-              - 'null'
+              - "null"
               - string
           responders:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           visibleTo:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           teams:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           integration:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           report:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               ackTime:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               closeTime:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               acknowledgedBy:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               closedBy:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           actions:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           entity:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           details:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
             additionalProperties: true
           ownerTeamId:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
   user_teams_stream:
@@ -647,15 +647,15 @@ definitions:
         properties:
           user_id:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
   alert_recipients_stream:
     $ref: "#/definitions/base_stream"
@@ -704,36 +704,36 @@ definitions:
         properties:
           alert_id:
             type:
-              - 'null'
+              - "null"
               - string
           user_id:
             type:
-              - 'null'
+              - "null"
               - string
           user_username:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           method:
             type:
-              - 'null'
+              - "null"
               - string
           aware:
             type:
-              - 'null'
+              - "null"
               - boolean
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
   alert_logs_stream:
@@ -771,27 +771,27 @@ definitions:
         properties:
           alert_id:
             type:
-              - 'null'
+              - "null"
               - string
           offset:
             type:
-              - 'null'
+              - "null"
               - string
           log:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           owner:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
 check:

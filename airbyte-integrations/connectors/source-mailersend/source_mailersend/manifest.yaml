@@ -95,18 +95,18 @@ definitions:
                   - string
               text:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               html:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               status:
                 type:
                   - string
               tags:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:

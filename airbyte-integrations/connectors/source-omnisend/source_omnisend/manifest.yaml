@@ -38,7 +38,7 @@ definitions:
       name: "contacts"
       primary_key: "contactID"
       path: "/contacts"
-  # API Docs: https://api-docs.omnisend.com/reference/get_campaigns
+    # API Docs: https://api-docs.omnisend.com/reference/get_campaigns
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -64,82 +64,82 @@ definitions:
                         status:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         statusDate:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                     email:
                       type: object
                       properties:
                         status:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         statusDate:
                           type:
                             - string
-                            - 'null'
+                            - "null"
           createdAt:
             type:
               - string
-              - 'null'
+              - "null"
           firstName:
             type:
               - string
-              - 'null'
+              - "null"
           lastName:
             type:
               - string
-              - 'null'
+              - "null"
           tags:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: string
           country:
             type:
               - string
-              - 'null'
+              - "null"
           countryCode:
             type:
               - string
-              - 'null'
+              - "null"
           state:
             type:
               - string
-              - 'null'
+              - "null"
           city:
             type:
               - string
-              - 'null'
+              - "null"
           address:
             type:
               - string
-              - 'null'
+              - "null"
           postalCode:
             type:
               - string
-              - 'null'
+              - "null"
           gender:
             type: string
           birthdate:
             type:
               - string
-              - 'null'
+              - "null"
           clicked:
             type:
               - integer
-              - 'null'
+              - "null"
           email:
             type:
               - string
-              - 'null'
+              - "null"
           optIns:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: object
               properties:
@@ -148,17 +148,17 @@ definitions:
           segments:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: string
           status:
             type:
               - string
-              - 'null'
+              - "null"
           opened:
             type:
               - integer
-              - 'null'
+              - "null"
           phone:
             type: array
             items:
@@ -166,26 +166,26 @@ definitions:
           phoneNumber:
             type:
               - string
-              - 'null'
+              - "null"
           statuses:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: object
               properties:
                 status:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 date:
                   type:
                     - string
-                    - 'null'
+                    - "null"
           sent:
             type:
               - integer
-              - 'null'
+              - "null"
         required:
           - contactID
   campaigns_stream:
@@ -209,82 +209,82 @@ definitions:
           name:
             type:
               - string
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           fromName:
             type:
               - string
-              - 'null'
+              - "null"
           subject:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           createdAt:
             type:
               - string
-              - 'null'
+              - "null"
           updatedAt:
             type:
               - string
-              - 'null'
+              - "null"
           startDate:
             type:
               - string
-              - 'null'
+              - "null"
           endDate:
             type:
               - string
-              - 'null'
+              - "null"
           sent:
             type:
               - integer
-              - 'null'
+              - "null"
           opened:
             type:
               - integer
-              - 'null'
+              - "null"
           clicked:
             type:
               - integer
-              - 'null'
+              - "null"
           bounced:
             type:
               - integer
-              - 'null'
+              - "null"
           complained:
             type:
               - integer
-              - 'null'
+              - "null"
           unsubscribed:
             type:
               - integer
-              - 'null'
+              - "null"
           allSubscribers:
             type:
               - boolean
-              - 'null'
+              - "null"
           segments:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: object
               properties:
                 segmentID:
                   type:
                     - string
-                    - 'null'
+                    - "null"
         required:
           - campaignID
   # API Docs: https://api-docs.omnisend.com/reference/get_carts
@@ -294,7 +294,7 @@ definitions:
       name: "carts"
       primary_key: "cartID"
       path: "/carts"
-  # API Docs: https://api-docs.omnisend.com/reference/get_orders
+    # API Docs: https://api-docs.omnisend.com/reference/get_orders
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -303,37 +303,37 @@ definitions:
           contactID:
             type:
               - string
-              - 'null'
+              - "null"
           cartID:
             type: string
           email:
             type:
               - string
-              - 'null'
+              - "null"
           phone:
             type:
               - string
-              - 'null'
+              - "null"
           createdAt:
             type:
               - string
-              - 'null'
+              - "null"
           updatedAt:
             type:
               - string
-              - 'null'
+              - "null"
           currency:
             type:
               - string
-              - 'null'
+              - "null"
           cartSum:
             type:
               - integer
-              - 'null'
+              - "null"
           cartRecoveryUrl:
             type:
               - string
-              - 'null'
+              - "null"
           products:
             type: array
             items:
@@ -342,47 +342,47 @@ definitions:
                 cartProductID:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 productID:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 variantID:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 title:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 description:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 quantity:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 price:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 oldPrice:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 discount:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 imageUrl:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 productUrl:
                   type:
                     - string
-                    - 'null'
+                    - "null"
         required:
           - cartID
   orders_stream:
@@ -391,7 +391,7 @@ definitions:
       name: "orders"
       primary_key: "orderID"
       path: "/orders"
-  # API Docs: https://api-docs.omnisend.com/reference/get_products
+    # API Docs: https://api-docs.omnisend.com/reference/get_products
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -402,205 +402,205 @@ definitions:
           orderNumber:
             type:
               - integer
-              - 'null'
+              - "null"
           email:
             type:
               - string
-              - 'null'
+              - "null"
           contactID:
             type:
               - string
-              - 'null'
+              - "null"
           firstName:
             type:
               - string
-              - 'null'
+              - "null"
           lastName:
             type:
               - string
-              - 'null'
+              - "null"
           cartID:
             type:
               - string
-              - 'null'
+              - "null"
           shippingMethod:
             type:
               - string
-              - 'null'
+              - "null"
           trackingCode:
             type:
               - string
-              - 'null'
+              - "null"
           courierTitle:
             type:
               - string
-              - 'null'
+              - "null"
           courierUrl:
             type:
               - string
-              - 'null'
+              - "null"
           orderUrl:
             type:
               - string
-              - 'null'
+              - "null"
           source:
             type:
               - string
-              - 'null'
+              - "null"
           tags:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           discountCode:
             type:
               - string
-              - 'null'
+              - "null"
           discountValue:
             type:
               - integer
-              - 'null'
+              - "null"
           discountType:
             type:
               - string
-              - 'null'
+              - "null"
           currency:
             type:
               - string
-              - 'null'
+              - "null"
           subTotalSum:
             type:
               - integer
-              - 'null'
+              - "null"
           orderSum:
             type:
               - integer
-              - 'null'
+              - "null"
           discountSum:
             type:
               - integer
-              - 'null'
+              - "null"
           taxSum:
             type:
               - integer
-              - 'null'
+              - "null"
           shippingSum:
             type:
               - integer
-              - 'null'
+              - "null"
           createdAt:
             type:
               - string
-              - 'null'
+              - "null"
           updatedAt:
             type:
               - string
-              - 'null'
+              - "null"
           contactNote:
             type:
               - string
-              - 'null'
+              - "null"
           paymentMethod:
             type:
               - string
-              - 'null'
+              - "null"
           paymentStatus:
             type:
               - string
-              - 'null'
+              - "null"
           fulfillmentStatus:
             type:
               - string
-              - 'null'
+              - "null"
           billingAddress:
             type: object
             properties:
               firstName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               lastName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               company:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               phone:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               country:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               countryCode:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               state:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               city:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               address:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               postalCode:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           shippingAddress:
             type: object
             properties:
               firstName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               lastName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               company:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               phone:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               country:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               countryCode:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               state:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               city:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               address:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               postalCode:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           products:
             type: array
             items:
@@ -609,68 +609,68 @@ definitions:
                 cartProductID:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 productID:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 variantID:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 variantTitle:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 title:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 quantity:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 weight:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 price:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 discount:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 imageUrl:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 productUrl:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 categoryIDs:
                   type: array
                   items:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                 tags:
                   type: array
                   items:
                     type:
                       - string
-                      - 'null'
+                      - "null"
           customFields:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               phone:
                 type:
                   - string
-                  - 'null'
+                  - "null"
         required:
           - orderID
   products_stream:
@@ -690,80 +690,80 @@ definitions:
           title:
             type:
               - string
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           description:
             type:
               - string
-              - 'null'
+              - "null"
           currency:
             type:
               - string
-              - 'null'
+              - "null"
           productUrl:
             type:
               - string
-              - 'null'
+              - "null"
           vendor:
             type:
               - string
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           createdAt:
             type:
               - string
-              - 'null'
+              - "null"
           updatedAt:
             type:
               - string
-              - 'null'
+              - "null"
           tags:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           categoryIDs:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           images:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: object
               properties:
                 imageID:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 isDefault:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
                 variants:
                   type: array
                   items:
                     type:
                       - string
-                      - 'null'
+                      - "null"
           variants:
             type: array
             items:
@@ -772,44 +772,44 @@ definitions:
                 variantID:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 title:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 sku:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 status:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 price:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 oldPrice:
                   type:
                     - integer
-                    - 'null'
+                    - "null"
                 productUrl:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 imageID:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 customFields:
                   type:
                     - object
-                    - 'null'
+                    - "null"
                   properties:
                     protectionClass:
                       type:
                         - string
-                        - 'null'
+                        - "null"
         required:
           - productID
 streams:

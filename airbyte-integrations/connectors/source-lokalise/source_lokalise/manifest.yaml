@@ -62,73 +62,73 @@ definitions:
         properties:
           key_id:
             type:
-              - 'null'
+              - "null"
               - number
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           created_at_timestamp:
             type:
-              - 'null'
+              - "null"
               - number
           key_name:
             type: object
             properties:
               ios:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               android:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               web:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               other:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           filenames:
             type: object
             properties:
               ios:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               android:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               web:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               other:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           platforms:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           comments:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
@@ -147,7 +147,7 @@ definitions:
                   type: number
           screenshots:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
@@ -156,7 +156,7 @@ definitions:
                   type: number
                 key_ids:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type: number
@@ -168,29 +168,29 @@ definitions:
                   type: string
                 screenshot_tags:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type: string
                 width:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 height:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 created_at:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 created_at_timestamp:
                   type:
-                    - 'null'
+                    - "null"
                     - number
           translations:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
@@ -270,23 +270,23 @@ definitions:
         properties:
           lang_id:
             type:
-              - 'null'
+              - "null"
               - number
           lang_iso:
             type:
-              - 'null'
+              - "null"
               - string
           lang_name:
             type:
-              - 'null'
+              - "null"
               - string
           is_rtl:
             type:
-              - 'null'
+              - "null"
               - boolean
           plural_forms:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
@@ -413,7 +413,7 @@ definitions:
           segment_number:
             type: integer
           task_id:
-            type: 'null'
+            type: "null"
           language_iso:
             type: string
           is_fuzzy:

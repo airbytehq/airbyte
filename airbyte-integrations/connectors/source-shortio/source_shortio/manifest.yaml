@@ -98,129 +98,129 @@ definitions:
         properties:
           lcpath:
             type:
-              - 'null'
+              - "null"
               - string
           passwordContact:
             type:
-              - 'null'
+              - "null"
               - string
           hasPassword:
             type:
-              - 'null'
+              - "null"
               - boolean
           OwnerId:
             type:
-              - 'null'
+              - "null"
               - integer
           id:
             type:
-              - 'null'
+              - "null"
               - string
           path:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           icon:
             type:
-              - 'null'
+              - "null"
               - string
           archived:
             type:
-              - 'null'
+              - "null"
               - boolean
           originalURL:
             type: string
           iphoneURL:
             type:
-              - 'null'
+              - "null"
               - string
           androidURL:
             type:
-              - 'null'
+              - "null"
               - string
           password:
             type:
-              - 'null'
+              - "null"
               - string
           utmSource:
             type:
-              - 'null'
+              - "null"
               - string
           utmMedium:
             type:
-              - 'null'
+              - "null"
               - string
           utmCampaign:
             type:
-              - 'null'
+              - "null"
               - string
           utmCampaignId:
             type:
-              - 'null'
+              - "null"
               - string
           utmTerm:
             type:
-              - 'null'
+              - "null"
               - string
           utmContent:
             type:
-              - 'null'
+              - "null"
               - string
           splitURL:
             type:
-              - 'null'
+              - "null"
               - string
           splitPercent:
             type:
-              - 'null'
+              - "null"
               - string
           expiresAt:
             type:
-              - 'null'
+              - "null"
               - string
           expiredURL:
             type:
-              - 'null'
+              - "null"
               - string
           redirectType:
             type:
-              - 'null'
+              - "null"
               - string
           clicksLimit:
             type:
-              - 'null'
+              - "null"
               - string
           cloaking:
             type:
-              - 'null'
+              - "null"
               - boolean
           source:
             type:
-              - 'null'
+              - "null"
               - string
           integrationGA:
             type:
-              - 'null'
+              - "null"
               - string
           integrationFB:
             type:
-              - 'null'
+              - "null"
               - string
           integrationAdroll:
             type:
-              - 'null'
+              - "null"
               - string
           integrationGTM:
             type:
-              - 'null'
+              - "null"
               - string
           AutodeletedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           createdAt:
@@ -233,32 +233,32 @@ definitions:
             type: integer
           Owner:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type: integer
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               photoURL:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           secureShortURL:
             type:
-              - 'null'
+              - "null"
               - string
           idString:
             type: string
@@ -266,22 +266,22 @@ definitions:
             type: string
           User:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type: integer
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               photoURL:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   clicks_stream:
     $ref: "#/definitions/v2_base_stream"
@@ -300,100 +300,100 @@ definitions:
         properties:
           host:
             type:
-              - 'null'
+              - "null"
               - string
           path:
             type:
-              - 'null'
+              - "null"
               - string
           method:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           dt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           st:
             type:
-              - 'null'
+              - "null"
               - integer
           ip:
             type:
-              - 'null'
+              - "null"
               - string
           proto:
             type:
-              - 'null'
+              - "null"
               - string
           ref:
             type:
-              - 'null'
+              - "null"
               - string
           ua:
             type:
-              - 'null'
+              - "null"
               - string
           human:
             type:
-              - 'null'
+              - "null"
               - boolean
           browser:
             type:
-              - 'null'
+              - "null"
               - string
           browser_version:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           social:
             type:
-              - 'null'
+              - "null"
               - string
           refhost:
             type:
-              - 'null'
+              - "null"
               - string
           os:
             type:
-              - 'null'
+              - "null"
               - string
           utm_source:
             type:
-              - 'null'
+              - "null"
               - string
           utm_medium:
             type:
-              - 'null'
+              - "null"
               - string
           utm_campaign:
             type:
-              - 'null'
+              - "null"
               - string
           goal_completed:
             type:
-              - 'null'
+              - "null"
               - string
           ab_path:
             type:
-              - 'null'
+              - "null"
               - string
           lcpath:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/links_stream"

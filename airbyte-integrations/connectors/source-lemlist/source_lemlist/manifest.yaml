@@ -51,11 +51,11 @@ definitions:
         properties:
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           userIds:
             type: array
@@ -63,12 +63,12 @@ definitions:
               type: string
           createdBy:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
-            format: '%Y-%m-%dT%H:%M:%S.%fZ'
+            format: "%Y-%m-%dT%H:%M:%S.%fZ"
             type:
-              - 'null'
+              - "null"
               - string
           beta:
             type: array
@@ -91,18 +91,18 @@ definitions:
                     quantity:
                       type: integer
                     okUpdatedAt:
-                      format: '%Y-%m-%dT%H:%M:%S.%fZ'
+                      format: "%Y-%m-%dT%H:%M:%S.%fZ"
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     ok:
                       type:
-                        - 'null'
+                        - "null"
                         - boolean
                     freetrialExpiresAt:
-                      format: '%Y-%m-%dT%H:%M:%S.%fZ'
+                      format: "%Y-%m-%dT%H:%M:%S.%fZ"
                       type:
-                        - 'null'
+                        - "null"
                         - string
           revenueVisualization:
             type: object
@@ -117,9 +117,9 @@ definitions:
               conversionRate:
                 type: integer
           _updatedAt:
-            format: '%Y-%m-%dT%H:%M:%S.%fZ'
+            format: "%Y-%m-%dT%H:%M:%S.%fZ"
             type:
-              - 'null'
+              - "null"
               - string
           dataIntegrityChecksCron:
             type: object
@@ -133,42 +133,42 @@ definitions:
                     text:
                       type: string
               lastAt:
-                format: '%Y-%m-%dT%H:%M:%S.%fZ'
+                format: "%Y-%m-%dT%H:%M:%S.%fZ"
                 type:
-                  - 'null'
+                  - "null"
                   - string
           linkedinLastScannedAt:
-            format: '%Y-%m-%dT%H:%M:%S.%fZ'
+            format: "%Y-%m-%dT%H:%M:%S.%fZ"
             type:
-              - 'null'
+              - "null"
               - string
           ctdCheck:
             type: object
             properties:
               lastAt:
-                format: '%Y-%m-%dT%H:%M:%S.%fZ'
+                format: "%Y-%m-%dT%H:%M:%S.%fZ"
                 type:
-                  - 'null'
+                  - "null"
                   - string
           campaignCron:
             type: object
             properties:
               lastAt:
-                format: '%Y-%m-%dT%H:%M:%S.%fZ'
+                format: "%Y-%m-%dT%H:%M:%S.%fZ"
                 type:
-                  - 'null'
+                  - "null"
                   - string
           sequencesSafeCheckCron:
             type: object
             properties:
               lastAt:
-                format: '%Y-%m-%dT%H:%M:%S.%fZ'
+                format: "%Y-%m-%dT%H:%M:%S.%fZ"
                 type:
-                  - 'null'
+                  - "null"
                   - string
           apiKey:
             type:
-              - 'null'
+              - "null"
               - string
   campaigns_stream:
     $ref: "#/definitions/base_stream"
@@ -186,11 +186,11 @@ definitions:
             type: string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           labels:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
@@ -210,120 +210,120 @@ definitions:
             type: string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           teamId:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
           leadId:
             type:
-              - 'null'
+              - "null"
               - string
           leadEmail:
             type:
-              - 'null'
+              - "null"
               - string
           campaignId:
             type:
-              - 'null'
+              - "null"
               - string
           createdBy:
             type:
-              - 'null'
+              - "null"
               - string
           leadFirstName:
             type:
-              - 'null'
+              - "null"
               - string
           leadLastName:
             type:
-              - 'null'
+              - "null"
               - string
           sequenceId:
             type:
-              - 'null'
+              - "null"
               - string
           isFirst:
             type:
-              - 'null'
+              - "null"
               - boolean
           sequenceStep:
             type:
-              - 'null'
+              - "null"
               - integer
           emailTemplateId:
             type:
-              - 'null'
+              - "null"
               - string
           extra:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               userName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               leadPhone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               sendUserId:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               leadPicture:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               leadCompanyName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           firstName:
             type:
-              - 'null'
+              - "null"
               - string
           lastName:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           companyName:
             type:
-              - 'null'
+              - "null"
               - string
           picture:
             type:
-              - 'null'
+              - "null"
               - string
           phone:
             type:
-              - 'null'
+              - "null"
               - string
           linkedinUrl:
             type:
-              - 'null'
+              - "null"
               - string
           icebreaker:
             type:
-              - 'null'
+              - "null"
               - string
           campaignName:
             type:
-              - 'null'
+              - "null"
               - string
           emailTemplateName:
             type:
-              - 'null'
+              - "null"
               - string
   unsubscribes_stream:
     $ref: "#/definitions/base_stream"
@@ -342,7 +342,7 @@ definitions:
             type: string
           email:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/team_stream"

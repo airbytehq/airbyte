@@ -46,31 +46,31 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           reference_num:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           resource:
             type:
-              - 'null'
+              - "null"
               - string
           product_id:
             type:
-              - 'null'
+              - "null"
               - string
   products_stream:
     $ref: "#/definitions/base_stream"
@@ -86,27 +86,27 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           reference_prefix:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           product_line:
             type:
-              - 'null'
+              - "null"
               - boolean
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           workspace_type:
             type:
-              - 'null'
+              - "null"
               - string
   idea_categories_stream:
     $ref: "#/definitions/base_stream"
@@ -131,19 +131,19 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           parent_id:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
   ideas_stream:
     $ref: "#/definitions/base_stream"
@@ -159,77 +159,77 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           reference_num:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           workflow_status:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               position:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               complete:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               color:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           description:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               body:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               attachments:
                 type:
-                  - 'null'
+                  - "null"
                   - array
           url:
             type:
-              - 'null'
+              - "null"
               - string
           resource:
             type:
-              - 'null'
+              - "null"
               - string
   idea_endorsements_stream:
     $ref: "#/definitions/base_stream"
@@ -254,115 +254,115 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           idea_id:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           value:
             type:
-              - 'null'
+              - "null"
               - string
           link:
             type:
-              - 'null'
+              - "null"
               - string
           weight:
             type:
-              - 'null'
+              - "null"
               - integer
           endorsed_by_portal_user:
             type: object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           endorsed_by_idea_user:
             type: object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           endorsed_by_idea_organization:
             type: object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               url:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               resource:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           endorsed_by_user:
             type: object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               updated_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   idea_comments_stream:
     $ref: "#/definitions/base_stream"
@@ -387,131 +387,131 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           idea_id:
             type:
-              - 'null'
+              - "null"
               - string
           body:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           visibility:
             type:
-              - 'null'
+              - "null"
               - string
           parent_idea_comment_id:
             type:
-              - 'null'
+              - "null"
               - string
           idea_commenter_user:
             type: object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name_id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               updated_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           idea:
             type: object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               reference_num:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               updated_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               workflow_status:
                 type: object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   name:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   position:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   complete:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   color:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               description:
                 type: object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   body:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   created_at:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   attachments:
                     type:
-                      - 'null'
+                      - "null"
                       - array
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 resource:
                   type:
-                    - 'null'
+                    - "null"
                     - string
             attachments:
               type:
-                - 'null'
+                - "null"
                 - array
           attachments:
             type:
-              - 'null'
+              - "null"
               - array
   users_stream:
     $ref: "#/definitions/base_stream"
@@ -527,51 +527,51 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           accessed_at:
             type:
-              - 'null'
+              - "null"
               - string
           product_roles:
             type:
-              - 'null'
+              - "null"
               - array
           enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           paid_seat:
             type:
-              - 'null'
+              - "null"
               - boolean
           administrator:
             type:
-              - 'null'
+              - "null"
               - boolean
           administrator_roles:
             type:
-              - 'null'
+              - "null"
               - object
           identity_provider:
             type:
-              - 'null'
+              - "null"
               - object
   goals_stream:
     $ref: "#/definitions/base_stream"
@@ -588,114 +588,114 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           reference_num:
             type:
-              - 'null'
+              - "null"
               - string
           effort:
             type:
-              - 'null'
+              - "null"
               - number
           value:
             type:
-              - 'null'
+              - "null"
               - number
           position:
             type:
-              - 'null'
+              - "null"
               - number
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           product_id:
             type:
-              - 'null'
+              - "null"
               - string
           progress:
             type:
-              - 'null'
+              - "null"
               - number
           progress_source:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           resource:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - object
           success_metric:
             type:
-              - 'null'
+              - "null"
               - object
           project:
             type:
-              - 'null'
+              - "null"
               - object
           timeframe:
             type:
-              - 'null'
+              - "null"
               - object
           initiatives:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
           comments_count:
             type:
-              - 'null'
+              - "null"
               - integer
           features:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
           releases:
             type:
-              - 'null'
+              - "null"
               - array
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - array
           parent:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
           parents:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
 streams:

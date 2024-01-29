@@ -58,26 +58,26 @@ definitions:
               - string
           retryOf:
             type:
-              - 'null'
+              - "null"
               - string
           retrySuccessId:
             type:
-              - 'null'
+              - "null"
               - integer
           startedAt:
             type:
               - string
           stoppedAt:
             type:
-              - 'null'
+              - "null"
               - string
           workflowId:
             type:
-              - 'null'
+              - "null"
               - string
           waitTill:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/executions_stream"

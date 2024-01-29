@@ -105,143 +105,143 @@ definitions:
         type: object
         properties:
           page:
-            $id: '#root/page'
+            $id: "#root/page"
             title: Page
             type: integer
             default: 0
           per_page:
-            $id: '#root/per_page'
+            $id: "#root/per_page"
             title: Per_page
             type: integer
             default: 0
           photos:
-            $id: '#root/photos'
+            $id: "#root/photos"
             title: Photos
             type: array
             default: []
             items:
-              $id: '#root/photos/items'
+              $id: "#root/photos/items"
               title: Items
               type: object
               properties:
                 id:
-                  $id: '#root/photos/items/id'
+                  $id: "#root/photos/items/id"
                   title: Id
                   type: integer
                   default: 0
                 width:
-                  $id: '#root/photos/items/width'
+                  $id: "#root/photos/items/width"
                   title: Width
                   type: integer
                   default: 0
                 height:
-                  $id: '#root/photos/items/height'
+                  $id: "#root/photos/items/height"
                   title: Height
                   type: integer
                   default: 0
                 url:
-                  $id: '#root/photos/items/url'
+                  $id: "#root/photos/items/url"
                   title: Url
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 photographer:
-                  $id: '#root/photos/items/photographer'
+                  $id: "#root/photos/items/photographer"
                   title: Photographer
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 photographer_url:
-                  $id: '#root/photos/items/photographer_url'
+                  $id: "#root/photos/items/photographer_url"
                   title: Photographer_url
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 photographer_id:
-                  $id: '#root/photos/items/photographer_id'
+                  $id: "#root/photos/items/photographer_id"
                   title: Photographer_id
                   type: integer
                   default: 0
                 avg_color:
-                  $id: '#root/photos/items/avg_color'
+                  $id: "#root/photos/items/avg_color"
                   title: Avg_color
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 src:
-                  $id: '#root/photos/items/src'
+                  $id: "#root/photos/items/src"
                   title: Src
                   type: object
                   properties:
                     original:
-                      $id: '#root/photos/items/src/original'
+                      $id: "#root/photos/items/src/original"
                       title: Original
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     large2x:
-                      $id: '#root/photos/items/src/large2x'
+                      $id: "#root/photos/items/src/large2x"
                       title: Large2x
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     large:
-                      $id: '#root/photos/items/src/large'
+                      $id: "#root/photos/items/src/large"
                       title: Large
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     medium:
-                      $id: '#root/photos/items/src/medium'
+                      $id: "#root/photos/items/src/medium"
                       title: Medium
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     small:
-                      $id: '#root/photos/items/src/small'
+                      $id: "#root/photos/items/src/small"
                       title: Small
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     portrait:
-                      $id: '#root/photos/items/src/portrait'
+                      $id: "#root/photos/items/src/portrait"
                       title: Portrait
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     landscape:
-                      $id: '#root/photos/items/src/landscape'
+                      $id: "#root/photos/items/src/landscape"
                       title: Landscape
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     tiny:
-                      $id: '#root/photos/items/src/tiny'
+                      $id: "#root/photos/items/src/tiny"
                       title: Tiny
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                 liked:
-                  $id: '#root/photos/items/liked'
+                  $id: "#root/photos/items/liked"
                   title: Liked
                   type: boolean
                   default: true
                 alt:
-                  $id: '#root/photos/items/alt'
+                  $id: "#root/photos/items/alt"
                   title: Alt
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
           total_results:
-            $id: '#root/total_results'
+            $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           next_page:
-            $id: '#root/next_page'
+            $id: "#root/next_page"
             title: Next_page
             type: string
-            default: ''
+            default: ""
             pattern: ^.*$
   photos_curated_stream:
     $ref: "#/definitions/page_stream"
@@ -259,143 +259,143 @@ definitions:
         type: object
         properties:
           page:
-            $id: '#root/page'
+            $id: "#root/page"
             title: Page
             type: integer
             default: 0
           per_page:
-            $id: '#root/per_page'
+            $id: "#root/per_page"
             title: Per_page
             type: integer
             default: 0
           photos:
-            $id: '#root/photos'
+            $id: "#root/photos"
             title: Photos
             type: array
             default: []
             items:
-              $id: '#root/photos/items'
+              $id: "#root/photos/items"
               title: Items
               type: object
               properties:
                 id:
-                  $id: '#root/photos/items/id'
+                  $id: "#root/photos/items/id"
                   title: Id
                   type: integer
                   default: 0
                 width:
-                  $id: '#root/photos/items/width'
+                  $id: "#root/photos/items/width"
                   title: Width
                   type: integer
                   default: 0
                 height:
-                  $id: '#root/photos/items/height'
+                  $id: "#root/photos/items/height"
                   title: Height
                   type: integer
                   default: 0
                 url:
-                  $id: '#root/photos/items/url'
+                  $id: "#root/photos/items/url"
                   title: Url
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 photographer:
-                  $id: '#root/photos/items/photographer'
+                  $id: "#root/photos/items/photographer"
                   title: Photographer
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 photographer_url:
-                  $id: '#root/photos/items/photographer_url'
+                  $id: "#root/photos/items/photographer_url"
                   title: Photographer_url
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 photographer_id:
-                  $id: '#root/photos/items/photographer_id'
+                  $id: "#root/photos/items/photographer_id"
                   title: Photographer_id
                   type: integer
                   default: 0
                 avg_color:
-                  $id: '#root/photos/items/avg_color'
+                  $id: "#root/photos/items/avg_color"
                   title: Avg_color
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 src:
-                  $id: '#root/photos/items/src'
+                  $id: "#root/photos/items/src"
                   title: Src
                   type: object
                   properties:
                     original:
-                      $id: '#root/photos/items/src/original'
+                      $id: "#root/photos/items/src/original"
                       title: Original
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     large2x:
-                      $id: '#root/photos/items/src/large2x'
+                      $id: "#root/photos/items/src/large2x"
                       title: Large2x
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     large:
-                      $id: '#root/photos/items/src/large'
+                      $id: "#root/photos/items/src/large"
                       title: Large
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     medium:
-                      $id: '#root/photos/items/src/medium'
+                      $id: "#root/photos/items/src/medium"
                       title: Medium
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     small:
-                      $id: '#root/photos/items/src/small'
+                      $id: "#root/photos/items/src/small"
                       title: Small
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     portrait:
-                      $id: '#root/photos/items/src/portrait'
+                      $id: "#root/photos/items/src/portrait"
                       title: Portrait
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     landscape:
-                      $id: '#root/photos/items/src/landscape'
+                      $id: "#root/photos/items/src/landscape"
                       title: Landscape
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     tiny:
-                      $id: '#root/photos/items/src/tiny'
+                      $id: "#root/photos/items/src/tiny"
                       title: Tiny
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                 liked:
-                  $id: '#root/photos/items/liked'
+                  $id: "#root/photos/items/liked"
                   title: Liked
                   type: boolean
                   default: true
                 alt:
-                  $id: '#root/photos/items/alt'
+                  $id: "#root/photos/items/alt"
                   title: Alt
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
           total_results:
-            $id: '#root/total_results'
+            $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           next_page:
-            $id: '#root/next_page'
+            $id: "#root/next_page"
             title: Next_page
             type: string
-            default: ''
+            default: ""
             pattern: ^.*$
   videos_search_stream:
     $ref: "#/definitions/page_stream"
@@ -413,170 +413,170 @@ definitions:
         type: object
         properties:
           page:
-            $id: '#root/page'
+            $id: "#root/page"
             title: Page
             type: integer
             default: 0
           per_page:
-            $id: '#root/per_page'
+            $id: "#root/per_page"
             title: Per_page
             type: integer
             default: 0
           total_results:
-            $id: '#root/total_results'
+            $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           url:
-            $id: '#root/url'
+            $id: "#root/url"
             title: Url
             type: string
-            default: ''
+            default: ""
             pattern: ^.*$
           videos:
-            $id: '#root/videos'
+            $id: "#root/videos"
             title: Videos
             type: array
             default: []
             items:
-              $id: '#root/videos/items'
+              $id: "#root/videos/items"
               title: Items
               type: object
               properties:
                 id:
-                  $id: '#root/videos/items/id'
+                  $id: "#root/videos/items/id"
                   title: Id
                   type: integer
                   default: 0
                 width:
-                  $id: '#root/videos/items/width'
+                  $id: "#root/videos/items/width"
                   title: Width
                   type:
-                    - 'null'
+                    - "null"
                     - number
                     - integer
                   default: 0
                 height:
-                  $id: '#root/videos/items/height'
+                  $id: "#root/videos/items/height"
                   title: Height
                   type:
-                    - 'null'
+                    - "null"
                     - number
                     - integer
                   default: 0
                 url:
-                  $id: '#root/videos/items/url'
+                  $id: "#root/videos/items/url"
                   title: Url
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 image:
-                  $id: '#root/videos/items/image'
+                  $id: "#root/videos/items/image"
                   title: Image
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 duration:
-                  $id: '#root/videos/items/duration'
+                  $id: "#root/videos/items/duration"
                   title: Duration
                   type: integer
                   default: 0
                 user:
-                  $id: '#root/videos/items/user'
+                  $id: "#root/videos/items/user"
                   title: User
                   type: object
                   properties:
                     id:
-                      $id: '#root/videos/items/user/id'
+                      $id: "#root/videos/items/user/id"
                       title: Id
                       type: integer
                       default: 0
                     name:
-                      $id: '#root/videos/items/user/name'
+                      $id: "#root/videos/items/user/name"
                       title: Name
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     url:
-                      $id: '#root/videos/items/user/url'
+                      $id: "#root/videos/items/user/url"
                       title: Url
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                 video_files:
-                  $id: '#root/videos/items/video_files'
+                  $id: "#root/videos/items/video_files"
                   title: Video_files
                   type: array
                   default: []
                   items:
-                    $id: '#root/videos/items/video_files/items'
+                    $id: "#root/videos/items/video_files/items"
                     title: Items
                     type: object
                     properties:
                       id:
-                        $id: '#root/videos/items/video_files/items/id'
+                        $id: "#root/videos/items/video_files/items/id"
                         title: Id
                         type: integer
                         default: 0
                       quality:
-                        $id: '#root/videos/items/video_files/items/quality'
+                        $id: "#root/videos/items/video_files/items/quality"
                         title: Quality
                         type: string
-                        default: ''
+                        default: ""
                         pattern: ^.*$
                       file_type:
-                        $id: '#root/videos/items/video_files/items/file_type'
+                        $id: "#root/videos/items/video_files/items/file_type"
                         title: File_type
                         type: string
-                        default: ''
+                        default: ""
                         pattern: ^.*$
                       width:
-                        $id: '#root/videos/items/video_files/items/width'
+                        $id: "#root/videos/items/video_files/items/width"
                         title: Width
                         type:
-                          - 'null'
+                          - "null"
                           - number
                           - integer
                         default: 0
                       height:
-                        $id: '#root/videos/items/video_files/items/height'
+                        $id: "#root/videos/items/video_files/items/height"
                         title: Height
                         type:
-                          - 'null'
+                          - "null"
                           - number
                           - integer
                         default: 0
                       link:
-                        $id: '#root/videos/items/video_files/items/link'
+                        $id: "#root/videos/items/video_files/items/link"
                         title: Link
                         type: string
-                        default: ''
+                        default: ""
                         pattern: ^.*$
                 video_pictures:
-                  $id: '#root/videos/items/video_pictures'
+                  $id: "#root/videos/items/video_pictures"
                   title: Video_pictures
                   type: array
                   default: []
                   items:
-                    $id: '#root/videos/items/video_pictures/items'
+                    $id: "#root/videos/items/video_pictures/items"
                     title: Items
                     type: object
                     properties:
                       id:
-                        $id: '#root/videos/items/video_pictures/items/id'
+                        $id: "#root/videos/items/video_pictures/items/id"
                         title: Id
                         type: integer
                         default: 0
                       picture:
-                        $id: '#root/videos/items/video_pictures/items/picture'
+                        $id: "#root/videos/items/video_pictures/items/picture"
                         title: Picture
                         type:
-                          - 'null'
+                          - "null"
                           - string
-                        default: ''
+                        default: ""
                         pattern: ^.*$
                       nr:
-                        $id: '#root/videos/items/video_pictures/items/nr'
+                        $id: "#root/videos/items/video_pictures/items/nr"
                         title: Nr
                         type: integer
                         default: 0
@@ -596,168 +596,168 @@ definitions:
         type: object
         properties:
           page:
-            $id: '#root/page'
+            $id: "#root/page"
             title: Page
             type: integer
             default: 0
           per_page:
-            $id: '#root/per_page'
+            $id: "#root/per_page"
             title: Per_page
             type: integer
             default: 0
           total_results:
-            $id: '#root/total_results'
+            $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           url:
-            $id: '#root/url'
+            $id: "#root/url"
             title: Url
             type: string
-            default: ''
+            default: ""
             pattern: ^.*$
           videos:
-            $id: '#root/videos'
+            $id: "#root/videos"
             title: Videos
             type: array
             default: []
             items:
-              $id: '#root/videos/items'
+              $id: "#root/videos/items"
               title: Items
               type: object
               properties:
                 id:
-                  $id: '#root/videos/items/id'
+                  $id: "#root/videos/items/id"
                   title: Id
                   type: integer
                   default: 0
                 width:
-                  $id: '#root/videos/items/width'
+                  $id: "#root/videos/items/width"
                   title: Width
                   type:
                     - number
                     - integer
-                    - 'null'
+                    - "null"
                   default: 0
                 height:
-                  $id: '#root/videos/items/height'
+                  $id: "#root/videos/items/height"
                   title: Height
                   type:
                     - number
                     - integer
-                    - 'null'
+                    - "null"
                   default: 0
                 url:
-                  $id: '#root/videos/items/url'
+                  $id: "#root/videos/items/url"
                   title: Url
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 image:
-                  $id: '#root/videos/items/image'
+                  $id: "#root/videos/items/image"
                   title: Image
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 duration:
-                  $id: '#root/videos/items/duration'
+                  $id: "#root/videos/items/duration"
                   title: Duration
                   type: integer
                   default: 0
                 user:
-                  $id: '#root/videos/items/user'
+                  $id: "#root/videos/items/user"
                   title: User
                   type: object
                   properties:
                     id:
-                      $id: '#root/videos/items/user/id'
+                      $id: "#root/videos/items/user/id"
                       title: Id
                       type: integer
                       default: 0
                     name:
-                      $id: '#root/videos/items/user/name'
+                      $id: "#root/videos/items/user/name"
                       title: Name
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                     url:
-                      $id: '#root/videos/items/user/url'
+                      $id: "#root/videos/items/user/url"
                       title: Url
                       type: string
-                      default: ''
+                      default: ""
                       pattern: ^.*$
                 video_files:
-                  $id: '#root/videos/items/video_files'
+                  $id: "#root/videos/items/video_files"
                   title: Video_files
                   type: array
                   default: []
                   items:
-                    $id: '#root/videos/items/video_files/items'
+                    $id: "#root/videos/items/video_files/items"
                     title: Items
                     type: object
                     properties:
                       id:
-                        $id: '#root/videos/items/video_files/items/id'
+                        $id: "#root/videos/items/video_files/items/id"
                         title: Id
                         type: integer
                         default: 0
                       quality:
-                        $id: '#root/videos/items/video_files/items/quality'
+                        $id: "#root/videos/items/video_files/items/quality"
                         title: Quality
                         type: string
-                        default: ''
+                        default: ""
                         pattern: ^.*$
                       file_type:
-                        $id: '#root/videos/items/video_files/items/file_type'
+                        $id: "#root/videos/items/video_files/items/file_type"
                         title: File_type
                         type: string
-                        default: ''
+                        default: ""
                         pattern: ^.*$
                       width:
-                        $id: '#root/videos/items/video_files/items/width'
+                        $id: "#root/videos/items/video_files/items/width"
                         title: Width
                         type:
                           - number
                           - integer
-                          - 'null'
+                          - "null"
                         default: 0
                       height:
-                        $id: '#root/videos/items/video_files/items/height'
+                        $id: "#root/videos/items/video_files/items/height"
                         title: Height
                         type:
                           - number
                           - integer
-                          - 'null'
+                          - "null"
                         default: 0
                       link:
-                        $id: '#root/videos/items/video_files/items/link'
+                        $id: "#root/videos/items/video_files/items/link"
                         title: Link
                         type: string
-                        default: ''
+                        default: ""
                         pattern: ^.*$
                 video_pictures:
-                  $id: '#root/videos/items/video_pictures'
+                  $id: "#root/videos/items/video_pictures"
                   title: Video_pictures
                   type: array
                   default: []
                   items:
-                    $id: '#root/videos/items/video_pictures/items'
+                    $id: "#root/videos/items/video_pictures/items"
                     title: Items
                     type: object
                     properties:
                       id:
-                        $id: '#root/videos/items/video_pictures/items/id'
+                        $id: "#root/videos/items/video_pictures/items/id"
                         title: Id
                         type: integer
                         default: 0
                       picture:
-                        $id: '#root/videos/items/video_pictures/items/picture'
+                        $id: "#root/videos/items/video_pictures/items/picture"
                         title: Picture
                         type: string
-                        default: ''
+                        default: ""
                         pattern: ^.*$
                       nr:
-                        $id: '#root/videos/items/video_pictures/items/nr'
+                        $id: "#root/videos/items/video_pictures/items/nr"
                         title: Nr
                         type: integer
                         default: 0
@@ -777,80 +777,80 @@ definitions:
         type: object
         properties:
           collections:
-            $id: '#root/collections'
+            $id: "#root/collections"
             title: Collections
             type: array
             default: []
             items:
-              $id: '#root/collections/items'
+              $id: "#root/collections/items"
               title: Items
               type: object
               properties:
                 id:
-                  $id: '#root/collections/items/id'
+                  $id: "#root/collections/items/id"
                   title: Id
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 title:
-                  $id: '#root/collections/items/title'
+                  $id: "#root/collections/items/title"
                   title: Title
                   type: string
-                  default: ''
+                  default: ""
                   pattern: ^.*$
                 description:
-                  $id: '#root/collections/items/description'
+                  $id: "#root/collections/items/description"
                   title: Description
                   type:
                     - string
-                    - 'null'
+                    - "null"
                   default:
                 private:
-                  $id: '#root/collections/items/private'
+                  $id: "#root/collections/items/private"
                   title: Private
                   type: boolean
                   default: true
                 media_count:
-                  $id: '#root/collections/items/media_count'
+                  $id: "#root/collections/items/media_count"
                   title: Media_count
                   type: integer
                   default: 0
                 photos_count:
-                  $id: '#root/collections/items/photos_count'
+                  $id: "#root/collections/items/photos_count"
                   title: Photos_count
                   type: integer
                   default: 0
                 videos_count:
-                  $id: '#root/collections/items/videos_count'
+                  $id: "#root/collections/items/videos_count"
                   title: Videos_count
                   type: integer
                   default: 0
           page:
-            $id: '#root/page'
+            $id: "#root/page"
             title: Page
             type: integer
             default: 0
           per_page:
-            $id: '#root/per_page'
+            $id: "#root/per_page"
             title: Per_page
             type: integer
             default: 0
           total_results:
-            $id: '#root/total_results'
+            $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           next_page:
-            $id: '#root/next_page'
+            $id: "#root/next_page"
             title: Next_page
             type: string
-            default: ''
+            default: ""
             pattern: ^.*$
           prev_page:
-            $id: '#root/prev_page'
+            $id: "#root/prev_page"
             title: Prev_page
             type: string
-            default: ''
+            default: ""
             pattern: ^.*$
 streams:
   - "#/definitions/photos_search_stream"

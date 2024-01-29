@@ -39,7 +39,7 @@ definitions:
       name: "forms"
       primary_key: "id"
       path: "/forms"
-  # API Docs: https://developers.convertkit.com/#sequences
+    # API Docs: https://developers.convertkit.com/#sequences
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -50,51 +50,51 @@ definitions:
           uid:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           created_at:
             type:
               - string
-              - 'null'
+              - "null"
           archived:
             type:
               - boolean
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           embed_js:
             type:
               - string
-              - 'null'
+              - "null"
           embed_url:
             type:
               - string
-              - 'null'
+              - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
           description:
             type:
               - string
-              - 'null'
+              - "null"
           sign_up_button_text:
             type:
               - string
-              - 'null'
+              - "null"
           success_message:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
   sequences_stream:
@@ -108,7 +108,7 @@ definitions:
       name: "sequences"
       primary_key: "id"
       path: "/sequences"
-  # API Docs: https://developers.convertkit.com/#tags
+    # API Docs: https://developers.convertkit.com/#tags
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -119,19 +119,19 @@ definitions:
           name:
             type:
               - string
-              - 'null'
+              - "null"
           hold:
             type:
               - boolean
-              - 'null'
+              - "null"
           repeat:
             type:
               - boolean
-              - 'null'
+              - "null"
           created_at:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
   tags_stream:
@@ -144,7 +144,7 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/increment_paginator"
-  # API Docs: https://developers.convertkit.com/#subscribers
+    # API Docs: https://developers.convertkit.com/#subscribers
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -155,11 +155,11 @@ definitions:
           name:
             type:
               - string
-              - 'null'
+              - "null"
           created_at:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
   subscribers_stream:
@@ -168,7 +168,7 @@ definitions:
       name: "subscribers"
       primary_key: "id"
       path: "/subscribers"
-  # API Docs: https://developers.convertkit.com/#broadcasts
+    # API Docs: https://developers.convertkit.com/#broadcasts
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -179,28 +179,28 @@ definitions:
           first_name:
             type:
               - string
-              - 'null'
+              - "null"
           email_address:
             type:
               - string
-              - 'null'
+              - "null"
           state:
             type:
               - string
-              - 'null'
+              - "null"
           created_at:
             type:
               - string
-              - 'null'
+              - "null"
           fields:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               last_name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
         required:
           - id
   broadcasts_stream:
@@ -219,11 +219,11 @@ definitions:
           created_at:
             type:
               - string
-              - 'null'
+              - "null"
           subject:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - id
 streams:

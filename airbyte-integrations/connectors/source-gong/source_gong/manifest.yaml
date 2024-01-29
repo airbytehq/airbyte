@@ -54,64 +54,64 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           emailAddress:
             type:
-              - 'null'
+              - "null"
               - string
           created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           active:
             type:
-              - 'null'
+              - "null"
               - boolean
           emailAliases:
             type:
-              - 'null'
+              - "null"
               - array
           firstName:
             type:
-              - 'null'
+              - "null"
               - string
           lastName:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           phoneNumber:
             type:
-              - 'null'
+              - "null"
               - string
           extension:
             type:
-              - 'null'
+              - "null"
               - string
           personalMeetingUrls:
             type:
-              - 'null'
+              - "null"
               - array
           settings:
             type:
-              - 'null'
+              - "null"
               - object
           managerId:
             type:
-              - 'null'
+              - "null"
               - string
           meetingConsentPageUrl:
             type:
-              - 'null'
+              - "null"
               - string
           spokenLanguages:
             type:
-              - 'null'
+              - "null"
               - array
   calls_stream:
     $ref: "#/definitions/base_stream"
@@ -128,81 +128,81 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           scheduled:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           started:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           duration:
             type:
-              - 'null'
+              - "null"
               - integer
           primaryUserId:
             type:
-              - 'null'
+              - "null"
               - string
           direction:
             type:
-              - 'null'
+              - "null"
               - string
           system:
             type:
-              - 'null'
+              - "null"
               - string
           scope:
             type:
-              - 'null'
+              - "null"
               - string
           media:
             type:
-              - 'null'
+              - "null"
               - string
           language:
             type:
-              - 'null'
+              - "null"
               - string
           workspaceId:
             type:
-              - 'null'
+              - "null"
               - string
           sdrDisposition:
             type:
-              - 'null'
+              - "null"
               - string
           clientUniqueId:
             type:
-              - 'null'
+              - "null"
               - string
           customData:
             type:
-              - 'null'
+              - "null"
               - string
           purpose:
             type:
-              - 'null'
+              - "null"
               - string
           meetingUrl:
             type:
-              - 'null'
+              - "null"
               - string
           isPrivate:
             type:
-              - 'null'
+              - "null"
               - boolean
   scorecards_stream:
     $ref: "#/definitions/base_stream"
@@ -219,71 +219,71 @@ definitions:
         properties:
           scorecardId:
             type:
-              - 'null'
+              - "null"
               - string
           scorecardName:
             type:
-              - 'null'
+              - "null"
               - string
           workspaceId:
             type:
-              - 'null'
+              - "null"
               - string
           enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           updaterUserId:
             type:
-              - 'null'
+              - "null"
               - string
           created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updated:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           questions:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 questionId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 questionRevisionId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 questionText:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 isOverall:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
                 updaterUserId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 created:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 updated:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
   answered_scorecards_stream:
@@ -317,74 +317,74 @@ definitions:
         properties:
           answeredScorecardId:
             type:
-              - 'null'
+              - "null"
               - string
           scorecardId:
             type:
-              - 'null'
+              - "null"
               - string
           scorecardName:
             type:
-              - 'null'
+              - "null"
               - string
           callId:
             type:
-              - 'null'
+              - "null"
               - string
           callStartTime:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           reviewedUserId:
             type:
-              - 'null'
+              - "null"
               - string
           reviewerUserId:
             type:
-              - 'null'
+              - "null"
               - string
           reviewTime:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           visibilityType:
             type:
-              - 'null'
+              - "null"
               - string
           answers:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 questionId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 questionRevisionId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 isOverall:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
                 score:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 answerText:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 notApplicable:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
 streams:
   - "#/definitions/users_stream"

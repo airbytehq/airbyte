@@ -59,185 +59,185 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           socials:
             type:
-              - 'null'
+              - "null"
               - array
             properties:
               note:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           leads_converted_from:
             type:
-              - 'null'
+              - "null"
               - array
             properties:
               leads:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             properties:
               sticker:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - array
             properties:
               mprc:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           prefix:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           middle_name:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           suffix:
             type:
-              - 'null'
+              - "null"
               - string
           address:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               street:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               state:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               postal_code:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               country:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           assignee_id:
             type:
-              - 'null'
+              - "null"
               - integer
           company_id:
             type:
-              - 'null'
+              - "null"
               - integer
           company_name:
             type:
-              - 'null'
+              - "null"
               - string
           contact_type_id:
             type:
-              - 'null'
+              - "null"
               - integer
           details:
-            type: 'null'
+            type: "null"
           emails:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 category:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 email:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           phone_numbers:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 number:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 category:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           websites:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 category:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           date_created:
             type:
-              - 'null'
+              - "null"
               - integer
           date_modified:
             type:
-              - 'null'
+              - "null"
               - integer
           date_last_contacted:
             type:
-              - 'null'
+              - "null"
               - integer
           interaction_count:
             type:
-              - 'null'
+              - "null"
               - integer
           date_lead_created:
             type:
-              - 'null'
+              - "null"
               - integer
         required:
           - id
@@ -253,59 +253,59 @@ definitions:
       schema:
         $schema: http://json-schema.org/draft-04/schema#
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             properties:
               sticker:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - array
             properties:
               mprc:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           related_resource:
             type:
-              - 'null'
+              - "null"
               - string
           assignee_id:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - string
           details:
             type:
-              - 'null'
+              - "null"
               - string
           date_created:
             type:
-              - 'null'
+              - "null"
               - integer
           date_modified:
             type:
-              - 'null'
+              - "null"
               - integer
   companies_stream:
     $ref: "#/definitions/base_stream"
@@ -323,121 +323,121 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           phone_numbers:
             type:
-              - 'null'
+              - "null"
               - array
             properties:
               category:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               number:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           custom_fields:
             type:
-              - 'null'
+              - "null"
               - array
             properties:
               mpc:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           address:
             type: object
             properties:
               street:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               postal_code:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           assignee_id:
             type:
-              - 'null'
+              - "null"
               - integer
           contact_type_id:
             type:
-              - 'null'
+              - "null"
               - integer
           details:
             type:
-              - 'null'
+              - "null"
               - string
           email_domain:
             type:
-              - 'null'
+              - "null"
               - string
           socials:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
               properties:
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 category:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items: {}
           websites:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 category:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           interaction_count:
             type:
-              - 'null'
+              - "null"
               - integer
           date_created:
             type:
-              - 'null'
+              - "null"
               - integer
           date_modified:
             type:
-              - 'null'
+              - "null"
               - integer
   opportunities_stream:
     $ref: "#/definitions/base_stream"
@@ -455,83 +455,83 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           assignee_id:
             type:
-              - 'null'
+              - "null"
               - number
           close_date:
             type:
-              - 'null'
+              - "null"
               - string
           company_id:
             type:
-              - 'null'
+              - "null"
               - string
           company_name:
             type:
-              - 'null'
+              - "null"
               - string
           customer_source_id:
             type:
-              - 'null'
+              - "null"
               - string
           details:
             type:
-              - 'null'
+              - "null"
               - string
           loss_reason_id:
             type:
-              - 'null'
+              - "null"
               - string
           monetary_value:
             type:
-              - 'null'
+              - "null"
               - integer
           pipeline_id:
             type:
-              - 'null'
+              - "null"
               - string
           primary_contact_id:
             type:
-              - 'null'
+              - "null"
               - string
           priority:
             type:
-              - 'null'
+              - "null"
               - string
           pipeline_stage_id:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           win_probability:
             type:
-              - 'null'
+              - "null"
               - number
           date_created:
             type:
-              - 'null'
+              - "null"
               - integer
           date_modified:
             type:
-              - 'null'
+              - "null"
               - integer
 streams:
   - "#/definitions/people_stream"

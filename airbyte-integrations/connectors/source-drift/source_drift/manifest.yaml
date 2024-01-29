@@ -129,7 +129,7 @@ definitions:
             type: integer
           relatedPlaybookId:
             type:
-              - 'null'
+              - "null"
               - string
           conversationTags:
             type: array

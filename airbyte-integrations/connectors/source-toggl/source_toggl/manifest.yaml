@@ -57,7 +57,7 @@ definitions:
             type: boolean
           description:
             type:
-              - 'null'
+              - "null"
               - string
           duration:
             type: integer
@@ -69,11 +69,11 @@ definitions:
             type: integer
           project_id:
             type:
-              - 'null'
+              - "null"
               - integer
           server_deleted_at:
             type:
-              - 'null'
+              - "null"
               - string
           start:
             type: string
@@ -81,15 +81,15 @@ definitions:
             type: string
           tag_ids:
             type:
-              - 'null'
+              - "null"
               - array
           tags:
             type:
-              - 'null'
+              - "null"
               - array
           task_id:
             type:
-              - 'null'
+              - "null"
               - integer
           tid:
             type: integer
@@ -139,11 +139,11 @@ definitions:
             type: integer
           server_deleted_at:
             type:
-              - 'null'
+              - "null"
               - string
           suspended_at:
             type:
-              - 'null'
+              - "null"
               - string
           trial_info:
             type: object
@@ -171,7 +171,7 @@ definitions:
             type: string
           groups:
             type:
-              - 'null'
+              - "null"
               - array
           id:
             type: integer
@@ -179,7 +179,7 @@ definitions:
             type: boolean
           invitation_code:
             type:
-              - 'null'
+              - "null"
               - string
           joined:
             type: boolean
@@ -211,7 +211,7 @@ definitions:
             type: string
           users:
             type:
-              - 'null'
+              - "null"
               - array
           workspaces:
             type: array
@@ -273,25 +273,25 @@ definitions:
             type: boolean
           actual_hours:
             type:
-              - 'null'
+              - "null"
               - integer
           at:
             type: string
           auto_estimates:
             type:
-              - 'null'
+              - "null"
               - boolean
           billable:
             type:
-              - 'null'
+              - "null"
               - boolean
           cid:
             type:
-              - 'null'
+              - "null"
               - integer
           client_id:
             type:
-              - 'null'
+              - "null"
               - integer
           color:
             type: string
@@ -299,21 +299,21 @@ definitions:
             type: string
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           current_period:
             type:
-              - 'null'
+              - "null"
               - object
           estimated_hours:
             type:
-              - 'null'
+              - "null"
               - integer
           first_time_entry:
             type: string
           fixed_fee:
             type:
-              - 'null'
+              - "null"
               - number
           id:
             type: integer
@@ -323,25 +323,25 @@ definitions:
             type: string
           rate:
             type:
-              - 'null'
+              - "null"
               - number
           rate_last_updated:
             type:
-              - 'null'
+              - "null"
               - string
           recurring:
             type: boolean
           recurring_parameters:
             type:
-              - 'null'
+              - "null"
               - array
           server_deleted_at:
             type:
-              - 'null'
+              - "null"
               - string
           template:
             type:
-              - 'null'
+              - "null"
               - boolean
           wid:
             type: integer
@@ -373,7 +373,7 @@ definitions:
             type: string
           estimated_seconds:
             type:
-              - 'null'
+              - "null"
               - integer
           id:
             type: integer
@@ -385,13 +385,13 @@ definitions:
             type: boolean
           server_deleted_at:
             type:
-              - 'null'
+              - "null"
               - string
           tracked_seconds:
             type: integer
           user_id:
             type:
-              - 'null'
+              - "null"
               - integer
           workspace_id:
             type: integer

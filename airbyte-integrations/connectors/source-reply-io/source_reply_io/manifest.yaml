@@ -62,60 +62,60 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           name:
             type:
-              - 'null'
+              - "null"
               - string
           ownerEmail:
             type:
-              - 'null'
+              - "null"
               - string
           deliveriesCount:
             type:
-              - 'null'
+              - "null"
               - integer
           opensCount:
             type:
-              - 'null'
+              - "null"
               - integer
           repliesCount:
             type:
-              - 'null'
+              - "null"
               - integer
           bouncesCount:
             type:
-              - 'null'
+              - "null"
               - integer
           optOutsCount:
             type:
-              - 'null'
+              - "null"
               - integer
           outOfOfficeCount:
             type:
-              - 'null'
+              - "null"
               - integer
           peopleCount:
             type:
-              - 'null'
+              - "null"
               - integer
           peopleFinished:
             type:
-              - 'null'
+              - "null"
               - integer
           peopleActive:
             type:
-              - 'null'
+              - "null"
               - integer
           peoplePaused:
             type:
-              - 'null'
+              - "null"
               - integer
   email_accounts_stream:
     $ref: "#/definitions/base_stream"
@@ -131,19 +131,19 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           senderName:
             type:
-              - 'null'
+              - "null"
               - string
           emailAddress:
             type:
-              - 'null'
+              - "null"
               - string
           signature:
             type:
-              - 'null'
+              - "null"
               - string
   people_stream:
     $ref: "#/definitions/paginated_stream"
@@ -159,64 +159,64 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           email:
             type:
-              - 'null'
+              - "null"
               - string
           firstName:
             type:
-              - 'null'
+              - "null"
               - string
           lastName:
             type:
-              - 'null'
+              - "null"
               - string
           company:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - string
           timeZoneId:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           phone:
             type:
-              - 'null'
+              - "null"
               - string
           phoneStatus:
             type:
-              - 'null'
+              - "null"
               - string
           linkedInProfile:
             type:
-              - 'null'
+              - "null"
               - string
           addingDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           customFields:
             type:
-              - 'null'
+              - "null"
               - array
   templates_stream:
     retriever:
@@ -237,23 +237,23 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           body:
             type:
-              - 'null'
+              - "null"
               - string
           subject:
             type:
-              - 'null'
+              - "null"
               - string
           categoryId:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/campaigns_stream"

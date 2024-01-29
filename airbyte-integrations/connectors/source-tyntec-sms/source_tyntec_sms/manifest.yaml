@@ -37,115 +37,115 @@ definitions:
         properties:
           doneDate:
             type:
-              - 'null'
+              - "null"
               - string
           errorCode:
             type:
-              - 'null'
+              - "null"
               - string
           errorReason:
             type:
-              - 'null'
+              - "null"
               - string
           from:
             type:
-              - 'null'
+              - "null"
               - string
           href:
             type:
-              - 'null'
+              - "null"
               - string
           mccmnc:
             type:
-              - 'null'
+              - "null"
               - string
           parts:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 currency:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 deliveryState:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 doneDate:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 errorCode:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 partId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 price:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 priceEffective:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 sendDate:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 statusText:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           overallPrice:
             type:
-              - 'null'
+              - "null"
               - string
           priceEffective:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           reference:
             type:
-              - 'null'
+              - "null"
               - string
           requestId:
             type:
-              - 'null'
+              - "null"
               - string
           sentDate:
             type:
-              - 'null'
+              - "null"
               - string
           size:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - string
           submitDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           to:
             type:
-              - 'null'
+              - "null"
               - string
           ttid:
             type:
-              - 'null'
+              - "null"
               - string
   sms_partition_router:
     type: SubstreamPartitionRouter
@@ -168,7 +168,7 @@ definitions:
         path: "/messaging/v1/messages/{{ stream_slice.requestId }}"
       partition_router:
         $ref: "#/definitions/sms_partition_router"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20contacts
+    # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20contacts
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -177,122 +177,122 @@ definitions:
         properties:
           doneDate:
             type:
-              - 'null'
+              - "null"
               - string
           errorCode:
             type:
-              - 'null'
+              - "null"
               - string
           errorReason:
             type:
-              - 'null'
+              - "null"
               - string
           from:
             type:
-              - 'null'
+              - "null"
               - string
           href:
             type:
-              - 'null'
+              - "null"
               - string
           mccmnc:
             type:
-              - 'null'
+              - "null"
               - string
           parts:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 currency:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 deliveryState:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 doneDate:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 errorCode:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 partId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 price:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 priceEffective:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 sendDate:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 statusText:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           overallPrice:
             type:
-              - 'null'
+              - "null"
               - string
           priceEffective:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           reference:
             type:
-              - 'null'
+              - "null"
               - string
           requestId:
             type:
-              - 'null'
+              - "null"
               - string
           sentDate:
             type:
-              - 'null'
+              - "null"
               - string
           size:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - string
           submitDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           to:
             type:
-              - 'null'
+              - "null"
               - string
           ttid:
             type:
-              - 'null'
+              - "null"
               - string
   contacts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "contacts"
       path: "/byon/contacts/v1"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phone%20numbers
+    # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phone%20numbers
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -301,51 +301,51 @@ definitions:
         properties:
           contacts:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 companyAddress:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 companyName:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 contactEmail:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 contactName:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 contactPhone:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 contactTitle:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 friendlyName:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           size:
             type:
-              - 'null'
+              - "null"
               - integer
   phones_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "phones"
       path: "/byon/phonebook/v1/numbers"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phones
+    # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phones
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -354,36 +354,36 @@ definitions:
         properties:
           provisioningRequests:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 accountId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 contactId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 friendlyName:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 requestId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 status:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           size:
             type:
-              - 'null'
+              - "null"
               - integer
   registrations_stream:
     $ref: "#/definitions/base_stream"
@@ -399,36 +399,36 @@ definitions:
         properties:
           provisioningRequests:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 accountId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 contactId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 friendlyName:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 requestId:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 status:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           size:
             type:
-              - 'null'
+              - "null"
               - integer
 streams:
   - "#/definitions/sms_stream"

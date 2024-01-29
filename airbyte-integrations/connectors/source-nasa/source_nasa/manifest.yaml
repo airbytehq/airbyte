@@ -63,73 +63,73 @@ definitions:
         properties:
           resource:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               image_set:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               planet:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           concept_tags:
             type:
-              - 'null'
+              - "null"
               - boolean
           title:
             type:
-              - 'null'
+              - "null"
               - string
           date:
             type:
-              - 'null'
+              - "null"
               - string
-            format: '%Y-%m-%d'
+            format: "%Y-%m-%d"
           url:
             type:
-              - 'null'
+              - "null"
               - string
             format: uri
           hdurl:
             type:
-              - 'null'
+              - "null"
               - string
             format: uri
           media_type:
             type:
-              - 'null'
+              - "null"
               - string
             enum:
               - image
               - video
           explanation:
             type:
-              - 'null'
+              - "null"
               - string
           concepts:
             type:
-              - 'null'
+              - "null"
               - object
               - string
             patternProperties:
               ^[0-9]+$:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           thumbnail_url:
             type:
-              - 'null'
+              - "null"
               - string
             format: uri
           copyright:
             type:
-              - 'null'
+              - "null"
               - string
           service_version:
             type:
-              - 'null'
+              - "null"
               - string
             pattern: ^v[0-9]$
 streams:

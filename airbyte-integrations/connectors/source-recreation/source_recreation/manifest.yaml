@@ -221,12 +221,12 @@ definitions:
               COORDINATES:
                 type:
                   - array
-                  - 'null'
+                  - "null"
                 items:
                   type:
                     - string
                     - number
-                    - 'null'
+                    - "null"
           FacilityLongitude:
             type: number
           FacilityLatitude:
@@ -697,12 +697,12 @@ definitions:
               COORDINATES:
                 type:
                   - array
-                  - 'null'
+                  - "null"
                 items:
                   type:
                     - string
                     - number
-                    - 'null'
+                    - "null"
           RecAreaLongitude:
             type: number
           RecAreaLatitude:
@@ -976,7 +976,7 @@ definitions:
                   type: string
           MEMBERTOURS:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
@@ -985,7 +985,7 @@ definitions:
                   type:
                     - string
                     - integer
-                    - 'null'
+                    - "null"
 streams:
   - "#/definitions/organizations_stream"
   - "#/definitions/media_stream"

@@ -61,101 +61,101 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           testSent:
             type:
-              - 'null'
+              - "null"
               - boolean
           header:
             type:
-              - 'null'
+              - "null"
               - string
           footer:
             type:
-              - 'null'
+              - "null"
               - string
           sender:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties: {}
           replyTo:
             type:
-              - 'null'
+              - "null"
               - string
           toField:
             type:
-              - 'null'
+              - "null"
               - string
           htmlContent:
             type:
-              - 'null'
+              - "null"
               - string
           tag:
             type:
-              - 'null'
+              - "null"
               - string
           inlineImageActivation:
             type:
-              - 'null'
+              - "null"
               - boolean
           mirrorActive:
             type:
-              - 'null'
+              - "null"
               - boolean
           recipients:
             type:
-              - 'null'
+              - "null"
               - object
           statistics:
             type:
-              - 'null'
+              - "null"
               - object
           subject:
             type:
-              - 'null'
+              - "null"
               - string
           scheduledAt:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
           modifiedAt:
             type:
-              - 'null'
+              - "null"
               - string
           previewText:
             type:
-              - 'null'
+              - "null"
               - string
           shareLink:
             type:
-              - 'null'
+              - "null"
               - string
           sendAtBestTime:
             type:
-              - 'null'
+              - "null"
               - boolean
           abTesting:
             type:
-              - 'null'
+              - "null"
               - boolean
   campaign_partition_router:
     type: SubstreamPartitionRouter
@@ -178,57 +178,57 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           testSent:
             type:
-              - 'null'
+              - "null"
               - boolean
           isActive:
             type:
-              - 'null'
+              - "null"
               - boolean
           sender:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties: {}
           subject:
             type:
-              - 'null'
+              - "null"
               - string
           replyTo:
             type:
-              - 'null'
+              - "null"
               - string
           toField:
             type:
-              - 'null'
+              - "null"
               - string
           htmlContent:
             type:
-              - 'null'
+              - "null"
               - string
           tag:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
           modifiedAt:
             type:
-              - 'null'
+              - "null"
               - string
   contacts_stream:
     $ref: "#/definitions/base_stream"
@@ -248,35 +248,35 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           email:
             type:
-              - 'null'
+              - "null"
               - string
           emailBlacklisted:
             type:
-              - 'null'
+              - "null"
               - boolean
           smsBlacklisted:
             type:
-              - 'null'
+              - "null"
               - boolean
           listIds:
             type:
-              - 'null'
+              - "null"
               - array
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
           modifiedAt:
             type:
-              - 'null'
+              - "null"
               - string
           attributes:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties: {}

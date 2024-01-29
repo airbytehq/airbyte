@@ -51,314 +51,314 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           country_code_a2:
             type:
-              - 'null'
+              - "null"
               - string
           pricing_type:
             type:
-              - 'null'
+              - "null"
               - string
           direct_link:
             type:
-              - 'null'
+              - "null"
               - string
           direction:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           missed_call_reason:
             type:
-              - 'null'
+              - "null"
               - string
           started_at:
             type:
-              - 'null'
+              - "null"
               - number
           answered_at:
             type:
-              - 'null'
+              - "null"
               - number
           ended_at:
             type:
-              - 'null'
+              - "null"
               - number
           duration:
             type:
-              - 'null'
+              - "null"
               - number
           voicemail:
             type:
-              - 'null'
+              - "null"
               - string
           recording:
             type:
-              - 'null'
+              - "null"
               - string
           asset:
             type:
-              - 'null'
+              - "null"
               - string
           raw_digits:
             type:
-              - 'null'
+              - "null"
               - string
           user:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               direct_link:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               available:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               availability_status:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               time_zone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               language:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           contact:
             type:
-              - 'null'
+              - "null"
               - string
           archived:
             type:
-              - 'null'
+              - "null"
               - boolean
           assigned_to:
             type:
-              - 'null'
+              - "null"
               - string
           transferred_by:
             type:
-              - 'null'
+              - "null"
               - string
           transferred_to:
             type:
-              - 'null'
+              - "null"
               - string
           cost:
             type:
-              - 'null'
+              - "null"
               - string
           number:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               direct_link:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               digits:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               time_zone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               open:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               availability_status:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               is_ivr:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               live_recording_activated:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               priority:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           comments:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 content:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 posted_at:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 posted_by:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - number
                     direct_link:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     name:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     email:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     available:
                       type:
-                        - 'null'
+                        - "null"
                         - boolean
                     availability_status:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     created_at:
                       type:
-                        - 'null'
+                        - "null"
                         - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 created_at:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 tagged_by:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - number
                     direct_link:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     name:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     email:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     available:
                       type:
-                        - 'null'
+                        - "null"
                         - boolean
                     availability_status:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     created_at:
                       type:
-                        - 'null'
+                        - "null"
                         - string
           teams:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 direct_link:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 created_at:
                   type:
-                    - 'null'
+                    - "null"
                     - string
   company_stream:
     type: DeclarativeStream
@@ -380,15 +380,15 @@ definitions:
         properties:
           name:
             type:
-              - 'null'
+              - "null"
               - string
           users_count:
             type:
-              - 'null'
+              - "null"
               - number
           numbers_count:
             type:
-              - 'null'
+              - "null"
               - number
   contacts_stream:
     type: DeclarativeStream
@@ -410,81 +410,81 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           company_name:
             type:
-              - 'null'
+              - "null"
               - string
           information:
             type:
-              - 'null'
+              - "null"
               - string
           is_shared:
             type:
-              - 'null'
+              - "null"
               - boolean
           direct_link:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - number
           updated_at:
             type:
-              - 'null'
+              - "null"
               - number
           phone_numbers:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 label:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           emails:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 label:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
   numbers_stream:
     type: DeclarativeStream
@@ -520,108 +520,108 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           direct_link:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           digits:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - string
           time_zone:
             type:
-              - 'null'
+              - "null"
               - string
           open:
             type:
-              - 'null'
+              - "null"
               - boolean
           availability_status:
             type:
-              - 'null'
+              - "null"
               - string
           is_ivr:
             type:
-              - 'null'
+              - "null"
               - boolean
           live_recording_activated:
             type:
-              - 'null'
+              - "null"
               - boolean
           priority:
             type:
-              - 'null'
+              - "null"
               - string
           messages:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               welcome:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               waiting:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               ivr:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               voicemail:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               closed:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               callback_later:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               unanswered_call:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               after_hours:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               ringing_tone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           wrap_up_time:
             type:
-              - 'null'
+              - "null"
               - number
           available:
             type:
-              - 'null'
+              - "null"
               - boolean
           language:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
   tags_stream:
@@ -645,19 +645,19 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           name:
             type:
-              - 'null'
+              - "null"
               - string
           color:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
   user_retriever:
     type: SimpleRetriever
@@ -688,43 +688,43 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           direct_link:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           available:
             type:
-              - 'null'
+              - "null"
               - boolean
           availability_status:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           time_zone:
             type:
-              - 'null'
+              - "null"
               - string
           language:
             type:
-              - 'null'
+              - "null"
               - string
           wrap_up_time:
             type:
-              - 'null'
+              - "null"
               - number
   user_availability_stream:
     type: DeclarativeStream
@@ -769,53 +769,53 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           name:
             type:
-              - 'null'
+              - "null"
               - string
           direct_link:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           users:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 direct_link:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 email:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 created_at:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 time_zone:
                   type:
-                    - 'null'
+                    - "null"
                     - string
   webhooks_stream:
     type: DeclarativeStream
@@ -838,36 +838,36 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           direct_link:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           url:
             type:
-              - 'null'
+              - "null"
               - string
           active:
             type:
-              - 'null'
+              - "null"
               - boolean
           token:
             type:
-              - 'null'
+              - "null"
               - string
           events:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
 streams:
   - "#/definitions/calls_stream"

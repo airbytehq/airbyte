@@ -48,45 +48,45 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           details:
             type:
-              - 'null'
+              - "null"
               - object
           results:
             type:
-              - 'null'
+              - "null"
               - object
           state:
             type:
-              - 'null'
+              - "null"
               - string
           errorDetails:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           finishedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           estimatePctComplete:
             type:
-              - 'null'
+              - "null"
               - integer
           step:
             type:
-              - 'null'
+              - "null"
               - string
   sessions_stream:
     type: DeclarativeStream
@@ -105,22 +105,22 @@ definitions:
         properties:
           userId:
             type:
-              - 'null'
+              - "null"
               - integer
               - string
           sessionId:
             type:
-              - 'null'
+              - "null"
               - integer
               - string
           createdTime:
             type:
-              - 'null'
+              - "null"
               - integer
               - string
           fsUrl:
             type:
-              - 'null'
+              - "null"
               - string
   segments_stream:
     type: DeclarativeStream
@@ -139,23 +139,23 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           creator:
             type:
-              - 'null'
+              - "null"
               - string
           created:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
   blockrules_stream:
     type: DeclarativeStream
@@ -174,19 +174,19 @@ definitions:
         properties:
           blockedIps:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           blockedUas:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           blockedAppIds:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
@@ -207,24 +207,24 @@ definitions:
         properties:
           onlyRecordKnownDomains:
             type:
-              - 'null'
+              - "null"
               - boolean
           domains:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 disabled:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
                 domain:
                   type:
-                    - 'null'
+                    - "null"
                     - string
   geosettings_stream:
     type: DeclarativeStream
@@ -243,11 +243,11 @@ definitions:
         properties:
           record_geo_mode:
             type:
-              - 'null'
+              - "null"
               - string
           record_geo_zones:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
@@ -268,23 +268,23 @@ definitions:
         properties:
           enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           consoleWatcher:
             type:
-              - 'null'
+              - "null"
               - boolean
           ajaxWatcher:
             type:
-              - 'null'
+              - "null"
               - boolean
           resourceUploading:
             type:
-              - 'null'
+              - "null"
               - boolean
           recordingShutoff:
             type:
-              - 'null'
+              - "null"
               - boolean
   targetrules_stream:
     type: DeclarativeStream
@@ -310,49 +310,49 @@ definitions:
         properties:
           endpoints:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 created:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 modified:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 enabled:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 event_types:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     properties:
                       event_name:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       subcategory:
                         type:
-                          - 'null'
+                          - "null"
                           - string
   event-types_stream:
     type: DeclarativeStream
@@ -371,15 +371,15 @@ definitions:
         properties:
           eventName:
             type:
-              - 'null'
+              - "null"
               - string
           displayName:
             type:
-              - 'null'
+              - "null"
               - string
           hasSubcategories:
             type:
-              - 'null'
+              - "null"
               - boolean
 streams:
   - "#/definitions/sessions_stream"

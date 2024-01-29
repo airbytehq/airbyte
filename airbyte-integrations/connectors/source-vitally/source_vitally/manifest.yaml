@@ -55,112 +55,112 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           externalId:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           traits:
             type:
-              - 'null'
+              - "null"
               - object
           organizationId:
             type:
-              - 'null'
+              - "null"
               - string
           accountOwnerId:
             type:
-              - 'null'
+              - "null"
               - string
           churnedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           firstSeenTimestamp:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           lastSeenTimestamp:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           lastInboundMessageTimestamp:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           lastOutboundMessageTimestamp:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           mrr:
             type:
-              - 'null'
+              - "null"
               - number
           nextRenewalDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           trialEndDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           usersCount:
             type:
-              - 'null'
+              - "null"
               - integer
           npsDetractorCount:
             type:
-              - 'null'
+              - "null"
               - integer
           npsPassiveCount:
             type:
-              - 'null'
+              - "null"
               - integer
           npsPromoterCount:
             type:
-              - 'null'
+              - "null"
               - integer
           npsScore:
             type:
-              - 'null'
+              - "null"
               - number
           healthScore:
             type:
-              - 'null'
+              - "null"
               - number
           csmId:
             type:
-              - 'null'
+              - "null"
               - string
           accountExecutiveId:
             type:
-              - 'null'
+              - "null"
               - string
           segments:
             type:
-              - 'null'
+              - "null"
               - array
   admins_stream:
     $ref: "#/definitions/base_stream"
@@ -176,19 +176,19 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           licenseStatus:
             type:
-              - 'null'
+              - "null"
               - string
   conversations_stream:
     $ref: "#/definitions/base_stream"
@@ -204,25 +204,25 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           externalId:
             type:
-              - 'null'
+              - "null"
               - string
           subject:
             type:
-              - 'null'
+              - "null"
               - string
   notes_stream:
     $ref: "#/definitions/base_stream"
@@ -238,70 +238,70 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           externalId:
             type:
-              - 'null'
+              - "null"
               - string
           organizationId:
             type:
-              - 'null'
+              - "null"
               - string
           categoryId:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           noteDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           note:
             type:
-              - 'null'
+              - "null"
               - string
           account:
             type:
-              - 'null'
+              - "null"
               - object
           organization:
             type:
-              - 'null'
+              - "null"
               - string
           author:
             type:
-              - 'null'
+              - "null"
               - string
           category:
             type:
-              - 'null'
+              - "null"
               - string
           tag:
             type:
-              - 'null'
+              - "null"
               - array
           accountId:
             type:
-              - 'null'
+              - "null"
               - string
           authorId:
             type:
-              - 'null'
+              - "null"
               - string
           traits:
             type:
-              - 'null'
+              - "null"
               - object
   nps_responses_stream:
     $ref: "#/definitions/base_stream"
@@ -317,47 +317,47 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           externalId:
             type:
-              - 'null'
+              - "null"
               - string
           userId:
             type:
-              - 'null'
+              - "null"
               - string
           user:
             type:
-              - 'null'
+              - "null"
               - object
           dismissedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           respondedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           score:
             type:
-              - 'null'
+              - "null"
               - number
           feedback:
             type:
-              - 'null'
+              - "null"
               - string
   organizations_stream:
     $ref: "#/definitions/base_stream"
@@ -373,68 +373,68 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           externalId:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           traits:
             type:
-              - 'null'
+              - "null"
               - object
           accountOwnerId:
             type:
-              - 'null'
+              - "null"
               - string
           churnedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           mrr:
             type:
-              - 'null'
+              - "null"
               - number
           nextRenewalDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           trialEndDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           usersCount:
             type:
-              - 'null'
+              - "null"
               - integer
           csmId:
             type:
-              - 'null'
+              - "null"
               - string
           keyRoles:
             type:
-              - 'null'
+              - "null"
               - array
           accountExecutiveId:
             type:
-              - 'null'
+              - "null"
               - string
   tasks_stream:
     $ref: "#/definitions/base_stream"
@@ -450,91 +450,91 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           externalId:
             type:
-              - 'null'
+              - "null"
               - string
           organizationId:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           completedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           dueDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date
           account:
             type:
-              - 'null'
+              - "null"
               - object
           organization:
             type:
-              - 'null'
+              - "null"
               - string
           tag:
             type:
-              - 'null'
+              - "null"
               - array
           accountId:
             type:
-              - 'null'
+              - "null"
               - string
           categoryId:
             type:
-              - 'null'
+              - "null"
               - string
           assignedToId:
             type:
-              - 'null'
+              - "null"
               - string
           completedById:
             type:
-              - 'null'
+              - "null"
               - string
           assignedTo:
             type:
-              - 'null'
+              - "null"
               - object
           completedBy:
             type:
-              - 'null'
+              - "null"
               - string
           category:
             type:
-              - 'null'
+              - "null"
               - string
           projects:
             type:
-              - 'null'
+              - "null"
               - array
           traits:
             type:
-              - 'null'
+              - "null"
               - object
   users_stream:
     $ref: "#/definitions/base_stream"
@@ -551,95 +551,95 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           externalId:
             type:
-              - 'null'
+              - "null"
               - string
           accounts:
             type:
-              - 'null'
+              - "null"
               - array
           organizations:
             type:
-              - 'null'
+              - "null"
               - array
           name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           avatar:
             type:
-              - 'null'
+              - "null"
               - string
           traits:
             type:
-              - 'null'
+              - "null"
               - object
           firstKnown:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           lastSeenTimestamp:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           lastInboundMessageTimestamp:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           lastOutboundMessageTimestamp:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           npsLastScore:
             type:
-              - 'null'
+              - "null"
               - number
           npsLastFeedback:
             type:
-              - 'null'
+              - "null"
               - string
           npsLastRespondedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           unsubscribedFromConversations:
             type:
-              - 'null'
+              - "null"
               - boolean
           deactivatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           segments:
             type:
-              - 'null'
+              - "null"
               - array
           joinDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
 streams:

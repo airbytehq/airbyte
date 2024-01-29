@@ -75,224 +75,224 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_created_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_modified:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_modified_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           email:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           role:
             type:
-              - 'null'
+              - "null"
               - string
           username:
             type:
-              - 'null'
+              - "null"
               - string
           billing:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               first_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               last_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               company:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address_1:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address_2:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               postcode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               phone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           shipping:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               first_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               last_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               company:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address_1:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address_2:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               postcode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           is_paying_customer:
             type:
-              - 'null'
+              - "null"
               - boolean
           avatar_url:
             type:
-              - 'null'
+              - "null"
               - string
           meta_data:
             type:
-              - 'null'
+              - "null"
               - array
               - object
             oneOf:
               - type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                       - string
                       - array
               - type: array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     key:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     value:
                       type:
-                        - 'null'
+                        - "null"
                         - object
                         - string
                         - array
           _links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               self:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     href:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               collection:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     href:
                       type:
-                        - 'null'
+                        - "null"
                         - string
           shop_url:
             type:
-              - 'null'
+              - "null"
               - string
   coupons_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -308,190 +308,190 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           code:
             type:
-              - 'null'
+              - "null"
               - string
           amount:
             type:
-              - 'null'
+              - "null"
               - string
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_created_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_modified:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_modified_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           discount_type:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           date_expires:
             type:
-              - 'null'
+              - "null"
               - string
           date_expires_gmt:
             type:
-              - 'null'
+              - "null"
               - string
           usage_count:
             type:
-              - 'null'
+              - "null"
               - integer
           individual_use:
             type:
-              - 'null'
+              - "null"
               - boolean
           product_ids:
             type:
-              - 'null'
+              - "null"
               - array
           excluded_product_ids:
             type:
-              - 'null'
+              - "null"
               - array
           usage_limit:
             type:
-              - 'null'
+              - "null"
               - integer
           usage_limit_per_user:
             type:
-              - 'null'
+              - "null"
               - integer
           limit_usage_to_x_items:
             type:
-              - 'null'
+              - "null"
               - integer
           free_shipping:
             type:
-              - 'null'
+              - "null"
               - boolean
           product_categories:
             type:
-              - 'null'
+              - "null"
               - array
           excluded_product_categories:
             type:
-              - 'null'
+              - "null"
               - array
           exclude_sale_items:
             type:
-              - 'null'
+              - "null"
               - boolean
           minimum_amount:
             type:
-              - 'null'
+              - "null"
               - string
           maximum_amount:
             type:
-              - 'null'
+              - "null"
               - string
           email_restrictions:
             type:
-              - 'null'
+              - "null"
               - array
           used_by:
             type:
-              - 'null'
+              - "null"
               - array
           meta_data:
             type:
-              - 'null'
+              - "null"
               - array
               - object
             oneOf:
               - type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                       - string
                       - array
               - type: array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     key:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     value:
                       type:
-                        - 'null'
+                        - "null"
                         - object
                         - string
                         - array
           _links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               self:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     href:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               collection:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     href:
                       type:
-                        - 'null'
+                        - "null"
                         - string
           shop_url:
             type:
-              - 'null'
+              - "null"
               - string
   orders_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -507,522 +507,522 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           parent_id:
             type:
-              - 'null'
+              - "null"
               - integer
           number:
             type:
-              - 'null'
+              - "null"
               - string
           order_key:
             type:
-              - 'null'
+              - "null"
               - string
           created_via:
             type:
-              - 'null'
+              - "null"
               - string
           version:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_created_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_modified:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_modified_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           discount_total:
             type:
-              - 'null'
+              - "null"
               - string
           discount_tax:
             type:
-              - 'null'
+              - "null"
               - string
           shipping_total:
             type:
-              - 'null'
+              - "null"
               - string
           shipping_tax:
             type:
-              - 'null'
+              - "null"
               - string
           cart_tax:
             type:
-              - 'null'
+              - "null"
               - string
           total:
             type:
-              - 'null'
+              - "null"
               - string
           total_tax:
             type:
-              - 'null'
+              - "null"
               - string
           prices_include_tax:
             type:
-              - 'null'
+              - "null"
               - boolean
           customer_id:
             type:
-              - 'null'
+              - "null"
               - integer
           customer_ip_address:
             type:
-              - 'null'
+              - "null"
               - string
           customer_user_agent:
             type:
-              - 'null'
+              - "null"
               - string
           customer_note:
             type:
-              - 'null'
+              - "null"
               - string
           billing:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               first_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               last_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               company:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address_1:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address_2:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               postcode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               phone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           shipping:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               first_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               last_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               company:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address_1:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address_2:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               postcode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           payment_method:
             type:
-              - 'null'
+              - "null"
               - string
           payment_method_title:
             type:
-              - 'null'
+              - "null"
               - string
           transaction_id:
             type:
-              - 'null'
+              - "null"
               - string
           date_paid:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_paid_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_completed:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_completed_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           cart_hash:
             type:
-              - 'null'
+              - "null"
               - string
           meta_data: &id001
             type:
-              - 'null'
+              - "null"
               - array
               - object
             oneOf:
               - type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                       - string
                       - array
               - type: array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     key:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     value:
                       type:
-                        - 'null'
+                        - "null"
                         - object
                         - string
                         - array
           shop_url:
             type:
-              - 'null'
+              - "null"
               - string
           line_items:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 product_id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 variation_id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 quantity:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 tax_class:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 subtotal:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 subtotal_tax:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 total:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 total_tax:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 taxes: &id002
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     properties:
                       id:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                       rate_code:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       rate_id:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       label:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       compound:
                         type:
-                          - 'null'
+                          - "null"
                           - boolean
                       tax_total:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       shipping_tax_total:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       meta_data: *id001
                 meta_data: *id001
                 sku:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 price:
                   type:
-                    - 'null'
+                    - "null"
                     - number
           tax_lines: *id002
           shipping_lines:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 method_title:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 method_id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 total:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 total_tax:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 taxes: *id002
                 meta_data: *id001
           fee_lines:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 tax_class:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 tax_status:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 total:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 total_tax:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 taxes: *id002
                 meta_data: *id001
           coupon_lines:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 code:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 discount:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 discount_tax:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 meta_data: *id001
           refunds:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 reason:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 total:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           set_paid:
             type:
-              - 'null'
+              - "null"
               - boolean
           _links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               self:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     href:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               collection:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     href:
                       type:
-                        - 'null'
+                        - "null"
                         - string
   order_notes_stream:
     $ref: "#/definitions/base_stream"
@@ -1046,33 +1046,33 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           author:
             type:
-              - 'null'
+              - "null"
               - string
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_created_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           note:
             type:
-              - 'null'
+              - "null"
               - string
           custom_note:
             type:
-              - 'null'
+              - "null"
               - boolean
           added_by_user:
             type:
-              - 'null'
+              - "null"
               - boolean
   products_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -1088,440 +1088,440 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           permalink:
             type:
-              - 'null'
+              - "null"
               - string
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_created_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_modified:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_modified_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           type:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           features:
             type:
-              - 'null'
+              - "null"
               - boolean
           catalog_visibility:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           short_description:
             type:
-              - 'null'
+              - "null"
               - string
           sku:
             type:
-              - 'null'
+              - "null"
               - string
           price:
             type:
-              - 'null'
+              - "null"
               - string
           regular_price:
             type:
-              - 'null'
+              - "null"
               - string
           sale_price:
             type:
-              - 'null'
+              - "null"
               - string
           date_on_sale_from:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_on_sale_from_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_on_sale_to:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_on_sale_to_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           price_html:
             type:
-              - 'null'
+              - "null"
               - string
           on_sale:
             type:
-              - 'null'
+              - "null"
               - boolean
           purchasable:
             type:
-              - 'null'
+              - "null"
               - boolean
           total_sales:
             type:
-              - 'null'
+              - "null"
               - integer
           virtual:
             type:
-              - 'null'
+              - "null"
               - boolean
           downloadable:
             type:
-              - 'null'
+              - "null"
               - boolean
           downloads:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 file:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           download_limit:
             type:
-              - 'null'
+              - "null"
               - integer
           download_expiry:
             type:
-              - 'null'
+              - "null"
               - integer
           external_url:
             type:
-              - 'null'
+              - "null"
               - string
           button_text:
             type:
-              - 'null'
+              - "null"
               - string
           tax_status:
             type:
-              - 'null'
+              - "null"
               - string
           tax_class:
             type:
-              - 'null'
+              - "null"
               - string
           manage_stock:
             type:
-              - 'null'
+              - "null"
               - boolean
           stock_quantity:
             type:
-              - 'null'
+              - "null"
               - integer
           stock_status:
             type:
-              - 'null'
+              - "null"
               - string
           backorders:
             type:
-              - 'null'
+              - "null"
               - string
           backorders_allowed:
             type:
-              - 'null'
+              - "null"
               - boolean
           backordered:
             type:
-              - 'null'
+              - "null"
               - boolean
           sold_individually:
             type:
-              - 'null'
+              - "null"
               - boolean
           weight:
             type:
-              - 'null'
+              - "null"
               - string
           dimensions:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               length:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               width:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               height:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           shipping_required:
             type:
-              - 'null'
+              - "null"
               - boolean
           shipping_taxable:
             type:
-              - 'null'
+              - "null"
               - boolean
           shipping_class:
             type:
-              - 'null'
+              - "null"
               - string
           shipping_class_id:
             type:
-              - 'null'
+              - "null"
               - integer
           reviews_allowed:
             type:
-              - 'null'
+              - "null"
               - boolean
           average_rating:
             type:
-              - 'null'
+              - "null"
               - string
           rating_count:
             type:
-              - 'null'
+              - "null"
               - integer
           related_ids:
             type:
-              - 'null'
+              - "null"
               - array
           upsell_ids:
             type:
-              - 'null'
+              - "null"
               - array
           cross_sell_ids:
             type:
-              - 'null'
+              - "null"
               - array
           parent_id:
             type:
-              - 'null'
+              - "null"
               - integer
           purchase_note:
             type:
-              - 'null'
+              - "null"
               - string
           categories: &id003
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 slug:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           tags: *id003
           images:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 date_created:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 date_created_gmt:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 date_modified:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 date_modified_gmt:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 src:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 alt:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           attributes:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 position:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 visible:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
                 variation:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
                 options:
                   type:
-                    - 'null'
+                    - "null"
                     - array
           default_attributes:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 option:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           variations:
             type:
-              - 'null'
+              - "null"
               - array
           grouped_products:
             type:
-              - 'null'
+              - "null"
               - array
           menu_order:
             type:
-              - 'null'
+              - "null"
               - integer
           meta_data:
             type:
-              - 'null'
+              - "null"
               - array
               - object
             oneOf:
               - type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                       - string
                       - array
               - type: array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     key:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     value:
                       type:
-                        - 'null'
+                        - "null"
                         - object
                         - string
                         - array
@@ -1532,88 +1532,88 @@ definitions:
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url_meta:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     origin:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     position:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                 title:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 author:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 date:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 format:
                   type:
-                    - 'null'
+                    - "null"
                     - boolean
                 excerpt:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 rel:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 context:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 block_context:
                   type: object
                   properties:
                     text:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     link:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                 img:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     alt_text:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     src:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     width:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     height:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                 classes:
                   type:
-                    - 'null'
+                    - "null"
                     - array
   product_variations_stream:
     $ref: "#/definitions/base_stream"
@@ -1637,293 +1637,293 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_created_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_modified:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_modified_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           description:
             type:
-              - 'null'
+              - "null"
               - string
           permalink:
             type:
-              - 'null'
+              - "null"
               - string
           sku:
             type:
-              - 'null'
+              - "null"
               - string
           price:
             type:
-              - 'null'
+              - "null"
               - string
           regular_price:
             type:
-              - 'null'
+              - "null"
               - string
           sale_price:
             type:
-              - 'null'
+              - "null"
               - string
           date_on_sale_from:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_on_sale_from_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_on_sale_to:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_on_sale_to_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           on_sale:
             type:
-              - 'null'
+              - "null"
               - boolean
           status:
             type:
-              - 'null'
+              - "null"
               - string
           purchasable:
             type:
-              - 'null'
+              - "null"
               - boolean
           virtual:
             type:
-              - 'null'
+              - "null"
               - boolean
           downloadable:
             type:
-              - 'null'
+              - "null"
               - boolean
           downloads:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 file:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           download_limit:
             type:
-              - 'null'
+              - "null"
               - integer
           download_expiry:
             type:
-              - 'null'
+              - "null"
               - integer
           tax_status:
             type:
-              - 'null'
+              - "null"
               - string
           tax_class:
             type:
-              - 'null'
+              - "null"
               - string
           manage_stock:
             type:
-              - 'null'
+              - "null"
               - string
           stock_quantity:
             type:
-              - 'null'
+              - "null"
               - integer
           stock_status:
             type:
-              - 'null'
+              - "null"
               - string
           backorders:
             type:
-              - 'null'
+              - "null"
               - string
           backorders_allowed:
             type:
-              - 'null'
+              - "null"
               - boolean
           backordered:
             type:
-              - 'null'
+              - "null"
               - boolean
           weight:
             type:
-              - 'null'
+              - "null"
               - string
           dimensions:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               length:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               width:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               height:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           shipping_class:
             type:
-              - 'null'
+              - "null"
               - string
           shipping_class_id:
             type:
-              - 'null'
+              - "null"
               - integer
           image:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 date_created:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 date_created_gmt:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 date_modified:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 date_modified_gmt:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 src:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 alt:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           attributes:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 option:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           menu_order:
             type:
-              - 'null'
+              - "null"
               - integer
           meta_data:
             type:
-              - 'null'
+              - "null"
               - array
               - object
             oneOf:
               - type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                       - string
                       - array
               - type: array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     key:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     value:
                       type:
-                        - 'null'
+                        - "null"
                         - object
                         - string
                         - array
@@ -1941,73 +1941,73 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           order:
             type:
-              - 'null'
+              - "null"
               - string
               - integer
           enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           method_title:
             type:
-              - 'null'
+              - "null"
               - string
           method_description:
             type:
-              - 'null'
+              - "null"
               - string
           method_supports:
             type:
-              - 'null'
+              - "null"
               - array
           settings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               label:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               description:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               value:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               default:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               tip:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               placeholder:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   product_attributes_stream:
     $ref: "#/definitions/base_stream"
@@ -2023,27 +2023,27 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           order_by:
             type:
-              - 'null'
+              - "null"
               - string
           has_archives:
             type:
-              - 'null'
+              - "null"
               - boolean
   product_attribute_terms_stream:
     $ref: "#/definitions/base_stream"
@@ -2067,27 +2067,27 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           menu_order:
             type:
-              - 'null'
+              - "null"
               - integer
           count:
             type:
-              - 'null'
+              - "null"
               - integer
   product_categories_stream:
     $ref: "#/definitions/base_stream"
@@ -2103,80 +2103,80 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           parent:
             type:
-              - 'null'
+              - "null"
               - integer
           description:
             type:
-              - 'null'
+              - "null"
               - string
           display:
             type:
-              - 'null'
+              - "null"
               - string
           image:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 date_created:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 date_created_gmt:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 date_modified:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 date_modified_gmt:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   format: date-time
                 src:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 alt:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           menu_order:
             type:
-              - 'null'
+              - "null"
               - integer
           count:
             type:
-              - 'null'
+              - "null"
               - integer
   product_reviews_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -2203,45 +2203,45 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_created_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           product_id:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - string
           reviewer:
             type:
-              - 'null'
+              - "null"
               - string
           reviewer_email:
             type:
-              - 'null'
+              - "null"
               - string
           review:
             type:
-              - 'null'
+              - "null"
               - string
           rating:
             type:
-              - 'null'
+              - "null"
               - integer
           verified:
             type:
-              - 'null'
+              - "null"
               - boolean
   product_shipping_classes_stream:
     $ref: "#/definitions/base_stream"
@@ -2257,23 +2257,23 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           count:
             type:
-              - 'null'
+              - "null"
               - integer
   product_tags_stream:
     $ref: "#/definitions/base_stream"
@@ -2289,23 +2289,23 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           count:
             type:
-              - 'null'
+              - "null"
               - integer
   refunds_stream:
     $ref: "#/definitions/base_stream"
@@ -2329,170 +2329,170 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_created_gmt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           amount:
             type:
-              - 'null'
+              - "null"
               - string
           reason:
             type:
-              - 'null'
+              - "null"
               - string
           refunded_by:
             type:
-              - 'null'
+              - "null"
               - integer
           refunded_payment:
             type:
-              - 'null'
+              - "null"
               - boolean
           meta_data: &id004
             type:
-              - 'null'
+              - "null"
               - array
               - object
             oneOf:
               - type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   key:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                       - string
                       - array
               - type: array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     key:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     value:
                       type:
-                        - 'null'
+                        - "null"
                         - object
                         - string
                         - array
           line_items:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 product_id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 variation_id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 quantity:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 tax_class:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                     - integer
                 subtotal:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 subtotal_tax:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 total:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 total_tax:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 taxes:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     properties:
                       id:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                       total:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       subtotal:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       refund_total:
                         type:
-                          - 'null'
+                          - "null"
                           - number
                 meta_data: *id004
                 sku:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 price:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                     - integer
                 refund_total:
                   type:
-                    - 'null'
+                    - "null"
                     - number
           api_refund:
             type:
-              - 'null'
+              - "null"
               - boolean
   shipping_methods_stream:
     $ref: "#/definitions/base_stream"
@@ -2508,15 +2508,15 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
   shipping_zones_stream:
     $ref: "#/definitions/base_stream"
@@ -2532,15 +2532,15 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           order:
             type:
-              - 'null'
+              - "null"
               - integer
   shipping_partition_router:
     type: SubstreamPartitionRouter
@@ -2566,11 +2566,11 @@ definitions:
         properties:
           code:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
   shipping_zone_methods_stream:
     $ref: "#/definitions/base_stream"
@@ -2590,68 +2590,68 @@ definitions:
         properties:
           instance_id:
             type:
-              - 'null'
+              - "null"
               - integer
           title:
             type:
-              - 'null'
+              - "null"
               - string
           order:
             type:
-              - 'null'
+              - "null"
               - integer
           enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           method_id:
             type:
-              - 'null'
+              - "null"
               - string
           method_title:
             type:
-              - 'null'
+              - "null"
               - string
           method_description:
             type:
-              - 'null'
+              - "null"
               - string
           settings:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               label:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               description:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               value:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               default:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               tip:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               placeholder:
                 type:
-                  - 'null'
+                  - "null"
                   - string
   system_status_tools_stream:
     $ref: "#/definitions/base_stream"
@@ -2667,31 +2667,31 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           action:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           success:
             type:
-              - 'null'
+              - "null"
               - boolean
           message:
             type:
-              - 'null'
+              - "null"
               - string
           confirm:
             type:
-              - 'null'
+              - "null"
               - boolean
   tax_classes_stream:
     $ref: "#/definitions/base_stream"
@@ -2707,11 +2707,11 @@ definitions:
         properties:
           slug:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
   tax_rates_stream:
     $ref: "#/definitions/base_stream"
@@ -2728,67 +2728,67 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           country:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           postcode:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           postcodes:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           cities:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           rate:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           priority:
             type:
-              - 'null'
+              - "null"
               - integer
           compound:
             type:
-              - 'null'
+              - "null"
               - boolean
           shipping:
             type:
-              - 'null'
+              - "null"
               - boolean
           order:
             type:
-              - 'null'
+              - "null"
               - integer
           class:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/customers_stream"

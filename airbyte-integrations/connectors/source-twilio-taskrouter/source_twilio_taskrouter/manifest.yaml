@@ -50,61 +50,61 @@ definitions:
         properties:
           timeout_actvity_name:
             type:
-              - 'null'
+              - "null"
               - string
           events_filter:
             type:
-              - 'null'
+              - "null"
               - string
           date_updated:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           friendly_name:
             type:
-              - 'null'
+              - "null"
               - string
           timeout_activity_sid:
             type:
-              - 'null'
+              - "null"
               - string
           account_sid:
             type:
-              - 'null'
+              - "null"
               - string
           default_acitvity_name:
             type:
-              - 'null'
+              - "null"
               - string
           multi_task_enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           event_callback_url:
             type:
-              - 'null'
+              - "null"
               - string
           sid:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           default_activity_sid:
             type:
-              - 'null'
+              - "null"
               - string
           links:
             type:
-              - 'null'
+              - "null"
               - object
   workspace_partition_router:
     type: SubstreamPartitionRouter
@@ -135,58 +135,58 @@ definitions:
         properties:
           account_sid:
             type:
-              - 'null'
+              - "null"
               - string
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           date_updated:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           workspace_sid:
             type:
-              - 'null'
+              - "null"
               - string
           attributes:
             type:
-              - 'null'
+              - "null"
               - string
           date_status_changed:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           friendly_name:
             type:
-              - 'null'
+              - "null"
               - string
           available:
             type:
-              - 'null'
+              - "null"
               - boolean
           sid:
             type:
-              - 'null'
+              - "null"
               - string
           actvity_name:
             type:
-              - 'null'
+              - "null"
               - string
           activity_sid:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           links:
             type:
-              - 'null'
+              - "null"
               - object
 streams:
   - "#/definitions/workspaces_stream"

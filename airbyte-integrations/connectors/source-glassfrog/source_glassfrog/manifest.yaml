@@ -46,7 +46,7 @@ definitions:
             default: 0
           election:
             type:
-              - 'null'
+              - "null"
               - string
             default:
           exclude_from_meetings:
@@ -54,21 +54,21 @@ definitions:
             default: false
           focus:
             type:
-              - 'null'
+              - "null"
               - string
-            default: ''
+            default: ""
           links:
             type: object
             default: {}
             properties:
               person:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
               role:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
   checklist_items_stream:
@@ -90,13 +90,13 @@ definitions:
             default: 0
           description:
             type: string
-            default: ''
+            default: ""
           frequency:
             type: string
-            default: ''
+            default: ""
           link:
             type: string
-            default: ''
+            default: ""
           global:
             type: boolean
             default: false
@@ -106,12 +106,12 @@ definitions:
             properties:
               circle:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
               role:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
   circles_stream:
@@ -133,13 +133,13 @@ definitions:
             default: 0
           name:
             type: string
-            default: ''
+            default: ""
           short_name:
             type: string
-            default: ''
+            default: ""
           strategy:
             type:
-              - 'null'
+              - "null"
               - string
             default:
           organization_id:
@@ -188,17 +188,17 @@ definitions:
             default: 0
           field_name:
             type: string
-            default: ''
+            default: ""
           field_value:
             type: string
-            default: ''
+            default: ""
           links:
             type: object
             default: {}
             properties:
               role:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
   metrics_stream:
@@ -220,13 +220,13 @@ definitions:
             default: 0
           description:
             type: string
-            default: ''
+            default: ""
           frequency:
             type: string
-            default: ''
+            default: ""
           link:
             type: string
-            default: ''
+            default: ""
           global:
             type: boolean
             default: false
@@ -236,12 +236,12 @@ definitions:
             properties:
               role:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
               circle:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
   people_stream:
@@ -260,52 +260,52 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           tag_names:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           settings:
             type:
-              - 'null'
+              - "null"
               - object
           email:
             type:
-              - 'null'
+              - "null"
               - string
           external_id:
             type:
-              - 'null'
+              - "null"
               - integer
           links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               circles:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
               organization_ids:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
   projects_stream:
     $ref: "#/definitions/base_stream"
@@ -326,38 +326,38 @@ definitions:
             default: 0
           description:
             type: string
-            default: ''
+            default: ""
           status:
             type: string
-            default: ''
+            default: ""
           waiting_on_who:
             type:
-              - 'null'
+              - "null"
               - string
             default:
           waiting_on_what:
             type:
-              - 'null'
+              - "null"
               - string
             default:
           link:
             type:
-              - 'null'
+              - "null"
               - string
             default:
           value:
             type:
-              - 'null'
+              - "null"
               - integer
             default:
           effort:
             type:
-              - 'null'
+              - "null"
               - integer
             default:
           roi:
             type:
-              - 'null'
+              - "null"
               - number
             default:
           private_to_circle:
@@ -366,33 +366,33 @@ definitions:
           created_at:
             type: string
             format: date-time
-            default: ''
+            default: ""
           archived_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
             default:
           type:
             type: string
-            default: ''
+            default: ""
           links:
             type: object
             default: {}
             properties:
               role:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
               person:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
               circle:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
   roles_stream:
@@ -417,22 +417,22 @@ definitions:
             default: []
             items:
               type: string
-              default: ''
+              default: ""
           name:
             type: string
-            default: ''
+            default: ""
           is_core:
             type: boolean
             default: false
           name_with_circle_for_core_roles:
             type: string
-            default: ''
+            default: ""
           purpose:
             type: string
-            default: ''
+            default: ""
           elected_until:
             type:
-              - 'null'
+              - "null"
               - string
             format: date
             default:
@@ -445,12 +445,12 @@ definitions:
             properties:
               circle:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
               supporting_circle:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 default:
               domains:
@@ -458,7 +458,7 @@ definitions:
                 default: []
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                   default:
               accountabilities:
@@ -466,7 +466,7 @@ definitions:
                 default: []
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                   default:
               people:
@@ -474,7 +474,7 @@ definitions:
                 default: []
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                   default:
 streams:

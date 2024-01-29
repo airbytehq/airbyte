@@ -71,38 +71,38 @@ definitions:
         properties:
           edit_history_tweet_ids:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           text:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           lang:
             type:
-              - 'null'
+              - "null"
               - string
           author_id:
             type:
-              - 'null'
+              - "null"
               - string
           conversation_id:
             type:
-              - 'null'
+              - "null"
               - string
           in_reply_to_user_id:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/tweets_stream"

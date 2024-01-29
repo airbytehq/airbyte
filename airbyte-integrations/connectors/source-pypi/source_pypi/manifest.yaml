@@ -62,7 +62,7 @@ definitions:
                 description: URL to find issues and bugs for the project
                 type:
                   - string
-                  - 'null'
+                  - "null"
               classifiers:
                 description: Trove Classifier. Corresponds to https://packaging.python.org/specifications/core-metadata/#classifier-multiple-use
                 type: array
@@ -75,19 +75,19 @@ definitions:
                 description: Corresponds to https://packaging.python.org/specifications/core-metadata/#description-content-type
                 type:
                   - string
-                  - 'null'
+                  - "null"
               docs_url:
                 description: URL to the project's documentation
                 type:
                   - string
-                  - 'null'
+                  - "null"
               download_url:
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
                 type:
                   - string
-                  - 'null'
+                  - "null"
               downloads:
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
                 type: object
               home_page:
                 description: URL to project home page
@@ -99,17 +99,17 @@ definitions:
                 description: Project's open source license
                 type:
                   - string
-                  - 'null'
+                  - "null"
               maintainer:
                 description: Project maintainer name
                 type:
                   - string
-                  - 'null'
+                  - "null"
               maintainer_email:
                 description: Project maintainer email address
                 type:
                   - string
-                  - 'null'
+                  - "null"
               name:
                 description: Project's raw (non-normailzed name)
                 type: string
@@ -117,9 +117,9 @@ definitions:
                 description: URL to the project page
                 type: string
               platform:
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
                 type:
-                  - 'null'
+                  - "null"
                   - string
               project_url:
                 description: URL to the project page
@@ -129,7 +129,7 @@ definitions:
                 patternProperties:
                   .*:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               release_url:
                 description: URL of the release page of the version of the project
@@ -138,19 +138,19 @@ definitions:
                 description: Calculated project dependencies. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-dist-multiple-use
                 type:
                   - array
-                  - 'null'
+                  - "null"
                 items:
                   type: string
               requires_python:
                 description: Python runtime version required for project. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-python
                 type:
                   - string
-                  - 'null'
+                  - "null"
               summary:
                 description: A one-line summary of what the distribution does.. Corresponds to https://packaging.python.org/specifications/core-metadata/#summary
                 type:
                   - string
-                  - 'null'
+                  - "null"
               version:
                 description: A string containing the distributions version number in the format specified in PEP 440. Corresponds to https://packaging.python.org/specifications/core-metadata/#version
                 type: string
@@ -161,7 +161,7 @@ definitions:
                 description: Reason for applying PEP 592 version yank
                 type:
                   - string
-                  - 'null'
+                  - "null"
           last_serial:
             type: integer
             description: Monotonically increasing integer sequence that changes every time the project is updated
@@ -187,7 +187,7 @@ definitions:
                         - yanked_reason
                       properties:
                         comment_text:
-                          description: '[DEPRECATED]'
+                          description: "[DEPRECATED]"
                           type: string
                         digests:
                           description: The file checksums
@@ -200,7 +200,7 @@ definitions:
                               description: The SHA256 checksum of the release file
                               type: string
                         downloads:
-                          description: '[DEPRECATED]'
+                          description: "[DEPRECATED]"
                           type: integer
                         filename:
                           description: Full filename (including extension)
@@ -209,7 +209,7 @@ definitions:
                           description: Indicates whether a $(filename).asc GPG signature file was provided
                           type: boolean
                         md5_digest:
-                          description: '[DEPRECATED]'
+                          description: "[DEPRECATED]"
                           type: string
                         packagetype:
                           description: "Release file type: 'sdist', 'bdist_wheel', etc"
@@ -221,7 +221,7 @@ definitions:
                           description: Python runtime version required for project. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-python
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         size:
                           description: File size in bytes
                           type: integer
@@ -241,7 +241,7 @@ definitions:
                           description: PEP 592 reason for yanking release file
                           type:
                             - string
-                            - 'null'
+                            - "null"
           urls:
             type: array
             description: A list of release artifacts associated with a version
@@ -260,7 +260,7 @@ definitions:
                   - yanked_reason
                 properties:
                   comment_text:
-                    description: '[DEPRECATED]'
+                    description: "[DEPRECATED]"
                     type: string
                   digests:
                     description: The file checksums
@@ -273,7 +273,7 @@ definitions:
                         description: The SHA256 checksum of the release file
                         type: string
                   downloads:
-                    description: '[DEPRECATED]'
+                    description: "[DEPRECATED]"
                     type: integer
                   filename:
                     description: Full filename (including extension)
@@ -282,7 +282,7 @@ definitions:
                     description: Indicates whether a $(filename).asc GPG signature file was provided
                     type: boolean
                   md5_digest:
-                    description: '[DEPRECATED]'
+                    description: "[DEPRECATED]"
                     type: string
                   packagetype:
                     description: "Release file type: 'sdist', 'bdist_wheel', etc"
@@ -294,7 +294,7 @@ definitions:
                     description: Python runtime version required for project. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-python
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   size:
                     description: File size in bytes
                     type: integer
@@ -314,7 +314,7 @@ definitions:
                     description: PEP 592 reason for yanking release file
                     type:
                       - string
-                      - 'null'
+                      - "null"
           vulnerabilities:
             type: array
             description: A mapping of version identifiers to vulnerability information
@@ -324,34 +324,34 @@ definitions:
                 aliases:
                   type:
                     - array
-                    - 'null'
+                    - "null"
                   description: A list of CVE vulns
                   items:
                     type: string
                 details:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                   description: A description of the vulnerability
                 fixed_in:
                   type:
                     - array
-                    - 'null'
+                    - "null"
                   description: A list of versions that are fixed
                   items:
                     type: string
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 link:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 source:
                   type:
                     - string
-                    - 'null'
+                    - "null"
   release_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -392,7 +392,7 @@ definitions:
                 description: URL to find issues and bugs for the project
                 type:
                   - string
-                  - 'null'
+                  - "null"
               classifiers:
                 description: Trove Classifier. Corresponds to https://packaging.python.org/specifications/core-metadata/#classifier-multiple-use
                 type: array
@@ -405,19 +405,19 @@ definitions:
                 description: Corresponds to https://packaging.python.org/specifications/core-metadata/#description-content-type
                 type:
                   - string
-                  - 'null'
+                  - "null"
               docs_url:
                 description: URL to the project's documentation
                 type:
                   - string
-                  - 'null'
+                  - "null"
               download_url:
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
                 type:
                   - string
-                  - 'null'
+                  - "null"
               downloads:
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
                 type: object
               home_page:
                 description: URL to project home page
@@ -429,17 +429,17 @@ definitions:
                 description: Project's open source license
                 type:
                   - string
-                  - 'null'
+                  - "null"
               maintainer:
                 description: Project maintainer name
                 type:
                   - string
-                  - 'null'
+                  - "null"
               maintainer_email:
                 description: Project maintainer email address
                 type:
                   - string
-                  - 'null'
+                  - "null"
               name:
                 description: Project's raw (non-normailzed name)
                 type: string
@@ -447,9 +447,9 @@ definitions:
                 description: URL to the project page
                 type: string
               platform:
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
                 type:
-                  - 'null'
+                  - "null"
                   - string
               project_url:
                 description: URL to the project page
@@ -459,7 +459,7 @@ definitions:
                 patternProperties:
                   .*:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               release_url:
                 description: URL of the release page of the version of the project
@@ -468,19 +468,19 @@ definitions:
                 description: Calculated project dependencies. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-dist-multiple-use
                 type:
                   - array
-                  - 'null'
+                  - "null"
                 items:
                   type: string
               requires_python:
                 description: Python runtime version required for project. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-python
                 type:
                   - string
-                  - 'null'
+                  - "null"
               summary:
                 description: A one-line summary of what the distribution does.. Corresponds to https://packaging.python.org/specifications/core-metadata/#summary
                 type:
                   - string
-                  - 'null'
+                  - "null"
               version:
                 description: A string containing the distributions version number in the format specified in PEP 440. Corresponds to https://packaging.python.org/specifications/core-metadata/#version
                 type: string
@@ -491,7 +491,7 @@ definitions:
                 description: Reason for applying PEP 592 version yank
                 type:
                   - string
-                  - 'null'
+                  - "null"
           last_serial:
             type: integer
             description: Monotonically increasing integer sequence that changes every time the project is updated
@@ -513,7 +513,7 @@ definitions:
                   - yanked_reason
                 properties:
                   comment_text:
-                    description: '[DEPRECATED]'
+                    description: "[DEPRECATED]"
                     type: string
                   digests:
                     description: The file checksums
@@ -526,7 +526,7 @@ definitions:
                         description: The SHA256 checksum of the release file
                         type: string
                   downloads:
-                    description: '[DEPRECATED]'
+                    description: "[DEPRECATED]"
                     type: integer
                   filename:
                     description: Full filename (including extension)
@@ -535,7 +535,7 @@ definitions:
                     description: Indicates whether a $(filename).asc GPG signature file was provided
                     type: boolean
                   md5_digest:
-                    description: '[DEPRECATED]'
+                    description: "[DEPRECATED]"
                     type: string
                   packagetype:
                     description: "Release file type: 'sdist', 'bdist_wheel', etc"
@@ -547,7 +547,7 @@ definitions:
                     description: Python runtime version required for project. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-python
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   size:
                     description: File size in bytes
                     type: integer
@@ -567,7 +567,7 @@ definitions:
                     description: PEP 592 reason for yanking release file
                     type:
                       - string
-                      - 'null'
+                      - "null"
           vulnerabilities:
             type: array
             description: A mapping of version identifiers to vulnerability information
@@ -577,34 +577,34 @@ definitions:
                 aliases:
                   type:
                     - array
-                    - 'null'
+                    - "null"
                   description: A list of CVE vulns
                   items:
                     type: string
                 details:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                   description: A description of the vulnerability
                 fixed_in:
                   type:
                     - array
-                    - 'null'
+                    - "null"
                   description: A list of versions that are fixed
                   items:
                     type: string
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 link:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 source:
                   type:
                     - string
-                    - 'null'
+                    - "null"
   stats_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -631,7 +631,7 @@ definitions:
                 properties:
                   size:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
           total_packages_size:
             type: integer

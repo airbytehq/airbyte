@@ -36,21 +36,21 @@ definitions:
           brand_name:
             type:
               - string
-              - 'null'
+              - "null"
           avatar_id:
             type: string
           brand_image:
             type:
               - string
-              - 'null'
+              - "null"
           user_role:
             type:
               - string
-              - 'null'
+              - "null"
           facebook_page_id:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - avatar_id
   avatars_partition_router:
@@ -74,7 +74,7 @@ definitions:
           avatar_id: "{{ stream_slice.avatar_id }}"
       partition_router:
         $ref: "#/definitions/avatars_partition_router"
-  # API Docs: https://smartengage.com/docs/#list-all-custom-fields
+    # API Docs: https://smartengage.com/docs/#list-all-custom-fields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -85,7 +85,7 @@ definitions:
           tag_name:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - tag_id
   custom_fields_stream:
@@ -102,7 +102,7 @@ definitions:
           avatar_id: "{{ stream_slice.avatar_id }}"
       partition_router:
         $ref: "#/definitions/avatars_partition_router"
-  # API Docs: https://smartengage.com/docs/#list-all-sequences
+    # API Docs: https://smartengage.com/docs/#list-all-sequences
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -113,7 +113,7 @@ definitions:
           custom_field_name:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - custom_field_id
   sequences_stream:
@@ -141,7 +141,7 @@ definitions:
           sequence_name:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - sequence_id
 streams:

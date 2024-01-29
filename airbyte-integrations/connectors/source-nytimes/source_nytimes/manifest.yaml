@@ -41,26 +41,26 @@ definitions:
         properties:
           web_url:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article URL.
           snippet:
             type:
-              - 'null'
+              - "null"
               - string
           print_page:
             type:
-              - 'null'
+              - "null"
               - string
             description: Page in print (e.g. 1).
           print_section:
             type:
-              - 'null'
+              - "null"
               - string
             description: Section in print (e.g. A).
           source:
             type:
-              - 'null'
+              - "null"
               - string
           multimedia:
             type: array
@@ -69,85 +69,85 @@ definitions:
               properties:
                 rank:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 subtype:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 caption:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 credit:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 height:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 width:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 legacy:
                   type: object
                   properties:
                     xlarge:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     xlargewidth:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     xlargeheight:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                 crop_name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           headline:
             type: object
             properties:
               main:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               kicker:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               content_kicker:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               print_headline:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               seo:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               sub:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           keywords:
             type: array
@@ -156,38 +156,38 @@ definitions:
               properties:
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 rank:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 major:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           pub_date:
             type:
-              - 'null'
+              - "null"
               - string
             description: Publication date.
           document_type:
             type:
-              - 'null'
+              - "null"
               - string
             description: Document type (article, multimedia).
           news_desk:
             type:
-              - 'null'
+              - "null"
               - string
             description: Desk in the newsroom that worked on the story (Foreign, Metro, Sports, ...).
           section_name:
             type:
-              - 'null'
+              - "null"
               - string
             description: Section that the article appeared in (New York, Sports, World, ...).
           byline:
@@ -195,7 +195,7 @@ definitions:
             properties:
               original:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               person:
                 type: array
@@ -204,57 +204,57 @@ definitions:
                   properties:
                     firstname:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     middlename:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     lastname:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     qualifier:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     title:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     role:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     organization:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     rank:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
               organization:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           type_of_material:
             type:
-              - 'null'
+              - "null"
               - string
             description: Type of asset (Correction, News, Op-Ed, Review, Video, ...).
           _id:
             type:
-              - 'null'
+              - "null"
               - string
           word_count:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Number of words in the article.
           uri:
             type:
-              - 'null'
+              - "null"
               - string
             description: Uniquely identifies an asset.
   most_popular_emailed_stream:
@@ -275,110 +275,110 @@ definitions:
         properties:
           url:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's URL.
           adx_keywords:
             type:
-              - 'null'
+              - "null"
               - string
             description: Semicolon separated list of keywords.
           subsection:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's subsection (e.g. Politics). Can be empty string.
           column:
             type:
-              - 'null'
+              - "null"
               - string
             description: Deprecated. Set to null.
           eta_id:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Deprecated. Set to 0.
           section:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's section (e.g. Sports).
           id:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Asset ID number (e.g. 100000007772696).
           asset_id:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Asset ID number (e.g. 100000007772696).
           nytdsection:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's section (e.g. sports).
           byline:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's byline (e.g. By Thomas L. Friedman).
           type:
             type:
-              - 'null'
+              - "null"
               - string
             description: Asset type (e.g. Article, Interactive, ...).
           title:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's headline (e.g. When the Cellos Play, the Cows Come Home).
           abstract:
             type:
-              - 'null'
+              - "null"
               - string
             description: Brief summary of the article.
           published_date:
             type:
-              - 'null'
+              - "null"
               - string
             description: When the article was published on the web (e.g. 2021-04-19).
           source:
             type:
-              - 'null'
+              - "null"
               - string
             description: Publisher (e.g. New York Times).
           updated:
             type:
-              - 'null'
+              - "null"
               - string
             description: When the article was last updated (e.g. 2021-05-12 06:32:03).
           des_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of description facets (e.g. Quarantine (Life and Culture)).
           org_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of organization facets (e.g. Sullivan Street Bakery).
           per_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of person facets (e.g. Bittman, Mark).
           geo_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of geographic facets (e.g. Canada).
           media:
@@ -388,27 +388,27 @@ definitions:
               properties:
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Asset type (e.g. image).
                 subtype:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Asset subtype (e.g. photo).
                 caption:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Media caption.
                 copyright:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Media credit.
                 approved_for_syndication:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                   description: Whether media is approved for syndication.
                 media-metadata:
@@ -418,29 +418,29 @@ definitions:
                     properties:
                       url:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                         description: Image's URL.
                       format:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                         description: Image's crop name.
                       height:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                         description: Image's height (e.g. 293).
                       width:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                         description: Image's width (e.g. 440).
                   description: Media metadata (url, width, height, ...).
             description: Array of images.
           uri:
             type:
-              - 'null'
+              - "null"
               - string
             description: An article's globally unique identifier.
   most_popular_shared_stream:
@@ -461,110 +461,110 @@ definitions:
         properties:
           url:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's URL.
           adx_keywords:
             type:
-              - 'null'
+              - "null"
               - string
             description: Semicolon separated list of keywords.
           subsection:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's subsection (e.g. Politics). Can be empty string.
           column:
             type:
-              - 'null'
+              - "null"
               - string
             description: Deprecated. Set to null.
           eta_id:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Deprecated. Set to 0.
           section:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's section (e.g. Sports).
           id:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Asset ID number (e.g. 100000007772696).
           asset_id:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Asset ID number (e.g. 100000007772696).
           nytdsection:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's section (e.g. sports).
           byline:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's byline (e.g. By Thomas L. Friedman).
           type:
             type:
-              - 'null'
+              - "null"
               - string
             description: Asset type (e.g. Article, Interactive, ...).
           title:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's headline (e.g. When the Cellos Play, the Cows Come Home).
           abstract:
             type:
-              - 'null'
+              - "null"
               - string
             description: Brief summary of the article.
           published_date:
             type:
-              - 'null'
+              - "null"
               - string
             description: When the article was published on the web (e.g. 2021-04-19).
           source:
             type:
-              - 'null'
+              - "null"
               - string
             description: Publisher (e.g. New York Times).
           updated:
             type:
-              - 'null'
+              - "null"
               - string
             description: When the article was last updated (e.g. 2021-05-12 06:32:03).
           des_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of description facets (e.g. Quarantine (Life and Culture)).
           org_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of organization facets (e.g. Sullivan Street Bakery).
           per_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of person facets (e.g. Bittman, Mark).
           geo_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of geographic facets (e.g. Canada).
           media:
@@ -574,27 +574,27 @@ definitions:
               properties:
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Asset type (e.g. image).
                 subtype:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Asset subtype (e.g. photo).
                 caption:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Media caption.
                 copyright:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Media credit.
                 approved_for_syndication:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                   description: Whether media is approved for syndication.
                 media-metadata:
@@ -604,29 +604,29 @@ definitions:
                     properties:
                       url:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                         description: Image's URL.
                       format:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                         description: Image's crop name.
                       height:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                         description: Image's height (e.g. 293).
                       width:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                         description: Image's width (e.g. 440).
                   description: Media metadata (url, width, height, ...).
             description: Array of images.
           uri:
             type:
-              - 'null'
+              - "null"
               - string
             description: An article's globally unique identifier.
   most_popular_viewed_stream:
@@ -648,90 +648,90 @@ definitions:
         properties:
           url:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's URL.
           adx_keywords:
             type:
-              - 'null'
+              - "null"
               - string
             description: Semicolon separated list of keywords.
           column:
             type:
-              - 'null'
+              - "null"
               - string
             description: Deprecated. Set to null.
           section:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's section (e.g. Sports).
           byline:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's byline (e.g. By Thomas L. Friedman).
           type:
             type:
-              - 'null'
+              - "null"
               - string
             description: Asset type (e.g. Article, Interactive, ...).
           title:
             type:
-              - 'null'
+              - "null"
               - string
             description: Article's headline (e.g. When the Cellos Play, the Cows Come Home).
           abstract:
             type:
-              - 'null'
+              - "null"
               - string
             description: Brief summary of the article.
           published_date:
             type:
-              - 'null'
+              - "null"
               - string
             description: When the article was published on the web (e.g. 2021-04-19).
           source:
             type:
-              - 'null'
+              - "null"
               - string
             description: Publisher (e.g. New York Times).
           id:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Asset ID number (e.g. 100000007772696).
           asset_id:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Asset ID number (e.g. 100000007772696).
           des_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of description facets (e.g. Quarantine (Life and Culture)).
           org_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of organization facets (e.g. Sullivan Street Bakery).
           per_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of person facets (e.g. Bittman, Mark).
           geo_facet:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             description: Array of geographic facets (e.g. Canada).
           media:
@@ -741,27 +741,27 @@ definitions:
               properties:
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Asset type (e.g. image).
                 subtype:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Asset subtype (e.g. photo).
                 caption:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Media caption.
                 copyright:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Media credit.
                 approved_for_syndication:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                   description: Whether media is approved for syndication.
                 media-metadata:
@@ -771,29 +771,29 @@ definitions:
                     properties:
                       url:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                         description: Image's URL.
                       format:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                         description: Image's crop name.
                       height:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                         description: Image's height (e.g. 293).
                       width:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                         description: Image's width (e.g. 440).
                   description: Media metadata (url, width, height, ...).
             description: Array of images.
           uri:
             type:
-              - 'null'
+              - "null"
               - string
             description: An article's globally unique identifier.
 streams:

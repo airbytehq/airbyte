@@ -52,31 +52,31 @@ definitions:
               properties:
                 stage_id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 job_starts_at:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 created_at:
                   type: string
                 language:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 hired_at:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 offer_id:
                   type: integer
                 candidate_id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 overdue_diff:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 updated_at:
                   type: string
@@ -84,25 +84,25 @@ definitions:
                   type: object
                 overdue_at:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 positive_ratings:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 id:
                   type: integer
                 position:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
           source:
             type:
-              - 'null'
+              - "null"
               - string
           adminapp_url:
             type:
-              - 'null'
+              - "null"
               - string
           example:
             type: boolean
@@ -125,7 +125,7 @@ definitions:
             type: boolean
           positive_ratings:
             type:
-              - 'null'
+              - "null"
               - integer
           id:
             type: integer
@@ -139,11 +139,11 @@ definitions:
             type: boolean
           photo_thumb_url:
             type:
-              - 'null'
+              - "null"
               - string
           initials:
             type:
-              - 'null'
+              - "null"
               - string
           followed:
             type: boolean
@@ -151,17 +151,17 @@ definitions:
             type: boolean
           referrer:
             type:
-              - 'null'
+              - "null"
               - string
           my_pending_result_request:
             type: boolean
           admin_id:
             type:
-              - 'null'
+              - "null"
               - integer
           my_last_rating:
             type:
-              - 'null'
+              - "null"
               - string
           notes_count:
             type: integer
@@ -169,7 +169,7 @@ definitions:
             type: string
           last_message_at:
             type:
-              - 'null'
+              - "null"
               - string
   offers_stream:
     # Docs: https://docs.recruitee.com/reference/offers-get
@@ -187,15 +187,15 @@ definitions:
             type: boolean
           employment_type:
             type:
-              - 'null'
+              - "null"
               - string
           eeo_settings:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type: string
@@ -203,17 +203,17 @@ definitions:
             type: string
           adminapp_url:
             type:
-              - 'null'
+              - "null"
               - string
           example:
             type: boolean
           mailbox_email:
             type:
-              - 'null'
+              - "null"
               - string
           pipeline_template:
             type:
-              - 'null'
+              - "null"
               - object
           careers_url:
             type: string
@@ -223,31 +223,31 @@ definitions:
             type: string
           state_name:
             type:
-              - 'null'
+              - "null"
               - string
           street:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type: integer
           hiring_manager_id:
             type:
-              - 'null'
+              - "null"
               - integer
           department:
             type:
-              - 'null'
+              - "null"
               - string
           published_at:
             type:
-              - 'null'
+              - "null"
               - string
           slug:
             type: string
           closed_at:
             type:
-              - 'null'
+              - "null"
               - string
           department_id:
             type: integer
@@ -257,7 +257,7 @@ definitions:
             type: string
           recruiter_id:
             type:
-              - 'null'
+              - "null"
               - integer
           enabled_languages:
             type: array
@@ -278,13 +278,13 @@ definitions:
             type: boolean
           country_code:
             type:
-              - 'null'
+              - "null"
               - string
           followers:
             type: array
           number_of_openings:
             type:
-              - 'null'
+              - "null"
               - integer
           candidates_count:
             type: integer
@@ -292,7 +292,7 @@ definitions:
             type: integer
           job_scheduler:
             type:
-              - 'null'
+              - "null"
               - string
           guid:
             type: string
@@ -302,15 +302,15 @@ definitions:
             type: string
           position:
             type:
-              - 'null'
+              - "null"
               - integer
           postal_code:
             type:
-              - 'null'
+              - "null"
               - string
           state_code:
             type:
-              - 'null'
+              - "null"
               - string
           offer_tags:
             type: array
@@ -345,7 +345,7 @@ definitions:
             type: integer
           status:
             type:
-              - 'null'
+              - "null"
               - string
 streams:
   - "#/definitions/candidates_stream"

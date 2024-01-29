@@ -52,258 +52,258 @@ streams:
           employee_number:
             type:
               - string
-              - 'null'
+              - "null"
           country:
             type:
               - string
-              - 'null'
+              - "null"
           labor_groups:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           is_admin:
             type:
               - boolean
-              - 'null'
+              - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
           street1:
             type:
               - string
-              - 'null'
+              - "null"
           company:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           department:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           subordinates:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           location:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           work_phone:
             type:
               - string
-              - 'null'
+              - "null"
           middle_name:
             type:
               - string
-              - 'null'
+              - "null"
           custom_field_values:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           postal_code:
             type:
               - string
-              - 'null'
+              - "null"
           employments:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           manager:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           banks:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           date_of_birth:
             type:
               - string
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           federal_filing_status:
             type:
               - string
-              - 'null'
+              - "null"
           gender:
             type:
               - string
-              - 'null'
+              - "null"
           personal_email:
             type:
               - string
-              - 'null'
+              - "null"
           personal_phone:
             type:
               - string
-              - 'null'
+              - "null"
           personal_pronoun:
             type:
               - string
-              - 'null'
+              - "null"
           photo_thumbnail_url:
             type:
               - string
-              - 'null'
+              - "null"
           photo_url:
             type:
               - string
-              - 'null'
+              - "null"
           social_security_number:
             type:
               - string
-              - 'null'
+              - "null"
           is_full_admin:
             type:
               - boolean
-              - 'null'
+              - "null"
           last_name:
             type:
               - string
-              - 'null'
+              - "null"
           first_name:
             type:
               - string
-              - 'null'
+              - "null"
           state:
             type:
               - string
-              - 'null'
+              - "null"
           title:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           street2:
             type:
               - string
-              - 'null'
+              - "null"
           work_email:
             type:
               - string
-              - 'null'
+              - "null"
           preferred_name:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
           city:
             type:
               - string
-              - 'null'
+              - "null"
   - type: DeclarativeStream
     name: employments
     primary_key: []
@@ -354,75 +354,75 @@ streams:
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           hire_date:
             type:
               - string
-              - 'null'
+              - "null"
           amount_type:
             type:
               - string
-              - 'null'
+              - "null"
           annual_salary:
             type:
               - string
-              - 'null'
+              - "null"
           comp_type:
             type:
               - string
-              - 'null'
+              - "null"
           pay_rate:
             type:
               - string
-              - 'null'
+              - "null"
           employment_type:
             type:
               - string
-              - 'null'
+              - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
           is_active:
             type:
               - boolean
-              - 'null'
+              - "null"
           is_flsa_exempt:
             type:
               - string
-              - 'null'
+              - "null"
           termination_type:
             type:
               - string
-              - 'null'
+              - "null"
           termination_date:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
           working_hours_per_week:
             type:
               - string
-              - 'null'
+              - "null"
           employment_sub_type:
             type:
               - string
-              - 'null'
+              - "null"
   - type: DeclarativeStream
     name: departments
     primary_key: []
@@ -470,64 +470,64 @@ streams:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           labor_group:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           people:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           company:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
   - type: DeclarativeStream
     name: locations
     primary_key: []
@@ -575,92 +575,92 @@ streams:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           city:
             type:
               - string
-              - 'null'
+              - "null"
           labor_group:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           zip:
             type:
               - string
-              - 'null'
+              - "null"
           people:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           street1:
             type:
               - string
-              - 'null'
+              - "null"
           street2:
             type:
               - string
-              - 'null'
+              - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
           phone:
             type:
               - string
-              - 'null'
+              - "null"
           state:
             type:
               - string
-              - 'null'
+              - "null"
           country:
             type:
               - string
-              - 'null'
+              - "null"
           company:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
   - type: DeclarativeStream
     name: labor_groups
     primary_key: []
@@ -708,78 +708,78 @@ streams:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           code:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
           labor_group_type:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           assigned_members:
             type: object
             properties:
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               next_url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               data:
                 type:
                   - array
-                  - 'null'
+                  - "null"
                 items:
                   type:
                     - object
-                    - 'null'
+                    - "null"
                   properties:
                     url:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     is_primary:
                       type:
                         - boolean
-                        - 'null'
+                        - "null"
                     object:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     ref_object:
                       type:
                         - string
-                        - 'null'
+                        - "null"
   - type: DeclarativeStream
     name: labor_group_types
     primary_key: []
@@ -827,49 +827,49 @@ streams:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           company:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           labor_groups:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
   - type: DeclarativeStream
     name: custom_fields
     primary_key: []
@@ -917,100 +917,100 @@ streams:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           can_manager_view_field:
             type:
               - boolean
-              - 'null'
+              - "null"
           custom_field_values:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           person_during_onboarding:
             type:
               - boolean
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           is_field_completer_person:
             type:
               - boolean
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           is_sensitive:
             type:
               - boolean
-              - 'null'
+              - "null"
           is_field_required:
             type:
               - boolean
-              - 'null'
+              - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
           can_person_view_field:
             type:
               - boolean
-              - 'null'
+              - "null"
           can_person_edit_field:
             type:
               - boolean
-              - 'null'
+              - "null"
           company:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           company_during_hiring:
             type:
               - boolean
-              - 'null'
+              - "null"
           custom_field_type:
             type:
               - string
-              - 'null'
+              - "null"
           help_url:
             type:
-              - 'null'
+              - "null"
               - string
           help_text:
             type:
               - string
-              - 'null'
+              - "null"
           help_url_media:
             type:
-              - 'null'
+              - "null"
               - string
           media_file_type:
             type:
-              - 'null'
+              - "null"
   - type: DeclarativeStream
     name: custom_field_values
     primary_key: []
@@ -1058,18 +1058,18 @@ streams:
           id:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
           value:
             type:
-              - 'null'
+              - "null"
               - string
               - boolean
           custom_field:
@@ -1078,30 +1078,30 @@ streams:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           person:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
   - type: DeclarativeStream
     name: vacation_requests
     primary_key: []
@@ -1149,92 +1149,92 @@ streams:
           status:
             type:
               - string
-              - 'null'
+              - "null"
           vacation_type:
             type: object
             properties:
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           end_date:
             type:
               - string
-              - 'null'
+              - "null"
           creator:
             type: object
             properties:
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
           start_date:
             type:
               - string
-              - 'null'
+              - "null"
           hours:
             type:
               - string
-              - 'null'
+              - "null"
           approved_date:
             type:
               - string
-              - 'null'
+              - "null"
           reason:
             type:
               - string
-              - 'null'
+              - "null"
           person:
             type: object
             properties:
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           created_date:
             type:
               - string
-              - 'null'
+              - "null"
           deny_reason:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
   - type: DeclarativeStream
     name: vacation_types
     primary_key: []
@@ -1282,61 +1282,61 @@ streams:
           status:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           counts_as:
             type:
               - string
-              - 'null'
+              - "null"
           company:
             type: object
             properties:
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
           vacation_requests:
             type: object
             properties:
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           count_as:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
   - type: DeclarativeStream
     name: time_durations
     primary_key: []
@@ -1385,19 +1385,19 @@ streams:
           is_overnight:
             type:
               - boolean
-              - 'null'
+              - "null"
           is_approved:
             type:
               - boolean
-              - 'null'
+              - "null"
           object:
             type:
               - string
-              - 'null'
+              - "null"
           end:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
           person:
             type: object
@@ -1405,70 +1405,70 @@ streams:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           approver:
             type: object
             properties:
               ref_object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               object:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               url:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           labor_group_ids:
             type:
               - string
-              - 'null'
+              - "null"
           hours:
             type:
               - string
-              - 'null'
+              - "null"
           start:
             type:
               - string
-              - 'null'
+              - "null"
           state:
             type:
               - string
-              - 'null'
+              - "null"
           approved_datetime:
             type:
               - string
-              - 'null'
+              - "null"
           valid_status:
             type:
               - string
-              - 'null'
+              - "null"
           date:
             type:
               - string
-              - 'null'
+              - "null"
           activity:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.io/integrations/sources/zenefits

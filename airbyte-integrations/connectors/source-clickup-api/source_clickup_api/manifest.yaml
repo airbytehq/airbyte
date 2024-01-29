@@ -40,19 +40,19 @@ streams:
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               username:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               color:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               profilePicture:
                 type:
-                  - 'null'
+                  - "null"
                   - string
     retriever:
       $ref: "#/definitions/retriever"
@@ -74,19 +74,19 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           color:
             type:
-              - 'null'
+              - "null"
               - string
           avatar:
             type:
-              - 'null'
+              - "null"
               - string
           members:
             type: array
@@ -95,19 +95,19 @@ streams:
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 username:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 color:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 profilePicture:
                   type:
-                    - 'null'
+                    - "null"
                     - string
     retriever:
       $ref: "#/definitions/retriever"
@@ -129,94 +129,94 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           orderindex:
             type:
-              - 'null'
+              - "null"
               - integer
           content:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
               - object
           priority:
             type:
-              - 'null'
+              - "null"
               - string
           assignee:
             type:
-              - 'null'
+              - "null"
               - string
           task_count:
             type:
-              - 'null'
+              - "null"
               - integer
           due_date:
             type:
-              - 'null'
+              - "null"
               - string
           start_date:
             type:
-              - 'null'
+              - "null"
               - string
           archived:
             type:
-              - 'null'
+              - "null"
               - boolean
           override_statuses:
             type:
-              - 'null'
+              - "null"
               - boolean
           permission_level:
             type:
-              - 'null'
+              - "null"
               - string
           folder:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               hidden:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               access:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
           space:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               access:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
     retriever:
       $ref: "#/definitions/retriever"
@@ -238,114 +238,114 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           statuses:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 status:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 color:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 orderindex:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           private:
             type:
-              - 'null'
+              - "null"
               - boolean
           multiple_assignees:
             type:
-              - 'null'
+              - "null"
               - boolean
           assignees:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
           features:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               due_dates:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   enabled:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   start_date:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   remap_due_dates:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   remap_closed_due_date:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
               time_tracking:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   enabled:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
               tags:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   enabled:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
               time_estimates:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   enabled:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
               checklists:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   enabled:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
     retriever:
       $ref: "#/definitions/retriever"
@@ -367,52 +367,52 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           orderindex:
             type:
-              - 'null'
+              - "null"
               - integer
           override_statuses:
             type:
-              - 'null'
+              - "null"
               - boolean
           hidden:
             type:
-              - 'null'
+              - "null"
               - boolean
           task_count:
             type:
-              - 'null'
+              - "null"
               - string
           lists:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
           space:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               access:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
     retriever:
       $ref: "#/definitions/retriever"
@@ -434,144 +434,144 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               status:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               color:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               orderindex:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           orderindex:
             type:
-              - 'null'
+              - "null"
               - string
           date_created:
             type:
-              - 'null'
+              - "null"
               - string
           date_updated:
             type:
-              - 'null'
+              - "null"
               - string
           date_closed:
             type:
-              - 'null'
+              - "null"
               - string
           creator:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               username:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               color:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               profilePicture:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           assignees:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
           checklists:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
           parent:
             type:
-              - 'null'
+              - "null"
               - string
           priority:
             type:
-              - 'null'
+              - "null"
               - object
           due_date:
             type:
-              - 'null'
+              - "null"
               - string
           start_date:
             type:
-              - 'null'
+              - "null"
               - string
           time_estimate:
             type:
-              - 'null'
+              - "null"
               - string
           time_spent:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
           folder:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           space:
             type: object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           list:
             type: object
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
     retriever:
       $ref: "#/definitions/retriever"
