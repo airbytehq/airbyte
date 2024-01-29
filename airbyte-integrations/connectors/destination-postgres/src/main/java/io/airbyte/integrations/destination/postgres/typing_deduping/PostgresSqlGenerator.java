@@ -61,11 +61,8 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
       "timestamptz", "timestamp with time zone",
       "timetz", "time with time zone");
 
-  private final NamingConventionTransformer namingTransformer;
-
   public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
-    this.namingTransformer = namingTransformer;
   }
 
   @Override
@@ -79,7 +76,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     return new StreamId(
         namingTransformer.getNamespace(namespace),
         namingTransformer.convertStreamName(name),
-        namingTransformer.getNamespace(rawNamespaceOverride),
+        namingTransformer.getNamespace(rawNamespaceOverride).toLowerCase(),
         namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase(),
         namespace,
         name);
