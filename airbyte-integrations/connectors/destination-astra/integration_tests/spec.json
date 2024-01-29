@@ -334,8 +334,7 @@
           "astra_db_keyspace": {
             "title": "Astra DB Keyspace",
             "description": "Keyspaces (or Namespaces) serve as containers for organizing data within a database. You can create a new keyspace uisng the Data Explorer tab in the Astra UI. The keyspace default_keyspace is created for you when you create a Vector Database in Astra DB.",
-            "type": "string",
-            "default": "default_keyspace"
+            "type": "string"
           },
           "collection": {
             "title": "Astra DB collection",

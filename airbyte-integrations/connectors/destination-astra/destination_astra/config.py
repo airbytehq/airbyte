@@ -20,8 +20,16 @@ class AstraIndexingModel(BaseModel):
         pattern="^https:\\/\\/([a-z]|[0-9]){8}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){12}-[^\\.]*?\\.apps\\.astra\\.datastax\\.com",
         examples=["https://8292d414-dd1b-4c33-8431-e838bedc04f7-us-east1.apps.astra.datastax.com"],
     )
-    astra_db_keyspace: str = Field(..., title="Astra DB Keyspace", description="Keyspaces (or Namespaces) serve as containers for organizing data within a database. You can create a new keyspace uisng the Data Explorer tab in the Astra UI. The keyspace default_keyspace is created for you when you create a Vector Database in Astra DB.")
-    collection: str = Field(..., title="Astra DB collection", description="Collections hold data. They are analagous to tables in traditional Cassandra terminology. This tool will create the collection with the provided name automatically if it does not already exist. Alternatively, you can create one thorugh the Data Explorer tab in the Astra UI.")
+    astra_db_keyspace: str = Field(
+        ...,
+        title="Astra DB Keyspace",
+        description="Keyspaces (or Namespaces) serve as containers for organizing data within a database. You can create a new keyspace uisng the Data Explorer tab in the Astra UI. The keyspace default_keyspace is created for you when you create a Vector Database in Astra DB.",
+    )
+    collection: str = Field(
+        ...,
+        title="Astra DB collection",
+        description="Collections hold data. They are analagous to tables in traditional Cassandra terminology. This tool will create the collection with the provided name automatically if it does not already exist. Alternatively, you can create one thorugh the Data Explorer tab in the Astra UI.",
+    )
 
     class Config:
         title = "Indexing"
