@@ -7,7 +7,7 @@ import datetime
 import logging
 from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call
 
 import pytest
 from airbyte_cdk.models import (
@@ -384,6 +384,7 @@ def _as_error_trace(stream: str, error_message: str,  internal_message: Optional
     )
 
     return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
+
 
 def _configured_stream(stream: Stream, sync_mode: SyncMode):
     return ConfiguredAirbyteStream(
