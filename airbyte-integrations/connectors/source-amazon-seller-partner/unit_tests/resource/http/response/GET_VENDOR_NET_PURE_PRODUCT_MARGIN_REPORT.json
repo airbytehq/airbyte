@@ -32,18 +32,6 @@
       "endDate": "2021-06-12",
       "asin": "B987654321",
       "netPureProductMargin": 0.1234
-    },
-    {
-      "startDate": "2021-06-13",
-      "endDate": "2021-06-19",
-      "asin": "B123456789",
-      "netPureProductMargin": 0.1234
-    },
-    {
-      "startDate": "2021-06-13",
-      "endDate": "2021-06-19",
-      "asin": "B987654321",
-      "netPureProductMargin": 0.1234
     }
   ]
 }

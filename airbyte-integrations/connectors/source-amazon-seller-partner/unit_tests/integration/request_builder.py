@@ -78,13 +78,8 @@ class RequestBuilder:
         self._body = body
         return self
 
-    @property
-    def url(self) -> str:
-        # TODO: make better?
-        url = self._base_url
-        if self._resource:
-            url = f"{url}/{self._resource}"
-        return url
+    def _url(self) -> str:
+        return f"{self._base_url}/{self._resource}" if self._resource else self._base_url
 
     def build(self) -> HttpRequest:
-        return HttpRequest(url=self.url, query_params=self._query_params, headers=self._headers, body=self._body)
+        return HttpRequest(url=self._url(), query_params=self._query_params, headers=self._headers, body=self._body)
