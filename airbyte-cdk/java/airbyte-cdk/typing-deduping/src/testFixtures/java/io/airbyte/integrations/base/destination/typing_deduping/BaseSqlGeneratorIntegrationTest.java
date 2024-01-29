@@ -13,6 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Streams;
@@ -21,6 +23,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -147,6 +150,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
   protected abstract void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records)
       throws Exception;
+
+  protected abstract boolean supportsSafeCast();
 
   /**
    * The two dump methods are defined identically as in {@link BaseTypingDedupingTest}, but with
@@ -403,18 +408,15 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * to make that assumption (and we might as well exercise that code path).
    */
   @Test
-  public void allTypes() throws Exception {
-    // Add case-sensitive columnName to test json path querying
-    incrementalDedupStream.columns().put(
-        generator.buildColumnId("IamACaseSensitiveColumnName"),
-        AirbyteProtocolType.STRING);
+  public void allTypes_safeCast() throws Exception {
+    assumeTrue(supportsSafeCast(), "Skipping test because this connector does not support safe casting");
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
-
-    assertTrue(destinationHandler.isFinalTableEmpty(streamId), "Final table should be empty before T+D");
+        Streams.concat(
+            BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl").stream(),
+            BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast/alltypes_inputrecords.jsonl").stream()).toList());
 
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), "");
 
@@ -423,26 +425,85 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpRawTableRecords(streamId),
         "sqlgenerator/alltypes_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, ""));
-    assertFalse(destinationHandler.isFinalTableEmpty(streamId), "Final table should not be empty after T+D");
   }
 
   /**
-   * Run a basic test to verify that we don't throw an exception on basic data values.
+   * Similar to {@link #allTypes_safeCast()}, but just the records with good data. This verifies that
+   * the connector handles all types correctly.
    */
   @Test
-  public void allTypesUnsafe() throws Exception {
+  public void allTypes_noSafeCast_handleGoodData() throws Exception {
+    assumeFalse(supportsSafeCast(), "Skipping test because this connector supports safe casting");
+
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_unsafe_inputrecords.jsonl"));
+        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
+
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), "");
+
+    verifyRecords(
+        "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/alltypes_expectedrecords_final.jsonl",
+        dumpFinalTableRecords(streamId, ""));
+  }
+
+  /**
+   * Similar to {@link #allTypes_safeCast()}, but just the records with bad data. This verifies that
+   * the connector throws an error when it encounters bad data.
+   */
+  @Test
+  public void allTypes_noSafeCast_crashOnBadData() throws Exception {
+    assumeFalse(supportsSafeCast(), "Skipping test because this connector supports safe casting");
+
+    createRawTable(streamId);
+    createFinalTable(incrementalDedupStream, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast/alltypes_inputrecords.jsonl"));
+
+    assertThrows(
+        Exception.class,
+        () -> TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), ""));
+  }
+
+  /**
+   * Verifies two behaviors:
+   * <ul>
+   * <ol>
+   * The isFinalTableEmpty method behaves correctly during a sync
+   * </ol>
+   * <ol>
+   * Column names with mixed case are handled correctly
+   * </ol>
+   * </ul>
+   *
+   * The first behavior technically should be its own test, but we might as well just throw it into a
+   * random testcase to avoid running test setup/teardown again.
+   */
+  @Test
+  public void mixedCaseTest() throws Exception {
+    // Add case-sensitive columnName to test json path querying
+    incrementalDedupStream.columns().put(
+        generator.buildColumnId("IamACaseSensitiveColumnName"),
+        AirbyteProtocolType.STRING);
+    createRawTable(streamId);
+    createFinalTable(incrementalDedupStream, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/mixedcasecolumnname_inputrecords.jsonl"));
 
     assertTrue(destinationHandler.isFinalTableEmpty(streamId), "Final table should be empty before T+D");
 
-    // Instead of using the full T+D transaction, explicitly run with useSafeCasting=false.
-    final Sql unsafeSql = generator.updateTable(incrementalDedupStream, "", Optional.empty(), false);
-    destinationHandler.execute(unsafeSql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), "");
 
+    verifyRecords(
+        "sqlgenerator/mixedcasecolumnname_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/mixedcasecolumnname_expectedrecords_final.jsonl",
+        dumpFinalTableRecords(streamId, ""));
     assertFalse(destinationHandler.isFinalTableEmpty(streamId), "Final table should not be empty after T+D");
   }
 
@@ -545,9 +606,11 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         AirbyteProtocolType.STRING);
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "");
-    insertRawTableRecords(
-        streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
+    final List<JsonNode> inputRecords = new ArrayList<>(BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
+    if (supportsSafeCast()) {
+      inputRecords.addAll(BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast/alltypes_inputrecords.jsonl"));
+    }
+    insertRawTableRecords(streamId, inputRecords);
 
     final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
     assertAll(
@@ -570,10 +633,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void handleNoPreexistingRecords() throws Exception {
-    // Add case-sensitive columnName to test json path querying
-    incrementalDedupStream.columns().put(
-        generator.buildColumnId("IamACaseSensitiveColumnName"),
-        AirbyteProtocolType.STRING);
     createRawTable(streamId);
     final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
     assertAll(
@@ -581,9 +640,11 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         () -> assertEquals(Optional.empty(), tableState.maxProcessedTimestamp(), "With an empty raw table, the min timestamp should be empty"));
 
     createFinalTable(incrementalDedupStream, "");
-    insertRawTableRecords(
-        streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
+    final List<JsonNode> inputRecords = new ArrayList<>(BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
+    if (supportsSafeCast()) {
+      inputRecords.addAll(BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast/alltypes_inputrecords.jsonl"));
+    }
+    insertRawTableRecords(streamId, inputRecords);
 
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, tableState.maxProcessedTimestamp(), "");
 
@@ -681,9 +742,13 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void incrementalDedup() throws Exception {
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "");
-    insertRawTableRecords(
-        streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
+    final List<JsonNode> inputRecords = new ArrayList<>(BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
+    if (supportsSafeCast()) {
+      inputRecords.addAll(BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast/incrementaldedup_inputrecords.jsonl"));
+    } else {
+      inputRecords.addAll(BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast_unsupported/incrementaldedup_inputrecords.jsonl"));
+    }
+    insertRawTableRecords(streamId, inputRecords);
 
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), "");
 
@@ -753,9 +818,13 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void incrementalAppend() throws Exception {
     createRawTable(streamId);
     createFinalTable(incrementalAppendStream, "");
-    insertRawTableRecords(
-        streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
+    final List<JsonNode> inputRecords = new ArrayList<>(BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
+    if (supportsSafeCast()) {
+      inputRecords.addAll(BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast/incrementaldedup_inputrecords.jsonl"));
+    } else {
+      inputRecords.addAll(BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast_unsupported/incrementaldedup_inputrecords.jsonl"));
+    }
+    insertRawTableRecords(streamId, inputRecords);
 
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalAppendStream, Optional.empty(), "");
 
@@ -861,9 +930,13 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void cdcComplexUpdate() throws Exception {
     createRawTable(streamId);
     createFinalTable(cdcIncrementalDedupStream, "");
-    insertRawTableRecords(
-        streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/cdcupdate_inputrecords_raw.jsonl"));
+    final List<JsonNode> inputRecords = new ArrayList<>(BaseTypingDedupingTest.readRecords("sqlgenerator/cdcupdate_inputrecords_raw.jsonl"));
+    if (supportsSafeCast()) {
+      inputRecords.addAll(BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast/cdcupdate_inputrecords_raw.jsonl"));
+    } else {
+      inputRecords.addAll(BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast_unsupported/cdcupdate_inputrecords_raw.jsonl"));
+    }
+    insertRawTableRecords(streamId, inputRecords);
     insertFinalTableRecords(
         true,
         streamId,
@@ -1157,14 +1230,13 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void testV1V2migration() throws Exception {
     // This is maybe a little hacky, but it avoids having to refactor this entire class and subclasses
     // for something that is going away
-    // Add case-sensitive columnName to test json path querying
-    incrementalDedupStream.columns().put(
-        generator.buildColumnId("IamACaseSensitiveColumnName"),
-        AirbyteProtocolType.STRING);
     final StreamId v1RawTableStreamId = new StreamId(null, null, streamId.finalNamespace(), "v1_" + streamId.rawName(), null, null);
     createV1RawTable(v1RawTableStreamId);
-    insertV1RawTableRecords(v1RawTableStreamId, BaseTypingDedupingTest.readRecords(
-        "sqlgenerator/all_types_v1_inputrecords.jsonl"));
+    final List<JsonNode> inputRecords = new ArrayList<>(BaseTypingDedupingTest.readRecords("sqlgenerator/all_types_v1_inputrecords.jsonl"));
+    if (supportsSafeCast()) {
+      inputRecords.addAll(BaseTypingDedupingTest.readRecords("sqlgenerator/safe_cast/all_types_v1_inputrecords.jsonl"));
+    }
+    insertV1RawTableRecords(v1RawTableStreamId, inputRecords);
     final Sql migration = generator.migrateFromV1toV2(streamId, v1RawTableStreamId.rawNamespace(), v1RawTableStreamId.rawName());
     destinationHandler.execute(migration);
     final List<JsonNode> v1RawRecords = dumpV1RawTableRecords(v1RawTableStreamId);
@@ -1205,9 +1277,16 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final var v2RecordMap = v2RawRecords.stream().collect(Collectors.toMap(
         record -> record.get("_airbyte_raw_id").asText(),
         Function.identity()));
+    final int expectedRecordCount;
+    if (supportsSafeCast()) {
+      expectedRecordCount = 5;
+    } else {
+      // safe_cast_unsupported excludes one record with invalid data.
+      expectedRecordCount = 4;
+    }
     assertAll(
-        () -> assertEquals(6, v1RawRecords.size()),
-        () -> assertEquals(6, v2RawRecords.size()));
+        () -> assertEquals(expectedRecordCount, v1RawRecords.size()),
+        () -> assertEquals(expectedRecordCount, v2RawRecords.size()));
     v1RawRecords.forEach(v1Record -> {
       final var v1id = v1Record.get("_airbyte_ab_id").asText();
       assertAll(
