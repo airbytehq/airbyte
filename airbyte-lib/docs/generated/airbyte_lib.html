@@ -120,6 +120,7 @@ so we insert as values instead.</p>
                 <dd id="DuckDBCache.streams" class="variable">streams</dd>
                 <dd id="DuckDBCache.get_records" class="function">get_records</dd>
                 <dd id="DuckDBCache.get_pandas_dataframe" class="function">get_pandas_dataframe</dd>
+                <dd id="DuckDBCache.register_source" class="function">register_source</dd>
 
             </div>
             <div><dt>airbyte_lib.caches.duckdb.DuckDBCacheBase</dt>
@@ -131,7 +132,6 @@ so we insert as values instead.</p>
             <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="DuckDBCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
                 <dd id="DuckDBCache.source_catalog" class="variable">source_catalog</dd>
-                <dd id="DuckDBCache.register_source" class="function">register_source</dd>
                 <dd id="DuckDBCache.process_stdin" class="function">process_stdin</dd>
                 <dd id="DuckDBCache.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="DuckDBCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
@@ -336,7 +336,7 @@ working directory.</p>
                             <div id="ReadResult.__init__" class="classattr">
                                 <div class="attr function">
             
-        <span class="name">ReadResult</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">processed_records</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span></span>)</span>
+        <span class="name">ReadResult</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">processed_records</span><span class="p">:</span> <span class="nb">int</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span>,</span><span class="param">	<span class="n">processed_streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span>)</span>
 
         
     </div>
