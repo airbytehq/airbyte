@@ -12,16 +12,11 @@ class PartitionGenerationCompletedSentinel:
     Includes a pointer to the stream that was processed.
     """
 
-    def __init__(self, stream: AbstractStream, has_generated_partition: bool):
+    def __init__(self, stream: AbstractStream):
         """
         :param stream: The stream that was processed
         """
         self.stream = stream
-        self._has_generated_partition = has_generated_partition
-
-    @property
-    def has_generated_partition(self) -> bool:
-        return self._has_generated_partition
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, PartitionGenerationCompletedSentinel):

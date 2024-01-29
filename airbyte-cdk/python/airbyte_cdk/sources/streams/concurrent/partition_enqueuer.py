@@ -35,7 +35,6 @@ class PartitionEnqueuer:
         This method is meant to be called in a separate thread.
         """
         try:
-            has_generated_partitions = False
             for partition in stream.generate_partitions():
                 # Adding partitions to the queue generates futures. To avoid having too many futures, we throttle here. We understand that
                 # we might add more futures than the limit by throttling in the threads while it is the main thread that actual adds the
@@ -51,7 +50,6 @@ class PartitionEnqueuer:
                 while self._thread_pool_manager.prune_to_validate_has_reached_futures_limit():
                     time.sleep(self._sleep_time_in_seconds)
                 self._queue.put(partition)
-                has_generated_partitions = True
-            self._queue.put(PartitionGenerationCompletedSentinel(stream, has_generated_partitions))
+            self._queue.put(PartitionGenerationCompletedSentinel(stream))
         except Exception as e:
             self._queue.put(e)

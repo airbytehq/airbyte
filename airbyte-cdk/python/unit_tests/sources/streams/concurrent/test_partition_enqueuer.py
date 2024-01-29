@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
 
 _SOME_PARTITIONS: List[Partition] = [Mock(spec=Partition), Mock(spec=Partition)]
-
+_ANY_COUNT = -1
 
 class PartitionEnqueuerTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -32,7 +32,7 @@ class PartitionEnqueuerTest(unittest.TestCase):
 
         assert mocked_sleep.call_count == 0
 
-    def test_given_partitions_when_generate_partitions_then_only_push_sentinel(self):
+    def test_given_no_partitions_when_generate_partitions_then_only_push_sentinel(self):
         self._thread_pool_manager.prune_to_validate_has_reached_futures_limit.return_value = True
         stream = self._a_stream([])
 

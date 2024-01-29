@@ -57,7 +57,7 @@ class Cursor(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def emit_state_given_no_partitions_generated(self) -> None:
+    def ensure_at_least_one_state_emitted(self) -> None:
         """
         State messages are emitted when a partition is closed. However, the platform expects at least one state to be emitted per sync per
         stream. Hence, if no partitions are generated, this method needs to be called.
@@ -76,7 +76,7 @@ class NoopCursor(Cursor):
     def close_partition(self, partition: Partition) -> None:
         pass
 
-    def emit_state_given_no_partitions_generated(self) -> None:
+    def ensure_at_least_one_state_emitted(self) -> None:
         pass
 
 
@@ -191,5 +191,9 @@ class ConcurrentCursor(Cursor):
         except KeyError as exception:
             raise KeyError(f"Partition is expected to have key `{key}` but could not be found") from exception
 
-    def emit_state_given_no_partitions_generated(self) -> None:
+    def ensure_at_least_one_state_emitted(self) -> None:
+        """
+        The platform expect to have at least one state message on successful syncs. Hence, whatever happens, we expect this method to be
+        called.
+        """
         self._emit_state_message()
