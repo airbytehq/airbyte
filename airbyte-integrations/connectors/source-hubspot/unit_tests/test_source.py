@@ -50,7 +50,7 @@ def test_check_connection_empty_config(config):
 
 
 def test_check_connection_invalid_config(config):
-    config.pop("start_date")
+    config.pop("credentials")
 
     with pytest.raises(KeyError):
         SourceHubspot().check_connection(logger, config=config)
@@ -143,7 +143,7 @@ def test_cast_datetime(common_params, caplog):
         "type": "LOG",
         "log": {
             "level": "WARN",
-            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: argument 'input': 'DateTime' object cannot be converted to 'PyString'",
+            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: argument of type 'DateTime' is not iterable",
         },
     }
     assert expected_warining_message["log"]["message"] in caplog.text
