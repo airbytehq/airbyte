@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "airbyte-lib"
 description = "AirbyteLib"
-version = "0.1.0"
+version = "0.1.0dev.2"
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
 packages = [{include = "airbyte_lib"}]

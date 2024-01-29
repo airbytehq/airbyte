@@ -9,6 +9,7 @@ import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
+from os.path import splitext
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple
 from xmlrpc.client import Boolean
 
@@ -29,6 +30,7 @@ from airbyte_protocol.models import (
 )
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (
+    AllowedHostsConfiguration,
     BasicReadTestConfig,
     Config,
     ConnectionTestConfig,
@@ -39,6 +41,7 @@ from connector_acceptance_test.config import (
     IgnoredFieldsConfiguration,
     NoPrimaryKeyConfiguration,
     SpecTestConfig,
+    UnsupportedFileTypeConfig,
 )
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
 from connector_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
@@ -536,6 +539,8 @@ class TestSpec(BaseTest):
         advanced_auth = actual_connector_spec.advanced_auth
         if not advanced_auth:
             pytest.skip("Source does not have OAuth method.")
+        if not advanced_auth.predicate_key:
+            pytest.skip("Advanced Auth object does not have predicate_key, only one option to authenticate.")
 
         spec_schema = actual_connector_spec.connectionSpecification
         credentials = advanced_auth.predicate_key[0]
@@ -1012,10 +1017,12 @@ class TestBasicRead(BaseTest):
         else:
             return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
 
+    _file_types: Set[str] = set()
+
     async def test_read(
         self,
-        connector_config,
-        configured_catalog,
+        connector_config: SecretDict,
+        configured_catalog: ConfiguredAirbyteCatalog,
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
@@ -1024,10 +1031,14 @@ class TestBasicRead(BaseTest):
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
-        detailed_logger,
+        detailed_logger: Logger,
+        certified_file_based_connector: bool,
     ):
         output = await docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
+
+        if certified_file_based_connector:
+            self._file_types.update(self._get_actual_file_types(records))
 
         assert records, "At least one record should be read using provided catalog"
 
@@ -1173,10 +1184,61 @@ class TestBasicRead(BaseTest):
 
         return result
 
+    @pytest.fixture(name="certified_file_based_connector")
+    def is_certified_file_based_connector(self, connector_metadata: Dict[str, Any]) -> bool:
+        metadata = connector_metadata.get("data", {})
+
+        # connector subtype is specified in data.connectorSubtype field
+        file_based_connector = metadata.get("connectorSubtype") == "file"
+        # a certified connector has ab_internal.ql value >= 400
+        certified_connector = metadata.get("ab_internal", {}).get("ql", 0) >= 400
+
+        return file_based_connector and certified_connector
+
+    @staticmethod
+    def _get_file_extension(file_name: str) -> str:
+        _, file_extension = splitext(file_name)
+        return file_extension.casefold()
+
+    def _get_actual_file_types(self, records: List[AirbyteRecordMessage]) -> Set[str]:
+        return {self._get_file_extension(record.data.get("_ab_source_file_url", "")) for record in records}
+
+    @staticmethod
+    def _get_unsupported_file_types(config: List[UnsupportedFileTypeConfig]) -> Set[str]:
+        return {t.extension.casefold() for t in config}
+
+    async def test_all_supported_file_types_present(self, certified_file_based_connector: bool, inputs: BasicReadTestConfig):
+        if not certified_file_based_connector or inputs.file_types.skip_test:
+            reason = (
+                "Skipping the test for supported file types"
+                f"{' as it is only applicable for certified file-based connectors' if not certified_file_based_connector else ''}."
+            )
+            pytest.skip(reason)
+
+        structured_types = {".avro", ".csv", ".jsonl", ".parquet"}
+        unstructured_types = {".pdf", ".doc", ".docx", ".ppt", ".pptx", ".md"}
+
+        if inputs.file_types.unsupported_types:
+            unsupported_file_types = self._get_unsupported_file_types(inputs.file_types.unsupported_types)
+            structured_types.difference_update(unsupported_file_types)
+            unstructured_types.difference_update(unsupported_file_types)
+
+        missing_structured_types = structured_types - self._file_types
+        missing_unstructured_types = unstructured_types - self._file_types
+
+        # all structured and at least one of unstructured supported file types should be present
+        assert not missing_structured_types and len(missing_unstructured_types) != len(unstructured_types), (
+            f"Please make sure you added files with the following supported structured types {missing_structured_types} "
+            f"and at least one with unstructured type {unstructured_types} to the test account "
+            "or add them to the `file_types -> unsupported_types` list in config."
+        )
+
 
 @pytest.mark.default_timeout(TEN_MINUTES)
 class TestConnectorAttributes(BaseTest):
-    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []  # Used so that this is not part of the mandatory high strictness test suite yet
+    # Overide from BaseTest!
+    # Used so that this is not part of the mandatory high strictness test suite yet
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []
 
     @pytest.fixture(name="operational_certification_test")
     async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
@@ -1195,7 +1257,7 @@ class TestConnectorAttributes(BaseTest):
 
     async def test_streams_define_primary_key(
         self, operational_certification_test, streams_without_primary_key, connector_config, docker_runner: ConnectorRunner
-    ):
+    ) -> None:
         output = await docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
         streams = catalog_messages[0].catalog.streams
@@ -1204,3 +1266,72 @@ class TestConnectorAttributes(BaseTest):
 
         quoted_missing_primary_keys = {f"'{primary_key}'" for primary_key in missing_primary_keys}
         assert not missing_primary_keys, f"The following streams {', '.join(quoted_missing_primary_keys)} do not define a primary_key"
+
+    @pytest.fixture(name="allowed_hosts_test")
+    def allowed_hosts_fixture_test(self, inputs: ConnectorAttributesConfig) -> bool:
+        allowed_hosts = inputs.allowed_hosts
+        bypass_reason = allowed_hosts.bypass_reason if allowed_hosts else None
+        if bypass_reason:
+            pytest.skip(f"Skipping `metadata.allowedHosts` checks. Reason: {bypass_reason}")
+        return True
+
+    async def test_certified_connector_has_allowed_hosts(
+        self, operational_certification_test, allowed_hosts_test, connector_metadata: dict
+    ) -> None:
+        """
+        Checks whether or not the connector has `allowedHosts` and it's components defined in `metadata.yaml`.
+        Suitable for certified connectors starting `ql` >= 400.
+
+        Arguments:
+            :: operational_certification_test -- pytest.fixure defines the connector is suitable for this test or not.
+            :: connector_metadata -- `metadata.yaml` file content
+        """
+        metadata = connector_metadata.get("data", {})
+
+        has_allowed_hosts_property = "allowedHosts" in metadata.keys()
+        assert has_allowed_hosts_property, f"The `allowedHosts` property is missing in `metadata.data` for `metadata.yaml`."
+
+        allowed_hosts = metadata.get("allowedHosts", {})
+        has_hosts_property = "hosts" in allowed_hosts.keys() if allowed_hosts else False
+        assert has_hosts_property, f"The `hosts` property is missing in `metadata.data.allowedHosts` for `metadata.yaml`."
+
+        hosts = allowed_hosts.get("hosts", [])
+        has_assigned_hosts = len(hosts) > 0 if hosts else False
+        assert (
+            has_assigned_hosts
+        ), f"The `hosts` empty list is not allowed for `metadata.data.allowedHosts` for certified connectors. Please add `hosts` or define the `allowed_hosts.bypass_reason` in `acceptance-test-config.yaml`."
+
+    @pytest.fixture(name="suggested_streams_test")
+    def suggested_streams_fixture_test(self, inputs: ConnectorAttributesConfig) -> bool:
+        suggested_streams = inputs.suggested_streams
+        bypass_reason = suggested_streams.bypass_reason if suggested_streams else None
+        if bypass_reason:
+            pytest.skip(f"Skipping `metadata.suggestedStreams` checks. Reason: {bypass_reason}")
+        return True
+
+    async def test_certified_connector_has_suggested_streams(
+        self, operational_certification_test, suggested_streams_test, connector_metadata: dict
+    ) -> None:
+        """
+        Checks whether or not the connector has `suggestedStreams` and it's components defined in `metadata.yaml`.
+        Suitable for certified connectors starting `ql` >= 400.
+
+        Arguments:
+            :: operational_certification_test -- pytest.fixure defines the connector is suitable for this test or not.
+            :: connector_metadata -- `metadata.yaml` file content
+        """
+
+        metadata = connector_metadata.get("data", {})
+
+        has_suggested_streams_property = "suggestedStreams" in metadata.keys()
+        assert has_suggested_streams_property, f"The `suggestedStreams` property is missing in `metadata.data` for `metadata.yaml`."
+
+        suggested_streams = metadata.get("suggestedStreams", {})
+        has_streams_property = "streams" in suggested_streams.keys() if suggested_streams else False
+        assert has_streams_property, f"The `streams` property is missing in `metadata.data.suggestedStreams` for `metadata.yaml`."
+
+        streams = suggested_streams.get("streams", [])
+        has_assigned_suggested_streams = len(streams) > 0 if streams else False
+        assert (
+            has_assigned_suggested_streams
+        ), f"The `streams` empty list is not allowed for `metadata.data.suggestedStreams` for certified connectors."

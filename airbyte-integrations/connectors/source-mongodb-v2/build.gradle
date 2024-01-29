@@ -5,7 +5,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.13.2'
+    cdkVersionRequired = '0.16.0'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -35,8 +35,18 @@ sourceSets {
     }
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes"
+    }
+}
+
 dependencies {
     implementation libs.mongo.driver.sync
+
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
+    implementation libs.debezium.mongodb
 
     testImplementation libs.testcontainers.mongodb
 

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.59.2
+Fix CCDK overlapping message due to print in entrypoint
+
 ## 0.59.1
 Fix concurrent CDK deadlock
 
