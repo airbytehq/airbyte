@@ -947,6 +947,17 @@ files = [
 ]
 
 [[package]]
+name = "mimesis"
+version = "6.1.1"
+description = "Mimesis: Fake Data Generator."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "mimesis-6.1.1-py3-none-any.whl", hash = "sha256:eabe41d7afa23b01dffb51ebd9e10837df6417fef02fa9841989ca886e479790"},
+    {file = "mimesis-6.1.1.tar.gz", hash = "sha256:044ac378c61db0e06832ff722548fd6e604881d36bc938002e0bd5b85eeb6a98"},
+]
+
+[[package]]
 name = "mypy"
 version = "1.8.0"
 description = "Optional static typing for Python"
@@ -2175,6 +2186,26 @@ files = [
 ]
 
 [[package]]
+name = "source-faker"
+version = "0.0.0"
+description = "Source implementation for fake but realistic looking data."
+optional = false
+python-versions = "*"
+files = []
+develop = false
+
+[package.dependencies]
+airbyte-cdk = ">=0.2,<1.0"
+mimesis = "6.1.1"
+
+[package.extras]
+tests = ["pytest (>=6.2,<7.0)", "pytest-mock (>=3.6.1,<3.7.0)", "requests-mock (>=1.9.3,<1.10.0)"]
+
+[package.source]
+type = "directory"
+url = "../airbyte-integrations/connectors/source-faker"
+
+[[package]]
 name = "sqlalchemy"
 version = "1.4.51"
 description = "Database Abstraction Library"
@@ -2494,4 +2525,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "5eba75179b62f56be141db82121ca9e1c623944306172d7bdacaf5388e6f3384"
+content-hash = "1b47357840cd93526519857bf1dc292d4143051e4447ab6243114cb4b897ec60"
