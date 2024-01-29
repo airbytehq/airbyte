@@ -17,33 +17,29 @@ public abstract class DebeziumPropertiesManager {
   public static final String TOPIC_PREFIX_KEY = "topic.prefix";
 
   private final JsonNode config;
-  private final AirbyteFileOffsetBackingStore offsetManager;
-  private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
-
   private final Properties properties;
   private final ConfiguredAirbyteCatalog catalog;
 
   public DebeziumPropertiesManager(final Properties properties,
                                    final JsonNode config,
-                                   final ConfiguredAirbyteCatalog catalog,
-                                   final AirbyteFileOffsetBackingStore offsetManager,
-                                   final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
+                                   final ConfiguredAirbyteCatalog catalog) {
     this.properties = properties;
     this.config = config;
     this.catalog = catalog;
-    this.offsetManager = offsetManager;
-    this.schemaHistoryManager = schemaHistoryManager;
   }
 
-  public Properties getDebeziumProperties() {
+  public Properties getDebeziumProperties(final AirbyteFileOffsetBackingStore offsetManager) {
+    return getDebeziumProperties(offsetManager, Optional.empty());
+  }
+
+  public Properties getDebeziumProperties(
+                                          final AirbyteFileOffsetBackingStore offsetManager,
+                                          final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
     final Properties props = new Properties();
     props.putAll(properties);
 
     // debezium engine configuration
-    // https://debezium.io/documentation/reference/2.2/development/engine.html#engine-properties
-    props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
-    props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
-    props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
+    offsetManager.setDebeziumProperties(props);
     // default values from debezium CommonConnectorConfig
     props.setProperty("max.batch.size", "2048");
     props.setProperty("max.queue.size", "8192");
@@ -57,15 +53,7 @@ public abstract class DebeziumPropertiesManager {
     props.setProperty("errors.retry.delay.initial.ms", "299");
     props.setProperty("errors.retry.delay.max.ms", "300");
 
-    if (schemaHistoryManager.isPresent()) {
-      // https://debezium.io/documentation/reference/2.2/operations/debezium-server.html#debezium-source-database-history-class
-      // https://debezium.io/documentation/reference/development/engine.html#_in_the_code
-      // As mentioned in the documents above, debezium connector for MySQL needs to track the schema
-      // changes. If we don't do this, we can't fetch records for the table.
-      props.setProperty("schema.history.internal", "io.debezium.storage.file.history.FileSchemaHistory");
-      props.setProperty("schema.history.internal.file.filename", schemaHistoryManager.get().getPath().toString());
-      props.setProperty("schema.history.internal.store.only.captured.databases.ddl", "true");
-    }
+    schemaHistoryManager.ifPresent(m -> m.setDebeziumProperties(props));
 
     // https://debezium.io/documentation/reference/2.2/configuration/avro.html
     props.setProperty("key.converter.schemas.enable", "false");
@@ -102,10 +90,5 @@ public abstract class DebeziumPropertiesManager {
   protected abstract String getName(final JsonNode config);
 
   protected abstract Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config);
-
-  public enum DebeziumConnectorType {
-    RELATIONALDB,
-    MONGODB;
-  }
 
 }

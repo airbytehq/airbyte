@@ -14,8 +14,10 @@ from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
+from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry, PythonRegistryPublishContext
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
+from pipelines.helpers.pip import is_package_published
 from pipelines.models.steps import Step, StepResult, StepStatus
 from pydantic import ValidationError
 
@@ -50,6 +52,28 @@ class CheckConnectorImageDoesNotExist(Step):
             if docker_tag_already_exists:
                 return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image} already exists.")
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image}.")
+
+
+class CheckPythonRegistryPackageDoesNotExist(Step):
+    context: PythonRegistryPublishContext
+    title = "Check if the connector is published on python registry"
+
+    async def _run(self) -> StepResult:
+        is_published = is_package_published(
+            self.context.package_metadata.name, self.context.package_metadata.version, self.context.registry
+        )
+        if is_published:
+            return StepResult(
+                self,
+                status=StepStatus.SKIPPED,
+                stderr=f"{self.context.package_metadata.name} already exists in version {self.context.package_metadata.version}.",
+            )
+        else:
+            return StepResult(
+                self,
+                status=StepStatus.SUCCESS,
+                stdout=f"{self.context.package_metadata.name} does not exist in version {self.context.package_metadata.version}.",
+            )
 
 
 class PushConnectorImageToRegistry(Step):
@@ -259,6 +283,11 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
             results.append(check_connector_image_results)
 
+            python_registry_steps, terminate_early = await _run_python_registry_publish_pipeline(context)
+            results.extend(python_registry_steps)
+            if terminate_early:
+                return create_connector_report(results)
+
             # If the connector image already exists, we don't need to build it, but we still need to upload the metadata file.
             # We also need to upload the spec to the spec cache bucket.
             if check_connector_image_results.status is StepStatus.SKIPPED:
@@ -310,6 +339,33 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             results.append(metadata_upload_results)
             connector_report = create_connector_report(results)
     return connector_report
+
+
+async def _run_python_registry_publish_pipeline(context: PublishConnectorContext) -> Tuple[List[StepResult], bool]:
+    """
+    Run the python registry publish pipeline for a single connector.
+    Return the results of the steps and a boolean indicating whether there was an error and the pipeline should be stopped.
+    """
+    results: List[StepResult] = []
+    # Try to convert the context to a PythonRegistryPublishContext. If it returns None, it means we don't need to publish to a python registry.
+    python_registry_context = await PythonRegistryPublishContext.from_publish_connector_context(context)
+    if not python_registry_context:
+        return results, False
+
+    check_python_registry_package_exists_results = await CheckPythonRegistryPackageDoesNotExist(python_registry_context).run()
+    results.append(check_python_registry_package_exists_results)
+    if check_python_registry_package_exists_results.status is StepStatus.SKIPPED:
+        context.logger.info("The connector version is already published on python registry.")
+    elif check_python_registry_package_exists_results.status is StepStatus.SUCCESS:
+        context.logger.info("The connector version is not published on python registry. Let's build and publish it.")
+        publish_to_python_registry_results = await PublishToPythonRegistry(python_registry_context).run()
+        results.append(publish_to_python_registry_results)
+        if publish_to_python_registry_results.status is StepStatus.FAILURE:
+            return results, True
+    elif check_python_registry_package_exists_results.status is StepStatus.FAILURE:
+        return results, True
+
+    return results, False
 
 
 def reorder_contexts(contexts: List[PublishConnectorContext]) -> List[PublishConnectorContext]:
