@@ -54,7 +54,6 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
-
   @Override
   public void prepareTables() throws Exception {
     try {

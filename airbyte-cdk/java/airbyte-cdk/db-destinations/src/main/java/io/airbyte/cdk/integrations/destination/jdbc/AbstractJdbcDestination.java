@@ -303,6 +303,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
 
   /**
    * Creates the appropriate TyperDeduper class for the jdbc destination and the user's configuration
+   *
    * @param config the configuration for the connection
    * @param catalog the catalog for the connection
    * @param database a database instance
