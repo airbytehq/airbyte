@@ -27,7 +27,6 @@ class GradleTask(Step, ABC):
 
     context: ConnectorContext
 
-    LOCAL_MAVEN_REPOSITORY_PATH = "/root/.m2"
     GRADLE_DEP_CACHE_PATH = "/root/gradle-cache"
     GRADLE_HOME_PATH = "/root/.gradle"
     STATIC_GRADLE_OPTIONS = ("--no-daemon", "--no-watch-fs", "--build-cache", "--scan", "--console=plain")
@@ -143,23 +142,19 @@ class GradleTask(Step, ABC):
             # When running locally, this dependency update is slower and less useful than within a CI runner. Skip it.
             warm_dependency_cache_args = ["--dry-run"]
 
-        # Mount the whole git repo to update the cache volume contents and build the CDK.
+        # Mount the whole git repo to update the cache volume contents.
         with_whole_git_repo = (
             gradle_container_base
             # Mount the whole repo.
             .with_directory("/airbyte", self.context.get_repo_dir("."))
-            # Update the cache in place by executing a gradle task which will update all dependencies and build the CDK.
+            # Update the cache in place by executing a gradle task which will update all dependencies.
             .with_exec(
                 sh_dash_c(
                     [
-                        # Ensure that the .m2 directory exists.
-                        f"mkdir -p {self.LOCAL_MAVEN_REPOSITORY_PATH}",
                         # Load from the cache volume.
                         f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
                         # Resolve all dependencies and write their checksums to './gradle/verification-metadata.dryrun.xml'.
                         self._get_gradle_command("help", *warm_dependency_cache_args),
-                        # Build the CDK and publish it to the local maven repository.
-                        self._get_gradle_command(":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"),
                         # Store to the cache volume.
                         f"(rsync -a --stats {self.GRADLE_HOME_PATH}/ {self.GRADLE_DEP_CACHE_PATH} || true)",
                     ]
@@ -170,8 +165,8 @@ class GradleTask(Step, ABC):
         # Mount only the code needed to build the connector.
         gradle_container = (
             gradle_container_base
-            # Copy the local maven repository and force evaluation of `with_whole_git_repo` container.
-            .with_directory(self.LOCAL_MAVEN_REPOSITORY_PATH, await with_whole_git_repo.directory(self.LOCAL_MAVEN_REPOSITORY_PATH))
+            # Copy the gradle home directory and force evaluation of `with_whole_git_repo` container.
+            .with_directory(self.GRADLE_HOME_PATH, await with_whole_git_repo.directory(self.GRADLE_HOME_PATH))
             # Mount the connector-agnostic whitelisted files in the git repo.
             .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
             # Mount the sources for the connector and its dependencies in the git repo.
@@ -193,8 +188,6 @@ class GradleTask(Step, ABC):
         gradle_container = gradle_container.with_exec(
             sh_dash_c(
                 [
-                    # Warm the gradle cache.
-                    f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
                     # Run the gradle task.
                     self._get_gradle_command(connector_task, task_options=self.params_as_cli_options),
                 ]

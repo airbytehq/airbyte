@@ -223,6 +223,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.3 | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573) | Adopt CDK v0.16.0. |
 | 3.3.2   | 2024-01-08 | [33005](https://github.com/airbytehq/airbyte/pull/33005)   | Adding count stats for incremental sync in AirbyteStateMessage
 | 3.3.1   | 2024-01-03 | [33312](https://github.com/airbytehq/airbyte/pull/33312)   | Adding count stats in AirbyteStateMessage |
 | 3.3.0   | 2023-12-19 | [33436](https://github.com/airbytehq/airbyte/pull/33436)   | Remove LEGACY state flag                                                                                                                        |

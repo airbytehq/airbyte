@@ -14,13 +14,15 @@ import pyarrow as pa
 import sqlalchemy
 import ulid
 from overrides import overrides
-from sqlalchemy import create_engine, text
+from sqlalchemy import Column, String, create_engine, text
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql.elements import TextClause
 
 from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
+from airbyte_lib.caches._catalog_manager import CatalogManager
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.datasets._sql import CachedDataset
 from airbyte_lib.types import SQLTypeConverter
@@ -35,13 +37,30 @@ if TYPE_CHECKING:
     from sqlalchemy.engine.reflection import Inspector
     from sqlalchemy.sql.base import Executable
 
-    from airbyte_protocol.models import ConfiguredAirbyteStream
+    from airbyte_protocol.models import (
+        ConfiguredAirbyteCatalog,
+        ConfiguredAirbyteStream,
+    )
 
     from airbyte_lib.datasets._base import DatasetBase
     from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 DEBUG_MODE = False  # Set to True to enable additional debug logging.
+
+
+STREAMS_TABLE_NAME = "_airbytelib_streams"
+
+Base = declarative_base()
+
+
+class CachedStream(Base):  # type: ignore[valid-type,misc]
+    __tablename__ = STREAMS_TABLE_NAME
+
+    stream_name = Column(String)
+    source_name = Column(String)
+    table_name = Column(String, primary_key=True)
+    catalog_metadata = Column(String)
 
 
 class RecordDedupeMode(enum.Enum):
@@ -116,6 +135,9 @@ class SQLCacheBase(RecordProcessor):
         self._connection_to_reuse: Connection | None = None
         super().__init__(config, **kwargs)
         self._ensure_schema_exists()
+        self._catalog_manager: CatalogManager = CatalogManager(
+            self.get_sql_engine(), lambda stream_name: self.get_sql_table_name(stream_name)
+        )
 
         self.file_writer = file_writer or self.file_writer_class(config)
         self.type_converter = self.type_converter_class()
@@ -148,6 +170,8 @@ class SQLCacheBase(RecordProcessor):
             return self._engine
 
         sql_alchemy_url = self.get_sql_alchemy_url()
+
+        execution_options = {"schema_translate_map": {None: self.config.schema_name}}
         if self.use_singleton_connection:
             if self._connection_to_reuse is None:
                 # This temporary bootstrap engine will be created once and is needed to
@@ -162,6 +186,7 @@ class SQLCacheBase(RecordProcessor):
                 creator=lambda: self._connection_to_reuse,
                 poolclass=StaticPool,
                 echo=DEBUG_MODE,
+                execution_options=execution_options,
                 # isolation_level="AUTOCOMMIT",
             )
         else:
@@ -169,6 +194,7 @@ class SQLCacheBase(RecordProcessor):
             self._engine = create_engine(
                 sql_alchemy_url,
                 echo=DEBUG_MODE,
+                execution_options=execution_options,
                 # isolation_level="AUTOCOMMIT",
             )
 
@@ -356,7 +382,6 @@ class SQLCacheBase(RecordProcessor):
     def _ensure_compatible_table_schema(
         self,
         stream_name: str,
-        table_name: str,
         *,
         raise_on_error: bool = False,
     ) -> bool:
@@ -370,7 +395,7 @@ class SQLCacheBase(RecordProcessor):
         """
         json_schema = self._get_stream_json_schema(stream_name)
         stream_column_names: list[str] = json_schema["properties"].keys()
-        table_column_names: list[str] = self.get_sql_table(table_name).columns.keys()
+        table_column_names: list[str] = self.get_sql_table(stream_name).columns.keys()
 
         missing_columns: set[str] = set(stream_column_names) - set(table_column_names)
         if missing_columns:
@@ -443,28 +468,7 @@ class SQLCacheBase(RecordProcessor):
         stream_name: str,
     ) -> ConfiguredAirbyteStream:
         """Return the column definitions for the given stream."""
-        if not self.source_catalog:
-            raise exc.AirbyteLibInternalError(
-                message="Cannot get stream JSON schema without a catalog.",
-            )
-
-        matching_streams: list[ConfiguredAirbyteStream] = [
-            stream for stream in self.source_catalog.streams if stream.stream.name == stream_name
-        ]
-        if not matching_streams:
-            raise exc.AirbyteStreamNotFoundError(
-                stream_name=stream_name,
-            )
-
-        if len(matching_streams) > 1:
-            raise exc.AirbyteLibInternalError(
-                message="Multiple streams found with same name.",
-                context={
-                    "stream_name": stream_name,
-                },
-            )
-
-        return matching_streams[0]
+        return self._catalog_manager.get_stream_config(stream_name)
 
     @final
     def _get_stream_json_schema(
@@ -534,7 +538,6 @@ class SQLCacheBase(RecordProcessor):
             )
             self._ensure_compatible_table_schema(
                 stream_name=stream_name,
-                table_name=final_table_name,
                 raise_on_error=True,
             )
 
@@ -762,6 +765,29 @@ class SQLCacheBase(RecordProcessor):
     ) -> bool:
         """Return true if the given table exists."""
         return table_name in self._get_tables_list()
+
+    @overrides
+    def register_source(
+        self,
+        source_name: str,
+        incoming_source_catalog: ConfiguredAirbyteCatalog,
+    ) -> None:
+        self._ensure_schema_exists()
+        self._catalog_manager.register_source(source_name, incoming_source_catalog)
+
+    @property
+    @overrides
+    def _streams_with_data(self) -> set[str]:
+        """Return a list of known streams."""
+        if not self._catalog_manager.source_catalog:
+            raise exc.AirbyteLibInternalError(
+                message="Cannot get streams with data without a catalog.",
+            )
+        return {
+            stream.stream.name
+            for stream in self._catalog_manager.source_catalog.streams
+            if self._table_exists(self.get_sql_table_name(stream.stream.name))
+        }
 
     @abc.abstractmethod
     def get_telemetry_info(self) -> CacheTelemetryInfo:
