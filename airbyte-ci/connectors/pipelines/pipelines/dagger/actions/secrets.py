@@ -19,7 +19,18 @@ if TYPE_CHECKING:
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
-async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container) -> list[str]:
+# List of overrides for the secrets masking logic.
+# These keywords may have been marked as secrets, perhaps somewhat aggressively.
+# Masking them, however, is annoying and pointless.
+# This list should be extended (carefully) as needed.
+NOT_REALLY_SECRETS = {
+    "admin",
+    "airbyte",
+    "host",
+}
+
+
+async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container, connector_technical_name: str) -> list[str]:
     """This function will print the secrets to mask in the GitHub actions logs with the ::add-mask:: prefix.
     We're not doing it directly from the ci_credentials tool because its stdout is wrapped around the dagger logger,
     And GHA will only interpret lines starting with ::add-mask:: as secrets to mask.
@@ -27,6 +38,9 @@ async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container)
     secrets_to_mask = []
     if secrets_to_mask_file := await get_file_contents(ci_credentials_with_downloaded_secrets, "/tmp/secrets_to_mask.txt"):
         for secret_to_mask in secrets_to_mask_file.splitlines():
+            if secret_to_mask in NOT_REALLY_SECRETS or secret_to_mask in connector_technical_name:
+                # Don't mask secrets which are also common words or connector name.
+                continue
             # We print directly to stdout because the GHA runner will mask only if the log line starts with "::add-mask::"
             # If we use the dagger logger, or context logger, the log line will start with other stuff and will not be masked
             print(f"::add-mask::{secret_to_mask}")
@@ -59,7 +73,7 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     )
     # We don't want to print secrets in the logs when running locally.
     if context.is_ci:
-        context.secrets_to_mask = await get_secrets_to_mask(with_downloaded_secrets)
+        context.secrets_to_mask = await get_secrets_to_mask(with_downloaded_secrets, context.connector.technical_name)
     connector_secrets = {}
     for secret_file in await with_downloaded_secrets.directory(secrets_path).entries():
         secret_plaintext = await with_downloaded_secrets.directory(secrets_path).file(secret_file).contents()

@@ -49,6 +49,7 @@ so we insert as values instead.</p>
                 <dd id="DuckDBCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
                 <dd id="DuckDBCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
                 <dd id="DuckDBCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+                <dd id="DuckDBCache.register_source" class="function"><a href="#SQLCacheBase.register_source">register_source</a></dd>
 
             </div>
             <div><dt>airbyte_lib.caches.duckdb.DuckDBCacheBase</dt>
@@ -60,7 +61,6 @@ so we insert as values instead.</p>
             <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="DuckDBCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
                 <dd id="DuckDBCache.source_catalog" class="variable">source_catalog</dd>
-                <dd id="DuckDBCache.register_source" class="function">register_source</dd>
                 <dd id="DuckDBCache.process_stdin" class="function">process_stdin</dd>
                 <dd id="DuckDBCache.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="DuckDBCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
@@ -269,12 +269,12 @@ or another import method. (Relatively low priority, since for now it works fine 
                 <dd id="PostgresCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
                 <dd id="PostgresCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
                 <dd id="PostgresCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+                <dd id="PostgresCache.register_source" class="function"><a href="#SQLCacheBase.register_source">register_source</a></dd>
 
             </div>
             <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="PostgresCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
                 <dd id="PostgresCache.source_catalog" class="variable">source_catalog</dd>
-                <dd id="PostgresCache.register_source" class="function">register_source</dd>
                 <dd id="PostgresCache.process_stdin" class="function">process_stdin</dd>
                 <dd id="PostgresCache.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="PostgresCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
@@ -663,6 +663,27 @@ or another import method. (Relatively low priority, since for now it works fine 
 
 
                             </div>
+                            <div id="SQLCacheBase.register_source" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">register_source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">source_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">incoming_source_catalog</span><span class="p">:</span> <span class="n">airbyte_protocol</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">airbyte_protocol</span><span class="o">.</span><span class="n">ConfiguredAirbyteCatalog</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.register_source"></a>
+    
+            <div class="docstring"><p>Register the source name and catalog.</p>
+
+<p>For now, only one source at a time is supported.
+If this method is called multiple times, the last call will overwrite the previous one.</p>
+
+<p>TODO: Expand this to handle mutliple sources.</p>
+</div>
+
+
+                            </div>
                             <div id="SQLCacheBase.get_telemetry_info" class="classattr">
                                 <div class="attr function">
                     <div class="decorator">@abc.abstractmethod</div>
@@ -683,7 +704,6 @@ or another import method. (Relatively low priority, since for now it works fine 
                                     <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="SQLCacheBase.skip_finalize_step" class="variable">skip_finalize_step</dd>
                 <dd id="SQLCacheBase.source_catalog" class="variable">source_catalog</dd>
-                <dd id="SQLCacheBase.register_source" class="function">register_source</dd>
                 <dd id="SQLCacheBase.process_stdin" class="function">process_stdin</dd>
                 <dd id="SQLCacheBase.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="SQLCacheBase.process_airbyte_messages" class="function">process_airbyte_messages</dd>
@@ -924,12 +944,12 @@ or another import method. (Relatively low priority, since for now it works fine 
                 <dd id="SnowflakeSQLCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
                 <dd id="SnowflakeSQLCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
                 <dd id="SnowflakeSQLCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+                <dd id="SnowflakeSQLCache.register_source" class="function"><a href="#SQLCacheBase.register_source">register_source</a></dd>
 
             </div>
             <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="SnowflakeSQLCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
                 <dd id="SnowflakeSQLCache.source_catalog" class="variable">source_catalog</dd>
-                <dd id="SnowflakeSQLCache.register_source" class="function">register_source</dd>
                 <dd id="SnowflakeSQLCache.process_stdin" class="function">process_stdin</dd>
                 <dd id="SnowflakeSQLCache.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="SnowflakeSQLCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
