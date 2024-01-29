@@ -352,7 +352,7 @@ async def _run_python_registry_publish_pipeline(context: PublishConnectorContext
     if not python_registry_context:
         return results, False
 
-    if not python_registry_context.python_registry_token or not python_registry_context.registry:
+    if not context.python_registry_token or not context.python_registry_url:
         # If the python registry token or url are not set, we can't publish to the python registry - stop the pipeline.
         return [
             StepResult(
