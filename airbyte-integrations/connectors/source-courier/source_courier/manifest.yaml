@@ -1,10 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_courier/schemas/{{ parameters['name'] }}.json"
-
   root_selector:
     type: RecordSelector
     extractor:
@@ -48,8 +44,6 @@ definitions:
   base_stream:
     type: DeclarativeStream
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -75,6 +69,109 @@ definitions:
         $ref: "#/definitions/cursor_paginator"
 
   ## MESSAGE INFO / HISTORY / OUTPUT STREAMS ##
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: string
+          idempotencyKey:
+            type: string
+          listId:
+            type: string
+          listMessageId:
+            type: string
+          status:
+            type: string
+            enum:
+              - CLICKED
+              - DELIVERED
+              - ENQUEUED
+              - OPENED
+              - SENT
+              - UNDELIVERABLE
+              - UNMAPPED
+              - UNROUTABLE
+          enqueued:
+            type: number
+          sent:
+            type: number
+          delivered:
+            type: number
+          opened:
+            type: number
+          clicked:
+            type: number
+          recipient:
+            type: string
+          event:
+            type: string
+          notification:
+            type: string
+          error:
+            type: string
+          reason:
+            type: string
+            enum:
+              - FILTERED
+              - NO_CHANNELS
+              - NO_PROVIDERS
+              - PROVIDER_ERROR
+              - UNPUBLISHED
+              - UNDELIVERABLE
+              - UNSUBSCRIBED
+          reasonCode:
+            type: string
+            enum:
+              - HARD
+              - SOFT
+          reasonDetails:
+            type: string
+          runId:
+            type: string
+          providers:
+            type: array
+            items:
+              type: object
+              properties:
+                channel:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                    name:
+                      type: string
+                    template:
+                      type: string
+                clicked:
+                  type: number
+                delivered:
+                  type: number
+                error:
+                  type: string
+                provider:
+                  type: string
+                reference:
+                  type: object
+                  properties: {}
+                  additionalProperties: true
+                sent:
+                  type: number
+                status:
+                  type: string
+                  enum:
+                    - CLICKED
+                    - DELIVERED
+                    - ENQUEUED
+                    - FILTERED
+                    - OPENED
+                    - SENT
+                    - SIMULATED
+                    - UNDELIVERABLE
+                    - UNMAPPED
+                    - UNROUTABLE
   message_id_transformer:
     type: AddFields
     fields:
@@ -103,13 +200,191 @@ definitions:
       record_selector:
         $ref: "#/definitions/root_selector"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: string
+          idempotencyKey:
+            type: string
+          listId:
+            type: string
+          listMessageId:
+            type: string
+          status:
+            type: string
+            enum:
+              - CLICKED
+              - DELIVERED
+              - ENQUEUED
+              - OPENED
+              - SENT
+              - UNDELIVERABLE
+              - UNMAPPED
+              - UNROUTABLE
+          enqueued:
+            type: number
+          sent:
+            type: number
+          delivered:
+            type: number
+          opened:
+            type: number
+          clicked:
+            type: number
+          recipient:
+            type: string
+          event:
+            type: string
+          notification:
+            type: string
+          error:
+            type: string
+          reason:
+            type: string
+            enum:
+              - FILTERED
+              - NO_CHANNELS
+              - NO_PROVIDERS
+              - PROVIDER_ERROR
+              - UNPUBLISHED
+              - UNDELIVERABLE
+              - UNSUBSCRIBED
+          reasonCode:
+            type: string
+            enum:
+              - HARD
+              - SOFT
+          reasonDetails:
+            type: string
+          runId:
+            type: string
+          providers:
+            type: array
+            items:
+              type: object
+              properties:
+                channel:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                    name:
+                      type: string
+                    template:
+                      type: string
+                clicked:
+                  type: number
+                delivered:
+                  type: number
+                error:
+                  type: string
+                provider:
+                  type: string
+                reference:
+                  type: object
+                  properties: {}
+                  additionalProperties: true
+                sent:
+                  type: number
+                status:
+                  type: string
+                  enum:
+                    - CLICKED
+                    - DELIVERED
+                    - ENQUEUED
+                    - FILTERED
+                    - OPENED
+                    - SENT
+                    - SIMULATED
+                    - UNDELIVERABLE
+                    - UNMAPPED
+                    - UNROUTABLE
   message_history_stream:
     type: DeclarativeStream
     $parameters:
       name: message_history
     primary_key: message_id
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          message_id:
+            type: string
+          ts:
+            type: number
+          type:
+            type: string
+          data:
+            type: object
+            properties: {}
+            additionalProperties: true
+          event:
+            type: string
+          profile:
+            type: object
+            properties: {}
+            additionalProperties: true
+          override:
+            type: object
+            properties: {}
+            additionalProperties: true
+          recipient:
+            type: string
+          event_id:
+            type: string
+          notification_id:
+            type: string
+          merged_profile:
+            type: object
+            properties: {}
+            additionalProperties: true
+          received_profile:
+            type: object
+            properties: {}
+            additionalProperties: true
+          stored_profile:
+            type: object
+            properties: {}
+            additionalProperties: true
+          output:
+            type: object
+            properties: {}
+            additionalProperties: true
+          channel:
+            type: object
+            properties:
+              id:
+                type: string
+              label:
+                type: string
+          integration:
+            type: object
+            properties:
+              id:
+                type: string
+              provider:
+                type: string
+          reason:
+            type: string
+            enum:
+              - FILTERED
+              - NO_CHANNELS
+              - NO_PROVIDERS
+              - PROVIDER_ERROR
+              - UNPUBLISHED
+              - UNDELIVERABLE
+              - UNSUBSCRIBED
+          reasonCode:
+            type: string
+            enum:
+              - HARD
+              - SOFT
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -128,7 +403,32 @@ definitions:
       name: message_output
     primary_key: message_id
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          message_id:
+            type: string
+          channel:
+            type: string
+          channel_id:
+            type: string
+          content:
+            properties:
+              blocks:
+                type: array
+              body:
+                type: string
+              html:
+                type: string
+              subject:
+                type: string
+              text:
+                type: string
+              title:
+                type: string
+            type: object
+        type: object
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -150,3 +450,18 @@ streams:
 check:
   type: CheckStream
   stream_names: ["messages"]
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Courier Source Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        description: Courier API Key to retrieve your data.
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.io/integrations/sources/courier

@@ -45,6 +45,42 @@ definitions:
       paginator:
         $ref: "#/definitions/increment_paginator"
   # API Docs: https://smaily.com/help/api/segments/list-segments/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+          email:
+            type:
+              - string
+              - 'null'
+          first_name:
+            type:
+              - string
+              - 'null'
+          last_name:
+            type:
+              - string
+              - 'null'
+          is_owner:
+            type:
+              - boolean
+              - 'null'
+          role:
+            type:
+              - object
+              - 'null'
+            properties:
+              id:
+                type: integer
+              name:
+                type:
+                  - string
+                  - 'null'
+        required:
+          - id
   segments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -52,6 +88,23 @@ definitions:
       primary_key: "id"
       path: "/list.php"
   # API Docs: https://smaily.com/help/api/campaigns-3/list-campaigns/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - 'null'
+          subscribers_count:
+            type:
+              - integer
+              - 'null'
+        required:
+          - id
   campaigns_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -59,6 +112,52 @@ definitions:
       primary_key: "id"
       path: "/campaign.php"
   # API Docs: https://smaily.com/help/api/templates-2/list-templates/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - 'null'
+          template:
+            type:
+              - object
+              - 'null'
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                  - string
+                  - 'null'
+              preview_url:
+                type:
+                  - string
+                  - 'null'
+          tags:
+            type:
+              - array
+              - 'null'
+            items:
+              type: string
+          created_at:
+            type:
+              - string
+              - 'null'
+          completed_at:
+            type:
+              - string
+              - 'null'
+          status:
+            type:
+              - string
+              - 'null'
+        required:
+          - id
   templates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -73,6 +172,35 @@ definitions:
           type: PageIncrement
           page_size: 1000
   # API Docs: https://smaily.com/help/api/automations-2/list-automation-workflows/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+          type:
+            type:
+              - string
+              - 'null'
+          name:
+            type:
+              - string
+              - 'null'
+          created_at:
+            type:
+              - string
+              - 'null'
+          modified_at:
+            type:
+              - string
+              - 'null'
+          preview_url:
+            type:
+              - string
+              - 'null'
+        required:
+          - id
   automations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -80,6 +208,47 @@ definitions:
       primary_key: "id"
       path: "/autoresponder.php"
   # API Docs: https://smaily.com/help/api/a-b-tests/list-a-b-tests/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - 'null'
+          sections:
+            type:
+              - array
+              - 'null'
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                subject:
+                  type:
+                    - string
+                    - 'null'
+                template:
+                  type:
+                    - object
+                    - 'null'
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type:
+                        - string
+                        - 'null'
+                    preview_url:
+                      type:
+                        - string
+                        - 'null'
+        required:
+          - id
   ab_tests_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -87,6 +256,67 @@ definitions:
       primary_key: "id"
       path: "/split.php"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type:
+              - string
+              - 'null'
+          sections:
+            type:
+              - array
+              - 'null'
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                subject:
+                  type:
+                    - string
+                    - 'null'
+                template:
+                  type:
+                    - object
+                    - 'null'
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type:
+                        - string
+                        - 'null'
+                    preview_url:
+                      type:
+                        - string
+                        - 'null'
+          tags:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - string
+                - 'null'
+          created_at:
+            type:
+              - string
+              - 'null'
+          completed_at:
+            type:
+              - string
+              - 'null'
+          status:
+            type:
+              - string
+              - 'null'
+        required:
+          - id
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/segments_stream"
@@ -97,3 +327,29 @@ streams:
 
 check:
   stream_names: ["users"]
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Smaily Spec
+    type: object
+    required:
+      - api_subdomain
+      - api_username
+      - api_password
+    additionalProperties: true
+    properties:
+      api_subdomain:
+        type: string
+        title: API Subdomain
+        description: API Subdomain. See https://smaily.com/help/api/general/create-api-user/
+      api_username:
+        type: string
+        title: API User Username
+        description: API user username. See https://smaily.com/help/api/general/create-api-user/
+      api_password:
+        type: string
+        title: API User Password
+        description: API user password. See https://smaily.com/help/api/general/create-api-user/
+        airbyte_secret: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/smaily

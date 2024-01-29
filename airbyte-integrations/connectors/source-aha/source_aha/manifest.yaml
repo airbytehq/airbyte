@@ -37,11 +37,77 @@ definitions:
     $parameters:
       name: "features"
       path: "/features"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          reference_num:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          created_at:
+            type:
+              - 'null'
+              - string
+          url:
+            type:
+              - 'null'
+              - string
+          resource:
+            type:
+              - 'null'
+              - string
+          product_id:
+            type:
+              - 'null'
+              - string
   products_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "products"
       path: "/products"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          reference_prefix:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          product_line:
+            type:
+              - 'null'
+              - boolean
+          created_at:
+            type:
+              - 'null'
+              - string
+          workspace_type:
+            type:
+              - 'null'
+              - string
   idea_categories_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -57,11 +123,114 @@ definitions:
           - stream: "#/definitions/products_stream"
             parent_key: "id"
             partition_field: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          parent_id:
+            type:
+              - 'null'
+              - string
+          created_at:
+            type:
+              - 'null'
+              - string
   ideas_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "ideas"
       path: "/ideas"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          reference_num:
+            type:
+              - 'null'
+              - string
+          created_at:
+            type:
+              - 'null'
+              - string
+          updated_at:
+            type:
+              - 'null'
+              - string
+          workflow_status:
+            type:
+              - 'null'
+              - object
+            properties:
+              id:
+                type:
+                  - 'null'
+                  - string
+              name:
+                type:
+                  - 'null'
+                  - string
+              position:
+                type:
+                  - 'null'
+                  - integer
+              complete:
+                type:
+                  - 'null'
+                  - boolean
+              color:
+                type:
+                  - 'null'
+                  - string
+          description:
+            type:
+              - 'null'
+              - object
+            properties:
+              id:
+                type:
+                  - 'null'
+                  - string
+              body:
+                type:
+                  - 'null'
+                  - string
+              created_at:
+                type:
+                  - 'null'
+                  - string
+              attachments:
+                type:
+                  - 'null'
+                  - array
+          url:
+            type:
+              - 'null'
+              - string
+          resource:
+            type:
+              - 'null'
+              - string
   idea_endorsements_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -77,6 +246,124 @@ definitions:
           - stream: "#/definitions/ideas_stream"
             parent_key: "id"
             partition_field: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          idea_id:
+            type:
+              - 'null'
+              - string
+          created_at:
+            type:
+              - 'null'
+              - string
+          updated_at:
+            type:
+              - 'null'
+              - string
+          value:
+            type:
+              - 'null'
+              - string
+          link:
+            type:
+              - 'null'
+              - string
+          weight:
+            type:
+              - 'null'
+              - integer
+          endorsed_by_portal_user:
+            type: object
+            properties:
+              id:
+                type:
+                  - 'null'
+                  - string
+              name:
+                type:
+                  - 'null'
+                  - string
+              email:
+                type:
+                  - 'null'
+                  - string
+              created_at:
+                type:
+                  - 'null'
+                  - string
+          endorsed_by_idea_user:
+            type: object
+            properties:
+              id:
+                type:
+                  - 'null'
+                  - string
+              name:
+                type:
+                  - 'null'
+                  - string
+              email:
+                type:
+                  - 'null'
+                  - string
+              created_at:
+                type:
+                  - 'null'
+                  - string
+          endorsed_by_idea_organization:
+            type: object
+            properties:
+              id:
+                type:
+                  - 'null'
+                  - string
+              name:
+                type:
+                  - 'null'
+                  - string
+              created_at:
+                type:
+                  - 'null'
+                  - string
+              url:
+                type:
+                  - 'null'
+                  - string
+              resource:
+                type:
+                  - 'null'
+                  - string
+          endorsed_by_user:
+            type: object
+            properties:
+              id:
+                type:
+                  - 'null'
+                  - string
+              name:
+                type:
+                  - 'null'
+                  - string
+              email:
+                type:
+                  - 'null'
+                  - string
+              created_at:
+                type:
+                  - 'null'
+                  - string
+              updated_at:
+                type:
+                  - 'null'
+                  - string
   idea_comments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -92,17 +379,325 @@ definitions:
           - stream: "#/definitions/ideas_stream"
             parent_key: "id"
             partition_field: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          idea_id:
+            type:
+              - 'null'
+              - string
+          body:
+            type:
+              - 'null'
+              - string
+          created_at:
+            type:
+              - 'null'
+              - string
+          visibility:
+            type:
+              - 'null'
+              - string
+          parent_idea_comment_id:
+            type:
+              - 'null'
+              - string
+          idea_commenter_user:
+            type: object
+            properties:
+              id:
+                type:
+                  - 'null'
+                  - string
+              name_id:
+                type:
+                  - 'null'
+                  - string
+              email:
+                type:
+                  - 'null'
+                  - string
+              created_at:
+                type:
+                  - 'null'
+                  - string
+              updated_at:
+                type:
+                  - 'null'
+                  - string
+          idea:
+            type: object
+            properties:
+              id:
+                type:
+                  - 'null'
+                  - string
+              reference_num:
+                type:
+                  - 'null'
+                  - string
+              name:
+                type:
+                  - 'null'
+                  - string
+              created_at:
+                type:
+                  - 'null'
+                  - string
+              updated_at:
+                type:
+                  - 'null'
+                  - string
+              workflow_status:
+                type: object
+                properties:
+                  id:
+                    type:
+                      - 'null'
+                      - string
+                  name:
+                    type:
+                      - 'null'
+                      - string
+                  position:
+                    type:
+                      - 'null'
+                      - integer
+                  complete:
+                    type:
+                      - 'null'
+                      - boolean
+                  color:
+                    type:
+                      - 'null'
+                      - string
+              description:
+                type: object
+                properties:
+                  id:
+                    type:
+                      - 'null'
+                      - string
+                  body:
+                    type:
+                      - 'null'
+                      - string
+                  created_at:
+                    type:
+                      - 'null'
+                      - string
+                  attachments:
+                    type:
+                      - 'null'
+                      - array
+                url:
+                  type:
+                    - 'null'
+                    - string
+                resource:
+                  type:
+                    - 'null'
+                    - string
+            attachments:
+              type:
+                - 'null'
+                - array
+          attachments:
+            type:
+              - 'null'
+              - array
   users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "users"
       path: "/users"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          email:
+            type:
+              - 'null'
+              - string
+          created_at:
+            type:
+              - 'null'
+              - string
+          updated_at:
+            type:
+              - 'null'
+              - string
+          accessed_at:
+            type:
+              - 'null'
+              - string
+          product_roles:
+            type:
+              - 'null'
+              - array
+          enabled:
+            type:
+              - 'null'
+              - boolean
+          paid_seat:
+            type:
+              - 'null'
+              - boolean
+          administrator:
+            type:
+              - 'null'
+              - boolean
+          administrator_roles:
+            type:
+              - 'null'
+              - object
+          identity_provider:
+            type:
+              - 'null'
+              - object
   goals_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "goals"
       path: "/goals"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          reference_num:
+            type:
+              - 'null'
+              - string
+          effort:
+            type:
+              - 'null'
+              - number
+          value:
+            type:
+              - 'null'
+              - number
+          position:
+            type:
+              - 'null'
+              - number
+          created_at:
+            type:
+              - 'null'
+              - string
+          updated_at:
+            type:
+              - 'null'
+              - string
+          product_id:
+            type:
+              - 'null'
+              - string
+          progress:
+            type:
+              - 'null'
+              - number
+          progress_source:
+            type:
+              - 'null'
+              - string
+          url:
+            type:
+              - 'null'
+              - string
+          resource:
+            type:
+              - 'null'
+              - string
+          description:
+            type:
+              - 'null'
+              - object
+          success_metric:
+            type:
+              - 'null'
+              - object
+          project:
+            type:
+              - 'null'
+              - object
+          timeframe:
+            type:
+              - 'null'
+              - object
+          initiatives:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              additionalProperties: true
+          comments_count:
+            type:
+              - 'null'
+              - integer
+          features:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              additionalProperties: true
+          releases:
+            type:
+              - 'null'
+              - array
+          custom_fields:
+            type:
+              - 'null'
+              - array
+          parent:
+            type:
+              - 'null'
+              - object
+            additionalProperties: true
+          parents:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              additionalProperties: true
 streams:
   - "#/definitions/features_stream"
   - "#/definitions/products_stream"
@@ -116,3 +711,24 @@ streams:
 check:
   stream_names:
     - "products"
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Aha Spec
+    type: object
+    required:
+      - api_key
+      - url
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        description: API Key
+        title: API Bearer Token
+        airbyte_secret: true
+      url:
+        type: string
+        description: URL
+        title: Aha Url Instance
+  documentation_url: https://docs.airbyte.com/integrations/sources/aha

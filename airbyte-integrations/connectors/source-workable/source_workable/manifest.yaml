@@ -46,6 +46,99 @@ definitions:
       primary_key: "id"
       path: "/spi/v3/jobs"
       field_path: ["jobs"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          title:
+            type:
+              - 'null'
+              - string
+          full_title:
+            type:
+              - 'null'
+              - string
+          shortcode:
+            type:
+              - 'null'
+              - string
+          code:
+            type:
+              - 'null'
+              - string
+          state:
+            type:
+              - 'null'
+              - string
+          department:
+            type:
+              - 'null'
+              - string
+          department_hierarchy:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+            minItems: 0
+          url:
+            type:
+              - 'null'
+              - string
+          application_url:
+            type:
+              - 'null'
+              - string
+          shortlink:
+            type:
+              - 'null'
+              - string
+          location:
+            type: object
+            properties:
+              location_str:
+                type:
+                  - 'null'
+                  - string
+              country:
+                type:
+                  - 'null'
+                  - string
+              country_code:
+                type:
+                  - 'null'
+                  - string
+              region:
+                type:
+                  - 'null'
+                  - string
+              region_code:
+                type:
+                  - 'null'
+                  - string
+              city:
+                type:
+                  - 'null'
+                  - string
+              zip_code:
+                type:
+                  - 'null'
+                  - string
+              telecommuting:
+                type: boolean
+          created_at:
+            type:
+              - 'null'
+              - string
   candidates_stream: # https://workable.readme.io/reference/job-candidates-index
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -53,6 +146,32 @@ definitions:
       primary_key: "id"
       path: "/spi/v3/candidates"
       field_path: ["candidates"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          headline:
+            type:
+              - 'null'
+              - string
+          email:
+            type:
+              - 'null'
+              - string
+          role:
+            type:
+              - 'null'
+              - string
   stages_stream: # https://workable.readme.io/reference/stages
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -60,6 +179,28 @@ definitions:
       primary_key: "slug"
       path: "/spi/v3/stages"
       field_path: ["stages"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          slug:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          kind:
+            type:
+              - 'null'
+              - string
+          position:
+            type:
+              - 'null'
+              - number
   recruiters_stream: # https://workable.readme.io/reference/recruiters
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -67,6 +208,24 @@ definitions:
       primary_key: "id"
       path: "/spi/v3/recruiters"
       field_path: ["recruiters"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          email:
+            type:
+              - 'null'
+              - string
 
 streams:
   - "#/definitions/jobs_stream"
@@ -80,3 +239,33 @@ check:
     - "candidates"
     - "stages"
     - "recruiters"
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Workable API Spec
+    type: object
+    required:
+      - api_key
+      - account_subdomain
+      - start_date
+    additionalProperties: true
+    properties:
+      api_key:
+        title: API Key
+        type: string
+        description: Your Workable API Key. See <a href="https://workable.readme.io/reference/generate-an-access-token">here</a>.
+        airbyte_secret: true
+      account_subdomain:
+        title: Account Subdomain
+        type: string
+        description: Your Workable account subdomain, e.g. https://your_account_subdomain.workable.com.
+      start_date:
+        title: Start Date
+        type: string
+        description: "Get data that was created since this date (format: YYYYMMDDTHHMMSSZ)."
+        pattern: ^[0-9]{8}T[0-9]{6}Z$
+        examples:
+          - 20150708T115616Z
+          - 20221115T225616Z
+  documentation_url: https://docs.airbyte.io/integrations/sources/workable

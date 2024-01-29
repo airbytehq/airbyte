@@ -46,6 +46,91 @@ definitions:
     $parameters:
       path: "customfields"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - 'null'
+          accountId:
+            type:
+              - string
+              - 'null'
+          type:
+            type:
+              - string
+              - 'null'
+          title:
+            type:
+              - string
+              - 'null'
+          spaceId:
+            type:
+              - 'null'
+              - string
+          sharedIds:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - string
+                - 'null'
+          settings:
+            type:
+              - object
+              - 'null'
+            properties:
+              inheritanceType:
+                type:
+                  - string
+                  - 'null'
+              values:
+                type:
+                  - array
+                  - 'null'
+                items:
+                  type:
+                    - string
+                    - integer
+                    - number
+                    - boolean
+                    - 'null'
+              decimalPlaces:
+                type:
+                  - integer
+                  - 'null'
+              useThousandsSeparator:
+                type:
+                  - boolean
+                  - 'null'
+              readOnly:
+                type:
+                  - boolean
+                  - 'null'
+              allowTime:
+                type:
+                  - boolean
+                  - 'null'
+              allowOtherValues:
+                type:
+                  - boolean
+                  - 'null'
+              aggregation:
+                type:
+                  - string
+                  - 'null'
+              currency:
+                type:
+                  - string
+                  - 'null'
   contacts_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
@@ -53,6 +138,108 @@ definitions:
       name: "contacts"
       path: "contacts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - 'null'
+          firstName:
+            type:
+              - string
+              - 'null'
+          lastName:
+            type:
+              - string
+              - 'null'
+          avatarUrl:
+            type:
+              - string
+              - 'null'
+          timezone:
+            type:
+              - string
+              - 'null'
+          locale:
+            type:
+              - string
+              - 'null'
+          deleted:
+            type:
+              - boolean
+              - 'null'
+          type:
+            type:
+              - string
+              - 'null'
+          profiles:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - object
+                - 'null'
+              properties:
+                accountId:
+                  type:
+                    - string
+                    - 'null'
+                role:
+                  type:
+                    - string
+                    - 'null'
+                external:
+                  type:
+                    - boolean
+                    - 'null'
+                admin:
+                  type:
+                    - boolean
+                    - 'null'
+                owner:
+                  type:
+                    - boolean
+                    - 'null'
+                email:
+                  type:
+                    - string
+                    - 'null'
+          title:
+            type:
+              - 'null'
+              - string
+          me:
+            type:
+              - 'null'
+              - boolean
+          companyName:
+            type:
+              - 'null'
+              - string
+          phone:
+            type:
+              - 'null'
+              - string
+          myTeam:
+            type:
+              - 'null'
+              - boolean
+          memberIds:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - string
+                - 'null'
   workflows_stream:
     $ref: "#/definitions/base_stream"
     name: "workflows"
@@ -60,6 +247,72 @@ definitions:
     $parameters:
       path: "workflows"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - 'null'
+          name:
+            type:
+              - string
+              - 'null'
+          standard:
+            type:
+              - string
+              - 'null'
+          hidden:
+            type:
+              - string
+              - 'null'
+          customStatuses:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - object
+                - 'null'
+              properties:
+                id:
+                  type:
+                    - string
+                    - 'null'
+                name:
+                  type:
+                    - string
+                    - 'null'
+                standardName:
+                  type:
+                    - boolean
+                    - 'null'
+                color:
+                  type:
+                    - string
+                    - 'null'
+                standard:
+                  type:
+                    - string
+                    - 'null'
+                group:
+                  type:
+                    - string
+                    - 'null'
+                hidden:
+                  type:
+                    - string
+                    - 'null'
+          title:
+            type:
+              - string
+              - 'null'
   comments_stream:
     $ref: "#/definitions/base_stream"
     name: "comments"
@@ -67,6 +320,41 @@ definitions:
     $parameters:
       path: "comments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - 'null'
+          authorId:
+            type:
+              - string
+              - 'null'
+          text:
+            type:
+              - string
+              - 'null'
+          taskId:
+            type:
+              - string
+              - 'null'
+          createdDate:
+            type:
+              - string
+              - 'null'
+            format: date-time
+          updatedDate:
+            type:
+              - 'null'
+              - string
+            format: date-time
   folders_stream:
     $ref: "#/definitions/base_stream"
     name: "folders"
@@ -74,6 +362,70 @@ definitions:
     $parameters:
       path: "folders"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - 'null'
+          scope:
+            type:
+              - string
+              - 'null'
+          createdDate:
+            type:
+              - 'null'
+              - string
+            format: date-time
+          childIds:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - string
+                - 'null'
+          space:
+            type:
+              - boolean
+              - 'null'
+          title:
+            type:
+              - string
+              - 'null'
+          project:
+            type:
+              - object
+              - 'null'
+            properties:
+              authorId:
+                type:
+                  - string
+                  - 'null'
+              customStatusId:
+                type:
+                  - string
+                  - 'null'
+              createdDate:
+                type:
+                  - 'null'
+                  - string
+                format: date-time
+              ownerIds:
+                type:
+                  - array
+                  - 'null'
+                items:
+                  type:
+                    - string
+                    - 'null'
   tasks_stream:
     $ref: "#/definitions/base_stream"
     name: "tasks"
@@ -81,6 +433,128 @@ definitions:
     $parameters:
       path: "tasks"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - 'null'
+          accountId:
+            type:
+              - string
+              - 'null'
+          title:
+            type:
+              - string
+              - 'null'
+          status:
+            type:
+              - string
+              - 'null'
+          importance:
+            type:
+              - string
+              - 'null'
+          scope:
+            type:
+              - string
+              - 'null'
+          briefDescription:
+            type:
+              - 'null'
+              - string
+          description:
+            type:
+              - 'null'
+              - string
+          customStatusId:
+            type:
+              - string
+              - 'null'
+          permalink:
+            type:
+              - string
+              - 'null'
+          priority:
+            type:
+              - string
+              - 'null'
+          createdDate:
+            type:
+              - string
+              - 'null'
+            format: date-time
+          responsibleIds:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - string
+                - 'null'
+          parentIds:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - string
+                - 'null'
+          superTaskIds:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - string
+                - 'null'
+          authorIds:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - string
+                - 'null'
+          customFields:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - object
+                - 'null'
+              properties:
+                id:
+                  type:
+                    - string
+                    - 'null'
+                value:
+                  type:
+                    - string
+                    - 'null'
+          dates:
+            type:
+              - object
+              - 'null'
+            properties:
+              type:
+                type:
+                  - string
+                  - 'null'
+          updatedDate:
+            type: string
+            format: date-time
+          completedDate:
+            type: string
+            format: date-time
 streams:
   - "#/definitions/customfields_stream"
   - "#/definitions/contacts_stream"
@@ -97,3 +571,37 @@ check:
     - "folders"
     - "tasks"
     - "workflows"
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Wrike Spec
+    type: object
+    required:
+      - access_token
+      - wrike_instance
+    properties:
+      access_token:
+        type: string
+        title: Permanent Access Token
+        description: >-
+          Permanent access token. You can find documentation on how to acquire a permanent access token  <a href="https://developers.wrike.com/oauth-20-authorization/">here</a>
+        airbyte_secret: true
+        order: 0
+      wrike_instance:
+        type: string
+        title: Wrike Instance (hostname)
+        description: Wrike's instance such as `app-us2.wrike.com`
+        default: app-us2.wrike.com
+        order: 1
+      start_date:
+        type: string
+        title: Start date for comments
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Only comments
+          after this date will be replicated.
+        examples:
+          - "2017-01-25T00:00:00Z"
+        order: 2
+  documentation_url: https://docsurl.com

@@ -65,6 +65,67 @@ definitions:
     # incremental_sync:
     #       $ref: "#/definitions/incremental_sync_base"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          lat:
+            type: number
+          lon:
+            type: number
+          timezone:
+            type: string
+          timezone_offset:
+            type: number
+          current:
+            type: object
+            additionalProperties: true
+            properties:
+              dt:
+                type: number
+              sunrise:
+                type: number
+              sunset:
+                type: number
+              temp:
+                type: number
+              feels_like:
+                type: number
+              pressure:
+                type: number
+              humidity:
+                type: number
+              dew_point:
+                type: number
+              uvi:
+                type: number
+              clouds:
+                type: number
+              visibility:
+                type: number
+              wind_speed:
+                type: number
+              wind_deg:
+                type: number
+              weather:
+                type: array
+              rain:
+                type: object
+                additionalProperties: true
+                properties:
+                  1h:
+                    type: number
+          minutely:
+            type: array
+          hourly:
+            type: array
+          daily:
+            type: array
+          alerts:
+            type: array
 streams:
   - "#/definitions/onecall_stream"
 
@@ -126,10 +187,7 @@ spec:
           - "true"
       lang:
         type: string
-        description:
-          You can use lang parameter to get the output in your language.
-          The contents of the description field will be translated. See <a href="https://openweathermap.org/api/one-call-api#multi">here</a>
-          for the list of supported languages.
+        description: You can use lang parameter to get the output in your language. The contents of the description field will be translated. See <a href="https://openweathermap.org/api/one-call-api#multi">here</a> for the list of supported languages.
         enum:
           - af
           - al
