@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
 
 _SOME_PARTITIONS: List[Partition] = [Mock(spec=Partition), Mock(spec=Partition)]
-_ANY_COUNT = -1
+
 
 class PartitionEnqueuerTest(unittest.TestCase):
     def setUp(self) -> None:
