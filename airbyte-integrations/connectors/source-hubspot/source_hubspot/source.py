@@ -104,7 +104,7 @@ class SourceHubspot(AbstractSource):
         return API(credentials=credentials)
 
     def get_common_params(self, config) -> Mapping[str, Any]:
-        start_date = config["start_date"]
+        start_date = config.get("start_date", "")
         credentials = config["credentials"]
         api = self.get_api(config=config)
         return dict(api=api, start_date=start_date, credentials=credentials)
