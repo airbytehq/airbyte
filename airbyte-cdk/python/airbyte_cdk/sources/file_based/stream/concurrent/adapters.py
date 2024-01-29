@@ -21,6 +21,7 @@ from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedNoopCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from_stream, get_primary_key_from_stream
@@ -36,7 +37,7 @@ This module contains adapters to help enabling concurrency on File-based Stream 
 
 
 @deprecated("This class is experimental. Use at your own risk.")
-class FileBasedStreamFacade(AbstractFileBasedStream):
+class FileBasedStreamFacade(AbstractFileBasedStream, AbstractStreamFacade[DefaultStream]):
     @classmethod
     def create_from_stream(
         cls,
@@ -135,6 +136,9 @@ class FileBasedStreamFacade(AbstractFileBasedStream):
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         return self._legacy_stream.infer_schema(files)
+
+    def get_underlying_stream(self) -> DefaultStream:
+        return self._abstract_stream
 
 
 class FileBasedStreamPartition(Partition):

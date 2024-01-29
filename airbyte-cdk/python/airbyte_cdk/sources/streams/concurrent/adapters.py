@@ -14,7 +14,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
     AbstractAvailabilityStrategy,
     StreamAvailability,
@@ -39,7 +39,7 @@ This module contains adapters to help enabling concurrency on Stream objects wit
 
 
 @deprecated("This class is experimental. Use at your own risk.")
-class StreamFacade(Stream):
+class StreamFacade(Stream, AbstractStreamFacade[DefaultStream]):
     """
     The StreamFacade is a Stream that wraps an AbstractStream and exposes it as a Stream.
 
@@ -105,7 +105,7 @@ class StreamFacade(Stream):
         if "state" in dir(self._legacy_stream):
             self._legacy_stream.state = value  # type: ignore  # validating `state` is attribute of stream using `if` above
 
-    def __init__(self, stream: AbstractStream, legacy_stream: Stream, cursor: Cursor, slice_logger: SliceLogger, logger: logging.Logger):
+    def __init__(self, stream: DefaultStream, legacy_stream: Stream, cursor: Cursor, slice_logger: SliceLogger, logger: logging.Logger):
         """
         :param stream: The underlying AbstractStream
         """
@@ -228,6 +228,9 @@ class StreamFacade(Stream):
 
     def log_stream_sync_configuration(self) -> None:
         self._abstract_stream.log_stream_sync_configuration()
+
+    def get_underlying_stream(self) -> DefaultStream:
+        return self._abstract_stream
 
 
 class StreamPartition(Partition):

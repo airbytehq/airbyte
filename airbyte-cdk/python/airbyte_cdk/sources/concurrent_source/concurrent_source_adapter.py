@@ -8,10 +8,9 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
-from airbyte_cdk.sources.file_based.stream.concurrent.adapters import FileBasedStreamFacade
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
 
 
 class ConcurrentSourceAdapter(AbstractSource, ABC):
@@ -59,6 +58,6 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
                     f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
                     f"Refresh the schema in replication settings and remove this stream from future sync attempts."
                 )
-            if isinstance(stream_instance, (StreamFacade, FileBasedStreamFacade)):
-                abstract_streams.append(stream_instance._abstract_stream)
+            if isinstance(stream_instance, AbstractStreamFacade):
+                abstract_streams.append(stream_instance.get_underlying_stream())
         return abstract_streams
