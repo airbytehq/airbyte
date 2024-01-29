@@ -2,6 +2,6 @@
 !Dockerfile
 !Dockerfile.test
 !main.py
-!source_google_analytics_v4_cloud
+!source_google_analytics_v4_service_account_only
 !setup.py
 !secrets

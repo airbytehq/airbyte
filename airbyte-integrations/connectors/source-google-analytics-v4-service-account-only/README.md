@@ -35,7 +35,7 @@ to generate the necessary credentials. Then create a file `secrets/config.json` 
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source google-analytics-v4-cloud test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source google-analytics-v4-service-account-only test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -56,9 +56,9 @@ You can follow install instructions [here](https://github.com/airbytehq/airbyte/
 Then running the following command will build your connector:
 
 ```bash
-airbyte-ci connectors --name=source-google-analytics-v4-cloud build
+airbyte-ci connectors --name=source-google-analytics-v4-service-account-only build
 ```
-Once the command is done, you will find your connector image in your local docker registry: `airbyte/source-google-analytics-v4-cloud:dev`.
+Once the command is done, you will find your connector image in your local docker registry: `airbyte/source-google-analytics-v4-service-account-only:dev`.
 
 ##### Customizing our build process
 When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
@@ -95,7 +95,7 @@ If you would like to patch our connector and build your own a simple approach wo
 
 1. Create your own Dockerfile based on the latest version of the connector image.
 ```Dockerfile
-FROM airbyte/source-google-analytics-v4-cloud:latest
+FROM airbyte/source-google-analytics-v4-service-account-only:latest
 
 COPY . ./airbyte/integration_code
 RUN pip install ./airbyte/integration_code
@@ -108,17 +108,17 @@ Please use this as an example. This is not optimized.
 
 2. Build your image:
 ```bash
-docker build -t airbyte/source-google-analytics-v4-cloud:dev .
+docker build -t airbyte/source-google-analytics-v4-service-account-only:dev .
 # Running the spec command against your patched connector
-docker run airbyte/source-google-analytics-v4-cloud:dev spec
+docker run airbyte/source-google-analytics-v4-service-account-only:dev spec
 ```
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-google-analytics-v4-cloud:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-analytics-v4-cloud:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-analytics-v4-cloud:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-google-analytics-v4-cloud:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-google-analytics-v4-service-account-only:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-analytics-v4-service-account-only:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-analytics-v4-service-account-only:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-google-analytics-v4-service-account-only:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ## Testing
@@ -139,10 +139,10 @@ We split dependencies between two groups, dependencies that are:
 
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-google-analytics-v4-cloud test`
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-google-analytics-v4-service-account-only test`
 2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
 3. Make sure the `metadata.yaml` content is up to date.
-4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/google-analytics-v4-cloud.md`).
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/google-analytics-v4-service-account-only.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.

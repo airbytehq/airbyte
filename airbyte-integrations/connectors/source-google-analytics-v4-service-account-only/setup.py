@@ -22,7 +22,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_google_analytics_v4_cloud",
+    name="source_google_analytics_v4_service_account_only",
     description="Source implementation for Google Analytics V4.",
     author="Airbyte",
     author_email="contact@airbyte.io",

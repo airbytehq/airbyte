@@ -3,7 +3,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: source_google_analytics_v4_cloud/spec.json
+      - spec_path: source_google_analytics_v4_service_account_only/spec.json
   discovery:
     tests:
       - config_path: secrets/config.json

@@ -14,9 +14,9 @@ data:
   connectorType: source
   definitionId: 9e28a926-8f3c-4911-982d-a2e1c378b59c
   dockerImageTag: 0.0.1
-  dockerRepository: airbyte/source-google-analytics-v4-cloud
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4-cloud
-  githubIssueLabel: source-google-analytics-v4-cloud
+  dockerRepository: airbyte/source-google-analytics-v4-service-account-only
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4-service-account-only
+  githubIssueLabel: source-google-analytics-v4-service-account-only
   icon: google-analytics.svg
   license: Elv2
   name: Google Analytics (Universal Analytics)

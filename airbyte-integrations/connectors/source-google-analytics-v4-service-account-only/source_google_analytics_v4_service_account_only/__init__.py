@@ -23,6 +23,6 @@
 #
 
 
-from .source import SourceGoogleAnalyticsV4Cloud
+from .source import SourceGoogleAnalyticsV4CloudServiceAccountOnly
 
-__all__ = ["SourceGoogleAnalyticsV4Cloud"]
+__all__ = ["SourceGoogleAnalyticsV4CloudServiceAccountOnly"]
