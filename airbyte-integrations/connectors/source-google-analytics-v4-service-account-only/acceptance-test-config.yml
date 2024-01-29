@@ -1,4 +1,4 @@
-connector_image: airbyte/source-google-analytics-v4-cloud:dev
+connector_image: airbyte/source-google-analytics-v4-service-account-only:dev
 test_strictness_level: high
 acceptance_tests:
   spec:
