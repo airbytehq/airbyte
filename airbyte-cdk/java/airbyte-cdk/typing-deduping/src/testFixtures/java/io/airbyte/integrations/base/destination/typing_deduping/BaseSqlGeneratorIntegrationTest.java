@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Streams;
@@ -147,6 +149,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
   protected abstract void insertFinalTableRecords(boolean includeCdcDeletedAt, StreamId streamId, String suffix, List<JsonNode> records)
       throws Exception;
+
+  protected abstract boolean supportsSafeCast();
 
   /**
    * The two dump methods are defined identically as in {@link BaseTypingDedupingTest}, but with
@@ -412,7 +416,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
+        BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl")
+            .stream()
+            .filter(record -> record.get("test_config").get("requires_safe_cast_support").asBoolean())
+            .collect(toList()));
 
     assertTrue(destinationHandler.isFinalTableEmpty(streamId), "Final table should be empty before T+D");
 
