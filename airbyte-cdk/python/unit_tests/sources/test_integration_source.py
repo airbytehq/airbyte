@@ -11,7 +11,6 @@ from unittest.mock import patch
 import pytest
 import requests
 from airbyte_cdk.entrypoint import launch
-from airbyte_cdk.utils import AirbyteTracedException
 from unit_tests.sources.fixtures.source_test_fixture import (
     HttpTestStream,
     SourceFixtureOauthAuthenticator,
