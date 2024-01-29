@@ -113,7 +113,7 @@ public class MysqlDebeziumStateUtilTest {
         debeziumState, config);
     Assertions.assertTrue(parsedOffset.isPresent());
     final JsonNode stateGeneratedUsingParsedOffset =
-        mySqlDebeziumStateUtil.format(parsedOffset.get(), "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
+        mySqlDebeziumStateUtil.format(parsedOffset.get(), "db_fgnfxvllud", "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
     Assertions.assertEquals(debeziumState, stateGeneratedUsingParsedOffset);
   }
 
