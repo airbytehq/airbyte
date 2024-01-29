@@ -39,7 +39,7 @@ This module contains adapters to help enabling concurrency on Stream objects wit
 
 
 @deprecated("This class is experimental. Use at your own risk.")
-class StreamFacade(Stream, AbstractStreamFacade[DefaultStream]):
+class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
     """
     The StreamFacade is a Stream that wraps an AbstractStream and exposes it as a Stream.
 
@@ -185,11 +185,6 @@ class StreamFacade(Stream, AbstractStreamFacade[DefaultStream]):
         else:
             return self._abstract_stream.cursor_field
 
-    @property
-    def source_defined_cursor(self) -> bool:
-        # Streams must be aware of their cursor at instantiation time
-        return True
-
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._abstract_stream.get_json_schema()
@@ -207,21 +202,6 @@ class StreamFacade(Stream, AbstractStreamFacade[DefaultStream]):
         """
         availability = self._abstract_stream.check_availability()
         return availability.is_available(), availability.message()
-
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        """
-        Retrieves the user-friendly display message that corresponds to an exception.
-        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
-
-        A display message will be returned if the exception is an instance of ExceptionWithDisplayMessage.
-
-        :param exception: The exception that was raised
-        :return: A user-friendly message that indicates the cause of the error
-        """
-        if isinstance(exception, ExceptionWithDisplayMessage):
-            return exception.display_message
-        else:
-            return None
 
     def as_airbyte_stream(self) -> AirbyteStream:
         return self._abstract_stream.as_airbyte_stream()

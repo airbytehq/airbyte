@@ -144,7 +144,9 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         for stream in file_based_streams:
             sync_mode = self._get_sync_mode_from_catalog(stream)
             if sync_mode == SyncMode.full_refresh and hasattr(self, "_concurrency_level") and self._concurrency_level is not None:
-                configured_streams.append(FileBasedStreamFacade.create_from_stream(stream, self, self.logger, None, FileBasedNoopCursor()))
+                configured_streams.append(
+                    FileBasedStreamFacade.create_from_stream(stream, self, self.logger, None, FileBasedNoopCursor(stream.config))
+                )
             else:
                 configured_streams.append(stream)
 

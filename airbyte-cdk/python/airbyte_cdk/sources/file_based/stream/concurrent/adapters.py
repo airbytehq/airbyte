@@ -3,13 +3,13 @@
 #
 
 import copy
-import json
 import logging
-from functools import cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from functools import lru_cache
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.availability_strategy import (
     AbstractFileBasedAvailabilityStrategy,
     AbstractFileBasedAvailabilityStrategyWrapper,
@@ -28,6 +28,8 @@ from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
 
@@ -37,7 +39,7 @@ This module contains adapters to help enabling concurrency on File-based Stream 
 
 
 @deprecated("This class is experimental. Use at your own risk.")
-class FileBasedStreamFacade(AbstractFileBasedStream, AbstractStreamFacade[DefaultStream]):
+class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBasedStream):
     @classmethod
     def create_from_stream(
         cls,
@@ -94,22 +96,38 @@ class FileBasedStreamFacade(AbstractFileBasedStream, AbstractStreamFacade[Defaul
         """
         :param stream: The underlying AbstractStream
         """
+        # super().__init__(stream, legacy_stream, cursor, slice_logger, logger)
         self._abstract_stream = stream
         self._legacy_stream = legacy_stream
         self._cursor = cursor
         self._slice_logger = slice_logger
         self._logger = logger
-        self.catalog_schema = self._legacy_stream.catalog_schema
-        self.config = self._legacy_stream.config
-        self.validation_policy = self._legacy_stream.validation_policy
+        self.catalog_schema = legacy_stream.catalog_schema
+        self.config = legacy_stream.config
+        self.validation_policy = legacy_stream.validation_policy
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        if self._abstract_stream.cursor_field is None:
+            return []
+        else:
+            return self._abstract_stream.cursor_field
 
     @property
     def name(self) -> str:
         return self._abstract_stream.name
 
     @property
+    def supports_incremental(self) -> bool:
+        return self._legacy_stream.supports_incremental
+
+    @property
     def availability_strategy(self) -> AbstractFileBasedAvailabilityStrategy:
         return self._legacy_stream.availability_strategy
+
+    @lru_cache(maxsize=None)
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self._abstract_stream.get_json_schema()
 
     @property
     def primary_key(self) -> PrimaryKeyType:
@@ -121,15 +139,8 @@ class FileBasedStreamFacade(AbstractFileBasedStream, AbstractStreamFacade[Defaul
     def get_files(self) -> Iterable[RemoteFile]:
         return self._legacy_stream.get_files()
 
-    @cache
-    def get_json_schema(self) -> Mapping[str, Any]:
-        return self._legacy_stream.get_json_schema()
-
-    def as_airbyte_stream(self) -> AirbyteStream:
-        return self._abstract_stream.as_airbyte_stream()
-
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
-        raise RuntimeError("`read_records_from_slice` should not be called from the FileBasedStreamFacade.")
+        yield from self._legacy_stream.read_records_from_slice(stream_slice)
 
     def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
         return self._legacy_stream.compute_slices()
@@ -139,6 +150,60 @@ class FileBasedStreamFacade(AbstractFileBasedStream, AbstractStreamFacade[Defaul
 
     def get_underlying_stream(self) -> DefaultStream:
         return self._abstract_stream
+
+    def read_full_refresh(
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+    ) -> Iterable[StreamData]:
+        """
+        Read full refresh. Delegate to the underlying AbstractStream, ignoring all the parameters
+        :param cursor_field: (ignored)
+        :param logger: (ignored)
+        :param slice_logger: (ignored)
+        :return: Iterable of StreamData
+        """
+        yield from self._read_records()
+
+    def read_incremental(
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        stream_state: MutableMapping[str, Any],
+        state_manager: ConnectorStateManager,
+        per_stream_state_enabled: bool,
+        internal_config: InternalConfig,
+    ) -> Iterable[StreamData]:
+        yield from self._read_records()
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from self._read_records()
+        except Exception as exc:
+            if hasattr(self._cursor, "state"):
+                state = str(self._cursor.state)
+            else:
+                # This shouldn't happen if the ConcurrentCursor was used
+                state = "unknown; no state attribute was available on the cursor"
+            yield AirbyteMessage(
+                type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=f"Cursor State at time of exception: {state}")
+            )
+            raise exc
+
+    def _read_records(self) -> Iterable[StreamData]:
+        for partition in self._abstract_stream.generate_partitions():
+            if self._slice_logger.should_log_slice_message(self._logger):
+                yield self._slice_logger.create_slice_log_message(partition.to_slice())
+            for record in partition.read():
+                yield record.data
 
 
 class FileBasedStreamPartition(Partition):
@@ -162,11 +227,12 @@ class FileBasedStreamPartition(Partition):
         self._is_closed = False
 
     def read(self) -> Iterable[Record]:
-        if self._slice is None:
-            raise RuntimeError(f"Empty slice for stream {self.stream_name()}. This is unexpected. Please contact Support.")
         try:
-            for record_data in self._stream.read_records_from_slice(
+            for record_data in self._stream.read_records(
+                cursor_field=self._cursor_field,
+                sync_mode=SyncMode.full_refresh,
                 stream_slice=copy.deepcopy(self._slice),
+                stream_state=self._state,
             ):
                 if isinstance(record_data, Mapping):
                     data_to_return = dict(record_data)
@@ -188,7 +254,7 @@ class FileBasedStreamPartition(Partition):
             len(self._slice["files"]) == 1
         ), f"Expected 1 file per partition but got {len(self._slice['files'])} for stream {self.stream_name()}"
         file = self._slice["files"][0]
-        return {file.uri: file}
+        return {"files": [file]}
 
     def close(self) -> None:
         self._cursor.close_partition(self)
@@ -205,7 +271,7 @@ class FileBasedStreamPartition(Partition):
                     f"Slices for file-based streams should be of length 1, but got {len(self._slice['files'])}. This is unexpected. Please contact Support."
                 )
             else:
-                s = json.dumps(f"{self._slice['files'][0].last_modified}_{self._slice['files'][0].uri}")
+                s = f"{self._slice['files'][0].last_modified.strftime('%Y-%m-%dT%H:%M:%S.%fZ')}_{self._slice['files'][0].uri}"
             return hash((self._stream.name, s))
         else:
             return hash(self._stream.name)
