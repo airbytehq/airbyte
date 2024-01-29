@@ -101,7 +101,7 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
     :::
     - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
-   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
+   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, all data will be replicated.
 6. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
@@ -115,7 +115,7 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
     - **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
     - **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
-   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
+   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, all data will be replicated.
 6. Click **Set up source** and wait for the tests to complete.
 
 <FieldAnchor field="enable_experimental_streams">
@@ -304,6 +304,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.0   | 2024-01-29 |                                                          | Make start date not required, sync all if it's not provided                                                                                                                        |
 | 2.0.2   | 2023-12-15 | [33844](https://github.com/airbytehq/airbyte/pull/33844) | Make property_history PK combined to support Incremental/Deduped sync type                                                                                                         |
 | 2.0.1   | 2023-12-15 | [33527](https://github.com/airbytehq/airbyte/pull/33527) | Make query string calculated correctly for ProertyHistory streams to avoid 414 HTTP Errors                                                                                         |
 | 2.0.0   | 2023-12-08 | [33266](https://github.com/airbytehq/airbyte/pull/33266) | Added ContactsPropertyHistory, CompaniesPropertyHistory, DealsPropertyHistory streams                                                                                              |
