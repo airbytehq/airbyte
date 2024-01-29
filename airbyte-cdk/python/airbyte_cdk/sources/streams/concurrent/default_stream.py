@@ -34,7 +34,7 @@ class DefaultStream(AbstractStream):
         self._primary_key = primary_key
         self._cursor_field = cursor_field
         self._logger = logger
-        self._cursor = cursor
+        self._cursor = cursor or NoopCursor()
         self._namespace = namespace
 
     def generate_partitions(self) -> Iterable[Partition]:

@@ -179,7 +179,7 @@ class StreamFacade(Stream):
             yield from self._read_records()
         except Exception as exc:
             if hasattr(self._cursor, "state"):
-                state = self._cursor.state
+                state = str(self._cursor.state)
             else:
                 # This shouldn't happen if the ConcurrentCursor was used
                 state = "unknown; no state attribute was available on the cursor"
