@@ -60,7 +60,7 @@ POETRY_CACHE_VOLUME_NAME = "poetry_cache"
 POETRY_CACHE_PATH = "/root/.cache/pypoetry"
 STORAGE_DRIVER = "fuse-overlayfs"
 SETUP_PY_FILE_PATH = "setup.py"
-DEFAULT_PYTHON_PACKAGE_REGISTRY_URL = "https://pypi.org/simple"
+DEFAULT_PYTHON_PACKAGE_REGISTRY_URL = "https://upload.pypi.org/legacy/"
 
 
 class CIContext(str, Enum):

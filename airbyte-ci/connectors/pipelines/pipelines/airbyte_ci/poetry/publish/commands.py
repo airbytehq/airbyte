@@ -51,6 +51,7 @@ def _validate_python_version(_ctx: dict, _param: dict, value: Optional[str]) -> 
     help="Which registry to publish to. If not set, the default pypi is used. For test pypi, use https://test.pypi.org/legacy/",
     type=click.STRING,
     default=DEFAULT_PYTHON_PACKAGE_REGISTRY_URL,
+    envvar="PYTHON_REGISTRY_URL",
 )
 @click.option(
     "--publish-name",

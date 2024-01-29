@@ -391,7 +391,7 @@ async def test_run_connector_python_registry_publish_pipeline(
         ),
     )
     semaphore = anyio.Semaphore(1)
-    with patch.dict(os.environ, {"PYTHON_REGISTRY_TOKEN": "test"}):
+    with patch.dict(os.environ, {"PYTHON_REGISTRY_TOKEN": "test", "PYTHON_REGISTRY_URL": "https://test.pypi.org/legacy/"}):
         await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
     if expect_publish_to_pypi_called:
         mocked_publish_to_python_registry.return_value.run.assert_called_once()

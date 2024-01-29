@@ -116,9 +116,9 @@ class PublishToPythonRegistry(Step):
             .with_directory("package", package_dir_to_publish)
             .with_workdir("package")
             .with_new_file(PYPROJECT_TOML_FILE_PATH, contents=tomli_w.dumps(contents))
+            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(["poetry", "config", "repositories.mypypi", self.context.registry])
             .with_exec(sh_dash_c(["poetry config pypi-token.mypypi $PYTHON_REGISTRY_TOKEN"]))
-            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(sh_dash_c(["poetry publish --build --repository mypypi -vvv --no-interaction"]))
         )
 

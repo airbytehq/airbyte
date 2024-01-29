@@ -406,13 +406,23 @@ flowchart TD
     validate[Validate the metadata file]
     check[Check if the connector image already exists]
     build[Build the connector image for all platform variants]
+    publish_to_python_registry[Push the connector image to the python registry if enabled]
     upload_spec[Upload connector spec to the spec cache bucket]
     push[Push the connector image from DockerHub, with platform variants]
     pull[Pull the connector image from DockerHub to check SPEC can be run and the image layers are healthy]
     upload_metadata[Upload its metadata file to the metadata service bucket]
 
-    validate-->check-->build-->upload_spec-->push-->pull-->upload_metadata
+    validate-->check-->build-->upload_spec-->publish_to_python_registry-->push-->pull-->upload_metadata
 ```
+
+#### Python registry publishing
+
+If `remoteRegistries.pypi.enabled` in the connector metadata is set to `true`, the connector will be published to the python registry.
+To do so, the `PYTHON_REGISTRY_TOKEN` and `PYTHON_REGISTRY_URL` env vars are used to authenticate with the registry and publish the connector.
+If the current version of the connector is already published to the registry, the publish will be skipped.
+
+On a pre-release, the connector will be published as a `.dev<N>` version.
+
 
 ### <a id="connectors-bump_version"></a>`connectors bump_version` command
 
@@ -534,12 +544,12 @@ For poetry packages, the package name and version can be taken from the `pyproje
 
 #### Options
 
-| Option                    | Required | Default                 | Mapped environment variable | Description                                                                                              |
-| ------------------------- | -------- | ----------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `--publish-name`          | False    |                         |                             | The name of the package. Not required for poetry packages that define it in the `pyproject.toml` file    |
-| `--publish-version`       | False    |                         |                             | The version of the package. Not required for poetry packages that define it in the `pyproject.toml` file |
-| `--python-registry-token` | True     |                         | PYTHON_REGISTRY_TOKEN       | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified      |
-| `--registry-url`          | False    | https://pypi.org/simple |                             | The python registry to publish to. Defaults to main pypi                                                 |
+| Option                    | Required | Default                         | Mapped environment variable | Description                                                                                              |
+| ------------------------- | -------- | ------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `--publish-name`          | False    |                                 |                             | The name of the package. Not required for poetry packages that define it in the `pyproject.toml` file    |
+| `--publish-version`       | False    |                                 |                             | The version of the package. Not required for poetry packages that define it in the `pyproject.toml` file |
+| `--python-registry-token` | True     |                                 | PYTHON_REGISTRY_TOKEN       | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified      |
+| `--registry-url`          | False    | https://upload.pypi.org/legacy/ | PYTHON_REGISTRY_URL         | The python registry to publish to. Defaults to main pypi                                                 |
 
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
@@ -597,6 +607,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 3.9.0   | [#34316](https://github.com/airbytehq/airbyte/pull/34316)  | Allow configuration of python registry URL via environment variable.                                                       |
 | 3.8.0   | [#34316](https://github.com/airbytehq/airbyte/pull/34316)  | Expose Dagger engine image name in `--ci-requirements` and add `--ci-requirements` to the `airbyte-ci` root command group. |
 | 3.7.3   | [#34560](https://github.com/airbytehq/airbyte/pull/34560)  | Simplify Gradle task execution framework by removing local maven repo support.                                             |
 | 3.7.2   | [#34555](https://github.com/airbytehq/airbyte/pull/34555)  | Override secret masking in some very specific special cases.                                                               |
