@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
@@ -78,6 +79,22 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     try (final Connection connection = dataSource.getConnection()) {
       final DatabaseMetaData metaData = connection.getMetaData();
       return metaData;
+    } catch (final SQLException e) {
+      // Some databases like Redshift will have null cause
+      if (Objects.isNull(e.getCause()) || !(e.getCause() instanceof SQLException)) {
+        throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
+      } else {
+        final SQLException cause = (SQLException) e.getCause();
+        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
+      }
+    }
+  }
+
+  @Override
+  public <T> T executeMetadataQuery(Function<DatabaseMetaData, T> query) {
+    try (final Connection connection = dataSource.getConnection()) {
+      final DatabaseMetaData metaData = connection.getMetaData();
+      return query.apply(metaData);
     } catch (final SQLException e) {
       // Some databases like Redshift will have null cause
       if (Objects.isNull(e.getCause()) || !(e.getCause() instanceof SQLException)) {
