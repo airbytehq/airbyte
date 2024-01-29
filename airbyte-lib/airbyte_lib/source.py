@@ -369,10 +369,13 @@ class Source:
         if cache is None:
             cache = get_default_cache()
 
-        cache.register_source(source_name=self.name, source_catalog=self.configured_catalog)
+        cache.register_source(
+            source_name=self.name, incoming_source_catalog=self.configured_catalog
+        )
         cache.process_airbyte_messages(self._tally_records(self._read(cache.get_telemetry_info())))
 
         return ReadResult(
             processed_records=self._processed_records,
             cache=cache,
+            processed_streams=[stream.stream.name for stream in self.configured_catalog.streams],
         )
