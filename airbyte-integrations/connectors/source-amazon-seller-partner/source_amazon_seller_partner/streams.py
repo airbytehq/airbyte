@@ -412,14 +412,6 @@ class MerchantListingsReports(MerchantReports):
     primary_key = "listing-id"
 
 
-class NetPureProductMarginReport(IncrementalReportsAmazonSPStream):
-    name = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
-
-
-class RapidRetailAnalyticsInventoryReport(IncrementalReportsAmazonSPStream):
-    name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
-
-
 class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
@@ -763,6 +755,17 @@ class IncrementalAnalyticsStream(AnalyticsStream):
                 "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
             }
             start_date = end_date_slice
+
+
+class NetPureProductMarginReport(IncrementalAnalyticsStream):
+    name = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
+    result_key = "netPureProductMarginByAsin"
+
+
+class RapidRetailAnalyticsInventoryReport(IncrementalAnalyticsStream):
+    name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
+    result_key = "reportData"
+    cursor_field = "endTime"
 
 
 class BrandAnalyticsMarketBasketReports(IncrementalAnalyticsStream):
