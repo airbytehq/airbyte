@@ -288,21 +288,7 @@
       "type": ["null", "array"],
       "title": "Line Items",
       "items": {
-        "type": ["null", "object"],
-        "title": "Line item",
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Line item ID",
-            "maxLength": 13
-          },
-          "uuid": {
-            "type": "string",
-            "title": "UUID",
-            "description": "The UUID is useful for matching data with the CSV exports and building URLs into Recurly's UI.",
-            "maxLength": 32
-          }
-        }
+        "$ref": "line_items.json"
       }
     },
     "has_more_line_items": {

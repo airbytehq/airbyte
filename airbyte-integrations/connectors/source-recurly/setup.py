@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "recurly==4.10.0", "requests"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "recurly==4.10.0", "requests"]
 
 TEST_REQUIREMENTS = [
     "requests-mock~=1.9.3",

@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"],
@@ -18,17 +19,7 @@
       "maxLength": 13
     },
     "account": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": ["null", "string"],
-          "maxLength": 13
-        },
-        "code": {
-          "type": ["null", "string"],
-          "maxLength": 256
-        }
-      }
+      "$ref": "account_details.json"
     },
     "invoice": {
       "type": ["null", "object"],
@@ -40,6 +31,15 @@
         "number": {
           "type": ["null", "string"],
           "maxLength": 256
+        },
+        "business_entity_id": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
         }
       }
     },
@@ -50,9 +50,21 @@
           "type": ["null", "string"],
           "maxLength": 13
         },
+        "object": {
+          "type": ["null", "string"]
+        },
         "number": {
           "type": ["null", "string"],
           "maxLength": 256
+        },
+        "business_entity_id": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
         }
       }
     },
@@ -129,6 +141,9 @@
         "country": {
           "type": ["null", "string"],
           "maxLength": 256
+        },
+        "geo_code": {
+          "type": ["null", "string"]
         }
       }
     },
@@ -139,6 +154,9 @@
     "payment_method": {
       "type": "object",
       "properties": {
+        "object": {
+          "type": ["null", "string"]
+        },
         "card_type": {
           "type": ["null", "string"],
           "maxLength": 256
@@ -165,6 +183,9 @@
           "type": ["null", "string"],
           "maxLength": 256
         },
+        "cc_bin_country": {
+          "type": ["null", "string"]
+        },
         "gateway_code": {
           "type": ["null", "string"],
           "maxLength": 256
@@ -188,6 +209,9 @@
         "routing_number_bank": {
           "type": ["null", "string"],
           "maxLength": 256
+        },
+        "username": {
+          "type": ["null", "string"]
         }
       }
     },
@@ -221,6 +245,15 @@
         "id": {
           "type": ["null", "string"],
           "maxLength": 13
+        },
+        "object": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
         }
       }
     },

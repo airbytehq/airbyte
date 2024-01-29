@@ -72,6 +72,9 @@
       "maxLength": 50,
       "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
     },
+    "geo_code": {
+      "type": ["null", "string"]
+    },
     "created_at": {
       "type": "string",
       "title": "Created at",
