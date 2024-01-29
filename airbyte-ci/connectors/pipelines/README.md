@@ -385,16 +385,18 @@ Publish all connectors modified in the head commit: `airbyte-ci connectors --mod
 
 ### Options
 
-| Option                               | Required | Default         | Mapped environment variable        | Description                                                                                                                                                                               |
-| ------------------------------------ | -------- | --------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--pre-release/--main-release`       | False    | `--pre-release` |                                    | Whether to publish the pre-release or the main release version of a connector. Defaults to pre-release. For main release you have to set the credentials to interact with the GCS bucket. |
-| `--spec-cache-gcs-credentials`       | False    |                 | `SPEC_CACHE_GCS_CREDENTIALS`       | The service account key to upload files to the GCS bucket hosting spec cache.                                                                                                             |
-| `--spec-cache-bucket-name`           | False    |                 | `SPEC_CACHE_BUCKET_NAME`           | The name of the GCS bucket where specs will be cached.                                                                                                                                    |
-| `--metadata-service-gcs-credentials` | False    |                 | `METADATA_SERVICE_GCS_CREDENTIALS` | The service account key to upload files to the GCS bucket hosting the metadata files.                                                                                                     |
-| `--metadata-service-bucket-name`     | False    |                 | `METADATA_SERVICE_BUCKET_NAME`     | The name of the GCS bucket where metadata files will be uploaded.                                                                                                                         |
-| `--slack-webhook`                    | False    |                 | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                                                                                                                           |
-| `--slack-channel`                    | False    |                 | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                                                                                                                          |
-| `--ci-requirements`                  | False    |                 |                                    | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.                                                                                               |
+| Option                               | Required | Default                         | Mapped environment variable        | Description                                                                                                                                                                               |
+| ------------------------------------ | -------- | ------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--pre-release/--main-release`       | False    | `--pre-release`                 |                                    | Whether to publish the pre-release or the main release version of a connector. Defaults to pre-release. For main release you have to set the credentials to interact with the GCS bucket. |
+| `--spec-cache-gcs-credentials`       | False    |                                 | `SPEC_CACHE_GCS_CREDENTIALS`       | The service account key to upload files to the GCS bucket hosting spec cache.                                                                                                             |
+| `--spec-cache-bucket-name`           | False    |                                 | `SPEC_CACHE_BUCKET_NAME`           | The name of the GCS bucket where specs will be cached.                                                                                                                                    |
+| `--metadata-service-gcs-credentials` | False    |                                 | `METADATA_SERVICE_GCS_CREDENTIALS` | The service account key to upload files to the GCS bucket hosting the metadata files.                                                                                                     |
+| `--metadata-service-bucket-name`     | False    |                                 | `METADATA_SERVICE_BUCKET_NAME`     | The name of the GCS bucket where metadata files will be uploaded.                                                                                                                         |
+| `--slack-webhook`                    | False    |                                 | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                                                                                                                           |
+| `--slack-channel`                    | False    |                                 | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                                                                                                                          |
+| `--ci-requirements`                  | False    |                                 |                                    | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.                                                                                               |
+| `--python-registry-token`            | False    |                                 | `PYTHON_REGISTRY_TOKEN`            | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified      |
+| `--python-registry-url`              | False    | https://upload.pypi.org/legacy/ | `PYTHON_REGISTRY_URL`              | The python registry to publish to. Defaults to main pypi                                                 |
 
 
 I've added an empty "Default" column, and you can fill in the default values as needed.
@@ -418,7 +420,7 @@ flowchart TD
 #### Python registry publishing
 
 If `remoteRegistries.pypi.enabled` in the connector metadata is set to `true`, the connector will be published to the python registry.
-To do so, the `PYTHON_REGISTRY_TOKEN` and `PYTHON_REGISTRY_URL` env vars are used to authenticate with the registry and publish the connector.
+To do so, the `--python-registry-token` and `--python-registry-url` options are used to authenticate with the registry and publish the connector.
 If the current version of the connector is already published to the registry, the publish will be skipped.
 
 On a pre-release, the connector will be published as a `.dev<N>` version.
@@ -549,7 +551,7 @@ For poetry packages, the package name and version can be taken from the `pyproje
 | `--publish-name`          | False    |                                 |                             | The name of the package. Not required for poetry packages that define it in the `pyproject.toml` file    |
 | `--publish-version`       | False    |                                 |                             | The version of the package. Not required for poetry packages that define it in the `pyproject.toml` file |
 | `--python-registry-token` | True     |                                 | PYTHON_REGISTRY_TOKEN       | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified      |
-| `--registry-url`          | False    | https://upload.pypi.org/legacy/ | PYTHON_REGISTRY_URL         | The python registry to publish to. Defaults to main pypi                                                 |
+| `--python-registry-url`   | False    | https://upload.pypi.org/legacy/ | PYTHON_REGISTRY_URL         | The python registry to publish to. Defaults to main pypi                                                 |
 
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 

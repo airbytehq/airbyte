@@ -5,7 +5,6 @@ import json
 import os
 import random
 from typing import List
-from unittest.mock import patch
 
 import anyio
 import pytest
@@ -389,10 +388,11 @@ async def test_run_connector_python_registry_publish_pipeline(
             code_directory="path/to/connector",
             metadata={"dockerImageTag": "1.2.3", "remoteRegistries": {"pypi": {"enabled": pypi_enabled, "packageName": "test"}}},
         ),
+        python_registry_token="test",
+        python_registry_url="https://test.pypi.org/legacy/",
     )
     semaphore = anyio.Semaphore(1)
-    with patch.dict(os.environ, {"PYTHON_REGISTRY_TOKEN": "test", "PYTHON_REGISTRY_URL": "https://test.pypi.org/legacy/"}):
-        await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
+    await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
     if expect_publish_to_pypi_called:
         mocked_publish_to_python_registry.return_value.run.assert_called_once()
         # assert that the first argument passed to mocked_publish_to_pypi contains the things from the context

@@ -158,9 +158,11 @@ class PublishToPythonRegistry(Step):
             .with_new_file("setup.cfg", contents=setup_cfg)
             .with_exec(["pip", "install", "--upgrade", "setuptools", "wheel"])
             .with_exec(["python", SETUP_PY_FILE_PATH, "sdist", "bdist_wheel"])
+            # Make sure these steps are always executed and not cached as they are triggering a side-effect (calling the registry)
+            # Env var setting needs to be in this block as well to make sure a change of the env var will be propagated correctly
+            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_secret_variable("TWINE_USERNAME", pypi_username)
             .with_secret_variable("TWINE_PASSWORD", pypi_password)
-            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(["twine", "upload", "--verbose", "--repository-url", self.context.registry, "dist/*"])
         )
 

@@ -86,8 +86,8 @@ class PythonRegistryPublishContext(PipelineContext):
             version = f"{version}.dev{release_candidate_tag}"
 
         pypi_context = cls(
-            python_registry_token=os.environ["PYTHON_REGISTRY_TOKEN"],
-            registry=os.environ.get("PYTHON_REGISTRY_URL", DEFAULT_PYTHON_PACKAGE_REGISTRY_URL),
+            python_registry_token=connector_context.python_registry_token,
+            registry=connector_context.python_registry_url,
             package_path=str(connector_context.connector.code_directory),
             package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
             version=version,
