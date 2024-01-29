@@ -74,7 +74,6 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
         });
   }
 
-  @Deprecated
   @Override
   public DatabaseMetaData getMetaData() throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {

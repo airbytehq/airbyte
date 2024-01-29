@@ -238,7 +238,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
    * @return
    * @throws SQLException
    */
-  @Deprecated
+
   public abstract DatabaseMetaData getMetaData() throws SQLException;
 
   public abstract <T> T executeMetadataQuery(Function<DatabaseMetaData, T> query) throws SQLException;
