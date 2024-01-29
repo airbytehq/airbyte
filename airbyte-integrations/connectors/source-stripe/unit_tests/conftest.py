@@ -6,6 +6,7 @@ import os
 
 import pytest
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.test.state_builder import StateBuilder
 
 os.environ["CACHE_DISABLED"] = "true"
 os.environ["DEPLOYMENT_MODE"] = "testing"
@@ -40,7 +41,7 @@ def stream_by_name(config):
     from source_stripe.source import SourceStripe
 
     def mocker(stream_name, source_config=config):
-        source = SourceStripe(None, source_config)
+        source = SourceStripe(None, source_config, StateBuilder().build())
         streams = source.streams(source_config)
         for stream in streams:
             if stream.name == stream_name:
