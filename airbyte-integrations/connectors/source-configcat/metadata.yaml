@@ -8,10 +8,6 @@ data:
   icon: configcat.svg
   license: MIT
   name: ConfigCat
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-configcat
   registries:
     cloud:
       enabled: true
