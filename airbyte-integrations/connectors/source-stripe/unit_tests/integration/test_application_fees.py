@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
@@ -19,7 +19,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode, AirbyteStateMessage
+from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, FailureType, SyncMode
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
