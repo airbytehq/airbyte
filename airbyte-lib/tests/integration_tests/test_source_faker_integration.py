@@ -116,21 +116,21 @@ def test_merge_strategy(
 
     # First run, seed A (counts should match the scale or the product count)
     result = source_faker_seed_a.read(duckdb_cache, strategy="merge")
-    assert len(result.cache.streams) == 2
-    # assert len(result.cache.streams["products"]) == NUM_PRODUCTS
+    assert len(result.cache.streams) == 3
+    assert len(list(result.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result.cache.streams["users"])) == DEFAULT_FAKER_SCALE
     assert len(list(result.cache.streams["purchases"])) == DEFAULT_FAKER_SCALE
 
     # Second run, also seed A (should have same exact data, no change in counts)
     result = source_faker_seed_a.read(duckdb_cache, strategy="merge")
-    # assert len(result.cache.streams["products"]) == NUM_PRODUCTS
+    assert len(list(result.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result.cache.streams["users"])) == DEFAULT_FAKER_SCALE
     assert len(list(result.cache.streams["purchases"])) == DEFAULT_FAKER_SCALE
 
     # Third run, seed B (should increase record count, but not double)
     # TODO: See if we can reliably predict the exact number of records, since we use fixed seeds.
     result = source_faker_seed_b.read(duckdb_cache, strategy="merge")
-    # assert NUM_PRODUCTS < len(result.cache.streams["products"]) > NUM_PRODUCTS * 2
+    assert len(list(result.cache.streams["products"])) == NUM_PRODUCTS
     assert DEFAULT_FAKER_SCALE < len(list(result.cache.streams["users"])) < DEFAULT_FAKER_SCALE * 2
     assert DEFAULT_FAKER_SCALE < len(list(result.cache.streams["purchases"])) < DEFAULT_FAKER_SCALE * 2
 

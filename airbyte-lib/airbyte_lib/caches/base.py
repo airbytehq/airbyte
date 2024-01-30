@@ -14,7 +14,15 @@ import pyarrow as pa
 import sqlalchemy
 import ulid
 from overrides import overrides
-from sqlalchemy import create_engine, text
+from sqlalchemy import (
+    and_,
+    create_engine,
+    insert,
+    null,
+    select,
+    text,
+    update,
+)
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql.elements import TextClause
 
@@ -210,8 +218,14 @@ class SQLCacheBase(RecordProcessor):
         self,
         stream_name: str,
     ) -> sqlalchemy.Table:
-        """Return a temporary table name."""
-        table_name = self.get_sql_table_name(stream_name)
+        """Return the main table object for the stream."""
+        return self._get_table_by_name(self.get_sql_table_name(stream_name))
+
+    def _get_table_by_name(
+        self,
+        table_name: str,
+    ) -> sqlalchemy.Table:
+        """Return a table object from a table name."""
         return sqlalchemy.Table(
             table_name,
             sqlalchemy.MetaData(schema=self.config.schema_name),
@@ -641,11 +655,6 @@ class SQLCacheBase(RecordProcessor):
         write_strategy: WriteStrategy,
     ) -> None:
         """Write the temp table into the final table using the provided write strategy."""
-        if write_strategy == WriteStrategy.MERGE and not self.supports_merge_insert:
-            raise NotImplementedError(
-                "Deduping was requested but merge-insert is not yet supported.",
-            )
-
         has_pks: bool = bool(self._get_primary_keys(stream_name))
         has_incremental_key: bool = bool(self._get_incremental_key(stream_name))
         if write_strategy == WriteStrategy.MERGE and not has_pks:
@@ -681,6 +690,15 @@ class SQLCacheBase(RecordProcessor):
             return
 
         if write_strategy == WriteStrategy.MERGE:
+            if not self.supports_merge_insert:
+                # Fallback to emulated merge if the database does not support merge natively.
+                self._emulated_merge_temp_table_to_final_table(
+                    stream_name=stream_name,
+                    temp_table_name=temp_table_name,
+                    final_table_name=final_table_name,
+                )
+                return
+
             self._merge_temp_table_to_final_table(
                 stream_name=stream_name,
                 temp_table_name=temp_table_name,
@@ -799,6 +817,65 @@ class SQLCacheBase(RecordProcessor):
             );
             """,
         )
+
+    def _emulated_merge_temp_table_to_final_table(
+        self,
+        stream_name: str,
+        temp_table_name: str,
+        final_table_name: str,
+    ) -> None:
+        """Emulate the merge operation using a series of SQL commands.
+
+        This is a fallback implementation for databases that do not support MERGE.
+        """
+        final_table = self._get_table_by_name(final_table_name)
+        temp_table = self._get_table_by_name(temp_table_name)
+        pk_columns = self._get_primary_keys(stream_name)
+
+        columns_to_update: set[str] = self._get_sql_column_definitions(
+            stream_name=stream_name
+        ).keys() - set(pk_columns)
+
+        # Create a dictionary mapping columns in users_final to users_stage for updating
+        update_values = {
+            getattr(final_table.c, column): getattr(temp_table.c, column)
+            for column in columns_to_update
+        }
+
+        # Craft the WHERE clause for composite primary keys
+        join_conditions = [
+            getattr(final_table.c, pk_column) == getattr(temp_table.c, pk_column)
+            for pk_column in pk_columns
+        ]
+        join_clause = and_(*join_conditions)
+
+        # Craft the UPDATE statement
+        update_stmt = update(final_table).values(update_values).where(join_clause)
+
+        # Define a join between temp_table and final_table
+        joined_table = temp_table.outerjoin(final_table, join_clause)
+
+        # Define a condition that checks for records in temp_table that do not have a corresponding
+        # record in final_table
+        where_not_exists_clause = final_table.c.id == null()
+
+        # Select records from temp_table that are not in final_table
+        select_new_records_stmt = (
+            select([temp_table]).select_from(joined_table).where(where_not_exists_clause)
+        )
+
+        # Craft the INSERT statement using the select statement
+        insert_new_records_stmt = insert(final_table).from_select(
+            names=[column.name for column in temp_table.columns], select=select_new_records_stmt
+        )
+
+        if DEBUG_MODE:
+            print(str(update_stmt))
+            print(str(insert_new_records_stmt))
+
+        with self.get_sql_connection() as conn:
+            conn.execute(update_stmt)
+            conn.execute(insert_new_records_stmt)
 
     @final
     def _table_exists(

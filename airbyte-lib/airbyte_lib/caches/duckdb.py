@@ -54,7 +54,7 @@ class DuckDBCacheBase(SQLCacheBase):
     """
 
     config_class = DuckDBCacheConfig
-    supports_merge_insert = True
+    supports_merge_insert = False
 
     @overrides
     def get_telemetry_info(self) -> CacheTelemetryInfo:
@@ -81,37 +81,38 @@ class DuckDBCache(DuckDBCacheBase):
 
     file_writer_class = ParquetWriter
 
-    @overrides
-    def _merge_temp_table_to_final_table(
-        self,
-        stream_name: str,
-        temp_table_name: str,
-        final_table_name: str,
-    ) -> None:
-        """Merge the temp table into the main one.
+    # TODO: Delete or rewrite this method after DuckDB adds support for primary key inspection.
+    # @overrides
+    # def _merge_temp_table_to_final_table(
+    #     self,
+    #     stream_name: str,
+    #     temp_table_name: str,
+    #     final_table_name: str,
+    # ) -> None:
+    #     """Merge the temp table into the main one.
 
-        This implementation requires MERGE support in the SQL DB.
-        Databases that do not support this syntax can override this method.
-        """
-        if not self._get_primary_keys(stream_name):
-            raise exc.AirbyteLibInternalError(
-                message="Primary keys not found. Cannot run merge updates without primary keys.",
-                context={
-                    "stream_name": stream_name,
-                },
-            )
+    #     This implementation requires MERGE support in the SQL DB.
+    #     Databases that do not support this syntax can override this method.
+    #     """
+    #     if not self._get_primary_keys(stream_name):
+    #         raise exc.AirbyteLibInternalError(
+    #             message="Primary keys not found. Cannot run merge updates without primary keys.",
+    #             context={
+    #                 "stream_name": stream_name,
+    #             },
+    #         )
 
-        _ = stream_name
-        final_table = self._fully_qualified(final_table_name)
-        staging_table = self._fully_qualified(temp_table_name)
-        self._execute_sql(
-            # https://duckdb.org/docs/sql/statements/insert.html
-            # NOTE: This depends on primary keys being set properly in the final table.
-            f"""
-            INSERT OR REPLACE INTO {final_table} BY NAME
-            (SELECT * FROM {staging_table})
-            """
-        )
+    #     _ = stream_name
+    #     final_table = self._fully_qualified(final_table_name)
+    #     staging_table = self._fully_qualified(temp_table_name)
+    #     self._execute_sql(
+    #         # https://duckdb.org/docs/sql/statements/insert.html
+    #         # NOTE: This depends on primary keys being set properly in the final table.
+    #         f"""
+    #         INSERT OR REPLACE INTO {final_table} BY NAME
+    #         (SELECT * FROM {staging_table})
+    #         """
+    #     )
 
     @overrides
     def _ensure_compatible_table_schema(
