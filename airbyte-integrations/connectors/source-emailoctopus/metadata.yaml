@@ -8,10 +8,6 @@ data:
   icon: emailoctopus.svg
   license: MIT
   name: EmailOctopus
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-emailoctopus
   registries:
     cloud:
       enabled: true

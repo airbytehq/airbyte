@@ -7,10 +7,6 @@ data:
   githubIssueLabel: source-commcare
   license: MIT
   name: Commcare
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-commcare
   registries:
     cloud:
       enabled: false

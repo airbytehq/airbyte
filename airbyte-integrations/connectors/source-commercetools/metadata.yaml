@@ -3,10 +3,6 @@ data:
     hosts:
       - auth.${region}.${host}.commercetools.com
       - api.${region}.${host}.commercetools.com
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-commercetools
   registries:
     oss:
       enabled: true

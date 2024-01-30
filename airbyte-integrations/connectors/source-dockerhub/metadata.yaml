@@ -3,10 +3,6 @@ data:
     hosts:
       - hub.docker.com
       - auth.docker.io
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-dockerhub
   registries:
     oss:
       enabled: true
