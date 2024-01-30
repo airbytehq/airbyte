@@ -8,6 +8,10 @@ data:
   icon: dv360.svg
   license: MIT
   name: DV 360
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-dv-360
   registries:
     cloud:
       enabled: false
