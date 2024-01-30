@@ -8,6 +8,10 @@ data:
   icon: freshcaller.svg
   license: MIT
   name: Freshcaller
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-freshcaller
   registries:
     cloud:
       enabled: true
