@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - https://driftapi.com/
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-drift
   registries:
     oss:
       enabled: true

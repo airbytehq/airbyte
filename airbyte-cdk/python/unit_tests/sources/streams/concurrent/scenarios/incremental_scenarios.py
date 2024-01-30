@@ -3,6 +3,7 @@
 #
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import ConcurrencyCompatibleStateType
+from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_builder import StreamFacadeSourceBuilder
 from unit_tests.sources.streams.concurrent.scenarios.utils import MockStream
@@ -76,6 +77,7 @@ test_incremental_stream_with_slice_boundaries_no_input_state = (
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
             {"stream1": {"cursor_field": 2}},
+            {"stream1": {"cursor_field": 2}},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -84,7 +86,7 @@ test_incremental_stream_with_slice_boundaries_no_input_state = (
 )
 
 
-LEGACY_STATE = [{"type": "STREAM", "stream": {"stream_state": {"cursor_field": 0}, "stream_descriptor": {"name": "stream1"}}}]
+LEGACY_STATE = StateBuilder().with_stream_state("stream1", {"cursor_field": 0}).build()
 test_incremental_stream_without_slice_boundaries_with_legacy_state = (
     TestScenarioBuilder()
     .set_name("test_incremental_stream_without_slice_boundaries_with_legacy_state")
@@ -152,6 +154,7 @@ test_incremental_stream_with_slice_boundaries_with_legacy_state = (
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
             {"stream1": {"cursor_field": 2}},
+            {"stream1": {"cursor_field": 2}},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -160,18 +163,10 @@ test_incremental_stream_with_slice_boundaries_with_legacy_state = (
 )
 
 
-CONCURRENT_STATE = [
-    {
-        "type": "STREAM",
-        "stream": {
-            "stream_state": {
-                "slices": [{"start": 0, "end": 0}],
-                "state_type": ConcurrencyCompatibleStateType.date_range.value,
-            },
-            "stream_descriptor": {"name": "stream1"},
-        },
-    },
-]
+CONCURRENT_STATE = StateBuilder().with_stream_state("stream1", {
+    "slices": [{"start": 0, "end": 0}],
+    "state_type": ConcurrencyCompatibleStateType.date_range.value,
+}).build()
 test_incremental_stream_without_slice_boundaries_with_concurrent_state = (
     TestScenarioBuilder()
     .set_name("test_incremental_stream_without_slice_boundaries_with_concurrent_state")
@@ -239,6 +234,7 @@ test_incremental_stream_with_slice_boundaries_with_concurrent_state = (
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
             {"stream1": {"cursor_field": 2}},
+            {"stream1": {"cursor_field": 2}},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
