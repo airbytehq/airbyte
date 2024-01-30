@@ -25,18 +25,16 @@ application {
     mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
                                  '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
-                                 '-XX:GCLockerRetryAllocationCount=100',
-//            '-Djava.rmi.server.hostname=localhost',
-//            '-Dcom.sun.management.jmxremote=true',
-//            '-Dcom.sun.management.jmxremote.port=6000',
-//            '-Dcom.sun.management.jmxremote.rmi.port=6000',
-//            '-Dcom.sun.management.jmxremote.local.only=false',
-//            '-Dcom.sun.management.jmxremote.authenticate=false',
-//            '-Dcom.sun.management.jmxremote.ssl=false'
-    ]
+                                 '-XX:GCLockerRetryAllocationCount=100', "-Dmicronaut.environments=destination"]
 }
 
 dependencies {
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.5'
+    annotationProcessor 'io.micronaut:micronaut-inject-java:4.2.4'
+
+    implementation 'info.picocli:picocli:4.7.5'
+    implementation 'io.micronaut.picocli:micronaut-picocli:5.2.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
     implementation 'com.codepoetics:protonpack:1.13'
     implementation 'org.apache.commons:commons-text:1.10.0'
 }

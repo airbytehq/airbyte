@@ -21,7 +21,7 @@ import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
-import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.IntegrationCommand;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
@@ -67,6 +67,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import io.micronaut.configuration.picocli.PicocliRunner;
+import jakarta.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -74,6 +77,7 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final String RAW_DATA_DATASET = "raw_data_dataset";
@@ -462,10 +466,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return true;
   }
 
-  public static void main(final String[] args) throws Exception {
+  public static void main(final String[] args) {
     AirbyteExceptionHandler.addThrowableForDeinterpolation(BigQueryException.class);
-    final Destination destination = new BigQueryDestination();
-    new IntegrationRunner(destination).run(args);
+    PicocliRunner.run(IntegrationCommand.class, args);
   }
 
 }
