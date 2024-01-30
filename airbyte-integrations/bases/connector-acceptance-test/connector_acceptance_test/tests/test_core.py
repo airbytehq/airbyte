@@ -1045,7 +1045,7 @@ class TestBasicRead(BaseTest):
         certified_file_based_connector: bool,
     ):
         output = await docker_runner.call_read(connector_config, configured_catalog)
-        all_statuses = [message.trace.stream_status for message in filter_output(output, Type.TRACE)]
+        all_statuses = [message.stream_status for message in filter_output(output, TraceType.STREAM_STATUS)]
 
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
@@ -1258,9 +1258,9 @@ class TestBasicRead(BaseTest):
 
         for stream_name, status_list in stream_statuses.items():
             assert status_list == [
-                AirbyteStreamStatus.STARTED.value,
-                AirbyteStreamStatus.RUNNING.value,
-                AirbyteStreamStatus.COMPLETE.value,
+                AirbyteStreamStatus.STARTED,
+                AirbyteStreamStatus.RUNNING,
+                AirbyteStreamStatus.COMPLETE,
             ], f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`, `COMPLETE`"
 
 
