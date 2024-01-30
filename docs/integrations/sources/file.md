@@ -164,6 +164,7 @@ This source produces a single table for the target file as it replicates only on
 | Format                | Supported? |
 | --------------------- | ---------- |
 | CSV                   | Yes        |
+| FWF                   | Yes        |
 | JSON/JSONL            | Yes        |
 | HTML                  | No         |
 | XML                   | No         |
