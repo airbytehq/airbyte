@@ -3,10 +3,10 @@
 #
 
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 setup(
-    name="source_test",
+    name="airbyte-source-test",
     version="0.0.1",
     description="Test Soutce",
     author="Airbyte",
