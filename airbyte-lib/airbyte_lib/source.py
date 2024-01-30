@@ -236,7 +236,11 @@ class Source:
             ) from KeyError(stream)
 
         iterator: Iterator[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
-            self._read_with_catalog(streaming_cache_info, configured_catalog),
+            self._read_with_catalog(
+                streaming_cache_info,
+                configured_catalog,
+                force_full_refresh=True,  # Always full refresh when skipping the cache
+            ),
         )
         return LazyDataset(iterator)
 
@@ -387,40 +391,40 @@ class Source:
         self,
         cache: SQLCacheBase | None = None,
         *,
-        strategy: str | WriteStrategy = WriteStrategy.AUTO,
+        write_strategy: str | WriteStrategy = WriteStrategy.AUTO,
         force_full_refresh: bool = False,
     ) -> ReadResult:
         """Read from the connector and write to the cache.
 
         Args:
             cache: The cache to write to. If None, a default cache will be used.
-            strategy: The strategy to use when writing to the cache. If a string, it must be one of
-                "append", "upsert", "replace", or "auto". If a WriteStrategy, it must be one of
-                WriteStrategy.APPEND, WriteStrategy.UPSERT, WriteStrategy.REPLACE, or
+            write_strategy: The strategy to use when writing to the cache. If a string, it must be
+                one of "append", "upsert", "replace", or "auto". If a WriteStrategy, it must be one
+                of WriteStrategy.APPEND, WriteStrategy.UPSERT, WriteStrategy.REPLACE, or
                 WriteStrategy.AUTO.
             force_full_refresh: If True, the source will operate in full refresh mode. Otherwise,
                 streams will be read in incremental mode if supported by the connector. This option
                 must be True when using the "replace" strategy.
         """
-        if strategy == WriteStrategy.REPLACE and not force_full_refresh:
+        if write_strategy == WriteStrategy.REPLACE and not force_full_refresh:
             raise exc.AirbyteLibInputError(
                 message="The replace strategy requires full refresh mode.",
                 context={
-                    "strategy": strategy,
+                    "write_strategy": write_strategy,
                     "force_full_refresh": force_full_refresh,
                 },
             )
         if cache is None:
             cache = get_default_cache()
 
-        if isinstance(strategy, str):
+        if isinstance(write_strategy, str):
             try:
-                strategy = WriteStrategy(strategy)
+                write_strategy = WriteStrategy(write_strategy)
             except ValueError:
                 raise exc.AirbyteLibInputError(
                     message="Invalid strategy",
                     context={
-                        "strategy": strategy,
+                        "write_strategy": write_strategy,
                         "available_strategies": [s.value for s in WriteStrategy],
                     },
                 ) from None
@@ -433,7 +437,7 @@ class Source:
                     force_full_refresh=force_full_refresh,
                 ),
             ),
-            write_strategy=strategy,
+            write_strategy=write_strategy,
         )
 
         return ReadResult(

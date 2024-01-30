@@ -137,13 +137,18 @@ class RecordProcessor(abc.ABC):
         Return a list of summaries for testing.
         """
         messages = self._airbyte_messages_from_buffer(input_stream)
-        self.process_airbyte_messages(messages, max_batch_size)
+        self.process_airbyte_messages(
+            messages,
+            write_strategy=WriteStrategy.APPEND,
+            max_batch_size=max_batch_size,
+        )
 
     @final
     def process_airbyte_messages(
         self,
         messages: Iterable[AirbyteMessage],
         write_strategy: WriteStrategy,
+        *,
         max_batch_size: int = DEFAULT_BATCH_SIZE,
     ) -> None:
         """Process a stream of Airbyte messages."""

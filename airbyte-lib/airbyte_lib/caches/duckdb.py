@@ -9,7 +9,6 @@ from typing import cast
 
 from overrides import overrides
 
-from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.telemetry import CacheTelemetryInfo
