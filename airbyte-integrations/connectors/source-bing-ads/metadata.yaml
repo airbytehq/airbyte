@@ -23,6 +23,11 @@ data:
   icon: bingads.svg
   license: MIT
   name: Bing Ads
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-bing-ads
   registries:
     cloud:
       enabled: true
