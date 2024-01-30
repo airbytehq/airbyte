@@ -1,4 +1,4 @@
-name: Connector Extensibility - Run mypy on modified cdk files
+name: Connector Extensibility - Run mypy on modified Python files
 
 on:
   pull_request:
@@ -6,8 +6,8 @@ on:
       - "airbyte-cdk/python/airbyte_cdk/**/*.py"
       - "airbyte-integrations/connectors/**/*.py"
 jobs:
-  run-mypy-on-modified-cdk-files:
-    name: "Run mypy on modified cdk files"
+  run-mypy-on-modified-python-files:
+    name: "Run mypy on modified Python files"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
@@ -23,8 +23,7 @@ jobs:
         id: changed-py-files
         uses: tj-actions/changed-files@v23
         with:
-          files: "{airbyte-cdk/python,airbyte-integrations/connectors}/**/*.py" |
-            "airbyte-integrations/connectors/**/*.py"
+          files: "**/*.py"
       - name: Run if any of the listed files above is changed
         if: steps.changed-py-files.outputs.any_changed == 'true'
         run: mypy ${{ steps.changed-py-files.outputs.all_changed_files }} --config-file airbyte-cdk/python/mypy.ini --install-types --non-interactive
