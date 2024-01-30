@@ -91,12 +91,12 @@ public class InitialSnapshotHandler {
           // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
           final Bson filter = existingState
               .map(state -> Filters.gt(MongoConstants.ID_FIELD,
-              switch (state.idType()) {
-                case STRING -> new BsonString(state.id());
-                case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
-                case INT -> new BsonInt32(Integer.parseInt(state.id()));
-                case LONG -> new BsonInt64(Long.parseLong(state.id()));
-              }))
+                  switch (state.idType()) {
+            case STRING -> new BsonString(state.id());
+            case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
+            case INT -> new BsonInt32(Integer.parseInt(state.id()));
+            case LONG -> new BsonInt64(Long.parseLong(state.id()));
+          }))
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 
@@ -121,7 +121,6 @@ public class InitialSnapshotHandler {
         })
         .toList();
   }
-
 
   /**
    * Returns a list of types (as strings) that the _id field has for the provided collection.
