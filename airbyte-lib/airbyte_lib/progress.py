@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """A simple progress bar for the command line and IPython notebooks."""
 from __future__ import annotations
 
