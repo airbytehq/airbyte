@@ -42,7 +42,7 @@ public class MongoDbResumeTokenHelper {
     final List<String> collectionsList = catalog.getStreams().stream()
         .map(s -> s.getStream().getName())
         .toList();
-    LOGGER.info("*** resume token for db {} with collection filter {}", databaseName, Arrays.toString(collectionsList.toArray()));
+    LOGGER.info("Resume token for db {} with collection filter {}", databaseName, Arrays.toString(collectionsList.toArray()));
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
         Filters.in("ns.coll", collectionsList)));
     final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.getDatabase(databaseName).watch(pipeline, BsonDocument.class);
