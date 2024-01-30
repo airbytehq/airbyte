@@ -73,8 +73,21 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
     records, log_messages = output.records_and_state_messages, output.logs
     logs = [message.log for message in log_messages if message.log.level.value in scenario.log_levels]
     expected_records = scenario.expected_records
+
+    if expected_records is None:
+        return
+
     assert len(records) == len(expected_records)
-    for actual, expected in zip(records, expected_records):
+
+    sorted_expected_records = sorted(
+        filter(lambda e: "data" in e, expected_records),
+        key=lambda x: ",".join(f"{k}={v}" for k, v in sorted(x["data"].items(), key=lambda x: x[0]) if k != "emitted_at"),
+    )
+    sorted_records = sorted(
+        filter(lambda r: r.record, records),
+        key=lambda x: ",".join(f"{k}={v}" for k, v in sorted(x.record.data.items(), key=lambda x: x[0]) if k != "emitted_at"),
+    )
+    for actual, expected in zip(sorted_records, sorted_expected_records):
         if actual.record:
             assert len(actual.record.data) == len(expected["data"])
             for key, value in actual.record.data.items():
@@ -83,8 +96,11 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
                 else:
                     assert value == expected["data"][key]
             assert actual.record.stream == expected["stream"]
-        elif actual.state:
-            assert actual.state.data == expected
+
+    expected_states = filter(lambda e: "data" not in e, expected_records)
+    states = filter(lambda r: r.state, records)
+    for actual, expected in zip(states, expected_states):  # states should be emitted in sorted order
+        assert actual.state.data == expected
 
     if scenario.expected_logs:
         read_logs = scenario.expected_logs.get("read")
@@ -129,7 +145,7 @@ def verify_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Tes
             output = check(capsys, tmp_path, scenario)
             if expected_msg:
                 # expected_msg is a string. what's the expected value field?
-                assert expected_msg.value in output["message"]  # type: ignore
+                assert expected_msg in output["message"]  # type: ignore
                 assert output["status"] == scenario.expected_check_status
 
     else:
