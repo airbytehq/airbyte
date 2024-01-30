@@ -16,7 +16,7 @@ import airbyte_lib as ab
 os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/integration_tests/fixtures/registry.json"
 
 source = ab.get_connector("source-test", config={"apiKey": "test"})
-cache = ab.new_local_cache()
+cache = ab.new_local_cache("cache_test")
 
 source.check()
 
@@ -26,3 +26,6 @@ result = source.read(cache)
 
 print(result.processed_records)
 print(list(result["stream1"]))
+
+different_cache = ab.new_local_cache("cache_test")
+print(list(different_cache["stream1"]))

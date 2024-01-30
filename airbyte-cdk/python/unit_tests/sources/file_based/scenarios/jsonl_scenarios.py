@@ -485,14 +485,10 @@ invalid_jsonl_scenario = (
         }
     )
     .set_expected_records(
-        [
-            {
-                "data": {"col1": "val1", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.jsonl"},
-                "stream": "stream1",
-            },
-        ]
+        []
     )
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_read_error(AirbyteTracedException, "Please check the logged errors for more information.")
     .set_expected_logs(
         {
             "read": [

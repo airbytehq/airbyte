@@ -12,9 +12,17 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.postgres.PostgresDestination;
 import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
 import io.airbyte.integrations.destination.postgres.PostgresTestDatabase;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
 
@@ -70,6 +78,33 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
   @Override
   protected JdbcCompatibleSourceOperations<?> getSourceOperations() {
     return new PostgresSqlGeneratorIntegrationTest.PostgresSourceOperations();
+  }
+
+  @Test
+  public void testMixedCasedSchema() throws Exception {
+    streamName = "MixedCaseSchema" + streamName;
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    // First sync
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+
+    runSync(catalog, messages1);
+
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+  }
+
+  @Override
+  protected List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws Exception {
+    return super.dumpRawTableRecords(streamNamespace, streamName.toLowerCase());
   }
 
 }
