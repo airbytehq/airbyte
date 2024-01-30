@@ -1366,9 +1366,14 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
         AirbyteTraceMessage(type=TraceType.STREAM_STATUS, emitted_at=120,
                             stream_status=AirbyteStreamStatusTraceMessage(stream_descriptor=StreamDescriptor(name="test_stream_0"),
                                                                           status=AirbyteStreamStatus.COMPLETE)),
-    ], does_not_raise())
+    ], does_not_raise()),
+([
+        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_0", data={'a': 1}, emitted_at=111)),
+        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_1", data={'a': 1}, emitted_at=112)),
+        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_2", data={'a': 1}, emitted_at=113)),
+    ], pytest.raises(AssertionError))
     ],
-    ids=['async_output_no_exception']
+    ids=['async_output_no_exception', "async_output_with_exception"]
 )
 async def test_read_validate_stream_statuses(mocker, output, expected_exception):
     configured_catalog = ConfiguredAirbyteCatalog(
