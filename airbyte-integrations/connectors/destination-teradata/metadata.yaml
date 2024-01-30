@@ -15,7 +15,6 @@ data:
       enabled: true
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/teradata
-  supportsDbt: true
   tags:
     - language:java
   ab_internal:
