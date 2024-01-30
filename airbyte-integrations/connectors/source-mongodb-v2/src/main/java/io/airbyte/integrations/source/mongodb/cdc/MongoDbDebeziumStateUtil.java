@@ -111,7 +111,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
       return true;
     }
 
-    final ChangeStreamIterable<BsonDocument> stream  = mongoClient.watch(BsonDocument.class);
+    final ChangeStreamIterable<BsonDocument> stream = mongoClient.watch(BsonDocument.class);
     stream.resumeAfter(savedOffset);
     try (final var ignored = stream.cursor()) {
       LOGGER.info("Valid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Incremental sync will be performed for "

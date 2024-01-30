@@ -9,17 +9,14 @@ import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.bson.conversions.Bson;
@@ -39,7 +36,9 @@ public class MongoDbResumeTokenHelper {
    * @param mongoClient The {@link MongoClient} used to query the MongoDB server.
    * @return The most recent resume token value.
    */
-  public static BsonDocument getMostRecentResumeToken(final MongoClient mongoClient, final String databaseName, final ConfiguredAirbyteCatalog catalog) {
+  public static BsonDocument getMostRecentResumeToken(final MongoClient mongoClient,
+                                                      final String databaseName,
+                                                      final ConfiguredAirbyteCatalog catalog) {
     final List<String> collectionsList = catalog.getStreams().stream()
         .map(s -> s.getStream().getName())
         .toList();
