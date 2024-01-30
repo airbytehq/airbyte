@@ -129,7 +129,7 @@ def validate(connector_dir: str, sample_config: str, *, validate_install_only: b
 
     pip_path = str(venv_path / "bin" / "pip")
 
-    _run_subprocess_and_raise_on_failure([pip_path, "install", "-e", connector_dir])
+    _run_subprocess_and_raise_on_failure([pip_path, "install", connector_dir])
 
     # write basic registry to temp json file
     registry = {
