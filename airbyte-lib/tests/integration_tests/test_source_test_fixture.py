@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from collections.abc import Mapping
+from enum import auto
 import os
 import shutil
 from typing import Any
@@ -27,9 +28,10 @@ from airbyte_lib import exceptions as exc
 
 
 @pytest.fixture(scope="module", autouse=True)
-def prepare_test_env():
+def source_test_env(monkeypatch):
     """
-    Prepare test environment. This will pre-install the test source from the fixtures array and set the environment variable to use the local json file as registry.
+    Prepare test environment. This will pre-install the test source from the fixtures array and set
+    the environment variable to use the local json file as registry.
     """
     if os.path.exists(".venv-source-test"):
         shutil.rmtree(".venv-source-test")
@@ -37,12 +39,23 @@ def prepare_test_env():
     os.system("python -m venv .venv-source-test")
     os.system(".venv-source-test/bin/pip install -e ./tests/integration_tests/fixtures/source-test")
 
-    os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/integration_tests/fixtures/registry.json"
-    os.environ["DO_NOT_TRACK"] = "true"
+    env_vars = {
+        "AIRBYTE_LOCAL_REGISTRY": "./tests/integration_tests/fixtures/registry.json",
+        "DO_NOT_TRACK": "true"
+    }
+
+    for key, value in env_vars.items():
+        monkeypatch.setenv(key, value)
 
     yield
 
     shutil.rmtree(".venv-source-test")
+
+
+@pytest.fixture
+def source_test(source_test_env) -> ab.Source:
+    return ab.get_connector("source-test", config={"apiKey": "test"})
+
 
 @pytest.fixture
 def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
@@ -82,7 +95,11 @@ def test_non_existing_connector():
         ("0.0.1", "0.0.1", False),
         ("1.2.3", "1.2.3", True),
     ])
-def test_version_enforcement(raises, latest_available_version, requested_version):
+def test_version_enforcement(
+    raises: bool,
+    latest_available_version,
+    requested_version,
+):
     """"
     Ensures version enforcement works as expected:
     * If no version is specified, the current version is accepted
