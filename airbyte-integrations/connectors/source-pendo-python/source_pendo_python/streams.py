@@ -227,7 +227,7 @@ class ReportResult(PendoPythonStream):
         if isinstance(value, bool):
             return {"type": ["null", "boolean"]}
         if isinstance(value, float):
-            return {"type": ["null", "float"]}
+            return {"type": ["null", "number"]}
         if isinstance(value, int):
             return {"type": ["null", "integer"]}
         if isinstance(value, list):
@@ -254,9 +254,10 @@ class ReportResult(PendoPythonStream):
                 session = requests.get(url, headers=auth_headers)
                 body = session.json()
                 if body is not None and len(body) != 0:
-                    first_result = body[0]
-                    for field in first_result:
-                        schema["properties"][field] = self.infer_type(first_result[field])
+                    for result in body:
+                        for field in result:
+                            if result[field] is not None:
+                                schema["properties"][field] = self.infer_type(result[field])
                 self.json_schema = schema
             except requests.exceptions.RequestException:
                 print("Error fetching sample Pendo Report Results")
