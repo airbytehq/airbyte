@@ -2,10 +2,6 @@ data:
   allowedHosts:
     hosts:
       - exports.dixa.io
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-dixa
   registries:
     oss:
       enabled: true
