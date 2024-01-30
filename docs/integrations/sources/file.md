@@ -164,12 +164,12 @@ This source produces a single table for the target file as it replicates only on
 | Format                | Supported? |
 | --------------------- | ---------- |
 | CSV                   | Yes        |
-| FWF                   | Yes        |
 | JSON/JSONL            | Yes        |
 | HTML                  | No         |
 | XML                   | No         |
 | Excel                 | Yes        |
 | Excel Binary Workbook | Yes        |
+| Fixed Width File      | Yes        |
 | Feather               | Yes        |
 | Parquet               | Yes        |
 | Pickle                | No         |
@@ -217,6 +217,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------|
+| 0.3.15 | 2023-10-19 | [34678](https://github.com/airbytehq/airbyte/pull/34678) | Add Fixed-Width File Support  |
 | 0.3.15 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Upgrade to airbyte/python-connector-base:1.0.1  |
 | 0.3.14  | 2023-10-13 | [30984](https://github.com/airbytehq/airbyte/pull/30984) | Prevent local file usage on cloud                                                                          |
 | 0.3.13  | 2023-10-12 | [31341](https://github.com/airbytehq/airbyte/pull/31341) | Build from airbyte/python-connector-base:1.0.0                                                             |
