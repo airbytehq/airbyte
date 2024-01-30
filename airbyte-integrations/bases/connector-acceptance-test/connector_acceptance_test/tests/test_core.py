@@ -539,6 +539,8 @@ class TestSpec(BaseTest):
         advanced_auth = actual_connector_spec.advanced_auth
         if not advanced_auth:
             pytest.skip("Source does not have OAuth method.")
+        if not advanced_auth.predicate_key:
+            pytest.skip("Advanced Auth object does not have predicate_key, only one option to authenticate.")
 
         spec_schema = actual_connector_spec.connectionSpecification
         credentials = advanced_auth.predicate_key[0]
