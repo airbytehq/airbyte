@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import os
-import threading
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,7 +14,7 @@ from airbyte_lib.version import get_version
 
 
 __cache: dict[str, ConnectorMetadata] | None = None
-_cache_lock = threading.Lock()
+
 
 REGISTRY_ENV_VAR = "AIRBYTE_LOCAL_REGISTRY"
 REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
