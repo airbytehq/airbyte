@@ -2,10 +2,6 @@ data:
   allowedHosts:
     hosts:
       - https://api.customer.io/v1/
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-customer-io
   registries:
     oss:
       enabled: false
