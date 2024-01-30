@@ -22,6 +22,10 @@ data:
   icon: amazonsellerpartner.svg
   license: MIT
   name: Amazon Seller Partner
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-amazon-seller-partner
   registries:
     cloud:
       enabled: true
