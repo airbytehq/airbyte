@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcEventUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorProcessor;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.source.mongodb.state.IdType;
