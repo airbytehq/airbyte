@@ -10,6 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock", "requests_mock~=1.8"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-klaviyo=source_klaviyo.run:run",
+        ],
+    },
     name="source_klaviyo",
     description="Source implementation for Klaviyo.",
     author="Airbyte",

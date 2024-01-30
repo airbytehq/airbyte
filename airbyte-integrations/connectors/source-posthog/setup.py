@@ -14,6 +14,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-posthog=source_posthog.run:run",
+        ],
+    },
     name="source_posthog",
     description="Source implementation for Posthog.",
     author="Airbyte",

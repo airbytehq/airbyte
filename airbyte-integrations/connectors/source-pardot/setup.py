@@ -16,6 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-pardot=source_pardot.run:run",
+        ],
+    },
     name="source_pardot",
     description="Source implementation for Pardot.",
     author="Airbyte",

@@ -53,6 +53,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "tap-kustomer==1.0.2"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-kustomer-singer=source_kustomer_singer.run:run",
+        ],
+    },
     name="source_kustomer_singer",
     description="Source implementation for Kustomer, built on the Singer tap implementation.",
     author="Airbyte",
