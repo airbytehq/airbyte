@@ -198,7 +198,7 @@ def assert_cache_data(expected_test_stream_data: dict[str, list[dict[str, str | 
             pd.DataFrame(expected_test_stream_data[stream_name]),
             check_dtype=False,
         )
-    
+
     # validate that the cache doesn't contain any other streams
     if streams:
         assert len(list(cache.__iter__())) == len(streams)
@@ -520,7 +520,9 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
 def test_airbyte_lib_version() -> None:
     assert get_version()
     assert isinstance(get_version(), str)
-    assert len(get_version().split(".")) == 3
+
+    # Ensure the version is a valid semantic version (x.y.z or x.y.z.alpha0)
+    assert 3 <= len(get_version().split(".")) <= 4
 
 
 @patch.dict('os.environ', {'DO_NOT_TRACK': ''})
