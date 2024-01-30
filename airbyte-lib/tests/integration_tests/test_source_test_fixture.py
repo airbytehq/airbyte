@@ -28,7 +28,7 @@ from airbyte_lib import exceptions as exc
 
 
 @pytest.fixture(scope="module", autouse=True)
-def source_test_env(monkeypatch):
+def source_test_installation():
     """
     Prepare test environment. This will pre-install the test source from the fixtures array and set
     the environment variable to use the local json file as registry.
@@ -39,6 +39,18 @@ def source_test_env(monkeypatch):
     os.system("python -m venv .venv-source-test")
     os.system(".venv-source-test/bin/pip install -e ./tests/integration_tests/fixtures/source-test")
 
+    yield
+
+    shutil.rmtree(".venv-source-test")
+
+
+@pytest.fixture(scope="function", autouse=True)
+def source_test_registry(monkeypatch):
+    """
+    Set environment variables for the test source.
+
+    These are applied to this test file only.
+    """
     env_vars = {
         "AIRBYTE_LOCAL_REGISTRY": "./tests/integration_tests/fixtures/registry.json",
         "DO_NOT_TRACK": "true"
@@ -46,10 +58,6 @@ def source_test_env(monkeypatch):
 
     for key, value in env_vars.items():
         monkeypatch.setenv(key, value)
-
-    yield
-
-    shutil.rmtree(".venv-source-test")
 
 
 @pytest.fixture
