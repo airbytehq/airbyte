@@ -13,6 +13,11 @@ data:
   icon: google-drive.svg
   license: ELv2
   name: Google Drive
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-google-drive
   registries:
     cloud:
       enabled: true
