@@ -149,7 +149,7 @@
           "type": ["null", "integer"]
         },
         "locked": {
-          "type": ["null", "integer"]
+          "type": ["null", "boolean"]
         }
       }
     },
