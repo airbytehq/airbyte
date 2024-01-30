@@ -16,6 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-search-metrics=source_search_metrics.run:run",
+        ],
+    },
     name="source_search_metrics",
     description="Source implementation for Search Metrics.",
     author="Airbyte",

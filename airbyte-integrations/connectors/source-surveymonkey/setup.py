@@ -10,6 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "vcrpy==4.1.1", "urllib3<2.0"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "requests_mock"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-surveymonkey=source_surveymonkey.run:run",
+        ],
+    },
     name="source_surveymonkey",
     description="Source implementation for Surveymonkey.",
     author="Airbyte",

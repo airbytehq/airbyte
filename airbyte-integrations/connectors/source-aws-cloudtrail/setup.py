@@ -14,6 +14,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-aws-cloudtrail=source_aws_cloudtrail.run:run",
+        ],
+    },
     name="source_aws_cloudtrail",
     description="Source implementation for Aws Cloudtrail.",
     author="Airbyte",

@@ -151,6 +151,8 @@ class GradleTask(Step, ABC):
             .with_exec(
                 sh_dash_c(
                     [
+                        # Defensively delete the gradle home directory to avoid dirtying the cache volume.
+                        f"rm -rf {self.GRADLE_HOME_PATH}",
                         # Load from the cache volume.
                         f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
                         # Resolve all dependencies and write their checksums to './gradle/verification-metadata.dryrun.xml'.

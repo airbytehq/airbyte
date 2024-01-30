@@ -15,6 +15,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-bing-ads=source_bing_ads.run:run",
+        ],
+    },
     name="source_bing_ads",
     description="Source implementation for Bing Ads.",
     author="Airbyte",

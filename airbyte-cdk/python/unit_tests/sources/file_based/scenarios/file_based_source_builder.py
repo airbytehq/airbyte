@@ -14,6 +14,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
+from airbyte_cdk.sources.source import TState
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 
@@ -29,8 +30,10 @@ class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
         self._stream_reader: Optional[AbstractFileBasedStreamReader] = None
         self._file_write_options: Mapping[str, Any] = {}
         self._cursor_cls: Optional[Type[AbstractFileBasedCursor]] = None
+        self._config: Optional[Mapping[str, Any]] = None
+        self._state: Optional[TState] = None
 
-    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> InMemoryFilesSource:
+    def build(self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]) -> InMemoryFilesSource:
         if self._file_type is None:
             raise ValueError("file_type is not set")
         return InMemoryFilesSource(
@@ -42,6 +45,8 @@ class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
             self._parsers,
             self._stream_reader,
             configured_catalog,
+            config,
+            state,
             self._file_write_options,
             self._cursor_cls,
         )

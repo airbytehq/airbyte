@@ -16,6 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-kyriba=source_kyriba.run:run",
+        ],
+    },
     name="source_kyriba",
     description="Source implementation for Kyriba.",
     author="Airbyte",

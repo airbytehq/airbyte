@@ -28,6 +28,7 @@ pyarrow = "^14.0.2"
 
 # Psycopg3 is not supported in SQLAlchemy 1.x:
 # psycopg = {extras = ["binary", "pool"], version = "^3.1.16"}
+rich = "^13.7.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -44,6 +45,7 @@ ruff = "^0.1.11"
 types-jsonschema = "^4.20.0.0"
 google-cloud-secret-manager = "^2.17.0"
 types-requests = "2.31.0.4"
+freezegun = "^1.4.0"
 
 [build-system]
 requires = ["poetry-core"]

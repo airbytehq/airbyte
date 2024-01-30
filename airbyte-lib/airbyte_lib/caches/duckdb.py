@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from textwrap import dedent
 from typing import cast
 
 from overrides import overrides
@@ -158,6 +159,25 @@ class DuckDBCache(DuckDBCacheBase):
     ) -> str:
         """Write a file(s) to a new table.
 
-        TODO: Optimize this for DuckDB instead of calling the base implementation.
+        We use DuckDB's `read_parquet` function to efficiently read the files and insert
+        them into the table in a single operation.
+
+        Note: This implementation is fragile in regards to column ordering. However, since
+        we are inserting into a temp table we have just created, there should be no
+        drift between the table schema and the file schema.
         """
-        return super()._write_files_to_new_table(files, stream_name, batch_id)
+        temp_table_name = self._create_table_for_loading(
+            stream_name=stream_name,
+            batch_id=batch_id,
+        )
+        files_list = ", ".join([f"'{f!s}'" for f in files])
+        insert_statement = dedent(
+            f"""
+            INSERT INTO {self.config.schema_name}.{temp_table_name}
+            SELECT * FROM read_parquet(
+                [{files_list}]
+            )
+            """
+        )
+        self._execute_sql(insert_statement)
+        return temp_table_name

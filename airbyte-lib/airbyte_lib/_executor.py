@@ -1,21 +1,22 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
+import shlex
 import subprocess
 import sys
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, NoReturn
+from shutil import rmtree
+from typing import IO, TYPE_CHECKING, Any, NoReturn, cast
 
 from airbyte_lib import exceptions as exc
+from airbyte_lib.registry import ConnectorMetadata
 from airbyte_lib.telemetry import SourceTelemetryInfo, SourceType
 
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable, Iterator
-
-    from airbyte_lib.registry import ConnectorMetadata
 
 
 _LATEST_VERSION = "latest"
@@ -24,22 +25,37 @@ _LATEST_VERSION = "latest"
 class Executor(ABC):
     def __init__(
         self,
-        metadata: ConnectorMetadata,
+        *,
+        name: str | None = None,
+        metadata: ConnectorMetadata | None = None,
         target_version: str | None = None,
     ) -> None:
-        self.metadata = metadata
-        self.enforce_version = target_version is not None
-        if target_version is None or target_version == _LATEST_VERSION:
-            self.target_version = metadata.latest_available_version
-        else:
-            self.target_version = target_version
+        """Initialize a connector executor.
+
+        The 'name' param is required if 'metadata' is None.
+        """
+        if not name and not metadata:
+            raise exc.AirbyteLibInternalError(message="Either name or metadata must be provided.")
+
+        self.name: str = name or cast(ConnectorMetadata, metadata).name  # metadata is not None here
+        self.metadata: ConnectorMetadata | None = metadata
+        self.enforce_version: bool = target_version is not None
+
+        self.reported_version: str | None = None
+        self.target_version: str | None = None
+        if target_version:
+            if metadata and target_version == _LATEST_VERSION:
+                self.target_version = metadata.latest_available_version
+            else:
+                self.target_version = target_version
 
     @abstractmethod
     def execute(self, args: list[str]) -> Iterator[str]:
         pass
 
     @abstractmethod
-    def ensure_installation(self) -> None:
+    def ensure_installation(self, *, auto_fix: bool = True) -> None:
+        _ = auto_fix
         pass
 
     @abstractmethod
@@ -101,71 +117,150 @@ def _stream_from_subprocess(args: list[str]) -> Generator[Iterable[str], None, N
 
         # If the exit code is not 0 or -15 (SIGTERM), raise an exception
         if exit_code not in (0, -15):
-            raise exc.AirbyteSubprocessFailedError(exit_code=exit_code)
+            raise exc.AirbyteSubprocessFailedError(
+                run_args=args,
+                exit_code=exit_code,
+            )
 
 
 class VenvExecutor(Executor):
     def __init__(
         self,
-        metadata: ConnectorMetadata,
+        name: str | None = None,
+        *,
+        metadata: ConnectorMetadata | None = None,
         target_version: str | None = None,
         pip_url: str | None = None,
-        *,
-        install_if_missing: bool = False,
+        install_root: Path | None = None,
     ) -> None:
-        super().__init__(metadata, target_version)
-        self.install_if_missing = install_if_missing
+        """Initialize a connector executor that runs a connector in a virtual environment.
+
+        Args:
+            name: The name of the connector.
+            metadata: (Optional.) The metadata of the connector.
+            target_version: (Optional.) The version of the connector to install.
+            pip_url: (Optional.) The pip URL of the connector to install.
+            install_root: (Optional.) The root directory where the virtual environment will be
+                created. If not provided, the current working directory will be used.
+        """
+        super().__init__(name=name, metadata=metadata, target_version=target_version)
 
         # This is a temporary install path that will be replaced with a proper package
         # name once they are published.
-        # TODO: Replace with `f"airbyte-{self.metadata.name}"`
-        self.pip_url = pip_url or f"../airbyte-integrations/connectors/{self.metadata.name}"
+        # TODO: Replace with `f"airbyte-{self.name}"`
+        self.pip_url = pip_url or f"../airbyte-integrations/connectors/{self.name}"
+        self.install_root = install_root or Path.cwd()
 
     def _get_venv_name(self) -> str:
-        return f".venv-{self.metadata.name}"
+        return f".venv-{self.name}"
+
+    def _get_venv_path(self) -> Path:
+        return self.install_root / self._get_venv_name()
 
     def _get_connector_path(self) -> Path:
-        return Path(self._get_venv_name(), "bin", self.metadata.name)
+        return self._get_venv_path() / "bin" / self.name
 
     def _run_subprocess_and_raise_on_failure(self, args: list[str]) -> None:
-        result = subprocess.run(args, check=False)
+        result = subprocess.run(
+            args,
+            check=False,
+            stderr=subprocess.PIPE,
+        )
         if result.returncode != 0:
-            raise exc.AirbyteConnectorInstallationError from exc.AirbyteSubprocessFailedError(
-                exit_code=result.returncode
+            raise exc.AirbyteSubprocessFailedError(
+                run_args=args,
+                exit_code=result.returncode,
+                log_text=result.stderr.decode("utf-8"),
             )
 
     def uninstall(self) -> None:
-        venv_name = self._get_venv_name()
-        if Path(venv_name).exists():
-            self._run_subprocess_and_raise_on_failure(["rm", "-rf", venv_name])
+        if self._get_venv_path().exists():
+            rmtree(str(self._get_venv_path()))
+
+        self.reported_version = None  # Reset the reported version from the previous installation
 
     def install(self) -> None:
-        venv_name = self._get_venv_name()
-        self._run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", venv_name])
+        """Install the connector in a virtual environment.
 
-        pip_path = str(Path(venv_name) / "bin" / "pip")
+        After installation, the installed version will be stored in self.reported_version.
+        """
+        self._run_subprocess_and_raise_on_failure(
+            [sys.executable, "-m", "venv", str(self._get_venv_path())]
+        )
 
-        self._run_subprocess_and_raise_on_failure([pip_path, "install", "-e", self.pip_url])
+        pip_path = str(self._get_venv_path() / "bin" / "pip")
 
-    def _get_installed_version(self) -> str:
+        try:
+            self._run_subprocess_and_raise_on_failure(
+                args=[pip_path, "install", *shlex.split(self.pip_url)]
+            )
+        except exc.AirbyteSubprocessFailedError as ex:
+            # If the installation failed, remove the virtual environment
+            # Otherwise, the connector will be considered as installed and the user may not be able
+            # to retry the installation.
+            with suppress(exc.AirbyteSubprocessFailedError):
+                self.uninstall()
+
+            raise exc.AirbyteConnectorInstallationError from ex
+
+        # Assuming the installation succeeded, store the installed version
+        self.reported_version = self._get_installed_version(raise_on_error=False, recheck=True)
+
+    def _get_installed_version(
+        self,
+        *,
+        raise_on_error: bool = False,
+        recheck: bool = False,
+    ) -> str | None:
         """Detect the version of the connector installed.
+
+        Returns the version string if it can be detected, otherwise None.
+
+        If raise_on_error is True, raise an exception if the version cannot be detected.
+
+        If recheck if False and the version has already been detected, return the cached value.
 
         In the venv, we run the following:
         > python -c "from importlib.metadata import version; print(version('<connector-name>'))"
         """
-        venv_name = self._get_venv_name()
-        connector_name = self.metadata.name
-        return subprocess.check_output(
-            [
-                Path(venv_name) / "bin" / "python",
-                "-c",
-                f"from importlib.metadata import version; print(version('{connector_name}'))",
-            ],
-            universal_newlines=True,
-        ).strip()
+        if not recheck and self.reported_version:
+            return self.reported_version
+
+        connector_name = self.name
+        if not self.interpreter_path.exists():
+            # No point in trying to detect the version if the interpreter does not exist
+            if raise_on_error:
+                raise exc.AirbyteLibInternalError(
+                    message="Connector's virtual environment interpreter could not be found.",
+                    context={
+                        "interpreter_path": self.interpreter_path,
+                    },
+                )
+            return None
+
+        try:
+            return subprocess.check_output(
+                [
+                    self.interpreter_path,
+                    "-c",
+                    f"from importlib.metadata import version; print(version('{connector_name}'))",
+                ],
+                universal_newlines=True,
+            ).strip()
+        except Exception:
+            if raise_on_error:
+                raise
+
+            return None
+
+    @property
+    def interpreter_path(self) -> Path:
+        return self._get_venv_path() / "bin" / "python"
 
     def ensure_installation(
         self,
+        *,
+        auto_fix: bool = True,
     ) -> None:
         """Ensure that the connector is installed in a virtual environment.
 
@@ -176,48 +271,77 @@ class VenvExecutor(Executor):
         Note: Version verification is not supported for connectors installed from a
         local path.
         """
-        venv_name = f".venv-{self.metadata.name}"
-        venv_path = Path(venv_name)
-        if not venv_path.exists():
-            if not self.install_if_missing:
-                raise exc.AirbyteConnectorNotFoundError(
-                    message="Connector not available and venv does not exist.",
-                    guidance=(
-                        "Please ensure the connector is pre-installed or consider enabling "
-                        "`install_if_missing=True`."
-                    ),
+        # Store the installed version (or None if not installed)
+        if not self.reported_version:
+            self.reported_version = self._get_installed_version()
+
+        original_installed_version = self.reported_version
+
+        reinstalled = False
+        venv_name = f".venv-{self.name}"
+        if not self._get_venv_path().exists():
+            if not auto_fix:
+                raise exc.AirbyteConnectorInstallationError(
+                    message="Virtual environment does not exist.",
+                    connector_name=self.name,
                     context={
-                        "connector_name": self.metadata.name,
-                        "venv_name": venv_name,
+                        "venv_path": self._get_venv_path(),
                     },
                 )
+
+            # If the venv path does not exist, install.
             self.install()
+            reinstalled = True
+
+        elif not self._get_connector_path().exists():
+            if not auto_fix:
+                raise exc.AirbyteConnectorInstallationError(
+                    message="Could not locate connector executable within the virtual environment.",
+                    connector_name=self.name,
+                    context={
+                        "connector_path": self._get_connector_path(),
+                    },
+                )
+
+            # If the connector path does not exist, uninstall and re-install.
+            # This is sometimes caused by a failed or partial installation.
+            self.uninstall()
+            self.install()
+            reinstalled = True
+
+        # By now, everything should be installed. Raise an exception if not.
 
         connector_path = self._get_connector_path()
         if not connector_path.exists():
-            raise exc.AirbyteConnectorNotFoundError(
-                connector_name=self.metadata.name,
+            raise exc.AirbyteConnectorInstallationError(
+                message="Connector's executable could not be found within the virtual environment.",
+                connector_name=self.name,
                 context={
-                    "venv_name": venv_name,
+                    "connector_path": self._get_connector_path(),
                 },
             ) from FileNotFoundError(connector_path)
 
         if self.enforce_version:
-            installed_version = self._get_installed_version()
-            if installed_version != self.target_version:
-                # If the version doesn't match, reinstall
-                self.install()
+            version_after_reinstall: str | None = None
+            if self.reported_version != self.target_version:
+                if auto_fix and not reinstalled:
+                    # If we haven't already reinstalled above, reinstall now.
+                    self.install()
+                    reinstalled = True
+
+                if reinstalled:
+                    version_after_reinstall = self.reported_version
 
                 # Check the version again
-                version_after_install = self._get_installed_version()
-                if version_after_install != self.target_version:
+                if self.reported_version != self.target_version:
                     raise exc.AirbyteConnectorInstallationError(
-                        connector_name=self.metadata.name,
+                        message="Connector's reported version does not match the target version.",
+                        connector_name=self.name,
                         context={
                             "venv_name": venv_name,
                             "target_version": self.target_version,
-                            "installed_version": installed_version,
-                            "version_after_install": version_after_install,
+                            "original_installed_version": original_installed_version,
+                            "version_after_reinstall": version_after_reinstall,
                         },
                     )
 
@@ -228,33 +352,69 @@ class VenvExecutor(Executor):
             yield from stream
 
     def get_telemetry_info(self) -> SourceTelemetryInfo:
-        return SourceTelemetryInfo(self.metadata.name, SourceType.VENV, self.target_version)
+        return SourceTelemetryInfo(
+            name=self.name,
+            type=SourceType.VENV,
+            version=self.reported_version,
+        )
 
 
 class PathExecutor(Executor):
-    def ensure_installation(self) -> None:
+    def __init__(
+        self,
+        name: str | None = None,
+        *,
+        path: Path,
+        target_version: str | None = None,
+    ) -> None:
+        """Initialize a connector executor that runs a connector from a local path.
+
+        If path is simply the name of the connector, it will be expected to exist in the current
+        PATH or in the current working directory.
+        """
+        self.path: Path = path
+        name = name or path.name
+        super().__init__(name=name, target_version=target_version)
+
+    def ensure_installation(
+        self,
+        *,
+        auto_fix: bool = True,
+    ) -> None:
+        """Ensure that the connector executable can be found.
+
+        The auto_fix parameter is ignored for this executor type.
+        """
+        _ = auto_fix
         try:
             self.execute(["spec"])
         except Exception as e:
-            raise exc.AirbyteConnectorNotFoundError(
-                connector_name=self.metadata.name,
+            # TODO: Improve error handling. We should try to distinguish between
+            #       a connector that is not installed and a connector that is not
+            #       working properly.
+            raise exc.AirbyteConnectorExecutableNotFoundError(
+                connector_name=self.name,
             ) from e
 
     def install(self) -> NoReturn:
         raise exc.AirbyteConnectorInstallationError(
             message="Connector cannot be installed because it is not managed by airbyte-lib.",
-            connector_name=self.metadata.name,
+            connector_name=self.name,
         )
 
     def uninstall(self) -> NoReturn:
         raise exc.AirbyteConnectorInstallationError(
             message="Connector cannot be uninstalled because it is not managed by airbyte-lib.",
-            connector_name=self.metadata.name,
+            connector_name=self.name,
         )
 
     def execute(self, args: list[str]) -> Iterator[str]:
-        with _stream_from_subprocess([self.metadata.name, *args]) as stream:
+        with _stream_from_subprocess([str(self.path), *args]) as stream:
             yield from stream
 
     def get_telemetry_info(self) -> SourceTelemetryInfo:
-        return SourceTelemetryInfo(self.metadata.name, SourceType.LOCAL_INSTALL, version=None)
+        return SourceTelemetryInfo(
+            str(self.name),
+            SourceType.LOCAL_INSTALL,
+            version=self.reported_version,
+        )
