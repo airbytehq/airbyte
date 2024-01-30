@@ -53,4 +53,5 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------|
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-10-20 | [18224](https://github.com/airbytehq/airbyte/pull/18224) | New source |

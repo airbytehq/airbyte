@@ -61,4 +61,5 @@ GET https://www.mydatascope.com/api/external/locations
 
 | Version | Date       | Pull Request                                              | Subject        |
 | :------ |:-----------|:----------------------------------------------------------| :------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-10-31 | [#18725](https://github.com/airbytehq/airbyte/pull/18725) | Initial commit |

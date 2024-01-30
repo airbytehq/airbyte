@@ -76,4 +76,5 @@ Merge [API reference](https://api.merge.dev/api/ats/v1/) has v1 at present. The 
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2023-04-18 | [Init](https://github.com/airbytehq/airbyte/pull/)| Initial commit |

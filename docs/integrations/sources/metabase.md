@@ -70,6 +70,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------|
+| 1.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 1.1.0   | 2023-10-31 | [31909](https://github.com/airbytehq/airbyte/pull/31909) | Add `databases` and `native_query_snippets` streams       |
 | 1.0.1   | 2023-07-20 | [28470](https://github.com/airbytehq/airbyte/pull/27777) | Update CDK to 0.47.0       |
 | 1.0.0   | 2023-06-27 | [27777](https://github.com/airbytehq/airbyte/pull/27777) | Remove Activity Stream     |

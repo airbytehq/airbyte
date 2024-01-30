@@ -84,4 +84,5 @@ There is no published rate limit. However, since this data updates infrequently,
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-10-17 | [#18075](https://github.com/airbytehq/airbyte/pull/18075) | 🎉 New Source: Gutendex API [low-code CDK] |

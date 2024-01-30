@@ -28,4 +28,5 @@ The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per
 
 | Version | Date       | Pull Request | Subject                                                    |
 |:--------|:-----------| :----------- |:-----------------------------------------------------------|
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-10-30 | [18657](https://github.com/airbytehq/airbyte/pull/18657) | Initial commit |

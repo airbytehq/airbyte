@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 0541b2cd-2367-4986-b5f1-b79ff55439e4
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-courier
   githubIssueLabel: source-courier
   icon: courier.svg

@@ -47,5 +47,6 @@ Generate a API access key ID and token using the [Babelforce documentation](http
 
 | Version | Date       | Pull Request                                             | Subject                     |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------|
+| 0.2.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
  0.2.0    | 2023-08-24 | [29314](https://github.com/airbytehq/airbyte/pull/29314) | Migrate to Low Code         |
  0.1.0    | 2022-05-09 | [12700](https://github.com/airbytehq/airbyte/pull/12700) | Introduce Babelforce source |

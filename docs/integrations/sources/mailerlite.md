@@ -36,4 +36,5 @@ MailerLite API has a global rate limit of 120 requests per minute.
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-10-25 | [18336](https://github.com/airbytehq/airbyte/pull/18336) | Initial commit |

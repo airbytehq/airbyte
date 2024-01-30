@@ -61,4 +61,5 @@ Punk API's [API reference](https://punkapi.com/documentation/v2) has v2 at prese
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-10-31 | [Init](https://github.com/airbytehq/airbyte/pull/<yet>)| Initial commit |

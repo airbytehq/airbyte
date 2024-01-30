@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4a4d887b-0f2d-4b33-ab7f-9b01b9072804
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-survey-sparrow
   githubIssueLabel: source-survey-sparrow
   icon: surveysparrow.svg

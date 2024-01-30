@@ -45,4 +45,5 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 
 | Version | Date       | Pull Request                                         | Subject                    |
 | :------ | :--------- | :--------------------------------------------------- | :------------------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-10-22 | [18334](https://github.com/airbytehq/airbyte/pull/18334) | Add Ashby Source Connector |
