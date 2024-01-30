@@ -43,10 +43,11 @@ if TYPE_CHECKING:
 
 
 @contextmanager
-def as_temp_files(files: list[Any]) -> Generator[list[Any], Any, None]:
+def as_temp_files(files_contents: list[dict]) -> Generator[list[str], Any, None]:
+    """Write the given contents to temporary files and yield the file paths as strings."""
     temp_files: list[Any] = []
     try:
-        for content in files:
+        for content in files_contents:
             temp_file = tempfile.NamedTemporaryFile(mode="w+t", delete=True)
             temp_file.write(
                 json.dumps(content) if isinstance(content, dict) else content,
