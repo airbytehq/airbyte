@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "airbyte-cdk/python/airbyte_cdk/**/*.py"
+      - "airbyte-integrations/connectors/**/*.py"
 jobs:
   run-mypy-on-modified-cdk-files:
     name: "Run mypy on modified cdk files"
