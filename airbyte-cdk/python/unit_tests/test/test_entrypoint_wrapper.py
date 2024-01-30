@@ -9,6 +9,7 @@ from unittest.mock import Mock, patch
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
 from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import (
     AirbyteAnalyticsTraceMessage,
     AirbyteErrorTraceMessage,
@@ -91,7 +92,7 @@ _A_CATALOG = ConfiguredAirbyteCatalog.parse_obj(
         ]
     }
 )
-_A_STATE = {"state_key": "state_value"}
+_A_STATE = StateBuilder().with_stream_state(_A_STREAM_NAME, {"state_key": "state_value"}).build()
 _A_LOG_MESSAGE = "a log message"
 
 
