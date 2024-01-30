@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 01d1c685-fd4a-4837-8f4c-93fe5a0d2188
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.3
   dockerRepository: airbyte/source-microsoft-onedrive
   githubIssueLabel: source-microsoft-onedrive
   icon: microsoft-onedrive.svg
