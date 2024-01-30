@@ -31,7 +31,7 @@ GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING = {
     # We run the Java connectors tests sequentially because we currently have memory issues when Java integration tests are run in parallel.
     # See https://github.com/airbytehq/airbyte/issues/27168
-    ConnectorLanguage.JAVA: anyio.Semaphore(1),
+    #ConnectorLanguage.JAVA: anyio.Semaphore(1),
 }
 
 
