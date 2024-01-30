@@ -15,7 +15,7 @@ from .utils import format_airbyte_time, generate_estimate, read_json
 
 
 class Products(Stream, IncrementalMixin):
-    primary_key = None
+    primary_key = "id"
     cursor_field = "updated_at"
 
     def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
@@ -65,7 +65,7 @@ class Products(Stream, IncrementalMixin):
 
 
 class Users(Stream, IncrementalMixin):
-    primary_key = None
+    primary_key = "id"
     cursor_field = "updated_at"
 
     def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
@@ -125,7 +125,7 @@ class Users(Stream, IncrementalMixin):
 
 
 class Purchases(Stream, IncrementalMixin):
-    primary_key = None
+    primary_key = "id"
     cursor_field = "updated_at"
 
     def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
