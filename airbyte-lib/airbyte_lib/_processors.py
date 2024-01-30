@@ -31,7 +31,8 @@ from airbyte_protocol.models import (
 )
 
 from airbyte_lib import exceptions as exc
-from airbyte_lib._util import protocol_util  # Internal utility functions
+from airbyte_lib._util import protocol_util
+from airbyte_lib.strategies import WriteStrategy  # Internal utility functions
 
 
 if TYPE_CHECKING:
@@ -142,8 +143,16 @@ class RecordProcessor(abc.ABC):
     def process_airbyte_messages(
         self,
         messages: Iterable[AirbyteMessage],
+        write_strategy: WriteStrategy,
         max_batch_size: int = DEFAULT_BATCH_SIZE,
     ) -> None:
+        """Process a stream of Airbyte messages."""
+        if not isinstance(write_strategy, WriteStrategy):
+            raise exc.AirbyteInternalError(
+                message="Invalid `write_strategy` argument. Excepted instance of WriteStrategy.",
+                context={"write_strategy": write_strategy},
+            )
+
         stream_batches: dict[str, list[dict]] = defaultdict(list, {})
 
         # Process messages, writing to batches as we go
@@ -187,7 +196,7 @@ class RecordProcessor(abc.ABC):
 
         # Finalize any pending batches
         for stream_name in list(self._pending_batches.keys()):
-            self._finalize_batches(stream_name)
+            self._finalize_batches(stream_name, write_strategy=write_strategy)
 
     @final
     def _process_batch(
@@ -257,13 +266,18 @@ class RecordProcessor(abc.ABC):
         batch_id = batch_id or self._new_batch_id()
         return f"{stream_name}_{batch_id}"
 
-    def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:
+    def _finalize_batches(
+        self,
+        stream_name: str,
+        write_strategy: WriteStrategy,
+    ) -> dict[str, BatchHandle]:
         """Finalize all uncommitted batches.
 
         Returns a mapping of batch IDs to batch handles, for processed batches.
 
         This is a generic implementation, which can be overridden.
         """
+        _ = write_strategy  # Unused
         with self._finalizing_batches(stream_name) as batches_to_finalize:
             if batches_to_finalize and not self.skip_finalize_step:
                 raise NotImplementedError(

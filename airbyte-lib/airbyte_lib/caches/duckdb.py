@@ -133,21 +133,24 @@ class DuckDBCache(DuckDBCacheBase):
         ):
             return False
 
-        pk_cols = self._get_primary_keys(stream_name)
-        table = self.get_sql_table(table_name)
-        table_pk_cols = table.primary_key.columns.keys()
-        if set(pk_cols) != set(table_pk_cols):
-            if raise_on_error:
-                raise exc.AirbyteLibCacheTableValidationError(
-                    violation="Primary keys do not match.",
-                    context={
-                        "stream_name": stream_name,
-                        "table_name": table_name,
-                        "expected": pk_cols,
-                        "found": table_pk_cols,
-                    },
-                )
-            return False
+        # TODO: Add validation for primary keys after DuckDB adds support for primary key
+        #       inspection: https://github.com/Mause/duckdb_engine/issues/594
+        #       This is a problem because DuckDB implicitly joins on primary keys during MERGE.
+        # pk_cols = self._get_primary_keys(stream_name)
+        # table = self.get_sql_table(table_name)
+        # table_pk_cols = table.primary_key.columns.keys()
+        # if set(pk_cols) != set(table_pk_cols):
+        #     if raise_on_error:
+        #         raise exc.AirbyteLibCacheTableValidationError(
+        #             violation="Primary keys do not match.",
+        #             context={
+        #                 "stream_name": stream_name,
+        #                 "table_name": table_name,
+        #                 "expected": pk_cols,
+        #                 "found": table_pk_cols,
+        #             },
+        #         )
+        #     return False
 
         return True
 

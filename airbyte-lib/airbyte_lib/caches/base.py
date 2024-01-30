@@ -23,6 +23,7 @@ from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.datasets._sql import CachedDataset
+from airbyte_lib.strategies import WriteStrategy
 from airbyte_lib.types import SQLTypeConverter
 
 
@@ -56,7 +57,6 @@ class SQLRuntimeError(Exception):
 class SQLCacheConfigBase(CacheConfigBase):
     """Same as a regular config except it exposes the 'get_sql_alchemy_url()' method."""
 
-    dedupe_mode = RecordDedupeMode.REPLACE
     schema_name: str = "airbyte_raw"
 
     table_prefix: str | None = None
@@ -390,9 +390,14 @@ class SQLCacheBase(RecordProcessor):
         self,
         table_name: str,
         column_definition_str: str,
+        primary_keys: list[str] | None = None,
     ) -> None:
         if DEBUG_MODE:
             assert table_name not in self._get_tables_list(), f"Table {table_name} already exists."
+
+        if primary_keys:
+            pk_str = ", ".join(primary_keys)
+            column_definition_str += f",\n  PRIMARY KEY ({pk_str})"
 
         cmd = f"""
         CREATE TABLE {self._fully_qualified(table_name)} (
@@ -503,7 +508,11 @@ class SQLCacheBase(RecordProcessor):
 
     @final
     @overrides
-    def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:
+    def _finalize_batches(
+        self,
+        stream_name: str,
+        write_strategy: WriteStrategy,
+    ) -> dict[str, BatchHandle]:
         """Finalize all uncommitted batches.
 
         This is a generic 'final' implementation, which should not be overridden.
@@ -539,15 +548,16 @@ class SQLCacheBase(RecordProcessor):
             )
 
             temp_table_name = self._write_files_to_new_table(
-                files,
-                stream_name,
-                max_batch_id,
+                files=files,
+                stream_name=stream_name,
+                batch_id=max_batch_id,
             )
             try:
                 self._write_temp_table_to_final_table(
-                    stream_name,
-                    temp_table_name,
-                    final_table_name,
+                    stream_name=stream_name,
+                    temp_table_name=temp_table_name,
+                    final_table_name=final_table_name,
+                    write_strategy=write_strategy,
                 )
             finally:
                 self._drop_temp_table(temp_table_name, if_exists=True)
@@ -628,33 +638,62 @@ class SQLCacheBase(RecordProcessor):
         stream_name: str,
         temp_table_name: str,
         final_table_name: str,
+        write_strategy: WriteStrategy,
     ) -> None:
-        """Merge the temp table into the final table."""
-        if self.config.dedupe_mode == RecordDedupeMode.REPLACE:
-            if not self.supports_merge_insert:
-                raise NotImplementedError(
-                    "Deduping was requested but merge-insert is not yet supported.",
-                )
+        """Write the temp table into the final table using the provided write strategy."""
+        if write_strategy == WriteStrategy.MERGE and not self.supports_merge_insert:
+            raise NotImplementedError(
+                "Deduping was requested but merge-insert is not yet supported.",
+            )
 
-            if not self._get_primary_keys(stream_name):
-                self._swap_temp_table_with_final_table(
-                    stream_name,
-                    temp_table_name,
-                    final_table_name,
-                )
+        has_pks: bool = bool(self._get_primary_keys(stream_name))
+        has_incremental_key: bool = bool(self._get_incremental_key(stream_name))
+        if write_strategy == WriteStrategy.MERGE and not has_pks:
+            raise exc.AirbyteLibInputError(
+                message="Cannot use merge strategy on a stream with no primary keys.",
+                context={
+                    "stream_name": stream_name,
+                },
+            )
+
+        if write_strategy == WriteStrategy.AUTO:
+            if has_pks:
+                write_strategy = WriteStrategy.MERGE
+            elif has_incremental_key:
+                write_strategy = WriteStrategy.APPEND
             else:
-                self._merge_temp_table_to_final_table(
-                    stream_name,
-                    temp_table_name,
-                    final_table_name,
-                )
+                write_strategy = WriteStrategy.REPLACE
 
-        else:
+        if write_strategy == WriteStrategy.REPLACE:
+            self._swap_temp_table_with_final_table(
+                stream_name=stream_name,
+                temp_table_name=temp_table_name,
+                final_table_name=final_table_name,
+            )
+            return
+
+        if write_strategy == WriteStrategy.APPEND:
             self._append_temp_table_to_final_table(
                 stream_name=stream_name,
                 temp_table_name=temp_table_name,
                 final_table_name=final_table_name,
             )
+            return
+
+        if write_strategy == WriteStrategy.MERGE:
+            self._merge_temp_table_to_final_table(
+                stream_name=stream_name,
+                temp_table_name=temp_table_name,
+                final_table_name=final_table_name,
+            )
+            return
+
+        raise exc.AirbyteLibInternalError(
+            message="Write strategy is not supported.",
+            context={
+                "write_strategy": write_strategy,
+            },
+        )
 
     def _append_temp_table_to_final_table(
         self,
@@ -690,6 +729,12 @@ class SQLCacheBase(RecordProcessor):
                 raise NotImplementedError(msg)
 
         return joined_pks
+
+    def _get_incremental_key(
+        self,
+        stream_name: str,
+    ) -> str | None:
+        return self._get_stream_config(stream_name).cursor_field
 
     def _swap_temp_table_with_final_table(
         self,

@@ -44,7 +44,7 @@ ruff = "^0.1.11"
 types-jsonschema = "^4.20.0.0"
 google-cloud-secret-manager = "^2.17.0"
 types-requests = "2.31.0.4"
-source-faker = {path = "../airbyte-integrations/connectors/source-faker"}
+source-faker = {path = "../airbyte-integrations/connectors/source-faker", develop = true}
 
 [build-system]
 requires = ["poetry-core"]
