@@ -206,8 +206,9 @@ pub async fn run_airbyte_source_connector(
         if let Some(interval_minutes) = run_interval_minutes {
             let elapsed = Instant::now().duration_since(start_time);
             let total_duration = tokio::time::Duration::from_secs(60 * interval_minutes);
-            tracing::debug!("atf: sleeping for {:?}", total_duration - elapsed);
-            tokio::time::sleep(total_duration - elapsed).await;
+            let remainder = total_duration.saturating_sub(elapsed);
+            tracing::debug!("atf: sleeping for {remainder:?}");
+            tokio::time::sleep(remainder).await;
         }
 
         let r: Result<(), Error> = Ok(());
