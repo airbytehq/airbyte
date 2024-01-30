@@ -32,7 +32,7 @@ from airbyte_protocol.models import (
 
 from airbyte_lib import exceptions as exc
 from airbyte_lib._util import protocol_util
-from airbyte_lib.strategies import WriteStrategy  # Internal utility functions
+from airbyte_lib.strategies import WriteStrategy
 
 
 if TYPE_CHECKING:
