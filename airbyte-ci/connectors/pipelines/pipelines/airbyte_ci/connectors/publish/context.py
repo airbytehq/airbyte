@@ -46,12 +46,16 @@ class PublishConnectorContext(ConnectorContext):
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
         use_local_cdk: bool = False,
+        python_registry_token: Optional[str] = None,
+        python_registry_url: Optional[str] = None,
     ) -> None:
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
         self.metadata_bucket_name = metadata_bucket_name
         self.spec_cache_gcs_credentials = sanitize_gcs_credentials(spec_cache_gcs_credentials)
         self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
+        self.python_registry_token = python_registry_token
+        self.python_registry_url = python_registry_url
         pipeline_name = f"Publish {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
 
