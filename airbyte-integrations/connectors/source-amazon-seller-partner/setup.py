@@ -10,6 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "xmltodict~=0.12", "dateparser==1.2.0"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-amazon-seller-partner=source_amazon_seller_partner.run:run",
+        ],
+    },
     name="source_amazon_seller_partner",
     description="Source implementation for Amazon Seller Partner.",
     author="Airbyte",

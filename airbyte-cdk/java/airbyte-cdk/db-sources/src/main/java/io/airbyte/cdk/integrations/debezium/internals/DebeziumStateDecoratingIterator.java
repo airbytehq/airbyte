@@ -4,18 +4,13 @@
 
 package io.airbyte.cdk.integrations.debezium.internals;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager.DebeziumConnectorType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateStats;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,9 +34,6 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final boolean trackSchemaHistory;
   private final AirbyteSchemaHistoryStorage schemaHistoryManager;
-  private final CdcMetadataInjector cdcMetadataInjector;
-  private final Instant emittedAt;
-
   private boolean isSyncFinished = false;
 
   /**
@@ -78,50 +70,39 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
    * an unneeded usage of networking and processing.
    */
   private final HashMap<String, String> previousCheckpointOffset;
-  private final DebeziumConnectorType debeziumConnectorType;
-  private final ConfiguredAirbyteCatalog configuredAirbyteCatalog;
-  private final JsonNode config;
+
+  private final DebeziumEventConverter eventConverter;
 
   /**
    * @param changeEventIterator Base iterator that we want to enrich with checkpoint messages
    * @param cdcStateHandler Handler to save the offset and schema history
    * @param offsetManager Handler to read and write debezium offset file
+   * @param eventConverter Handler to transform debezium events into Airbyte messages.
    * @param trackSchemaHistory Set true if the schema needs to be tracked
    * @param schemaHistoryManager Handler to write schema. Needs to be initialized if
    *        trackSchemaHistory is set to true
    * @param checkpointDuration Duration object with time between syncs
    * @param checkpointRecords Number of records between syncs
-   * @param configuredAirbyteCatalog The {@link ConfiguredAirbyteCatalog} that contains the stream
-   * @param debeziumConnectorType type of connector that debezium will be capturing changes from
    */
   public DebeziumStateDecoratingIterator(final Iterator<ChangeEventWithMetadata> changeEventIterator,
                                          final CdcStateHandler cdcStateHandler,
                                          final CdcTargetPosition<T> targetPosition,
-                                         final CdcMetadataInjector cdcMetadataInjector,
-                                         final Instant emittedAt,
+                                         final DebeziumEventConverter eventConverter,
                                          final AirbyteFileOffsetBackingStore offsetManager,
                                          final boolean trackSchemaHistory,
                                          final AirbyteSchemaHistoryStorage schemaHistoryManager,
                                          final Duration checkpointDuration,
-                                         final Long checkpointRecords,
-                                         final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
-                                         final DebeziumConnectorType debeziumConnectorType,
-                                         final JsonNode config) {
+                                         final Long checkpointRecords) {
     this.changeEventIterator = changeEventIterator;
     this.cdcStateHandler = cdcStateHandler;
     this.targetPosition = targetPosition;
-    this.cdcMetadataInjector = cdcMetadataInjector;
-    this.emittedAt = emittedAt;
+    this.eventConverter = eventConverter;
     this.offsetManager = offsetManager;
     this.trackSchemaHistory = trackSchemaHistory;
     this.schemaHistoryManager = schemaHistoryManager;
-    this.configuredAirbyteCatalog = configuredAirbyteCatalog;
-
     this.syncCheckpointDuration = checkpointDuration;
     this.syncCheckpointRecords = checkpointRecords;
     this.previousCheckpointOffset = (HashMap<String, String>) offsetManager.read();
-    this.debeziumConnectorType = debeziumConnectorType;
-    this.config = config;
     resetCheckpointValues();
   }
 
@@ -179,7 +160,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
         }
       }
       recordsLastSync++;
-      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType, config);
+      return eventConverter.toAirbyteMessage(event);
     }
 
     isSyncFinished = true;

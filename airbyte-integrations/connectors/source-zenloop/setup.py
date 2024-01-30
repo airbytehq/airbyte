@@ -17,6 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-zenloop=source_zenloop.run:run",
+        ],
+    },
     name="source_zenloop",
     description="Source implementation for Zenloop.",
     author="Alexander Batoulis",

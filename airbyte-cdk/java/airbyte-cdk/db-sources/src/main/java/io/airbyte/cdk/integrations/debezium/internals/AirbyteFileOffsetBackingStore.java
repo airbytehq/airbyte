@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
@@ -47,10 +48,6 @@ public class AirbyteFileOffsetBackingStore {
   public AirbyteFileOffsetBackingStore(final Path offsetFilePath, final Optional<String> dbName) {
     this.offsetFilePath = offsetFilePath;
     this.dbName = dbName;
-  }
-
-  public Path getOffsetFilePath() {
-    return offsetFilePath;
   }
 
   public Map<String, String> read() {
@@ -183,6 +180,14 @@ public class AirbyteFileOffsetBackingStore {
     final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
 
     return new AirbyteFileOffsetBackingStore(cdcOffsetFilePath, Optional.empty());
+  }
+
+  public void setDebeziumProperties(Properties props) {
+    // debezium engine configuration
+    // https://debezium.io/documentation/reference/2.2/development/engine.html#engine-properties
+    props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
+    props.setProperty("offset.storage.file.filename", offsetFilePath.toString());
+    props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
   }
 
 }

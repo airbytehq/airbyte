@@ -14,6 +14,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-bamboo-hr=source_bamboo_hr.run:run",
+        ],
+    },
     name="source_bamboo_hr",
     description="Source implementation for Bamboo Hr.",
     author="Airbyte",

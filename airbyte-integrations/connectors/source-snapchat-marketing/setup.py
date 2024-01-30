@@ -12,6 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "requests_mock"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-snapchat-marketing=source_snapchat_marketing.run:run",
+        ],
+    },
     name="source_snapchat_marketing",
     description="Source implementation for Snapchat Marketing.",
     author="Airbyte",

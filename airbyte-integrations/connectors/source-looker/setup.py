@@ -20,6 +20,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-looker=source_looker.run:run",
+        ],
+    },
     name="source_looker",
     description="Source implementation for Looker.",
     author="Airbyte",
