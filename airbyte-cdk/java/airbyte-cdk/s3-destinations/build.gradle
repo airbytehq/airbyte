@@ -13,7 +13,6 @@ dependencies {
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')

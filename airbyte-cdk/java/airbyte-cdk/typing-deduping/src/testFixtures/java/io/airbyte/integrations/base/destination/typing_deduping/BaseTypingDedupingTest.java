@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -118,7 +120,7 @@ public abstract class BaseTypingDedupingTest {
    * @return
    * @throws Exception
    */
-  protected boolean checkTableExists(String streamNamespace, String streamName) {
+  protected boolean checkTableExists(final String streamNamespace, final String streamName) {
     // Implementation is specific to destination's tests.
     return true;
   }
@@ -185,7 +187,7 @@ public abstract class BaseTypingDedupingTest {
    */
   protected synchronized String getUniqueSuffix() {
     if (randomSuffix == null) {
-      randomSuffix = "_" + RandomStringUtils.randomAlphabetic(5).toLowerCase();
+      randomSuffix = "_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
     }
     return randomSuffix;
   }
@@ -601,14 +603,12 @@ public abstract class BaseTypingDedupingTest {
     for (int i = 0; i < 100_000; i++) {
       pushMessages(messages2, sync2);
     }
-    // This will dump sync1's entire stdout to our stdout
     endSync(sync1);
     // Write some more messages to the second sync. It should not be affected by the first sync's
     // shutdown.
     for (int i = 0; i < 100_000; i++) {
       pushMessages(messages2, sync2);
     }
-    // And this will dump sync2's entire stdout to our stdout
     endSync(sync2);
 
     // For simplicity, don't verify the raw table. Assume that if the final table is correct, then
@@ -705,7 +705,7 @@ public abstract class BaseTypingDedupingTest {
 
   protected void verifySyncResult(final List<JsonNode> expectedRawRecords,
                                   final List<JsonNode> expectedFinalRecords,
-                                  boolean disableFinalTableComparison)
+                                  final boolean disableFinalTableComparison)
       throws Exception {
     verifySyncResult(expectedRawRecords, expectedFinalRecords, streamNamespace, streamName, disableFinalTableComparison);
   }
@@ -714,7 +714,7 @@ public abstract class BaseTypingDedupingTest {
                                 final List<JsonNode> expectedFinalRecords,
                                 final String streamNamespace,
                                 final String streamName,
-                                boolean disableFinalTableComparison)
+                                final boolean disableFinalTableComparison)
       throws Exception {
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
     if (disableFinalTableComparison) {
@@ -764,7 +764,7 @@ public abstract class BaseTypingDedupingTest {
   protected void runSync(final ConfiguredAirbyteCatalog catalog,
                          final List<AirbyteMessage> messages,
                          final String imageName,
-                         Function<JsonNode, JsonNode> configTransformer)
+                         final Function<JsonNode, JsonNode> configTransformer)
       throws Exception {
     final AirbyteDestination destination = startSync(catalog, imageName, configTransformer);
     pushMessages(messages, destination);
@@ -790,7 +790,7 @@ public abstract class BaseTypingDedupingTest {
    */
   protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog,
                                          final String imageName,
-                                         Function<JsonNode, JsonNode> configTransformer)
+                                         final Function<JsonNode, JsonNode> configTransformer)
       throws Exception {
     synchronized (this) {
       catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
@@ -825,6 +825,26 @@ public abstract class BaseTypingDedupingTest {
 
     destination.start(destinationConfig, jobRoot, Collections.emptyMap());
 
+    // In the background, read messages from the destination until it terminates. We need to clear
+    // stdout in real time, to prevent the buffer from filling up and blocking the destination.
+    // TODO Eventually we'll want to somehow extract the state messages while a sync is running, to
+    // verify checkpointing.
+    final ExecutorService messageHandler = Executors.newSingleThreadExecutor(
+        // run as a daemon thread just in case we run into an exception or something
+        r -> {
+          final Thread t = Executors.defaultThreadFactory().newThread(r);
+          t.setDaemon(true);
+          return t;
+        });
+    messageHandler.submit(() -> {
+      while (!destination.isFinished()) {
+        // attemptRead isn't threadsafe, we read stdout fully here.
+        // i.e. we shouldn't call attemptRead anywhere else.
+        destination.attemptRead();
+      }
+    });
+    messageHandler.shutdown();
+
     return destination;
   }
 
@@ -833,13 +853,11 @@ public abstract class BaseTypingDedupingTest {
         message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
   }
 
-  // TODO Eventually we'll want to somehow extract the state messages while a sync is running, to
-  // verify checkpointing.
-  // That's going to require some nontrivial changes to how attemptRead() works.
   protected static void endSync(final AirbyteDestination destination) throws Exception {
     destination.notifyEndOfInput();
+    // Wait until process is finished cleanly.
     while (!destination.isFinished()) {
-      destination.attemptRead();
+      Thread.sleep(1000);
     }
     destination.close();
   }

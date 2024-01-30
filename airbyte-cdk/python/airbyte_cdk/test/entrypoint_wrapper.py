@@ -26,7 +26,16 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.sources import Source
-from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog, Level, TraceType, Type
+from airbyte_protocol.models import (
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStreamStatus,
+    ConfiguredAirbyteCatalog,
+    Level,
+    TraceType,
+    Type,
+)
 from pydantic.error_wrappers import ValidationError
 
 
@@ -59,6 +68,13 @@ class EntrypointOutput:
     @property
     def state_messages(self) -> List[AirbyteMessage]:
         return self._get_message_by_types([Type.STATE])
+
+    @property
+    def most_recent_state(self) -> Any:
+        state_messages = self._get_message_by_types([Type.STATE])
+        if not state_messages:
+            raise ValueError("Can't provide most recent state as there are no state messages")
+        return state_messages[-1].state.data
 
     @property
     def logs(self) -> List[AirbyteMessage]:
@@ -97,7 +113,7 @@ def read(
     source: Source,
     config: Mapping[str, Any],
     catalog: ConfiguredAirbyteCatalog,
-    state: Optional[Any] = None,
+    state: Optional[List[AirbyteStateMessage]] = None,
     expecting_exception: bool = False,
 ) -> EntrypointOutput:
     """
@@ -122,13 +138,14 @@ def read(
             "--catalog",
             make_file(tmp_directory_path / "catalog.json", catalog.json()),
         ]
-        if state:
+        if state is not None:
             args.extend(
                 [
                     "--state",
-                    make_file(tmp_directory_path / "state.json", state),
+                    make_file(tmp_directory_path / "state.json", f"[{','.join([stream_state.json() for stream_state in state])}]"),
                 ]
             )
+        args.append("--debug")
         source_entrypoint = AirbyteEntrypoint(source)
         parsed_args = source_entrypoint.parse_args(args)
 

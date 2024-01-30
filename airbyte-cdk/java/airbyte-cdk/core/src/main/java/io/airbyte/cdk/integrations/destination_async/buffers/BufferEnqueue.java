@@ -38,11 +38,11 @@ public class BufferEnqueue {
    * @param message to buffer
    * @param sizeInBytes
    */
-  public void addRecord(final PartialAirbyteMessage message, final Integer sizeInBytes) {
+  public void addRecord(final PartialAirbyteMessage message, final Integer sizeInBytes, final String defaultNamespace) {
     if (message.getType() == Type.RECORD) {
       handleRecord(message, sizeInBytes);
     } else if (message.getType() == Type.STATE) {
-      stateManager.trackState(message, sizeInBytes);
+      stateManager.trackState(message, sizeInBytes, defaultNamespace);
     }
   }
 

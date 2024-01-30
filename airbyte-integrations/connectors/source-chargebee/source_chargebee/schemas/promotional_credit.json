@@ -41,6 +41,9 @@
     "created_at": {
       "type": ["integer", "null"]
     },
+    "object": {
+      "type": ["string", "null"]
+    },
     "custom_fields": {
       "type": ["null", "array"],
       "items": {

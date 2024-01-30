@@ -95,6 +95,10 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 3. Enter a **Source name** of your choosing.
 4. From the **Authentication** dropdown, select your chosen authentication method:
     - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+    :::tip HubSpot Authentication issues
+    You might encounter errors during the connection process in the popup window, such as `An invalid scope name was provided`.
+    To resolve this, close the window and attempt authentication again.
+    :::
     - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
@@ -162,6 +166,7 @@ The HubSpot source connector supports the following streams:
 - [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists) \(Incremental\)
 - [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
 - [Contacts List Memberships](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
+- [Contacts Merged Audit](https://legacydocs.hubspot.com/docs/methods/contacts/get_batch_by_vid)
 - [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
   - Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
@@ -180,8 +185,11 @@ The HubSpot source connector supports the following streams:
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 - [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
 - [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
+- [Owners Archived](https://legacydocs.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental)
 - [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
-- [Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
+- [Contacts Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Client-Side Incremental\)
+- [Companies Property History](https://legacydocs.hubspot.com/docs/methods/companies/get-all-companies) \(Client-Side Incremental\)
+- [Deals Property History](https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals) \(Client-Side Incremental\)
 - [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) \(Incremental\)
 - [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
 - [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
@@ -296,7 +304,10 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.9.0   | 2023-12-04 | [33042](https://github.com/airbytehq/airbyte/pull/33042) | Add Web Analytics streams                                                                                                                                                          |
+| 2.0.2   | 2023-12-15 | [33844](https://github.com/airbytehq/airbyte/pull/33844) | Make property_history PK combined to support Incremental/Deduped sync type                                                                                                         |
+| 2.0.1   | 2023-12-15 | [33527](https://github.com/airbytehq/airbyte/pull/33527) | Make query string calculated correctly for ProertyHistory streams to avoid 414 HTTP Errors                                                                                         |
+| 2.0.0   | 2023-12-08 | [33266](https://github.com/airbytehq/airbyte/pull/33266) | Added ContactsPropertyHistory, CompaniesPropertyHistory, DealsPropertyHistory streams                                                                                              |
+| 1.9.0   | 2023-12-04 | [33042](https://github.com/airbytehq/airbyte/pull/33042) | Added Web Analytics streams                                                                                                                                                        |
 | 1.8.0   | 2023-11-23 | [32778](https://github.com/airbytehq/airbyte/pull/32778) | Extend `PropertyHistory` stream to support incremental sync                                                                                                                        |
 | 1.7.0   | 2023-11-01 | [32035](https://github.com/airbytehq/airbyte/pull/32035) | Extend the `Forms` stream schema                                                                                                                                                   |
 | 1.6.1   | 2023-10-20 | [31644](https://github.com/airbytehq/airbyte/pull/31644) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                                    |

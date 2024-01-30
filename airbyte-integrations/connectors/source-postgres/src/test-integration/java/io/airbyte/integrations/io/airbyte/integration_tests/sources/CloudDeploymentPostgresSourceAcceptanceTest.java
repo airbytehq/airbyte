@@ -43,9 +43,7 @@ public class CloudDeploymentPostgresSourceAcceptanceTest extends SourceAcceptanc
   @Override
   protected FeatureFlags featureFlags() {
     return FeatureFlagsWrapper.overridingDeploymentMode(
-        FeatureFlagsWrapper.overridingUseStreamCapableState(
-            super.featureFlags(),
-            true),
+        super.featureFlags(),
         AdaptiveSourceRunner.CLOUD_MODE);
   }
 
@@ -121,11 +119,6 @@ public class CloudDeploymentPostgresSourceAcceptanceTest extends SourceAcceptanc
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }

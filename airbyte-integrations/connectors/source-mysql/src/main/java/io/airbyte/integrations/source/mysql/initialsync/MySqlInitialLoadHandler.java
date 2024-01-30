@@ -15,7 +15,7 @@ import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorProcessor;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -187,11 +187,12 @@ public class MySqlInitialLoadHandler {
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
-    final SourceStateIteratorProcessor processor = new MySqlInitialSyncStateIteratorProcessor(pair, initialLoadStateManager, incrementalState,
-        syncCheckpointDuration, syncCheckpointRecords);
+    final SourceStateIteratorManager<AirbyteMessage> processor =
+        new MySqlInitialSyncStateIteratorManager(pair, initialLoadStateManager, incrementalState,
+            syncCheckpointDuration, syncCheckpointRecords);
 
     return AutoCloseableIterators.transformIterator(
-        r -> new SourceStateIterator(r, processor),
+        r -> new SourceStateIterator<>(r, processor),
         recordIterator, pair);
   }
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.source.relationaldb.state;
 
 import com.google.common.collect.AbstractIterator;
@@ -11,19 +15,20 @@ import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage>  {
+public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceStateIterator.class);
   private final Iterator<T> messageIterator;
   private boolean hasEmittedFinalState = false;
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();
 
-  private final SourceStateIteratorProcessor sourceStateIteratorProcessor;
+  private final SourceStateIteratorManager sourceStateIteratorManager;
 
   public SourceStateIterator(final Iterator<T> messageIterator,
-      final SourceStateIteratorProcessor sourceStateIteratorProcessor) {
+                             final SourceStateIteratorManager sourceStateIteratorManager) {
     this.messageIterator = messageIterator;
-    this.sourceStateIteratorProcessor = sourceStateIteratorProcessor;
+    this.sourceStateIteratorManager = sourceStateIteratorManager;
   }
 
   @CheckForNull
@@ -36,8 +41,8 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       LOGGER.info("Caught exception while trying to get the next from message iterator. Treating hasNext to false. ", ex);
     }
     if (iteratorHasNextValue) {
-      if (sourceStateIteratorProcessor.shouldEmitStateMessage(recordCount, lastCheckpoint)) {
-        AirbyteStateMessage stateMessage = sourceStateIteratorProcessor.generateStateMessageAtCheckpoint();
+      if (sourceStateIteratorManager.shouldEmitStateMessage(recordCount, lastCheckpoint)) {
+        AirbyteStateMessage stateMessage = sourceStateIteratorManager.generateStateMessageAtCheckpoint();
         stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
 
         recordCount = 0L;
@@ -49,7 +54,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
         final T message = messageIterator.next();
-        final AirbyteMessage processedMessage = sourceStateIteratorProcessor.processRecordMessage(message);
+        final AirbyteMessage processedMessage = sourceStateIteratorManager.processRecordMessage(message);
         recordCount++;
         return processedMessage;
       } catch (final Exception e) {
@@ -57,7 +62,9 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      final AirbyteStateMessage finalStateMessage = sourceStateIteratorProcessor.createFinalStateMessage();
+      final AirbyteStateMessage finalStateMessage = sourceStateIteratorManager.createFinalStateMessage();
+      finalStateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
+      recordCount = 0L;
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(finalStateMessage);

@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Incremental Sync - Append + Deduped
 
 ## High-Level Context

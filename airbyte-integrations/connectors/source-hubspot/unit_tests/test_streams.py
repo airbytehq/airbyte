@@ -10,7 +10,9 @@ from source_hubspot.streams import (
     Companies,
     ContactLists,
     Contacts,
+    ContactsListMemberships,
     ContactsMergedAudit,
+    ContactsPropertyHistory,
     ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
@@ -31,7 +33,6 @@ from source_hubspot.streams import (
     Owners,
     OwnersArchived,
     Products,
-    PropertyHistory,
     RecordUnnester,
     TicketPipelines,
     Tickets,
@@ -551,7 +552,7 @@ def test_web_analytics_latest_state(common_params, mocker):
 
 
 def test_property_history_transform(common_params):
-    stream = PropertyHistory(**common_params)
+    stream = ContactsPropertyHistory(**common_params)
     versions = [
         {
             "value": "Georgia",
@@ -561,10 +562,54 @@ def test_property_history_transform(common_params):
     records = [
         {
             "vid": 1,
+            "canonical-vid": 1,
+            "portal-id": 1,
+            "is-contact": True,
             "properties": {
                 "hs_country": {"versions": versions},
                 "lastmodifieddate": {"value": 1645135236625}
             }
         }
     ]
-    assert [{"vid": 1, "property": "hs_country", **version} for version in versions] == list(stream._transform(records=records))
+    assert [
+        {
+            "vid": 1,
+            "canonical-vid": 1,
+            "portal-id": 1,
+            "is-contact": True,
+            "property": "hs_country",
+            **version
+        } for version in versions
+    ] == list(stream._transform(records=records))
+
+
+def test_contacts_membership_transform(common_params):
+    stream = ContactsListMemberships(**common_params)
+    versions = [
+        {
+            "value": "Georgia",
+            "timestamp": 1645135236625
+        }
+    ]
+    memberships = [
+        {"membership": 1}
+    ]
+    records = [
+        {
+            "vid": 1,
+            "canonical-vid": 1,
+            "portal-id": 1,
+            "is-contact": True,
+            "properties": {
+                "hs_country": {"versions": versions},
+                "lastmodifieddate": {"value": 1645135236625}
+            },
+            "list-memberships": memberships
+        }
+    ]
+    assert [
+        {
+            "membership": 1,
+            "canonical-vid": 1
+        } for _ in versions
+    ] == list(stream._transform(records=records))

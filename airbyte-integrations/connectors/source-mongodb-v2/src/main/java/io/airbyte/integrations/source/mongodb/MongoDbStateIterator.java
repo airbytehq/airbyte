@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcEventUtils;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
@@ -50,6 +50,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private Instant lastCheckpoint = Instant.now();
   private final Integer checkpointInterval;
   private final Duration checkpointDuration;
+  private final boolean isEnforceSchema;
 
   /**
    * Counts the number of records seen in this batch, resets when a state-message has been generated.
@@ -92,7 +93,8 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
                               final ConfiguredAirbyteStream stream,
                               final Instant emittedAt,
                               final int checkpointInterval,
-                              final Duration checkpointDuration) {
+                              final Duration checkpointDuration,
+                              final boolean isEnforceSchema) {
     this.iter = iter;
     this.stateManager = stateManager;
     this.stream = stream;
@@ -103,6 +105,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     this.lastId =
         stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
     this.cdcMetadataInjector = cdcMetadataInjector;
+    this.isEnforceSchema = isEnforceSchema;
   }
 
   @Override
@@ -172,7 +175,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
     count++;
     final var document = iter.next();
-    final var jsonNode = MongoDbCdcEventUtils.toJsonNode(document, fields);
+    final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
 
     lastId = document.get(MongoConstants.ID_FIELD);
 

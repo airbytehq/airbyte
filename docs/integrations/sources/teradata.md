@@ -63,4 +63,5 @@ You need a Teradata user which has read permissions on the database
 
 | Version | Date       | Pull Request                                    | Subject                     |
 |:--------|:-----------|:------------------------------------------------|:----------------------------|
+| 0.2.0   | 2023-12-18 | https://github.com/airbytehq/airbyte/pull/33485 | Remove LEGACY state         |
 | 0.1.0   | 2022-03-27 | https://github.com/airbytehq/airbyte/pull/24221 | New Source Teradata Vantage |

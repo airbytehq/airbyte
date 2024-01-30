@@ -67,7 +67,7 @@ reports for profiles from BasicAmazonAdsStream _profiles list.
 class ErrorResponse(BaseModel):
     code: str
     details: str
-    requestId: str
+    requestId: Optional[str]
 
 
 class BasicAmazonAdsStream(Stream, ABC):

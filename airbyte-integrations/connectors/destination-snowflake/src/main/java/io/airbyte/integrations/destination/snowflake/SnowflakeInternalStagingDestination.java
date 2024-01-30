@@ -99,17 +99,17 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
       sqlOperations.attemptWriteToStage(outputSchema, stageName, database);
     } finally {
       // drop created tmp stage
-      sqlOperations.dropStageIfExists(database, stageName);
+      sqlOperations.dropStageIfExists(database, stageName, null);
     }
   }
 
   @Override
-  protected DataSource getDataSource(final JsonNode config) {
+  public DataSource getDataSource(final JsonNode config) {
     return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
   }
 
   @Override
-  protected JdbcDatabase getDatabase(final DataSource dataSource) {
+  public JdbcDatabase getDatabase(final DataSource dataSource) {
     return SnowflakeDatabase.getDatabase(dataSource);
   }
 

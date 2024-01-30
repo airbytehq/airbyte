@@ -35,7 +35,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
@@ -67,7 +67,7 @@ class MongoDbSourceTest {
 
   @BeforeEach
   void setup() {
-    airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty());
+    airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty(), true);
     sourceConfig = new MongoDbSourceConfig(airbyteSourceConfig);
     mongoClient = mock(MongoClient.class);
     cdcInitializer = mock(MongoDbCdcInitializer.class);
@@ -240,9 +240,9 @@ class MongoDbSourceTest {
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get(DEFAULT_CURSOR_FIELD).get("type").asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_DELETED_AT).get("type").asText());
+        stream.get().getJsonSchema().get("properties").get(DebeziumEventConverter.CDC_DELETED_AT).get("type").asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_UPDATED_AT).get("type").asText());
+        stream.get().getJsonSchema().get("properties").get(DebeziumEventConverter.CDC_UPDATED_AT).get("type").asText());
     assertEquals(true, stream.get().getSourceDefinedCursor());
     assertEquals(List.of(DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
     assertEquals(List.of(List.of(MongoCatalogHelper.DEFAULT_PRIMARY_KEY)), stream.get().getSourceDefinedPrimaryKey());
@@ -306,12 +306,13 @@ class MongoDbSourceTest {
     verify(mongoClient, never()).close();
   }
 
-  private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password) {
+  private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
     final Map<String, Object> baseConfig = Map.of(
         MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
         MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/",
         MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin",
-        MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE);
+        MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE,
+        MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced);
 
     final Map<String, Object> config = new HashMap<>(baseConfig);
     username.ifPresent(u -> config.put(MongoConstants.USERNAME_CONFIGURATION_KEY, u));
