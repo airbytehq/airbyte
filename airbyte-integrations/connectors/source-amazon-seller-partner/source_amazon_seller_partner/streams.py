@@ -379,7 +379,7 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
 
     def _transform_report_record_cursor_value(self, date_string: str) -> str:
         """
-        Parse report date field based on aggregation type
+        Parse report date field based using transformer defined in the stream class
         """
         return (
             self.transformer._custom_normalizer(date_string, self.get_json_schema()["properties"][self.cursor_field])
