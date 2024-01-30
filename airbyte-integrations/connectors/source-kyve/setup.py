@@ -16,6 +16,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-kyve=source_kyve.run:run",
+        ],
+    },
     name="source_kyve",
     description="Source implementation for KYVE.",
     author="KYVE Core Team",

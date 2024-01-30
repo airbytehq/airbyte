@@ -19,6 +19,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-gcs=source_gcs.run:run",
+        ],
+    },
     name="source_gcs",
     description="Source implementation for Gcs.",
     author="Airbyte",

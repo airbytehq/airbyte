@@ -14,6 +14,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-azure-table=source_azure_table.run:run",
+        ],
+    },
     name="source_azure_table",
     description="Source implementation for Azure Table.",
     author="Airbyte",

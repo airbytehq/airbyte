@@ -10,6 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "sgqlc"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.2", "responses~=0.23.1", "freezegun~=1.2"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-github=source_github.run:run",
+        ],
+    },
     name="source_github",
     description="Source implementation for Github.",
     author="Airbyte",
