@@ -86,7 +86,7 @@ class NetsuiteODBCStream(Stream):
     ) -> Iterable[StreamData]:
         try:
             self.process_input_stream_state(stream_state)
-            self.db_connection.execute(self.generate_query(sync_mode, stream_slice))
+            self.db_connection.execute(self.generate_query(stream_slice))
             number_records = 0
             while True:
                 row = self.db_connection.fetchone()
@@ -99,12 +99,12 @@ class NetsuiteODBCStream(Stream):
                         f"Fetching another page for the stream {self.table_name}.  Current state is (primary key: {str(self.primary_key_last_value_seen)}, date: {self.incremental_most_recent_value_seen}"
                     )
                     number_records = 0
-                    self.db_connection.execute(self.generate_query(sync_mode, stream_slice))
+                    self.db_connection.execute(self.generate_query(stream_slice))
                     continue
                 # data from netsuite does not include columns, so we need to assign each value to the correct column name
                 serialized_data = self.serialize_row_to_response(row)
                 # before we yield record, update state
-                self.update_last_values_seen(serialized_data, sync_mode)
+                self.update_last_values_seen(serialized_data)
                 self.find_most_recent_date(serialized_data)
                 number_records = number_records + 1
                 yield serialized_data
@@ -124,8 +124,10 @@ class NetsuiteODBCStream(Stream):
         self.logger.info(f"Finished Stream Slice for Netsuite ODBC Table {self.table_name} with stream slice: {stream_slice}")
         #  Because the WHERE filter changes in each stream slice, primary key values are not guaranteed to be in order
         #  across stream slives.  Therefore, we reset the primary key last value seen after each stream slice
+        #  Also, we set incremental last value seen to None at the start of a stream to set state to start of stream slice
         if self.incremental_column is not None:  #  if an incremental column does not exist, we do NOT reset the primary key
             self.primary_key_last_value_seen = self.set_up_primary_key_last_value_seen(self.primary_key_column)
+            self.incremental_most_recent_value_seen = None
         self.db_connection.execute("SELECT COUNT(*) FROM " + self.table_name)
         self.logger.info(
             f"Finished reading stream slice for {self.table_name}.  Total number of records in table: {self.db_connection.fetchone()[0]}"
@@ -152,7 +154,7 @@ class NetsuiteODBCStream(Stream):
             else:
                 self.incremental_most_recent_value_seen = max(self.incremental_most_recent_value_seen, date_value_received)
 
-    def update_last_values_seen(self, result, sync_mode: SyncMode):
+    def update_last_values_seen(self, result):
         if self.primary_key_column is None:
             return
         for key in self.primary_key_column:
@@ -211,13 +213,11 @@ class NetsuiteODBCStream(Stream):
     def has_composite_primary_key(self):
         return len(self.primary_key_column) > 1
 
-    def generate_query(self, sync_mode, stream_slice):
-        if sync_mode == SyncMode.full_refresh:
-            return self.generate_full_refresh_query(stream_slice)
-        elif sync_mode == SyncMode.incremental:
-            return self.generate_incremental_query(stream_slice)
+    def generate_query(self, stream_slice):
+        if self.incremental_column is not None:
+            return self.generate_query_with_incremental(stream_slice)
         else:
-            raise Exception(f'Unsupported Sync Mode: {sync_mode}.  Please use either "full_refresh" or "incremental"')
+            return self.generate_query_with_no_incremental(stream_slice)
 
     # How does full refresh work?
     # We first split things into stream slices.  Then, we start with filtering our SQL query by >= the start date of the stream slice
@@ -230,33 +230,18 @@ class NetsuiteODBCStream(Stream):
     # SELECT TOP 10000 [every property is individually articulated, like  accountnumber, acquisitionsource, alcoholrecipienttype ...] FROM Customer
     #    WHERE ((id > -10000)) AND lastmodifieddate >= to_timestamp('2025-01-01', 'YYYY-MM-DD') AND lastmodifieddate <= to_timestamp('2025-12-31', 'YYYY-MM-DD')
     #    ORDER BY id ASC, lastmodifieddate ASC
-    def generate_full_refresh_query(self, stream_slice):
+    def generate_query_with_no_incremental(self, stream_slice):
         values = ", ".join(self.properties)  # we use values instead of '*' because we want to preserve the order of the columns
-        incremental_column_sorter = f", {self.incremental_column} ASC" if self.incremental_column else ""
         # per https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_156257805177.html#subsect_156330163819
         # date literals need to be wrapped in a to_date function
-        incremental_column_filter = self.generate_incremental_filter_for_full_refresh(stream_slice=stream_slice)
         primary_key_filter = self.generate_primary_key_filter()
         primary_key_sorter = self.generate_primary_key_sorter()
-        and_connector = " AND " if primary_key_filter != "" and incremental_column_filter != "" else ""
-        where_clause = "WHERE " if primary_key_filter != "" or incremental_column_filter != "" else ""
-        query = (
-            f"""
+        where_clause = "WHERE " if primary_key_filter != "" else ""
+        query = f"""
         SELECT TOP {NETSUITE_PAGINATION_INTERVAL} {values} FROM {self.table_name} 
-        {where_clause}{primary_key_filter}{and_connector}{incremental_column_filter} 
+        {where_clause}{primary_key_filter}
         ORDER BY {primary_key_sorter}"""
-            + incremental_column_sorter
-        )
         return query
-
-    def generate_incremental_filter_for_full_refresh(self, stream_slice):
-        if not self.incremental_column:
-            return ""
-        # first, we check to see if we've been given a null slice, and if so, we change the query accordingly
-        # To understand why we need a null slice, see the comment in stream_slices()
-        if stream_slice["first_day"] is None or stream_slice["last_day"] is None:
-            return f"{self.incremental_column} IS NULL"
-        return f"{self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')"
 
     def generate_primary_key_filter(self):
         # Note that netsuite tables can have composite primary keys, and we've so far
@@ -303,7 +288,7 @@ class NetsuiteODBCStream(Stream):
     # SELECT TOP 10000 [every property is individually articulated, like  accountnumber, acquisitionsource, alcoholrecipienttype ...] FROM Customer
     #    WHERE (lastmodifieddate > to_timestamp('2023-12-05 19:13:52.000000', 'YYYY-MM-DD HH24:MI:SS.FF') AND lastmodifieddate <= to_timestamp('2025-12-31 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.FF')) OR (lastmodifieddate = to_timestamp('2023-12-05 19:13:52.000000', 'YYYY-MM-DD HH24:MI:SS.FF') AND ((id > 1152)))
     #    ORDER BY lastmodifieddate ASC, id ASC
-    def generate_incremental_query(self, stream_slice):
+    def generate_query_with_incremental(self, stream_slice):
         if self.incremental_column is None:
             raise AirbyteTracedException(
                 message=GENERATING_INCREMENTAL_QUERY_WITH_NO_INCREMENTAL_COLUMN_ERROR, failure_type=FailureType.system_error
@@ -429,7 +414,7 @@ class NetsuiteODBCStream(Stream):
         """
         :return: True if this stream supports incrementally reading data
         """
-        if self._wrapped_cursor_field() is None:
+        if self.cursor_field() is None:
             return False
         return len(self._wrapped_cursor_field()) > 0
 
