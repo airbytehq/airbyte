@@ -192,8 +192,8 @@ class AirbyteConnectorError(AirbyteError):
     connector_name: str | None = None
 
 
-class AirbyteConnectorNotFoundError(AirbyteConnectorError):
-    """Connector name not found in registry."""
+class AirbyteConnectorExecutableNotFoundError(AirbyteConnectorError):
+    """Connector executable not found."""
 
 
 class AirbyteConnectorInstallationError(AirbyteConnectorError):
