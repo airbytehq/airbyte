@@ -16,6 +16,7 @@ data:
   registries:
     cloud:
       enabled: false
+      dockerImageTag: 0.6.0
     oss:
       enabled: false
   releaseStage: alpha
