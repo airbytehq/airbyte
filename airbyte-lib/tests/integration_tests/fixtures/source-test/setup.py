@@ -11,7 +11,7 @@ setup(
     description="Test Soutce",
     author="Airbyte",
     author_email="contact@airbyte.io",
-    packages=find_packages(),
+    packages=["source_test"],
     entry_points={
         "console_scripts": [
             "source-test=source_test.run:run",

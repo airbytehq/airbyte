@@ -12,7 +12,6 @@ import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.TRU
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresConverter;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.postgres.PostgresSource;
 import io.airbyte.integrations.source.postgres.PostgresUtils;

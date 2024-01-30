@@ -11,6 +11,7 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
@@ -123,6 +124,6 @@ class StreamFacadeSourceBuilder(SourceBuilder[StreamFacadeSource]):
         self._input_state = state
         return self
 
-    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> StreamFacadeSource:
+    def build(self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]) -> StreamFacadeSource:
         threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
-        return StreamFacadeSource(self._streams, threadpool, self._cursor_field, self._cursor_boundaries, self._input_state)
+        return StreamFacadeSource(self._streams, threadpool, self._cursor_field, self._cursor_boundaries, state)
