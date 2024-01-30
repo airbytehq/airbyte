@@ -251,7 +251,6 @@ class VenvExecutor(Executor):
             if raise_on_error:
                 raise
 
-            print("no version could be detected!!!!")
             return None
 
     @property
