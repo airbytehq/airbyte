@@ -27,13 +27,9 @@ acceptance_tests:
             bypass_reason: "There is no seed data available in our sandbox account"
           - name: "credit_payments"
             bypass_reason: "There is no seed data available in our sandbox account"
-          - name: "line_items"
-            bypass_reason: "There is no seed data available in our sandbox account"
           - name: "shipping_methods"
             bypass_reason: "There is no seed data available in our sandbox account"
           - name: "unique_coupons"
-            bypass_reason: "There is no seed data available in our sandbox account"
-          - name: "export_dates"
             bypass_reason: "There is no seed data available in our sandbox account"
   full_refresh:
     tests:
