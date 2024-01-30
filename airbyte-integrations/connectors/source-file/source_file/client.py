@@ -328,6 +328,7 @@ class Client:
             "html": pd.read_html,
             "excel": pd.read_excel,
             "excel_binary": pd.read_excel,
+            "fwf": pd.read_fwf,
             "feather": pd.read_feather,
             "parquet": pd.read_parquet,
             "orc": pd.read_orc,

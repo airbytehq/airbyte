@@ -61,6 +61,7 @@ class SourceFile(Source):
     - read_json
     - read_html
     - read_excel
+    - read_fwf
     - read_feather
     - read_parquet
     - read_orc
