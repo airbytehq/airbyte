@@ -71,7 +71,7 @@ def test_get_updated_state(stream_state, stream):
 
 def test_generate_ordered_query(stream_state, stream):
     netsuite_stream = NetsuiteODBCStream({}, "test", stream, config={"starting_year": 2020})
-    query = netsuite_stream.generate_query(SyncMode.full_refresh, {"first_day": date(2024, 1, 1), "last_day": date(2024, 12, 31)})
+    query = netsuite_stream.generate_query({"first_day": date(2024, 1, 1), "last_day": date(2024, 12, 31)})
     stripped_query = query.replace(" ", "").replace("\n", "")
     expected_query = f"""SELECT TOP {NETSUITE_PAGINATION_INTERVAL} accountnumber, acquisitionsource, alcoholrecipienttype, altemail, altname, altphone, assignedwebsite, lastmodifieddate FROM testWHERE ((id > -10000)) AND lastmodifieddate >= to_timestamp('2024-01-01', 'YYYY-MM-DD') AND lastmodifieddate <= to_timestamp('2024-12-31', 'YYYY-MM-DD')ORDER BY id ASC,lastmodifieddateASC""".replace(
         " ", ""
