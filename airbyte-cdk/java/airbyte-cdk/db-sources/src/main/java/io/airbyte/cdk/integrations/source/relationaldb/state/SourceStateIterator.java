@@ -73,5 +73,4 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
     }
   }
 
-
 }
