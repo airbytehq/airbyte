@@ -191,6 +191,7 @@ class Report(PendoPythonStream):
 
 
 class ReportResult(PendoPythonStream):
+    json_schema = None  # Field to store dynamically built Airbyte Stream Schema
     primary_key = "reportId"
 
     def __init__(self, report: Mapping[str, Any], **kwargs):
@@ -219,21 +220,49 @@ class ReportResult(PendoPythonStream):
         record["reportId"] = self.report['id']
         return record
 
+    # Method to infer schema types from JSON response
+    def infer_type(self, value: Any):
+        if isinstance(value, str):
+            return {"type": ["null", "string"]}
+        if isinstance(value, bool):
+            return {"type": ["null", "boolean"]}
+        if isinstance(value, float):
+            return {"type": ["null", "float"]}
+        if isinstance(value, int):
+            return {"type": ["null", "integer"]}
+        if isinstance(value, list):
+            return {"type": ["null", "array"]}
+        if isinstance(value, dict):
+            return {"type": ["null", "object"]}
+        return {"type": ["null", "string"]}
+
     def get_json_schema(self) -> Mapping[str, Any]:
-        schema = {
-            "type": "object",
-            "$schema": "http://json-schema.org/schema#",
-            "properties": {
-                "reportId": {
-                    "type": "string"
+        if self.json_schema is None:
+            schema = {
+                "type": "object",
+                "$schema": "http://json-schema.org/schema#",
+                "properties": {
+                    "reportId": {
+                        "type": "string"
+                    }
                 }
             }
-        }
 
-        for field in self.report["fields"]:
-            schema["properties"][field["field"]] = self.get_valid_field_info(field["type"])
+            url = f"{PendoPythonStream.url_base}{self.path()}"
+            auth_headers = self.authenticator.get_auth_header()
+            try:
+                session = requests.get(url, headers=auth_headers)
+                body = session.json()
+                if len(body) != 0:
+                    first_result = body[0]
+                    for field in first_result:
+                        schema["properties"][field] = self.infer_type(first_result[field])
+                self.json_schema = schema
+            except requests.exceptions.RequestException:
+                print("Error fetching sample Pendo Report Results")
+                self.json_schema = schema
 
-        return schema
+        return self.json_schema
 
 
 class VisitorMetadata(PendoPythonStream):
