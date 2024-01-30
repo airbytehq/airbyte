@@ -9,7 +9,7 @@ airbyteJavaConnector {
             'db-sources', // required for tests
             'db-destinations',
     ]
-    useLocalCdk = true
+    useLocalCdk = false
 }
 
 //remove once upgrading the CDK version to 0.4.x or later
