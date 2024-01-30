@@ -56,7 +56,7 @@ class SourcePendoPython(AbstractSource):
         try:
             session = requests.get(url, headers=auth.get_auth_header())
             body = session.json()
-            return [{"id": obj["id"], "type": obj["type"], "fields": obj["aggregation"]["fields"]} for obj in body]
+            return [{"id": obj["id"], "type": obj["type"]} for obj in body]
         except requests.exceptions.RequestException as e:
             return False, e
 

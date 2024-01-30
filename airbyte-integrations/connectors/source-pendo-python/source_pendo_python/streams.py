@@ -253,7 +253,7 @@ class ReportResult(PendoPythonStream):
             try:
                 session = requests.get(url, headers=auth_headers)
                 body = session.json()
-                if len(body) != 0:
+                if body is not None and len(body) != 0:
                     first_result = body[0]
                     for field in first_result:
                         schema["properties"][field] = self.infer_type(first_result[field])
