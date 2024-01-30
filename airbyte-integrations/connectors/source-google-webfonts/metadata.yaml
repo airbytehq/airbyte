@@ -8,6 +8,10 @@ data:
   icon: googleworkpace.svg
   license: MIT
   name: Google Webfonts
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-webfonts
   registries:
     cloud:
       enabled: true
