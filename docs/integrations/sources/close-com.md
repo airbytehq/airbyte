@@ -105,8 +105,9 @@ The Close.com connector is subject to rate limits. For more information on this 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------|
-| 0.4.3   | 2023-10-28 | [31534](https://github.com/airbytehq/airbyte/pull/31534) | Fixed Email Activities Stream Pagination                                            |
-| 0.4.2   | 2023-08-08 | [29206](https://github.com/airbytehq/airbyte/pull/29206) | Fixed the issue with `DatePicker` format for `start date`                                            |
+| 0.5.0   | 2023-11-30 | [32984](https://github.com/airbytehq/airbyte/pull/32984) | Add support for custom fields                                                                          |
+| 0.4.3   | 2023-10-28 | [31534](https://github.com/airbytehq/airbyte/pull/31534) | Fixed Email Activities Stream Pagination                                                               |
+| 0.4.2   | 2023-08-08 | [29206](https://github.com/airbytehq/airbyte/pull/29206) | Fixed the issue with `DatePicker` format for `start date`                                              |
 | 0.4.1   | 2023-07-04 | [27950](https://github.com/airbytehq/airbyte/pull/27950) | Add human readable titles to API Key and Start Date fields                                             |
 | 0.4.0   | 2023-06-27 | [27776](https://github.com/airbytehq/airbyte/pull/27776) | Update the `Email Followup Tasks` stream schema                                                        |
 | 0.3.0   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Update the `Email sequences` stream schema                                                             |

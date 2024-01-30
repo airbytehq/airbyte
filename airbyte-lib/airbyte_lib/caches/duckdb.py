@@ -5,12 +5,15 @@
 from __future__ import annotations
 
 from pathlib import Path
+from textwrap import dedent
 from typing import cast
 
 from overrides import overrides
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
+from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
 class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -55,6 +58,10 @@ class DuckDBCacheBase(SQLCacheBase):
     supports_merge_insert = True
 
     @overrides
+    def get_telemetry_info(self) -> CacheTelemetryInfo:
+        return CacheTelemetryInfo("duckdb")
+
+    @overrides
     def _setup(self) -> None:
         """Create the database parent folder if it doesn't yet exist."""
         config = cast(DuckDBCacheConfig, self.config)
@@ -88,9 +95,11 @@ class DuckDBCache(DuckDBCacheBase):
         Databases that do not support this syntax can override this method.
         """
         if not self._get_primary_keys(stream_name):
-            raise RuntimeError(
-                f"Primary keys not found for stream {stream_name}. "
-                "Cannot run merge updates without primary keys."
+            raise exc.AirbyteLibInternalError(
+                message="Primary keys not found. Cannot run merge updates without primary keys.",
+                context={
+                    "stream_name": stream_name,
+                },
             )
 
         _ = stream_name
@@ -109,7 +118,7 @@ class DuckDBCache(DuckDBCacheBase):
     def _ensure_compatible_table_schema(
         self,
         stream_name: str,
-        table_name: str,
+        *,
         raise_on_error: bool = True,
     ) -> bool:
         """Return true if the given table is compatible with the stream's schema.
@@ -117,18 +126,26 @@ class DuckDBCache(DuckDBCacheBase):
         In addition to the base implementation, this also checks primary keys.
         """
         # call super
-        if not super()._ensure_compatible_table_schema(stream_name, table_name, raise_on_error):
+        if not super()._ensure_compatible_table_schema(
+            stream_name=stream_name,
+            raise_on_error=raise_on_error,
+        ):
             return False
 
         pk_cols = self._get_primary_keys(stream_name)
-        table = self.get_sql_table(table_name)
+        table = self.get_sql_table(stream_name)
+        table_name = self.get_sql_table_name(stream_name)
         table_pk_cols = table.primary_key.columns.keys()
         if set(pk_cols) != set(table_pk_cols):
             if raise_on_error:
-                raise RuntimeError(
-                    f"Primary keys do not match for table {table_name}. "
-                    f"Expected: {pk_cols}. "
-                    f"Found: {table_pk_cols}.",
+                raise exc.AirbyteLibCacheTableValidationError(
+                    violation="Primary keys do not match.",
+                    context={
+                        "stream_name": stream_name,
+                        "table_name": table_name,
+                        "expected": pk_cols,
+                        "found": table_pk_cols,
+                    },
                 )
             return False
 
@@ -142,6 +159,25 @@ class DuckDBCache(DuckDBCacheBase):
     ) -> str:
         """Write a file(s) to a new table.
 
-        TODO: Optimize this for DuckDB instead of calling the base implementation.
+        We use DuckDB's `read_parquet` function to efficiently read the files and insert
+        them into the table in a single operation.
+
+        Note: This implementation is fragile in regards to column ordering. However, since
+        we are inserting into a temp table we have just created, there should be no
+        drift between the table schema and the file schema.
         """
-        return super()._write_files_to_new_table(files, stream_name, batch_id)
+        temp_table_name = self._create_table_for_loading(
+            stream_name=stream_name,
+            batch_id=batch_id,
+        )
+        files_list = ", ".join([f"'{f!s}'" for f in files])
+        insert_statement = dedent(
+            f"""
+            INSERT INTO {self.config.schema_name}.{temp_table_name}
+            SELECT * FROM read_parquet(
+                [{files_list}]
+            )
+            """
+        )
+        self._execute_sql(insert_statement)
+        return temp_table_name

@@ -1,11 +1,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
-import importlib.metadata
 import json
 import os
+from copy import copy
 from dataclasses import dataclass
+from pathlib import Path
 
 import requests
+
+from airbyte_lib import exceptions as exc
+from airbyte_lib.version import get_version
+
+
+__cache: dict[str, ConnectorMetadata] | None = None
+
+
+REGISTRY_ENV_VAR = "AIRBYTE_LOCAL_REGISTRY"
+REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 
 
 @dataclass
@@ -14,35 +26,68 @@ class ConnectorMetadata:
     latest_available_version: str
 
 
-_cache: dict[str, ConnectorMetadata] | None = None
-airbyte_lib_version = importlib.metadata.version("airbyte-lib")
+def _get_registry_url() -> str:
+    if REGISTRY_ENV_VAR in os.environ:
+        return str(os.environ.get(REGISTRY_ENV_VAR))
 
-REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
+    return REGISTRY_URL
 
 
-def _update_cache() -> None:
-    global _cache
-    if os.environ.get("AIRBYTE_LOCAL_REGISTRY"):
-        with open(str(os.environ.get("AIRBYTE_LOCAL_REGISTRY"))) as f:
-            data = json.load(f)
-    else:
+def _get_registry_cache(*, force_refresh: bool = False) -> dict[str, ConnectorMetadata]:
+    """Return the registry cache."""
+    global __cache
+    if __cache and not force_refresh:
+        return __cache
+
+    registry_url = _get_registry_url()
+    if registry_url.startswith("http"):
         response = requests.get(
-            REGISTRY_URL, headers={"User-Agent": f"airbyte-lib-{airbyte_lib_version}"}
+            registry_url, headers={"User-Agent": f"airbyte-lib-{get_version()}"}
         )
         response.raise_for_status()
         data = response.json()
-    _cache = {}
+    else:
+        # Assume local file
+        with Path(registry_url).open() as f:
+            data = json.load(f)
+
+    new_cache: dict[str, ConnectorMetadata] = {}
+
     for connector in data["sources"]:
         name = connector["dockerRepository"].replace("airbyte/", "")
-        _cache[name] = ConnectorMetadata(name, connector["dockerImageTag"])
+        new_cache[name] = ConnectorMetadata(name, connector["dockerImageTag"])
+
+    if len(new_cache) == 0:
+        raise exc.AirbyteLibInternalError(
+            message="Connector registry is empty.",
+            context={
+                "registry_url": _get_registry_url(),
+            },
+        )
+
+    __cache = new_cache
+    return __cache
 
 
 def get_connector_metadata(name: str) -> ConnectorMetadata:
+    """Check the cache for the connector.
+
+    If the cache is empty, populate by calling update_cache.
     """
-    check the cache for the connector. If the cache is empty, populate by calling update_cache
-    """
-    if not _cache:
-        _update_cache()
-    if not _cache or name not in _cache:
-        raise Exception(f"Connector {name} not found")
-    return _cache[name]
+    cache = copy(_get_registry_cache())
+    if not cache:
+        raise exc.AirbyteLibInternalError(
+            message="Connector registry could not be loaded.",
+            context={
+                "registry_url": _get_registry_url(),
+            },
+        )
+    if name not in cache:
+        raise exc.AirbyteConnectorNotRegisteredError(
+            connector_name=name,
+            context={
+                "registry_url": _get_registry_url(),
+                "available_connectors": sorted(cache.keys()),
+            },
+        )
+    return cache[name]

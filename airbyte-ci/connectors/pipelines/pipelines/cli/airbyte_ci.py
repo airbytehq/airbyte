@@ -27,6 +27,7 @@ from pipelines.cli.auto_update import __installed_version__, check_for_upgrade, 
 from pipelines.cli.click_decorators import (
     CI_REQUIREMENTS_OPTION_NAME,
     click_append_to_context_object,
+    click_ci_requirements_option,
     click_ignore_unused_kwargs,
     click_merge_args_into_context_obj,
 )
@@ -130,6 +131,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
     help="Airbyte CI top-level command group.",
     lazy_subcommands={
         "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
+        "poetry": "pipelines.airbyte_ci.poetry.commands.poetry",
         "format": "pipelines.airbyte_ci.format.commands.format_code",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
@@ -170,6 +172,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str)
 @click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
+@click_ci_requirements_option()
 @click_track_command
 @click_merge_args_into_context_obj
 @click_append_to_context_object("is_ci", lambda ctx: not ctx.obj["is_local"])

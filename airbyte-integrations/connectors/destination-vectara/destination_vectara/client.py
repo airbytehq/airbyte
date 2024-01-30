@@ -147,7 +147,7 @@ class VectaraClient:
             )
 
     def index_document(self, document):
-        document_section, document_metadata, document_id = document
+        document_section, document_metadata, document_title, document_id = document
         if len(document_section) == 0:
             return None  # Document is empty, so skip it
         document_metadata = self._normalize(document_metadata)
@@ -157,6 +157,7 @@ class VectaraClient:
             "document": {
                 "documentId": document_id,
                 "metadataJson": json.dumps(document_metadata),
+                "title": document_title,
                 "section": [
                     {"text": f"{section_key}: {section_value}"}
                     for section_key, section_value in document_section.items()
@@ -169,7 +170,7 @@ class VectaraClient:
 
     def index_documents(self, documents):
         if self.parallelize:
-            with ThreadPoolExecutor() as executor:  ### DEBUG remove max_workers limit
+            with ThreadPoolExecutor() as executor:
                 futures = [executor.submit(self.index_document, doc) for doc in documents]
                 for future in futures:
                     try:

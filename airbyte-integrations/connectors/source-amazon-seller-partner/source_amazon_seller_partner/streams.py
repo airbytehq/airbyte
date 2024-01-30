@@ -412,14 +412,6 @@ class MerchantListingsReports(MerchantReports):
     primary_key = "listing-id"
 
 
-class NetPureProductMarginReport(IncrementalReportsAmazonSPStream):
-    name = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
-
-
-class RapidRetailAnalyticsInventoryReport(IncrementalReportsAmazonSPStream):
-    name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
-
-
 class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
@@ -765,6 +757,17 @@ class IncrementalAnalyticsStream(AnalyticsStream):
             start_date = end_date_slice
 
 
+class NetPureProductMarginReport(IncrementalAnalyticsStream):
+    name = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
+    result_key = "netPureProductMarginByAsin"
+
+
+class RapidRetailAnalyticsInventoryReport(IncrementalAnalyticsStream):
+    name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
+    result_key = "reportData"
+    cursor_field = "endTime"
+
+
 class BrandAnalyticsMarketBasketReports(IncrementalAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
     result_key = "dataByAsin"
@@ -782,16 +785,6 @@ class BrandAnalyticsSearchTermsReports(IncrementalAnalyticsStream):
 
 class BrandAnalyticsRepeatPurchaseReports(IncrementalAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
-    result_key = "dataByAsin"
-
-
-class BrandAnalyticsAlternatePurchaseReports(IncrementalAnalyticsStream):
-    name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
-    result_key = "dataByAsin"
-
-
-class BrandAnalyticsItemComparisonReports(IncrementalAnalyticsStream):
-    name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
     result_key = "dataByAsin"
 
 

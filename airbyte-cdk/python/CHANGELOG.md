@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.60.1
+Emit state when no partitions are generated for ccdk and update StateBuilder
+
+## 0.60.0
+File-based CDK: run full refresh syncs with concurrency
+
+## 0.59.2
+Fix CCDK overlapping message due to print in entrypoint
+
+## 0.59.1
+Fix concurrent CDK deadlock
+
+## 0.59.0
+Fix state message handling when running concurrent syncs
+
+## 0.58.9
+concurrent-cdk: improve resource usage when reading from substreams
+
 ## 0.58.8
 CDK: HttpRequester can accept http_method in str format, which is required by custom low code components
 
