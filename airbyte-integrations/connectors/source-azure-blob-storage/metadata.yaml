@@ -14,6 +14,11 @@ data:
   icon: azureblobstorage.svg
   license: MIT
   name: Azure Blob Storage
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-azure-blob-storage
   registries:
     cloud:
       enabled: true

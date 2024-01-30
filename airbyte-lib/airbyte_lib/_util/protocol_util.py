@@ -26,7 +26,7 @@ def airbyte_messages_to_record_dicts(
     yield from (
         cast(dict[str, Any], airbyte_message_to_record_dict(message))
         for message in messages
-        if message is not None
+        if message is not None and message.type == Type.RECORD
     )
 
 

@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb;
 
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.AIRBYTE_STREAM_PROPERTIES;
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_PRIMARY_KEY;
@@ -147,7 +147,7 @@ public class MongoUtil {
    * @param config The source connector's configuration.
    * @return The size of the Debezium event queue.
    */
-  public static OptionalInt getDebeziumEventQueueSize(final MongoDbSourceConfig config) {
+  public static int getDebeziumEventQueueSize(final MongoDbSourceConfig config) {
     final OptionalInt sizeFromConfig = config.getQueueSize();
 
     if (sizeFromConfig.isPresent()) {
@@ -155,15 +155,15 @@ public class MongoUtil {
       if (size < MIN_QUEUE_SIZE) {
         LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
             MIN_QUEUE_SIZE);
-        return OptionalInt.of(MIN_QUEUE_SIZE);
+        return MIN_QUEUE_SIZE;
       } else if (size > MAX_QUEUE_SIZE) {
         LOGGER.warn("Queue size is overridden to {} , which is the max allowed for safety.",
             MAX_QUEUE_SIZE);
-        return OptionalInt.of(MAX_QUEUE_SIZE);
+        return MAX_QUEUE_SIZE;
       }
-      return OptionalInt.of(size);
+      return size;
     }
-    return OptionalInt.of(MAX_QUEUE_SIZE);
+    return MAX_QUEUE_SIZE;
   }
 
   /**

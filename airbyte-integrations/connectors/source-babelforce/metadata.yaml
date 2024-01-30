@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - ${region}.babelforce.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-babelforce
   registries:
     oss:
       enabled: true
