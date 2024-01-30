@@ -12,6 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock~=3.6.1", "airbyte-cdk"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-rki-covid=source_rki_covid.run:run",
+        ],
+    },
     name="source_rki_covid",
     description="Source implementation for Rki Covid.",
     author="Airbyte",

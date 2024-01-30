@@ -19,6 +19,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-google-search-console=source_google_search_console.run:run",
+        ],
+    },
     name="source_google_search_console",
     description="Source implementation for Google Search Console.",
     author="Airbyte",
