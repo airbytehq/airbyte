@@ -254,7 +254,7 @@ is not also a path, such as "md:" to connect the user's default MotherDuck DB.</
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_connector</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">pip_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">use_local_install</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">install_if_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n"><a href="#Source">Source</a></span>:</span></span>
+        <span class="name">get_connector</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">pip_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">local_executable</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">install_if_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n"><a href="#Source">Source</a></span>:</span></span>
 
         
     </div>
@@ -271,11 +271,11 @@ is not also a path, such as "md:" to connect the user's default MotherDuck DB.</
         connector name.
     config: connector config - if not provided, you need to set it later via the set_config
         method.
-    use_local_install: whether to use a virtual environment to run the connector. If True, the
-        connector is expected to be available on the path (e.g. installed via pip). If False,
-        the connector will be installed automatically in a virtual environment.
-    install_if_missing: whether to install the connector if it is not available locally. This
-        parameter is ignored if use_local_install is True.</p>
+    local_executable: If set, the connector will be assumed to already be installed and will be
+        executed using this path or executable name. Otherwise, the connector will be installed
+        automatically in a virtual environment.
+    install_if_missing: Whether to install the connector if it is not available locally. This
+        parameter is ignored when local_executable is set.</p>
 </div>
 
 
@@ -409,13 +409,17 @@ working directory.</p>
                             <div id="Source.__init__" class="classattr">
                                 <div class="attr function">
             
-        <span class="name">Source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">executor</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">Executor</span>,</span><span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
+        <span class="name">Source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">executor</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">Executor</span>,</span><span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></span>)</span>
 
         
     </div>
     <a class="headerlink" href="#Source.__init__"></a>
     
-    
+            <div class="docstring"><p>Initialize the source.</p>
+
+<p>If config is provided, it will be validated against the spec if validate is True.</p>
+</div>
+
 
                             </div>
                             <div id="Source.executor" class="classattr">
@@ -465,13 +469,37 @@ are sometimes disabled by default within the connector.)</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">set_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+        <span class="name">set_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span>, </span><span class="param"><span class="o">*</span>, </span><span class="param"><span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
     <a class="headerlink" href="#Source.set_config"></a>
     
+            <div class="docstring"><p>Set the config for the connector.</p>
+
+<p>If validate is True, raise an exception if the config fails validation.</p>
+
+<p>If validate is False, validation will be deferred until check() or validate_config()
+is called.</p>
+</div>
+
+
+                            </div>
+                            <div id="Source.validate_config" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">validate_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.validate_config"></a>
     
+            <div class="docstring"><p>Validate the config against the spec.</p>
+
+<p>If config is not provided, the already-set config will be validated.</p>
+</div>
+
 
                             </div>
                             <div id="Source.get_available_streams" class="classattr">

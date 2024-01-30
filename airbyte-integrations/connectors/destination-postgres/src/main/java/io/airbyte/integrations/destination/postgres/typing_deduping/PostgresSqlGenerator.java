@@ -31,6 +31,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
@@ -62,6 +63,23 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
+  }
+
+  @Override
+  public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
+    // There is a mismatch between convention used in create table query in SqlOperations vs this.
+    // For postgres specifically, when a create table is issued without a quoted identifier, it will be
+    // converted to lowercase.
+    // To keep it consistent when querying raw table in T+D query, convert it to lowercase.
+    // TODO: This logic should be unified across Raw and final table operations in a single class
+    // operating on a StreamId.
+    return new StreamId(
+        namingTransformer.getNamespace(namespace),
+        namingTransformer.convertStreamName(name),
+        namingTransformer.getNamespace(rawNamespaceOverride).toLowerCase(),
+        namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase(),
+        namespace,
+        name);
   }
 
   @Override
