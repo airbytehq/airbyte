@@ -23,6 +23,6 @@ setup(
         "airbyte-cdk",
         "pytest~=6.1",
     ],
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json", "schemas/shared/*/*.json"]},
     extras_require={"tests": TEST_REQUIREMENTS},
 )

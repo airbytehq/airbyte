@@ -28,7 +28,7 @@ setup(
     author_email="wisse@vrowl.nl",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json", "schemas/shared/*/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
