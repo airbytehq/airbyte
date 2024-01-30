@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - https://api.mailgun.net/
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-mailgun
   registries:
     oss:
       enabled: true
