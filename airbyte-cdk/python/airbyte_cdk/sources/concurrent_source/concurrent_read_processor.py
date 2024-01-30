@@ -66,14 +66,12 @@ class ConcurrentReadProcessor:
         """
         stream_name = sentinel.stream.name
         self._streams_currently_generating_partitions.remove(sentinel.stream.name)
-        ret = []
         # It is possible for the stream to already be done if no partitions were generated
         # If the partition generation process was completed and there are no partitions left to process, the stream is done
         if self._is_stream_done(stream_name) or len(self._streams_to_running_partitions[stream_name]) == 0:
-            ret.append(self._on_stream_is_done(stream_name))
+            yield from self._on_stream_is_done(stream_name)
         if self._stream_instances_to_start_partition_generation:
-            ret.append(self.start_next_partition_generator())
-        return ret
+            yield self.start_next_partition_generator()
 
     def on_partition(self, partition: Partition) -> None:
         """
@@ -102,7 +100,7 @@ class ConcurrentReadProcessor:
             partitions_running.remove(partition)
             # If all partitions were generated and this was the last one, the stream is done
             if partition.stream_name() not in self._streams_currently_generating_partitions and len(partitions_running) == 0:
-                yield self._on_stream_is_done(partition.stream_name())
+                yield from self._on_stream_is_done(partition.stream_name())
         yield from self._message_repository.consume_queue()
 
     def on_record(self, record: Record) -> Iterable[AirbyteMessage]:
@@ -171,13 +169,15 @@ class ConcurrentReadProcessor:
     def _is_stream_done(self, stream_name: str) -> bool:
         return stream_name in self._streams_done
 
-    def _on_stream_is_done(self, stream_name: str) -> AirbyteMessage:
+    def _on_stream_is_done(self, stream_name: str) -> Iterable[AirbyteMessage]:
         self._logger.info(f"Read {self._record_counter[stream_name]} records from {stream_name} stream")
         self._logger.info(f"Marking stream {stream_name} as STOPPED")
         stream = self._stream_name_to_instance[stream_name]
+        stream.cursor.ensure_at_least_one_state_emitted()
+        yield from self._message_repository.consume_queue()
         self._logger.info(f"Finished syncing {stream.name}")
         self._streams_done.add(stream_name)
-        return stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.COMPLETE)
+        yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.COMPLETE)
 
     def _stop_streams(self) -> Iterable[AirbyteMessage]:
         self._thread_pool_manager.shutdown()
