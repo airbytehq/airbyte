@@ -12,6 +12,7 @@ from airbyte_lib.caches.snowflake import SnowflakeCacheConfig
 import docker
 import psycopg2 as psycopg
 import pytest
+from _pytest.nodes import Item
 from google.cloud import secretmanager
 from pytest_docker.plugin import get_docker_ip
 
@@ -23,6 +24,32 @@ logger = logging.getLogger(__name__)
 PYTEST_POSTGRES_IMAGE = "postgres:13"
 PYTEST_POSTGRES_CONTAINER = "postgres_pytest_container"
 PYTEST_POSTGRES_PORT = 5432
+
+
+def pytest_collection_modifyitems(items: list[Item]) -> None:
+    """Override default pytest behavior, sorting our tests in a sensible execution order.
+
+    In general, we want faster tests to run first, so that we can get feedback faster.
+
+    Running lint tests first is helpful because they are fast and can catch typos and other errors.
+
+    Otherwise tests are run based on an alpha-based natural sort, where 'unit' tests run after
+    'integration' tests because 'u' comes after 'i' alphabetically.
+    """
+    def test_priority(item: Item) -> int:
+        if 'lint_tests' in str(item.fspath):
+            return 1  # lint tests have high priority
+        elif 'unit_tests' in str(item.fspath):
+            return 2  # unit tests have highest priority
+        elif 'docs_tests' in str(item.fspath):
+            return 3  # doc tests have medium priority
+        elif 'integration_tests' in str(item.fspath):
+            return 4  # integration tests have the lowest priority
+        else:
+            return 5  # all other tests have lower priority
+
+    # Sort the items list in-place based on the test_priority function
+    items.sort(key=test_priority)
 
 
 def is_port_in_use(port):
@@ -127,6 +154,7 @@ def new_pg_cache_config(pg_dsn):
         schema_name="public",
     )
     yield config
+
 
 @pytest.fixture
 def snowflake_config():
