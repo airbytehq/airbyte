@@ -19,6 +19,7 @@ data:
   registries:
     cloud:
       dockerRepository: airbyte/destination-postgres-strict-encrypt
+      dockerImageTag: 0.6.0
       enabled: true
     oss:
       enabled: true
