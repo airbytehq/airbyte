@@ -65,4 +65,5 @@ Google Webfont's [API reference](https://developers.google.com/fonts/docs/develo
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-10-26 | [Init](https://github.com/airbytehq/airbyte/pull/18496)| Initial commit |

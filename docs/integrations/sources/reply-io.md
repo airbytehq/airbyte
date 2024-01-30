@@ -38,4 +38,5 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-10-22 | [18844](https://github.com/airbytehq/airbyte/pull/18844) | Add Reply.io Source Connector |

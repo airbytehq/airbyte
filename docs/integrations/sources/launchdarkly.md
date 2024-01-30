@@ -34,4 +34,5 @@ Launchdarkly APIs are under rate limits for the number of API calls allowed per 
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-10-30 | [#18660](https://github.com/airbytehq/airbyte/pull/18660) | 🎉 New Source: Launchdarkly API [low-code CDK] |

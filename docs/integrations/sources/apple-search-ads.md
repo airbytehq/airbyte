@@ -57,5 +57,6 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 0.1.2 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.1   | 2023-07-11 | [28153](https://github.com/airbytehq/airbyte/pull/28153) | Fix manifest duplicate key (no change in behavior for the syncs)                     |
 | 0.1.0   | 2022-11-17 | [19557](https://github.com/airbytehq/airbyte/pull/19557) | Initial release with campaigns, adgroups & keywords streams (base and daily reports) |

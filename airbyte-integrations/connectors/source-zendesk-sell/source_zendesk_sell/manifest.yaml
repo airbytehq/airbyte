@@ -47,18 +47,158 @@ definitions:
     $parameters:
       name: "call_outcomes"
       path: "/call_outcomes"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   calls_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "calls"
       path: "/calls"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          user_id:
+            type:
+              - "null"
+              - number
+          summary:
+            type:
+              - "null"
+              - string
+          recording_url:
+            type:
+              - "null"
+              - string
+          outcome_id:
+            type:
+              - "null"
+              - number
+          duration:
+            type:
+              - "null"
+              - number
+          phone_number:
+            type:
+              - "null"
+              - string
+          incoming:
+            type:
+              - "null"
+              - boolean
+          missed:
+            type:
+              - "null"
+              - boolean
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          associated_deal_ids:
+            type:
+              - "null"
+              - array
+          made_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   collaborations_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "collaborations"
       path: "/collaborations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          collaborator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   contacts_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
@@ -66,18 +206,218 @@ definitions:
       name: "contacts"
       path: "/contacts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          is_organization:
+            type:
+              - "null"
+              - boolean
+          contact_id:
+            type:
+              - "null"
+              - number
+          parent_organization_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          customer_status:
+            type:
+              - "null"
+              - string
+          prospect_status:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          industry:
+            type:
+              - "null"
+              - string
+          website:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          mobile:
+            type:
+              - "null"
+              - string
+          fax:
+            type:
+              - "null"
+              - string
+          twitter:
+            type:
+              - "null"
+              - string
+          facebook:
+            type:
+              - "null"
+              - string
+          linkedin:
+            type:
+              - "null"
+              - string
+          skype:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          billing_address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          shipping_address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          tags:
+            type:
+              - "null"
+              - array
+          custom_fields:
+            type:
+              - "null"
+              - object
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   deal_sources_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "deal_sources"
       path: "/deal_sources"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   deal_unqualified_reasons_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "deal_unqualified_reasons"
       path: "/deal_unqualified_reasons"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   deals_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
@@ -85,96 +425,988 @@ definitions:
       name: "deals"
       path: "/deals"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          value:
+            type:
+              - "null"
+              - number
+              - string
+          currency:
+            type:
+              - "null"
+              - string
+          hot:
+            type:
+              - "null"
+              - boolean
+          stage_id:
+            type:
+              - "null"
+              - number
+          last_stage_change_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_stage_change_by_id:
+            type:
+              - "null"
+              - number
+          last_activity_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          source_id:
+            type:
+              - "null"
+              - number
+          loss_reason_id:
+            type:
+              - "null"
+              - number
+          unqualified_reason_id:
+            type:
+              - "null"
+              - number
+          dropbox_email:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - number
+          organization_id:
+            type:
+              - "null"
+              - number
+          estimated_close_date:
+            type:
+              - "null"
+              - string
+          customized_win_likelihood:
+            type:
+              - "null"
+              - number
+          tags:
+            type:
+              - "null"
+              - array
+          custom_fields:
+            type:
+              - "null"
+              - object
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          added_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   leads_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "leads"
       path: "/leads"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          organization_name:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          source_id:
+            type:
+              - "null"
+              - number
+          title:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          industry:
+            type:
+              - "null"
+              - string
+          website:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          mobile:
+            type:
+              - "null"
+              - string
+          fax:
+            type:
+              - "null"
+              - string
+          twitter:
+            type:
+              - "null"
+              - string
+          facebook:
+            type:
+              - "null"
+              - string
+          linkedin:
+            type:
+              - "null"
+              - string
+          skype:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          unqualified_reason_id:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+          custom_fields:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   lead_conversions_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "lead_conversions"
       path: "/lead_conversions"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          lead_id:
+            type:
+              - "null"
+              - number
+          individual_id:
+            type:
+              - "null"
+              - number
+          organization_id:
+            type:
+              - "null"
+              - number
+          deal_id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   lead_sources_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "lead_sources"
       path: "/lead_sources"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   lead_unqualified_reasons_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "lead_unqualified_reasons"
       path: "/lead_unqualified_reasons"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          creator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   loss_reasons_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "loss_reasons"
       path: "/loss_reasons"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          creator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   notes_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "notes"
       path: "/notes"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          content:
+            type:
+              - "null"
+              - string
+          is_important:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          type:
+            type:
+              - "null"
+              - string
   orders_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "orders"
       path: "/orders"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          deal_id:
+            type:
+              - "null"
+              - number
+          discount:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   pipelines_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "pipelines"
       path: "/pipelines"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          locale_key:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          disabled:
+            type:
+              - "null"
+              - boolean
   products_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "products"
       path: "/products"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          sku:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          max_discount:
+            type:
+              - "null"
+              - number
+          max_markup:
+            type:
+              - "null"
+              - number
+          cost:
+            type:
+              - "null"
+              - string
+          version:
+            type:
+              - "null"
+              - integer
+          cost_currency:
+            type:
+              - "null"
+              - string
+          prices:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   stages_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "stages"
       path: "/stages"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          category:
+            type:
+              - "null"
+              - string
+          locale_key:
+            type:
+              - "null"
+              - string
+          position_hash:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          has_original_name:
+            type:
+              - "null"
+              - boolean
+          position:
+            type:
+              - "null"
+              - number
+          likelihood:
+            type:
+              - "null"
+              - number
+          pipeline_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   tags_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "tags"
       path: "/tags"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   tasks_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "tasks"
       path: "/tasks"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          completed:
+            type:
+              - "null"
+              - boolean
+          completed_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          due_date:
+            type:
+              - "null"
+              - string
+          overdue:
+            type:
+              - "null"
+              - boolean
+          remind_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          content:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   text_messages_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "text_messages"
       path: "/text_messages"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          associated_deal_ids:
+            type:
+              - "null"
+              - array
+          content:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          incoming:
+            type:
+              - "null"
+              - boolean
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          resource_phone_number:
+            type:
+              - "null"
+              - string
+          sent_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          user_id:
+            type:
+              - "null"
+              - number
+          user_phone_number:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   users_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "users"
       path: "/users"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          invited:
+            type:
+              - "null"
+              - boolean
+          detached:
+            type:
+              - "null"
+              - boolean
+          sell_login_disabled:
+            type:
+              - "null"
+              - boolean
+          confirmed:
+            type:
+              - "null"
+              - boolean
+          phone_number:
+            type:
+              - "null"
+              - string
+          role:
+            type:
+              - "null"
+              - string
+          roles:
+            type:
+              - "null"
+              - array
+          team_name:
+            type:
+              - "null"
+              - string
+          group:
+            type:
+              - "null"
+              - object
+          reports_to:
+            type:
+              - "null"
+              - number
+          system_tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          timezone:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          deleted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          zendesk_user_id:
+            type:
+              - "null"
+              - string
+          identity_type:
+            type:
+              - "null"
+              - string
   visit_outcomes_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "visit_outcomes"
       path: "/visit_outcomes"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   visits_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
@@ -182,6 +1414,62 @@ definitions:
       name: "visits"
       path: "/visits"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          outcome_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          visited_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          resource_address:
+            type:
+              - "null"
+              - string
+          rep_location_verification_status:
+            type:
+              - "null"
+              - string
+          summary:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
 streams:
   - "#/definitions/call_outcomes_stream"
   - "#/definitions/calls_stream"

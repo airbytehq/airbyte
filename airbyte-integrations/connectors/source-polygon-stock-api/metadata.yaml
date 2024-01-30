@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5807d72f-0abc-49f9-8fa5-ae820007032b
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-polygon-stock-api
   githubIssueLabel: source-polygon-stock-api
   icon: polygon.svg

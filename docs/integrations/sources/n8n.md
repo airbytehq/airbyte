@@ -29,4 +29,5 @@ You need a n8n instance or use cloud version
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-11-08 | [18745](https://github.com/airbytehq/airbyte/pull/18745) | 🎉 New Source: N8n [low-code cdk] |

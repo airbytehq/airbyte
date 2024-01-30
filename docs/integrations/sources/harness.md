@@ -49,5 +49,6 @@ Key](https://ngdocs.harness.io/article/tdoad7xrh9-add-and-manage-api-keys#harnes
 
 | Version    | Date       | Pull Request                                                        | Subject                                               |
 | :--------- | :--------- | :------------------------------------------------------------------ | :---------------------------------------------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0      | 2023-10-10 | [31103](https://github.com/airbytehq/airbyte/pull/31103) | Migrate to low code                                   |
 | 0.1.23     | 2021-11-16 | [153](https://github.com/faros-ai/airbyte-connectors/pull/153)      | Add Harness source and Faros destination's converter  |

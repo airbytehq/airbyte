@@ -70,4 +70,5 @@ FullStory [API reference](https://api.fullstory.com) has v1 at present. The conn
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2023-04-25 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |

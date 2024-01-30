@@ -37,6 +37,7 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.3.2 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.3.1   | 2023-06-05 | [27002](https://github.com/airbytehq/airbyte/pull/27002) | Flag spec `api_key` field as `airbyte-secret` |
 | 0.3.0   | 2023-05-30 | [22642](https://github.com/airbytehq/airbyte/pull/22642) | Add `idea_comments`, `idea_endorsements`, and `idea_categories` streams |
 | 0.2.0   | 2023-05-26 | [26666](https://github.com/airbytehq/airbyte/pull/26666) | Fix integration test and schemas                |

@@ -30,12 +30,171 @@ definitions:
     name: "tasks"
     $parameters:
       path: "/tasks"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          assignee_id:
+            type:
+              - "null"
+              - string
+          assigner_id:
+            type:
+              - "null"
+              - string
+          comment_count:
+            type:
+              - "null"
+              - integer
+          content:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+          creator_id:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          due:
+            anyOf:
+              - type:
+                  - "null"
+                  - object
+              - properties:
+                  date:
+                    type:
+                      - "null"
+                      - string
+                  is_recurring:
+                    type:
+                      - "null"
+                      - boolean
+                  lang:
+                    type:
+                      - "null"
+                      - string
+                  string:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+          id:
+            type:
+              - "null"
+              - string
+          duration:
+            type:
+              - "null"
+              - string
+          is_completed:
+            type:
+              - "null"
+              - boolean
+          labels:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          order:
+            type:
+              - "null"
+              - integer
+          parent_id:
+            type:
+              - "null"
+              - string
+          priority:
+            type:
+              - "null"
+              - integer
+          project_id:
+            type:
+              - "null"
+              - string
+          section_id:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
   projects_stream:
     $ref: "#/definitions/base_stream"
     name: "projects"
     $parameters:
       path: "/projects"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          color:
+            type:
+              - "null"
+              - string
+          comment_count:
+            type:
+              - "null"
+              - integer
+          id:
+            type:
+              - "null"
+              - string
+          is_favorite:
+            type:
+              - "null"
+              - boolean
+          is_inbox_project:
+            type:
+              - "null"
+              - boolean
+          is_shared:
+            type:
+              - "null"
+              - boolean
+          is_team_inbox:
+            type:
+              - "null"
+              - boolean
+          name:
+            type:
+              - "null"
+              - string
+          order:
+            type:
+              - "null"
+              - integer
+          parent_id:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          view_style:
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/tasks_stream"
   - "#/definitions/projects_stream"

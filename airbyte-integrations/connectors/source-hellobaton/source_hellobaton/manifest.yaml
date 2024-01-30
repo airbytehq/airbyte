@@ -7,10 +7,6 @@ check:
     - activity
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_hellobaton/schemas/{{ parameters.path }}.json"
-
   selector:
     type: RecordSelector
     extractor:
@@ -62,8 +58,6 @@ definitions:
     # name: '{{ parameters.name }}'
     primary_key:
       - id
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
 
@@ -73,66 +67,1029 @@ definitions:
     $parameters:
       path: "activity"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          _self:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          group:
+            type:
+              - string
+              - "null"
+          parent:
+            type:
+              - string
+              - "null"
+          child:
+            type:
+              - string
+              - "null"
+          actor:
+            type:
+              - string
+              - "null"
+          project:
+            type:
+              - string
+              - "null"
+          parent_type:
+            type:
+              - string
+              - "null"
+          child_type:
+            type:
+              - string
+              - "null"
+          meta:
+            type:
+              - object
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            type:
+              - string
+              - "null"
+            format: date-time
   companies_stream:
     $ref: "#/definitions/base_stream"
     name: "companies"
     $parameters:
       path: "companies"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          _self:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            type:
+              - string
+              - "null"
+            format: date-time
   milestones_stream:
     $ref: "#/definitions/base_stream"
     name: "milestones"
     $parameters:
       path: "milestones"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          _self:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          project:
+            type:
+              - string
+              - "null"
+          task_list:
+            type:
+              - string
+              - "null"
+          phase:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              _self:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              created:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+              modified:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+          deadline_fixed:
+            type:
+              - boolean
+              - "null"
+          deadline_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          risk_profiles:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                risk_level:
+                  type:
+                    - string
+                    - "null"
+                formula:
+                  type:
+                    - string
+                    - "null"
+                over_run:
+                  type:
+                    - integer
+                    - "null"
+          start_datetime:
+            type:
+              - string
+              - "null"
+          finish_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          created_from:
+            type:
+              - string
+              - "null"
+          duration:
+            type:
+              - integer
+              - "null"
+          feedback_list:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            type:
+              - string
+              - "null"
+            format: date-time
   phases_stream:
     $ref: "#/definitions/base_stream"
     name: "phases"
     $parameters:
       path: "phases"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          _self:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          order:
+            type:
+              - integer
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            type:
+              - string
+              - "null"
+            format: date-time
   project_attachments_stream:
     $ref: "#/definitions/base_stream"
     name: "project_attachments"
     $parameters:
       path: "project_attachments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          _self:
+            type:
+              - string
+              - "null"
+          project:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          is_sow:
+            type:
+              - boolean
+              - "null"
+          original_filename:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            type:
+              - string
+              - "null"
+            format: date-time
   projects_stream:
     $ref: "#/definitions/base_stream"
     name: "projects"
     $parameters:
       path: "projects"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _self:
+            type:
+              - string
+              - "null"
+          annual_contract_value:
+            type:
+              - string
+              - "null"
+          archived:
+            type:
+              - boolean
+              - "null"
+          attachment_list:
+            type:
+              - string
+              - "null"
+          client_systems:
+            type:
+              - string
+              - "null"
+          companies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          completed_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          cost:
+            type:
+              - integer
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+            format: date-time
+          created_from:
+            type:
+              - string
+              - "null"
+          created_from_template:
+            type:
+              - string
+              - "null"
+          creator:
+            type:
+              - string
+              - "null"
+          custom_field_list:
+            type:
+              - string
+              - "null"
+          deadline_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          estimated_duration:
+            type:
+              - integer
+              - "null"
+          id:
+            type:
+              - integer
+              - "null"
+          implementation_budget:
+            type:
+              - string
+              - "null"
+          milestone_feedback_list:
+            type:
+              - string
+              - "null"
+          milestone_list:
+            type:
+              - string
+              - "null"
+          modified:
+            type:
+              - string
+              - "null"
+            format: date-time
+          phase:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              _self:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              order:
+                type:
+                  - integer
+                  - "null"
+              created:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+              modified:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+          project_phases_list:
+            type:
+              - string
+              - "null"
+          project_user_list:
+            type:
+              - string
+              - "null"
+          risk_profiles:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                risk_score:
+                  type:
+                    - number
+                    - "null"
+                level:
+                  type:
+                    - string
+                    - "null"
+                variance:
+                  type:
+                    - integer
+                    - "null"
+                formula:
+                  type:
+                    - string
+                    - "null"
+                projected_golive_datetime:
+                  type:
+                    - string
+                    - "null"
+                  format: date-time
+          start_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          started_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          status:
+            type:
+              - string
+              - "null"
+          task_list:
+            type:
+              - string
+              - "null"
+          time_entry_list:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
   tasks_stream:
     $ref: "#/definitions/base_stream"
     name: "tasks"
     $parameters:
       path: "tasks"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          _self:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          project:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          dependencies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          start_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          due_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          started_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          finished_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          started_overridden_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          finished_overridden_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          estimated_duration:
+            type:
+              - integer
+              - "null"
+          milestone:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - string
+              - "null"
+          assigned_to:
+            type:
+              - string
+              - "null"
+          created_from:
+            type:
+              - string
+              - "null"
+          risk_profiles:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                risk_level:
+                  type:
+                    - string
+                    - "null"
+                formula:
+                  type:
+                    - string
+                    - "null"
+                over_run:
+                  type:
+                    - integer
+                    - "null"
+                task_variance:
+                  type:
+                    - integer
+                    - "null"
+                cool_down:
+                  type:
+                    - integer
+                    - "null"
+                reason:
+                  type:
+                    - integer
+                    - "null"
+                duration:
+                  type:
+                    - integer
+                    - "null"
+                estimated_duration:
+                  type:
+                    - integer
+                    - "null"
+          time_entry_list:
+            type:
+              - string
+              - "null"
+          attachment_list:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            type:
+              - string
+              - "null"
+            format: date-time
   task_attachments_stream:
     $ref: "#/definitions/base_stream"
     name: "task_attachments"
     $parameters:
       path: "task_attachments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          _self:
+            type:
+              - string
+              - "null"
+          task:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          deliverable:
+            type:
+              - boolean
+              - "null"
+          requires_approval:
+            type:
+              - boolean
+              - "null"
+          approved:
+            type:
+              - boolean
+              - "null"
+          revision_task:
+            type:
+              - string
+              - "null"
+          original_filename:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+          modified:
+            type:
+              - string
+              - "null"
   templates_stream:
     $ref: "#/definitions/base_stream"
     name: "templates"
     $parameters:
       path: "templates"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          _self:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          cost:
+            type:
+              - string
+              - "null"
+          annual_contract_value:
+            type:
+              - string
+              - "null"
+          implementation_budget:
+            type:
+              - string
+              - "null"
+          estimated_duration:
+            type:
+              - integer
+              - "null"
+          created_from_template:
+            type:
+              - string
+              - "null"
+          created_from:
+            type:
+              - string
+              - "null"
+          start_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          started_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          deadline_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          completed_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          client_systems:
+            type:
+              - string
+              - "null"
+          phase:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              _self:
+                type:
+                  - string
+                  - "null"
+              order:
+                type:
+                  - integer
+                  - "null"
+              created:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+              modified:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+          creator:
+            type:
+              - string
+              - "null"
+          task_list:
+            type:
+              - string
+              - "null"
   time_entries_stream:
     $ref: "#/definitions/base_stream"
     name: "time_entries"
     $parameters:
       path: "time_entries"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          _self:
+            type:
+              - string
+              - "null"
+          user:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - string
+              - "null"
+          project:
+            type:
+              - string
+              - "null"
+          task:
+            type:
+              - string
+              - "null"
+          rate:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              hourly_rate:
+                type:
+                  - string
+                  - "null"
+          started_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          ended_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          reference_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+          billable:
+            type:
+              - boolean
+              - "null"
+          calculated_duration:
+            type:
+              - integer
+              - "null"
+          inputted_duration:
+            type:
+              - integer
+              - "null"
+          notes:
+            type:
+              - string
+              - "null"
   users_stream:
     $ref: "#/definitions/base_stream"
     name: "users"
     $parameters:
       path: "users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          _self:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          capacity:
+            type:
+              - integer
+              - "null"
+          department:
+            type:
+              - object
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          account_type:
+            type:
+              - string
+              - "null"
+          job_title:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          avatar_url:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - string
+              - "null"
+          signed_up_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          created:
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            type:
+              - string
+              - "null"
+            format: date-time
 streams:
   - "#/definitions/activity_stream"
   - "#/definitions/companies_stream"

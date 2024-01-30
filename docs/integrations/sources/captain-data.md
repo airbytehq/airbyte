@@ -62,4 +62,5 @@ Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at prese
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2023-04-15 | [Init](https://github.com/airbytehq/airbyte/pull/25230) | Initial commit |

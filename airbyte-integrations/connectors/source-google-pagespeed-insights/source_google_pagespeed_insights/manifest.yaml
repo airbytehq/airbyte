@@ -47,9 +47,367 @@ definitions:
       name: "pagespeed"
       path: "/runPagespeed"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          strategy:
+            type: string
+          captchaResult:
+            type: string
+          kind:
+            type: string
+          id:
+            type: string
+          loadingExperience:
+            type: object
+            properties:
+              id:
+                type: string
+              metrics:
+                type: object
+                properties:
+                  CUMULATIVE_LAYOUT_SHIFT_SCORE:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+                  EXPERIMENTAL_INTERACTION_TO_NEXT_PAINT:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+                  EXPERIMENTAL_TIME_TO_FIRST_BYTE:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+                  FIRST_CONTENTFUL_PAINT_MS:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+                  FIRST_INPUT_DELAY_MS:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+                  LARGEST_CONTENTFUL_PAINT_MS:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+              overall_category:
+                type: string
+              initial_url:
+                type: string
+          originLoadingExperience:
+            type: object
+            properties:
+              id:
+                type: string
+              metrics:
+                type: object
+                properties:
+                  CUMULATIVE_LAYOUT_SHIFT_SCORE:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+                  EXPERIMENTAL_INTERACTION_TO_NEXT_PAINT:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+                  EXPERIMENTAL_TIME_TO_FIRST_BYTE:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+                  FIRST_CONTENTFUL_PAINT_MS:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+                  FIRST_INPUT_DELAY_MS:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+                  LARGEST_CONTENTFUL_PAINT_MS:
+                    type: object
+                    properties:
+                      percentile:
+                        type: number
+                      distributions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            min:
+                              type: number
+                            max:
+                              type: number
+                            proportion:
+                              type: number
+                      category:
+                        type: string
+              overall_category:
+                type: string
+              initial_url:
+                type: string
+          lighthouseResult:
+            type: object
+            properties:
+              requestedUrl:
+                type: string
+              finalUrl:
+                type: string
+              lighthouseVersion:
+                type: string
+              userAgent:
+                type: string
+              fetchTime:
+                type: string
+              environment:
+                type: object
+                properties:
+                  networkUserAgent:
+                    type: string
+                  hostUserAgent:
+                    type: string
+                  benchmarkIndex:
+                    type: number
+              runWarnings:
+                type: array
+              configSettings:
+                type: object
+                properties:
+                  emulatedFormFactor:
+                    type: string
+                  formFactor:
+                    type: string
+                  locale:
+                    type: string
+                  onlyCategories:
+                    type: array
+                    items:
+                      type: string
+                  channel:
+                    type: string
+              audits:
+                type: object
+              categories:
+                type: object
+              categoryGroups:
+                type: object
+          analysisUTCTimestamp:
+            type: string
 streams:
   - "#/definitions/pagespeed_stream"
 
 check:
   stream_names:
     - "pagespeed"
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Google PageSpeed Insights Spec
+    type: object
+    required:
+      - urls
+      - strategies
+      - categories
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Google PageSpeed API Key. See <a
+          href="https://developers.google.com/speed/docs/insights/v5/get-started#APIKey">here</a>.
+          The key is optional - however the API is heavily rate limited when using without API Key.
+          Creating and using the API key therefore is recommended.
+          The key is case sensitive.
+        airbyte_secret: true
+      urls:
+        type: array
+        items:
+          type: string
+          pattern: ^(?:origin:)?(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#\[\]@!\$&'\(\)\*\+,;=.]+$
+        title: URLs to analyse
+        description: >-
+          The URLs to retrieve pagespeed information from. The connector will attempt to sync
+          PageSpeed reports for all the defined URLs.
+          Format: https://(www.)url.domain
+        example: https://example.com
+      strategies:
+        type: array
+        items:
+          type: string
+          enum:
+            - "desktop"
+            - "mobile"
+        title: Analyses Strategies
+        description: >-
+          The analyses strategy to use. Either "desktop" or "mobile".
+      categories:
+        type: array
+        items:
+          type: string
+          enum:
+            - "accessibility"
+            - "best-practices"
+            - "performance"
+            - "pwa"
+            - "seo"
+        title: Lighthouse Categories
+        description: >-
+          Defines which Lighthouse category to run. One or many of: "accessibility", "best-practices", "performance", "pwa", "seo".
+  documentation_url: https://docs.airbyte.io/integrations/sources/google-pagespeed-insights

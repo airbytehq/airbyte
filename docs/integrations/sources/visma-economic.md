@@ -51,5 +51,6 @@ For more information about the api see the [E-conomic REST API Documentation](ht
 
 | Version | Date       | Pull Request                                        | Subject                            |
 | :------ |:-----------|:----------------------------------------------------|:-----------------------------------|
+| 0.2.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.2.0   | 2023-10-20 | [30991](https://github.com/airbytehq/airbyte/pull/30991) | Migrate to Low-code Framework |
 | 0.1.0   | 2022-11-08 | [18595](https://github.com/airbytehq/airbyte/pull/18595) | Adding Visma e-conomic as a source |

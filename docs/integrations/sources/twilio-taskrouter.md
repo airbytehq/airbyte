@@ -58,4 +58,5 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                             | Subject                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------- |
+| 0.1.1 | 2024-01-30 | [34629](https://github.com/airbytehq/airbyte/pull/34629) | Move spec and schema definitions into `manifest.yaml` |
 | 0.1.0   | 2022-11-18 | [18685](https://github.com/airbytehq/airbyte/pull/18685) | 🎉 New Source: Twilio Taskrouter API [low-code cdk] |
