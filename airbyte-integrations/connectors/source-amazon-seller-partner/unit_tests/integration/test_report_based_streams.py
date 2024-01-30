@@ -20,7 +20,7 @@ from source_amazon_seller_partner.streams import ReportProcessingStatus
 from .config import _ACCESS_TOKEN, _MARKETPLACE_ID, ConfigBuilder
 from .request_builder import RequestBuilder
 from .response_builder import build_response
-from .utils import config, find_template, read_output
+from .utils import config, find_template, get_stream_by_name, read_output
 
 _DOCUMENT_DOWNLOAD_URL = "https://test.com/download"
 _NOW = datetime.now(timezone.utc)
@@ -30,7 +30,7 @@ _REPORT_DOCUMENT_ID = "report_document_id"
 # every test file in resource/http/response contains 2 records
 EXPECTED_NUMBER_OF_RECORDS = 2
 
-STREAMS = {
+STREAMS = (
     ("GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING", "csv"),
     ("GET_ORDER_REPORT_DATA_SHIPPING", "xml"),
     ("GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL", "csv"),
@@ -64,7 +64,7 @@ STREAMS = {
     ("GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "json"),
     ("GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "json"),
     ("GET_VENDOR_TRAFFIC_REPORT", "json"),
-}
+)
 
 
 def _mock_auth(http_mocker: HttpMocker) -> None:
@@ -303,3 +303,54 @@ class TestFullRefresh:
         output = self._read(stream_name, config())
         _assert_message_in_output(message_on_backoff_exception, caplog)
         assert len(output.records) == 0
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestIncremental:
+    default_cursor_field = "dataEndTime"
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(config_, stream_name, SyncMode.incremental, expecting_exception=expecting_exception)
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_report_when_read_then_default_cursor_field_added_to_every_record(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        _mock_auth(http_mocker)
+
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
+        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
+        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert all([self.default_cursor_field in record.record.data for record in output.records])
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_report_when_read_then_state_message_produced_and_state_match_latest_record(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        _config = config()
+        _mock_auth(http_mocker)
+
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
+        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
+        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, _config)
+        assert len(output.state_messages) == 1
+
+        cursor_field = get_stream_by_name(stream_name, _config.build()).cursor_field
+        cursor_value_from_state_message = output.state_messages[0].state.data.get(stream_name, {}).get(cursor_field)
+        cursor_value_from_latest_record = output.records[-1].record.data.get(cursor_field)
+        assert cursor_value_from_state_message == cursor_value_from_latest_record

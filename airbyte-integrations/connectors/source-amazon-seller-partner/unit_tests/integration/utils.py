@@ -4,8 +4,9 @@
 
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http.response_builder import _get_unit_test_folder
@@ -29,13 +30,21 @@ def source() -> SourceAmazonSellerPartner:
 
 def read_output(
     config_builder: ConfigBuilder,
-    stream_name: str, sync_mode: SyncMode,
+    stream_name: str,
+    sync_mode: SyncMode,
     state: Optional[Dict[str, Any]] = None,
     expecting_exception: Optional[bool] = False,
 ) -> EntrypointOutput:
     _catalog = catalog(stream_name, sync_mode)
     _config = config_builder.build()
     return read(source(), _config, _catalog, state, expecting_exception)
+
+
+def get_stream_by_name(stream_name: str, config_: Mapping[str, Any]) -> Stream:
+    streams = [stream for stream in source().streams(config_) if stream.name == stream_name]
+    if not streams:
+        raise ValueError("Please provide a valid stream name")
+    return streams[0]
 
 
 def find_template(resource: str, execution_folder: str, template_format: Optional[str] = "csv") -> str:
