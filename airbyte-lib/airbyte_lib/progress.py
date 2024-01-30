@@ -40,7 +40,7 @@ def _to_time_str(timestamp: float) -> str:
     return datetime_obj.strftime("%H:%M:%S")
 
 
-def _get_elapsed_time_str(seconds: int) -> str:
+def _get_elapsed_time_str(seconds: str) -> str:
     """Return duration as a string.
 
     Seconds are included until 10 minutes is exceeded.
