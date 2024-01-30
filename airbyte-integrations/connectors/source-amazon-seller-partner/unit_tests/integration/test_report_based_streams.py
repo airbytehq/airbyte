@@ -5,8 +5,9 @@
 
 import gzip
 from datetime import datetime, timezone
+from http import HTTPStatus
 from test.mock_http.matcher import HttpRequestMatcher
-from typing import Optional
+from typing import Any, Optional
 
 import freezegun
 import pytest
@@ -68,7 +69,7 @@ STREAMS = {
 
 def _mock_auth(http_mocker: HttpMocker) -> None:
     response_body = {"access_token": _ACCESS_TOKEN, "expires_in": 3600, "token_type": "bearer"}
-    http_mocker.post(RequestBuilder.auth_endpoint().build(), build_response(response_body, status_code=200))
+    http_mocker.post(RequestBuilder.auth_endpoint().build(), build_response(response_body, status_code=HTTPStatus.OK))
 
 
 def _create_report_request(report_name: str) -> RequestBuilder:
@@ -106,7 +107,7 @@ def _download_document_request(url: str) -> RequestBuilder:
     return RequestBuilder.download_document_endpoint(url)
 
 
-def _create_report_response(status_code: Optional[int] = 202) -> HttpResponse:
+def _create_report_response(status_code: Optional[HTTPStatus] = HTTPStatus.ACCEPTED) -> HttpResponse:
     response_body = {"reportId": _REPORT_ID}
     return build_response(response_body, status_code=status_code)
 
@@ -133,7 +134,7 @@ def _check_report_status_response(
             }
         )
 
-    return build_response(response_body, status_code=200)
+    return build_response(response_body, status_code=HTTPStatus.OK)
 
 
 def _get_document_download_url_response(compressed: Optional[bool] = False) -> HttpResponse:
@@ -141,14 +142,18 @@ def _get_document_download_url_response(compressed: Optional[bool] = False) -> H
     if compressed:
         # See https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference#compressionalgorithm
         response_body["compressionAlgorithm"] = "GZIP"
-    return build_response(response_body, status_code=200)
+    return build_response(response_body, status_code=HTTPStatus.OK)
 
 
 def _download_document_response(stream_name: str, data_format: Optional[str] = "csv", compressed: Optional[bool] = False) -> HttpResponse:
     response_body = find_template(stream_name, __file__, data_format)
     if compressed:
         response_body = gzip.compress(response_body.encode("iso-8859-1"))
-    return HttpResponse(body=response_body, status_code=200)
+    return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
+
+
+def _assert_message_in_output(message: str, caplog: Any) -> None:
+    assert any(message in output_message for output_message in caplog.messages)
 
 
 @pytest.fixture(name="http_mocker")
@@ -210,20 +215,25 @@ class TestFullRefresh:
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
-    def test_given_report_access_forbidden_when_read_then_no_records(
-        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    def test_given_report_access_forbidden_when_read_then_no_records_and_error_logged(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker, caplog: Any
     ) -> None:
         _mock_auth(http_mocker)
 
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(status_code=403))
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(status_code=HTTPStatus.FORBIDDEN))
 
         output = self._read(stream_name, config())
+        message_on_access_forbidden = (
+            "This is most likely due to insufficient permissions on the credentials in use. "
+            "Try to grant required permissions/scopes or re-authenticate."
+        )
+        _assert_message_in_output(message_on_access_forbidden, caplog)
         assert len(output.records) == 0
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
-    def test_given_report_status_cancelled_when_read_then_no_records(
-        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    def test_given_report_status_cancelled_when_read_then_no_records_and_error_logged(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker, caplog: Any
     ) -> None:
         _mock_auth(http_mocker)
 
@@ -233,7 +243,10 @@ class TestFullRefresh:
             _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.cancelled),
         )
 
+        message_on_report_cancelled = f"The report for stream '{stream_name}' was cancelled or there is no data to return"
+
         output = self._read(stream_name, config())
+        _assert_message_in_output(message_on_report_cancelled, caplog)
         assert len(output.records) == 0
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
@@ -273,5 +286,20 @@ class TestFullRefresh:
         http_mocker.get(_download_document_request(_DOCUMENT_DOWNLOAD_URL).build(), _download_document_response(stream_name))
 
         output = self._read(stream_name, config())
-        assert len(output.records) == 2
+        assert len(output.records) == EXPECTED_NUMBER_OF_RECORDS
         assert output.records[0].record.data.get(date_field) == expected_date_value
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_error_500_on_create_report_when_read_then_no_records_and_error_logged(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker, caplog: Any
+    ) -> None:
+        _mock_auth(http_mocker)
+
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(status_code=HTTPStatus.INTERNAL_SERVER_ERROR))
+
+        message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
+
+        output = self._read(stream_name, config())
+        _assert_message_in_output(message_on_backoff_exception, caplog)
+        assert len(output.records) == 0

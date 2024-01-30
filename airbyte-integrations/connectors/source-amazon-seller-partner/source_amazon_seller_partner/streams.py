@@ -5,7 +5,8 @@
 
 import csv
 import gzip
-import json as json_lib
+import json
+import os
 import time
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -31,6 +32,8 @@ FINANCES_API_VERSION = "v0"
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 DATE_FORMAT = "%Y-%m-%d"
+
+IS_TESTING = os.environ.get("DEPLOYMENT_MODE") == "testing"
 
 
 class AmazonSPStream(HttpStream, ABC):
@@ -63,6 +66,12 @@ class AmazonSPStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+    def retry_factor(self) -> float:
+        """
+        Override for testing purposes
+        """
+        return 0 if IS_TESTING else super().retry_factor
 
 
 class IncrementalAmazonSPStream(AmazonSPStream, ABC):
@@ -242,7 +251,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         create_report_request = self._create_prepared_request(
             path=f"{self.path_prefix}/reports",
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
-            data=json_lib.dumps(report_data),
+            data=json.dumps(report_data),
         )
         report_response = self._send_request(create_report_request, {})
         self.http_method = "GET"  # rollback
@@ -370,6 +379,12 @@ class ReportsAmazonSPStream(HttpStream, ABC):
             logger.warning(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
             raise Exception(f"Unknown response for stream '{self.name}'. Response body {report_payload}")
+
+    def retry_factor(self) -> float:
+        """
+        Override for testing purposes
+        """
+        return 0 if IS_TESTING else super().retry_factor
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
@@ -626,7 +641,7 @@ class FbaInventoryPlaningReport(IncrementalReportsAmazonSPStream):
 
 class AnalyticsStream(ReportsAmazonSPStream):
     def parse_document(self, document):
-        parsed = json_lib.loads(document)
+        parsed = json.loads(document)
         return parsed.get(self.result_key, [])
 
     def _report_data(
