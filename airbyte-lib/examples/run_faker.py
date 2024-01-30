@@ -12,7 +12,7 @@ from __future__ import annotations
 import airbyte_lib as ab
 
 
-SCALE = 1_000_000  # Number of records to generate between users and purchases.
+SCALE = 5_000_000  # Number of records to generate between users and purchases.
 
 
 source = ab.get_connector(
