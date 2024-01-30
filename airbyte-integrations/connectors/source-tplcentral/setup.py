@@ -17,6 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-tplcentral=source_tplcentral.run:run",
+        ],
+    },
     name="source_tplcentral",
     description="Source implementation for Tplcentral.",
     author="Labanoras Tech",

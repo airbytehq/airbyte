@@ -11,7 +11,7 @@ setup(
     description="Test Soutce",
     author="Airbyte",
     author_email="contact@airbyte.io",
-    packages=find_packages(),
+    packages=["source_broken"],
     entry_points={
         "console_scripts": [
             "source-broken=source_broken.run:run",

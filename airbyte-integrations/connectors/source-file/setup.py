@@ -27,6 +27,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2", "pytest-docker~=2.0.1", "pytest-mock~=3.6.1"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-file=source_file.run:run",
+        ],
+    },
     name="source_file",
     description="Source implementation for File",
     author="Airbyte",

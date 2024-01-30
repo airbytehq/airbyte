@@ -215,7 +215,9 @@ class GithubStreamABC(HttpStream, ABC):
 
             self.logger.warning(error_msg)
         except GitHubAPILimitException:
-            self.logger.warning("Limits for all provided tokens are reached, please try again later")
+            self.logger.warning(
+                f"Stream: `{self.name}`, slice: `{stream_slice}`. Limits for all provided tokens are reached, please try again later"
+            )
 
 
 class GithubStream(GithubStreamABC):

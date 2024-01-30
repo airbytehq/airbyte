@@ -94,7 +94,7 @@ def test_multiple_token_authenticator_with_rate_limiter(caplog):
 
     list(read_full_refresh(stream))
     assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(0, 500), (0, 500), (0, 500)]
-    assert "Limits for all provided tokens are reached, please try again later" in caplog.messages
+    assert "Stream: `organizations`, slice: `{'organization': 'org1'}`. Limits for all provided tokens are reached, please try again later" in caplog.messages
 
 
 @freeze_time("2021-01-01 12:00:00")

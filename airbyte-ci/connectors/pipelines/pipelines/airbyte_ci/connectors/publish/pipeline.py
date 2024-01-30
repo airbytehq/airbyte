@@ -352,6 +352,16 @@ async def _run_python_registry_publish_pipeline(context: PublishConnectorContext
     if not python_registry_context:
         return results, False
 
+    if not context.python_registry_token or not context.python_registry_url:
+        # If the python registry token or url are not set, we can't publish to the python registry - stop the pipeline.
+        return [
+            StepResult(
+                PublishToPythonRegistry(python_registry_context),
+                status=StepStatus.FAILURE,
+                stderr="Pypi publishing is enabled, but python registry token or url are not set.",
+            )
+        ], True
+
     check_python_registry_package_exists_results = await CheckPythonRegistryPackageDoesNotExist(python_registry_context).run()
     results.append(check_python_registry_package_exists_results)
     if check_python_registry_package_exists_results.status is StepStatus.SKIPPED:

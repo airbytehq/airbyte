@@ -17,6 +17,11 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-sentry=source_sentry.run:run",
+        ],
+    },
     name="source_sentry",
     description="Source implementation for Sentry.",
     author="Airbyte",

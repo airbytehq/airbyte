@@ -10,6 +10,11 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "google-api-python-client"]
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-dv-360=source_dv_360.run:run",
+        ],
+    },
     name="source_dv_360",
     description="Source implementation for Display & Video 360.",
     author="Airbyte",

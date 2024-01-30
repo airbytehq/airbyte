@@ -12,6 +12,11 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "requests-mock"]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-paystack=source_paystack.run:run",
+        ],
+    },
     name="source_paystack",
     description="Source implementation for Paystack.",
     author="Airbyte",

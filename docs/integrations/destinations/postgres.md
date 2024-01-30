@@ -170,6 +170,7 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.6.1   | 2024-01-29 | [34630](https://github.com/airbytehq/airbyte/pull/34630)   | CDK Upgrade; Use lowercase raw table in T+D queries.                                                |
 | 0.6.0   | 2024-01-19 | [34372](https://github.com/airbytehq/airbyte/pull/34372)   | Add dv2 flag in spec                                                                                |
 | 0.5.5   | 2024-01-18 | [34236](https://github.com/airbytehq/airbyte/pull/34236)   | Upgrade CDK to 0.13.1; Add indexes in raw table for query optimization                              |
 | 0.5.4   | 2024-01-11 | [34177](https://github.com/airbytehq/airbyte/pull/34177)   | Add code for DV2 beta (no user-visible changes)                                                     |

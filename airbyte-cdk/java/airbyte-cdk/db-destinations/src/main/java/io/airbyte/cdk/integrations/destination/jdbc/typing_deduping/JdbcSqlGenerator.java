@@ -72,7 +72,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   private static final String TYPING_CTE_ALIAS = "intermediate_data";
   private static final String NUMBERED_ROWS_CTE_ALIAS = "numbered_rows";
 
-  private final NamingConventionTransformer namingTransformer;
+  protected final NamingConventionTransformer namingTransformer;
   protected final ColumnId cdcDeletedAtColumn;
 
   public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer) {

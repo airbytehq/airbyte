@@ -86,18 +86,11 @@ dependencies {
     implementation libs.hikaricp
     implementation libs.debezium.api
     implementation libs.debezium.embedded
-    implementation libs.debezium.mysql
-    implementation libs.debezium.postgres
-    implementation libs.debezium.mongodb
 
     implementation libs.bundles.datadog
     // implementation 'com.datadoghq:dd-trace-api'
     implementation 'org.apache.sshd:sshd-mina:2.8.0'
 
-    implementation libs.testcontainers
-    implementation libs.testcontainers.mysql
-    implementation libs.testcontainers.jdbc
-    implementation libs.testcontainers.postgresql
     testImplementation libs.testcontainers.jdbc
     testImplementation libs.testcontainers.mysql
     testImplementation libs.testcontainers.postgresql
