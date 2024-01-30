@@ -19,6 +19,8 @@ import pytest
 from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
@@ -975,6 +977,13 @@ class TestBasicRead(BaseTest):
         else:
             return inputs.validate_schema
 
+    @pytest.fixture(name="should_validate_stream_statuses")
+    def should_validate_stream_statuses_fixture(self, inputs: BasicReadTestConfig, test_strictness_level: Config.TestStrictnessLevel):
+        if not inputs.validate_stream_statuses and test_strictness_level is Config.TestStrictnessLevel.high:
+            pytest.fail("High strictness level error: validate_stream_statuses must be set to true in the basic read test configuration.")
+        else:
+            return inputs.validate_stream_statuses
+
     @pytest.fixture(name="should_fail_on_extra_columns")
     def should_fail_on_extra_columns_fixture(self, inputs: BasicReadTestConfig):
         # TODO (Ella): enforce this param once all connectors are passing
@@ -1026,6 +1035,7 @@ class TestBasicRead(BaseTest):
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
+        should_validate_stream_statuses: Boolean,
         should_fail_on_extra_columns: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
@@ -1035,6 +1045,8 @@ class TestBasicRead(BaseTest):
         certified_file_based_connector: bool,
     ):
         output = await docker_runner.call_read(connector_config, configured_catalog)
+        all_statuses = [message.trace.stream_status for message in filter_output(output, Type.TRACE)]
+
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
         if certified_file_based_connector:
@@ -1066,6 +1078,9 @@ class TestBasicRead(BaseTest):
                 ignored_fields=ignored_fields,
                 detailed_logger=detailed_logger,
             )
+
+        if should_validate_stream_statuses:
+            self._validate_stream_statuses(configured_catalog=configured_catalog, statuses=all_statuses)
 
     async def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
         if not inputs.expect_trace_message_on_failure:
@@ -1232,6 +1247,21 @@ class TestBasicRead(BaseTest):
             f"and at least one with unstructured type {unstructured_types} to the test account "
             "or add them to the `file_types -> unsupported_types` list in config."
         )
+
+    @staticmethod
+    def _validate_stream_statuses(configured_catalog: ConfiguredAirbyteCatalog, statuses: List[AirbyteStreamStatusTraceMessage]):
+        stream_statuses = defaultdict(list)
+        for status in statuses:
+            stream_statuses[status.stream_descriptor.name].append(status.status)
+
+        assert set(x.stream.name for x in configured_catalog.streams) == set(stream_statuses), "All stream must emit status"
+
+        for stream_name, status_list in stream_statuses.items():
+            assert status_list == [
+                AirbyteStreamStatus.STARTED.value,
+                AirbyteStreamStatus.RUNNING.value,
+                AirbyteStreamStatus.COMPLETE.value,
+            ], f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`, `COMPLETE`"
 
 
 @pytest.mark.default_timeout(TEN_MINUTES)
