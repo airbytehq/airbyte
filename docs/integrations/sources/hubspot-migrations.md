@@ -9,7 +9,7 @@ This change is only breaking if you are syncing the Marketing Emails stream.
 This update brings extended schema with data type changes for the Marketing Emails stream.
 
 Users should:
- - Refresh the source schema for the Marketing Emails stream
+ - Refresh the source schema for the Marketing Emails stream.
  - Reset the stream after upgrading to ensure uninterrupted syncs.
 
 ### Refresh affected schemas and reset data
