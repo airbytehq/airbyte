@@ -201,6 +201,10 @@ Make sure the database is accessible inside the cluster using `busy-box` service
 If you're using the external database for the first time you must ensure the database you're going to use exists. The default database Airbyte will try to use is `airbyte` but you can modified it in the `values.yaml`.
 :::
 
+:::warning
+You can use only one database to a one Airbyte Helm deployment. If you try to use the same database for a different deployment it will have conflict with Temporal internal databases.
+:::
+
 Create a Kubernetes secret to store the database password.
 Save the file as `db-secrets.yaml`.
 ```yaml
