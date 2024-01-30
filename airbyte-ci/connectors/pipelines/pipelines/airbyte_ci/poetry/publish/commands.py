@@ -47,10 +47,11 @@ def _validate_python_version(_ctx: dict, _param: dict, value: Optional[str]) -> 
     envvar="PYTHON_REGISTRY_TOKEN",
 )
 @click.option(
-    "--registry-url",
+    "--python-registry-url",
     help="Which registry to publish to. If not set, the default pypi is used. For test pypi, use https://test.pypi.org/legacy/",
     type=click.STRING,
     default=DEFAULT_PYTHON_PACKAGE_REGISTRY_URL,
+    envvar="PYTHON_REGISTRY_URL",
 )
 @click.option(
     "--publish-name",
@@ -69,7 +70,7 @@ async def publish(
     ctx: click.Context,
     click_pipeline_context: ClickPipelineContext,
     python_registry_token: str,
-    registry_url: str,
+    python_registry_url: str,
     publish_name: Optional[str],
     publish_version: Optional[str],
 ) -> bool:
@@ -85,7 +86,7 @@ async def publish(
         ci_context=ctx.obj.get("ci_context"),
         ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
         python_registry_token=python_registry_token,
-        registry=registry_url,
+        registry=python_registry_url,
         package_path=ctx.obj["package_path"],
         package_name=publish_name,
         version=publish_version,
