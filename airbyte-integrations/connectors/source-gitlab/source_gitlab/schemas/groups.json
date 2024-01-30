@@ -38,6 +38,17 @@
               }
             }
           }
+        },
+        "allowed_to_push": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "access_level": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
         }
       }
     },

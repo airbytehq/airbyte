@@ -123,6 +123,9 @@
         },
         "members": {
           "type": ["null", "string"]
+        },
+        "cluster_agents": {
+          "type": ["null", "string"]
         }
       }
     },
@@ -331,6 +334,12 @@
           "type": ["null", "integer"]
         },
         "container_registry_size": {
+          "type": ["null", "integer"]
+        },
+        "pipeline_artifacts_size": {
+          "type": ["null", "integer"]
+        },
+        "uploads_size": {
           "type": ["null", "integer"]
         }
       }
