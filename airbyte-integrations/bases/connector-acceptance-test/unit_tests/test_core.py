@@ -13,13 +13,16 @@ from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Level,
+    StreamDescriptor,
     SyncMode,
     TraceType,
-    Type, AirbyteStreamStatusTraceMessage, StreamDescriptor, AirbyteStreamStatus,
+    Type,
 )
 from connector_acceptance_test.config import (
     BasicReadTestConfig,
@@ -1335,20 +1338,10 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
 
 
 # TODO: add parametrize with expectation and output
-async def test_read_validate_stream_statuses(mocker):
-    configured_catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream.parse_obj({"name": f"test_stream_{x}", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}),
-                sync_mode="full_refresh",
-                destination_sync_mode="overwrite",
-            ) for x in range(3)
-        ]
-    )
-    AirbyteTraceMessage(type=TraceType.STREAM_STATUS, emitted_at=1,
-        stream_status=AirbyteStreamStatusTraceMessage(stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.STARTED)
-    )
-    async_output = [
+@pytest.mark.parametrize(
+    "output, expected_exception",
+    [
+        ([
         AirbyteTraceMessage(type=TraceType.STREAM_STATUS, emitted_at=1,stream_status=AirbyteStreamStatusTraceMessage(stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.STARTED)),
         AirbyteTraceMessage(type=TraceType.STREAM_STATUS, emitted_at=1,stream_status=AirbyteStreamStatusTraceMessage(stream_descriptor=StreamDescriptor(name="test_stream_2"), status=AirbyteStreamStatus.STARTED)),
         AirbyteTraceMessage(type=TraceType.STREAM_STATUS, emitted_at=1,stream_status=AirbyteStreamStatusTraceMessage(stream_descriptor=StreamDescriptor(name="test_stream_1"), status=AirbyteStreamStatus.STARTED)),
@@ -1373,11 +1366,24 @@ async def test_read_validate_stream_statuses(mocker):
         AirbyteTraceMessage(type=TraceType.STREAM_STATUS, emitted_at=120,
                             stream_status=AirbyteStreamStatusTraceMessage(stream_descriptor=StreamDescriptor(name="test_stream_0"),
                                                                           status=AirbyteStreamStatus.COMPLETE)),
-    ]
-    docker_runner_mock = mocker.MagicMock(call_read=mocker.AsyncMock(return_value=async_output))
+    ], does_not_raise())
+    ],
+    ids=['async_output_no_exception']
+)
+async def test_read_validate_stream_statuses(mocker, output, expected_exception):
+    configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream.parse_obj({"name": f"test_stream_{x}", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}),
+                sync_mode="full_refresh",
+                destination_sync_mode="overwrite",
+            ) for x in range(3)
+        ]
+    )
+    docker_runner_mock = mocker.MagicMock(call_read=mocker.AsyncMock(return_value=output))
 
     t = test_core.TestBasicRead()
-    with does_not_raise():  # expectation:
+    with expected_exception:
         await t.test_read(
             connector_config=None,
             configured_catalog=configured_catalog,
