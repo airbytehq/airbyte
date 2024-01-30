@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import backoff
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
+import backoff
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -43,7 +43,6 @@ class SourceRecurly(AbstractSource):
         super(SourceRecurly, self).__init__()
 
         self.__client = None
-
 
     @backoff.on_exception(
         backoff.expo,
