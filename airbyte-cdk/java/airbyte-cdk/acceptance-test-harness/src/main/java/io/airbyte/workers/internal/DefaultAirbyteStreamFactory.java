@@ -108,7 +108,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   }
 
   protected Stream<JsonNode> parseJson(final String line) {
-    final Optional<JsonNode> jsonLine = Jsons.tryDeserialize(line);
+    final Optional<JsonNode> jsonLine = Jsons.tryDeserializeWithoutWarn(line);
     if (jsonLine.isEmpty()) {
       // we log as info all the lines that are not valid json
       // some sources actually log their process on stdout, we
