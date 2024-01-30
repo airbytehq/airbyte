@@ -31,8 +31,7 @@ data:
           floats.
         upgradeDeadline: "2023-08-31"
       6.0.0:
-        message:
-          Declare 'id' columns as primary keys.
+        message: Declare 'id' columns as primary keys.
         upgradeDeadline: "2024-04-01"
   resourceRequirements:
     jobSpecific:
