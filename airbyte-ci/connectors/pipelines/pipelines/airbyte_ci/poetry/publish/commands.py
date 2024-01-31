@@ -14,7 +14,7 @@ from packaging import version
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_URL
+from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 from pipelines.models.contexts.python_registry_publish import PythonRegistryPublishContext
 from pipelines.models.steps import StepStatus
@@ -87,6 +87,7 @@ async def publish(
         ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
         python_registry_token=python_registry_token,
         registry=python_registry_url,
+        registry_check_url=DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL,
         package_path=ctx.obj["package_path"],
         package_name=publish_name,
         version=publish_version,

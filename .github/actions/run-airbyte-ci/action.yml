@@ -79,10 +79,6 @@ inputs:
   python_registry_token:
     description: "Python registry API token to publish python package"
     required: false
-  python_registry_url:
-    description: "Python registry URL to publish python package"
-    default: "https://upload.pypi.org/legacy/"
-    required: false
 
 runs:
   using: "composite"
@@ -140,6 +136,7 @@ runs:
         PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
         PYTHON_REGISTRY_TOKEN: ${{ inputs.python_registry_token }}
         PYTHON_REGISTRY_URL: ${{ inputs.python_registry_url }}
+        PYTHON_REGISTRY_CHECK_URL: ${{ inputs.python_registry_check_url }}
         S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ inputs.s3_build_cache_access_key_id }}
         S3_BUILD_CACHE_SECRET_KEY: ${{ inputs.s3_build_cache_secret_key }}
         SENTRY_DSN: ${{ inputs.sentry_dsn }}
