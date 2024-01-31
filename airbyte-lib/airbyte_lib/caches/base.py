@@ -151,6 +151,7 @@ class SQLCacheBase(RecordProcessor):
 
         self.file_writer = file_writer or self.file_writer_class(config)
         self.type_converter = self.type_converter_class()
+        self._cached_table_definitions: dict[str, sqlalchemy.Table] = {}
 
     def __getitem__(self, stream: str) -> DatasetBase:
         return self.streams[stream]
@@ -252,16 +253,22 @@ class SQLCacheBase(RecordProcessor):
     def _get_table_by_name(
         self,
         table_name: str,
+        *,
+        force_refresh: bool = False,
     ) -> sqlalchemy.Table:
         """Return a table object from a table name.
 
-        TODO: Cache the table objects to avoid repeated lookups against the remote DB.
+        To prevent unnecessary round-trips to the database, the table is cached after the first
+        query. To ignore the cache and force a refresh, set 'force_refresh' to True.
         """
-        return sqlalchemy.Table(
-            table_name,
-            sqlalchemy.MetaData(schema=self.config.schema_name),
-            autoload_with=self.get_sql_engine(),
-        )
+        if force_refresh or table_name not in self._cached_table_definitions:
+            self._cached_table_definitions[table_name] = sqlalchemy.Table(
+                table_name,
+                sqlalchemy.MetaData(schema=self.config.schema_name),
+                autoload_with=self.get_sql_engine(),
+            )
+
+        return self._cached_table_definitions[table_name]
 
     @final
     @property
