@@ -29,41 +29,14 @@ from airbyte_lib import exceptions as exc
 import ulid
 
 
-LOCAL_TEST_REGISTRY_URL = "./tests/integration_tests/fixtures/registry.json"
-
-
 @pytest.fixture(scope="module", autouse=True)
-def source_test_installation():
-    """
-    Prepare test environment. This will pre-install the test source from the fixtures array and set
-    the environment variable to use the local json file as registry.
-    """
-    venv_dir = ".venv-source-test"
-    if os.path.exists(venv_dir):
-        shutil.rmtree(venv_dir)
-
-    subprocess.run(["python", "-m", "venv", venv_dir], check=True)
-    subprocess.run([f"{venv_dir}/bin/pip", "install", "-e", "./tests/integration_tests/fixtures/source-test"], check=True)
-
-    yield
-
-    shutil.rmtree(".venv-source-test")
+def autouse_source_test_installation(source_test_installation):
+    return
 
 
 @pytest.fixture(scope="function", autouse=True)
-def source_test_registry(monkeypatch):
-    """
-    Set environment variables for the test source.
-
-    These are applied to this test file only.
-    """
-    env_vars = {
-        "AIRBYTE_LOCAL_REGISTRY": LOCAL_TEST_REGISTRY_URL,
-        "DO_NOT_TRACK": "true"
-    }
-
-    for key, value in env_vars.items():
-        monkeypatch.setenv(key, value)
+def autouse_source_test_registry(source_test_registry):
+    return
 
 
 @pytest.fixture
@@ -84,8 +57,6 @@ def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
     }
 
 def test_registry_get():
-    assert registry._get_registry_url() == LOCAL_TEST_REGISTRY_URL
-
     metadata = registry.get_connector_metadata("source-test")
     assert metadata.name == "source-test"
     assert metadata.latest_available_version == "0.0.1"

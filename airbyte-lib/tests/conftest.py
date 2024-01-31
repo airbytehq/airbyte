@@ -5,7 +5,9 @@
 import json
 import logging
 import os
+import shutil
 import socket
+import subprocess
 import time
 
 import ulid
@@ -26,6 +28,8 @@ logger = logging.getLogger(__name__)
 PYTEST_POSTGRES_IMAGE = "postgres:13"
 PYTEST_POSTGRES_CONTAINER = "postgres_pytest_container"
 PYTEST_POSTGRES_PORT = 5432
+
+LOCAL_TEST_REGISTRY_URL = "./tests/integration_tests/fixtures/registry.json"
 
 
 def pytest_collection_modifyitems(items: list[Item]) -> None:
@@ -188,3 +192,37 @@ def snowflake_config():
     )
 
     yield config
+
+
+@pytest.fixture(scope="module")
+def source_test_installation():
+    """
+    Prepare test environment. This will pre-install the test source from the fixtures array and set
+    the environment variable to use the local json file as registry.
+    """
+    venv_dir = ".venv-source-test"
+    if os.path.exists(venv_dir):
+        shutil.rmtree(venv_dir)
+
+    subprocess.run(["python", "-m", "venv", venv_dir], check=True)
+    subprocess.run([f"{venv_dir}/bin/pip", "install", "-e", "./tests/integration_tests/fixtures/source-test"], check=True)
+
+    yield
+
+    shutil.rmtree(".venv-source-test")
+
+
+@pytest.fixture(scope="function")
+def source_test_registry(monkeypatch):
+    """
+    Set environment variables for the test source.
+
+    These are applied to this test file only.
+    """
+    env_vars = {
+        "AIRBYTE_LOCAL_REGISTRY": LOCAL_TEST_REGISTRY_URL,
+        "DO_NOT_TRACK": "true"
+    }
+
+    for key, value in env_vars.items():
+        monkeypatch.setenv(key, value)
