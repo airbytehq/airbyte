@@ -4,12 +4,19 @@ export default function AirbyteLibConnectors({
     const connectors = JSON.parse(connectorsJSON);
     return <ul>
     {connectors.map((connector) => <li key={connector.name_oss}>
-        <a href={`${getRelativeDocumentationUrl(connector.spec_oss.documentationUrl)}#usage-with-airbyte-lib`}>{connector.name_oss}</a>
+        <a href={`${getRelativeDocumentationUrl(connector)}#usage-with-airbyte-lib`}>{connector.name_oss}</a>
     </li>)}
     </ul>
 }
 
-function getRelativeDocumentationUrl(url) {
-    const urlObj = new URL(url);
-    return urlObj.pathname;
+function getRelativeDocumentationUrl(connector) {
+    // get the relative path from the the dockerRepository_oss (e.g airbyte/source-amazon-sqs -> /integrations/sources/amazon-sqs)
+
+    const fullDockerImage = connector.dockerRepository_oss;
+    console.log(fullDockerImage);
+    const dockerImage = fullDockerImage.split("airbyte/")[1];
+
+    const [integrationType, ...integrationName] = dockerImage.split("-");
+
+    return `/integrations/${integrationType}s/${integrationName.join("-")}`;
 }
