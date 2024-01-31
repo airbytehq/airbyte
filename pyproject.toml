@@ -101,3 +101,4 @@ error_summary = true
 [tool.pytest.ini_options]
 minversion = "6.2.5"
 addopts ="-r a --capture=no -vv --color=yes"
+testpaths = []

@@ -1,7 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from collections.abc import Mapping
-from enum import auto
 import os
 import shutil
 import subprocess
@@ -30,6 +29,9 @@ from airbyte_lib import exceptions as exc
 import ulid
 
 
+LOCAL_TEST_REGISTRY_URL = "./tests/integration_tests/fixtures/registry.json"
+
+
 @pytest.fixture(scope="module", autouse=True)
 def source_test_installation():
     """
@@ -56,7 +58,7 @@ def source_test_registry(monkeypatch):
     These are applied to this test file only.
     """
     env_vars = {
-        "AIRBYTE_LOCAL_REGISTRY": "./tests/integration_tests/fixtures/registry.json",
+        "AIRBYTE_LOCAL_REGISTRY": LOCAL_TEST_REGISTRY_URL,
         "DO_NOT_TRACK": "true"
     }
 
