@@ -33,6 +33,7 @@ import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Test;
 
 class MongoDbResumeTokenHelperTest {
+
   private static final String DATABASE = "test-database";
 
   @Test
