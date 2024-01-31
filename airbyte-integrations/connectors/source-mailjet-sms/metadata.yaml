@@ -8,6 +8,10 @@ data:
   icon: mailjetsms.svg
   license: MIT
   name: Mailjet SMS
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-mailjet-sms
   registries:
     cloud:
       enabled: true

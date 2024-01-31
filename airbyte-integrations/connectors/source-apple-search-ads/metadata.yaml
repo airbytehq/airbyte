@@ -8,6 +8,10 @@ data:
   icon: apple.svg
   license: MIT
   name: Apple Search Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-apple-search-ads
   registries:
     cloud:
       enabled: false
