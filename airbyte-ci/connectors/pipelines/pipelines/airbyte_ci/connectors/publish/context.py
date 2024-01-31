@@ -5,6 +5,7 @@
 """Module declaring context related classes."""
 
 from typing import Optional
+from urllib.parse import urlparse
 
 import asyncclick as click
 from dagger import Secret
@@ -48,6 +49,7 @@ class PublishConnectorContext(ConnectorContext):
         use_local_cdk: bool = False,
         python_registry_token: Optional[str] = None,
         python_registry_url: Optional[str] = None,
+        python_registry_check_url: Optional[str] = None,
     ) -> None:
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
@@ -56,6 +58,7 @@ class PublishConnectorContext(ConnectorContext):
         self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
         self.python_registry_token = python_registry_token
         self.python_registry_url = python_registry_url
+        self.python_registry_check_url = python_registry_check_url
         pipeline_name = f"Publish {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
 
