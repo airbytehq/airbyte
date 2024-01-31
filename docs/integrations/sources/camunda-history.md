@@ -29,7 +29,6 @@ History API enabled by default and doesn't require username/password.
 3. Enter Start date in a format YYYY-MM-DDTHH:mm:ssZ. This Timestamp will point to the beginning from where you start ingesting Camunda History.
 4. Provide batchsize with a number of events pulled in a single rest call. 100 is a good default. Don't set it too high, it might overload the source system.
 
-<HideInUI>
 
 ## Supported sync modes
 
@@ -61,10 +60,10 @@ The full ist of fileds and their type documented in [Camunda REST](https://docs.
 ## joining streams with DBT
 
 Camunda APIs which export events with a start and end time being retrieved by 2 Streams:
-<API_NAME>-startedAfter and <API_NAME>-finishedAfter or similar
+API_NAME-startedAfter and API_NAME-finishedAfter or similar
 
-<API_NAME>-startedAfter - events which have started but haven't yet finished. Such even might not have end date yet.
-<API_NAME>-finishedAfter - events which have finished and have both
+API_NAME-startedAfter - events which have started but haven't yet finished. Such even might not have end date yet.
+API_NAME-finishedAfter - events which have finished and have both
 
 We pull both types of events as independent streams so we don't miss any event which havn't finished yet or which has finished after we already recived it with a start only. At the same time it helps avoiding full sync every time so we use cursor. 
 
