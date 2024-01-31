@@ -133,7 +133,7 @@ def test_version_enforcement(
         name="source-test", latest_available_version=latest_available_version
     )
 
-    # We need to initialize the cache before we can cache it.
+    # We need to initialize the cache before we can patch it.
     _ = registry._get_registry_cache()
     with patch.dict("airbyte_lib.registry.__cache", {"source-test": patched_entry}, clear=False):
         if raises:
