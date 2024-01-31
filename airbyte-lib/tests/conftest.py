@@ -158,6 +158,8 @@ def new_pg_cache_config(pg_dsn):
         password="postgres",
         database="postgres",
         schema_name="public",
+
+        # TODO: Move this to schema name when we support it (breaks as of 2024-01-31):
         table_prefix=f"test{str(ulid.ULID())[-6:]}_",
     )
     yield config
@@ -182,6 +184,7 @@ def snowflake_config():
         database=secret["database"],
         warehouse=secret["warehouse"],
         role=secret["role"],
+        schema_name=f"test{str(ulid.ULID()).lower()[-6:]}",
     )
 
     yield config
