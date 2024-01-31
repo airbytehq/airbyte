@@ -261,10 +261,9 @@ class ReportResult(PendoPythonStream):
                             for field in result:
                                 if result[field] is not None:
                                     schema["properties"][field] = self.infer_type(result[field])
-                self.json_schema = schema
             except Exception as e:
                 print(f"Error fetching sample Pendo Report Results: {e}")
-                self.json_schema = schema
+            self.json_schema = schema
 
         return self.json_schema
 
