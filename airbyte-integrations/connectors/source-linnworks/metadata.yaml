@@ -26,5 +26,5 @@ data:
       packageName: airbyte-source-linnworks
   supportLevel: community
   tags:
-  - language:python
-metadataSpecVersion: '1.0'
+    - language:python
+metadataSpecVersion: "1.0"

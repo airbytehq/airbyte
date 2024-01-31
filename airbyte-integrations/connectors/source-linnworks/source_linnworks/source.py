@@ -36,7 +36,7 @@ class LinnworksAuthenticator(Oauth2Authenticator):
             access_token_name=access_token_name,
             expires_in_name=expires_in_name,
         )
-        self.access_token_name=access_token_name
+        self.access_token_name = access_token_name
         self.application_id = application_id
         self.application_secret = application_secret
         self.expires_in_name = expires_in_name
