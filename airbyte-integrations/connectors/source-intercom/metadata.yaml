@@ -17,6 +17,11 @@ data:
   icon: intercom.svg
   license: MIT
   name: Intercom
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-intercom
   registries:
     cloud:
       enabled: true

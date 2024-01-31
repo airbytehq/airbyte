@@ -17,6 +17,10 @@ data:
   icon: harvest.svg
   license: MIT
   name: Harvest
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-harvest
   registries:
     cloud:
       enabled: true
