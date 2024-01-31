@@ -18,6 +18,10 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 5400
   name: GitHub
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-github
   registries:
     cloud:
       enabled: true

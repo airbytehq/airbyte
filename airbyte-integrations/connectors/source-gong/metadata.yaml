@@ -8,6 +8,10 @@ data:
   icon: gong.svg
   license: MIT
   name: Gong
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gong
   registries:
     cloud:
       enabled: false

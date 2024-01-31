@@ -15,6 +15,10 @@ data:
   icon: facebook.svg
   license: ELv2
   name: Facebook Pages
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-facebook-pages
   registries:
     cloud:
       enabled: false # hide from cloud until https://github.com/airbytehq/airbyte/issues/25515 is finished

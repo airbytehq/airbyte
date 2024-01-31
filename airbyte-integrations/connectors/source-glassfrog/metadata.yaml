@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.glassfrog.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-glassfrog
   registries:
     oss:
       enabled: true

@@ -17,6 +17,10 @@ data:
   icon: file.svg
   license: MIT
   name: File (CSV, JSON, Excel, Feather, Parquet)
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-file
   registries:
     cloud:
       enabled: true
