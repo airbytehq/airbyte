@@ -16,6 +16,10 @@ data:
   icon: square.svg
   license: MIT
   name: Square
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-square
   registries:
     cloud:
       enabled: true
