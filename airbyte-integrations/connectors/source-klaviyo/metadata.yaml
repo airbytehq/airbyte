@@ -14,6 +14,10 @@ data:
   icon: klaviyo.svg
   license: MIT
   name: Klaviyo
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-klaviyo
   registries:
     cloud:
       enabled: true

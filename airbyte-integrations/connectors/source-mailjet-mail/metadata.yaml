@@ -8,6 +8,10 @@ data:
   icon: mailjetmail.svg
   license: MIT
   name: Mailjet Mail
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-mailjet-mail
   registries:
     cloud:
       enabled: false
