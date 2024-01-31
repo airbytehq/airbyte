@@ -1,6 +1,6 @@
 package io.airbyte.integrations.source.postgres.xmin;
 
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorProcessor;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -11,9 +11,9 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class XminStateIteratorProcessor implements SourceStateIteratorProcessor<AirbyteMessage> {
+public class XminStateIteratorManager implements SourceStateIteratorManager<AirbyteMessage> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(XminStateIteratorProcessor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(XminStateIteratorManager.class);
 
   private final AirbyteStreamNameNamespacePair pair;
   private boolean hasEmittedFinalState;
@@ -24,7 +24,7 @@ public class XminStateIteratorProcessor implements SourceStateIteratorProcessor<
   /**
    * @param pair Stream Name and Namespace (e.g. public.users)
    */
-  public XminStateIteratorProcessor(
+  public XminStateIteratorManager(
       final AirbyteStreamNameNamespacePair pair,
       final XminStatus xminStatus) {
     this.pair = pair;

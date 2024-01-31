@@ -3,7 +3,7 @@ package io.airbyte.integrations.source.postgres.ctid;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_VERSION;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorProcessor;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -17,9 +17,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CtidStateIteratorProcessor implements SourceStateIteratorProcessor<AirbyteMessageWithCtid> {
+public class CtidStateIteratorManager implements SourceStateIteratorManager<AirbyteMessageWithCtid> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateIteratorProcessor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateIteratorManager.class);
   private final AirbyteStreamNameNamespacePair pair;
   private String lastCtid;
   private final JsonNode streamStateForIncrementalRun;
@@ -28,7 +28,7 @@ public class CtidStateIteratorProcessor implements SourceStateIteratorProcessor<
   private final Duration syncCheckpointDuration;
   private final Long syncCheckpointRecords;
 
-  public CtidStateIteratorProcessor(final AirbyteStreamNameNamespacePair pair,
+  public CtidStateIteratorManager(final AirbyteStreamNameNamespacePair pair,
                                     final FileNodeHandler fileNodeHandler,
                                     final CtidStateManager stateManager,
                                     final JsonNode streamStateForIncrementalRun,
