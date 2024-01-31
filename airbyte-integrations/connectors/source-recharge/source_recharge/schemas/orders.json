@@ -83,13 +83,13 @@
           "type": ["null", "integer"]
         },
         "external_transaction_id": {
-            "type": ["null", "object"],
-            "additionalProperties": true,
-            "properties": {
-              "payment_processor": {
-                "type": ["null", "string"]
-              }
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "payment_processor": {
+              "type": ["null", "string"]
             }
+          }
         },
         "payment_processor_name": {
           "type": ["null", "string"]
@@ -130,7 +130,7 @@
         "ecommerce": {
           "type": ["null", "string"]
         }
-      } 
+      }
     },
     "external_order_name": {
       "type": ["null", "object"],
@@ -139,7 +139,7 @@
         "ecommerce": {
           "type": ["null", "string"]
         }
-      } 
+      }
     },
     "external_order_number": {
       "type": ["null", "object"],
@@ -148,7 +148,7 @@
         "ecommerce": {
           "type": ["null", "string"]
         }
-      } 
+      }
     },
     "order_attributes": {
       "type": ["null", "array"],

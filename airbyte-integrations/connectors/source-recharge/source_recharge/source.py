@@ -12,17 +12,17 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .api import (
-    Addresses, 
-    Charges, 
-    Collections, 
-    Customers, 
-    Discounts, 
-    Metafields, 
-    Onetimes, 
+    Addresses,
+    Charges,
+    Collections,
+    Customers,
+    Discounts,
+    Metafields,
+    Onetimes,
     OrdersDeprecatedApi,
     OrdersModernApi,
-    Products, 
-    Shop, 
+    Products,
+    Shop,
     Subscriptions,
 )
 
@@ -46,7 +46,7 @@ class SourceRecharge(AbstractSource):
     def select_orders_stream(self, config: Mapping[str, Any], **kwargs) -> Union[OrdersDeprecatedApi, OrdersModernApi]:
         if config.get("use_orders_deprecated_api", False):
             return OrdersDeprecatedApi(config, **kwargs)
-        else:    
+        else:
             return OrdersModernApi(config, **kwargs)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
