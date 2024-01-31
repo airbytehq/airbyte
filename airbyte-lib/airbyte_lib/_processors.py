@@ -30,7 +30,9 @@ from airbyte_protocol.models import (
     Type,
 )
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib._util import protocol_util  # Internal utility functions
+from airbyte_lib.progress import progress
 
 
 if TYPE_CHECKING:
@@ -39,7 +41,7 @@ if TYPE_CHECKING:
     from airbyte_lib.config import CacheConfigBase
 
 
-DEFAULT_BATCH_SIZE = 10000
+DEFAULT_BATCH_SIZE = 10_000
 
 
 class BatchHandle:
@@ -87,17 +89,22 @@ class RecordProcessor(abc.ABC):
     def register_source(
         self,
         source_name: str,
-        source_catalog: ConfiguredAirbyteCatalog,
+        incoming_source_catalog: ConfiguredAirbyteCatalog,
     ) -> None:
         """Register the source name and catalog.
 
         For now, only one source at a time is supported.
         If this method is called multiple times, the last call will overwrite the previous one.
 
-        TODO: Expand this to handle mutliple sources.
+        TODO: Expand this to handle multiple sources.
         """
         _ = source_name
-        self.source_catalog = source_catalog
+        self.source_catalog = incoming_source_catalog
+
+    @property
+    def _streams_with_data(self) -> set[str]:
+        """Return a list of known streams."""
+        return self._pending_batches.keys() | self._finalized_batches.keys()
 
     @final
     def process_stdin(
@@ -151,6 +158,7 @@ class RecordProcessor(abc.ABC):
                 if len(stream_batch) >= max_batch_size:
                     record_batch = pa.Table.from_pylist(stream_batch)
                     self._process_batch(stream_name, record_batch)
+                    progress.log_batch_written(stream_name, len(stream_batch))
                     stream_batch.clear()
 
             elif message.type is Type.STATE:
@@ -166,17 +174,24 @@ class RecordProcessor(abc.ABC):
                 pass
 
             else:
-                raise ValueError(f"Unexpected message type: {message.type}")
+                raise exc.AirbyteConnectorError(
+                    message="Unexpected message type.",
+                    context={
+                        "message_type": message.type,
+                    },
+                )
 
         # We are at the end of the stream. Process whatever else is queued.
-        for stream_name, batch in stream_batches.items():
-            if batch:
-                record_batch = pa.Table.from_pylist(batch)
+        for stream_name, stream_batch in stream_batches.items():
+            if stream_batch:
+                record_batch = pa.Table.from_pylist(stream_batch)
                 self._process_batch(stream_name, record_batch)
+                progress.log_batch_written(stream_name, len(stream_batch))
 
         # Finalize any pending batches
         for stream_name in list(self._pending_batches.keys()):
             self._finalize_batches(stream_name)
+            progress.log_stream_finalized(stream_name)
 
     @final
     def _process_batch(
@@ -276,7 +291,10 @@ class RecordProcessor(abc.ABC):
         state_messages_to_finalize = self._pending_state_messages[stream_name].copy()
         self._pending_batches[stream_name].clear()
         self._pending_state_messages[stream_name].clear()
+
+        progress.log_batches_finalizing(stream_name, len(batches_to_finalize))
         yield batches_to_finalize
+        progress.log_batches_finalized(stream_name, len(batches_to_finalize))
 
         self._finalized_batches[stream_name].update(batches_to_finalize)
         self._finalized_state_messages[stream_name] += state_messages_to_finalize

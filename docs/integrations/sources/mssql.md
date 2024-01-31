@@ -109,7 +109,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
   @source_schema = N'{schema name}',
   @source_name   = N'{table name}',
   @role_name     = N'{role name}',  [1]
-  @filegroup_name = N'{fiilegroup name}', [2]
+  @filegroup_name = N'{filegroup name}', [2]
   @supports_net_changes = 0 [3]
   GO
   ```
@@ -342,6 +342,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.1 | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573) | Adopt CDK v0.16.0. |
 | 3.6.0   | 2024-01-10 | [33700](https://github.com/airbytehq/airbyte/pull/33700)                                                          | Remove CDC config options for data_to_sync and snapshot isolation.                                                                              |
 | 3.5.1   | 2024-01-05 | [33510](https://github.com/airbytehq/airbyte/pull/33510)                                                          | Test-only changes.                                                                                                                              |
 | 3.5.0   | 2023-12-19 | [33071](https://github.com/airbytehq/airbyte/pull/33071)                                                          | Fix SSL configuration parameters                                                                                                                |
