@@ -8,6 +8,10 @@ data:
   icon: salesforcepardot.svg
   license: MIT
   name: Pardot
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pardot
   registries:
     cloud:
       enabled: false
