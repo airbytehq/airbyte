@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """Read and write strategies for AirbyteLib."""
 from __future__ import annotations
 

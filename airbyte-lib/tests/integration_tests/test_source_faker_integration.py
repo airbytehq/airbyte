@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """Integration tests which leverage the source-faker connector to test the framework end-to-end.
 
 Since source-faker is included in dev dependencies, we can assume `source-faker` is installed
