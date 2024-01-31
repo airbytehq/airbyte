@@ -1,10 +1,10 @@
 # Changelog
 
 ## 3.3.3
-Add `validate_stream_statuses` to TestBasicRead.test_read
+Add `validate_stream_statuses` to TestBasicRead.test_read:: Validate all statuses for all streams in the catalogs were emitted in correct order.
 
 ## 3.3.2
-Fix TestBasicRead.test_read.validate_schema: set `additionalProperties` to False recursively for objects
+Fix TestBasicRead.test_read.validate_schema: set `additionalProperties` to False recursively for objects.
 
 ## 3.3.1
 Fix TestSpec.test_oauth_is_default_method to skip connectors that doesn't have predicate_key object. 

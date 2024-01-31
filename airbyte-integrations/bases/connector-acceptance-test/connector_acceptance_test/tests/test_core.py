@@ -1079,7 +1079,11 @@ class TestBasicRead(BaseTest):
             )
 
         if should_validate_stream_statuses:
-            all_statuses = [message.trace.stream_status for message in filter_output(output, Type.TRACE) if message.trace.type == TraceType.STREAM_STATUS]
+            all_statuses = [
+                message.trace.stream_status
+                for message in filter_output(output, Type.TRACE)
+                if message.trace.type == TraceType.STREAM_STATUS
+            ]
             self._validate_stream_statuses(configured_catalog=configured_catalog, statuses=all_statuses)
 
     async def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
@@ -1250,6 +1254,7 @@ class TestBasicRead(BaseTest):
 
     @staticmethod
     def _validate_stream_statuses(configured_catalog: ConfiguredAirbyteCatalog, statuses: List[AirbyteStreamStatusTraceMessage]):
+        """Validate all statuses for all streams in the catalogs were emitted in correct order"""
         stream_statuses = defaultdict(list)
         for status in statuses:
             stream_statuses[status.stream_descriptor.name].append(status.status)
