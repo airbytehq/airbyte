@@ -166,7 +166,7 @@ class TestAirbyteLibValidationTests:
         assert "Creating source and validating spec and version..." in result.stdout
         assert "Running check..." in result.stdout
         assert "Fetching streams..." in result.stdout
-        assert "Trying to peek stream" in result.stdout
+        assert "Trying to read from stream" in result.stdout
 
     async def test__run_validation_fail(self, mocker, invalid_secrets, context_for_valid_connector: ConnectorContext, connector_container):
         context_for_valid_connector.get_connector_secrets = mocker.AsyncMock(return_value=invalid_secrets)
