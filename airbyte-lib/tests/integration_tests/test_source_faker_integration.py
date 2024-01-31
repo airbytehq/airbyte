@@ -129,8 +129,8 @@ def all_cache_types(
     _ = postgres_cache
     return [
         duckdb_cache,
-        snowflake_cache,
         postgres_cache,
+        # snowflake_cache,  # Snowflake works, but is slow and expensive to test. # TODO: Re-enable.
     ]
 
 
