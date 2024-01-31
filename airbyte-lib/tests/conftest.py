@@ -209,7 +209,7 @@ def source_test_installation():
 
     yield
 
-    shutil.rmtree(".venv-source-test")
+    shutil.rmtree(venv_dir)
 
 
 @pytest.fixture(scope="function")

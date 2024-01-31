@@ -8,6 +8,7 @@ from typing import Any
 from unittest.mock import Mock, call, patch
 import tempfile
 from pathlib import Path
+from urllib import request
 from airbyte_lib.caches.base import SQLCacheBase
 
 from sqlalchemy import column, text
@@ -108,11 +109,11 @@ def test_non_existing_connector():
 @pytest.mark.parametrize(
     "latest_available_version, requested_version, raises",
     [
-        ("0.0.1", None, False),
-        ("1.2.3", None, False),
         ("0.0.1", "latest", False),
-        ("1.2.3", "latest", True),
         ("0.0.1", "0.0.1", False),
+        ("0.0.1", None, False),
+        ("1.2.3", None, False), # Don't raise if a version is not requested
+        ("1.2.3", "latest", True),
         ("1.2.3", "1.2.3", True),
     ])
 def test_version_enforcement(
@@ -131,6 +132,9 @@ def test_version_enforcement(
     patched_entry = registry.ConnectorMetadata(
         name="source-test", latest_available_version=latest_available_version
     )
+
+    # We need to initialize the cache before we can cache it.
+    _ = registry._get_registry_cache()
     with patch.dict("airbyte_lib.registry.__cache", {"source-test": patched_entry}, clear=False):
         if raises:
             with pytest.raises(Exception):
@@ -148,6 +152,10 @@ def test_version_enforcement(
                 config={"apiKey": "abc"},
                 install_if_missing=False,
             )
+            if requested_version: # Don't raise if a version is not requested
+                assert source.executor._get_installed_version(raise_on_error=True) == (
+                    requested_version or latest_available_version
+                ).replace("latest", latest_available_version)
             source.executor.ensure_installation(auto_fix=False)
 
 
