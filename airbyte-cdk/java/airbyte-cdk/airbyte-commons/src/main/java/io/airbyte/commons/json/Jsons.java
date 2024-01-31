@@ -121,7 +121,7 @@ public class Jsons {
     try {
       return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
     } catch (final Throwable e) {
-      return handleDeserThrowable(e);
+      return handleDeserThrowable(e, jsonString);
     }
   }
 
@@ -129,7 +129,7 @@ public class Jsons {
     try {
       return Optional.of(OBJECT_MAPPER_EXACT.readValue(jsonString, klass));
     } catch (final Throwable e) {
-      return handleDeserThrowable(e);
+      return handleDeserThrowable(e, jsonString);
     }
   }
 
@@ -137,7 +137,7 @@ public class Jsons {
     try {
       return Optional.of(OBJECT_MAPPER.readTree(jsonString));
     } catch (final Throwable e) {
-      return handleDeserThrowable(e);
+      return handleDeserThrowable(e, jsonString);
     }
   }
 
@@ -402,26 +402,38 @@ public class Jsons {
    * (e.g. `<snip...>[Source: (String)"{"foo": "bar"; line: 1, column: 13]`). Logging the class name
    * can at least help narrow down the problem, without leaking potentially-sensitive information.
    */
-  private static <T> Optional<T> handleDeserThrowable(Throwable t) {
+  private static <T> Optional<T> handleDeserThrowable(Throwable t, final String jsonString) {
     // Manually build the stacktrace, excluding the top-level exception object
     // so that we don't accidentally include the exception message.
     // Otherwise we could just do ExceptionUtils.getStackTrace(t).
-    final StringBuilder sb = new StringBuilder();
-    sb.append(t.getClass());
+    final StringBuilder stacktraceBuilder = new StringBuilder();
+    stacktraceBuilder.append(t.getClass());
     for (final StackTraceElement traceElement : t.getStackTrace()) {
-      sb.append("\n\tat ");
-      sb.append(traceElement.toString());
+      stacktraceBuilder.append("\n\tat ");
+      stacktraceBuilder.append(traceElement.toString());
     }
     while (t.getCause() != null) {
       t = t.getCause();
-      sb.append("\nCaused by ");
-      sb.append(t.getClass());
+      stacktraceBuilder.append("\nCaused by ");
+      stacktraceBuilder.append(t.getClass());
       for (final StackTraceElement traceElement : t.getStackTrace()) {
-        sb.append("\n\tat ");
-        sb.append(traceElement.toString());
+        stacktraceBuilder.append("\n\tat ");
+        stacktraceBuilder.append(traceElement.toString());
       }
     }
-    LOGGER.warn("Failed to deserialize json due to {}", sb);
+
+    // and then append a sanitized version of the input string, containing just the braces
+    final StringBuilder sanitizedStringBuilder = new StringBuilder();
+    for (int i = 0; i < jsonString.length(); i++) {
+      final char c = jsonString.charAt(i);
+      if (c == '"') {
+        sanitizedStringBuilder.append(c);
+      } else if (c == '{' || c == '}' || c == ',' || c == ':' || c == '[' || c == ']') {
+        sanitizedStringBuilder.append(c);
+      }
+    }
+
+    LOGGER.warn("Failed to deserialize json {} due to {}", sanitizedStringBuilder, stacktraceBuilder);
     return Optional.empty();
   }
 
