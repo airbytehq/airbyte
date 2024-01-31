@@ -8,6 +8,10 @@ data:
   icon: mailersend.svg
   license: MIT
   name: MailerSend
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-mailersend
   registries:
     cloud:
       enabled: false
