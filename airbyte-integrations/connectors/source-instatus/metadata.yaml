@@ -8,6 +8,10 @@ data:
   icon: instatus.svg
   license: MIT
   name: Instatus
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-instatus
   registries:
     cloud:
       enabled: true
