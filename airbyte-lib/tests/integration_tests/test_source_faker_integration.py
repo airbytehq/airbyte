@@ -32,6 +32,7 @@ def source_faker_seed_a() -> ab.Source:
     """Fixture to return a source-faker connector instance."""
     source = ab.get_connector(
         "source-faker",
+        local_executable="source-faker",
         config={
             "count": FAKER_SCALE_A,
             "seed": SEED_A,
@@ -53,6 +54,7 @@ def source_faker_seed_b() -> ab.Source:
     """Fixture to return a source-faker connector instance."""
     source = ab.get_connector(
         "source-faker",
+        local_executable="source-faker",
         config={
             "count": FAKER_SCALE_B,
             "seed": SEED_B,
