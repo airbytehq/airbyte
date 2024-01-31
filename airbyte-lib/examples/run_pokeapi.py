@@ -1,18 +1,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-"""A simple test of AirbyteLib, using the Faker source connector.
+"""A simple test of AirbyteLib, using the PokeAPI source connector.
 
 Usage (from airbyte-lib root directory):
-> poetry run python ./examples/run_faker.py
+> poetry run python ./examples/run_pokeapi.py
 
-No setup is needed, but you may need to delete the .venv-source-faker folder
+No setup is needed, but you may need to delete the .venv-source-pokeapi folder
 if your installation gets interrupted or corrupted.
 """
 from __future__ import annotations
 
 import airbyte_lib as ab
-
-
-SCALE = 50  # Number of records to generate between users and purchases.
 
 
 source = ab.get_connector(
