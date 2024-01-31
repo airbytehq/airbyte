@@ -18,6 +18,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
+from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
@@ -196,6 +197,8 @@ class AirbyteLibValidation(Step):
 
     title = "AirbyteLib validation tests"
 
+    context: ConnectorContext
+
     async def _run(self, connector_under_test: Container) -> StepResult:
         """Run all pytest tests declared in the test directory of the connector code.
         Args:
@@ -203,11 +206,10 @@ class AirbyteLibValidation(Step):
         Returns:
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
-        context: ConnectorContext = self.context
-        if dpath.util.get(context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
+        if dpath.util.get(self.context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
             return self.skip("Connector is not published on pypi, skipping airbyte-lib validation.")
 
-        test_environment = await self.install_testing_environment(connector_under_test)
+        test_environment = await self.install_testing_environment(with_poetry(self.context))
 
         connector_secrets = await self.context.get_connector_secrets()
         first_secret_name = list(connector_secrets.keys())[0]
@@ -222,7 +224,7 @@ class AirbyteLibValidation(Step):
     async def install_testing_environment(
         self,
         built_connector_container: Container,
-    ) -> Callable:
+    ) -> Container:
         """Add airbyte-lib and secrets to the test environment."""
         context: ConnectorContext = self.context
         secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets")
