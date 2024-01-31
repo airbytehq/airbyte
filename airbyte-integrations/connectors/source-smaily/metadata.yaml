@@ -8,6 +8,10 @@ data:
   icon: smaily.svg
   license: MIT
   name: Smaily
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-smaily
   registries:
     cloud:
       enabled: true

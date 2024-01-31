@@ -12,6 +12,10 @@ data:
   icon: senseforce.svg
   license: MIT
   name: Senseforce
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-senseforce
   registries:
     cloud:
       enabled: true

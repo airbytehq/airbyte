@@ -8,6 +8,10 @@ data:
   icon: searchmetrics.svg
   license: MIT
   name: SearchMetrics
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-search-metrics
   registries:
     cloud:
       enabled: false
