@@ -14,7 +14,7 @@ from packaging import version
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL
+from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 from pipelines.models.contexts.python_registry_publish import PythonRegistryPublishContext
 from pipelines.models.steps import StepStatus

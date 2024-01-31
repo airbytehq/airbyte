@@ -79,14 +79,6 @@ inputs:
   python_registry_token:
     description: "Python registry API token to publish python package"
     required: false
-  python_registry_url:
-    description: "Python registry URL to publish python package"
-    default: "https://upload.pypi.org/legacy/"
-    required: false
-  python_registry_check_url:
-    description: "Python registry URL to check whether a python package is published already"
-    default: "https://pypi.org/pypi"
-    required: false
 
 runs:
   using: "composite"
