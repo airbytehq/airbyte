@@ -130,14 +130,13 @@ class SourceKintone(Source):
                 logger.error(
                     f"could not sync stream '{configured_stream.stream.name}', invalid sync_mode: {configured_stream.sync_mode}")
 
-            logger.info(f"app: '{app}'")
             records = client.get_app_records(app["appId"], cursor_field, cursor_value)
             for record in records:
                 cursor_value = record.get(cursor_field, cursor_value)
                 yield AirbyteMessage(
                     type=Type.RECORD,
                     record=AirbyteRecordMessage(
-                        stream=app["name"],
+                        stream=stream_name,
                         data=record,
                         emitted_at=self._find_emitted_at(),
                     ))
