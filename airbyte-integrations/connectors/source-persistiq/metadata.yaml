@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.persistiq.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-persistiq
   registries:
     oss:
       enabled: true

@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "*"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-orbit
   registries:
     oss:
       enabled: true

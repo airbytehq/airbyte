@@ -16,6 +16,10 @@ data:
   icon: posthog.svg
   license: MIT
   name: PostHog
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-posthog
   registries:
     cloud:
       enabled: true
