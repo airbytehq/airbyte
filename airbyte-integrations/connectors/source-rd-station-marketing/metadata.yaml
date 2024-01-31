@@ -8,6 +8,10 @@ data:
   icon: rdstation.svg
   license: MIT
   name: RD Station Marketing
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-rd-station-marketing
   registries:
     cloud:
       enabled: false
