@@ -648,7 +648,6 @@ websocket-client = ">=0.32.0"
 ssh = ["paramiko (>=2.4.3)"]
 
 [[package]]
-<<<<<<< HEAD
 name = "dpath"
 version = "2.1.6"
 description = "Filesystem-like pathing and searching for dictionaries"
@@ -659,7 +658,7 @@ files = [
     {file = "dpath-2.1.6.tar.gz", hash = "sha256:f1e07c72e8605c6a9e80b64bc8f42714de08a789c7de417e49c3f87a19692e47"},
 ]
 
-=======
+[[package]]
 name = "editor"
 version = "1.6.5"
 description = "🖋 Open the default text editor 🖋"
@@ -674,7 +673,6 @@ files = [
 runs = "*"
 xmod = "*"
 
->>>>>>> origin/master
 [[package]]
 name = "exceptiongroup"
 version = "1.2.0"
@@ -2589,8 +2587,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-<<<<<<< HEAD
-content-hash = "bf876f28b303f1db188a7dcacfc91911f9c7b5b81e849a21ab1d289501cf346f"
-=======
-content-hash = "de011a00b912c9acd6d4f202c7cf54308010efc14a214ee25608712851306aa9"
->>>>>>> origin/master
+content-hash = "68c67e470fdf10ce89ada657bbbaa94dfbad98324b19d866de9cbb924beab5f7"
