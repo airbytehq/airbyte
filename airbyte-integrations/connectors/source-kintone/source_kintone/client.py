@@ -75,14 +75,14 @@ class Client:
             data=json.dumps(params).encode("utf-8"),
             method="DELETE",
         )
-
-    def _rename_app_name(self, app_id: str, app_name: str):
-        mappings = self.app_name_mappings
-        return mappings.get(app_id, app_name)
     
     def _rename_field_code_from_jp_to_en(self, app_id: str, field_code: str):
         mappings = self.field_code_mappings[app_id]
         return mappings.get(field_code, field_code)
+    
+    def rename_app_name(self, app_id: str, app_name: str):
+        mappings = self.app_name_mappings
+        return mappings.get(app_id, app_name)
 
     # ref. https://kintone.dev/en/docs/kintone/rest-api/apps/get-app/
     def get_app(self, app_id: str):
@@ -154,7 +154,7 @@ class Client:
         app_name_original = app.get("name")
         if not app_name_original:
             return None
-        app_name = self._rename_app_name(app_id, app_name_original)
+        app_name = self.rename_app_name(app_id, app_name_original)
 
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",

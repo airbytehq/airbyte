@@ -102,7 +102,8 @@ class SourceKintone(Source):
         apps = {}
         for app_id in config.get("app_ids"):
             app = client.get_app(app_id)
-            app_name = app.get("name")
+            app_name_original = app.get("name")
+            app_name = client._rename_app_name(app_id, app_name_original)
             apps[app_name] = app
 
         cursor_field, cursor_value = None, None
