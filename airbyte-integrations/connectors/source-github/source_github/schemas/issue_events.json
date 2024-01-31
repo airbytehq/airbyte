@@ -50,6 +50,83 @@
     "issue": {
       "type": ["null", "object"],
       "properties": {
+        "active_lock_reason": {
+          "type": ["null", "string"]
+        },
+        "assignee": {
+          "$ref": "user.json"
+        },
+        "assignees": {
+          "type": ["null", "array"],
+          "items": {
+            "$ref": "user.json"
+          }
+        },
+        "author_association": {
+          "type": ["null", "string"]
+        },
+        "closed_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "comments": {
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "labels": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "node_id": {
+                "type": ["null", "string"]
+              },
+              "url": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "description": {
+                "type": ["null", "string"]
+              },
+              "color": {
+                "type": ["null", "string"]
+              },
+              "default": {
+                "type": ["null", "boolean"]
+              }
+            }
+          }
+        },
+        "locked": {
+          "type": ["null", "boolean"]
+        },
+        "milestone": {
+          "type": ["null", "object"]
+        },
+        "performed_via_github_app": {
+          "type": ["null", "object"]
+        },
+        "state_reason": {
+          "type": ["null", "object"]
+        },
+        "timeline_url": {
+          "type": ["null", "object"]
+        },
+        "reactions": {
+          "$ref": "reactions.json"
+        },
         "id": {
           "type": ["null", "integer"]
         },
