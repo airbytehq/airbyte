@@ -7,6 +7,10 @@ and available on PATH for the poetry-managed venv.
 """
 from __future__ import annotations
 from collections.abc import Generator
+import os
+import sys
+import shutil
+from unittest.mock import _patch_dict
 
 import pytest
 
@@ -25,6 +29,24 @@ SEED_B = 5678
 FAKER_SCALE_A = 200
 # We want this to be different from FAKER_SCALE_A.
 FAKER_SCALE_B = 300
+
+
+# Patch PATH to include the source-faker executable.
+
+@pytest.fixture(autouse=True)
+def add_venv_bin_to_path(monkeypatch):
+    # Get the path to the bin directory of the virtual environment
+    venv_bin_path = os.path.join(sys.prefix, 'bin')
+
+    # Add the bin directory to the PATH
+    new_path = f"{venv_bin_path}:{os.environ['PATH']}"
+    monkeypatch.setenv('PATH', new_path)
+
+
+def test_which_source_faker() -> None:
+    """Test that source-faker is available on PATH."""
+    assert shutil.which("source-faker") is not None, \
+        f"Can't find source-faker on PATH: {os.environ['PATH']}"
 
 
 @pytest.fixture(scope="function")  # Each test gets a fresh source-faker instance.
