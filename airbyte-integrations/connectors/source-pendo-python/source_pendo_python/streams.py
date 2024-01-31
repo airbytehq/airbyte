@@ -25,6 +25,8 @@ class PendoPythonStream(HttpStream, ABC):
         output_types = []
         if field_type == "time":
             output_types = ["null", "integer"]
+        elif field_type == "float":
+            output_types = ["null", "number"]
         elif field_type == "list":
             output_types = ["null", "array", "string"]
         elif field_type == "":
@@ -153,7 +155,6 @@ class PendoTimeSeriesAggregationStream(PendoPythonStream):
         else:
             request_body["request"]["pipeline"][0]["source"]["timeSeries"]["first"] = f"now() {next_page_token} * 24*60*60*1000"
 
-        print(request_body)
         return request_body
 
 
@@ -187,6 +188,84 @@ class Report(PendoPythonStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "report"
+
+
+class ReportResult(PendoPythonStream):
+    json_schema = None  # Field to store dynamically built Airbyte Stream Schema
+    primary_key = "reportId"
+
+    def __init__(self, report: Mapping[str, Any], **kwargs):
+        super().__init__(**kwargs)
+        self.report = report
+        self.report_name = f"report_result_{report['id']}"
+
+    @property
+    def name(self):
+        return self.report_name
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"report/{self.report['id']}/results.json"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        for record in response.json():
+            yield self.transform(record=record)
+
+    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        record["reportId"] = self.report['id']
+        return record
+
+    # Method to infer schema types from JSON response
+    def infer_type(self, value: Any):
+        if isinstance(value, str):
+            return {"type": ["null", "string"]}
+        if isinstance(value, bool):
+            return {"type": ["null", "boolean"]}
+        if isinstance(value, float):
+            return {"type": ["null", "number"]}
+        if isinstance(value, int):
+            return {"type": ["null", "integer"]}
+        if isinstance(value, list):
+            return {"type": ["null", "array"]}
+        if isinstance(value, dict):
+            return {"type": ["null", "object"]}
+        return {"type": ["null", "string"]}
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        if self.json_schema is None:
+            schema = {
+                "type": "object",
+                "$schema": "http://json-schema.org/schema#",
+                "properties": {
+                    "reportId": {
+                        "type": "string"
+                    }
+                }
+            }
+
+            url = f"{PendoPythonStream.url_base}{self.path()}"
+            auth_headers = self.authenticator.get_auth_header()
+            try:
+                session = requests.get(url, headers=auth_headers)
+                if session.status_code != 200:
+                    raise Exception(f"{session.status_code} Response from Pendo: {session.text}")
+                else:
+                    body = session.json()
+                    if body is not None and len(body) != 0:
+                        for result in body:
+                            for field in result:
+                                if result[field] is not None:
+                                    schema["properties"][field] = self.infer_type(result[field])
+            except Exception as e:
+                print(f"Error fetching sample Pendo Report Results: {e}")
+            self.json_schema = schema
+
+        return self.json_schema
 
 
 class VisitorMetadata(PendoPythonStream):
