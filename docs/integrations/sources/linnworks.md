@@ -52,10 +52,11 @@ Authentication credentials can be obtained on developer portal section Applicati
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject                                                                     |
-| :------ | :--------- | :----------------------------------------------------- | :-------------------------------------------------------------------------- |
-| 0.1.5   | Unknown    | Unknown                                                | Bump Version                                                                |
-| 0.1.4   | 2021-11-24 | [8226](https://github.com/airbytehq/airbyte/pull/8226) | Source Linnworks: improve streams ProcessedOrders and ProcessedOrderDetails |
-| 0.1.3   | 2021-11-24 | [8169](https://github.com/airbytehq/airbyte/pull/8169) | Source Linnworks: refactor stream StockLocations                            |
-| 0.1.2   | 2021-11-23 | [8177](https://github.com/airbytehq/airbyte/pull/8177) | Source Linnworks: add stream ProcessedOrderDetails                          |
-| 0.1.0   | 2021-11-09 | [7588](https://github.com/airbytehq/airbyte/pull/7588) | New Source: Linnworks                                                       |
+| Version | Date       | Pull Request                                             | Subject                                                                     |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| 0.1.6   | 2024-01-31 | [](https://github.com/airbytehq/airbyte/pull/)           | Update CDK and migrate to base image                                        |
+| 0.1.5   | 2022-11-20 | [19865](https://github.com/airbytehq/airbyte/pull/19865) | Bump Version                                                                |
+| 0.1.4   | 2021-11-24 | [8226](https://github.com/airbytehq/airbyte/pull/8226)   | Source Linnworks: improve streams ProcessedOrders and ProcessedOrderDetails |
+| 0.1.3   | 2021-11-24 | [8169](https://github.com/airbytehq/airbyte/pull/8169)   | Source Linnworks: refactor stream StockLocations                            |
+| 0.1.2   | 2021-11-23 | [8177](https://github.com/airbytehq/airbyte/pull/8177)   | Source Linnworks: add stream ProcessedOrderDetails                          |
+| 0.1.0   | 2021-11-09 | [7588](https://github.com/airbytehq/airbyte/pull/7588)   | New Source: Linnworks                                                       |
