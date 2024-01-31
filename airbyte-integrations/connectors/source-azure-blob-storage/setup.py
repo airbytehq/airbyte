@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[file-based]==0.59.2",  # pinned until compatible with https://github.com/airbytehq/airbyte/pull/34411
+    "airbyte-cdk[file-based]>=0.60.1",
     "smart_open[azure]",
     "pytz",
 ]
