@@ -6,7 +6,7 @@ import functools
 from typing import Set
 
 import git
-from dagger import Connection
+from dagger import Connection, SessionError
 from pipelines.dagger.containers.git import checked_out_git_container
 from pipelines.helpers.utils import DAGGER_CONFIG, DIFF_FILTER
 
@@ -20,14 +20,20 @@ def get_current_git_branch() -> str:  # noqa D103
 
 
 async def get_modified_files_in_branch_remote(
-    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master"
+    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master", retries: int = 3
 ) -> Set[str]:
     """Use git diff to spot the modified files on the remote branch."""
-    async with Connection(DAGGER_CONFIG) as dagger_client:
-        container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision, diffed_branch)
-        modified_files = await container.with_exec(
-            ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_branch}"]
-        ).stdout()
+    try:
+        async with Connection(DAGGER_CONFIG) as dagger_client:
+            container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision, diffed_branch)
+            modified_files = await container.with_exec(
+                ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_branch}"]
+            ).stdout()
+    except SessionError:
+        if retries > 0:
+            return await get_modified_files_in_branch_remote(current_git_branch, current_git_revision, diffed_branch, retries - 1)
+        else:
+            raise
     return set(modified_files.split("\n"))
 
 
@@ -53,10 +59,16 @@ async def get_modified_files_in_branch(
         return await get_modified_files_in_branch_remote(current_git_branch, current_git_revision, diffed_branch)
 
 
-async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> Set[str]:
-    async with Connection(DAGGER_CONFIG) as dagger_client:
-        container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision)
-        modified_files = await container.with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"]).stdout()
+async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str, retries: int = 3) -> Set[str]:
+    try:
+        async with Connection(DAGGER_CONFIG) as dagger_client:
+            container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision)
+            modified_files = await container.with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"]).stdout()
+    except SessionError:
+        if retries > 0:
+            return await get_modified_files_in_commit_remote(current_git_branch, current_git_revision, retries - 1)
+        else:
+            raise
     return set(modified_files.split("\n"))
 
 

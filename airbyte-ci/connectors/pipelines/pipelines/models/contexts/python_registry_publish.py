@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import os
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Type
@@ -86,8 +85,8 @@ class PythonRegistryPublishContext(PipelineContext):
             version = f"{version}.dev{release_candidate_tag}"
 
         pypi_context = cls(
-            python_registry_token=os.environ["PYTHON_REGISTRY_TOKEN"],
-            registry="https://test.pypi.org/legacy/",  # TODO: go live
+            python_registry_token=str(connector_context.python_registry_token),
+            registry=str(connector_context.python_registry_url),
             package_path=str(connector_context.connector.code_directory),
             package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
             version=version,

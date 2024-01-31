@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.3.2
+Fix TestBasicRead.test_read.validate_schema: set `additionalProperties` to False recursively for objects
+
+## 3.3.1
+Fix TestSpec.test_oauth_is_default_method to skip connectors that doesn't have predicate_key object. 
+
+## 3.3.0
+Add `test_certified_connector_has_allowed_hosts` and `test_certified_connector_has_suggested_streams` tests to the `connector_attribute` test suite
+
+## 3.2.0
+Add TestBasicRead.test_all_supported_file_types_present, which validates that all supported file types are present in the sandbox account for certified file-based connectors.
+
+## 3.1.0
+Add TestSpec.test_oauth_is_default_method test with OAuth is default option validation.
+
 ## 3.0.1
 Upgrade to Dagger 0.9.6
 

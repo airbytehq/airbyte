@@ -22,7 +22,7 @@ from pipelines.helpers.execution.run_steps import RunStepOptions
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
-from pipelines.helpers.utils import AIRBYTE_REPO_URL
+from pipelines.helpers.utils import AIRBYTE_REPO_URL, java_log_scrub_pattern
 from pipelines.models.reports import Report
 
 if TYPE_CHECKING:
@@ -165,6 +165,12 @@ class PipelineContext:
     def ci_github_access_token_secret(self) -> Secret:
         assert self.ci_github_access_token is not None, "The ci_github_access_token was not set on this PipelineContext."
         return self.dagger_client.set_secret("ci_github_access_token", self.ci_github_access_token)
+
+    @property
+    def java_log_scrub_pattern_secret(self) -> Optional[Secret]:
+        if not self.secrets_to_mask:
+            return None
+        return self.dagger_client.set_secret("log_scrub_pattern", java_log_scrub_pattern(self.secrets_to_mask))
 
     @property
     def github_commit_status(self) -> dict:
