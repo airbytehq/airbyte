@@ -1,14 +1,19 @@
 import AirbyteLibConnectors from '@site/src/components/AirbyteLibConnectors';
 
-# airbyte-lib
+# Getting Started with AirbyteLib (Beta)
 
-airbyte-lib is a library that provides a set of utilities to use Airbyte connectors in Python. It is meant to be used in situations where setting up an Airbyte server or cloud account is not possible or desirable,
-for example in a Jupyter notebook or when iterating on early prototypes in a basic local Python script.
+AirbyteLib is a library that provides a set of utilities to use Airbyte connectors in Python. It is meant to be used in situations where setting up an Airbyte server or cloud account is not possible or desirable, for example in a Jupyter notebook or when iterating on early prototypes on a developer's workstation.
 
 ## Installation
 
 ```bash
 pip install airbyte-lib
+```
+
+Or during the beta, you may want to install the latest from from source with:
+
+```bash
+pip install 'git+airbytehq/airbyte.git@master#egg=airbyte-lib&subdirectory=airbyte-lib'
 ```
 
 ## Usage
@@ -23,21 +28,20 @@ source = ab.get_connector(
     config={"id": "605b4b6aaa5433645e37d03f"},
     install_if_missing=True,
 )
-cache = ab.new_local_cache(source_catalog=source.configured_catalog)
-
 source.check()
 
 source.set_streams(["launches", "rockets", "capsules"])
 
+cache = ab.new_local_cache()
 result = source.read_all(cache)
-
-print(islice(source.get_stream_records("capsules"), 10))
 
 for name, records in result.cache.streams.items():
     print(f"Stream {name}: {len(records)} records")
 ```
 
-For all the details, please refer to the [API reference](./reference).
+## API Reference
+
+For details on specific classes and methods, please refer to our [AirbyteLib API Reference](./reference).
 
 ## Architecture
 
@@ -45,7 +49,7 @@ For all the details, please refer to the [API reference](./reference).
 
 ![Architecture](../../assets/docs/airbyte-lib-high-level-architecture.svg)
 
-airbyte-lib is a python library that can be run in any context that supports Python >=3.10. It contains the following main components:
+airbyte-lib is a python library that can be run in any context that supports Python >=3.9. It contains the following main components:
 * **Source**: A source object is using a Python connector and includes a configuration object. The configuration object is a dictionary that contains the configuration of the connector, like authentication or connection modalities. The source object is used to read data from the connector.
 * **Cache**: Data can be read directly from the source object. However, it is recommended to use a cache object to store the data. The cache object allows to temporarily store records from the source in a SQL database like a local DuckDB file or a Postgres or Snowflake instance.
 * **Result**: An object holding the records from a read operation on a source. It allows quick access to the records of each synced stream via the used cache object. Data can be accessed as a list of records, a Pandas DataFrame or via SQLAlchemy queries.
