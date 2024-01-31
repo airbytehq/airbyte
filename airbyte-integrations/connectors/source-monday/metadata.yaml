@@ -34,6 +34,11 @@ data:
   icon: monday.svg
   license: MIT
   name: Monday
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-monday
   registries:
     cloud:
       enabled: true
