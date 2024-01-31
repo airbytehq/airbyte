@@ -4,7 +4,7 @@ export default function AirbyteLibConnectors({
     const connectors = JSON.parse(connectorsJSON);
     return <ul>
     {connectors.map((connector) => <li key={connector.name_oss}>
-        <a href={`${getRelativeDocumentationUrl(connector)}#usage-with-airbyte-lib`}>{connector.name_oss}</a>
+        <a href={`${getRelativeDocumentationUrl(connector)}#reference`}>{connector.name_oss}</a>
     </li>)}
     </ul>
 }

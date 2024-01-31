@@ -563,17 +563,6 @@ module.exports = {
       id: "terraform-documentation",
     },
     {
-      type: "category",
-      label: "airbyte-lib",
-      link: {
-        type: "doc",
-        id: "using-airbyte/airbyte-lib/getting-started",
-      },
-      items: [
-        { type: "doc", id: "using-airbyte/airbyte-lib/reference", label: "Reference" },
-      ],
-    },
-    {
       type: "doc",
       id: "cli-documentation",
     },

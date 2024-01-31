@@ -39,17 +39,7 @@ async function injectDefaultAirbyteLibSection(vfile, ast) {
       parent.children.splice(index, 0, {
         type: "heading",
         depth: 2,
-        children: [{ type: "text", value: "Usage with airbyte-lib" }]
-      }, {
-        type: "mdxJsxFlowElement",
-        name: "AirbyteLibExample",
-        attributes: [
-          {
-            type: "mdxJsxAttribute",
-            name: "connector",
-            value: connectorName
-          },
-        ]
+        children: [{ type: "text", value: "Reference" }]
       }, {
         type: "mdxJsxFlowElement",
         name: "SpecSchema",

@@ -147,16 +147,6 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 </details>
 
-<HideInUI>
-
-## Usage with airbyte-lib
-
-<AirbyteLibExample connector="source-google-sheets" />
-
-<SpecSchema connector="source-google-sheets" />
-
-</HideInUI>
-
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
