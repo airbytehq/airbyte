@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.lemlist.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-lemlist
   registries:
     cloud:
       enabled: true

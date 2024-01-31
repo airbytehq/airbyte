@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "*" # Please change to the hostname of the source.
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-klaus-api
   registries:
     oss:
       enabled: true

@@ -50,6 +50,11 @@ class SourceMicrosoftOneDrive(FileBasedSource):
                             "client_secret": {"type": "string", "path_in_connector_config": ["credentials", "client_secret"]},
                         },
                     },
+                    oauth_user_input_from_connector_config_specification={
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {"tenant_id": {"type": "string", "path_in_connector_config": ["credentials", "tenant_id"]}},
+                    },
                 ),
             ),
         )

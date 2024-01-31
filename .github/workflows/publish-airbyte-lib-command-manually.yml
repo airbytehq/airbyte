@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Publish
         id: publish-airbyte-lib
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
@@ -53,5 +53,5 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
-          subcommand: 'poetry --package-path=airbyte-lib publish --registry-url="https://test.pypi.org/legacy/"'
+          subcommand: "poetry --package-path=airbyte-lib publish"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
