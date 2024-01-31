@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.3.3
+Аix `NoAdditionalPropertiesValidator` if no type found in `items` 
+
 ## 3.3.2
 Fix TestBasicRead.test_read.validate_schema: set `additionalProperties` to False recursively for objects
 
