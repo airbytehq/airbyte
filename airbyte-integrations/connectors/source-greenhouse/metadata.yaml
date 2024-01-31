@@ -17,6 +17,10 @@ data:
   icon: greenhouse.svg
   license: MIT
   name: Greenhouse
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-greenhouse
   registries:
     cloud:
       enabled: true

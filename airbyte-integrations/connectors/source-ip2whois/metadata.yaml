@@ -8,6 +8,10 @@ data:
   icon: ip2whois.svg
   license: MIT
   name: IP2Whois
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-ip2whois
   registries:
     cloud:
       enabled: true
