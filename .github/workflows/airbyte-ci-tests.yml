@@ -1,4 +1,4 @@
-name: Connector Ops CI - Pipeline Unit Test
+name: Internal Poetry packages CI
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -12,14 +12,32 @@ on:
       - reopened
       - synchronize
 jobs:
-  run-airbyte-ci-tests:
+  run-internal-poetry-packages-tests:
     name: Run Airbyte CI tests
-    runs-on: tooling-test-large
+    runs-on: tooling-test-medium
+    strategy:
+      matrix:
+        include:
+          - poetry_package_path: airbyte-ci/connectors/base_images
+            airbyte_ci_subcommand: "test airbyte-ci/connectors/base_images --poetry-run-command='pytest tests'"
+          - poetry_package_path: airbyte-ci/connectors/connector_ops
+            airbyte_ci_subcommand: "test airbyte-ci/connectors/connector_ops --poetry-run-command='pytest tests'"
+          - poetry_package_path: airbyte-ci/connectors/metadata_service/lib
+            airbyte_ci_subcommand: "test airbyte-ci/connectors/metadata_service/lib/ --poetry-run-command='pytest tests'"
+          - poetry_package_path: airbyte-ci/connectors/metadata_service/orchestrator
+            airbyte_ci_subcommand: "test airbyte-ci/connectors/metadata_service/orchestrator/ --poetry-run-command='pytest tests'"
+          - poetry_package_path: airbyte-ci/connectors/pipelines
+            airbyte_ci_subcommand: "test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines --disallow-untyped-defs' --poetry-run-command='ruff check pipelines'"
+          - poetry_package_path: airbyte-integrations/bases/connector-acceptance-test
+            airbyte_ci_subcommand: "test airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest unit_tests'"
+          - poetry_package_path: airbyte-lib
+            airbyte_ci_subcommand: "test airbyte-lib --side-car-docker-engine --pass-env-var=GCP_GSM_CREDENTIALS --poetry-run-command='pytest'"
+
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           ref: ${{ github.event.pull_request.head.ref }}
 
       # IMPORTANT! This is nessesary to make sure that a status is reported on the PR
@@ -32,111 +50,47 @@ jobs:
       #
       # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
       # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
-      - name: Get changed files
-        uses: tj-actions/changed-files@v39
-        id: changes
-        with:
-          files_yaml: |
-            ops:
-              - 'airbyte-ci/connectors/connector_ops/**'
-              - '!**/*.md'
-            base_images:
-              - 'airbyte-ci/connectors/connector_ops/**'
-              - 'airbyte-ci/connectors/base_images/**'
-              - '!**/*.md'
-            pipelines:
-              - 'airbyte-ci/connectors/connector_ops/**'
-              - 'airbyte-ci/connectors/base_images/**'
-              - 'airbyte-ci/connectors/pipelines/**'
-              - '!**/*.md'
-            metadata_lib:
-              - 'airbyte-ci/connectors/metadata_service/lib/**'
-              - '!**/*.md'
-            metadata_orchestrator:
-              - 'airbyte-ci/connectors/metadata_service/lib/**'
-              - 'airbyte-ci/connectors/metadata_service/orchestrator/**'
-              - '!**/*.md'
-            airbyte_lib:
-              - 'airbyte-lib/**'
-              - '!**/*.md'
+      # - name: Get changed files
+      #   uses: tj-actions/changed-files@v39
+      #   id: changes
+      #   with:
+      #     files_yaml: |
+      #       ops:
+      #         - 'airbyte-ci/connectors/connector_ops/**'
+      #         - '!**/*.md'
+      #       base_images:
+      #         - 'airbyte-ci/connectors/connector_ops/**'
+      #         - 'airbyte-ci/connectors/base_images/**'
+      #         - '!**/*.md'
+      #       pipelines:
+      #         - 'airbyte-ci/connectors/connector_ops/**'
+      #         - 'airbyte-ci/connectors/base_images/**'
+      #         - 'airbyte-ci/connectors/pipelines/**'
+      #         - '!**/*.md'
+      #       metadata_lib:
+      #         - 'airbyte-ci/connectors/metadata_service/lib/**'
+      #         - '!**/*.md'
+      #       metadata_orchestrator:
+      #         - 'airbyte-ci/connectors/metadata_service/lib/**'
+      #         - 'airbyte-ci/connectors/metadata_service/orchestrator/**'
+      #         - '!**/*.md'
+      #       airbyte_lib:
+      #         - 'airbyte-lib/**'
+      #         - '!**/*.md'
+      #       cat:
+      #         - 'airbyte-integrations/bases/connector-acceptance-test/**'
+      #         - '!**/*.md'
 
-      - name: Run airbyte-ci/connectors/connector_ops tests
-        if: steps.changes.outputs.ops_any_changed == 'true'
-        id: run-airbyte-ci-connectors-connector-ops-tests
+      - name: Run ${{ matrix.poetry_package_name }} tests
+        # if: steps.changes.outputs.ops_any_changed == 'true' || github.event_name == 'workflow_dispatch'
         uses: ./.github/actions/run-airbyte-ci
         with:
-          context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-ci/connectors/connector_ops --poetry-run-command='pytest tests'"
-
-      - name: Run airbyte-ci/connectors/pipelines tests
-        id: run-airbyte-ci-connectors-pipelines-tests
-        if: steps.changes.outputs.pipelines_any_changed == 'true'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines --disallow-untyped-defs' --poetry-run-command='ruff check pipelines'"
-
-      - name: Run airbyte-ci/connectors/base_images tests
-        id: run-airbyte-ci-connectors-base-images-tests
-        if: steps.changes.outputs.base_images_any_changed == 'true'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-ci/connectors/base_images --poetry-run-command='pytest tests'"
-
-      - name: Run test pipeline for the metadata lib
-        id: metadata_lib-test-pipeline
-        if: steps.changes.outputs.metadata_lib_any_changed == 'true'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          subcommand: "test airbyte-ci/connectors/metadata_service/lib/ --poetry-run-command='pytest tests'"
-          context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
-      - name: Run test for the metadata orchestrator
-        id: metadata_orchestrator-test-pipeline
-        if: steps.changes.outputs.metadata_orchestrator_any_changed == 'true'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          subcommand: "test airbyte-ci/connectors/metadata_service/orchestrator/ --poetry-run-command='pytest tests'"
-          context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
-      - name: Run airbyte-lib tests
-        if: steps.changes.outputs.airbyte_lib_any_changed == 'true'
-        id: run-airbyte-lib-tests
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "pull_request"
+          context: ${{ github.event_name  == 'pull_request' && 'pull_request' || 'manual' }}
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          github_token: ${{ github.token }}
           subcommand: "test airbyte-lib --side-car-docker-engine --pass-env-var=GCP_GSM_CREDENTIALS --poetry-run-command='pytest'"
