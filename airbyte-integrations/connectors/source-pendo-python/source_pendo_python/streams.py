@@ -252,15 +252,18 @@ class ReportResult(PendoPythonStream):
             auth_headers = self.authenticator.get_auth_header()
             try:
                 session = requests.get(url, headers=auth_headers)
-                body = session.json()
-                if body is not None and len(body) != 0:
-                    for result in body:
-                        for field in result:
-                            if result[field] is not None:
-                                schema["properties"][field] = self.infer_type(result[field])
+                if session.status_code != 200:
+                    raise Exception(f"{session.status_code} Response from Pendo: {session.text}")
+                else:
+                    body = session.json()
+                    if body is not None and len(body) != 0:
+                        for result in body:
+                            for field in result:
+                                if result[field] is not None:
+                                    schema["properties"][field] = self.infer_type(result[field])
                 self.json_schema = schema
-            except requests.exceptions.RequestException:
-                print("Error fetching sample Pendo Report Results")
+            except Exception as e:
+                print(f"Error fetching sample Pendo Report Results: {e}")
                 self.json_schema = schema
 
         return self.json_schema
