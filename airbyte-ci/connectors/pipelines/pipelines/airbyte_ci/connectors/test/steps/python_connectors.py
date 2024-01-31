@@ -5,7 +5,7 @@
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
 from abc import ABC, abstractmethod
-from typing import Callable, List, Sequence, Tuple
+from typing import List, Sequence, Tuple
 
 import dpath.util
 import pipelines.dagger.actions.python.common
