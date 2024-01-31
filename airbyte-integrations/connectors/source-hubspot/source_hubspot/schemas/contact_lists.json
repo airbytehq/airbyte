@@ -22,6 +22,12 @@
         },
         "lastSizeChangeAt": {
           "type": ["null", "integer"]
+        },
+        "listReferencesCount": {
+          "type": ["null", "integer"]
+        },
+        "parentFolderId": {
+          "type": ["null", "integer"]
         }
       }
     },
