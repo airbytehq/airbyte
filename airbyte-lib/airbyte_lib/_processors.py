@@ -211,6 +211,7 @@ class RecordProcessor(abc.ABC):
         # Finalize any pending batches
         for stream_name in list(self._pending_batches.keys()):
             self._finalize_batches(stream_name, write_strategy=write_strategy)
+            progress.log_stream_finalized(stream_name)
 
     @final
     def _process_batch(
