@@ -14,6 +14,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.utils import AirbyteTracedException
 from requests.exceptions import HTTPError
 
 from . import constants
