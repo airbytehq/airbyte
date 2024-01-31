@@ -204,8 +204,7 @@ class AirbyteLibValidation(Step):
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
         context: ConnectorContext = self.context
-        # TODO skip if not pypi published
-        if False and dpath.util.get(context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
+        if dpath.util.get(context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
             return self.skip("Connector is not published on pypi, skipping airbyte-lib validation.")
 
         test_environment = await self.install_testing_environment(connector_under_test)
@@ -236,10 +235,6 @@ class AirbyteLibValidation(Step):
                 [
                     "pip",
                     "install",
-                    "--index-url",
-                    "https://test.pypi.org/simple/",
-                    "--extra-index-url",
-                    "https://pypi.org/simple",
                     "airbyte-lib",
                 ]
             )
@@ -262,37 +257,37 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
     """
     return [
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context))],
-        # [
-        #     StepToRun(
-        #         id=CONNECTOR_TEST_STEP_ID.UNIT,
-        #         step=UnitTests(context),
-        #         args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
-        #         depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-        #     )
-        # ],
         [
-            # StepToRun(
-            #     id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
-            #     step=IntegrationTests(context),
-            #     args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
-            #     depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-            # ),
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.UNIT,
+                step=UnitTests(context),
+                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            )
+        ],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
+                step=IntegrationTests(context),
+                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            ),
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LIB_VALIDATION,
                 step=AirbyteLibValidation(context),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
-            # StepToRun(
-            #     id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
-            #     step=AcceptanceTests(context, context.concurrent_cat),
-            #     args=lambda results: {
-            #         "connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]
-            #     },
-            #     depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-            # ),
-            # StepToRun(
-            #     id=CONNECTOR_TEST_STEP_ID.CHECK_BASE_IMAGE, step=CheckBaseImageIsUsed(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD]
-            # ),
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
+                step=AcceptanceTests(context, context.concurrent_cat),
+                args=lambda results: {
+                    "connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]
+                },
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            ),
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.CHECK_BASE_IMAGE, step=CheckBaseImageIsUsed(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD]
+            ),
         ],
     ]
