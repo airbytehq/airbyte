@@ -847,11 +847,114 @@ invalid_csv_scenario: TestScenario[InMemoryFilesSource] = (
             "read": [
                 {
                     "level": "ERROR",
-                    "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
+                    "message": f"{FileBasedSourceError.INVALID_SCHEMA_ERROR.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
                 },
             ]
         }
     )
+    .set_expected_read_error(
+        AirbyteTracedException,
+        "Please check the logged errors for more information.",
+    )
+).build()
+
+invalid_csv_multi_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
+    .set_name("invalid_csv_multi_scenario")  # too many values for the number of headers
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "csv"},
+                    "globs": ["*"],
+                    "validation_policy": "Emit Record",
+                },
+                {
+                    "name": "stream2",
+                    "format": {"filetype": "csv"},
+                    "globs": ["b.csv"],
+                    "validation_policy": "Emit Record",
+                },
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1",),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col3",),
+                        ("val13b", "val14b"),
+                        ("val23b", "val24b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col3": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
+                    },
+                    "name": "stream2",
+                    "source_defined_cursor": True,
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+            ]
+        }
+    )
+    .set_expected_records([])
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_logs(
+        {
+            "read": [
+                {
+                    "level": "ERROR",
+                    "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
+                },
+                {
+                    "level": "ERROR",
+                    "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream2 file=b.csv line_no=1 n_skipped=0",
+                },
+            ]
+        }
+    )
+    .set_expected_read_error(AirbyteTracedException, "Please check the logged errors for more information.")
 ).build()
 
 csv_single_stream_scenario: TestScenario[InMemoryFilesSource] = (
@@ -1368,28 +1471,7 @@ empty_schema_inference_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
-    .set_expected_records(
-        [
-            {
-                "data": {
-                    "col1": "val11",
-                    "col2": "val12",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.csv",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val21",
-                    "col2": "val22",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.csv",
-                },
-                "stream": "stream1",
-            },
-        ]
-    )
+    .set_expected_records([])
 ).build()
 
 schemaless_csv_scenario: TestScenario[InMemoryFilesSource] = (
@@ -1663,7 +1745,7 @@ schemaless_with_user_input_schema_fails_connection_check_scenario: TestScenario[
         }
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
@@ -1751,7 +1833,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario: 
         }
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
@@ -2172,17 +2254,15 @@ csv_newline_in_values_not_quoted_scenario: TestScenario[InMemoryFilesSource] = (
             },
         ]
     )
-    .set_expected_logs(
-        {
-            "read": [
-                {
-                    "level": "ERROR",
-                    "message": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. stream=stream1 file=a.csv line_no=2 n_skipped=0",
-                }
-            ]
-        }
+    .set_expected_read_error(
+        AirbyteTracedException,
+        f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=2 n_skipped=0",
     )
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_read_error(
+        AirbyteTracedException,
+        "Please check the logged errors for more information.",
+    )
 ).build()
 
 csv_escape_char_is_set_scenario: TestScenario[InMemoryFilesSource] = (
@@ -2928,6 +3008,7 @@ earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
         .set_file_type("csv")
     )
     .set_expected_check_status("FAILED")
+    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.EMPTY_STREAM.value)
     .set_expected_catalog(
         {
             "streams": [

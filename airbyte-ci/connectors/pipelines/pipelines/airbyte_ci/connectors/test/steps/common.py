@@ -21,7 +21,7 @@ from pipelines.consts import CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.containers import internal_tools
 from pipelines.helpers.utils import METADATA_FILE_NAME
-from pipelines.models.steps import Step, StepResult, StepStatus
+from pipelines.models.steps import STEP_PARAMS, Step, StepResult, StepStatus
 
 
 class VersionCheck(Step, ABC):
@@ -193,6 +193,20 @@ class AcceptanceTests(Step):
     CONTAINER_TEST_INPUT_DIRECTORY = "/test_input"
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
     skipped_exit_code = 5
+    accept_extra_params = True
+
+    @property
+    def default_params(self) -> STEP_PARAMS:
+        """Default pytest options.
+
+        Returns:
+            dict: The default pytest options.
+        """
+        return super().default_params | {
+            "-ra": [],  # Show extra test summary info in the report for all but the passed tests
+            "--disable-warnings": [],  # Disable warnings in the pytest report
+            "--durations": ["3"],  # Show the 3 slowest tests in the report
+        }
 
     @property
     def base_cat_command(self) -> List[str]:
@@ -200,14 +214,12 @@ class AcceptanceTests(Step):
             "python",
             "-m",
             "pytest",
-            "--disable-warnings",
-            "--durations=3",  # Show the 3 slowest tests in the report
-            "-ra",  # Show extra test summary info in the report for all but the passed tests
             "-p",  # Load the connector_acceptance_test plugin
             "connector_acceptance_test.plugin",
             "--acceptance-test-config",
             self.CONTAINER_TEST_INPUT_DIRECTORY,
         ]
+
         if self.concurrent_test_run:
             command += ["--numprocesses=auto"]  # Using pytest-xdist to run tests in parallel, auto means using all available cores
         return command
@@ -232,7 +244,7 @@ class AcceptanceTests(Step):
         if "integration_tests" in await connector_dir.entries():
             if "acceptance.py" in await connector_dir.directory("integration_tests").entries():
                 cat_command += ["-p", "integration_tests.acceptance"]
-        return cat_command
+        return cat_command + self.params_as_cli_options
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
         """Run the acceptance test suite on a connector dev image. Build the connector acceptance test image if the tag is :dev.

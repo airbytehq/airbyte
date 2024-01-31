@@ -106,7 +106,6 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
                                 \t@role_name     = N'%s',
                                 \t@supports_net_changes = 0""";
     testdb
-        .withSnapshotIsolation()
         .withCdc()
         .withWaitUntilAgentRunning()
         // create tables

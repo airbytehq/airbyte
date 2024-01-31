@@ -97,3 +97,11 @@ class TestUnitTests:
             context_for_connector_with_poetry.connector.technical_name in pip_freeze_output
         ), "The connector should be installed in the test environment."
         assert "pytest" in pip_freeze_output, "The pytest package should be installed in the test environment."
+
+    def test_params(self, context_for_certified_connector_with_setup):
+        step = UnitTests(context_for_certified_connector_with_setup)
+        assert step.params_as_cli_options == [
+            "-s",
+            f"--cov={context_for_certified_connector_with_setup.connector.technical_name.replace('-', '_')}",
+            f"--cov-fail-under={step.MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS}",
+        ]

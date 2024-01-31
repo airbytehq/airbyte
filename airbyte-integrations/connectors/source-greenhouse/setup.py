@@ -12,13 +12,30 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-greenhouse=source_greenhouse.run:run",
+        ],
+    },
     name="source_greenhouse",
     description="Source implementation for Greenhouse.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=["airbyte-cdk>=0.44.1", "dataclasses-jsonschema==2.15.1"],
-    package_data={"": ["*.json", "*.yaml", "schemas/*.json"]},
+    package_data={
+        "": [
+            # Include yaml files in the package (if any)
+            "*.yml",
+            "*.yaml",
+            # Include all json files in the package, up to 4 levels deep
+            "*.json",
+            "*/*.json",
+            "*/*/*.json",
+            "*/*/*/*.json",
+            "*/*/*/*/*.json",
+        ]
+    },
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

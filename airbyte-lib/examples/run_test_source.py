@@ -1,8 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import os
 
 import airbyte_lib as ab
+
 
 # preparation (from airbyte-lib main folder):
 #   python -m venv .venv-source-test
@@ -14,13 +16,16 @@ import airbyte_lib as ab
 os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/integration_tests/fixtures/registry.json"
 
 source = ab.get_connector("source-test", config={"apiKey": "test"})
-cache = ab.get_in_memory_cache()
+cache = ab.new_local_cache("cache_test")
 
 source.check()
 
 print(source.get_available_streams())
 
-result = source.read_all(cache)
+result = source.read(cache)
 
 print(result.processed_records)
 print(list(result["stream1"]))
+
+different_cache = ab.new_local_cache("cache_test")
+print(list(different_cache["stream1"]))

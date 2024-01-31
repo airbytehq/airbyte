@@ -11,6 +11,7 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
@@ -52,8 +53,7 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in self._streams}, state=self._state)
         state_converter = StreamFacadeConcurrentConnectorStateConverter()
-        stream_states = [state_converter.get_concurrent_stream_state(self._cursor_field, state_manager.get_stream_state(stream.name, stream.namespace))
-                         for stream in self._streams]
+        stream_states = [state_manager.get_stream_state(stream.name, stream.namespace) for stream in self._streams]
         return [
             StreamFacade.create_from_stream(
                 stream,
@@ -69,6 +69,7 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
                     state_converter,
                     self._cursor_field,
                     self._cursor_boundaries,
+                    None,
                 )
                 if self._cursor_field
                 else NoopCursor(),
@@ -123,6 +124,6 @@ class StreamFacadeSourceBuilder(SourceBuilder[StreamFacadeSource]):
         self._input_state = state
         return self
 
-    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> StreamFacadeSource:
+    def build(self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]) -> StreamFacadeSource:
         threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
-        return StreamFacadeSource(self._streams, threadpool, self._cursor_field, self._cursor_boundaries, self._input_state)
+        return StreamFacadeSource(self._streams, threadpool, self._cursor_field, self._cursor_boundaries, state)

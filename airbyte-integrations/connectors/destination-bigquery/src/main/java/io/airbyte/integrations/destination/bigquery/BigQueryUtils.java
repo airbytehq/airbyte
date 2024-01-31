@@ -396,18 +396,6 @@ public class BigQueryUtils {
     }
   }
 
-  public static boolean isUsingJsonCredentials(final JsonNode config) {
-    if (!config.has(BigQueryConsts.CONFIG_CREDS)) {
-      return false;
-    }
-    final JsonNode json = config.get(BigQueryConsts.CONFIG_CREDS);
-    if (json.isTextual()) {
-      return !json.asText().isEmpty();
-    } else {
-      return !Jsons.serialize(json).isEmpty();
-    }
-  }
-
   // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
   public static Integer getBigQueryClientChunkSize(final JsonNode config) {
     Integer chunkSizeFromConfig = null;

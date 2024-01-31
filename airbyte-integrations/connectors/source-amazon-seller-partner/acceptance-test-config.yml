@@ -91,8 +91,6 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: GET_FBA_SNS_FORECAST_DATA
             bypass_reason: "no records"
-          - name: GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT
-            bypass_reason: "no records"
           - name: GET_AFN_INVENTORY_DATA
             bypass_reason: "no records"
           - name: GET_MERCHANT_CANCELLED_LISTINGS_DATA
@@ -100,8 +98,6 @@ acceptance_tests:
           - name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA
             bypass_reason: "no records"
           - name: GET_LEDGER_SUMMARY_VIEW_DATA
-            bypass_reason: "no records"
-          - name: GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT
             bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT
             bypass_reason: "no records"

@@ -5,12 +5,10 @@
 package io.airbyte.commons.protocol;
 
 import io.airbyte.commons.version.Version;
-import jakarta.inject.Singleton;
 
 /**
  * Factory to build AirbyteMessageVersionedMigrator
  */
-@Singleton
 public class AirbyteProtocolVersionedMigratorFactory {
 
   private final AirbyteMessageMigrator airbyteMessageMigrator;

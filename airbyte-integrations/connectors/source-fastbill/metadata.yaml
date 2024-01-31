@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "*"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-fastbill
   registries:
     cloud:
       enabled: false
@@ -21,5 +25,5 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/fastbill
   tags:
-    - language:lowcode
+    - language:low-code
 metadataSpecVersion: "1.0"

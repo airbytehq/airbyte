@@ -115,16 +115,19 @@ def run():
     elif args[0] == "check":
         args = parse_args()
         config = get_json_file(args["--config"])
-        if config.get("apiKey") == "test":
+        if config.get("apiKey").startswith("test"):
             print(json.dumps(sample_connection_check_success))
         else:
             print(json.dumps(sample_connection_check_failure))
     elif args[0] == "read":
         args = parse_args()
         catalog = get_json_file(args["--catalog"])
+        config = get_json_file(args["--config"])
         for stream in catalog["streams"]:
             if stream["stream"]["name"] == "stream1":
                 print(json.dumps(sample_record1_stream1))
+                if config.get("apiKey") == "test_fail_during_sync":
+                    raise Exception("An error")
                 print(json.dumps(sample_record2_stream1))
             elif stream["stream"]["name"] == "stream2":
                 print(json.dumps(sample_record_stream2))

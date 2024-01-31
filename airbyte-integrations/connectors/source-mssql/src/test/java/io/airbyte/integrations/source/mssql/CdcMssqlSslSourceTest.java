@@ -23,8 +23,8 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
   }
 
   protected MSSQLServerContainer<?> createContainer() {
-    MsSQLContainerFactory containerFactory = new MsSQLContainerFactory();
-    MSSQLServerContainer<?> container =
+    final MsSQLContainerFactory containerFactory = new MsSQLContainerFactory();
+    final MSSQLServerContainer<?> container =
         containerFactory.createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
     containerFactory.withSslCertificates(container);
     return container;
@@ -38,7 +38,6 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
         .withConnectionProperty("trustServerCertificate", "true")
         .initialized()
-        .withSnapshotIsolation()
         .withCdc()
         .withWaitUntilAgentRunning();
   }
@@ -60,10 +59,10 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
     try {
       containerIp = InetAddress.getByName(testdb.getContainer().getHost())
           .getHostAddress();
-    } catch (UnknownHostException e) {
+    } catch (final UnknownHostException e) {
       throw new RuntimeException(e);
     }
-    String certificate = testdb.getCertificate(CertificateKey.SERVER);
+    final String certificate = testdb.getCertificate(CertificateKey.SERVER);
     return testdb.configBuilder()
         .withEncrytedVerifyServerCertificate(certificate, testdb.getContainer().getHost())
         .with(JdbcUtils.HOST_KEY, containerIp)

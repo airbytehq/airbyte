@@ -8,6 +8,10 @@ data:
   icon: coingeckocoins.svg
   license: MIT
   name: CoinGecko Coins
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-coingecko-coins
   registries:
     cloud:
       enabled: false # Did not pass acceptance tests
