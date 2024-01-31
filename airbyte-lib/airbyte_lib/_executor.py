@@ -246,7 +246,6 @@ class VenvExecutor(Executor):
                     f"from importlib.metadata import version; print(version('{package_name}'))",
                 ],
                 universal_newlines=True,
-                stdout=subprocess.PIPE, # Don't print to stdout
                 stderr=subprocess.PIPE, # Don't print to stderr
             ).strip()
         except Exception:
