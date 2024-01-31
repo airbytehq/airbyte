@@ -479,7 +479,10 @@ class Source:
                     },
                 ) from None
 
-        cache.register_source(source_name=self.name, source_catalog=self.configured_catalog)
+        cache.register_source(
+            source_name=self.name,
+            incoming_source_catalog=self.configured_catalog,
+        )
         cache.process_airbyte_messages(
             self._tally_records(
                 self._read(

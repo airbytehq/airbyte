@@ -32,6 +32,7 @@ from airbyte_protocol.models import (
 
 from airbyte_lib import exceptions as exc
 from airbyte_lib._util import protocol_util
+from airbyte_lib.progress import progress
 from airbyte_lib.strategies import WriteStrategy
 
 
@@ -119,9 +120,7 @@ class RecordProcessor(abc.ABC):
         """
         input_stream = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8")
         self.process_input_stream(
-            input_stream,
-            write_strategy=write_strategy,
-            max_batch_size=max_batch_size
+            input_stream, write_strategy=write_strategy, max_batch_size=max_batch_size
         )
 
     @final

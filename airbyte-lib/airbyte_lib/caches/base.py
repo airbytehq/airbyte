@@ -15,6 +15,8 @@ import sqlalchemy
 import ulid
 from overrides import overrides
 from sqlalchemy import (
+    Column,
+    String,
     and_,
     create_engine,
     insert,
@@ -23,6 +25,7 @@ from sqlalchemy import (
     text,
     update,
 )
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql.elements import TextClause
 
