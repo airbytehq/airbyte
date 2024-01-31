@@ -13,41 +13,19 @@ concurrency:
 on:
   pull_request_target:
 jobs:
-  get_ci_runner:
-    runs-on: ubuntu-latest
-    name: Get CI runner
-    permissions: read-all
-    steps:
-      # We checkout master to get the local actions files
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          ref: master
-          fetch-depth: 1
-          persist-credentials: false
-      - name: Get CI runner
-        id: get_ci_runner
-        uses: ./.github/actions/airbyte-ci-requirements
-        with:
-          runner_type: "test"
-          runner_size: "large"
-          airbyte_ci_command: "connectors test"
-    outputs:
-      runner_name: ${{ steps.get_ci_runner.outputs.runner_name }}
   # Only running connector CI for example
   # Other required checks should be added as new jobs in this workflow
   # e.g. format, Gradle check, CDK builds
   connectors_ci:
     name: Connectors CI
-    environment: community-ci
-    needs: get_ci_runner
-    if: github.event.pull_request.head.repo.fork  == true
-    runs-on: ${{ needs.get_ci_runner.outputs.runner_name }}
+    runs-on: tooling-test-large
     timeout-minutes: 1440 # 24 hours
     permissions:
       statuses: write
       pull-requests: read
     steps:
+      - run: echo "Running on community-ci environment"
+        bash: shell
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
