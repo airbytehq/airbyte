@@ -422,7 +422,7 @@ public class Jsons {
       }
     }
 
-    // and then append a sanitized version of the input string, containing just the braces
+    // and then build a sanitized version of the input string, containing just the json-ish stuff
     final StringBuilder sanitizedStringBuilder = new StringBuilder();
     for (int i = 0; i < jsonString.length(); i++) {
       final char c = jsonString.charAt(i);
