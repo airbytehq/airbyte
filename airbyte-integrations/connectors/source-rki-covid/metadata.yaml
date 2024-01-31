@@ -8,6 +8,10 @@ data:
   icon: rki.svg
   license: MIT
   name: RKI Covid
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-rki-covid
   registries:
     cloud:
       enabled: true
