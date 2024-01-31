@@ -65,17 +65,41 @@ class MountPath:
         return self.get_path().is_file()
 
 
-@dataclass(frozen=True)
-class StepResult:
-    """A dataclass to capture the result of a step."""
-
-    step: Step
+@dataclass(kw_only=True)
+class Result:
     status: StepStatus
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
     stdout: Optional[str] = None
-    output_artifact: Any = None
     exc_info: Optional[Exception] = None
+    output_artifact: Any = None
+
+    @property
+    def success(self) -> bool:
+        return self.status is StepStatus.SUCCESS
+
+    def log(self, logger: logging.Logger) -> None:
+        """Log the step result.
+
+        Args:
+            logger (logging.Logger): The logger to use.
+        """
+        if self.status is StepStatus.FAILURE:
+            logger.exception(self.exc_info)
+        else:
+            if self.stdout:
+                for line in self.stdout.splitlines():
+                    logger.info(line)
+            if self.stderr:
+                for line in self.stderr.splitlines():
+                    logger.error(line)
+
+
+@dataclass(kw_only=True)
+class StepResult(Result):
+    """A dataclass to capture the result of a step."""
+
+    step: Step
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
@@ -95,17 +119,11 @@ class StepResult:
         return value
 
 
-@dataclass(frozen=True)
-class CommandResult:
+@dataclass(kw_only=True)
+class CommandResult(Result):
     """A dataclass to capture the result of a command."""
 
     command: click.Command | FormatCommand
-    status: StepStatus
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    stderr: Optional[str] = None
-    stdout: Optional[str] = None
-    exc_info: Optional[Exception] = None
-    output_artifact: Any = None
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.command.name}: {self.status.value}"
@@ -113,9 +131,17 @@ class CommandResult:
     def __str__(self) -> str:  # noqa D105
         return f"{self.command.name}: {self.status.value}\n\nSTDOUT:\n{self.stdout}\n\nSTDERR:\n{self.stderr}"
 
-    @property
-    def success(self) -> bool:
-        return self.status is StepStatus.SUCCESS
+
+@dataclass(kw_only=True)
+class PoeTaskResult(Result):
+
+    task_name: str
+
+    def __repr__(self) -> str:  # noqa D105
+        return f"{self.task_name}: {self.status.value}"
+
+    def __str__(self) -> str:  # noqa D105
+        return f"{self.task_name}: {self.status.value}\n\nSTDOUT:\n{self.stdout}\n\nSTDERR:\n{self.stderr}"
 
 
 class StepStatus(Enum):
@@ -270,7 +296,7 @@ class Step(ABC):
             step_result = soon_result.value
         except DaggerError as e:
             self.logger.error("Step failed with an unexpected dagger error", exc_info=e)
-            step_result = StepResult(self, StepStatus.FAILURE, stderr=str(e), exc_info=e)
+            step_result = StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e), exc_info=e)
 
         self.stopped_at = datetime.utcnow()
         self.log_step_result(step_result)
@@ -326,7 +352,7 @@ class Step(ABC):
         Returns:
             StepResult: A skipped step result.
         """
-        return StepResult(self, StepStatus.SKIPPED, stdout=reason)
+        return StepResult(step=self, status=StepStatus.SKIPPED, stdout=reason)
 
     def get_step_status_from_exit_code(
         self,
@@ -363,8 +389,8 @@ class Step(ABC):
         """
         exit_code, stdout, stderr = await get_exec_result(container)
         return StepResult(
-            self,
-            self.get_step_status_from_exit_code(exit_code),
+            step=self,
+            status=self.get_step_status_from_exit_code(exit_code),
             stderr=stderr,
             stdout=stdout,
             output_artifact=container,
@@ -372,7 +398,7 @@ class Step(ABC):
 
     def _get_timed_out_step_result(self) -> StepResult:
         return StepResult(
-            self,
-            StepStatus.FAILURE,
+            step=self,
+            status=StepStatus.FAILURE,
             stdout=f"Timed out after the max duration of {format_duration(self.max_duration)}. Please checkout the Dagger logs to see what happened.",
         )

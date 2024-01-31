@@ -62,11 +62,11 @@ class VersionCheck(Step, ABC):
 
     @property
     def success_result(self) -> StepResult:
-        return StepResult(self, status=StepStatus.SUCCESS)
+        return StepResult(step=self, status=StepStatus.SUCCESS)
 
     @property
     def failure_result(self) -> StepResult:
-        return StepResult(self, status=StepStatus.FAILURE, stderr=self.failure_message)
+        return StepResult(step=self, status=StepStatus.FAILURE, stderr=self.failure_message)
 
     @abstractmethod
     def validate(self) -> StepResult:
@@ -74,13 +74,13 @@ class VersionCheck(Step, ABC):
 
     async def _run(self) -> StepResult:
         if not self.should_run:
-            return StepResult(self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
         if self.context.ci_context == CIContext.MASTER:
-            return StepResult(self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
         try:
             return self.validate()
         except (requests.HTTPError, ValueError, TypeError) as e:
-            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
 
 class VersionIncrementCheck(VersionCheck):
@@ -257,7 +257,7 @@ class AcceptanceTests(Step):
         """
 
         if not self.context.connector.acceptance_test_config:
-            return StepResult(self, StepStatus.SKIPPED)
+            return StepResult(step=self, status=StepStatus.SKIPPED)
         connector_dir = await self.context.get_connector_dir()
         cat_container = await self._build_connector_acceptance_test(connector_under_test_container, connector_dir)
         cat_command = await self.get_cat_command(connector_dir)
@@ -333,15 +333,15 @@ class CheckBaseImageIsUsed(Step):
         migration_hint = f"Please run 'airbyte-ci connectors --name={self.context.connector.technical_name} migrate_to_base_image <PR NUMBER>' and commit the changes."
         if not is_using_base_image:
             return StepResult(
-                self,
-                StepStatus.FAILURE,
+                step=self,
+                status=StepStatus.FAILURE,
                 stdout=f"Connector is certified but does not use our base image. {migration_hint}",
             )
         has_dockerfile = "Dockerfile" in await (await self.context.get_connector_dir(include=["Dockerfile"])).entries()
         if has_dockerfile:
             return StepResult(
-                self,
-                StepStatus.FAILURE,
+                step=self,
+                status=StepStatus.FAILURE,
                 stdout=f"Connector is certified but is still using a Dockerfile. {migration_hint}",
             )
-        return StepResult(self, StepStatus.SUCCESS, stdout="Connector is certified and uses our base image.")
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout="Connector is certified and uses our base image.")

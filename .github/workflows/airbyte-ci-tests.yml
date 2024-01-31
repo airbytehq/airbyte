@@ -6,91 +6,51 @@ concurrency:
 
 on:
   workflow_dispatch:
+    inputs:
+      airbyte_ci_subcommand:
+        description: "Subcommand to pass to the 'airbyte-ci test' command"
+        default: "--poetry-package-path=airbyte-ci/connectors/pipelines"
   pull_request:
     types:
       - opened
       - reopened
       - synchronize
 jobs:
-  run-internal-poetry-packages-tests:
-    name: Run Airbyte CI tests
-    runs-on: tooling-test-medium
-    strategy:
-      matrix:
-        include:
-          - poetry_package_path: airbyte-ci/connectors/base_images
-            airbyte_ci_subcommand: "test airbyte-ci/connectors/base_images --poetry-run-command='pytest tests'"
-          - poetry_package_path: airbyte-ci/connectors/connector_ops
-            airbyte_ci_subcommand: "test airbyte-ci/connectors/connector_ops --poetry-run-command='pytest tests'"
-          - poetry_package_path: airbyte-ci/connectors/metadata_service/lib
-            airbyte_ci_subcommand: "test airbyte-ci/connectors/metadata_service/lib/ --poetry-run-command='pytest tests'"
-          - poetry_package_path: airbyte-ci/connectors/metadata_service/orchestrator
-            airbyte_ci_subcommand: "test airbyte-ci/connectors/metadata_service/orchestrator/ --poetry-run-command='pytest tests'"
-          - poetry_package_path: airbyte-ci/connectors/pipelines
-            airbyte_ci_subcommand: "test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines --disallow-untyped-defs' --poetry-run-command='ruff check pipelines'"
-          - poetry_package_path: airbyte-integrations/bases/connector-acceptance-test
-            airbyte_ci_subcommand: "test airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest unit_tests'"
-          - poetry_package_path: airbyte-lib
-            airbyte_ci_subcommand: "test airbyte-lib --side-car-docker-engine --pass-env-var=GCP_GSM_CREDENTIALS --poetry-run-command='pytest'"
-
+  run-airbyte-ci-poetry-ci:
+    name: Internal Poetry packages CI
+    runs-on: tooling-test-large
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
 
-      # IMPORTANT! This is nessesary to make sure that a status is reported on the PR
-      # even if the workflow is skipped. If we used github actions filters, the workflow
-      # would not be reported as skipped, but instead would be forever pending.
-      #
-      # I KNOW THIS SOUNDS CRAZY, BUT IT IS TRUE.
-      #
-      # Also it gets worse
-      #
-      # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
-      # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
-      # - name: Get changed files
-      #   uses: tj-actions/changed-files@v39
-      #   id: changes
-      #   with:
-      #     files_yaml: |
-      #       ops:
-      #         - 'airbyte-ci/connectors/connector_ops/**'
-      #         - '!**/*.md'
-      #       base_images:
-      #         - 'airbyte-ci/connectors/connector_ops/**'
-      #         - 'airbyte-ci/connectors/base_images/**'
-      #         - '!**/*.md'
-      #       pipelines:
-      #         - 'airbyte-ci/connectors/connector_ops/**'
-      #         - 'airbyte-ci/connectors/base_images/**'
-      #         - 'airbyte-ci/connectors/pipelines/**'
-      #         - '!**/*.md'
-      #       metadata_lib:
-      #         - 'airbyte-ci/connectors/metadata_service/lib/**'
-      #         - '!**/*.md'
-      #       metadata_orchestrator:
-      #         - 'airbyte-ci/connectors/metadata_service/lib/**'
-      #         - 'airbyte-ci/connectors/metadata_service/orchestrator/**'
-      #         - '!**/*.md'
-      #       airbyte_lib:
-      #         - 'airbyte-lib/**'
-      #         - '!**/*.md'
-      #       cat:
-      #         - 'airbyte-integrations/bases/connector-acceptance-test/**'
-      #         - '!**/*.md'
-
-      - name: Run ${{ matrix.poetry_package_name }} tests
-        # if: steps.changes.outputs.ops_any_changed == 'true' || github.event_name == 'workflow_dispatch'
+      - name: Run poe tasks for modified internal packages [PULL REQUEST]
+        if: github.event_name == 'pull_request'
+        id: run-airbyte-ci-test-pr
         uses: ./.github/actions/run-airbyte-ci
         with:
-          context: ${{ github.event_name  == 'pull_request' && 'pull_request' || 'manual' }}
+          context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "test --modified"
+
+      - name: Run poe tasks for requested internal packages [WORKFLOW DISPATCH]
+        id: run-airbyte-ci-test-workflow-dispatch
+        if: github.event_name == 'workflow_dispatch'
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "manual"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ github.token }}
-          subcommand: "test airbyte-lib --side-car-docker-engine --pass-env-var=GCP_GSM_CREDENTIALS --poetry-run-command='pytest'"
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "test ${{ inputs.airbyte_ci_subcommand}}"
