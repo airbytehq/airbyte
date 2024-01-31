@@ -38,11 +38,10 @@ class SourceKintone(Source):
         """
         client = Client(config, logger)
         for app_id in config.get("app_ids"):
-            app = client.get_app(app_id)
-            if not app.get('code'):
+            if not client.get_app(app_id):
                 return AirbyteConnectionStatus(
                     status=Status.FAILED,
-                    message=f"App code is not found of app_id={app_id}.\n"
+                    message=f"app name is not found of app_id={app_id}.\n"
                     f"https://jp.cybozu.help/k/en/user/app_settings/app_othersettings/appcode.html"
                 )
 
@@ -103,7 +102,8 @@ class SourceKintone(Source):
         apps = {}
         for app_id in config.get("app_ids"):
             app = client.get_app(app_id)
-            apps[app["code"]] = app
+            app_name = app.get("name")
+            apps[app_name] = app
 
         cursor_field, cursor_value = None, None
         for configured_stream in catalog.streams:
@@ -129,13 +129,14 @@ class SourceKintone(Source):
                 logger.error(
                     f"could not sync stream '{configured_stream.stream.name}', invalid sync_mode: {configured_stream.sync_mode}")
 
+            logger.info(f"app: '{app}'")
             records = client.get_app_records(app["appId"], cursor_field, cursor_value)
             for record in records:
                 cursor_value = record.get(cursor_field, cursor_value)
                 yield AirbyteMessage(
                     type=Type.RECORD,
                     record=AirbyteRecordMessage(
-                        stream=app["code"],
+                        stream=app["name"],
                         data=record,
                         emitted_at=self._find_emitted_at(),
                     ))

@@ -5,7 +5,8 @@ connectionSpecification:
   type: object
   required:
     - subdomain
-    - api_token
+    - login_id
+    - password
     - app_ids
   properties:
     subdomain:
@@ -14,12 +15,14 @@ connectionSpecification:
         A subdomain is represented by the part of the URL that is used to access kintone on a Web browser.
         For example, in the access URL "https://example.cybozu.com/", the subdomain is "example".
         https://jp.cybozu.help/k/en/glossary/subdomain.html
-    api_token:
+    login_id:
       type: string
       description: >-
-        API tokens are used for authenticating kintone REST API requests sent from external programs.
-        Specifying an API token in the "X-Cybozu-API-Token" header of your REST API request authenticates the request, and the API is executed. You can also specify multiple API tokens with commas in between.
-        https://jp.cybozu.help/k/en/user/app_settings/api_token.html
+        Input login_id.
+    password:
+      type: string
+      description: >-
+        Input password for login.
       airbyte_secret: true
     app_ids:
       type: array

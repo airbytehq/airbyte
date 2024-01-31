@@ -2,6 +2,7 @@ import urllib.request
 import urllib.parse
 import json
 import yaml
+import base64
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -12,17 +13,23 @@ from airbyte_cdk.models import (
 class Client:
     def __init__(self, config: json, logger: AirbyteLogger):
         self.subdomain = config.get("subdomain")
-        self.api_token = config.get("api_token")
-        with open("/airbyte/integration_code/source_kintone/field_code_mappings.yaml") as f:
-            self.field_code_mappings = yaml.full_load(f)
+        with open(f"/airbyte/integration_code/source_kintone/app_name_mapping/app_name.yaml") as f:
+              self.app_name_mappings = yaml.full_load(f)
+        self.field_code_mappings = {}
+        for app_id in config.get("app_ids"):
+            with open(f"/airbyte/integration_code/source_kintone/field_code_mapping/field_code_{app_id}.yaml") as f:
+                  self.field_code_mappings[app_id] = yaml.full_load(f)
         self.logger = logger
+        self.config = config
 
     def _get_base_url(self):
         return "https://" + self.subdomain + ".cybozu.com"
 
     def _get_base_header(self):
+        text = self.config.get("login_id") + ":" + self.config.get("password")
+        param = base64.b64encode(text.encode()).decode()
         return {
-            "X-Cybozu-API-Token": self.api_token,
+           "X-Cybozu-Authorization": param,
         }
     
     def _fetch_data(self, url: str, params: dict, use_json: bool = False):
@@ -69,15 +76,20 @@ class Client:
             method="DELETE",
         )
 
+    def _rename_app_name(self, app_id: str, app_name: str):
+        mappings = self.app_name_mappings
+        return mappings.get(app_id, app_name)
+    
     def _rename_field_code_from_jp_to_en(self, app_id: str, field_code: str):
         mappings = self.field_code_mappings[app_id]
         return mappings.get(field_code, field_code)
 
     # ref. https://kintone.dev/en/docs/kintone/rest-api/apps/get-app/
     def get_app(self, app_id: str):
-        url = self._get_base_url() + "/k/v1/app.json"
-        params = {"id": app_id}
-        return self._fetch_data(url, params)
+        url = self._get_base_url() + "/k/v1/apps.json"
+        params = {"ids": app_id}
+        apps = self._fetch_data(url, params)
+        return apps.get("apps")[0]
 
     # ref. https://kintone.dev/en/docs/kintone/rest-api/apps/get-form-fields/
     def get_app_fields(self, app_id: str):
@@ -139,8 +151,10 @@ class Client:
     def get_stream(self, app_id: str):
         app = self.get_app(app_id)
         # https://jp.cybozu.help/k/en/user/app_settings/app_othersettings/appcode.html
-        if not app.get('code'):
+        app_name_original = app.get("name")
+        if not app_name_original:
             return None
+        app_name = self._rename_app_name(app_id, app_name_original)
 
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -155,10 +169,10 @@ class Client:
             json_schema["properties"][k] = {"type": "string"}
 
         return AirbyteStream(
-            name=app["code"],
+            name=app_name,
             json_schema=json_schema,
             supported_sync_modes=["full_refresh", "incremental"],
-            default_cursor_field=["update_date_time"],
+            #default_cursor_field=["update_date_time"],
         )
 
 def update_url(url, params):
