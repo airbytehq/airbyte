@@ -1337,7 +1337,6 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
         t._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
 
 
-# TODO: add parametrize with expectation and output
 @pytest.mark.parametrize(
     "output, expected_exception",
     [
@@ -1447,8 +1446,46 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
             ],
             pytest.raises(AssertionError),
         ),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(
+                        type=TraceType.STREAM_STATUS,
+                        emitted_at=1,
+                        stream_status=AirbyteStreamStatusTraceMessage(
+                            stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.STARTED
+                        ),
+                    ),
+                ),
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(
+                        type=TraceType.STREAM_STATUS,
+                        emitted_at=1,
+                        stream_status=AirbyteStreamStatusTraceMessage(
+                            stream_descriptor=StreamDescriptor(name="test_stream_2"), status=AirbyteStreamStatus.STARTED
+                        ),
+                    ),
+                ),
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(
+                        type=TraceType.STREAM_STATUS,
+                        emitted_at=1,
+                        stream_status=AirbyteStreamStatusTraceMessage(
+                            stream_descriptor=StreamDescriptor(name="test_stream_1"), status=AirbyteStreamStatus.STARTED
+                        ),
+                    ),
+                ),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_0", data={"a": 1}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_1", data={"a": 1}, emitted_at=112)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_2", data={"a": 1}, emitted_at=113)),
+            ],
+            pytest.raises(AssertionError),
+        ),
     ],
-    ids=["async_output_no_exception", "async_output_with_exception"],
+    ids=["no_exception", "with_exception_no_statuses", "with_exception_only_started_present"],
 )
 async def test_read_validate_stream_statuses(mocker, output, expected_exception):
     configured_catalog = ConfiguredAirbyteCatalog(
