@@ -13,6 +13,10 @@ data:
   icon: google-drive.svg
   license: ELv2
   name: Google Drive
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-drive
   registries:
     cloud:
       enabled: true
