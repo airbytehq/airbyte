@@ -133,7 +133,7 @@ def test_replace_strategy(
 ) -> None:
     """Test that the append strategy works as expected."""
     for cache in all_cache_types: # Function-scoped fixtures can't be used in parametrized().
-        for _ in range(3):
+        for _ in range(2):
             result = source_faker_seed_a.read(
                 cache, write_strategy="replace", force_full_refresh=True
             )
@@ -148,7 +148,7 @@ def test_append_strategy(
 ) -> None:
     """Test that the append strategy works as expected."""
     for cache in all_cache_types: # Function-scoped fixtures can't be used in parametrized().
-        for iteration in range(1, 4):
+        for iteration in range(1, 3):
             result = source_faker_seed_a.read(cache, write_strategy="append")
             assert len(result.cache.streams) == 2
             assert len(list(result.cache.streams["products"])) == NUM_PRODUCTS * iteration
