@@ -8,6 +8,10 @@ data:
   icon: nytimes.svg
   license: MIT
   name: New York Times
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-nytimes
   registries:
     cloud:
       enabled: true

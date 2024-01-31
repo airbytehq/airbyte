@@ -8,6 +8,10 @@ data:
   icon: omnisend.svg
   license: MIT
   name: Omnisend
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-omnisend
   registries:
     cloud:
       enabled: true

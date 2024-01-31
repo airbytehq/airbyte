@@ -7,6 +7,10 @@ data:
   githubIssueLabel: source-opsgenie
   license: MIT
   name: Opsgenie
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-opsgenie
   registries:
     cloud:
       enabled: false

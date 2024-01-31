@@ -8,6 +8,10 @@ data:
   icon: orb.svg
   license: MIT
   name: Orb
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-orb
   registries:
     cloud:
       enabled: true

@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.nasa.gov
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-nasa
   registries:
     oss:
       enabled: true

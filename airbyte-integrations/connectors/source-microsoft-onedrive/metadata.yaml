@@ -6,6 +6,11 @@ data:
     hosts:
       - graph.microsoft.com
       - login.microsoftonline.com
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-microsoft-onedrive
   registries:
     oss:
       enabled: true

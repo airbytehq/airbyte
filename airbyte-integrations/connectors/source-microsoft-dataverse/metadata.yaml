@@ -8,6 +8,10 @@ data:
   icon: microsoftdataverse.svg
   license: MIT
   name: Microsoft Dataverse
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-microsoft-dataverse
   registries:
     cloud:
       enabled: false
