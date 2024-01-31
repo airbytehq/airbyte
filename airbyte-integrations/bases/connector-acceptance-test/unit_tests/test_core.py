@@ -7,7 +7,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from _pytest.outcomes import Failed
-from airbyte_cdk.models import Type as MessageType
 from airbyte_protocol.models import (
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
@@ -1345,7 +1344,7 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
         (
             [
                 AirbyteMessage(
-                    type=MessageType.TRACE,
+                    type=Type.TRACE,
                     trace=AirbyteTraceMessage(
                         type=TraceType.STREAM_STATUS,
                         emitted_at=1,
@@ -1355,7 +1354,7 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
                     ),
                 ),
                 AirbyteMessage(
-                    type=MessageType.TRACE,
+                    type=Type.TRACE,
                     trace=AirbyteTraceMessage(
                         type=TraceType.STREAM_STATUS,
                         emitted_at=1,
@@ -1365,7 +1364,7 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
                     ),
                 ),
                 AirbyteMessage(
-                    type=MessageType.TRACE,
+                    type=Type.TRACE,
                     trace=AirbyteTraceMessage(
                         type=TraceType.STREAM_STATUS,
                         emitted_at=1,
@@ -1378,7 +1377,7 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_1", data={"a": 1}, emitted_at=112)),
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_2", data={"a": 1}, emitted_at=113)),
                 AirbyteMessage(
-                    type=MessageType.TRACE,
+                    type=Type.TRACE,
                     trace=AirbyteTraceMessage(
                         type=TraceType.STREAM_STATUS,
                         emitted_at=114,
@@ -1388,7 +1387,7 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
                     ),
                 ),
                 AirbyteMessage(
-                    type=MessageType.TRACE,
+                    type=Type.TRACE,
                     trace=AirbyteTraceMessage(
                         type=TraceType.STREAM_STATUS,
                         emitted_at=114,
@@ -1398,7 +1397,7 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
                     ),
                 ),
                 AirbyteMessage(
-                    type=MessageType.TRACE,
+                    type=Type.TRACE,
                     trace=AirbyteTraceMessage(
                         type=TraceType.STREAM_STATUS,
                         emitted_at=114,
@@ -1408,7 +1407,7 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
                     ),
                 ),
                 AirbyteMessage(
-                    type=MessageType.TRACE,
+                    type=Type.TRACE,
                     trace=AirbyteTraceMessage(
                         type=TraceType.STREAM_STATUS,
                         emitted_at=115,
@@ -1418,7 +1417,7 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
                     ),
                 ),
                 AirbyteMessage(
-                    type=MessageType.TRACE,
+                    type=Type.TRACE,
                     trace=AirbyteTraceMessage(
                         type=TraceType.STREAM_STATUS,
                         emitted_at=116,
@@ -1428,7 +1427,7 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
                     ),
                 ),
                 AirbyteMessage(
-                    type=MessageType.TRACE,
+                    type=Type.TRACE,
                     trace=AirbyteTraceMessage(
                         type=TraceType.STREAM_STATUS,
                         emitted_at=120,
