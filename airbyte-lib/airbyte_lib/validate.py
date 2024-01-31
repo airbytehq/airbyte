@@ -137,6 +137,9 @@ def validate(connector_dir: str, sample_config: str, *, validate_install_only: b
             {
                 "dockerRepository": f"airbyte/{connector_name}",
                 "dockerImageTag": "0.0.1",
+                "remoteRegistries": {
+                    "pypi": {"packageName": "airbyte-{connector_name}", "enabled": True}
+                },
             },
         ],
     }

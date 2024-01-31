@@ -24,6 +24,7 @@ REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.
 class ConnectorMetadata:
     name: str
     latest_available_version: str
+    pypi_package_name: str | None
 
 
 def _get_registry_url() -> str:
@@ -31,6 +32,19 @@ def _get_registry_url() -> str:
         return str(os.environ.get(REGISTRY_ENV_VAR))
 
     return REGISTRY_URL
+
+
+def _registry_entry_to_connector_metadata(entry: dict) -> ConnectorMetadata:
+    name = entry["dockerRepository"].replace("airbyte/", "")
+    remote_registries: dict = entry.get("remoteRegistries", {})
+    pypi_registry: dict = remote_registries.get("pypi", {})
+    pypi_package_name: str = pypi_registry.get("packageName", None)
+    pypi_enabled: bool = pypi_registry.get("enabled", False)
+    return ConnectorMetadata(
+        name=name,
+        latest_available_version=entry["dockerImageTag"],
+        pypi_package_name=pypi_package_name if pypi_enabled else None,
+    )
 
 
 def _get_registry_cache(*, force_refresh: bool = False) -> dict[str, ConnectorMetadata]:
@@ -54,8 +68,8 @@ def _get_registry_cache(*, force_refresh: bool = False) -> dict[str, ConnectorMe
     new_cache: dict[str, ConnectorMetadata] = {}
 
     for connector in data["sources"]:
-        name = connector["dockerRepository"].replace("airbyte/", "")
-        new_cache[name] = ConnectorMetadata(name, connector["dockerImageTag"])
+        connector_metadata = _registry_entry_to_connector_metadata(connector)
+        new_cache[connector_metadata.name] = connector_metadata
 
     if len(new_cache) == 0:
         raise exc.AirbyteLibInternalError(

@@ -10,4 +10,8 @@ data:
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-test
 metadataSpecVersion: "1.0"
