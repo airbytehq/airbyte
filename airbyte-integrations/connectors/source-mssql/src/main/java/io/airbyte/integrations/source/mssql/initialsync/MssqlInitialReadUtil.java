@@ -249,9 +249,10 @@ public class MssqlInitialReadUtil {
                                                 final String quoteString) {
     // For cursor-based syncs, we cannot always assume a ordered column field exists. We need to handle
     // the case where it does not exist when we support cursor-based syncs.
-//    if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) { // TODO: validate the seleted column rather than primary key
-//      LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}", stream.getStream().getNamespace(), stream.getStream().getName());
-//    }
+    // if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) {
+    // LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}",
+    // stream.getStream().getNamespace(), stream.getStream().getName());
+    // } // TODO: validate the seleted column rather than primary key
     final String clusterdIndexField = discoverClusteredIndexForStream(database, stream.getStream());
     final String ocFieldName = clusterdIndexField != null ? clusterdIndexField : stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
     LOGGER.info("selected ordered column field name: " + ocFieldName);
