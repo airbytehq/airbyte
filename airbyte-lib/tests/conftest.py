@@ -194,7 +194,35 @@ def snowflake_config():
     yield config
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
+def source_test_registry(monkeypatch):
+    """
+    Set environment variables for the test source.
+
+    These are applied to this test file only.
+    """
+    env_vars = {
+        "AIRBYTE_LOCAL_REGISTRY": LOCAL_TEST_REGISTRY_URL,
+    }
+    for key, value in env_vars.items():
+        monkeypatch.setenv(key, value)
+
+
+@pytest.fixture(autouse=True)
+def do_not_track(monkeypatch):
+    """
+    Set environment variables for the test source.
+
+    These are applied to this test file only.
+    """
+    env_vars = {
+        "DO_NOT_TRACK": "true"
+    }
+    for key, value in env_vars.items():
+        monkeypatch.setenv(key, value)
+
+
+@pytest.fixture(scope="package")
 def source_test_installation():
     """
     Prepare test environment. This will pre-install the test source from the fixtures array and set
@@ -210,19 +238,3 @@ def source_test_installation():
     yield
 
     shutil.rmtree(venv_dir)
-
-
-@pytest.fixture(scope="function")
-def source_test_registry(monkeypatch):
-    """
-    Set environment variables for the test source.
-
-    These are applied to this test file only.
-    """
-    env_vars = {
-        "AIRBYTE_LOCAL_REGISTRY": LOCAL_TEST_REGISTRY_URL,
-        "DO_NOT_TRACK": "true"
-    }
-
-    for key, value in env_vars.items():
-        monkeypatch.setenv(key, value)
