@@ -101,7 +101,7 @@ class SourceAzureTable(AbstractSource):
         This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.
         """
         stream_instances = {s.name: s for s in self.streams(logger=logger, config=config)}
-        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
+        state_manager = ConnectorStateManager(stream_instance_map={s.stream.name: s.stream for s in catalog.streams}, state=state)
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
         self._stream_to_instance_map = stream_instances

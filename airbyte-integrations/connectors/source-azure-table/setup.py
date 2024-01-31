@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "azure.data.tables"]
+MAIN_REQUIREMENTS = ["airbyte-cdk>=0.62.0", "azure.data.tables"]
 
 TEST_REQUIREMENTS = [
     "requests-mock~=1.9.3",
