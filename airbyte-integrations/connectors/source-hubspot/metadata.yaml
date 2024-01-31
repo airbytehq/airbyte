@@ -17,6 +17,10 @@ data:
   icon: hubspot.svg
   license: ELv2
   name: HubSpot
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-hubspot
   registries:
     cloud:
       enabled: true
