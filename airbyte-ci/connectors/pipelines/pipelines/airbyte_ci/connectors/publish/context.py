@@ -5,7 +5,6 @@
 """Module declaring context related classes."""
 
 from typing import Optional
-from urllib.parse import urlparse
 
 import asyncclick as click
 from dagger import Secret
