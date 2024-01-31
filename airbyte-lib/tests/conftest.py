@@ -7,6 +7,8 @@ import logging
 import os
 import socket
 import time
+
+import ulid
 from airbyte_lib.caches.snowflake import SnowflakeCacheConfig
 
 import docker
@@ -145,6 +147,10 @@ def pg_dsn():
 
 @pytest.fixture
 def new_pg_cache_config(pg_dsn):
+    """Fixture to return a fresh cache.
+
+    Each test that uses this fixture will get a unique table prefix.
+    """
     config = PostgresCacheConfig(
         host=pg_dsn,
         port=PYTEST_POSTGRES_PORT,
@@ -152,6 +158,7 @@ def new_pg_cache_config(pg_dsn):
         password="postgres",
         database="postgres",
         schema_name="public",
+        table_prefix=f"test{str(ulid.ULID())[-6:]}_",
     )
     yield config
 
