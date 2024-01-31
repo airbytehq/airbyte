@@ -451,50 +451,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using OC + CDC");
       return MssqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
-      /*
-       * final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-       * final Duration subsequentRecordWaitTime =
-       * RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig); final var targetPosition =
-       * MssqlCdcTargetPosition.getTargetPosition(database,
-       * sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()); final AirbyteDebeziumHandler<Lsn> handler =
-       * new AirbyteDebeziumHandler<>( sourceConfig, targetPosition, true, firstRecordWaitTime,
-       * subsequentRecordWaitTime, AirbyteDebeziumHandler.QUEUE_CAPACITY, true); final
-       * MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector =
-       * MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
-       *
-       * // Determine if new stream(s) have been added to the catalog after initial sync of existing
-       * streams final List<ConfiguredAirbyteStream> streamsToSnapshot =
-       * identifyStreamsToSnapshot(catalog, stateManager); final ConfiguredAirbyteCatalog
-       * streamsToSnapshotCatalog = new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot); final
-       * var propertiesManager = new RelationalDbDebeziumPropertiesManager(
-       * MssqlCdcHelper.getDebeziumProperties(database, catalog, false), sourceConfig, catalog); final var
-       * eventConverter = new RelationalDbDebeziumEventConverter(mssqlCdcConnectorMetadataInjector,
-       * emittedAt);
-       *
-       * final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () ->
-       * handler.getIncrementalIterators( propertiesManager, eventConverter, new
-       * MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()), new
-       * MssqlCdcStateHandler(stateManager));
-       *
-       *//*
-          * If the CDC state is null or there is no streams to snapshot, that means no stream has gone
-          * through the initial sync, so we return the list of incremental iterators
-          *//*
-             * if ((stateManager.getCdcStateManager().getCdcState() == null ||
-             * stateManager.getCdcStateManager().getCdcState().getState() == null ||
-             * streamsToSnapshot.isEmpty())) { return List.of(incrementalIteratorsSupplier.get()); }
-             *
-             * // Otherwise, we build the snapshot iterators for the newly added streams(s) final
-             * AutoCloseableIterator<AirbyteMessage> snapshotIterators = getDebeziumSnapshotIterators(
-             * sourceConfig, streamsToSnapshotCatalog, targetPosition, firstRecordWaitTime,
-             * subsequentRecordWaitTime, mssqlCdcConnectorMetadataInjector,
-             * MssqlCdcHelper.getDebeziumProperties(database, catalog, true), new
-             * MssqlCdcStateHandler(stateManager), emittedAt); /* The incremental iterators needs to be wrapped
-             * in a lazy iterator since only 1 Debezium engine for the DB can be running at a time
-             *//*
-                * return List.of(snapshotIterators,
-                * AutoCloseableIterators.lazyIterator(incrementalIteratorsSupplier, null));
-                */
     } else {
       if (isAnyStreamIncrementalSyncMode(catalog)) {
         LOGGER.info("Syncing via Primary Key");
