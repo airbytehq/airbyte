@@ -214,10 +214,9 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
-        except GitHubAPILimitException:
-            self.logger.warning(
-                f"Stream: `{self.name}`, slice: `{stream_slice}`. Limits for all provided tokens are reached, please try again later"
-            )
+        except GitHubAPILimitException as e:
+            message = f"Stream: `{self.name}`, slice: `{stream_slice}`. Limits for all provided tokens are reached, please try again later"
+            raise AirbyteTracedException(message) from e
 
 
 class GithubStream(GithubStreamABC):
