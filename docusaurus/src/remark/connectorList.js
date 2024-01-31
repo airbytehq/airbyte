@@ -9,7 +9,6 @@ const plugin = () => {
     visit(ast, "mdxJsxFlowElement", (node) => {
       if (node.name !== "AirbyteLibConnectors") return;
 
-        // TODO: Look for remoteRegistries here instead of lowcode tag
         const connectors = registry.filter(isPypiConnector);
 
       node.attributes.push({
