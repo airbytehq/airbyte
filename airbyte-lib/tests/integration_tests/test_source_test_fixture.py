@@ -236,7 +236,7 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
 
 def test_read_from_cache(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     """
-    Test that we can read from a cache that already has data (identigier by name)
+    Test that we can read from a cache that already has data (identifier by name)
     """
     cache_name = str(ulid.ULID())
     source = ab.get_connector("source-test", config={"apiKey": "test"})
