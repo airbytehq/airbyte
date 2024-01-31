@@ -14,6 +14,11 @@ data:
   icon: gcs.svg
   license: ELv2
   name: GCS
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-gcs
   registries:
     cloud:
       enabled: true
