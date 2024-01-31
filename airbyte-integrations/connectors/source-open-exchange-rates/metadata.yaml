@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - openexchangerates.org
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-open-exchange-rates
   registries:
     oss:
       enabled: true
