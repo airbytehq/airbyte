@@ -52,6 +52,24 @@ files = [
 pydantic = ">=1.9.2,<2.0.0"
 
 [[package]]
+name = "airbyte-source-faker"
+version = "6.0.0"
+description = "Source implementation for fake but realistic looking data."
+optional = false
+python-versions = "*"
+files = [
+    {file = "airbyte-source-faker-6.0.0.tar.gz", hash = "sha256:60c68980527b66f1ffa31e4e13c406233b6d9cfcb2a6acc23ebd827cd2532181"},
+    {file = "airbyte_source_faker-6.0.0-py3-none-any.whl", hash = "sha256:d92265c5be31a8d2ac66e7ed40cbe134d62acbb63adbc05789697cf64784e5b7"},
+]
+
+[package.dependencies]
+airbyte-cdk = ">=0.2,<1.0"
+mimesis = "6.1.1"
+
+[package.extras]
+tests = ["pytest (>=6.2,<7.0)", "pytest-mock (>=3.6.1,<3.7.0)", "requests-mock (>=1.9.3,<1.10.0)"]
+
+[[package]]
 name = "asn1crypto"
 version = "1.5.1"
 description = "Fast ASN.1 parser and serializer with definitions for private keys, public keys, certificates, CRL, OCSP, CMS, PKCS#3, PKCS#7, PKCS#8, PKCS#12, PKCS#5, X.509 and TSP"
@@ -524,6 +542,20 @@ files = [
 docs = ["furo (>=2023.9.10)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.24)"]
 testing = ["covdefaults (>=2.3)", "coverage (>=7.3.2)", "diff-cover (>=8)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)", "pytest-timeout (>=2.2)"]
 typing = ["typing-extensions (>=4.8)"]
+
+[[package]]
+name = "freezegun"
+version = "1.4.0"
+description = "Let your Python tests travel through time"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "freezegun-1.4.0-py3-none-any.whl", hash = "sha256:55e0fc3c84ebf0a96a5aa23ff8b53d70246479e9a68863f1fcac5a3e52f19dd6"},
+    {file = "freezegun-1.4.0.tar.gz", hash = "sha256:10939b0ba0ff5adaecf3b06a5c2f73071d9678e507c5eaedb23c761d56ac774b"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.7"
 
 [[package]]
 name = "genson"
@@ -2239,26 +2271,6 @@ files = [
 ]
 
 [[package]]
-name = "source_faker"
-version = "0.0.0"
-description = "Source implementation for fake but realistic looking data."
-optional = false
-python-versions = "*"
-files = []
-develop = true
-
-[package.dependencies]
-airbyte-cdk = ">=0.2,<1.0"
-mimesis = "6.1.1"
-
-[package.extras]
-tests = ["pytest (>=6.2,<7.0)", "pytest-mock (>=3.6.1,<3.7.0)", "requests-mock (>=1.9.3,<1.10.0)"]
-
-[package.source]
-type = "directory"
-url = "../airbyte-integrations/connectors/source-faker"
-
-[[package]]
 name = "sqlalchemy"
 version = "1.4.51"
 description = "Database Abstraction Library"
@@ -2578,4 +2590,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "83918939aa4cfbdf0b17a35f5699938099f1225958adf15d82e37b357f5a41d0"
+content-hash = "10dc6d712fcf12981716373f5718eee65ba75ded52e0bed86f7c5c2c0ffec71f"
