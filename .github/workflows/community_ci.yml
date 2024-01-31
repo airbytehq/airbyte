@@ -24,7 +24,7 @@ jobs:
       statuses: write
       pull-requests: read
     steps:
-      - run: echo "Running on community-ci environment"
+      - run: echo "Running on community-ci environment 2"
         bash: shell
       - name: Checkout Airbyte
         uses: actions/checkout@v3
