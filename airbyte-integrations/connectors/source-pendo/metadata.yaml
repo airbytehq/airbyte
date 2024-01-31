@@ -8,6 +8,10 @@ data:
   icon: pendo.svg
   license: MIT
   name: Pendo
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pendo
   registries:
     cloud:
       enabled: true
