@@ -12,6 +12,10 @@ data:
   icon: recurly.svg
   license: MIT
   name: Recurly
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-recurly
   registries:
     cloud:
       enabled: true

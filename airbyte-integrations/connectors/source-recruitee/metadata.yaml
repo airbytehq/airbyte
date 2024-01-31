@@ -8,6 +8,10 @@ data:
   icon: recruitee.svg
   license: MIT
   name: Recruitee
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-recruitee
   registries:
     cloud:
       enabled: true
