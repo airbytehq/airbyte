@@ -8,6 +8,10 @@ data:
   icon: azureblobstorage.svg
   license: MIT
   name: Azure Table Storage
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-azure-table
   registries:
     cloud:
       enabled: true

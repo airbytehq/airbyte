@@ -8,6 +8,10 @@ data:
   icon: intruder.svg
   license: MIT
   name: Intruder
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-intruder
   registries:
     cloud:
       enabled: false

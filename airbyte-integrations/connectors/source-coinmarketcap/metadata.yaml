@@ -8,6 +8,10 @@ data:
   icon: coinmarketcap.svg
   license: MIT
   name: CoinMarketCap
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-coinmarketcap
   registries:
     cloud:
       enabled: true
