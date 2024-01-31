@@ -77,9 +77,9 @@ def duckdb_cache() -> Generator[caches.DuckDBCache, None, None]:
 
 
 @pytest.fixture(scope="function")
-def snowflake_cache() -> Generator[caches.SnowflakeCache, None, None]:
+def snowflake_cache(snowflake_config) -> Generator[caches.SnowflakeCache, None, None]:
     """Fixture to return a fresh cache."""
-    cache: caches.SnowflakeCache = ab.new_local_cache()
+    cache: caches.SnowflakeCache = caches.SnowflakeSQLCache(snowflake_config)
     yield cache
     # TODO: Delete cache DB file after test is complete.
     return

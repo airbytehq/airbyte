@@ -253,7 +253,10 @@ class SQLCacheBase(RecordProcessor):
         self,
         table_name: str,
     ) -> sqlalchemy.Table:
-        """Return a table object from a table name."""
+        """Return a table object from a table name.
+
+        TODO: Cache the table objects to avoid repeated lookups against the remote DB.
+        """
         return sqlalchemy.Table(
             table_name,
             sqlalchemy.MetaData(schema=self.config.schema_name),
