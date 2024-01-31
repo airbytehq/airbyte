@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.3.3
+Add `validate_stream_statuses` to TestBasicRead.test_read
+
 ## 3.3.2
 Fix TestBasicRead.test_read.validate_schema: set `additionalProperties` to False recursively for objects
 

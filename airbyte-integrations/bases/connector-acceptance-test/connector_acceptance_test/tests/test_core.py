@@ -1045,7 +1045,6 @@ class TestBasicRead(BaseTest):
         certified_file_based_connector: bool,
     ):
         output = await docker_runner.call_read(connector_config, configured_catalog)
-        all_statuses = [message.stream_status for message in filter_output(output, TraceType.STREAM_STATUS)]
 
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
@@ -1080,6 +1079,7 @@ class TestBasicRead(BaseTest):
             )
 
         if should_validate_stream_statuses:
+            all_statuses = [message.trace.stream_status for message in filter_output(output, Type.TRACE) if message.trace.type == TraceType.STREAM_STATUS]
             self._validate_stream_statuses(configured_catalog=configured_catalog, statuses=all_statuses)
 
     async def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):

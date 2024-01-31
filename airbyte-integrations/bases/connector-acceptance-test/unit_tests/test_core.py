@@ -4,7 +4,7 @@
 
 from unittest import mock
 from unittest.mock import MagicMock, patch
-
+from airbyte_cdk.models import Type as MessageType
 import pytest
 from _pytest.outcomes import Failed
 from airbyte_protocol.models import (
@@ -1343,72 +1343,72 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
     [
         (
             [
-                AirbyteTraceMessage(
+                AirbyteMessage(type=MessageType.TRACE, trace=AirbyteTraceMessage(
                     type=TraceType.STREAM_STATUS,
                     emitted_at=1,
                     stream_status=AirbyteStreamStatusTraceMessage(
                         stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.STARTED
                     ),
-                ),
-                AirbyteTraceMessage(
+                )),
+                AirbyteMessage(type=MessageType.TRACE, trace=AirbyteTraceMessage(
                     type=TraceType.STREAM_STATUS,
                     emitted_at=1,
                     stream_status=AirbyteStreamStatusTraceMessage(
                         stream_descriptor=StreamDescriptor(name="test_stream_2"), status=AirbyteStreamStatus.STARTED
                     ),
-                ),
-                AirbyteTraceMessage(
+                )),
+                AirbyteMessage(type=MessageType.TRACE, trace=AirbyteTraceMessage(
                     type=TraceType.STREAM_STATUS,
                     emitted_at=1,
                     stream_status=AirbyteStreamStatusTraceMessage(
                         stream_descriptor=StreamDescriptor(name="test_stream_1"), status=AirbyteStreamStatus.STARTED
                     ),
-                ),
+                )),
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_0", data={"a": 1}, emitted_at=111)),
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_1", data={"a": 1}, emitted_at=112)),
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_2", data={"a": 1}, emitted_at=113)),
-                AirbyteTraceMessage(
+                AirbyteMessage(type=MessageType.TRACE, trace=AirbyteTraceMessage(
                     type=TraceType.STREAM_STATUS,
                     emitted_at=114,
                     stream_status=AirbyteStreamStatusTraceMessage(
                         stream_descriptor=StreamDescriptor(name="test_stream_1"), status=AirbyteStreamStatus.RUNNING
                     ),
-                ),
-                AirbyteTraceMessage(
+                )),
+                AirbyteMessage(type=MessageType.TRACE, trace=AirbyteTraceMessage(
                     type=TraceType.STREAM_STATUS,
                     emitted_at=114,
                     stream_status=AirbyteStreamStatusTraceMessage(
                         stream_descriptor=StreamDescriptor(name="test_stream_2"), status=AirbyteStreamStatus.RUNNING
                     ),
-                ),
-                AirbyteTraceMessage(
+                )),
+                AirbyteMessage(type=MessageType.TRACE, trace=AirbyteTraceMessage(
                     type=TraceType.STREAM_STATUS,
                     emitted_at=114,
                     stream_status=AirbyteStreamStatusTraceMessage(
                         stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.RUNNING
                     ),
-                ),
-                AirbyteTraceMessage(
+                )),
+                AirbyteMessage(type=MessageType.TRACE, trace=AirbyteTraceMessage(
                     type=TraceType.STREAM_STATUS,
                     emitted_at=115,
                     stream_status=AirbyteStreamStatusTraceMessage(
                         stream_descriptor=StreamDescriptor(name="test_stream_2"), status=AirbyteStreamStatus.COMPLETE
                     ),
-                ),
-                AirbyteTraceMessage(
+                )),
+                AirbyteMessage(type=MessageType.TRACE, trace=AirbyteTraceMessage(
                     type=TraceType.STREAM_STATUS,
                     emitted_at=116,
                     stream_status=AirbyteStreamStatusTraceMessage(
                         stream_descriptor=StreamDescriptor(name="test_stream_1"), status=AirbyteStreamStatus.COMPLETE
                     ),
-                ),
-                AirbyteTraceMessage(
+                )),
+                AirbyteMessage(type=MessageType.TRACE, trace=AirbyteTraceMessage(
                     type=TraceType.STREAM_STATUS,
                     emitted_at=120,
                     stream_status=AirbyteStreamStatusTraceMessage(
                         stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.COMPLETE
                     ),
-                ),
+                )),
             ],
             does_not_raise(),
         ),
