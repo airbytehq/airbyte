@@ -44,7 +44,7 @@ class SourceRecharge(AbstractSource):
             return False, f"Unable to connect to Recharge API with the provided credentials - {repr(error)}"
 
     def select_orders_stream(self, config: Mapping[str, Any], **kwargs) -> Union[OrdersDeprecatedApi, OrdersModernApi]:
-        if config.get("use_orders_deprecated_api", False):
+        if config.get("use_orders_deprecated_api"):
             return OrdersDeprecatedApi(config, **kwargs)
         else:
             return OrdersModernApi(config, **kwargs)
