@@ -13,7 +13,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.micronaut.context.env.Environment;
-import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.slf4j.Logger;
@@ -73,19 +72,19 @@ public class IntegrationCommand implements Runnable {
             "Required by the following commands: check, discover, read, write",
             JavaBaseConstants.ARGS_CONFIG_DESC
     })
-    private String config;
+    private Path configFile;
 
     @CommandLine.Option(names = {  "--" + JavaBaseConstants.ARGS_CATALOG_KEY }, description = {
             "Required by the following commands: read, write",
             JavaBaseConstants.ARGS_CATALOG_DESC
     })
-    private String catalog;
+    private Path catalogFile;
 
     @CommandLine.Option(names = {  "--" + JavaBaseConstants.ARGS_STATE_KEY }, description = {
             "Required by the following commands: read",
             JavaBaseConstants.ARGS_PATH_DESC
     })
-    private Optional<String> state;
+    private Optional<Path> stateFile;
 
     @Override
     public void run() {
@@ -147,9 +146,9 @@ public class IntegrationCommand implements Runnable {
         LOGGER.info("Completed integration: {}", this.integration.getClass().getName());
     }
 
-    private JsonNode validateConfig(JsonNode schemaJson, String config, String operationType) throws Exception {
-        if(StringUtils.isNotEmpty(config)) {
-            final JsonNode configJson = Jsons.deserialize(IOs.readFile(Path.of(catalog)));
+    private JsonNode validateConfig(JsonNode schemaJson, Path configFile, String operationType) throws Exception {
+        if(configFile != null) {
+            final JsonNode configJson = Jsons.deserialize(IOs.readFile(configFile));
             final Set<String> validationResult = validator.validate(schemaJson, configJson);
             if (!validationResult.isEmpty()) {
                 throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ", operationType, validationResult));
@@ -160,9 +159,9 @@ public class IntegrationCommand implements Runnable {
         }
     }
 
-    private ConfiguredAirbyteCatalog validateCatalog(final String catalog) {
-        if(StringUtils.isNotEmpty(catalog)) {
-            return Jsons.deserialize(IOs.readFile(Path.of(catalog)), ConfiguredAirbyteCatalog.class);
+    private ConfiguredAirbyteCatalog validateCatalog(final Path catalogFile) {
+        if(catalogFile != null) {
+            return Jsons.deserialize(IOs.readFile(catalogFile), ConfiguredAirbyteCatalog.class);
         } else {
             throw new IllegalArgumentException("Missing required command line argument '--" + JavaBaseConstants.ARGS_CATALOG_KEY + "'.");
         }
@@ -176,7 +175,7 @@ public class IntegrationCommand implements Runnable {
 
     private void check() {
         try {
-            final JsonNode configJson = validateConfig(this.integration.spec().getConnectionSpecification(), config, Command.CHECK.name());
+            final JsonNode configJson = validateConfig(this.integration.spec().getConnectionSpecification(), configFile, Command.CHECK.name());
             initialize(configJson);
             this.outputRecordCollector.accept((new AirbyteMessage()).withType(AirbyteMessage.Type.CONNECTION_STATUS).withConnectionStatus(this.integration.check(configJson)));
         } catch (final Exception e) {
@@ -185,14 +184,14 @@ public class IntegrationCommand implements Runnable {
     }
 
     private void discover() throws Exception {
-        final JsonNode configJson = validateConfig(this.integration.spec().getConnectionSpecification(), config, Command.DISCOVER.name());
+        final JsonNode configJson = validateConfig(this.integration.spec().getConnectionSpecification(), configFile, Command.DISCOVER.name());
         this.outputRecordCollector.accept((new AirbyteMessage()).withType(AirbyteMessage.Type.CATALOG).withCatalog(((Source)integration).discover(configJson)));
     }
 
     private void read() throws Exception {
-        final JsonNode configJson = validateConfig(integration.spec().getConnectionSpecification(), config, Command.READ.name());
-        final ConfiguredAirbyteCatalog configuredCatalog = validateCatalog(catalog);
-        final Optional<JsonNode> stateOptional = state.isPresent() ? state.map(s -> Path.of(s)).map(f -> Jsons.deserialize(IOs.readFile(f))) : Optional.empty();
+        final JsonNode configJson = validateConfig(integration.spec().getConnectionSpecification(), configFile, Command.READ.name());
+        final ConfiguredAirbyteCatalog configuredCatalog = validateCatalog(catalogFile);
+        final Optional<JsonNode> stateOptional = stateFile.isPresent() ? stateFile.map(p -> Jsons.deserialize(IOs.readFile(p))) : Optional.empty();
         AutoCloseableIterator<AirbyteMessage> messageIterator = null;
         try {
             // TODO make the message iterator injectable
@@ -220,10 +219,10 @@ public class IntegrationCommand implements Runnable {
     }
 
     private void write() throws Exception {
-        final JsonNode configJson = validateConfig(integration.spec().getConnectionSpecification(), config, Command.WRITE.name());
+        final JsonNode configJson = validateConfig(integration.spec().getConnectionSpecification(), configFile, Command.WRITE.name());
         // save config to singleton
         initialize(configJson);
-        final ConfiguredAirbyteCatalog configuredCatalog = validateCatalog(catalog);
+        final ConfiguredAirbyteCatalog configuredCatalog = validateCatalog(catalogFile);
 
         SerializedAirbyteMessageConsumer consumer = null;
         try {
