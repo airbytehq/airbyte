@@ -247,6 +247,7 @@ Before parsing each document, the connector exports Google Document files to Doc
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |---------|------------|-----------------------------------------------------------|--------------------------------------------------------------|
+| 0.0.8   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681)  | Unpin CDK version to make compatible with the Concurrent CDK                      |
 | 0.0.7   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661)  | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
 | 0.0.6   | 2023-12-16 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
 | 0.0.5   | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411)  | Bump CDK version to auto-set primary key for document file streams and support raw txt files          |

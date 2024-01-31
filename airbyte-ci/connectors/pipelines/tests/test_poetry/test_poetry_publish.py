@@ -24,6 +24,7 @@ def context(dagger_client: Client):
         version="0.2.0",
         python_registry_token="test",
         package_name="test",
+        registry_check_url="http://local_registry:8080/",
         registry="http://local_registry:8080/",
         is_local=True,
         git_branch="test",
