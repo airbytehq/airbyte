@@ -20,6 +20,10 @@ data:
   icon: amazonads.svg
   license: MIT
   name: Amazon Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-amazon-ads
   registries:
     cloud:
       enabled: true

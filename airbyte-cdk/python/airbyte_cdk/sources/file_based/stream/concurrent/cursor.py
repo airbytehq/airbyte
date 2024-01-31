@@ -83,5 +83,8 @@ class FileBasedNoopCursor(AbstractFileBasedConcurrentCursor):
     def close_partition(self, partition: Partition) -> None:
         return None
 
+    def ensure_at_least_one_state_emitted(self) -> None:
+        return None
+
     def set_pending_partitions(self, partitions: Iterable[Partition]) -> None:
         return None

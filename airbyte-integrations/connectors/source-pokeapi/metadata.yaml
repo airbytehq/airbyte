@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "*"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pokeapi
   registries:
     oss:
       enabled: true
