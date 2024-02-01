@@ -106,6 +106,8 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
               "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
         }
       }
+    } catch (final InterruptedException ine) {
+      LOGGER.info("*** interrupted");
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
