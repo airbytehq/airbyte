@@ -88,9 +88,6 @@ async def test(
         raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
     if ctx.obj["is_ci"]:
         fail_if_missing_docker_hub_creds(ctx)
-    if ctx.obj["is_ci"] and ctx.obj["pull_request"] and ctx.obj["pull_request"].draft:
-        main_logger.info("Skipping connectors tests for draft pull request.")
-        sys.exit(0)
 
     if ctx.obj["selected_connectors_with_modified_files"]:
         update_global_commit_status_check_for_tests(ctx.obj, "pending")
