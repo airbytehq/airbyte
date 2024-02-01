@@ -518,8 +518,6 @@ class SourceStripe(ConcurrentSourceAdapter):
         return [self._to_concurrent(stream, self._start_date_to_timestamp(config), state_manager) for stream in streams]
 
     def _to_concurrent(self, stream: Stream, fallback_start, state_manager: ConnectorStateManager) -> Stream:
-        if os.environ.get("SKIP_CONCURRENCY"):
-            return stream
         if stream.name in self._streams_configured_as_full_refresh:
             return StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._create_empty_state(), NoopCursor())
 
@@ -544,7 +542,6 @@ class SourceStripe(ConcurrentSourceAdapter):
         return stream
 
     def _create_empty_state(self) -> MutableMapping[str, Any]:
-        # The state is known to be empty because concurrent CDK is currently only used for full refresh
         return {}
 
     @staticmethod
