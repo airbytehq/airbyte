@@ -323,6 +323,7 @@ definitions:
     $ref: "#/definitions/substream_semi_incremental"
     incremental_sync:
       $ref: "#/definitions/substream_semi_incremental/incremental_sync"
+      cursor_field: ""
       parent_stream_configs:
         - type: ParentStreamConfig
           stream: "#/definitions/tickets"
@@ -338,9 +339,11 @@ definitions:
           - path: ["ticket_id"]
             value: "'{{ stream_slice.id }}'"
     retriever:
-      $ref: "#/definitions/substream_semi_incremental/retriever"
+      $ref: "#/definitions/stream_full_refresh/retriever"
+      paginator:
+        type: "NoPagination"
       record_selector:
-        $ref: "#/definitions/substream_semi_incremental/retriever/record_selector"
+        $ref: "#/definitions/selector"
         extractor:
           field_path: ["contacts", "contacts"]
 
