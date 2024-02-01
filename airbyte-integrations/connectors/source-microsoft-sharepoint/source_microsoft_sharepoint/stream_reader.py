@@ -78,7 +78,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     def one_drive_client(self) -> SourceMicrosoftSharePointSpec:
         if self._one_drive_client is None:
             self._one_drive_client = SourceMicrosoftSharePointClient(self._config).client
-        return self._one_drive_client.client
+        return self._one_drive_client
     @config.setter
     def config(self, value: SourceMicrosoftSharePointSpec):
         """
