@@ -122,7 +122,7 @@ class TestReportsAmazonSPStream:
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": ReportProcessingStatus.fatal, "dataEndTime": "2022-10-03T00:00:00Z"},
+            json={"processingStatus": ReportProcessingStatus.FATAL, "dataEndTime": "2022-10-03T00:00:00Z"},
         )
 
         stream = SomeReportStream(**report_init_kwargs)
@@ -150,7 +150,7 @@ class TestReportsAmazonSPStream:
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": ReportProcessingStatus.cancelled, "dataEndTime": "2022-10-03T00:00:00Z"},
+            json={"processingStatus": ReportProcessingStatus.CANCELLED, "dataEndTime": "2022-10-03T00:00:00Z"},
         )
 
         stream = SomeReportStream(**report_init_kwargs)
@@ -178,7 +178,7 @@ class TestReportsAmazonSPStream:
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": ReportProcessingStatus.done, "dataEndTime": "2022-10-03T00:00:00Z", "reportDocumentId": document_id},
+            json={"processingStatus": ReportProcessingStatus.DONE, "dataEndTime": "2022-10-03T00:00:00Z", "reportDocumentId": document_id},
         )
         requests_mock.register_uri(
             "GET",
