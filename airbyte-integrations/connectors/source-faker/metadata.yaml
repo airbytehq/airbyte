@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 5.0.2
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   githubIssueLabel: source-faker
@@ -30,6 +30,9 @@ data:
           ID and products.year fields are changing to be integers instead of
           floats.
         upgradeDeadline: "2023-08-31"
+      6.0.0:
+        message: Declare 'id' columns as primary keys.
+        upgradeDeadline: "2024-04-01"
   resourceRequirements:
     jobSpecific:
       - jobType: sync

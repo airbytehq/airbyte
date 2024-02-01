@@ -8,6 +8,10 @@ data:
   icon: convex.svg
   license: MIT
   name: Convex
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-convex
   registries:
     cloud:
       enabled: true

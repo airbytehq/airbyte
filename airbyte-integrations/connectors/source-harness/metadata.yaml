@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.harness.io
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-harness
   registries:
     oss:
       enabled: false

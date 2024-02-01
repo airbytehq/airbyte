@@ -21,6 +21,7 @@ class PythonRegistryPublishContext(PipelineContext):
     def __init__(
         self,
         python_registry_token: str,
+        registry_check_url: str,
         package_path: str,
         report_output_prefix: str,
         is_local: bool,
@@ -38,6 +39,7 @@ class PythonRegistryPublishContext(PipelineContext):
     ) -> None:
         self.python_registry_token = python_registry_token
         self.registry = registry
+        self.registry_check_url = registry_check_url
         self.package_path = package_path
         self.package_metadata = PythonPackageMetadata(package_name, version)
 
@@ -87,6 +89,7 @@ class PythonRegistryPublishContext(PipelineContext):
         pypi_context = cls(
             python_registry_token=str(connector_context.python_registry_token),
             registry=str(connector_context.python_registry_url),
+            registry_check_url=str(connector_context.python_registry_check_url),
             package_path=str(connector_context.connector.code_directory),
             package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
             version=version,

@@ -8,6 +8,10 @@ data:
   icon: genesys.svg
   license: MIT
   name: Genesys
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-genesys
   registries:
     cloud:
       enabled: false
