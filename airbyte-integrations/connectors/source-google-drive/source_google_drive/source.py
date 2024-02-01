@@ -1,21 +1,24 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import Any
+from typing import Any, Mapping, Optional
 
-from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, OAuthConfigSpecification
+from airbyte_cdk.models import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.source import TState
 from source_google_drive.spec import SourceGoogleDriveSpec
 from source_google_drive.stream_reader import SourceGoogleDriveStreamReader
 
 
 class SourceGoogleDrive(FileBasedSource):
-    def __init__(self, catalog_path: str):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
             stream_reader=SourceGoogleDriveStreamReader(),
             spec_class=SourceGoogleDriveSpec,
-            catalog_path=catalog_path,
+            catalog=catalog,
+            config=config,
+            state=state,
             cursor_cls=DefaultFileBasedCursor,
         )
 

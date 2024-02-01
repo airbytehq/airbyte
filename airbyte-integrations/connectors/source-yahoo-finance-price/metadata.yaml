@@ -8,6 +8,10 @@ data:
   icon: yahoo-finance-price.svg
   license: MIT
   name: Yahoo Finance Price
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-yahoo-finance-price
   registries:
     cloud:
       enabled: false

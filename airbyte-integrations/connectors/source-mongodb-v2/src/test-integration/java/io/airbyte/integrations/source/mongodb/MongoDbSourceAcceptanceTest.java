@@ -522,7 +522,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   void testReachedTargetPosition() {
     final long eventTimestamp = Long.MAX_VALUE;
     final Integer order = 0;
-    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
+    final MongoDbCdcTargetPosition targetPosition =
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
     final ChangeEventWithMetadata changeEventWithMetadata = mock(ChangeEventWithMetadata.class);
 
     when(changeEventWithMetadata.isSnapshotEvent()).thenReturn(true);
@@ -549,8 +550,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Test
   void testIsSameOffset() {
-    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition =
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog());
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
     final String replicaSet = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final Map<String, String> emptyOffsetA = Map.of();

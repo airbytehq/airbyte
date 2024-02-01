@@ -8,6 +8,10 @@ data:
   icon: googledirectory.svg
   license: MIT
   name: Google Directory
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-directory
   registries:
     cloud:
       dockerImageTag: 0.2.1
