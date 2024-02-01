@@ -117,6 +117,9 @@ def test_non_existing_connector():
     with pytest.raises(Exception):
         ab.get_connector("source-not-existing", config={"apiKey": "abc"})
 
+def test_non_enabled_connector():
+    with pytest.raises(exc.AirbyteConnectorNotPyPiPublishedError):
+        ab.get_connector("source-non-published", config={"apiKey": "abc"})
 
 @pytest.mark.parametrize(
     "latest_available_version, requested_version, raises",
@@ -138,7 +141,7 @@ def test_version_enforcement(raises, latest_available_version, requested_version
     In this test, the actually installed version is 0.0.1
     """
     patched_entry = registry.ConnectorMetadata(
-        name="source-test", latest_available_version=latest_available_version
+        name="source-test", latest_available_version=latest_available_version, pypi_package_name="airbyte-source-test"
     )
     with patch.dict("airbyte_lib.registry.__cache", {"source-test": patched_entry}, clear=False):
         if raises:
