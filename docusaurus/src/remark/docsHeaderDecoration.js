@@ -1,5 +1,6 @@
 const visit = require("unist-util-visit").visit;
-const catalog = require("../connector_registry");
+const { isPypiConnector } = require("../connector_registry");
+const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const toAttributes = (props) =>
   Object.entries(props).map(([key, value]) => ({
@@ -12,19 +13,7 @@ const plugin = () => {
   const transformer = async (ast, vfile) => {
     if (!isDocsPage(vfile)) return;
 
-    const pathParts = vfile.path.split("/");
-    const connectorName = pathParts.pop().split(".")[0];
-    const connectorType = pathParts.pop();
-    const dockerRepository = `airbyte/${connectorType.replace(
-      /s$/,
-      ""
-    )}-${connectorName}`;
-
-    const registry = await catalog;
-
-    const registryEntry = registry.find(
-      (r) => r.dockerRepository_oss === dockerRepository
-    );
+    const registryEntry = await getRegistryEntry(vfile);
 
     if (!registryEntry) return;
 
@@ -42,7 +31,7 @@ const plugin = () => {
         node.attributes = toAttributes({
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
-          isPypiPublished: Boolean(registryEntry.remoteRegistries?.pypi?.enabled),
+          isPypiPublished: false,
           supportLevel: registryEntry.supportLevel_oss,
           dockerImageTag: registryEntry.dockerImageTag_oss,
           iconUrl: registryEntry.iconUrl_oss,
@@ -55,21 +44,6 @@ const plugin = () => {
     });
   };
   return transformer;
-};
-
-const isDocsPage = (vfile) => {
-  if (
-    !vfile.path.includes("integrations/sources") &&
-    !vfile.path.includes("integrations/destinations")
-  ) {
-    return false;
-  }
-
-  if (vfile.path.includes("-migrations.md")) {
-    return false;
-  }
-
-  return true;
 };
 
 module.exports = plugin;

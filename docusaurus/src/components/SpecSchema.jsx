@@ -27,7 +27,7 @@ function JSONSchemaViewer(props) {
         Type
       </div>
       <div class={className(styles.headerItem, styles.tableHeader)}>
-        Title
+        Property name
       </div>
       <JSONSchemaObject schema={props.schema} />
     </div>
@@ -108,16 +108,16 @@ function getType(schema) {
 
 function JSONSchemaProperty({ propertyKey, schema, required, depth = 0 }) {
   const newDepth = depth + 1;
-  const propertyName = <>
-    <div>{propertyKey || schema.title}</div>
+  const fieldName = <>
+    <div>{schema.title || propertyKey}</div>
     {required && <div className={styles.tag}>required</div>}
   </>;
-  const typeAndTitle = <>
+  const typeAndPropertyName = <>
     <div className={styles.headerItem}>
       {getType(schema)}
     </div>
     <div className={styles.headerItem}>
-      {schema.title && <div>{schema.title}</div>}
+      {propertyKey && <div>{propertyKey}</div>}
     </div>
   </>;
   if (showCollapsible(schema)) {
@@ -126,9 +126,9 @@ function JSONSchemaProperty({ propertyKey, schema, required, depth = 0 }) {
         <>
           <Disclosure.Button className={className(styles.headerItem, styles.clickable, styles.propertyName)} style={getIndentStyle(newDepth)}>
             <div className={className({ [styles.open]: open })}>›</div>
-            {propertyName}
+            {fieldName}
           </Disclosure.Button>
-          {typeAndTitle}
+          {typeAndPropertyName}
           <Disclosure.Panel className={styles.contents}>
             {showDescription(schema) && <Description schema={schema} style={getIndentStyle(newDepth + 1)} />}
             {schema.type === "object" && schema.oneOf && <JSONSchemaOneOf schema={schema} depth={newDepth} />}
@@ -140,9 +140,9 @@ function JSONSchemaProperty({ propertyKey, schema, required, depth = 0 }) {
   } else {
     return <>
       <div className={className(styles.headerItem, styles.propertyName)} style={getIndentStyle(newDepth)}>
-        {propertyName}
+        {fieldName}
       </div>
-      {typeAndTitle}
+      {typeAndPropertyName}
     </>
   }
 }
