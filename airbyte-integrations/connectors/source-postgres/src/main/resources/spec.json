@@ -289,6 +289,13 @@
                 ],
                 "default": "After loading Data in the destination",
                 "order": 7
+              },
+              "heartbeat_action_query": {
+                "type": "string",
+                "title": "Debezium commit heartbeat action query",
+                "description": "Debezium setting. Specifies a query that the connector executes on the source database when the connector sends a heartbeat message.",
+                "default": "",
+                "order": 8
               }
             }
           },

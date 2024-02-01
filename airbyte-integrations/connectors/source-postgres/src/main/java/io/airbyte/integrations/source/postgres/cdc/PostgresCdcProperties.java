@@ -68,7 +68,9 @@ public class PostgresCdcProperties {
             ? HEARTBEAT_INTERVAL_IN_TESTS
             : HEARTBEAT_INTERVAL;
     props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
-
+    if(!sourceConfig.get("replication_method").get("heartbeat_action_query").asText().isEmpty()) {
+      props.setProperty("heartbeat.action.query", sourceConfig.get("replication_method").get("heartbeat_action_query").asText());
+    }
     if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
       props.setProperty("flush.lsn.source", "false");
     }
