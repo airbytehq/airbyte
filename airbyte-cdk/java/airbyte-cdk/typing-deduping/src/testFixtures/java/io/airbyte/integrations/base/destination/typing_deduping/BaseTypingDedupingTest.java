@@ -770,8 +770,9 @@ public abstract class BaseTypingDedupingTest {
                          final Function<JsonNode, JsonNode> configTransformer)
       throws Exception {
     final AirbyteDestination destination = startSync(catalog, imageName, configTransformer);
+    final CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outputFuture = destinationOutputFuture(destination);
     pushMessages(messages, destination);
-    endSync(destination, destinationOutputFuture(destination));
+    endSync(destination, outputFuture);
   }
 
   // In the background, read messages from the destination until it terminates. We need to clear
