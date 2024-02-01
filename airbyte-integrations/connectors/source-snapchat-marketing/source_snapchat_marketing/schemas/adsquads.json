@@ -4,22 +4,37 @@
     "id": {
       "type": ["null", "string"]
     },
+    "campaign_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
     "updated_at": {
       "type": ["null", "string"]
     },
     "created_at": {
       "type": ["null", "string"]
     },
-    "name": {
+    "deleted": {
       "type": ["null", "string"]
     },
     "status": {
       "type": ["null", "string"]
     },
-    "campaign_id": {
+    "delivery_status": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "start_time": {
       "type": ["null", "string"]
     },
-    "type": {
+    "end_time": {
       "type": ["null", "string"]
     },
     "targeting": {
@@ -47,13 +62,43 @@
         }
       }
     },
-    "targeting_reach_status": {
+    "bid_micro": {
+      "type": ["null", "integer"]
+    },
+    "billing_event": {
+      "type": ["null", "string"]
+    },
+    "daily_budget_micro": {
+      "type": ["null", "integer"]
+    },
+    "lifetime_budget_micro": {
+      "type": ["null", "integer"]
+    },
+    "optimization_goal": {
+      "type": ["null", "string"]
+    },
+    "conversion_window": {
       "type": ["null", "string"]
     },
     "placement": {
       "type": ["null", "string"]
     },
-    "billing_event": {
+    "placement_v2": {
+      "type": ["null", "string"]
+    },
+    "story_ad_creative_type": {
+      "type": ["null", "string"]
+    },
+    "bid_strategy": {
+      "type": ["null", "string"]
+    },
+    "roas_value_micro": {
+      "type": ["null", "string"]
+    },
+    "creation_state": {
+      "type": ["null", "string"]
+    },
+    "targeting_reach_status": {
       "type": ["null", "string"]
     },
     "auto_bid": {
@@ -61,18 +106,6 @@
     },
     "target_bid": {
       "type": ["null", "boolean"]
-    },
-    "bid_strategy": {
-      "type": ["null", "string"]
-    },
-    "daily_budget_micro": {
-      "type": ["null", "integer"]
-    },
-    "start_time": {
-      "type": ["null", "string"]
-    },
-    "optimization_goal": {
-      "type": ["null", "string"]
     },
     "delivery_constraint": {
       "type": ["null", "string"]
@@ -86,15 +119,6 @@
     "forced_view_setting": {
       "type": ["null", "string"]
     },
-    "creation_state": {
-      "type": ["null", "string"]
-    },
-    "delivery_status": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
-    },
     "skadnetwork_properties": {
       "type": ["null", "object"],
       "properties": {
@@ -102,12 +126,6 @@
           "type": ["null", "string"]
         }
       }
-    },
-    "lifetime_budget_micro": {
-      "type": ["null", "integer"]
-    },
-    "end_time": {
-      "type": ["null", "string"]
     }
   }
 }
