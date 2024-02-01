@@ -19,6 +19,11 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 86400
   name: LinkedIn Ads
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-linkedin-ads
   registries:
     cloud:
       enabled: true

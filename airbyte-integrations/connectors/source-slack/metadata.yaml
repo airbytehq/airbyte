@@ -17,6 +17,10 @@ data:
   icon: slack.svg
   license: MIT
   name: Slack
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-slack
   registries:
     cloud:
       enabled: true

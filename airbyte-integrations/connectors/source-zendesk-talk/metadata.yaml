@@ -18,6 +18,10 @@ data:
   icon: zendesk-talk.svg
   license: MIT
   name: Zendesk Talk
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zendesk-talk
   registries:
     cloud:
       enabled: true
