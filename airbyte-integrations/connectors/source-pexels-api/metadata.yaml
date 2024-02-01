@@ -8,6 +8,10 @@ data:
   icon: pexels.svg
   license: MIT
   name: Pexels API
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pexels-api
   registries:
     cloud:
       enabled: true

@@ -3,7 +3,7 @@
 #
 import logging
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import freezegun
 from airbyte_cdk.models import (
@@ -32,6 +32,7 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 _STREAM_NAME = "stream"
 _ANOTHER_STREAM_NAME = "stream2"
+_ANY_AIRBYTE_MESSAGE = Mock(spec=AirbyteMessage)
 
 
 class TestConcurrentReadProcessor(unittest.TestCase):
@@ -110,6 +111,10 @@ class TestConcurrentReadProcessor(unittest.TestCase):
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_last_stream_partition_done(self):
+        in_order_validation_mock = Mock()
+        in_order_validation_mock.attach_mock(self._another_stream, "_another_stream")
+        in_order_validation_mock.attach_mock(self._message_repository, '_message_repository')
+        self._message_repository.consume_queue.return_value = iter([_ANY_AIRBYTE_MESSAGE])
         stream_instances_to_read_from = [self._another_stream]
 
         handler = ConcurrentReadProcessor(
@@ -124,9 +129,10 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         handler.start_next_partition_generator()
 
         sentinel = PartitionGenerationCompletedSentinel(self._another_stream)
-        messages = handler.on_partition_generation_completed(sentinel)
+        messages = list(handler.on_partition_generation_completed(sentinel))
 
         expected_messages = [
+            _ANY_AIRBYTE_MESSAGE,
             AirbyteMessage(
                 type=MessageType.TRACE,
                 trace=AirbyteTraceMessage(
@@ -140,6 +146,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             )
         ]
         assert expected_messages == messages
+        assert in_order_validation_mock.mock_calls.index(call._another_stream.cursor.ensure_at_least_one_state_emitted) < in_order_validation_mock.mock_calls.index(call._message_repository.consume_queue)
 
     def test_handle_partition(self):
         stream_instances_to_read_from = [self._another_stream]
@@ -236,7 +243,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         )
         handler.start_next_partition_generator()
         handler.on_partition(self._a_closed_partition)
-        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream))
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream)))
 
         sentinel = PartitionCompleteSentinel(self._a_closed_partition)
 
@@ -543,8 +550,8 @@ class TestConcurrentReadProcessor(unittest.TestCase):
 
         handler.start_next_partition_generator()
         handler.on_partition(self._an_open_partition)
-        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream))
-        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream))
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream)))
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream)))
 
         another_stream = Mock(spec=AbstractStream)
         another_stream.name = _STREAM_NAME

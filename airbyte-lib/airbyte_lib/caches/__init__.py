@@ -1,4 +1,5 @@
 """Base module for all caches."""
+from __future__ import annotations
 
 from airbyte_lib.caches.base import SQLCacheBase
 from airbyte_lib.caches.duckdb import DuckDBCache, DuckDBCacheConfig

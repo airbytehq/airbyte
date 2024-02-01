@@ -22,15 +22,15 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Updates;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.SnapshotMetadata;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcTargetPosition;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumStateUtil;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbResumeTokenHelper;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
 import io.airbyte.protocol.models.Field;
@@ -522,7 +522,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   void testReachedTargetPosition() {
     final long eventTimestamp = Long.MAX_VALUE;
     final Integer order = 0;
-    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
+    final MongoDbCdcTargetPosition targetPosition =
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
     final ChangeEventWithMetadata changeEventWithMetadata = mock(ChangeEventWithMetadata.class);
 
     when(changeEventWithMetadata.isSnapshotEvent()).thenReturn(true);
@@ -549,8 +550,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Test
   void testIsSameOffset() {
-    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition =
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog());
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
     final String replicaSet = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final Map<String, String> emptyOffsetA = Map.of();
