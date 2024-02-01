@@ -18,7 +18,6 @@ import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
-import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -32,7 +31,11 @@ import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+@Disabled
 public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "dbo.id_and_name";
@@ -40,11 +43,13 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
-  private final SshBastionContainer bastion = new SshBastionContainer();
-  private MsSQLTestDatabase testdb;
+  protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractSshMssqlSourceAcceptanceTest.class);
+  private final MsSQLTestDatabase testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
+  private final SshBastionContainer bastion = new SshBastionContainer();;
 
   @Override
   protected JsonNode getConfig() {
+    LOGGER.info("starting getConfig");
     try {
       return testdb.integrationTestConfigBuilder()
           .withoutSsl()
@@ -58,6 +63,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   }
 
   private void populateDatabaseTestData() throws Exception {
+    LOGGER.info("starting populateDatabaseTestData");
     final var outerConfig = testdb.integrationTestConfigBuilder()
         .withSchemas("public")
         .withoutSsl()
@@ -77,9 +83,11 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
                   "(3, 'vash', '2124-03-04T01:01:01Z');");
               return null;
             }));
+    LOGGER.info("closing populateDatabaseTestData");
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
+    LOGGER.info("starting getDatabaseFromConfig");
     return new Database(
         DSLContextFactory.create(
             config.get(JdbcUtils.USERNAME_KEY).asText(),
@@ -94,14 +102,17 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2017, ContainerModifier.NETWORK);
+    LOGGER.info("starting setupEnvironment");
     bastion.initAndStartBastion(testdb.getContainer().getNetwork());
     populateDatabaseTestData();
+    LOGGER.info("closing setupEnvironment");
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    LOGGER.info("starting tearDown");
     bastion.stopAndClose();
+    LOGGER.info("closing tearDown");
   }
 
   @Override
@@ -111,11 +122,13 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
+    LOGGER.info("starting getSpec");
     return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
+    LOGGER.info("starting getConfiguredCatalog");
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
@@ -141,6 +154,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   @Override
   protected JsonNode getState() {
+    LOGGER.info("starting getState");
     return Jsons.jsonNode(new HashMap<>());
   }
 

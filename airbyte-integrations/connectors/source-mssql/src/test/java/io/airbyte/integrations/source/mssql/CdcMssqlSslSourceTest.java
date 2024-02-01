@@ -15,29 +15,21 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import javax.sql.DataSource;
-import org.junit.jupiter.api.TestInstance;
-import org.testcontainers.containers.MSSQLServerContainer;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
 
-  @Override
-  protected MSSQLServerContainer<?> createContainer() {
-    return new MsSQLContainerFactory().exclusive(
-        MsSQLTestDatabase.BaseImage.MSSQL_2022.reference,
-        MsSQLTestDatabase.ContainerModifier.AGENT.methodName,
-        MsSQLTestDatabase.ContainerModifier.WITH_SSL_CERTIFICATES.methodName);
+  CdcMssqlSslSourceTest() {
+    super();
   }
 
   @Override
   final protected MsSQLTestDatabase createTestDatabase() {
-    final var testdb = new MsSQLTestDatabase(privateContainer);
+    final var testdb = new MsSQLTestDatabase(new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2022-latest"));
     return testdb
         .withConnectionProperty("encrypt", "true")
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
         .withConnectionProperty("trustServerCertificate", "true")
         .initialized()
-        .withWaitUntilAgentRunning()
         .withCdc();
   }
 

@@ -18,6 +18,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -57,9 +58,8 @@ public class CdcStateCompressionTest {
 
   @BeforeEach
   public void setup() {
-    testdb = MsSQLTestDatabase.in(MsSQLTestDatabase.BaseImage.MSSQL_2022, MsSQLTestDatabase.ContainerModifier.AGENT)
-        .withWaitUntilAgentRunning()
-        .withCdc();
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
+    testdb = testdb.withCdc();
 
     // Create a test schema and a bunch of test tables with CDC enabled.
     // Insert one row in each table so that they're not empty.
@@ -113,8 +113,8 @@ public class CdcStateCompressionTest {
       }
       testdb
           .with(sb.toString())
-          .with(enableCdcSqlFmt, TEST_SCHEMA, i, CDC_ROLE_NAME, i, 2)
           .with(disableCdcSqlFmt, TEST_SCHEMA, i, i, 1)
+          .with(enableCdcSqlFmt, TEST_SCHEMA, i, CDC_ROLE_NAME, i, 2)
           .withShortenedCapturePollingInterval();
     }
   }
@@ -155,7 +155,8 @@ public class CdcStateCompressionTest {
         .with("is_test", true)
         .with("replication_method", Map.of(
             "method", "CDC",
-            "initial_waiting_seconds", 60))
+            "initial_waiting_seconds", 180))
+
         .build();
   }
 
@@ -179,6 +180,14 @@ public class CdcStateCompressionTest {
     assertNotNull(lastSharedStateFromFirstBatch.get(MSSQL_DB_HISTORY));
     assertNotNull(lastSharedStateFromFirstBatch.get(MSSQL_CDC_OFFSET));
     assertNotNull(lastSharedStateFromFirstBatch.get(IS_COMPRESSED));
+
+    assertNotNull(lastSharedStateFromFirstBatch.get(MSSQL_DB_HISTORY));
+    /*
+     * String schema = lastSharedStateFromFirstBatch.get(MSSQL_DB_HISTORY).asText(); boolean
+     * isCompressed = lastSharedStateFromFirstBatch.get(IS_COMPRESSED).asBoolean(); int schemaSize =
+     * schema.getBytes(StandardCharsets.UTF_8).length; assertTrue(false, "size of schema was " +
+     * schemaSize + ". isCompressed=" + isCompressed + ". full schema was " + schema);
+     */
     assertTrue(lastSharedStateFromFirstBatch.get(IS_COMPRESSED).asBoolean());
     final var recordsFromFirstBatch = extractRecordMessages(dataFromFirstBatch);
     assertEquals(TEST_TABLES, recordsFromFirstBatch.size());

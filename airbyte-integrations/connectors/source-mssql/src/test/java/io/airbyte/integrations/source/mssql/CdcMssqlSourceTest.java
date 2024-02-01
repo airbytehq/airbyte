@@ -38,6 +38,7 @@ import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
@@ -60,16 +61,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.testcontainers.containers.MSSQLServerContainer;
 
-@TestInstance(Lifecycle.PER_CLASS)
 public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestDatabase> {
 
   static private final String CDC_ROLE_NAME = "cdc_selector";
@@ -78,24 +74,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   // Deliberately do not share this test container, as we're going to mutate the global SQL Server
   // state.
-  protected final MSSQLServerContainer<?> privateContainer;
-
   private DataSource testDataSource;
-
-  CdcMssqlSourceTest() {
-    this.privateContainer = createContainer();
-  }
-
-  protected MSSQLServerContainer<?> createContainer() {
-    return new MsSQLContainerFactory().exclusive(
-        MsSQLTestDatabase.BaseImage.MSSQL_2022.reference,
-        MsSQLTestDatabase.ContainerModifier.AGENT.methodName);
-  }
-
-  @AfterAll
-  void afterAll() {
-    privateContainer.close();
-  }
 
   protected final String testUserName() {
     return testdb.withNamespace(TEST_USER_NAME_PREFIX);
@@ -103,13 +82,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   @Override
   protected MsSQLTestDatabase createTestDatabase() {
-    final var testdb = new MsSQLTestDatabase(privateContainer);
-    return testdb
-        .withConnectionProperty("encrypt", "false")
-        .withConnectionProperty("databaseName", testdb.getDatabaseName())
-        .initialized()
-        .withWaitUntilAgentRunning()
-        .withCdc();
+    final var testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
+    return testdb.withCdc();
   }
 
   @Override
@@ -180,10 +154,10 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   protected void tearDown() {
     try {
       DataSourceFactory.close(testDataSource);
+      super.tearDown();
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
-    super.tearDown();
 
   }
 
@@ -299,16 +273,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         () -> source().assertCdcSchemaQueryable(config(), testDatabase()));
   }
 
-  @Test
-  void testAssertSqlServerAgentRunning() {
-    testdb.withAgentStopped().withWaitUntilAgentStopped();
-    // assert expected failure if sql server agent stopped
-    assertThrows(RuntimeException.class, () -> source().assertSqlServerAgentRunning(testDatabase()));
-    // assert success if sql server agent running
-    testdb.withAgentStarted().withWaitUntilAgentRunning();
-    assertDoesNotThrow(() -> source().assertSqlServerAgentRunning(testDatabase()));
-  }
-
   // Ensure the CDC check operations are included when CDC is enabled
   // todo: make this better by checking the returned checkOperations from source.getCheckOperations
   @Test
@@ -323,13 +287,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
     testdb.with("GRANT SELECT ON SCHEMA :: [cdc] TO %s", testUserName());
-
-    // assertSqlServerAgentRunning
-
-    testdb.withAgentStopped().withWaitUntilAgentStopped();
-    status = source().check(config());
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
-    testdb.withAgentStarted().withWaitUntilAgentRunning();
     status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }

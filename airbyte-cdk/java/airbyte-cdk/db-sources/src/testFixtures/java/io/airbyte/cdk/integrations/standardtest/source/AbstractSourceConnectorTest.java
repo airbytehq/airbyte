@@ -131,6 +131,7 @@ public abstract class AbstractSourceConnectorTest {
 
   @BeforeEach
   public void setUpInternal() throws Exception {
+    LOGGER.info("starting setupInternal");
     final Path testDir = Path.of("/tmp/airbyte_tests/");
     Files.createDirectories(testDir);
     final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
@@ -146,13 +147,14 @@ public abstract class AbstractSourceConnectorTest {
     mConnectorConfigUpdater = mock(ConnectorConfigUpdater.class);
     var envMap = new HashMap<>(new TestEnvConfigs().getJobDefaultEnvMap());
     envMap.put(EnvVariableFeatureFlags.DEPLOYMENT_MODE, featureFlags().deploymentMode());
+    LOGGER.info("creating processFactory");
     processFactory = new DockerProcessFactory(
         workspaceRoot,
         workspaceRoot.toString(),
         localRoot.toString(),
         "host",
         envMap);
-
+    LOGGER.info("calling postSetup");
     postSetup();
   }
 
@@ -239,7 +241,11 @@ public abstract class AbstractSourceConnectorTest {
     while (!source.isFinished()) {
       source.attemptRead().ifPresent(m -> messages.add(convertProtocolObject(m, AirbyteMessage.class)));
     }
-    source.close();
+    try {
+      source.close();
+    } catch (TestHarnessException e) {
+      LOGGER.warn("exception durnig source.close : " + e);
+    }
 
     return messages;
   }

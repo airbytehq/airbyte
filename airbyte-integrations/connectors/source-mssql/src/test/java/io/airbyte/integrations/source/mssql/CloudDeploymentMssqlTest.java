@@ -14,6 +14,7 @@ import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -22,15 +23,8 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 @Execution(ExecutionMode.CONCURRENT)
 public class CloudDeploymentMssqlTest {
 
-  private MsSQLTestDatabase createTestDatabase(String... containerFactoryMethods) {
-    final var container = new MsSQLContainerFactory().shared(
-        "mcr.microsoft.com/mssql/server:2022-latest", containerFactoryMethods);
-    final var testdb = new MsSQLTestDatabase(container);
-    return testdb
-        .withConnectionProperty("encrypt", "true")
-        .withConnectionProperty("trustServerCertificate", "true")
-        .withConnectionProperty("databaseName", testdb.getDatabaseName())
-        .initialized();
+  private MsSQLTestDatabase createTestDatabase() {
+    return MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
   }
 
   private Source source() {
@@ -104,7 +98,7 @@ public class CloudDeploymentMssqlTest {
 
   @Test
   void testCheckWithSslModeDisabled() throws Exception {
-    try (final var testdb = createTestDatabase("withNetwork")) {
+    try (final var testdb = createTestDatabase()) {
       try (final SshBastionContainer bastion = new SshBastionContainer()) {
         bastion.initAndStartBastion(testdb.getContainer().getNetwork());
         final var config = testdb.integrationTestConfigBuilder()

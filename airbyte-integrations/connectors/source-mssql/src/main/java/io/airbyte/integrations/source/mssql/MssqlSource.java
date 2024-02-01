@@ -142,6 +142,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    LOGGER.info("started check");
     // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
     // and not over SSH tunnel
     if (cloudDeploymentMode()) {
@@ -160,6 +161,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         }
       }
     }
+    LOGGER.info("calling super.check");
     return super.check(config);
   }
 
@@ -202,11 +204,13 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                          final List<String> columnNames,
                                          final String schemaName,
                                          final String tableName) {
+    LOGGER.info("started getWrappedColumnNames");
     return MssqlQueryUtils.getWrappedColumnNames(database, quoteString, columnNames, schemaName, tableName);
   }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode mssqlConfig) {
+    LOGGER.info("started toDatabaseConfig");
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(
@@ -252,6 +256,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
+    LOGGER.info("started getExcludedInternalNameSpaces");
     return Set.of(
         "INFORMATION_SCHEMA",
         "sys",
@@ -266,6 +271,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
+    LOGGER.info("started discover");
     final AirbyteCatalog catalog = super.discover(config);
 
     if (MssqlCdcHelper.isCdc(config)) {
@@ -285,6 +291,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    LOGGER.info("started discoverInternal");
     final List<TableInfo<CommonField<JDBCType>>> internals = super.discoverInternal(database);
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly filtered (from UI) schemas
@@ -305,6 +312,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   @Override
   protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
       throws SQLException {
+    LOGGER.info("started verifyCursorColumnValues");
 
     boolean nullValExist = false;
     final String resultColName = "nullValue";
@@ -343,6 +351,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   private boolean isTableInRequestedSchema(final TableInfo<CommonField<JDBCType>> tableInfo) {
+    LOGGER.info("started isTableInRequestedSchema");
     return schemas
         .stream()
         .anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
@@ -351,6 +360,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   @Override
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
       throws Exception {
+    LOGGER.info("started getCheckOperations");
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
         super.getCheckOperations(config));
 
@@ -365,6 +375,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
+    LOGGER.info("started assertCdcEnabledInDb");
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
       final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
@@ -388,6 +399,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
+    LOGGER.info("started assertCdcSchemaQueryable");
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
       boolean isAzureSQL = false;
 
@@ -416,6 +428,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   // todo: ensure this works for Azure managed SQL (since it uses different sql server agent)
   protected void assertSqlServerAgentRunning(final JdbcDatabase database) throws SQLException {
+    LOGGER.info("started assertSqlServerAgentRunning");
     try {
       final List<JsonNode> queryResponse = database.queryJsons(connection -> {
         final String sql =
@@ -447,6 +460,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
+    LOGGER.info("started getIncrementalIterators");
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using OC + CDC");
@@ -503,6 +517,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                             final Properties properties,
                                                                             final CdcStateHandler cdcStateHandler,
                                                                             final Instant emittedAt) {
+    LOGGER.info("started getDebeziumSnapshotIterators");
 
     LOGGER.info("Running snapshot for " + catalog.getStreams().size() + " new tables");
     final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(AirbyteDebeziumHandler.QUEUE_CAPACITY);
@@ -626,6 +641,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   @Override
   public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
       throws Exception {
+    LOGGER.info("started readStreams");
     final JdbcDatabase database = createDatabase(config);
     logPreSyncDebugData(database, catalog);
     return super.readStreams(config, catalog, state);
@@ -645,6 +661,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   public static void main(final String[] args) throws Exception {
+    LOGGER.info("starting main:");
     final Source source = MssqlSource.sshWrappedSource(new MssqlSource());
     LOGGER.info("starting source: {}", MssqlSource.class);
     new IntegrationRunner(source).run(args);

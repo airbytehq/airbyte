@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
-import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 
 public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
@@ -22,7 +21,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
 
   @Override
   protected Database setupDatabase() {
-    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT)
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022)
         .withCdc();
     return testdb.getDatabase();
   }
@@ -66,12 +65,19 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
                    FETCH NEXT FROM CDC_Cursor INTO @TableName,@TableSchema
                 END
                 CLOSE CDC_Cursor
-                DEALLOCATE CDC_Cursor""");
+                DEALLOCATE CDC_Cursor""")
+        .withCdcJobStarted();
   }
 
   @Override
   public boolean testCatalog() {
     return true;
+  }
+
+  protected void initTests() {
+    super.initTests();
+    testdb.withCdcJobStarted();
+    testdb.withCdcJobStarted();
   }
 
 }
