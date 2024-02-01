@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.bigcommerce.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-bigcommerce
   registries:
     oss:
       enabled: false

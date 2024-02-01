@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "restapi.e-conomic.com"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-visma-economic
   registries:
     oss:
       enabled: true

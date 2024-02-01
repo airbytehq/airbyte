@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
-  dockerImageTag: 0.5.0
+  dockerImageTag: 0.5.1
   dockerRepository: airbyte/source-redshift
   documentationUrl: https://docs.airbyte.com/integrations/sources/redshift
   githubIssueLabel: source-redshift

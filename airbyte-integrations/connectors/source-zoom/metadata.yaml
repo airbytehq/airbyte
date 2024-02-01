@@ -8,6 +8,10 @@ data:
   icon: zoom.svg
   license: MIT
   name: Zoom
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zoom
   registries:
     cloud:
       enabled: true
