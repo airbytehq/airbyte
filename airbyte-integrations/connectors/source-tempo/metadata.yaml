@@ -15,6 +15,10 @@ data:
   icon: tempo.svg
   license: MIT
   name: Tempo
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-tempo
   registries:
     cloud:
       enabled: true
