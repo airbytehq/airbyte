@@ -17,6 +17,10 @@ data:
   icon: gitlab.svg
   license: MIT
   name: Gitlab
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gitlab
   registries:
     cloud:
       enabled: true
