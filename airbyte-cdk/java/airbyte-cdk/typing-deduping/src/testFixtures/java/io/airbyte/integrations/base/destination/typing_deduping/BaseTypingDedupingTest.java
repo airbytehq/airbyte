@@ -774,7 +774,7 @@ public abstract class BaseTypingDedupingTest {
   // In the background, read messages from the destination until it terminates. We need to clear
   // stdout in real time, to prevent the buffer from filling up and blocking the destination.
   private CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> destinationOutputFuture(final AirbyteDestination destination) {
-    CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outputFuture = new CompletableFuture<>();
+    final CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outputFuture = new CompletableFuture<>();
     Executors.newSingleThreadExecutor().submit(() -> {
       final List<io.airbyte.protocol.models.AirbyteMessage> destinationMessages = new ArrayList<>();
       while (!destination.isFinished()) {
