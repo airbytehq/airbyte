@@ -17,6 +17,10 @@ data:
   icon: surveymonkey.svg
   license: MIT
   name: SurveyMonkey
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-surveymonkey
   registries:
     cloud:
       enabled: true

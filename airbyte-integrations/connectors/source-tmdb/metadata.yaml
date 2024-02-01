@@ -8,6 +8,10 @@ data:
   icon: tmdb.svg
   license: MIT
   name: TMDb
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-tmdb
   registries:
     cloud:
       enabled: false

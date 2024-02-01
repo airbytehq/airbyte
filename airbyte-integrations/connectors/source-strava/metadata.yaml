@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - strava.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-strava
   registries:
     oss:
       enabled: true

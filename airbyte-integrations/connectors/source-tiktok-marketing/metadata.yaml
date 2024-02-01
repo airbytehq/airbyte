@@ -18,6 +18,10 @@ data:
   icon: tiktok.svg
   license: MIT
   name: TikTok Marketing
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-tiktok-marketing
   registries:
     cloud:
       enabled: true
