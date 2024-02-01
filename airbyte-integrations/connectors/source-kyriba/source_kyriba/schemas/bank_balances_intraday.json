@@ -1,6 +1,5 @@
 {
   "type": "object",
-  "additionalProperties": true,
   "properties": {
     "account": {
       "type": ["object", "null"],
@@ -26,6 +25,9 @@
           "type": ["string", "null"]
         },
         "currencyCode": {
+          "type": ["string", "null"]
+        },
+        "lastKnownBalanceDate": {
           "type": ["string", "null"]
         }
       },

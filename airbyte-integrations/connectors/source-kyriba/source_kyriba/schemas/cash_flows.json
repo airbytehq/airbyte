@@ -1,7 +1,6 @@
 {
   "type": "object",
   "required": ["uuid", "account", "flowAmount", "flowCode", "status"],
-  "additionalProperties": true,
   "properties": {
     "uuid": {
       "type": ["string", "null"]
