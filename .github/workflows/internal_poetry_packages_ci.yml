@@ -17,9 +17,7 @@ on:
       - synchronize
 jobs:
   run-airbyte-ci-poetry-ci:
-    #name: Internal Poetry packages CI
-    # To rename in a follow up PR
-    name: Run Airbyte CI tests
+    name: Internal Poetry packages CI
     runs-on: tooling-test-large
     permissions:
       pull-requests: read
