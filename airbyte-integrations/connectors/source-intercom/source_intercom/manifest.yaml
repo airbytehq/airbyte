@@ -319,6 +319,30 @@ definitions:
             value: "'{{ stream_slice.id }}'"
     retriever:
       $ref: "#/definitions/substream_semi_incremental/retriever"
+  ticket_contacts:
+    $ref: "#/definitions/substream_semi_incremental"
+    incremental_sync:
+      $ref: "#/definitions/substream_semi_incremental/incremental_sync"
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream: "#/definitions/tickets"
+          parent_key: "id"
+          partition_field: "id"
+    $parameters:
+      name: "ticket_contacts"
+      primary_key: "id"
+      path: "/tickets/{{ stream_slice.id }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["ticket_id"]
+            value: "'{{ stream_slice.id }}'"
+    retriever:
+      $ref: "#/definitions/substream_semi_incremental/retriever"
+      record_selector:
+        $ref: "#/definitions/substream_semi_incremental/retriever/record_selector"
+        extractor:
+          field_path: ["contacts", "contacts"]
 
   # incremental search
   stream_incremental_search:
@@ -381,6 +405,7 @@ streams:
   - "#/definitions/conversation_contacts"
   - "#/definitions/company_segments"
   - "#/definitions/tickets"
+  - "#/definitions/ticket_contacts"
 
 check:
   stream_names:
