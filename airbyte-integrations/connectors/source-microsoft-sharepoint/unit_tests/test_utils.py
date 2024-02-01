@@ -27,13 +27,13 @@ class MockException(Exception):
             HTTPStatus.TOO_MANY_REQUESTS,
             None,
             4,
-            "Maximum total wait time of 10 seconds exceeded for execute_query.",
+            "Maximum total wait time of 10 seconds exceeded for execute_query. The latest response status code is 429.",
         ),  # No 'Retry-After' header, should retry max times
         (
             HTTPStatus.SERVICE_UNAVAILABLE,
             "4",
             4,
-            "Maximum total wait time of 10 seconds exceeded for execute_query. Retry-After header: 4",
+            "Maximum total wait time of 10 seconds exceeded for execute_query. The latest response status code is 503. Retry-After header: 4",
         ),  # With 'Retry-After' header, limited retries due to time constraint
         (
             HTTPStatus.SERVICE_UNAVAILABLE,

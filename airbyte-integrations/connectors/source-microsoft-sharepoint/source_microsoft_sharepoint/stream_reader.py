@@ -54,7 +54,8 @@ class SourceMicrosoftSharePointClient:
 
         if "access_token" not in result:
             error_description = result.get("error_description", "No error description provided.")
-            raise MsalServiceError(error=result.get("error"), error_description=error_description)
+            message = f"Failed to acquire access token. Error: {result.get('error')}. Error description: {error_description}."
+            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
         return result
 
@@ -79,6 +80,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         if self._one_drive_client is None:
             self._one_drive_client = SourceMicrosoftSharePointClient(self._config).client
         return self._one_drive_client
+
     @config.setter
     def config(self, value: SourceMicrosoftSharePointSpec):
         """

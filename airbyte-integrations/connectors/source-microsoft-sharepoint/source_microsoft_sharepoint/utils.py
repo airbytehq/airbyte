@@ -59,7 +59,10 @@ def execute_query_with_retry(obj, max_retries=5, initial_retry_after=5, max_retr
                     retry_after = int(retry_after_header)
 
                 if elapsed_time + retry_after > max_total_wait_time:
-                    message = f"Maximum total wait time of {max_total_wait_time} seconds exceeded for execute_query."
+                    message = (
+                        f"Maximum total wait time of {max_total_wait_time} seconds exceeded for execute_query. "
+                        f"The latest response status code is {ex.response.status_code}."
+                    )
                     if retry_after_header:
                         message += f" Retry-After header: {retry_after_header}"
                     raise AirbyteTracedException(message, message, failure_type=FailureType.system_error)
