@@ -1,5 +1,8 @@
 # Microsoft SQL Server (MSSQL) Migration Guide
 
+## Upgrading to 4.0.0
+This change
+
 ## Upgrading to 3.0.0
 This change remapped date, datetime, datetime2, datetimeoffset, smalldatetime, and time data type to their correct Airbyte types. Customers whose streams have columns with the affected datatype must refresh their schema and reset their data. See chart below for the mapping change.
 
