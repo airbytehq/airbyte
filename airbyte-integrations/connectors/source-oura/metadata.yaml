@@ -8,6 +8,10 @@ data:
   icon: oura.svg
   license: MIT
   name: Oura
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-oura
   registries:
     cloud:
       enabled: false

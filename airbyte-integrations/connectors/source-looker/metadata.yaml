@@ -8,6 +8,10 @@ data:
   icon: looker.svg
   license: MIT
   name: Looker
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-looker
   registries:
     cloud:
       enabled: false

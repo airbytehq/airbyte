@@ -78,6 +78,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
                 cursor_field=cursor_field,
                 logger=logger,
                 namespace=stream.namespace,
+                cursor=cursor,
             ),
             stream,
             cursor,

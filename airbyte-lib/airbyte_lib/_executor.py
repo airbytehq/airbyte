@@ -145,10 +145,19 @@ class VenvExecutor(Executor):
         """
         super().__init__(name=name, metadata=metadata, target_version=target_version)
 
-        # This is a temporary install path that will be replaced with a proper package
-        # name once they are published.
-        # TODO: Replace with `f"airbyte-{self.name}"`
-        self.pip_url = pip_url or f"../airbyte-integrations/connectors/{self.name}"
+        if not pip_url and metadata and not metadata.pypi_package_name:
+            raise exc.AirbyteConnectorNotPyPiPublishedError(
+                connector_name=self.name,
+                context={
+                    "metadata": metadata,
+                },
+            )
+
+        self.pip_url = pip_url or (
+            metadata.pypi_package_name
+            if metadata and metadata.pypi_package_name
+            else f"airbyte-{self.name}"
+        )
         self.install_root = install_root or Path.cwd()
 
     def _get_venv_name(self) -> str:
@@ -239,11 +248,16 @@ class VenvExecutor(Executor):
             return None
 
         try:
+            package_name = (
+                self.metadata.pypi_package_name
+                if self.metadata and self.metadata.pypi_package_name
+                else f"airbyte-{connector_name}"
+            )
             return subprocess.check_output(
                 [
                     self.interpreter_path,
                     "-c",
-                    f"from importlib.metadata import version; print(version('{connector_name}'))",
+                    f"from importlib.metadata import version; print(version('{package_name}'))",
                 ],
                 universal_newlines=True,
             ).strip()

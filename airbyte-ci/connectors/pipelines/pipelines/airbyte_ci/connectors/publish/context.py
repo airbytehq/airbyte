@@ -37,6 +37,8 @@ class PublishConnectorContext(ConnectorContext):
         is_local: bool,
         git_branch: str,
         git_revision: str,
+        python_registry_url: str,
+        python_registry_check_url: str,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -47,7 +49,6 @@ class PublishConnectorContext(ConnectorContext):
         s3_build_cache_secret_key: Optional[str] = None,
         use_local_cdk: bool = False,
         python_registry_token: Optional[str] = None,
-        python_registry_url: Optional[str] = None,
     ) -> None:
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
@@ -56,6 +57,7 @@ class PublishConnectorContext(ConnectorContext):
         self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
         self.python_registry_token = python_registry_token
         self.python_registry_url = python_registry_url
+        self.python_registry_check_url = python_registry_check_url
         pipeline_name = f"Publish {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
 
