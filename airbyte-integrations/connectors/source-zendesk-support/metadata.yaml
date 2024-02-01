@@ -19,6 +19,10 @@ data:
   license: ELv2
   maxSecondsBetweenMessages: 10800
   name: Zendesk Support
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zendesk-support
   registries:
     cloud:
       enabled: true
