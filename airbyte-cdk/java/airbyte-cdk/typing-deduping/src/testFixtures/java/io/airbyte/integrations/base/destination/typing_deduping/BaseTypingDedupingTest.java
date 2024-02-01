@@ -598,18 +598,21 @@ public abstract class BaseTypingDedupingTest {
     // Start two concurrent syncs
     final AirbyteDestination sync1 = startSync(catalog1);
     final AirbyteDestination sync2 = startSync(catalog2);
+    CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outFuture1 = destinationOutputFuture(sync1);
+    CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outFuture2 = destinationOutputFuture(sync2);
+
     // Write some messages to both syncs. Write a lot of data to sync 2 to try and force a flush.
     pushMessages(messages1, sync1);
     for (int i = 0; i < 100_000; i++) {
       pushMessages(messages2, sync2);
     }
-    endSync(sync1, destinationOutputFuture(sync1));
+    endSync(sync1, outFuture1);
     // Write some more messages to the second sync. It should not be affected by the first sync's
     // shutdown.
     for (int i = 0; i < 100_000; i++) {
       pushMessages(messages2, sync2);
     }
-    endSync(sync2, destinationOutputFuture(sync2));
+    endSync(sync2, outFuture2);
 
     // For simplicity, don't verify the raw table. Assume that if the final table is correct, then
     // the raw data is correct. This is generally a safe assumption.
