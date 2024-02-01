@@ -231,14 +231,16 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         )
 
     def stream_slices(
-        self,
-        **kwargs: Mapping[str, Any],
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         accounts = Accounts(self.client, self.config)
         for _slice in accounts.stream_slices():
             for account in accounts.read_records(SyncMode.full_refresh, _slice):
-                for period in self.default_time_periods:
-                    yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
+                if self.get_start_date(stream_state, account["Id"]):  # if start date is not provided default time periods will be used
+                    yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+                else:
+                    for period in self.default_time_periods:
+                        yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
 
 
 class BingAdsReportingServicePerformanceStream(BingAdsReportingServiceStream, ABC):
