@@ -40,8 +40,8 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
         .withConnectionProperty("trustServerCertificate", "true")
         .initialized()
-        .withCdc()
-        .withWaitUntilAgentRunning();
+        .withWaitUntilAgentRunning()
+        .withCdc();
   }
 
   @Override
