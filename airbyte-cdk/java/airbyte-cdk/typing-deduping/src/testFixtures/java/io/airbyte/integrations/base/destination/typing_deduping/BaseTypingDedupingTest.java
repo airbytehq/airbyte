@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -779,7 +780,7 @@ public abstract class BaseTypingDedupingTest {
   // stdout in real time, to prevent the buffer from filling up and blocking the destination.
   private CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> destinationOutputFuture(final AirbyteDestination destination) {
     final CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outputFuture = new CompletableFuture<>();
-    Executors.newSingleThreadExecutor().submit(() -> {
+    Executors.newSingleThreadExecutor().submit((Callable<Void>) () -> {
       final List<io.airbyte.protocol.models.AirbyteMessage> destinationMessages = new ArrayList<>();
       while (!destination.isFinished()) {
         // attemptRead isn't threadsafe, we read stdout fully here.
