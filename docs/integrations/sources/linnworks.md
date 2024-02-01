@@ -63,7 +63,7 @@ Expand to see details about Linnworks connector limitations and troubleshooting
 
 ### Rate limits
 
-Rate limits for the Linnworks API vary across endpoints. Use the [links in the **Supported Streams** table](#supported-streams) to view each endpoint's limits. Rate limited requests will receive a 429 response, but the Linnworks connector should not run into Linnworks API limitations under normal usage.
+Rate limits for the Linnworks API vary across endpoints. Use the [links in the **Supported Streams** table](#supported-streams-and-sync-modes) to view each endpoint's limits. Rate limited requests will receive a 429 response, but the Linnworks connector should not run into Linnworks API limitations under normal usage.
 
 </details>
 
