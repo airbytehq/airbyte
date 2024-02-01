@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -773,15 +774,18 @@ public abstract class BaseTypingDedupingTest {
   // In the background, read messages from the destination until it terminates. We need to clear
   // stdout in real time, to prevent the buffer from filling up and blocking the destination.
   private CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> destinationOutputFuture(final AirbyteDestination destination) {
-    return CompletableFuture.supplyAsync(() -> {
+    CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outputFuture = new CompletableFuture<>();
+    Executors.newSingleThreadExecutor().submit(() -> {
       final List<io.airbyte.protocol.models.AirbyteMessage> destinationMessages = new ArrayList<>();
       while (!destination.isFinished()) {
         // attemptRead isn't threadsafe, we read stdout fully here.
         // i.e. we shouldn't call attemptRead anywhere else.
         destination.attemptRead().ifPresent(destinationMessages::add);
       }
-      return destinationMessages;
+      outputFuture.complete(destinationMessages);
+      return null;
     });
+    return outputFuture;
   }
 
   protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog) throws Exception {
@@ -837,23 +841,6 @@ public abstract class BaseTypingDedupingTest {
         new EnvVariableFeatureFlags()));
 
     destination.start(destinationConfig, jobRoot, Collections.emptyMap());
-
-    // final ExecutorService messageHandler = Executors.newSingleThreadExecutor(
-    // // run as a daemon thread just in case we run into an exception or something
-    // r -> {
-    // final Thread t = Executors.defaultThreadFactory().newThread(r);
-    // t.setDaemon(true);
-    // return t;
-    // });
-    // messageHandler.submit(() -> {
-    // while (!destination.isFinished()) {
-    // // attemptRead isn't threadsafe, we read stdout fully here.
-    // // i.e. we shouldn't call attemptRead anywhere else.
-    // destination.attemptRead();
-    // }
-    // LOGGER.info("Message consumed latch countdown");
-    // });
-    // messageHandler.shutdown();
 
     return destination;
   }
