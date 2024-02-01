@@ -16,11 +16,16 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.config.SslConfigs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.io.IOException;
+import java.util.Base64;
 
 public abstract class AbstractFormat implements KafkaFormat {
-
+ 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFormat.class);
 
   protected Set<String> topicsToSubscribe;
@@ -28,7 +33,6 @@ public abstract class AbstractFormat implements KafkaFormat {
 
   public AbstractFormat(JsonNode config) {
     this.config = config;
-
   }
 
   protected abstract KafkaConsumer<String, ?> getConsumer();
@@ -64,7 +68,6 @@ public abstract class AbstractFormat implements KafkaFormat {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     return filteredProps;
-
   }
 
   private Map<String, Object> propertiesByProtocol(final JsonNode config) {
@@ -80,10 +83,26 @@ public abstract class AbstractFormat implements KafkaFormat {
         builder.put(SaslConfigs.SASL_JAAS_CONFIG, protocolConfig.get("sasl_jaas_config").asText());
         builder.put(SaslConfigs.SASL_MECHANISM, protocolConfig.get("sasl_mechanism").asText());
       }
+      case SSL -> {
+        try {
+          String keystoreText = protocolConfig.get("ssl_keystore_text").asText();
+          String truststoreText = protocolConfig.get("ssl_truststore_text").asText();
+          Path keystorePath = Files.createTempFile("keystore", ".jks");
+          Path truststorePath = Files.createTempFile("truststore", ".jks");
+          Files.write(keystorePath, Base64.getDecoder().decode(keystoreText));
+          Files.write(truststorePath, Base64.getDecoder().decode(truststoreText));
+          builder.put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, protocolConfig.get("ssl_keystore_type").asText());
+          builder.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, keystorePath.toString());
+          builder.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, protocolConfig.get("ssl_truststore_type").asText());
+          builder.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, truststorePath.toString());
+        } catch (IOException e) {
+          LOGGER.error("Error creating keystore or truststore file: {}", e.toString());
+          throw new RuntimeException("Error creating keystore or truststore file", e);
+        }
+      }
       default -> throw new RuntimeException("Unexpected Kafka protocol: " + Jsons.serialize(protocol));
     }
 
     return builder.build();
   }
-
 }
