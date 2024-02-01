@@ -27,12 +27,7 @@ class SourceMicrosoftSharePointClient:
     def __init__(self, config: SourceMicrosoftSharePointSpec):
         self.config = config
         self._client = None
-
-    @property
-    @lru_cache(maxsize=None)
-    def msal_app(self):
-        """Returns an MSAL app instance for authentication."""
-        return ConfidentialClientApplication(
+        self._msal_app = ConfidentialClientApplication(
             self.config.credentials.client_id,
             authority=f"https://login.microsoftonline.com/{self.config.credentials.tenant_id}",
             client_credential=self.config.credentials.client_secret,
@@ -53,9 +48,9 @@ class SourceMicrosoftSharePointClient:
         refresh_token = self.config.credentials.refresh_token if hasattr(self.config.credentials, "refresh_token") else None
 
         if refresh_token:
-            result = self.msal_app.acquire_token_by_refresh_token(refresh_token, scopes=scope)
+            result = self._msal_app.acquire_token_by_refresh_token(refresh_token, scopes=scope)
         else:
-            result = self.msal_app.acquire_token_for_client(scopes=scope)
+            result = self._msal_app.acquire_token_for_client(scopes=scope)
 
         if "access_token" not in result:
             error_description = result.get("error_description", "No error description provided.")

@@ -68,10 +68,12 @@ def setup_client_class():
     config.folder_path = "."
     config.credentials.auth_type = "Client"
 
-    client_class = SourceMicrosoftSharePointClient(config)  # Instantiate your class
     with patch("source_microsoft_sharepoint.stream_reader.ConfidentialClientApplication") as mock_client_class:
-        mock_client = mock_client_class.return_value
-        mock_client.msal_app = Mock()  # Mock the client attribute of SourceMicrosoftSharePointClient
+        mock_msal_app_instance = Mock()
+        mock_client_class.return_value = mock_msal_app_instance
+
+        client_class = SourceMicrosoftSharePointClient(config)
+
         yield client_class
 
 
@@ -87,10 +89,10 @@ def test_get_access_token(setup_client_class, has_refresh_token, token_response,
     instance = setup_client_class
     if has_refresh_token:
         instance.config.credentials.refresh_token = "test_refresh_token"
-        instance.msal_app.acquire_token_by_refresh_token.return_value = token_response
+        instance._msal_app.acquire_token_by_refresh_token.return_value = token_response
     else:
         instance.config.credentials.refresh_token = None
-        instance.msal_app.acquire_token_for_client.return_value = token_response
+        instance._msal_app.acquire_token_for_client.return_value = token_response
 
     if raises_exception:
         with pytest.raises(MsalServiceError):
@@ -99,11 +101,11 @@ def test_get_access_token(setup_client_class, has_refresh_token, token_response,
         assert instance._get_access_token() == expected_result
 
         if has_refresh_token:
-            instance.msal_app.acquire_token_by_refresh_token.assert_called_once_with(
+            instance._msal_app.acquire_token_by_refresh_token.assert_called_once_with(
                 "test_refresh_token", scopes=["https://graph.microsoft.com/.default"]
             )
         else:
-            instance.msal_app.acquire_token_for_client.assert_called_once_with(scopes=["https://graph.microsoft.com/.default"])
+            instance._msal_app.acquire_token_for_client.assert_called_once_with(scopes=["https://graph.microsoft.com/.default"])
 
 
 @patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry")
