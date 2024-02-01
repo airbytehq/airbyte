@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: aa8ba6fd-4875-d94e-fc8d-4e1e09aa2503
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-teradata
   githubIssueLabel: source-teradata
   icon: teradata.svg

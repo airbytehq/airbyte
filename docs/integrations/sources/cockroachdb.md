@@ -95,6 +95,7 @@ Your database user should now be ready for use with Airbyte.
 
 | Version | Date       | Pull Request | Subject                                                                                                                                   |
 |:--------|:-----------| :--- |:------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
 | 0.2.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Removed LEGACY state                                                                                                                      |
 | 0.1.22  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting                                                                                          |
 | 0.1.21  | 2023-03-14 | [24000](https://github.com/airbytehq/airbyte/pull/24000) | Removed check method call on read.                                                                                                        |

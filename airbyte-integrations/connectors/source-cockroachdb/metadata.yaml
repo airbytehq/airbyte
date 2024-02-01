@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-cockroachdb
   githubIssueLabel: source-cockroachdb
   icon: cockroachdb.svg
