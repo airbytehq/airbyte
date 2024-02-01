@@ -1,11 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
+import shutil
+from pathlib import Path
 from typing import Any
 
-from airbyte_lib._executor import Executor, PathExecutor, VenvExecutor
-from airbyte_lib.exceptions import AirbyteLibInputError
-from airbyte_lib.registry import get_connector_metadata
+from airbyte_lib import exceptions as exc
+from airbyte_lib._executor import PathExecutor, VenvExecutor
+from airbyte_lib.registry import ConnectorMetadata, get_connector_metadata
 from airbyte_lib.source import Source
 
 
@@ -15,7 +17,7 @@ def get_connector(
     pip_url: str | None = None,
     config: dict[str, Any] | None = None,
     *,
-    use_local_install: bool = False,
+    local_executable: Path | str | None = None,
     install_if_missing: bool = True,
 ) -> Source:
     """Get a connector by name and version.
@@ -29,34 +31,58 @@ def get_connector(
             connector name.
         config: connector config - if not provided, you need to set it later via the set_config
             method.
-        use_local_install: whether to use a virtual environment to run the connector. If True, the
-            connector is expected to be available on the path (e.g. installed via pip). If False,
-            the connector will be installed automatically in a virtual environment.
-        install_if_missing: whether to install the connector if it is not available locally. This
-            parameter is ignored if use_local_install is True.
+        local_executable: If set, the connector will be assumed to already be installed and will be
+            executed using this path or executable name. Otherwise, the connector will be installed
+            automatically in a virtual environment.
+        install_if_missing: Whether to install the connector if it is not available locally. This
+            parameter is ignored when local_executable is set.
     """
-    metadata = get_connector_metadata(name)
-    if use_local_install:
+    if local_executable:
         if pip_url:
-            raise AirbyteLibInputError(
-                message="Param 'pip_url' is not supported when 'use_local_install' is True."
+            raise exc.AirbyteLibInputError(
+                message="Param 'pip_url' is not supported when 'local_executable' is set."
             )
         if version:
-            raise AirbyteLibInputError(
-                message="Param 'version' is not supported when 'use_local_install' is True."
+            raise exc.AirbyteLibInputError(
+                message="Param 'version' is not supported when 'local_executable' is set."
             )
-        executor: Executor = PathExecutor(
-            metadata=metadata,
-            target_version=version,
+
+        if isinstance(local_executable, str):
+            if "/" in local_executable or "\\" in local_executable:
+                # Assume this is a path
+                local_executable = Path(local_executable).absolute()
+            else:
+                which_executable = shutil.which(local_executable)
+                if which_executable is None:
+                    raise FileNotFoundError(local_executable)
+                local_executable = Path(which_executable).absolute()
+
+        return Source(
+            name=name,
+            config=config,
+            executor=PathExecutor(
+                name=name,
+                path=local_executable,
+            ),
         )
 
-    else:
-        executor = VenvExecutor(
-            metadata=metadata,
-            target_version=version,
-            install_if_missing=install_if_missing,
-            pip_url=pip_url,
-        )
+    metadata: ConnectorMetadata | None = None
+    try:
+        metadata = get_connector_metadata(name)
+    except exc.AirbyteConnectorNotRegisteredError:
+        if not pip_url:
+            # We don't have a pip url or registry entry, so we can't install the connector
+            raise
+
+    executor = VenvExecutor(
+        name=name,
+        metadata=metadata,
+        target_version=version,
+        pip_url=pip_url,
+    )
+    if install_if_missing:
+        executor.ensure_installation()
+
     return Source(
         executor=executor,
         name=name,

@@ -8,6 +8,10 @@ data:
   icon: captain-data.svg
   license: MIT
   name: Captain Data
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-captain-data
   registries:
     cloud:
       enabled: false

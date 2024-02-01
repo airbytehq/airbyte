@@ -18,6 +18,10 @@ data:
   icon: amplitude.svg
   license: MIT
   name: Amplitude
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-amplitude
   registries:
     cloud:
       enabled: true
