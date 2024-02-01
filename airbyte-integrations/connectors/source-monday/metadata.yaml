@@ -38,10 +38,6 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-monday
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-monday
   registries:
     cloud:
       enabled: true
