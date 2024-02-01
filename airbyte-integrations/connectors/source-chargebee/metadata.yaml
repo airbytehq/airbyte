@@ -17,6 +17,10 @@ data:
   icon: chargebee.svg
   license: MIT
   name: Chargebee
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-chargebee
   registries:
     cloud:
       enabled: true

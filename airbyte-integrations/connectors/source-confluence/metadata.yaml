@@ -5,6 +5,10 @@ data:
   allowedHosts:
     hosts:
       - ${subdomain}.atlassian.net
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-confluence
   registries:
     oss:
       enabled: true
