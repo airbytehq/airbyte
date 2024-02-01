@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "*"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-fastbill
   registries:
     cloud:
       enabled: false

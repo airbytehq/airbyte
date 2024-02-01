@@ -12,6 +12,10 @@ data:
   icon: braintree.svg
   license: MIT
   name: Braintree
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-braintree
   registries:
     cloud:
       enabled: true

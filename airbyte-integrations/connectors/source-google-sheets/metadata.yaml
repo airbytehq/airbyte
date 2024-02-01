@@ -17,6 +17,10 @@ data:
   icon: google-sheets.svg
   license: Elv2
   name: Google Sheets
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-sheets
   registries:
     cloud:
       enabled: true

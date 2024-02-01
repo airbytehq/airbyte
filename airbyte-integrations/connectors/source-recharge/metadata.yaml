@@ -13,6 +13,10 @@ data:
   icon: recharge.svg
   license: MIT
   name: Recharge
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-recharge
   registries:
     cloud:
       enabled: true

@@ -1,14 +1,32 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { JSONSchemaFaker } from "json-schema-faker";
 import CodeBlock from '@theme/CodeBlock';
 
+/**
+ * Generate a fake config based on the spec.
+ * 
+ * As our specs are not 100% consistent, errors may occur.
+ * Try to generate a few times before giving up.
+ */
+function generateFakeConfig(spec) {
+  let tries = 5;
+  while (tries > 0) {
+    try {
+      return JSON.stringify(JSONSchemaFaker.generate(spec), null, 2)
+    }
+    catch (e) {
+      tries--;
+    }
+  }
+  return "{ ... }";
+}
 
 export const AirbyteLibExample = ({
   specJSON,
-  connector
+  connector,
 }) => {
-  const spec = JSON.parse(specJSON);
-  const fakeConfig = JSONSchemaFaker.generate(spec);
+  const spec = useMemo(() => JSON.parse(specJSON), [specJSON]);
+  const fakeConfig = useMemo(() => generateFakeConfig(spec), [spec]);
   return <>
     <p>
       Install the Python library via:
@@ -20,12 +38,12 @@ export const AirbyteLibExample = ({
       language="python"
     >{`import airbyte_lib as ab
 
-config = ${JSON.stringify(fakeConfig, null, 2)}
+config = ${fakeConfig}
 
 result = ab.get_connector(
     "${connector}",
     config=config,
-).read_all()
+).read()
 
 for record in result.cache.streams["my_stream:name"]:
   print(record)`} </CodeBlock>
