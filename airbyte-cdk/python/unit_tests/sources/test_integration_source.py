@@ -11,6 +11,7 @@ from unittest.mock import patch
 import pytest
 import requests
 from airbyte_cdk.entrypoint import launch
+from airbyte_cdk.utils import AirbyteTracedException
 from unit_tests.sources.fixtures.source_test_fixture import (
     HttpTestStream,
     SourceFixtureOauthAuthenticator,
@@ -38,9 +39,10 @@ def test_external_request_source(capsys, deployment_mode, url_base, expected_rec
         with mock.patch.object(HttpTestStream, "url_base", url_base):
             args = ["read", "--config", "config.json", "--catalog", "configured_catalog.json"]
             if expected_error:
-                launch(source, args)
-                messages = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
-                assert contains_error_trace_message(messages, expected_error)
+                with pytest.raises(AirbyteTracedException):
+                    launch(source, args)
+                    messages = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+                    assert contains_error_trace_message(messages, expected_error)
             else:
                 launch(source, args)
 
@@ -65,9 +67,10 @@ def test_external_oauth_request_source(capsys, deployment_mode, token_refresh_ur
     with mock.patch.dict(os.environ, {"DEPLOYMENT_MODE": deployment_mode}, clear=False):  # clear=True clears the existing os.environ dict
         args = ["read", "--config", "config.json", "--catalog", "configured_catalog.json"]
         if expected_error:
-            launch(source, args)
-            messages = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
-            assert contains_error_trace_message(messages, expected_error)
+            with pytest.raises(AirbyteTracedException):
+                launch(source, args)
+                messages = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+                assert contains_error_trace_message(messages, expected_error)
         else:
             launch(source, args)
 

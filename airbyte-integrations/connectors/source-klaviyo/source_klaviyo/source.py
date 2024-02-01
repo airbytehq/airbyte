@@ -60,3 +60,7 @@ class SourceKlaviyo(AbstractSource):
             EmailTemplates(api_key=api_key, start_date=start_date),
             Profiles(api_key=api_key, start_date=start_date),
         ]
+
+    @property
+    def stop_sync_on_stream_failure(self) -> bool:
+        return True

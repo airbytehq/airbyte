@@ -305,8 +305,9 @@ def test_read_stream_emits_repository_message_on_error(mocker, message_repositor
 
     source = MockSource(streams=[stream], message_repository=message_repository)
 
-    messages = list(source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])))
-    assert MESSAGE_FROM_REPOSITORY in messages
+    with pytest.raises(AirbyteTracedException):
+        messages = list(source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])))
+        assert MESSAGE_FROM_REPOSITORY in messages
 
 
 def test_read_stream_with_error_gets_display_message(mocker):
@@ -319,13 +320,14 @@ def test_read_stream_with_error_gets_display_message(mocker):
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])
 
     # without get_error_display_message
-    messages = list(source.read(logger, {}, catalog))
-    assert messages[-1].trace.error.message == "Something went wrong in the connector. See the logs for more details."
+    with pytest.raises(AirbyteTracedException):
+        list(source.read(logger, {}, catalog))
 
     mocker.patch.object(MockStream, "get_error_display_message", return_value="my message")
 
-    messages = list(source.read(logger, {}, catalog))
-    assert messages[-1].trace.error.message == "my message"
+    with pytest.raises(AirbyteTracedException) as exc:
+        list(source.read(logger, {}, catalog))
+    assert "oh no!" in exc.value.message
 
 
 GLOBAL_EMITTED_AT = 1
@@ -1241,10 +1243,13 @@ def test_continue_sync_with_failed_streams(mocker, exception_to_raise, expected_
         ]
     )
 
-    messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
-    messages = _fix_emitted_at(messages)
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
 
-    assert expected == messages
+        assert expected == messages
+
+    assert "lamentations" in exc.value.message
 
 
 def test_continue_sync_source_override_false(mocker):
@@ -1287,10 +1292,13 @@ def test_continue_sync_source_override_false(mocker):
         ]
     )
 
-    messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
-    messages = _fix_emitted_at(messages)
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
 
-    assert expected == messages
+        assert expected == messages
+
+    assert "lamentations" in exc.value.message
 
 
 def test_sync_error_trace_messages_obfuscate_secrets(mocker):
@@ -1332,10 +1340,13 @@ def test_sync_error_trace_messages_obfuscate_secrets(mocker):
         ]
     )
 
-    messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
-    messages = _fix_emitted_at(messages)
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
 
-    assert expected == messages
+        assert expected == messages
+
+    assert "lamentations" in exc.value.message
 
 
 def test_continue_sync_with_failed_streams_with_override_false(mocker):
@@ -1373,10 +1384,13 @@ def test_continue_sync_with_failed_streams_with_override_false(mocker):
         ]
     )
 
-    messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
 
-    messages = _fix_emitted_at(messages)
-    assert expected == messages
+        assert expected == messages
+
+    assert "lamentations" in exc.value.message
 
 
 def _remove_stack_trace(message: AirbyteMessage) -> AirbyteMessage:

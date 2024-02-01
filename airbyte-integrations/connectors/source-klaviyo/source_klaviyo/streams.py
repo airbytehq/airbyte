@@ -274,6 +274,7 @@ class BadLists(IncrementalKlaviyoStream):
 
     max_retries = 10
     cursor_field = "updated"
+    availability_strategy = None
 
     def path(self, **kwargs) -> str:
         return "lists"
@@ -335,6 +336,7 @@ class BadFlows(IncrementalKlaviyoStream):
 
     cursor_field = "updated"
     state_checkpoint_interval = 50  # API can return maximum 50 records per page
+    availability_strategy = None
 
     def path(self, **kwargs) -> str:
         return "flows"
