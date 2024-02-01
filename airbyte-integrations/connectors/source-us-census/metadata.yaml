@@ -8,6 +8,10 @@ data:
   icon: uscensus.svg
   license: MIT
   name: US Census
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-us-census
   registries:
     cloud:
       enabled: true
