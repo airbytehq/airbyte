@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.zenefits.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zenefits
   registries:
     cloud:
       enabled: false

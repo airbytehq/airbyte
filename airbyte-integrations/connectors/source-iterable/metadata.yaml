@@ -17,6 +17,10 @@ data:
   icon: iterable.svg
   license: MIT
   name: Iterable
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-iterable
   registries:
     cloud:
       enabled: true

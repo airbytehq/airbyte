@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.getbase.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zendesk-sell
   registries:
     oss:
       enabled: false
