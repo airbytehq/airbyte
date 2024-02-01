@@ -273,8 +273,9 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         """
         Unpacks a report document
         """
-        report = requests.get(payload.get("url"))
-        report.raise_for_status()
+
+        download_report_request = self._create_prepared_request(path=payload.get("url"))
+        report = self._send_request(download_report_request, {})
         if "compressionAlgorithm" in payload:
             return gzip.decompress(report.content).decode("iso-8859-1")
         return report.content.decode("iso-8859-1")
@@ -1105,6 +1106,12 @@ class VendorDirectFulfillmentShipping(IncrementalAmazonSPStream):
 
     def path(self, **kwargs) -> str:
         return f"vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        stream_data = response.json()
+        next_page_token = stream_data.get("payload", {}).get("pagination", {}).get(self.next_page_token_field)
+        if next_page_token:
+            return {self.next_page_token_field: next_page_token}
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs

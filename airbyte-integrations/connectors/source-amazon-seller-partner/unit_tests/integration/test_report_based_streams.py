@@ -5,20 +5,20 @@
 
 import gzip
 from http import HTTPStatus
-from test.mock_http.matcher import HttpRequestMatcher
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 import freezegun
 import pytest
 import requests_mock
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
-from airbyte_protocol.models import FailureType, SyncMode
+from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
+from airbyte_protocol.models import AirbyteStateMessage, FailureType, SyncMode
 from source_amazon_seller_partner.streams import ReportProcessingStatus
 
-from .config import MARKETPLACE_ID, NOW, ConfigBuilder
+from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, ConfigBuilder
 from .request_builder import RequestBuilder
-from .response_builder import build_response
+from .response_builder import build_response, response_with_status
 from .utils import assert_message_in_output, config, find_template, get_stream_by_name, mock_auth, read_output
 
 _DOCUMENT_DOWNLOAD_URL = "https://test.com/download"
@@ -53,7 +53,6 @@ STREAMS = (
     ("GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA", "csv"),
     ("GET_FBA_INVENTORY_PLANNING_DATA", "csv"),
     ("GET_FBA_STORAGE_FEE_CHARGES_DATA", "csv"),
-    # ("GET_SALES_AND_TRAFFIC_REPORT", "json"),
     ("GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA", "csv"),
     ("GET_STRANDED_INVENTORY_UI_DATA", "csv"),
     ("GET_FBA_REIMBURSEMENTS_DATA", "csv"),
@@ -111,17 +110,14 @@ def _check_report_status_response(
         "processingStatus": processing_status,
         "marketplaceIds": [MARKETPLACE_ID],
         "reportId": _REPORT_ID,
-        # TODO: check what to do with these dates
-        "dataEndTime": "2022-11-29T23:59:59+00:00",
-        "createdTime": "2024-01-10T12:55:55+00:00",
-        "dataStartTime": "2022-09-01T00:00:00+00:00",
+        "dataEndTime": CONFIG_END_DATE,
+        "createdTime": CONFIG_START_DATE,
+        "dataStartTime": CONFIG_START_DATE,
     }
     if processing_status == ReportProcessingStatus.DONE:
         response_body.update(
             {
-                "reportDocumentId": _REPORT_DOCUMENT_ID,
-                "processingEndTime": "2024-01-10T13:30:43+00:00",
-                "processingStartTime": "2024-01-10T13:30:31+00:00",
+                "reportDocumentId": _REPORT_DOCUMENT_ID, "processingEndTime": CONFIG_START_DATE, "processingStartTime": CONFIG_START_DATE
             }
         )
 
@@ -148,7 +144,9 @@ class TestFullRefresh:
 
     @staticmethod
     def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
-        return read_output(config_, stream_name, SyncMode.full_refresh, expecting_exception=expecting_exception)
+        return read_output(
+            config_builder=config_, stream_name=stream_name, sync_mode=SyncMode.full_refresh, expecting_exception=expecting_exception
+        )
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
@@ -196,12 +194,92 @@ class TestFullRefresh:
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
+    def test_given_http_status_500_then_200_when_create_report_then_retry_and_return_records(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).build(),
+            [response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR), _create_report_response()],
+        )
+        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
+        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_retrieve_report_then_retry_and_return_records(
+            self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            [response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR), _check_report_status_response(stream_name)],
+        )
+        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_get_document_url_then_retry_and_return_records(
+            self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
+        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            [response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR), _get_document_download_url_response()],
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_download_document_then_retry_and_return_records(
+            self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
+        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
+        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _download_document_response(stream_name, data_format=data_format),
+            ],
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
     def test_given_report_access_forbidden_when_read_then_no_records_and_error_logged(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker, caplog: Any
     ) -> None:
         mock_auth(http_mocker)
 
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(status_code=HTTPStatus.FORBIDDEN))
+        http_mocker.post(_create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.FORBIDDEN))
 
         output = self._read(stream_name, config())
         message_on_access_forbidden = (
@@ -277,7 +355,7 @@ class TestFullRefresh:
     ) -> None:
         mock_auth(http_mocker)
 
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(status_code=HTTPStatus.INTERNAL_SERVER_ERROR))
+        http_mocker.post(_create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR))
 
         message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
 
@@ -291,8 +369,16 @@ class TestIncremental:
     default_cursor_field = "dataEndTime"
 
     @staticmethod
-    def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
-        return read_output(config_, stream_name, SyncMode.incremental, expecting_exception=expecting_exception)
+    def _read(
+        stream_name: str, config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
+    ) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.incremental,
+            state=state,
+            expecting_exception=expecting_exception,
+        )
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
@@ -332,6 +418,6 @@ class TestIncremental:
         assert len(output.state_messages) == 1
 
         cursor_field = get_stream_by_name(stream_name, _config.build()).cursor_field
-        cursor_value_from_state_message = output.state_messages[0].state.data.get(stream_name, {}).get(cursor_field)
+        cursor_value_from_state_message = output.most_recent_state.get(stream_name, {}).get(cursor_field)
         cursor_value_from_latest_record = output.records[-1].record.data.get(cursor_field)
         assert cursor_value_from_state_message == cursor_value_from_latest_record

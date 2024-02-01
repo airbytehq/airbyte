@@ -5,14 +5,14 @@
 
 import json
 from http import HTTPStatus
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import _get_unit_test_folder
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from source_amazon_seller_partner import SourceAmazonSellerPartner
 
 from .config import ACCESS_TOKEN, ConfigBuilder
@@ -36,7 +36,7 @@ def read_output(
     config_builder: ConfigBuilder,
     stream_name: str,
     sync_mode: SyncMode,
-    state: Optional[Dict[str, Any]] = None,
+    state: Optional[List[AirbyteStateMessage]] = None,
     expecting_exception: Optional[bool] = False,
 ) -> EntrypointOutput:
     _catalog = catalog(stream_name, sync_mode)

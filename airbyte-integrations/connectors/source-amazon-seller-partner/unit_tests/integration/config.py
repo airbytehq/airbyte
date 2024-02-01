@@ -14,9 +14,11 @@ ACCESS_TOKEN = "test_access_token"
 LWA_APP_ID = "amazon_app_id"
 LWA_CLIENT_SECRET = "amazon_client_secret"
 MARKETPLACE_ID = "ATVPDKIKX0DER"
-NEXT_TOKEN_STRING = "MDAwMDAwMDAwMQ=="
-NOW = pendulum.now(tz="utc")
 REFRESH_TOKEN = "amazon_refresh_token"
+
+CONFIG_START_DATE = "2023-01-01T00:00:00Z"
+CONFIG_END_DATE = "2023-01-30T00:00:00Z"
+NOW = pendulum.now(tz="utc")
 
 
 class ConfigBuilder:
@@ -25,8 +27,8 @@ class ConfigBuilder:
             "refresh_token": REFRESH_TOKEN,
             "lwa_app_id": LWA_APP_ID,
             "lwa_client_secret": LWA_CLIENT_SECRET,
-            "replication_start_date": "2023-01-01T00:00:00Z",
-            "replication_end_date": "2023-01-30T00:00:00Z",
+            "replication_start_date": CONFIG_START_DATE,
+            "replication_end_date": CONFIG_END_DATE,
             "aws_environment": "PRODUCTION",
             "region": "US",
             "account_type": "Seller",
