@@ -83,7 +83,8 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
     boolean schemaHistoryRead = false;
     SchemaHistory<String> schemaHistory = null;
     final var debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(properties, database.getSourceConfig(), catalog);
-    try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(debeziumPropertiesManager)) {
+    try {
+      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(debeziumPropertiesManager);
       publisher.start(queue, emptyOffsetManager, Optional.of(schemaHistoryStorage));
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
