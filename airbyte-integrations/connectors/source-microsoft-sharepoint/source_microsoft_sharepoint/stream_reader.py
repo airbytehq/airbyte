@@ -90,7 +90,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceMicrosoftSharePointSpec)
         self._config = value
 
-    def list_directories_and_files(self, root_folder, path=None):
+    def _list_directories_and_files(self, root_folder, path=None):
         """Enumerates folders and files starting from a root folder."""
         drive_items = execute_query_with_retry(root_folder.children.get())
         found_items = []
@@ -99,10 +99,10 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             if item.is_file:
                 found_items.append((item, item_path))
             else:
-                found_items.extend(self.list_directories_and_files(item, item_path))
+                found_items.extend(self._list_directories_and_files(item, item_path))
         return found_items
 
-    def get_files_by_drive_name(self, drives, folder_path):
+    def _get_files_by_drive_name(self, drives, folder_path):
         """Yields files from the specified drive."""
         path_levels = [level for level in folder_path.split("/") if level]
         folder_path = "/".join(path_levels)
@@ -113,7 +113,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 folder = (
                     drive.root if folder_path in self.ROOT_PATH else execute_query_with_retry(drive.root.get_by_path(folder_path).get())
                 )
-                yield from self.list_directories_and_files(folder)
+                yield from self._list_directories_and_files(folder)
 
     @property
     @lru_cache(maxsize=None)
@@ -138,7 +138,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         """
         Retrieve all files matching the specified glob patterns in SharePoint.
         """
-        files = self.get_files_by_drive_name(self.drives, self.config.folder_path)
+        files = self._get_files_by_drive_name(self.drives, self.config.folder_path)
 
         try:
             first_file, path = next(files)

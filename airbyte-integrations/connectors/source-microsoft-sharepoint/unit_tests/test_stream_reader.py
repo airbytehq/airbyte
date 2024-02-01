@@ -112,7 +112,7 @@ def test_get_access_token(setup_client_class, has_refresh_token, token_response,
 @patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.filter_files_by_globs_and_start_date")
 def test_get_matching_files(mock_filter_files, mock_execute_query, setup_reader_class, mock_drive_files):
     instance = setup_reader_class
-    instance.get_files_by_drive_name = Mock(return_value=iter([(mock_drive_files[0], "file1.csv"), (mock_drive_files[1], "file2.txt")]))
+    instance._get_files_by_drive_name = Mock(return_value=iter([(mock_drive_files[0], "file1.csv"), (mock_drive_files[1], "file2.txt")]))
 
     # Set up mocks
     mock_drive = Mock()
@@ -137,7 +137,7 @@ def test_get_matching_files(mock_filter_files, mock_execute_query, setup_reader_
 
 def test_get_matching_files_empty_drive(setup_reader_class):
     instance = setup_reader_class
-    instance.get_files_by_drive_name = Mock(return_value=iter([]))
+    instance._get_files_by_drive_name = Mock(return_value=iter([]))
 
     # Define test parameters
     globs = ["*.csv"]
@@ -198,7 +198,7 @@ def test_microsoft_sharepoint_client_initialization(requests_mock):
     client = SourceMicrosoftSharePointClient(SourceMicrosoftSharePointSpec(**config))
 
     assert client.config == SourceMicrosoftSharePointSpec(**config)
-    assert client.msal_app is not None
+    assert client._msal_app is not None
 
 
 def test_list_directories_and_files():
@@ -211,7 +211,7 @@ def test_list_directories_and_files():
 
     stream_reader = SourceMicrosoftSharePointStreamReader()
 
-    result = stream_reader.list_directories_and_files(mock_root_folder)
+    result = stream_reader._list_directories_and_files(mock_root_folder)
 
     assert len(result) == 2
     assert result[0][1] == "folder1/file1.txt"
@@ -225,7 +225,7 @@ def test_list_directories_and_files():
         ("business", 0),
     ],
 )
-@patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.list_directories_and_files")
+@patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader._list_directories_and_files")
 def test_get_files_by_drive_name(mock_list_directories_and_files, drive_type, files_number):
     # Helper function usage
     mock_drive = Mock()
@@ -244,7 +244,7 @@ def test_get_files_by_drive_name(mock_list_directories_and_files, drive_type, fi
     stream_reader._config = Mock()
 
     # Call the method
-    files = list(stream_reader.get_files_by_drive_name([mock_drive], "/test/path"))
+    files = list(stream_reader._get_files_by_drive_name([mock_drive], "/test/path"))
 
     # Assertions
     assert len(files) == files_number
