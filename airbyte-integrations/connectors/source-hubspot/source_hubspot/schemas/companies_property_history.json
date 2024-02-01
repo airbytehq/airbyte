@@ -47,6 +47,9 @@
     },
     "value": {
       "type": ["null", "string"]
+    },
+    "dataSensitivity": {
+      "type": ["null", "string"]
     }
   }
 }
