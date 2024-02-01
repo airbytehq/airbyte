@@ -17,7 +17,7 @@ class GainsightCsStream(HttpStream, ABC):
 
 class GainsightCsObjectStream(GainsightCsStream):
     primary_key = "gsid"
-    limit = 100
+    limit = 500
     json_schema = None
     offset = 0
 
@@ -28,6 +28,7 @@ class GainsightCsObjectStream(GainsightCsStream):
         "PERCENTAGE": ["null", "number"],
         "CURRENCY": ["null", "number"],
         "GSID": ["null", "string"],
+        "SFDCID": ["null", "string"],
         "DATETIME": ["null", "string"],
         "EMAIL": ["null", "string"],
         "URL": ["null", "string"],
@@ -47,12 +48,9 @@ class GainsightCsObjectStream(GainsightCsStream):
     def name(self):
         return self.object_name
 
-    def lowercase(self, field_name):
-        return field_name[0].lower() + field_name[1:]
-
     def dynamic_schema(self, full_schema, metadata):
         for field in metadata:
-            field_name = self.lowercase(field['fieldName'])
+            field_name = field['fieldName']
             field_type = self.gainsight_airbyte_type_map.get(field['dataType'], ["null", "string"])
             full_schema['properties'][field_name] = {
                 "type": field_type
