@@ -15,10 +15,14 @@ from .streams import (
     Guide,
     Page,
     Report,
+    ReportResult,
     VisitorMetadata,
     AccountMetadata,
     Visitor,
-    Account
+    Account,
+    PageEvents,
+    FeatureEvents,
+    GuideEvents
 )
 
 
@@ -46,9 +50,20 @@ class SourcePendoPython(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, e
 
+    def get_reports(self, config):
+        url = f"{PendoPythonStream.url_base}report"
+        auth = SourcePendoPython._get_authenticator(config)
+        try:
+            session = requests.get(url, headers=auth.get_auth_header())
+            body = session.json()
+            return [{"id": obj["id"], "type": obj["type"]} for obj in body]
+        except requests.exceptions.RequestException as e:
+            return False, e
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
-        return [
+
+        result = [
             Feature(authenticator=auth),
             Guide(authenticator=auth),
             Page(authenticator=auth),
@@ -56,5 +71,14 @@ class SourcePendoPython(AbstractSource):
             VisitorMetadata(authenticator=auth),
             AccountMetadata(authenticator=auth),
             Visitor(authenticator=auth),
-            Account(authenticator=auth)
+            Account(authenticator=auth),
+            PageEvents(authenticator=auth),
+            FeatureEvents(authenticator=auth),
+            GuideEvents(authenticator=auth)
         ]
+
+        all_reports = self.get_reports(config)
+        for report in all_reports:
+            result.append(ReportResult(report=report, authenticator=auth))
+
+        return result

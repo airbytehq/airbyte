@@ -8,21 +8,22 @@ from unittest.mock import MagicMock
 import pytest
 from source_pendo_python.source import SourcePendoPython
 from source_pendo_python.streams import (
-  PendoPythonStream,
-  PendoAggregationStream,
-  Feature,
-  Guide,
-  Page,
-  Report,
-  VisitorMetadata,
-  AccountMetadata,
-  Visitor,
-  Account
+    PendoPythonStream,
+    PendoAggregationStream,
+    PendoTimeSeriesAggregationStream,
+    Feature,
+    Guide,
+    Page,
+    Report,
+    VisitorMetadata,
+    AccountMetadata,
+    Visitor,
+    Account,
 )
 
-fake_token = 'ABC123'
+fake_token = "ABC123"
 page_size = 10
-aggregation_primary_key = 'test_id'
+aggregation_primary_key = "test_id"
 
 
 @pytest.fixture(name="config")
@@ -58,10 +59,7 @@ def test_request_params(patch_base_class):
 def test_parse_response(patch_base_class):
     stream = PendoPythonStream()
     response = MagicMock()
-    expected_parsed_object = [
-        {"test_id": "id1"},
-        {"test_id": "id2"}
-    ]
+    expected_parsed_object = [{"test_id": "id1"}, {"test_id": "id2"}]
     response.json.return_value = expected_parsed_object
     inputs = {"response": response}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object[0]
@@ -70,18 +68,10 @@ def test_parse_response(patch_base_class):
 @pytest.mark.parametrize(
     ("input_type", "output"),
     [
-        ("time", {
-            "type": ["null", "integer"]
-        }),
-        ("list", {
-            "type": ["null", "array"]
-        }),
-        ("", {
-            "type": ["null", "array", "string", "integer", "boolean"]
-        }),
-        ("random", {
-            "type": ["null", "random"]
-        }),
+        ("time", {"type": ["null", "integer"]}),
+        ("list", {"type": ["null", "array"]}),
+        ("", {"type": ["null", "array", "string", "integer", "boolean"]}),
+        ("random", {"type": ["null", "random"]}),
     ],
 )
 def test_get_valid_field_info(patch_base_class, input_type, output):
@@ -145,18 +135,20 @@ def test_request_headers(patch_aggregation_class):
 def test_next_page_token(patch_aggregation_class):
     stream = PendoAggregationStream()
     response = MagicMock()
-    response.json.return_value = {"results": [
-        {"test_id": "id1"},
-        {"test_id": "id2"},
-        {"test_id": "id3"},
-        {"test_id": "id4"},
-        {"test_id": "id5"},
-        {"test_id": "id6"},
-        {"test_id": "id7"},
-        {"test_id": "id8"},
-        {"test_id": "id9"},
-        {"test_id": "id10"}
-    ]}
+    response.json.return_value = {
+        "results": [
+            {"test_id": "id1"},
+            {"test_id": "id2"},
+            {"test_id": "id3"},
+            {"test_id": "id4"},
+            {"test_id": "id5"},
+            {"test_id": "id6"},
+            {"test_id": "id7"},
+            {"test_id": "id8"},
+            {"test_id": "id9"},
+            {"test_id": "id10"},
+        ]
+    }
     inputs = {"response": response}
     expected_token = "id10"
     assert stream.next_page_token(**inputs) == expected_token
@@ -165,10 +157,7 @@ def test_next_page_token(patch_aggregation_class):
 def test_next_page_token_end(patch_aggregation_class):
     stream = PendoAggregationStream()
     response = MagicMock()
-    response.json.return_value = {"results": [
-        {"test_id": "id1"},
-        {"test_id": "id2"}
-    ]}
+    response.json.return_value = {"results": [{"test_id": "id1"}, {"test_id": "id2"}]}
     inputs = {"response": response}
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
@@ -206,7 +195,7 @@ def test_build_request_body_pagination(patch_aggregation_class):
             "pipeline": [
                 {"source": source},
                 {"sort": [aggregation_primary_key]},
-                {"filter": f"{aggregation_primary_key} > \"{next_page_token}\""},
+                {"filter": f'{aggregation_primary_key} > "{next_page_token}"'},
                 {"limit": page_size},
             ],
         },
