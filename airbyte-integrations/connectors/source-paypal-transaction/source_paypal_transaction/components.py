@@ -12,7 +12,8 @@ from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.types import StreamState, StreamSlice
-from typing import Any, MutableMapping, Optional, Mapping
+from typing import Any, MutableMapping, Optional, Mapping, Iterable
+
 
 
 logger = logging.getLogger("airbyte")
@@ -75,5 +76,4 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
             raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
-
-
+        
