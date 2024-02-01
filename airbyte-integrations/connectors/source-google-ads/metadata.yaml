@@ -1,0 +1,68 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - accounts.google.com
+      - googleads.googleapis.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
+  dockerImageTag: 3.3.1
+  dockerRepository: airbyte/source-google-ads
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
+  githubIssueLabel: source-google-ads
+  icon: google-adwords.svg
+  license: Elv2
+  name: Google Ads
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          This release introduces fixes to custom query schema creation. Users
+          should refresh the source schema and reset affected streams after upgrading
+          to ensure uninterrupted syncs.
+        upgradeDeadline: "2023-10-31"
+      2.0.0:
+        message:
+          This release updates the Source Google Ads connector so that its
+          default streams and stream names match the related resources in Google Ads
+          API. Users should refresh the source schema and reset affected streams after
+          upgrading to ensure uninterrupted syncs.
+        upgradeDeadline: "2023-11-30"
+      3.0.0:
+        message: Google is deprecating v13 of the Google Ads API in January.
+          This release upgrades the Google Ads API to the latest version (v15), which causes changes in several schemas.
+          Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
+        upgradeDeadline: "2024-01-12"
+  suggestedStreams:
+    streams:
+      - campaigns
+      - accounts
+      - ad_group_ads
+      - ad_group_ad_report
+      - ad_groups
+      - click_view
+      - account_performance_report
+      - keyword_report
+      - campaign_labels
+      - ad_group_labels
+      - ad_group_ad_labels
+      - user_location_report
+      - geographic_report
+      - display_keyword_performance_report
+      - shopping_performance_report
+      - display_topics_performance_report
+  supportLevel: certified
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
