@@ -100,7 +100,7 @@ elif args.action == 'update' and args.product_id:
         {
             "op": "replace",
             "path": "/description",
-            "value": "Anothe rUpdate. Let's see if something changes or not"
+            "value": "My Update. Does it changes it?"
         }
     ]
     product = update_paypal_product(access_token, args.product_id, updates)
