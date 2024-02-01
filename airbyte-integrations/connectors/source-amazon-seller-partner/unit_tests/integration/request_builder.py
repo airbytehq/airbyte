@@ -8,10 +8,9 @@ from __future__ import annotations
 import json
 from typing import Any, List, Mapping, Optional, Union
 
-import pendulum
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS, HttpRequest
 
-from .config import _ACCESS_TOKEN, _LWA_APP_ID, _LWA_CLIENT_SECRET, _MARKETPLACE_ID, _REFRESH_TOKEN
+from .config import ACCESS_TOKEN, LWA_APP_ID, LWA_CLIENT_SECRET, MARKETPLACE_ID, NOW, REFRESH_TOKEN
 
 
 class RequestBuilder:
@@ -19,15 +18,14 @@ class RequestBuilder:
     @classmethod
     def auth_endpoint(cls) -> RequestBuilder:
         request_headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        request_body = f"grant_type=refresh_token&client_id={_LWA_APP_ID}&client_secret={_LWA_CLIENT_SECRET}&refresh_token={_REFRESH_TOKEN}"
+        request_body = f"grant_type=refresh_token&client_id={LWA_APP_ID}&client_secret={LWA_CLIENT_SECRET}&refresh_token={REFRESH_TOKEN}"
         return cls("auth/o2/token").with_base_url("https://api.amazon.com").with_headers(request_headers).with_body(request_body)
 
     @classmethod
     def create_report_endpoint(cls, report_name: str) -> RequestBuilder:
-        # TODO: need to pass stream slice or what? Maybe with_stream_slice method?
         request_body = {
             "reportType": report_name,
-            "marketplaceIds": [_MARKETPLACE_ID],
+            "marketplaceIds": [MARKETPLACE_ID],
             "dataStartTime": "2023-01-01T00:00:00Z",
             "dataEndTime": "2023-01-30T00:00:00Z",
         }
@@ -56,8 +54,8 @@ class RequestBuilder:
             "content-type": "application/json",
             "host": self._base_url.replace("https://", ""),
             "user-agent": "python-requests",
-            "x-amz-access-token": _ACCESS_TOKEN,
-            "x-amz-date": pendulum.now("utc").strftime("%Y%m%dT%H%M%SZ"),
+            "x-amz-access-token": ACCESS_TOKEN,
+            "x-amz-date": NOW.strftime("%Y%m%dT%H%M%SZ"),
         }
         self._query_params = ANY_QUERY_PARAMS
         self._body = None

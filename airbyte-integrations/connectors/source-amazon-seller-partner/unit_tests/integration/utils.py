@@ -4,16 +4,20 @@
 
 
 import json
+from http import HTTPStatus
 from typing import Any, Dict, Mapping, Optional
 
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import _get_unit_test_folder
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, SyncMode
 from source_amazon_seller_partner import SourceAmazonSellerPartner
 
-from .config import ConfigBuilder
+from .config import ACCESS_TOKEN, ConfigBuilder
+from .request_builder import RequestBuilder
+from .response_builder import build_response
 
 
 def config() -> ConfigBuilder:
@@ -56,3 +60,12 @@ def find_template(resource: str, execution_folder: str, template_format: Optiona
             return json.load(template_file)
         else:
             return template_file.read()
+
+
+def mock_auth(http_mocker: HttpMocker) -> None:
+    response_body = {"access_token": ACCESS_TOKEN, "expires_in": 3600, "token_type": "bearer"}
+    http_mocker.post(RequestBuilder.auth_endpoint().build(), build_response(response_body, status_code=HTTPStatus.OK))
+
+
+def assert_message_in_output(message: str, caplog: Any) -> None:
+    assert any(message in output_message for output_message in caplog.messages)
