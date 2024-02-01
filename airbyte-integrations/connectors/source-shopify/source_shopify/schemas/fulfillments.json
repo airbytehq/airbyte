@@ -409,6 +409,9 @@
                 }
               }
             }
+          },
+          "admin_graphql_api_id": {
+            "type": ["null", "string"]
           }
         }
       }

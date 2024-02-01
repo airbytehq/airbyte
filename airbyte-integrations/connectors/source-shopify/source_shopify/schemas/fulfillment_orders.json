@@ -107,7 +107,7 @@
           "shop_id": {
             "type": ["null", "integer"]
           },
-          "fullfillment_order_id": {
+          "fulfillment_order_id": {
             "type": ["null", "integer"]
           },
           "line_item_id": {
