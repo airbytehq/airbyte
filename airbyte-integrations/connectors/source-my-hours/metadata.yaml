@@ -8,6 +8,10 @@ data:
   icon: my-hours.svg
   license: MIT
   name: My Hours
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-my-hours
   registries:
     cloud:
       enabled: true
