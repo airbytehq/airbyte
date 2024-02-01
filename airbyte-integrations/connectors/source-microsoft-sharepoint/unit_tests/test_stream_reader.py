@@ -30,6 +30,7 @@ def create_mock_drive_item(is_file, name, children=None):
 def setup_reader_class():
     reader = SourceMicrosoftSharePointStreamReader()  # Instantiate your class here
     config = Mock(spec=SourceMicrosoftSharePointSpec)
+    config.start_date = None
     config.credentials = Mock()
     config.folder_path = "."
     config.credentials.auth_type = "Client"
@@ -95,8 +96,9 @@ def test_get_access_token(setup_client_class, has_refresh_token, token_response,
         instance._msal_app.acquire_token_for_client.return_value = token_response
 
     if raises_exception:
-        with pytest.raises(MsalServiceError):
+        with pytest.raises(AirbyteTracedException) as exception:
             instance._get_access_token()
+        assert exception.value.message == f"Failed to acquire access token. Error: test_error. Error description: test_error_description."
     else:
         assert instance._get_access_token() == expected_result
 

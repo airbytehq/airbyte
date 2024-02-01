@@ -140,32 +140,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         """
         files = self._get_files_by_drive_name(self.drives, self.config.folder_path)
 
-        try:
-            first_file, path = next(files)
-
-            yield from filter_http_urls(
-                self.filter_files_by_globs_and_start_date(
-                    [
-                        MicrosoftSharePointRemoteFile(
-                            uri=path,
-                            download_url=first_file.properties["@microsoft.graph.downloadUrl"],
-                            last_modified=first_file.properties["lastModifiedDateTime"],
-                        )
-                    ],
-                    globs,
-                ),
-                logger,
-            )
-
-        except StopIteration as e:
-            raise AirbyteTracedException(
-                internal_message=str(e),
-                message=f"Drive is empty or does not exist.",
-                failure_type=FailureType.config_error,
-                exception=e,
-            )
-
-        yield from filter_http_urls(
+        files_generator = filter_http_urls(
             self.filter_files_by_globs_and_start_date(
                 [
                     MicrosoftSharePointRemoteFile(
@@ -179,6 +154,17 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             ),
             logger,
         )
+
+        items_processed = False
+        for file in files_generator:
+            items_processed = True
+            yield file
+
+        if not items_processed:
+            raise AirbyteTracedException(
+                message=f"Drive is empty or does not exist.",
+                failure_type=FailureType.config_error,
+            )
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         # choose correct compression mode because the url is random and doesn't end with filename extension
