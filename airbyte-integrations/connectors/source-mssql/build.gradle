@@ -15,12 +15,6 @@ configurations.all {
     }
 }
 
-java {
-    compileJava {
-        options.compilerArgs += "-Xlint:-try,-rawtypes"
-    }
-}
-
 application {
     mainClass = 'io.airbyte.integrations.source.mssql.MssqlSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']

@@ -95,11 +95,13 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
         schemaHistoryRead = Objects.nonNull(schemaHistory) && StringUtils.isNotBlank(schemaHistory.schema());
 
         if (event != null || schemaHistoryRead) {
+          publisher.close();
           break;
         }
 
         if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5)) > 0) {
           LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 300);
+          publisher.close();
           throw new RuntimeException(
               "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
         }
