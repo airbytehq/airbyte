@@ -1,4 +1,8 @@
 data:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-younium
   registries:
     oss:
       enabled: true

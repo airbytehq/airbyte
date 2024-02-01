@@ -8,6 +8,10 @@ data:
   icon: workramp.svg
   license: MIT
   name: WorkRamp
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-workramp
   registries:
     cloud:
       enabled: false

@@ -8,6 +8,10 @@ data:
   icon: workable.svg
   license: MIT
   name: Workable
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-workable
   registries:
     cloud:
       enabled: false

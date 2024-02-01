@@ -8,6 +8,10 @@ data:
   icon: weatherstack.svg
   license: MIT
   name: Weatherstack
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-weatherstack
   registries:
     cloud:
       enabled: false

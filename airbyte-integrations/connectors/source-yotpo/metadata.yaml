@@ -8,6 +8,10 @@ data:
   icon: yotpo.svg
   license: MIT
   name: Yotpo
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-yotpo
   registries:
     cloud:
       enabled: true

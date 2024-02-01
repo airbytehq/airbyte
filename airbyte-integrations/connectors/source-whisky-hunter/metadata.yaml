@@ -8,6 +8,10 @@ data:
   icon: whiskyhunter.svg
   license: MIT
   name: Whisky Hunter
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-whisky-hunter
   registries:
     cloud:
       enabled: true
