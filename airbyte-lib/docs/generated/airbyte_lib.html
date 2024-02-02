@@ -325,13 +325,19 @@ working directory.</p>
                     <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">ReadResult</span>:
+    <span class="name">ReadResult</span><wbr>(<span class="base">collections.abc.Mapping[str, airbyte_lib.datasets._sql.CachedDataset]</span>):
 
         
     </div>
     <a class="headerlink" href="#ReadResult"></a>
     
-    
+            <div class="docstring"><p>A Mapping is a generic container for associating key/value
+pairs.</p>
+
+<p>This class provides concrete generic implementations of all
+methods except for __getitem__, __iter__, and __len__.</p>
+</div>
+
 
                             <div id="ReadResult.__init__" class="classattr">
                                 <div class="attr function">
@@ -390,6 +396,18 @@ working directory.</p>
     
     
 
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>collections.abc.Mapping</dt>
+                                <dd id="ReadResult.get" class="function">get</dd>
+                <dd id="ReadResult.keys" class="function">keys</dd>
+                <dd id="ReadResult.items" class="function">items</dd>
+                <dd id="ReadResult.values" class="function">values</dd>
+
+            </div>
+                                </dl>
                             </div>
                 </section>
                 <section id="Source">

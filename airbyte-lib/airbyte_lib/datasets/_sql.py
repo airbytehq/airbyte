@@ -5,7 +5,7 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, cast
 
 from overrides import overrides
-from sqlalchemy import and_, text
+from sqlalchemy import and_, func, select, text
 
 from airbyte_lib.datasets._base import DatasetBase
 
@@ -33,9 +33,11 @@ class SQLDataset(DatasetBase):
         stream_name: str,
         query_statement: Selectable,
     ) -> None:
+        self._length: int | None = None
         self._cache: SQLCacheBase = cache
         self._stream_name: str = stream_name
         self._query_statement: Selectable = query_statement
+        super().__init__()
 
     @property
     def stream_name(self) -> str:
@@ -47,6 +49,18 @@ class SQLDataset(DatasetBase):
                 # Access to private member required because SQLAlchemy doesn't expose a public API.
                 # https://pydoc.dev/sqlalchemy/latest/sqlalchemy.engine.row.RowMapping.html
                 yield cast(Mapping[str, Any], row._mapping)  # noqa: SLF001
+
+    def __len__(self) -> int:
+        """Return the number of records in the dataset.
+
+        This method caches the length of the dataset after the first call.
+        """
+        if self._length is None:
+            count_query = select([func.count()]).select_from(self._query_statement.alias())
+            with self._cache.get_sql_connection() as conn:
+                self._length = conn.execute(count_query).scalar()
+
+        return self._length
 
     def to_pandas(self) -> DataFrame:
         return self._cache.get_pandas_dataframe(self._stream_name)
@@ -85,16 +99,19 @@ class CachedDataset(SQLDataset):
     """
 
     def __init__(self, cache: SQLCacheBase, stream_name: str) -> None:
-        self._cache: SQLCacheBase = cache
-        self._stream_name: str = stream_name
-        self._query_statement: Selectable = self.to_sql_table().select()
+        self._sql_table: Table = cache.get_sql_table(stream_name)
+        super().__init__(
+            cache=cache,
+            stream_name=stream_name,
+            query_statement=self._sql_table.select(),
+        )
 
     @overrides
     def to_pandas(self) -> DataFrame:
         return self._cache.get_pandas_dataframe(self._stream_name)
 
     def to_sql_table(self) -> Table:
-        return self._cache.get_sql_table(self._stream_name)
+        return self._sql_table
 
     def __eq__(self, value: object) -> bool:
         """Return True if the value is a CachedDataset with the same cache and stream name.
