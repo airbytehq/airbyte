@@ -2,21 +2,86 @@
   "streams": [
     {
       "stream": {
+        "name": "campaign",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [
+          ["campaign.id"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": [],
+      "primary_key": [
+        ["campaign.id"]
+      ]
+    },
+    {
+      "stream": {
+        "name": "campaign_budget",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [
+          ["customer.id"],
+          ["campaign_budget.id"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": [],
+      "primary_key": [
+        ["customer.id"],
+        ["campaign_budget.id"]
+      ]
+    },
+    {
+      "stream": {
+        "name": "ad_group",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["ad_group.id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": [],
+      "primary_key": [["ad_group.id"]]
+    },
+    {
+      "stream": {
+        "name": "customer",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["customer.id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": [],
+      "primary_key": [["customer.id"]]
+    },
+    {
+      "stream": {
         "name": "ad_group_ad",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "source_defined_primary_key": [
           ["ad_group.id"],
-          ["ad_group_ad.ad.id"],
-          ["segments.date"]
+          ["ad_group_ad.ad.id"]
         ],
-        "default_cursor_field": ["segments.date"]
+        "default_cursor_field": []
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["segments.date"],
-      "primary_key": [["ad_group.id"], ["ad_group_ad.ad.id"], ["segments.date"]]
+      "cursor_field": [],
+      "primary_key": [["ad_group.id"], ["ad_group_ad.ad.id"]]
     }
   ]
 }

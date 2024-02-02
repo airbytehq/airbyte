@@ -156,30 +156,18 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         for customer in self.customers:
             stream_state = stream_state or {}
-            logger.info(
-                "Start date: " + str(self._start_date) +
-                ", Stream state: " + str(stream_state) +
-                ", Customer id: " + str(customer.id) +
-                ", Cursor field: " + str(self.cursor_field) +
-                ", Customers: " + str(self.customers) +
-                ", State cursor field value: " + str(stream_state.get(self.cursor_field))
-            )
             if stream_state.get(customer.id):
                 start_date = stream_state[customer.id].get(self.cursor_field) or self._start_date
-                logger.info("Start date from 'stream_state.get(customer.id)'")
 
             # We should keep backward compatibility with the previous version
             elif stream_state.get(self.cursor_field) and len(self.customers) > 0:
                 start_date = stream_state.get(self.cursor_field) or self._start_date
-                logger.info("Start date from 'stream_state.get(self.cursor_field) and len(self.customers) > 0'")
             elif self._start_date is not None:
                 start_date = self._start_date
-                logger.info("Start date from 'else")
             else:
                 start_date = '2023-11-20'
-                logger.warning("self._start_date is None, this shouldn't be happening")
 
-            logger.info("Final start date " + start_date)
+            # logger.info("Final start date " + start_date)
 
             end_date = self._end_date
 
@@ -261,7 +249,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         return query
 
 
-class Customer(IncrementalGoogleAdsStream):
+class Customer(GoogleAdsStream):
     """
     Customer stream: https://developers.google.com/google-ads/api/fields/v15/customer
     """
@@ -348,7 +336,7 @@ class ServiceAccounts(GoogleAdsStream):
     primary_key = ["customer.id"]
 
 
-class Campaign(IncrementalGoogleAdsStream):
+class Campaign(GoogleAdsStream):
     """
     Campaign stream: https://developers.google.com/google-ads/api/fields/v15/campaign
     """
@@ -357,7 +345,7 @@ class Campaign(IncrementalGoogleAdsStream):
     primary_key = ["campaign.id"]
 
 
-class CampaignBudget(IncrementalGoogleAdsStream):
+class CampaignBudget(GoogleAdsStream):
     """
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v15/campaign_budget
     """
@@ -384,13 +372,14 @@ class CampaignLabel(GoogleAdsStream):
     primary_key = ["campaign.id", "label.id"]
 
 
-class AdGroup(IncrementalGoogleAdsStream):
+class AdGroup(GoogleAdsStream):
     """
     AdGroup stream: https://developers.google.com/google-ads/api/fields/v15/ad_group
     """
 
     primary_key = ["ad_group.id"]
 
+    """
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
         # validation that the customer is not a manager
@@ -405,7 +394,7 @@ class AdGroup(IncrementalGoogleAdsStream):
             fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
         )
         return query
-
+    """
 
 class AdGroupLabel(GoogleAdsStream):
     """
@@ -434,7 +423,7 @@ class AdGroupCriterionLabel(GoogleAdsStream):
     primary_key = ["ad_group_criterion_label.resource_name"]
 
 
-class AdGroupAd(IncrementalGoogleAdsStream):
+class AdGroupAd(GoogleAdsStream):
     """
     Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_ad
     """

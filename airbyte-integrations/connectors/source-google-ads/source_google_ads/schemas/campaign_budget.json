@@ -62,10 +62,6 @@
     "campaign_budget.type": {
       "type": ["null", "string"]
     },
-    "segments.date": {
-      "type": ["null", "string"],
-      "format": "date"
-    },
     "metrics.all_conversions": {
       "type": ["null", "number"]
     },
