@@ -10,7 +10,7 @@ This page contains the setup guide and reference information for the [Linnworks]
 
 ### Generate Credentials in Linnworks
 
-1. The Linnworks platform has two portals: seller and developer. To generate the necessary credentials, log in to the [developer portal](https://developer.linnworks.com) and select **+ New App**.
+1. The Linnworks platform has two portals: Seller and Developer. To generate the necessary credentials, log in to the [developer portal](https://developer.linnworks.com) and select **+ New App**.
 2. Input a name for your application and set the **Application Type** to `System Integration`.
 3. Select **Edit** for your new application. In the **General** tab, find and copy your **Application ID** and **Application Secret**. Click on the **Installation URL** to complete the installation of your app and acquire your **API Token**.
 
@@ -23,7 +23,7 @@ The value of your API Token can be viewed at any time from the main dashboard of
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. From the Airbyte UI, click **Sources** > **+ New Source**.
 3. Select **Linnworks** from the list of available sources.
-4. Enter a **Source name** of your choosing.
+4. Enter a **Name** of your choosing.
 5. Enter your **Application ID**, **Application Secret** and **API Token**.
 6. Enter a **Start date** using the provided datepicker. When using Incremental sync mode, only data generated after this date will be fetched.
 7. Select **Set up source** and wait for the connection test to complete.
