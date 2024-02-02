@@ -1,20 +1,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from airbyte_lib.datasets import CachedDataset
 
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Mapping
+    from collections.abc import Iterator
 
     from sqlalchemy.engine import Engine
 
     from airbyte_lib.caches import SQLCacheBase
 
 
-class ReadResult:
+class ReadResult(Mapping[str, CachedDataset]):
     def __init__(
         self, processed_records: int, cache: SQLCacheBase, processed_streams: list[str]
     ) -> None:
@@ -33,6 +34,9 @@ class ReadResult:
 
     def __iter__(self) -> Iterator[str]:
         return self._processed_streams.__iter__()
+
+    def __len__(self) -> int:
+        return len(self._processed_streams)
 
     def get_sql_engine(self) -> Engine:
         return self._cache.get_sql_engine()
