@@ -163,6 +163,11 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         def _metric_type_to_python(metric_data: Tuple[str, str]) -> Any:
             metric_name, metric_value = metric_data
             python_type = metrics_type_to_python(metric_types[metric_name])
+
+            # Google Analytics sometimes returns float for integer metrics.
+            # So this is a workaround for this issue: https://github.com/airbytehq/oncall/issues/4130
+            if python_type == int:
+                return metric_name, round(float(metric_value))
             return metric_name, python_type(metric_value)
 
         return dict(map(_metric_type_to_python, zip(metrics, [v["value"] for v in row["metricValues"]])))
