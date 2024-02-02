@@ -30,7 +30,6 @@ from airbyte_protocol.models import (
     Type,
 )
 
-from airbyte_lib import exceptions as exc
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.progress import progress
 
