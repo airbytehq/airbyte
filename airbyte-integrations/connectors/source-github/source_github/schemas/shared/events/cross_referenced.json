@@ -43,6 +43,7 @@
           "description": "Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.",
           "type": "object",
           "properties": {
+            "author_association": { "type": ["string", "null"] },
             "id": { "type": "integer" },
             "node_id": { "type": "string" },
             "url": { "type": "string" },
@@ -247,6 +248,7 @@
             "locked": { "type": "boolean" },
             "active_lock_reason": { "type": ["string", "null"] },
             "comments": { "type": "integer" },
+            "draft": { "type": ["boolean", "null"]  },
             "pull_request": {
               "type": "object",
               "properties": {
