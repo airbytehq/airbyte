@@ -76,6 +76,9 @@
         "comments": {
           "type": ["null", "integer"]
         },
+        "draft": {
+          "type": ["null", "boolean"]
+        },
         "created_at": {
           "type": ["null", "string"],
           "format": "date-time"
