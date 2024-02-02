@@ -313,10 +313,6 @@
     },
     "metrics.cost_per_conversion": {
       "type": ["null", "number"]
-    },
-    "segments.date": {
-      "type": ["null", "string"],
-      "format": "date"
     }
   }
 }

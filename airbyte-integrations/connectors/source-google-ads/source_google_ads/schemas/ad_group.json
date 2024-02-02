@@ -97,10 +97,6 @@
       "items": {
         "type": "string"
       }
-    },
-    "segments.date": {
-      "type": ["null", "string"],
-      "format": "date"
     }
   }
 }

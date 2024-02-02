@@ -523,10 +523,6 @@
     },
     "ad_group_ad.status": {
       "type": ["null", "string"]
-    },
-    "segments.date": {
-      "type": ["null", "string"],
-      "format": "date"
     }
   }
 }
