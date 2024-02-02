@@ -43,8 +43,12 @@ class ParquetWriter(FileWriterBase):
         record_batch: pa.Table | pa.RecordBatch,
     ) -> list[str]:
         """Return a list of columns that are missing in the batch."""
-        col_names = self.source_catalog.streams[stream_name]
-        return [col for col in col_names if col not in record_batch.column_names]
+        stream = self._catalog_manager.get_stream_config(stream_name)
+        stream_property_names = stream.stream.json_schema["properties"].keys()
+        return [
+            col for col in stream_property_names
+            if col not in record_batch.schema.names
+        ]
 
     @overrides
     def _write_batch(
@@ -60,12 +64,14 @@ class ParquetWriter(FileWriterBase):
         _ = batch_id  # unused
         output_file_path = self.get_new_cache_file_path(stream_name)
 
-        schema: pa.Schema = record_batch.schema
         missing_columns = self._get_missing_columns(stream_name, record_batch)
         for col in missing_columns:
-            schema.append(pa.field(col, pa.null()))
+            # We need to append a column with the missing column name and a null type
+            record_batch = record_batch.append_column(
+                col, pa.array([None] * len(record_batch), type=pa.null())
+            )
 
-        with parquet.ParquetWriter(output_file_path, schema=schema) as writer:
+        with parquet.ParquetWriter(output_file_path, schema=record_batch.schema) as writer:
             writer.write_table(cast(pa.Table, record_batch))
 
         batch_handle = FileWriterBatchHandle()

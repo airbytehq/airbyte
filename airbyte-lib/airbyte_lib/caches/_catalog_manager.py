@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING, Callable
+from pytest import Config
 
 from sqlalchemy import Column, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -48,6 +49,7 @@ class CatalogManager:
         self._table_name_resolver = table_name_resolver
         self.source_catalog: ConfiguredAirbyteCatalog | None = None
         self._load_catalog_from_internal_table()
+        assert self.source_catalog is not None
 
     def _ensure_internal_tables(self) -> None:
         engine = self._engine
@@ -57,34 +59,49 @@ class CatalogManager:
         self,
         source_name: str,
         incoming_source_catalog: ConfiguredAirbyteCatalog,
+        incoming_stream_names: set[str],
     ) -> None:
+        """Register a source and its streams in the cache."""
         if not self.source_catalog:
-            self.source_catalog = incoming_source_catalog
-        else:
-            # merge in the new streams, keyed by name
-            new_streams = {stream.stream.name: stream for stream in incoming_source_catalog.streams}
-            for stream in self.source_catalog.streams:
-                if stream.stream.name not in new_streams:
-                    new_streams[stream.stream.name] = stream
             self.source_catalog = ConfiguredAirbyteCatalog(
-                streams=list(new_streams.values()),
+                streams=[
+                    stream
+                    for stream in incoming_source_catalog.streams
+                    if stream.stream.name in incoming_stream_names
+                ],
+            )
+            assert len(self.source_catalog.streams) == len(incoming_stream_names)
+
+        else:
+            # Keep existing streams untouched if not incoming
+            unchanged_streams: list[ConfiguredAirbyteStream] = [
+                stream for stream in
+                self.source_catalog.streams
+                if stream.stream.name not in incoming_stream_names
+            ]
+            new_streams: list[ConfiguredAirbyteStream] = [
+                stream for stream in
+                incoming_source_catalog.streams
+                if stream.stream.name in incoming_stream_names
+            ]
+            self.source_catalog = ConfiguredAirbyteCatalog(
+                streams=unchanged_streams + new_streams
             )
 
         self._ensure_internal_tables()
         engine = self._engine
         with Session(engine) as session:
-            # delete all existing streams from the db
-            session.query(CachedStream).filter(
-                CachedStream.table_name.in_(
-                    [
-                        self._table_name_resolver(stream.stream.name)
-                        for stream in self.source_catalog.streams
-                    ]
-                )
+            # Delete and replace existing stream entries from the catalog cache
+            table_name_entries_to_delete = [
+                self._table_name_resolver(incoming_stream_name)
+                for incoming_stream_name in incoming_stream_names
+            ]
+            result = session.query(CachedStream).filter(
+                CachedStream.table_name.in_(table_name_entries_to_delete)
             ).delete()
+            _ = result
             session.commit()
-            # add the new ones
-            streams = [
+            insert_streams = [
                 CachedStream(
                     source_name=source_name,
                     stream_name=stream.stream.name,
@@ -93,8 +110,7 @@ class CatalogManager:
                 )
                 for stream in incoming_source_catalog.streams
             ]
-            session.add_all(streams)
-
+            session.add_all(insert_streams)
             session.commit()
 
     def get_stream_config(
@@ -113,6 +129,12 @@ class CatalogManager:
         if not matching_streams:
             raise exc.AirbyteStreamNotFoundError(
                 stream_name=stream_name,
+                context={
+                    "available_streams": [
+                        stream.stream.name
+                        for stream in self.source_catalog.streams
+                    ],
+                }
             )
 
         if len(matching_streams) > 1:
@@ -133,6 +155,9 @@ class CatalogManager:
             streams: list[CachedStream] = session.query(CachedStream).all()
             if not streams:
                 # no streams means the cache is pristine
+                if not self.source_catalog:
+                    self.source_catalog = ConfiguredAirbyteCatalog(streams=[])
+
                 return
 
             # load the catalog

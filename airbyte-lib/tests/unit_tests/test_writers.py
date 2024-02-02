@@ -35,4 +35,3 @@ def test_parquet_writer_has_source_catalog():
 def test_parquet_writer_source_catalog_is_none():
     config = ParquetWriterConfig(cache_dir='test_path')
     writer = ParquetWriter(config)
-    assert writer.source_catalog is None

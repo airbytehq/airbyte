@@ -124,7 +124,9 @@ class SQLCacheBase(RecordProcessor):
             self.get_sql_engine(), lambda stream_name: self.get_sql_table_name(stream_name)
         )
 
-        self.file_writer = file_writer or self.file_writer_class(config)
+        self.file_writer = file_writer or self.file_writer_class(
+            config, catalog_manager=self._catalog_manager
+        )
         self.type_converter = self.type_converter_class()
 
     def __getitem__(self, stream: str) -> DatasetBase:
@@ -447,22 +449,6 @@ class SQLCacheBase(RecordProcessor):
         # columns["_airbyte_loaded_at"] = sqlalchemy.TIMESTAMP()
         return columns
 
-    @final
-    def _get_stream_config(
-        self,
-        stream_name: str,
-    ) -> ConfiguredAirbyteStream:
-        """Return the column definitions for the given stream."""
-        return self._catalog_manager.get_stream_config(stream_name)
-
-    @final
-    def _get_stream_json_schema(
-        self,
-        stream_name: str,
-    ) -> dict[str, Any]:
-        """Return the column definitions for the given stream."""
-        return self._get_stream_config(stream_name).stream.json_schema
-
     @overrides
     def _write_batch(
         self,
@@ -756,9 +742,21 @@ class SQLCacheBase(RecordProcessor):
         self,
         source_name: str,
         incoming_source_catalog: ConfiguredAirbyteCatalog,
+        stream_names: set[str],
     ) -> None:
+        """Register the source with the cache.
+
+        We use stream_names to determine which streams will receive data, and
+        we only register the stream if is expected to receive data.
+
+        This method is called by the source when it is initialized.
+        """
         self._ensure_schema_exists()
-        self._catalog_manager.register_source(source_name, incoming_source_catalog)
+        super().register_source(
+            source_name,
+            incoming_source_catalog,
+            stream_names=stream_names,
+        )
 
     @property
     @overrides
