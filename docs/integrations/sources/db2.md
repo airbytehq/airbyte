@@ -60,6 +60,7 @@ You can also enter your own password for the keystore, but if you don't, the pas
 
 | Version | Date       | Pull Request | Subject                                                                                                                                   |
 |:--------|:-----------| :--- |:------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
 | 0.2.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Remove LEGACY state                                                                                                                       |
 | 0.1.20  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                  |
 | 0.1.19  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting                                                                                          |

@@ -21,7 +21,6 @@ on:
     types:
       - opened
       - synchronize
-      - ready_for_review
 jobs:
   connectors_ci:
     name: Connectors CI
