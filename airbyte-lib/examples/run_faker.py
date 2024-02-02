@@ -17,15 +17,13 @@ SCALE = 5_000_000  # Number of records to generate between users and purchases.
 
 source = ab.get_connector(
     "source-faker",
-    pip_url="-e ../airbyte-integrations/connectors/source-faker",
     config={"count": SCALE / 2},
     install_if_missing=True,
 )
 source.check()
 source.set_streams(["products", "users", "purchases"])
 
-cache = ab.new_local_cache()
-result = source.read(cache)
+result = source.read()
 
-for name, records in result.cache.streams.items():
+for name, records in result.streams.items():
     print(f"Stream {name}: {len(list(records))} records")
