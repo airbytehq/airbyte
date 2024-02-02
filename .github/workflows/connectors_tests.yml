@@ -27,6 +27,12 @@ jobs:
     runs-on: connector-test-large
     timeout-minutes: 1440 # 24 hours
     steps:
+      - name: check docker resource allocation
+        shell: bash
+        run: docker info
+      - name: run mssql 
+        shell: bash
+        run: docker run mcr.microsoft.com/mssql/server:2022-latest --accept-eula
       - name: Checkout Airbyte
         uses: actions/checkout@v3
       - name: Check PAT rate limits
