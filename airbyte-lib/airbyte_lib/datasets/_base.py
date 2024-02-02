@@ -12,7 +12,7 @@ class DatasetBase(ABC):
     """Base implementation for all datasets."""
 
     def __init__(self) -> None:
-        self.__length: int | None = None
+        self._length: int | None = None
 
     @abstractmethod
     def __iter__(self) -> Iterator[Mapping[str, Any]]:
@@ -24,10 +24,10 @@ class DatasetBase(ABC):
 
         This method caches the length of the dataset after the first call.
         """
-        if self.__length is None:
-            self.__length = sum(1 for _ in self)
+        if self._length is None:
+            self._length = sum(1 for _ in self)
 
-        return self.__length
+        return self._length
 
     def to_pandas(self) -> DataFrame:
         """Return a pandas DataFrame representation of the dataset.
