@@ -69,11 +69,10 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private boolean finalStateNext = false;
 
   /**
-   * Tracks if the underlying iterator threw an exception, indicating that the snapshot for this stream failed.
-   * This helps to determine the final state status emitted from the final next call.
+   * Tracks if the underlying iterator threw an exception, indicating that the snapshot for this
+   * stream failed. This helps to determine the final state status emitted from the final next call.
    */
   private boolean initialSnapshotFailed = false;
-
 
   /**
    * Tracks the exception thrown if there initial snapshot has failed.
@@ -118,7 +117,8 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   public boolean hasNext() {
     LOGGER.debug("Checking hasNext() for stream {}...", getStream());
     if (initialSnapshotFailed) {
-      // If the initial snapshot is incomplete for this stream, throw an exception failing the sync. This will ensure the platform retry logic
+      // If the initial snapshot is incomplete for this stream, throw an exception failing the sync. This
+      // will ensure the platform retry logic
       // kicks in and keeps retrying the sync until the initial snapshot is complete.
       throw new RuntimeException(initialSnapshotException);
     }
@@ -127,7 +127,8 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
         return true;
       }
     } catch (final MongoException e) {
-      // If hasNext throws an exception, log it and set the flag to indicate that the initial snapshot failed. This indicates to the main iterator
+      // If hasNext throws an exception, log it and set the flag to indicate that the initial snapshot
+      // failed. This indicates to the main iterator
       // to emit state associated with what has been processed so far.
       initialSnapshotFailed = true;
       initialSnapshotException = e;
