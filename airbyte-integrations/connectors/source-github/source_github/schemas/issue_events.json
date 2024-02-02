@@ -122,7 +122,7 @@
           "type": ["null", "object"]
         },
         "timeline_url": {
-          "type": ["null", "object"]
+          "type": ["null", "string"]
         },
         "reactions": {
           "$ref": "reactions.json"
