@@ -1,0 +1,16 @@
+source-linkedin-ads/
+source-mailchimp/
+source-marketo/
+source-mixpanel/
+source-paypal-transaction/
+source-pipedrive/
+source-s3/
+source-salesforce/
+source-shopify/
+source-slack/
+source-smartsheets/
+source-stripe/
+source-typeform/
+source-xero/
+source-zendesk-support/
+source-zendesk-talk/
