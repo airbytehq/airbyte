@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[file-based]>=0.57.7",
+    "airbyte-cdk[file-based]==0.59.2",  # temporarily pin until concurrency can be released
     "smart-open[s3]==5.1.0",
     "wcmatch==8.4",
     "dill==0.3.4",
@@ -14,7 +14,8 @@ MAIN_REQUIREMENTS = [
     "python-snappy==0.6.1",
 ]
 
-TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "pandas==2.0.3", "docker", "moto"]
+# temporarily pin moto due to use of `mock_sts`, which has been deprecated
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "pandas==2.0.3", "docker", "moto==4.2.14"]
 
 setup(
     name="source_s3",
