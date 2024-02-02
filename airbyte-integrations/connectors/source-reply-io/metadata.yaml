@@ -8,6 +8,10 @@ data:
   icon: reply-io.svg
   license: MIT
   name: Reply.io
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-reply-io
   registries:
     cloud:
       enabled: false

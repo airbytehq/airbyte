@@ -3,6 +3,10 @@ data:
     hosts:
       - https://api.short.io
       - https://api-v2.short.cm
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-shortio
   registries:
     oss:
       enabled: true

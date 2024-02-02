@@ -182,6 +182,14 @@ class AirbyteConnectorNotRegisteredError(AirbyteConnectorRegistryError):
     guidance = "Please double check the connector name."
 
 
+@dataclass
+class AirbyteConnectorNotPyPiPublishedError(AirbyteConnectorRegistryError):
+    """Connector found, but not published to PyPI."""
+
+    connector_name: str | None = None
+    guidance = "This likely means that the connector is not ready for use with airbyte-lib."
+
+
 # Connector Errors
 
 

@@ -15,8 +15,6 @@ import sqlalchemy
 import ulid
 from overrides import overrides
 from sqlalchemy import (
-    Column,
-    String,
     and_,
     create_engine,
     insert,
@@ -25,7 +23,6 @@ from sqlalchemy import (
     text,
     update,
 )
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql.elements import TextClause
 
@@ -58,20 +55,6 @@ if TYPE_CHECKING:
 
 
 DEBUG_MODE = False  # Set to True to enable additional debug logging.
-
-
-STREAMS_TABLE_NAME = "_airbytelib_streams"
-
-Base = declarative_base()
-
-
-class CachedStream(Base):  # type: ignore[valid-type,misc]
-    __tablename__ = STREAMS_TABLE_NAME
-
-    stream_name = Column(String)
-    source_name = Column(String)
-    table_name = Column(String, primary_key=True)
-    catalog_metadata = Column(String)
 
 
 class RecordDedupeMode(enum.Enum):
