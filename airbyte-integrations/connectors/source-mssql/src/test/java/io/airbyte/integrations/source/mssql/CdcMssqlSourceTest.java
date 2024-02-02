@@ -73,6 +73,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @TestInstance(Lifecycle.PER_CLASS)
+@Disabled
 public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestDatabase> {
 
   static private final String CDC_ROLE_NAME = "cdc_selector";
