@@ -61,6 +61,9 @@ from .utils import read_full_refresh
 
 
 class SourceGithub(AbstractSource):
+
+    continue_sync_on_stream_failure = True
+
     @staticmethod
     def _get_org_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
         """

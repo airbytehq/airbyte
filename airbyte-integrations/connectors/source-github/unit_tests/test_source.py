@@ -23,6 +23,11 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
     return source.check(logger_mock, config)
 
 
+def test_source_will_continue_sync_on_stream_failure():
+    source = SourceGithub()
+    assert source.continue_sync_on_stream_failure
+
+
 @responses.activate
 @pytest.mark.parametrize(
     "config, expected",

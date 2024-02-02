@@ -171,11 +171,25 @@ Expand to see details about GitHub connector limitations and troubleshooting.
 ### Connector limitations
 
 #### Rate limiting
-The GitHub connector should not run into GitHub API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully. Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
+
+You can use a personal access token to make API requests. Additionally, you can authorize a GitHub App or OAuth app, which can then make API requests on your behalf.
+All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization ). 
+
+:::info `REST API` and `GraphQL API` rate limits are counted separately
+:::
+
+:::tip
+In the event that limits are reached before all streams have been read, it is recommended to take the following actions:
+1. Utilize Incremental sync mode.
+2. Set a higher sync interval.
+3. Divide the sync into separate connections with a smaller number of streams.
+:::
+
+Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
 
 #### Permissions and scopes
 
-If you use OAuth authentication method, the OAuth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
+If you use OAuth authentication method, the OAuth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
 
 Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
 
@@ -193,6 +207,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.6.0   | 2024-02-02  | [34700](https://github.com/airbytehq/airbyte/pull/34700)                                                          | Continue Sync on Stream failure                                                                                                                                        |
 | 1.5.7   | 2024-01-29 | [34598](https://github.com/airbytehq/airbyte/pull/34598)                                                          | Fix MultipleToken sleep time                                                                                                                                        |
 | 1.5.6   | 2024-01-26 | [34503](https://github.com/airbytehq/airbyte/pull/34503)                                                          | Fix MultipleToken rotation logic                                                                                                                                    |
 | 1.5.5   | 2023-12-26 | [33783](https://github.com/airbytehq/airbyte/pull/33783)                                                          | Fix retry for 504 error in GraphQL based streams                                                                                                                    |
