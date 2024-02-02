@@ -141,6 +141,21 @@ public class Jsons {
     }
   }
 
+  /**
+   * This method does not generate deserialization warn log on why serialization failed. See also
+   * {@link #tryDeserialize(String)}.
+   *
+   * @param jsonString
+   * @return
+   */
+  public static Optional<JsonNode> tryDeserializeWithoutWarn(final String jsonString) {
+    try {
+      return Optional.of(OBJECT_MAPPER.readTree(jsonString));
+    } catch (final Throwable e) {
+      return Optional.empty();
+    }
+  }
+
   public static <T> JsonNode jsonNode(final T object) {
     return OBJECT_MAPPER.valueToTree(object);
   }

@@ -1,7 +1,10 @@
 # Changelog
 
-## 3.3.3
+## 3.4.0
 Add `validate_stream_statuses` to TestBasicRead.test_read:: Validate all statuses for all streams in the catalogs were emitted in correct order.
+
+## 3.3.3
+Аix `NoAdditionalPropertiesValidator` if no type found in `items` 
 
 ## 3.3.2
 Fix TestBasicRead.test_read.validate_schema: set `additionalProperties` to False recursively for objects.

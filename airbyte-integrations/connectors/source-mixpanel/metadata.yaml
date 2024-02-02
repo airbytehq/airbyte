@@ -18,6 +18,10 @@ data:
   icon: mixpanel.svg
   license: MIT
   name: Mixpanel
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-mixpanel
   registries:
     cloud:
       enabled: true

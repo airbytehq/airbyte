@@ -14,7 +14,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
     AbstractAvailabilityStrategy,
     StreamAvailability,
@@ -24,6 +24,7 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
+from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from_stream, get_primary_key_from_stream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
@@ -38,7 +39,7 @@ This module contains adapters to help enabling concurrency on Stream objects wit
 
 
 @deprecated("This class is experimental. Use at your own risk.")
-class StreamFacade(Stream):
+class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
     """
     The StreamFacade is a Stream that wraps an AbstractStream and exposes it as a Stream.
 
@@ -62,8 +63,8 @@ class StreamFacade(Stream):
         :param max_workers: The maximum number of worker thread to use
         :return:
         """
-        pk = cls._get_primary_key_from_stream(stream.primary_key)
-        cursor_field = cls._get_cursor_field_from_stream(stream)
+        pk = get_primary_key_from_stream(stream.primary_key)
+        cursor_field = get_cursor_field_from_stream(stream)
 
         if not source.message_repository:
             raise ValueError(
@@ -88,6 +89,7 @@ class StreamFacade(Stream):
                 primary_key=pk,
                 cursor_field=cursor_field,
                 logger=logger,
+                cursor=cursor,
             ),
             stream,
             cursor,
@@ -104,33 +106,7 @@ class StreamFacade(Stream):
         if "state" in dir(self._legacy_stream):
             self._legacy_stream.state = value  # type: ignore  # validating `state` is attribute of stream using `if` above
 
-    @classmethod
-    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> List[str]:
-        if stream_primary_key is None:
-            return []
-        elif isinstance(stream_primary_key, str):
-            return [stream_primary_key]
-        elif isinstance(stream_primary_key, list):
-            if len(stream_primary_key) > 0 and all(isinstance(k, str) for k in stream_primary_key):
-                return stream_primary_key  # type: ignore # We verified all items in the list are strings
-            else:
-                raise ValueError(f"Nested primary keys are not supported. Found {stream_primary_key}")
-        else:
-            raise ValueError(f"Invalid type for primary key: {stream_primary_key}")
-
-    @classmethod
-    def _get_cursor_field_from_stream(cls, stream: Stream) -> Optional[str]:
-        if isinstance(stream.cursor_field, list):
-            if len(stream.cursor_field) > 1:
-                raise ValueError(f"Nested cursor fields are not supported. Got {stream.cursor_field} for {stream.name}")
-            elif len(stream.cursor_field) == 0:
-                return None
-            else:
-                return stream.cursor_field[0]
-        else:
-            return stream.cursor_field
-
-    def __init__(self, stream: AbstractStream, legacy_stream: Stream, cursor: Cursor, slice_logger: SliceLogger, logger: logging.Logger):
+    def __init__(self, stream: DefaultStream, legacy_stream: Stream, cursor: Cursor, slice_logger: SliceLogger, logger: logging.Logger):
         """
         :param stream: The underlying AbstractStream
         """
@@ -178,7 +154,7 @@ class StreamFacade(Stream):
             yield from self._read_records()
         except Exception as exc:
             if hasattr(self._cursor, "state"):
-                state = self._cursor.state
+                state = str(self._cursor.state)
             else:
                 # This shouldn't happen if the ConcurrentCursor was used
                 state = "unknown; no state attribute was available on the cursor"
@@ -210,11 +186,6 @@ class StreamFacade(Stream):
         else:
             return self._abstract_stream.cursor_field
 
-    @property
-    def source_defined_cursor(self) -> bool:
-        # Streams must be aware of their cursor at instantiation time
-        return True
-
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._abstract_stream.get_json_schema()
@@ -233,26 +204,14 @@ class StreamFacade(Stream):
         availability = self._abstract_stream.check_availability()
         return availability.is_available(), availability.message()
 
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        """
-        Retrieves the user-friendly display message that corresponds to an exception.
-        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
-
-        A display message will be returned if the exception is an instance of ExceptionWithDisplayMessage.
-
-        :param exception: The exception that was raised
-        :return: A user-friendly message that indicates the cause of the error
-        """
-        if isinstance(exception, ExceptionWithDisplayMessage):
-            return exception.display_message
-        else:
-            return None
-
     def as_airbyte_stream(self) -> AirbyteStream:
         return self._abstract_stream.as_airbyte_stream()
 
     def log_stream_sync_configuration(self) -> None:
         self._abstract_stream.log_stream_sync_configuration()
+
+    def get_underlying_stream(self) -> DefaultStream:
+        return self._abstract_stream
 
 
 class StreamPartition(Partition):

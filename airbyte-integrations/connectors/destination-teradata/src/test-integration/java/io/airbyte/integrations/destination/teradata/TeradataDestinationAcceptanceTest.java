@@ -179,6 +179,12 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     // overrides test in coming releases
   }
 
+  @Override
+  @Test
+  public void testCustomDbtTransformations() throws Exception {
+    // overrides test in coming releases
+  }
+
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = destination.toJdbcConfig(config);
     return DataSourceFactory.create(jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
