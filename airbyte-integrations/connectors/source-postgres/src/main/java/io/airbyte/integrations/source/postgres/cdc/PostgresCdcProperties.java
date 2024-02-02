@@ -62,11 +62,11 @@ public class PostgresCdcProperties {
     props.setProperty("datetime.type", PostgresConverter.class.getName());
     props.setProperty("include.unknown.datatypes", "true");
 
-    /*final Duration heartbeatInterval =
+    final Duration heartbeatInterval =
         (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
             ? HEARTBEAT_INTERVAL_IN_TESTS
             : HEARTBEAT_INTERVAL;
-    props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));*/
+    props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
 
     if (sourceConfig.get("replication_method").has("heartbeat_action_query")
         && !sourceConfig.get("replication_method").get("heartbeat_action_query").asText().isEmpty()) {
