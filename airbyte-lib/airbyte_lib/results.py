@@ -29,7 +29,10 @@ class ReadResult(Mapping[str, CachedDataset]):
 
         return CachedDataset(self._cache, stream)
 
-    def __contains__(self, stream: str) -> bool:
+    def __contains__(self, stream: object) -> bool:
+        if not isinstance(stream, str):
+            return False
+
         return stream in self._processed_streams
 
     def __iter__(self) -> Iterator[str]:

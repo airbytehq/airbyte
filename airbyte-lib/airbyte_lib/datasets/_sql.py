@@ -54,6 +54,7 @@ class SQLDataset(DatasetBase):
             count_query = select([func.count()]).select_from(self._query_statement.alias())
             with self._cache.get_sql_connection() as conn:
                 self._length = conn.execute(count_query).scalar()
+
         return self._length
 
     def to_pandas(self) -> DataFrame:
@@ -93,10 +94,11 @@ class CachedDataset(SQLDataset):
     """
 
     def __init__(self, cache: SQLCacheBase, stream_name: str) -> None:
+        self._query_statement: Table
         super().__init__(
             cache=cache,
             stream_name=stream_name,
-            query_statement=self.to_sql_table().select(),
+            query_statement=cache.get_sql_table(self._stream_name),
         )
 
     @overrides
@@ -104,7 +106,7 @@ class CachedDataset(SQLDataset):
         return self._cache.get_pandas_dataframe(self._stream_name)
 
     def to_sql_table(self) -> Table:
-        return self._cache.get_sql_table(self._stream_name)
+        return self._query_statement
 
     def __eq__(self, value: object) -> bool:
         """Return True if the value is a CachedDataset with the same cache and stream name.
