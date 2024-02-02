@@ -11,10 +11,23 @@ from pandas import DataFrame
 class DatasetBase(ABC):
     """Base implementation for all datasets."""
 
+    def __init__(self) -> None:
+        self.__length: int | None = None
+
     @abstractmethod
     def __iter__(self) -> Iterator[Mapping[str, Any]]:
         """Return the iterator of records."""
         raise NotImplementedError
+
+    def __len__(self) -> int:
+        """Return the number of records in the dataset.
+
+        This method caches the length of the dataset after the first call.
+        """
+        if self.__length is None:
+            self.__length = sum(1 for _ in self)
+
+        return self.__length
 
     def to_pandas(self) -> DataFrame:
         """Return a pandas DataFrame representation of the dataset.
