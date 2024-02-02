@@ -125,18 +125,18 @@
           "type": ["null", "string"]
         },
         "pull_request": {
-              "type": ["null", "object"],
-              "properties": {
-                "merged_at": {
-                  "type": ["string", "null"],
-                  "format": "date-time"
-                },
-                "diff_url": { "type": ["string", "null"] },
-                "html_url": { "type": ["string", "null"] },
-                "patch_url": { "type": ["string", "null"] },
-                "url": { "type": ["string", "null"] }
-              }
+          "type": ["null", "object"],
+          "properties": {
+            "merged_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
             },
+            "diff_url": { "type": ["string", "null"] },
+            "html_url": { "type": ["string", "null"] },
+            "patch_url": { "type": ["string", "null"] },
+            "url": { "type": ["string", "null"] }
+          }
+        },
         "timeline_url": {
           "type": ["null", "string"]
         },
