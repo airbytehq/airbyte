@@ -12,7 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v13.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
 from pendulum import parse, today
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
@@ -39,7 +39,7 @@ from .streams import (
 )
 from .utils import GAQL
 
-FULL_REFRESH_CUSTOM_TABLE = ["asset", "asset_group_listing_group_filter", "custom_audience", "geo_target_constant"]
+FULL_REFRESH_CUSTOM_TABLE = ["custom_audience", "geo_target_constant"]
 
 
 class SourceGoogleAds(AbstractSource):
@@ -51,7 +51,7 @@ class SourceGoogleAds(AbstractSource):
             try:
                 query["query"] = GAQL.parse(query["query"])
             except ValueError:
-                message = f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v13/query_validator"
+                message = f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v15/query_validator"
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
         return config
 
