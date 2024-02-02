@@ -30,7 +30,6 @@ from airbyte_protocol.models import (
     Type,
 )
 
-from airbyte_lib import exceptions as exc
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.progress import progress
 
@@ -170,16 +169,10 @@ class RecordProcessor(abc.ABC):
                     stream_name = stream_state.stream_descriptor.name
                     self._pending_state_messages[stream_name].append(state_msg)
 
-            elif message.type in [Type.LOG, Type.TRACE]:
-                pass
-
             else:
-                raise exc.AirbyteConnectorError(
-                    message="Unexpected message type.",
-                    context={
-                        "message_type": message.type,
-                    },
-                )
+                # Ignore unexpected or unhandled message types:
+                # Type.LOG, Type.TRACE, Type.CONTROL, etc.
+                pass
 
         # We are at the end of the stream. Process whatever else is queued.
         for stream_name, stream_batch in stream_batches.items():
