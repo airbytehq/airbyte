@@ -31,6 +31,7 @@ public class StandardNameTransformer implements NamingConventionTransformer {
   }
 
   @Override
+  @Deprecated
   public String getRawTableName(final String streamName) {
     return convertStreamName("_airbyte_raw_" + streamName);
   }
