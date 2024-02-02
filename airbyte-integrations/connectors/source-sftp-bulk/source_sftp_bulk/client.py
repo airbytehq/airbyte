@@ -10,7 +10,7 @@ import re
 import socket
 import stat
 from datetime import datetime
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping, Tuple, Generator
 
 import backoff
 import numpy as np
@@ -20,6 +20,9 @@ from paramiko.ssh_exception import AuthenticationException
 
 # set default timeout to 300 seconds
 REQUEST_TIMEOUT = 300
+
+# limit records read at a single time
+CHUNK_SIZE = 10_000
 
 logger = logging.getLogger("airbyte")
 
@@ -176,28 +179,31 @@ class SFTPClient:
         return line
 
     @backoff.on_exception(backoff.expo, (socket.timeout), max_tries=5, factor=2)
-    def fetch_file(self, fn: Mapping[str, Any], separator, file_type="csv") -> pd.DataFrame:
+    def fetch_file(self, fn: Mapping[str, Any], separator, file_type="csv") -> Generator[pd.DataFrame, None, None]:
         try:
             with self._connection.open(fn["filepath"], "r") as f:
-                df: pd.DataFrame = None
-
+                f.prefetch()
+                
                 if not separator:
                     dialect = csv.Sniffer().sniff(self.peek_line(f=f))
                     separator = dialect.delimiter
 
                 # Using pandas to make reading files in different formats easier
                 if file_type == "csv":
-                    df = pd.read_csv(f, engine="python", sep=separator)
+                    chunks = pd.read_csv(f, engine="python", sep=separator, chunksize=CHUNK_SIZE)
                 elif file_type == "json":
-                    df = pd.read_json(f, lines=True)
+                    chunks = pd.read_json(f, lines=True, chunksize=CHUNK_SIZE)
                 else:
                     raise Exception("Unsupported file type: %s" % file_type)
 
-                # Replace nan with None for correct
-                # json serialization when emitting records
-                df = df.replace({np.nan: None})
-                df["last_modified"] = fn["last_modified"]
-                return df
+                for df in chunks:
+                    # Replace nan with None for correct
+                    # json serialization when emitting records
+                    df = df.replace({np.nan: None})
+                    df["last_modified"] = fn["last_modified"]
+
+                    df.replace({np.nan: None}, inplace=True)
+                    yield df
 
         except OSError as e:
             if "Permission denied" in str(e):
@@ -211,6 +217,6 @@ class SFTPClient:
         logger.info("Fetching %s files", len(files))
         for fn in files:
             records = self.fetch_file(fn=fn, separator=separator, file_type=file_type)
-            yield (fn["last_modified"], records.to_dict("records"))
+            yield (fn["last_modified"], (chunk.to_dict("records") for chunk in records))
 
         self.close()
