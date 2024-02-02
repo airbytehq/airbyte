@@ -165,6 +165,8 @@ minio:
 ```yaml
 global:
     ...
+    log4jConfig: "log4j2-no-minio.xml"
+
     logs:
         storage:
             type: "S3"
@@ -228,6 +230,8 @@ For each of `accessKey` and `secretKey`, the `password` and `existingSecret` fie
 ```yaml
 global:
     ...
+    log4jConfig: "log4j2-no-minio.xml"
+
     logs:
         storage:
             type: "GCS"
