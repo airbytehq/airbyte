@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.integrations.base.ssh;
 
-import static io.airbyte.cdk.integrations.base.ssh.SshHelpers.getInnerContainerAddress;
-import static io.airbyte.cdk.integrations.base.ssh.SshHelpers.getOuterContainerAddress;
 import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_KEY_AUTH;
 import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
 
@@ -16,6 +14,8 @@ import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.Network;
@@ -96,6 +96,32 @@ public class SshBastionContainer implements AutoCloseable {
 
   public GenericContainer getContainer() {
     return bastion;
+  }
+
+  /**
+   * Returns the inner docker network ip address and port of a container. This can be used to reach a
+   * container from another container running on the same network
+   *
+   * @param container container
+   * @return a pair of host and port
+   */
+  public static ImmutablePair<String, Integer> getInnerContainerAddress(final Container container) {
+    return ImmutablePair.of(
+        container.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream().findFirst().get().getValue().getIpAddress(),
+        (Integer) container.getExposedPorts().stream().findFirst().get());
+  }
+
+  /**
+   * Returns the outer docker network ip address and port of a container. This can be used to reach a
+   * container from the host machine
+   *
+   * @param container container
+   * @return a pair of host and port
+   */
+  public static ImmutablePair<String, Integer> getOuterContainerAddress(final Container container) {
+    return ImmutablePair.of(
+        container.getHost(),
+        container.getFirstMappedPort());
   }
 
 }
