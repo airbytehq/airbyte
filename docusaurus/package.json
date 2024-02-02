@@ -105,6 +105,7 @@
     "del": "6.1.1",
     "docusaurus-plugin-hubspot": "^1.0.0",
     "docusaurus-plugin-segment": "^1.0.3",
+    "html-loader": "^4.2.0",
     "js-yaml": "^4.1.0",
     "json-schema-faker": "^0.5.4",
     "node-fetch": "^3.3.2",

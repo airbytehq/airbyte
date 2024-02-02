@@ -11,6 +11,10 @@ data:
   icon: xero.svg
   license: MIT
   name: Xero
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-xero
   registries:
     cloud:
       enabled: false

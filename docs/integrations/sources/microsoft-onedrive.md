@@ -121,6 +121,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------|
+| 0.1.5   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681)  | Unpin CDK version to make compatible with the Concurrent CDK                      |
 | 0.1.4   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661)  | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
 | 0.1.3   | 2024-01-24 | [34478](https://github.com/airbytehq/airbyte/pull/34478) | Fix OAuth                 |
 | 0.1.2   | 2021-12-22 | [33745](https://github.com/airbytehq/airbyte/pull/33745) | Add ql and sl to metadata |
