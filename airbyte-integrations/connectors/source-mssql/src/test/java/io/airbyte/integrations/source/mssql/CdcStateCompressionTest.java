@@ -69,7 +69,6 @@ public class CdcStateCompressionTest {
         .withWaitUntilAgentRunning()
         .withCdc();
 
-
     // Create a test schema and a bunch of test tables with CDC enabled.
     // Insert one row in each table so that they're not empty.
     final var enableCdcSqlFmt = """
