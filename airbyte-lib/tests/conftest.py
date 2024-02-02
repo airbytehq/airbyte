@@ -194,12 +194,15 @@ def snowflake_config():
     yield config
 
 
-@pytest.fixture
+@pytest.fixture(auto_use=True)
 def source_test_registry(monkeypatch):
     """
     Set environment variables for the test source.
 
     These are applied to this test file only.
+
+    This means the normal registry is not usable. Expect AirbyteConnectorNotRegisteredError for
+    other connectors.
     """
     env_vars = {
         "AIRBYTE_LOCAL_REGISTRY": LOCAL_TEST_REGISTRY_URL,
