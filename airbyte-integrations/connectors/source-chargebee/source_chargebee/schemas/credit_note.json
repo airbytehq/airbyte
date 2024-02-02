@@ -152,8 +152,7 @@
             "type": ["integer", "null"]
           },
           "tax_rate": {
-            "type": ["number", "null"],
-            "maximum": 100.0
+            "type": ["number", "null"]
           },
           "unit_amount_in_decimal": {
             "type": ["string", "null"]
@@ -186,6 +185,15 @@
             "type": ["string", "null"]
           },
           "customer_id": {
+            "type": ["string", "null"]
+          },
+          "metered": {
+            "type": ["boolean", "null"]
+          },
+          "reference_line_item_id": {
+            "type": ["string", "null"]
+          },
+          "object": {
             "type": ["string", "null"]
           }
         }
@@ -493,6 +501,9 @@
           "type": ["string", "null"]
         },
         "validation_status": {
+          "type": ["string", "null"]
+        },
+        "object": {
           "type": ["string", "null"]
         }
       }

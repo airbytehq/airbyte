@@ -173,6 +173,12 @@
           },
           "coupon_code": {
             "type": ["string", "null"]
+          },
+          "applied_count": {
+            "type": ["integer", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -361,6 +367,9 @@
           },
           "charge_on_option": {
             "type": ["string", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -390,6 +399,9 @@
           },
           "price_in_decimal": {
             "type": ["string", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -404,6 +416,9 @@
           },
           "last_charged_at": {
             "type": ["integer", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }

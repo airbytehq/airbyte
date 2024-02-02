@@ -41,7 +41,11 @@
         },
         "note": {
           "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
         }
+
       }
     },
     "gift_receiver": {
@@ -61,6 +65,9 @@
         },
         "email": {
           "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
         }
       }
     },
@@ -74,9 +81,15 @@
           },
           "occurred_at": {
             "type": ["integer", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
+    },
+    "object": {
+      "type": ["string", "null"]
     },
     "custom_fields": {
       "$ref": "_definitions.json#/definitions/custom_fields"

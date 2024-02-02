@@ -42,6 +42,9 @@
     "business_entity_id": {
       "type": ["string", "null"]
     },
+    "object": {
+      "type": ["string", "null"]
+    },
     "custom_fields": {
       "$ref": "_definitions.json#/definitions/custom_fields"
     }

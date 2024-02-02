@@ -98,6 +98,9 @@
         }
       }
     },
+    "object": {
+      "type": ["string", "null"]
+    },
     "custom_fields": {
       "$ref": "_definitions.json#/definitions/custom_fields"
     }

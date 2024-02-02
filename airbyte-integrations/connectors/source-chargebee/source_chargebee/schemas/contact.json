@@ -33,6 +33,9 @@
     "send_billing_email": {
       "type": ["boolean", "null"]
     },
+    "phone": {
+      "type": ["string", "null"]
+    },
     "custom_fields": {
       "$ref": "_definitions.json#/definitions/custom_fields"
     }

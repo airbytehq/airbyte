@@ -204,6 +204,9 @@
         },
         "validation_status": {
           "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
         }
       }
     },
@@ -270,6 +273,9 @@
           },
           "send_billing_email": {
             "type": ["boolean", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -290,6 +296,9 @@
           "type": ["string", "null"]
         },
         "reference_id": {
+          "type": ["string", "null"]
+        },
+        "object": {
           "type": ["string", "null"]
         }
       }
@@ -312,6 +321,12 @@
             "type": ["integer", "null"]
           },
           "currency_code": {
+            "type": ["string", "null"]
+          },
+          "balance_currency_code": {
+            "type": ["string", "null"]
+          },
+          "object": {
             "type": ["string", "null"]
           }
         }

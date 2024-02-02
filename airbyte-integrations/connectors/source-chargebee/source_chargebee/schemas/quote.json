@@ -163,6 +163,12 @@
           },
           "customer_id": {
             "type": ["string", "null"]
+          },
+          "metered": {
+            "type": ["boolean", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -192,6 +198,9 @@
           },
           "coupon_set_code": {
             "type": ["string", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -212,6 +221,9 @@
           },
           "discount_amount": {
             "type": ["integer", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -359,6 +371,9 @@
         },
         "index": {
           "type": ["integer", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
         }
       }
     },
@@ -406,8 +421,14 @@
         },
         "validation_status": {
           "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
         }
       }
+    },
+    "object": {
+      "type": ["string", "null"]
     },
     "custom_fields": {
       "$ref": "_definitions.json#/definitions/custom_fields"

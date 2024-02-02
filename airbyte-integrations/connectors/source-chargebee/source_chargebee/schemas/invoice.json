@@ -227,6 +227,9 @@
           },
           "metered": {
             "type": ["boolean", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -250,6 +253,15 @@
           },
           "coupon_set_code": {
             "type": ["string", "null"]
+          },
+          "discount_type": {
+            "type": ["string", "null"]
+          },
+          "discount_percentage": {
+            "type": ["number", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -269,6 +281,12 @@
             "type": ["integer", "null"]
           },
           "entity_id": {
+            "type": ["string", "null"]
+          },
+          "coupon_id": {
+            "type": ["string", "null"]
+          },
+          "object": {
             "type": ["string", "null"]
           }
         }
@@ -374,6 +392,9 @@
             "type": ["string", "null"]
           },
           "unit_amount_in_decimal": {
+            "type": ["string", "null"]
+          },
+          "object": {
             "type": ["string", "null"]
           }
         }
@@ -605,6 +626,9 @@
         },
         "validation_status": {
           "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
         }
       }
     },
@@ -665,6 +689,9 @@
           "type": ["string", "null"]
         },
         "validation_status": {
+          "type": ["string", "null"]
+        },
+        "object": {
           "type": ["string", "null"]
         }
       }
