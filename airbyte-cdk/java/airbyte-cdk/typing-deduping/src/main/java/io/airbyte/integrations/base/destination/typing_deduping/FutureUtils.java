@@ -12,29 +12,40 @@ import java.util.concurrent.CompletableFuture;
 
 public class FutureUtils {
 
+  public static final int DEFAULT_TD_THREAD_COUNT = 8;
+
+
   /**
-   * Allow for configuring the number of typing and deduping threads via an enviornment variable in
-   * the destination container.
+   * Allow for configuring the number of typing and deduping threads via an environment variable in the destination container.
    *
    * @return the number of threads to use in the typing and deduping pool
    */
   public static int countOfTypingDedupingThreads(final int defaultThreads) {
     return Optional.ofNullable(System.getenv("TD_THREADS"))
-        .map(Integer::valueOf)
-        .orElse(defaultThreads);
+                   .map(Integer::valueOf)
+                   .orElse(defaultThreads);
   }
 
   /**
-   * Log all exceptions from a list of futures, and rethrow the first exception if there is one. This
-   * mimics the behavior of running the futures in serial, where the first failure
+   * Allow for configuring the number of typing and deduping threads via an environment variable in the destination container.
+   *
+   * @return the number of threads to use in the typing and deduping pool
+   */
+  public static int countOfTypingDedupingThreads() {
+    return countOfTypingDedupingThreads(DEFAULT_TD_THREAD_COUNT);
+  }
+
+  /**
+   * Log all exceptions from a list of futures, and rethrow the first exception if there is one. This mimics the behavior of running the futures in
+   * serial, where the first failure
    */
   public static void reduceExceptions(final Collection<CompletableFuture<Optional<Exception>>> potentialExceptions, final String initialMessage)
       throws Exception {
     final List<Exception> exceptions = potentialExceptions.stream()
-        .map(CompletableFuture::join)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .toList();
+                                                          .map(CompletableFuture::join)
+                                                          .filter(Optional::isPresent)
+                                                          .map(Optional::get)
+                                                          .toList();
     ConnectorExceptionUtil.logAllAndThrowFirst(initialMessage, exceptions);
   }
 
