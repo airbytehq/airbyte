@@ -217,7 +217,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         return query
 
 
-class Customer(IncrementalGoogleAdsStream):
+class Accounts(IncrementalGoogleAdsStream):
     """
     Customer stream: https://developers.google.com/google-ads/api/fields/v15/customer
     """
@@ -287,7 +287,7 @@ class CustomerClient(GoogleAdsStream):
             yield record
 
 
-class CustomerLabel(GoogleAdsStream):
+class AccountLabels(GoogleAdsStream):
     """
     Customer Label stream: https://developers.google.com/google-ads/api/fields/v15/customer_label
     """
@@ -304,7 +304,7 @@ class ServiceAccounts(GoogleAdsStream):
     primary_key = ["customer.id"]
 
 
-class Campaign(IncrementalGoogleAdsStream):
+class Campaigns(IncrementalGoogleAdsStream):
     """
     Campaign stream: https://developers.google.com/google-ads/api/fields/v15/campaign
     """
@@ -328,7 +328,7 @@ class CampaignBudget(IncrementalGoogleAdsStream):
     ]
 
 
-class CampaignBiddingStrategy(IncrementalGoogleAdsStream):
+class CampaignBiddingStrategies(IncrementalGoogleAdsStream):
     """
     Campaign Bidding Strategy stream: https://developers.google.com/google-ads/api/fields/v15/campaign
     """
@@ -337,7 +337,7 @@ class CampaignBiddingStrategy(IncrementalGoogleAdsStream):
     primary_key = ["campaign.id", "bidding_strategy.id", "segments.date"]
 
 
-class CampaignLabel(GoogleAdsStream):
+class CampaignLabels(GoogleAdsStream):
     """
     Campaign labels stream: https://developers.google.com/google-ads/api/fields/v15/campaign_label
     """
@@ -346,7 +346,7 @@ class CampaignLabel(GoogleAdsStream):
     primary_key = ["campaign.id", "label.id"]
 
 
-class AdGroup(IncrementalGoogleAdsStream):
+class AdGroups(IncrementalGoogleAdsStream):
     """
     AdGroup stream: https://developers.google.com/google-ads/api/fields/v15/ad_group
     """
@@ -369,7 +369,7 @@ class AdGroup(IncrementalGoogleAdsStream):
         return query
 
 
-class AdGroupLabel(GoogleAdsStream):
+class AdGroupLabels(GoogleAdsStream):
     """
     Ad Group Labels stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_label
     """
@@ -378,7 +378,7 @@ class AdGroupLabel(GoogleAdsStream):
     primary_key = ["ad_group.id", "label.id"]
 
 
-class AdGroupBiddingStrategy(IncrementalGoogleAdsStream):
+class AdGroupBiddingStrategies(IncrementalGoogleAdsStream):
     """
     Ad Group Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v15/ad_group
     """
@@ -387,7 +387,7 @@ class AdGroupBiddingStrategy(IncrementalGoogleAdsStream):
     primary_key = ["ad_group.id", "bidding_strategy.id", "segments.date"]
 
 
-class AdGroupCriterionLabel(GoogleAdsStream):
+class AdGroupCriterionLabels(GoogleAdsStream):
     """
     Ad Group Criterion Label stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_criterion_label
     """
@@ -396,7 +396,7 @@ class AdGroupCriterionLabel(GoogleAdsStream):
     primary_key = ["ad_group_criterion_label.resource_name"]
 
 
-class AdGroupAd(IncrementalGoogleAdsStream):
+class AdGroupAds(IncrementalGoogleAdsStream):
     """
     Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_ad
     """
@@ -404,7 +404,7 @@ class AdGroupAd(IncrementalGoogleAdsStream):
     primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date"]
 
 
-class AdGroupAdLabel(GoogleAdsStream):
+class AdGroupAdLabels(GoogleAdsStream):
     """
     Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_ad_label
     """
@@ -421,7 +421,7 @@ class AccountPerformanceReport(IncrementalGoogleAdsStream):
     primary_key = ["customer.id", "segments.date", "segments.ad_network_type", "segments.device"]
 
 
-class AdGroupAdLegacy(IncrementalGoogleAdsStream):
+class AdGroupAdReport(IncrementalGoogleAdsStream):
     """
     AdGroupAdReport stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_ad
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance
@@ -430,7 +430,7 @@ class AdGroupAdLegacy(IncrementalGoogleAdsStream):
     primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date", "segments.ad_network_type"]
 
 
-class DisplayKeywordView(IncrementalGoogleAdsStream):
+class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
     """
     DisplayKeywordView stream: https://developers.google.com/google-ads/api/fields/v15/display_keyword_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance
@@ -445,7 +445,7 @@ class DisplayKeywordView(IncrementalGoogleAdsStream):
     ]
 
 
-class TopicView(IncrementalGoogleAdsStream):
+class TopicPerformanceReport(IncrementalGoogleAdsStream):
     """
     DisplayTopicsPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v15/topic_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance
@@ -460,14 +460,14 @@ class TopicView(IncrementalGoogleAdsStream):
     ]
 
 
-class ShoppingPerformanceView(IncrementalGoogleAdsStream):
+class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
     """
     ShoppingPerformanceView stream: https://developers.google.com/google-ads/api/fields/v15/shopping_performance_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
     """
 
 
-class UserLocationView(IncrementalGoogleAdsStream):
+class UserLocationReport(IncrementalGoogleAdsStream):
     """
     UserLocationView stream: https://developers.google.com/google-ads/api/fields/v15/user_location_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#geo_performance
@@ -482,7 +482,7 @@ class UserLocationView(IncrementalGoogleAdsStream):
     ]
 
 
-class GeographicView(IncrementalGoogleAdsStream):
+class GeographicReport(IncrementalGoogleAdsStream):
     """
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v15/geographic_view
     """
@@ -490,7 +490,7 @@ class GeographicView(IncrementalGoogleAdsStream):
     primary_key = ["customer.id", "geographic_view.country_criterion_id", "geographic_view.location_type", "segments.date"]
 
 
-class KeywordView(IncrementalGoogleAdsStream):
+class KeywordReport(IncrementalGoogleAdsStream):
     """
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v15/keyword_view
     """
@@ -526,7 +526,7 @@ class Audience(GoogleAdsStream):
     primary_key = ["customer.id", "audience.id"]
 
 
-class Label(GoogleAdsStream):
+class Labels(GoogleAdsStream):
     """
     Label stream: https://developers.google.com/google-ads/api/fields/v15/label
     """
@@ -808,7 +808,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         return query
 
 
-class AdGroupCriterion(IncrementalEventsStream):
+class AdGroupCriterions(IncrementalEventsStream):
     """
     Ad Group Criterion stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_criterion
     """
@@ -821,7 +821,7 @@ class AdGroupCriterion(IncrementalEventsStream):
     cursor_field = "change_status.last_change_date_time"
 
 
-class AdListingGroupCriterion(AdGroupCriterion):
+class AdListingGroupCriterions(AdGroupCriterions):
     """
     Ad Listing Group Criterion stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_criterion
     While this stream utilizes the same resource as the AdGroupCriterions,
