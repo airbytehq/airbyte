@@ -25,7 +25,7 @@ class DatasetBase(ABC):
         This method caches the length of the dataset after the first call.
         """
         if self._length is None:
-            self._length = sum(1 for _ in self)
+            self._length = sum(1 for _ in iter(self))
 
         return self._length
 
