@@ -89,7 +89,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
   @Override
   public boolean isHeartbeatSupported() {
-    return true;
+    return false;
   }
 
   @Override
