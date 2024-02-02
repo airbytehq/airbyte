@@ -9,14 +9,9 @@ class NoOpRawTableTDLock: Lock {
 
     override fun lockInterruptibly() {}
 
-    override fun tryLock(): Boolean {
-        // To mimic NoOp behavior always return true that lock is acquired
-        return true
-    }
+    override fun tryLock() = true
 
-    override fun tryLock(time: Long, unit: TimeUnit): Boolean {
-        return tryLock()
-    }
+    override fun tryLock(time: Long, unit: TimeUnit) = tryLock()
 
     override fun unlock() {}
 

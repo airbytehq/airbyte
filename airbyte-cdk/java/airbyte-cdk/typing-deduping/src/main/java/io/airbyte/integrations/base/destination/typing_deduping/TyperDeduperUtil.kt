@@ -1,21 +1,15 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
-import com.google.common.collect.Streams
-import java.util.*
 
 /**
  * Extracts all the "raw" and "final" schemas identified in the [parsedCatalog] and ensures they
  * exist in the Destination Database.
  */
 fun <T> prepareAllSchemas(parsedCatalog: ParsedCatalog, sqlGenerator: SqlGenerator<T>, destinationHandler: DestinationHandler<T>) {
-    val rawSchema =
-        parsedCatalog.streams.stream().map { stream: StreamConfig -> stream.id.rawNamespace }
-    val finalSchema =
-        parsedCatalog.streams.stream().map { stream: StreamConfig -> stream.id.finalNamespace }
-    val createAllSchemasSql = Streams.concat(rawSchema, finalSchema)
-        .filter { obj: String? -> Objects.nonNull(obj) }
-        .distinct()
-        .map { schema: String? -> sqlGenerator.createSchema(schema) }
+    val rawSchema = parsedCatalog.streams.mapNotNull { it.id.rawNamespace }
+    val finalSchema = parsedCatalog.streams.mapNotNull { it.id.finalNamespace }
+    val createAllSchemasSql = rawSchema.union(finalSchema)
+        .map { sqlGenerator.createSchema(it) }
         .toList()
     destinationHandler.execute(Sql.concat(createAllSchemasSql))
 }

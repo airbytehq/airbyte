@@ -57,7 +57,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
   @Override
   public void prepareTables() throws Exception {
     try {
-      log.info("ensuring schemas exist for prepareTables with V1V2 migrations");
+      log.info("Ensuring schemas exist for prepareTables with V1V2 migrations");
       prepareAllSchemas(parsedCatalog, sqlGenerator, destinationHandler);
       final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
       for (final StreamConfig stream : parsedCatalog.streams()) {
