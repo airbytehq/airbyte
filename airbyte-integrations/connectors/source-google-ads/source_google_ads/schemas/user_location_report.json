@@ -39,6 +39,9 @@
     "user_location_view.country_criterion_id": {
       "type": ["null", "integer"]
     },
+    "user_location_view.targeting_location": {
+      "type": ["null", "boolean"]
+    },
     "user_location_view.resource_name": {
       "type": ["null", "string"]
     },
@@ -85,7 +88,7 @@
       "type": ["null", "number"]
     },
     "metrics.clicks": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.conversions": {
       "type": ["null", "number"]
@@ -97,7 +100,7 @@
       "type": ["null", "number"]
     },
     "metrics.cost_micros": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.cost_per_all_conversions": {
       "type": ["null", "number"]
@@ -112,16 +115,19 @@
       "type": ["null", "number"]
     },
     "metrics.impressions": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.interaction_event_types": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "metrics.interaction_rate": {
       "type": ["null", "number"]
     },
     "metrics.interactions": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.value_per_all_conversions": {
       "type": ["null", "number"]
@@ -133,10 +139,10 @@
       "type": ["null", "number"]
     },
     "metrics.video_views": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.view_through_conversions": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     }
   }
 }
