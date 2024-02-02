@@ -7,9 +7,9 @@ package io.airbyte.cdk.integrations.destination.staging;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.joda.time.DateTime;
 
 /**
  * Staging operations focuses on the SQL queries that are needed to success move data into a staging
@@ -27,7 +27,7 @@ public interface StagingOperations extends SqlOperations {
    *        raw table). Not all destinations use the table name in the staging path (e.g. Snowflake
    *        simply uses a timestamp + UUID), but e.g. Redshift does rely on this to ensure uniqueness.
    */
-  String getStagingPath(UUID connectionId, String namespace, String streamName, String outputTableName, DateTime writeDatetime);
+  String getStagingPath(UUID connectionId, String namespace, String streamName, String outputTableName, Instant writeDatetime);
 
   /**
    * Returns the staging environment's name

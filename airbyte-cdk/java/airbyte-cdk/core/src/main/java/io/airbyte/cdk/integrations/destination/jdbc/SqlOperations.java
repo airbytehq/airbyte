@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  */
 public interface SqlOperations {
 
-  Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
+  Logger LOGGER = LoggerFactory.getLogger(SqlOperations.class);
 
   /**
    * Create a schema with provided name if it does not already exist.
