@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.mongodb;
+package io.airbyte.cdk.db.mongodb;
 
 import java.util.LinkedList;
 import java.util.List;

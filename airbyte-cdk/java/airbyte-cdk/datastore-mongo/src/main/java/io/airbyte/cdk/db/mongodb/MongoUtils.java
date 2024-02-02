@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.mongodb;
+package io.airbyte.cdk.db.mongodb;
 
 import static java.util.Arrays.asList;
 import static org.bson.BsonType.ARRAY;
@@ -19,7 +19,6 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.api.client.util.DateTime;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mongodb.DBRefCodecProvider;
@@ -31,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -121,8 +121,8 @@ public class MongoUtils {
         case INT64 -> new BsonInt64(Long.parseLong(value));
         case DOUBLE -> new BsonDouble(Double.parseDouble(value));
         case DECIMAL128 -> Decimal128.parse(value);
-        case TIMESTAMP -> new BsonTimestamp(new DateTime(value).getValue());
-        case DATE_TIME -> new BsonDateTime(new DateTime(value).getValue());
+        case TIMESTAMP -> new BsonTimestamp((int) Instant.parse(value).getEpochSecond(), 0);
+        case DATE_TIME -> new BsonDateTime(Instant.parse(value).toEpochMilli());
         case OBJECT_ID -> new ObjectId(value);
         case SYMBOL -> new Symbol(value);
         case STRING -> new BsonString(value);
