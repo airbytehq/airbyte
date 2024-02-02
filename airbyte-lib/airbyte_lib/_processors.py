@@ -75,6 +75,7 @@ class RecordProcessor(abc.ABC):
             raise TypeError(err_msg)
 
         self.source_catalog: ConfiguredAirbyteCatalog | None = None
+        self._source_name: str | None = None
 
         self._pending_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
         self._finalized_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
@@ -99,7 +100,7 @@ class RecordProcessor(abc.ABC):
 
         TODO: Expand this to handle multiple sources.
         """
-        _ = source_name
+        self._source_name = source_name
         self.source_catalog = incoming_source_catalog
 
     @property
@@ -302,6 +303,14 @@ class RecordProcessor(abc.ABC):
 
             return batches_to_finalize
 
+    def _finalize_state_messages(
+        self,
+        stream_name: str,
+        state_messages: list[AirbyteStateMessage],
+    ) -> None:
+        """Handle state messages. Might be a no-op if the processor doesn't handle incremental state."""
+        pass
+
     @final
     @contextlib.contextmanager
     def _finalizing_batches(
@@ -319,6 +328,7 @@ class RecordProcessor(abc.ABC):
 
         progress.log_batches_finalizing(stream_name, len(batches_to_finalize))
         yield batches_to_finalize
+        self._finalize_state_messages(stream_name, state_messages_to_finalize)
         progress.log_batches_finalized(stream_name, len(batches_to_finalize))
 
         self._finalized_batches[stream_name].update(batches_to_finalize)
