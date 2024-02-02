@@ -8,6 +8,10 @@ data:
   icon: toggl.svg
   license: MIT
   name: Toggl
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-toggl
   registries:
     cloud:
       enabled: false

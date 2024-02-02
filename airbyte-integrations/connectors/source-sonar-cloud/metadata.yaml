@@ -11,6 +11,10 @@ data:
   icon: sonarcloud.svg
   license: MIT
   name: Sonar Cloud
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sonar-cloud
   registries:
     cloud:
       enabled: true

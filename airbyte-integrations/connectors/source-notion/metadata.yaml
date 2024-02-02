@@ -17,6 +17,10 @@ data:
   icon: notion.svg
   license: MIT
   name: Notion
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-notion
   registries:
     cloud:
       enabled: true
