@@ -14,6 +14,7 @@ This page contains the setup guide and reference information for the Amazon Sell
 - AWS Region
 - AWS Seller Partner Account Type
 - Granted OAuth access
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -26,11 +27,14 @@ This page contains the setup guide and reference information for the Amazon Sell
 - LWA Client Id
 - LWA Client Secret
 - Refresh Token
+
 <!-- /env:oss -->
 
 ## Setup Guide
 
 ## Step 1: Set up Amazon Seller Partner
+
+[Register](https://sellercentral.amazon.com/) your Amazon Seller Partner account.
 
 <!-- env:oss -->
 
@@ -41,6 +45,8 @@ This page contains the setup guide and reference information for the Amazon Sell
 <!-- /env:oss -->
 
 ## Step 2: Set up the source connector in Airbyte
+
+<!-- env:cloud -->
 
 **For Airbyte Cloud:**
 
@@ -55,6 +61,10 @@ This page contains the setup guide and reference information for the Amazon Sell
 9. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 10. Click `Set up source`.
 
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token. 
@@ -65,6 +75,8 @@ This page contains the setup guide and reference information for the Amazon Sell
 6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
 7. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 8. Click `Set up source`.
+
+<!-- /env:oss -->
 
 ## Supported sync modes
 
