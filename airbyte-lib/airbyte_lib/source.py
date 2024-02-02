@@ -19,6 +19,7 @@ from airbyte_protocol.models import (
     DestinationSyncMode,
     Status,
     SyncMode,
+    TraceType,
     Type,
 )
 
@@ -395,6 +396,8 @@ class Source:
                     yield message
                     if message.type == Type.LOG:
                         self._add_to_logs(message.log.message)
+                    if message.type == Type.TRACE and message.trace.type == TraceType.ERROR:
+                        self._add_to_logs(message.trace.error.message)
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
