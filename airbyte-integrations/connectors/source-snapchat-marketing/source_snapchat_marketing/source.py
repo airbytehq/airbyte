@@ -814,9 +814,9 @@ class SourceSnapchatMarketing(AbstractSource):
             ),
             "start_date": config["start_date"],
             "end_date": config.get("end_date", default_end_date),
-            "action_report_time": config.get("action_report_time", "impression"),
+            "action_report_time": config.get("action_report_time", "conversion"),
             "swipe_up_attribution_window": config.get("swipe_up_attribution_window", "28_DAY"),
-            "view_attribution_window": config.get("view_attribution_window", "7_DAY"),
+            "view_attribution_window": config.get("view_attribution_window", "1_DAY"),
         }
 
         return [
