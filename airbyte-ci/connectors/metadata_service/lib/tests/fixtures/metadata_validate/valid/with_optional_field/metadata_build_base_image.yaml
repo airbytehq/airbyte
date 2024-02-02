@@ -18,6 +18,10 @@ data:
       enabled: true
     oss:
       enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-sheets
   releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   tags:

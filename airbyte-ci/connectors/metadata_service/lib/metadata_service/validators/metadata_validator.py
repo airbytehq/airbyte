@@ -9,7 +9,7 @@ from typing import Callable, List, Optional, Tuple, Union
 import semver
 import yaml
 from metadata_service.docker_hub import is_image_on_docker_hub
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0, SupportLevel
 from pydantic import ValidationError
 from pydash.objects import get
 
@@ -164,17 +164,25 @@ def validate_metadata_base_images_in_dockerhub(
     return True, None
 
 
-def validate_pypi_only_for_python(
-    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
-) -> ValidationResult:
-    """Ensure that if pypi publishing is enabled for a connector, it has a python language tag."""
+def validate_pypi_publishing(metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions) -> ValidationResult:
+    """
+    Ensures pypi publishing is configured correctly:
+    * Ensure that if pypi publishing is enabled for a connector, it has a python language tag.
+    * Ensure that for certified python connectors, pypi publishing is enabled for a connector
+    """
 
+    tags = get(metadata_definition, "data.tags", [])
+    is_pypi_compatible = "language:python" in tags or "language:low-code" in tags
+    is_certified = metadata_definition.data.supportLevel == SupportLevel(__root__="certified")
     pypi_enabled = get(metadata_definition, "data.remoteRegistries.pypi.enabled", False)
+
+    if is_certified and is_pypi_compatible and not pypi_enabled:
+        return False, "Certified python connectors must have pypi publishing enabled."
+
     if not pypi_enabled:
         return True, None
 
-    tags = get(metadata_definition, "data.tags", [])
-    if "language:python" not in tags and "language:low-code" not in tags:
+    if not is_pypi_compatible:
         return False, "If pypi publishing is enabled, the connector must have a python language tag."
 
     return True, None
@@ -186,7 +194,7 @@ PRE_UPLOAD_VALIDATORS = [
     validate_major_version_bump_has_breaking_change_entry,
     validate_docs_path_exists,
     validate_metadata_base_images_in_dockerhub,
-    validate_pypi_only_for_python,
+    validate_pypi_publishing,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
