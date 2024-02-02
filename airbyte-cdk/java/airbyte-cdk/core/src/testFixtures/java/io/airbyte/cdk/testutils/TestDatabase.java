@@ -233,7 +233,6 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
   @Override
   public void close() {
     execSQL(this.cleanupSQL.stream());
-    dslContext.close();
     execInContainer(inContainerUndoBootstrapCmd());
   }
 
