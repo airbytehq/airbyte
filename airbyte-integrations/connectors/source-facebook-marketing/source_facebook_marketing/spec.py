@@ -174,28 +174,28 @@ class ConnectorConfig(BaseConfig):
     campaign_statuses: Optional[List[ValidCampaignStatuses]] = Field(
         title="Campaign Statuses",
         order=4,
-        description="Select statuses you want to to be loaded in the stream. Empty means all available.",
+        description="Select statuses you want to to be loaded in the stream. All means all available.",
         default=["ALL"],
     )
 
     adset_statuses: Optional[List[ValidAdSetStatuses]] = Field(
         title="AdSet Statuses",
         order=5,
-        description="Select statuses you want to to be loaded in the stream. Empty means all available.",
+        description="Select statuses you want to to be loaded in the stream. All means all available.",
         default=["ALL"],
     )
 
     ad_statuses: Optional[List[ValidAdStatuses]] = Field(
         title="Ad Statuses",
         order=6,
-        description="Select statuses you want to to be loaded in the stream. Empty means all available.",
+        description="Select statuses you want to to be loaded in the stream. All means all available.",
         default=["ALL"],
     )
 
     adcreative_statuses: Optional[List[ValidAdCreativeStatuses]] = Field(
         title="AdCreative Statuses",
         order=7,
-        description="Select statuses you want to to be loaded in the stream. Empty means all available.",
+        description="Select statuses you want to to be loaded in the stream. All means all available.",
         default=["ALL"],
     )
 
