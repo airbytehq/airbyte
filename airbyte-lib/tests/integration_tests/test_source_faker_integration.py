@@ -214,3 +214,28 @@ def test_merge_strategy(
         result = source_faker_seed_a.read(cache, write_strategy=strategy)
         assert len(list(result.cache.streams["products"])) == NUM_PRODUCTS
         assert len(list(result.cache.streams["purchases"])) == FAKER_SCALE_B
+
+
+def test_incremental_sync(
+    source_faker_seed_a: ab.Source,
+    source_faker_seed_b: ab.Source,
+    duckdb_cache: ab.DuckDBCache,
+) -> None:
+    config_a = source_faker_seed_a.get_config()
+    config_b = source_faker_seed_b.get_config()
+    config_a["always_updated"] = False
+    config_b["always_updated"] = False
+    source_faker_seed_a.set_config(config_a)
+    source_faker_seed_b.set_config(config_b)
+
+    result1 = source_faker_seed_a.read(duckdb_cache)
+    assert len(list(result1.cache.streams["products"])) == NUM_PRODUCTS
+    assert len(list(result1.cache.streams["purchases"])) == FAKER_SCALE_A
+
+    assert not duckdb_cache.get_state() == [] 
+
+    # Second run should not return records as it picks up the state and knows it's up to date.
+    result2 = source_faker_seed_b.read(duckdb_cache)
+
+    assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
+    assert len(list(result2.cache.streams["purchases"])) == FAKER_SCALE_A

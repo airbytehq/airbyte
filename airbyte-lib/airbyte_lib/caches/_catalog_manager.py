@@ -6,12 +6,13 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Callable
 
-from sqlalchemy import Column, String, DateTime
-from sqlalchemy.sql import func
+from sqlalchemy import Column, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 
 from airbyte_protocol.models import (
+    AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
@@ -49,7 +50,7 @@ class StreamState(Base):  # type: ignore[valid-type,misc]
     stream_name = Column(String)
     table_name = Column(String, primary_key=True)
     state_json = Column(String)
-    last_updated = Column(DateTime(timezone=True), onupdate=func.now())
+    last_updated = Column(DateTime(timezone=True), onupdate=func.now(), default=func.now())
 
 
 class CatalogManager:
@@ -77,7 +78,7 @@ class CatalogManager:
     def record_state(
         self,
         source_name: str,
-        state_json: str,
+        state: AirbyteStateMessage,
         stream_name: str,
     ) -> None:
         self._ensure_internal_tables()
@@ -92,7 +93,7 @@ class CatalogManager:
                     source_name=source_name,
                     stream_name=stream_name,
                     table_name=self._table_name_resolver(stream_name),
-                    state_json=state_json,
+                    state_json=state.json(),
                 )
             )
             session.commit()
@@ -115,7 +116,8 @@ class CatalogManager:
             )
             if not states:
                 return None
-            # only return the states if the table name matches what the current cache would generate (otherwise consider it part of a different cache)
+            # Only return the states if the table name matches what the current cache
+            # would generate. Otherwise consider it part of a different cache.
             states = [
                 state
                 for state in states

@@ -303,12 +303,14 @@ class RecordProcessor(abc.ABC):
 
             return batches_to_finalize
 
+    @abc.abstractmethod
     def _finalize_state_messages(
         self,
         stream_name: str,
         state_messages: list[AirbyteStateMessage],
     ) -> None:
-        """Handle state messages. Might be a no-op if the processor doesn't handle incremental state."""
+        """Handle state messages.
+        Might be a no-op if the processor doesn't handle incremental state."""
         pass
 
     @final

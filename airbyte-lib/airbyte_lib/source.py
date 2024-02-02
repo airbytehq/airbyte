@@ -13,6 +13,7 @@ from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
@@ -20,7 +21,6 @@ from airbyte_protocol.models import (
     Status,
     SyncMode,
     Type,
-    AirbyteStateMessage,
 )
 
 from airbyte_lib import exceptions as exc
@@ -130,6 +130,10 @@ class Source:
 
         self._config_dict = config
 
+    def get_config(self) -> dict[str, Any]:
+        """Get the config for the connector."""
+        return self._config
+
     @property
     def _config(self) -> dict[str, Any]:
         if self._config_dict is None:
@@ -234,7 +238,7 @@ class Source:
                 # TODO: Set sync modes and primary key to a sensible adaptive default
                 ConfiguredAirbyteStream(
                     stream=stream,
-                    sync_mode=SyncMode.full_refresh,
+                    sync_mode=SyncMode.incremental,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                     primary_key=stream.source_defined_primary_key,
                 )

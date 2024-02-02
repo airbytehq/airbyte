@@ -46,9 +46,9 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.base import Executable
 
     from airbyte_protocol.models import (
+        AirbyteStateMessage,
         ConfiguredAirbyteCatalog,
         ConfiguredAirbyteStream,
-        AirbyteStateMessage,
     )
 
     from airbyte_lib.datasets._base import DatasetBase
@@ -584,12 +584,12 @@ class SQLCacheBase(RecordProcessor):
         stream_name: str,
         state_messages: list[AirbyteStateMessage],
     ) -> None:
-        """Handle state messages. Might be a no-op if the processor doesn't handle incremental state."""
+        """Handle state messages by passing them to the catalog manager."""
         if state_messages and self._source_name:
             self._catalog_manager.record_state(
                 source_name=self._source_name,
                 stream_name=stream_name,
-                state_json=state_messages[-1],
+                state=state_messages[-1],
             )
 
     def get_state(self) -> list[dict]:
@@ -912,6 +912,7 @@ class SQLCacheBase(RecordProcessor):
         source_name: str,
         incoming_source_catalog: ConfiguredAirbyteCatalog,
     ) -> None:
+        self._source_name = source_name
         self._ensure_schema_exists()
         self._catalog_manager.register_source(source_name, incoming_source_catalog)
 
