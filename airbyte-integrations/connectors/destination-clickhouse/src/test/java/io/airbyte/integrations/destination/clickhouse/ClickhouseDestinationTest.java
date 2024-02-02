@@ -100,7 +100,7 @@ public class ClickhouseDestinationTest {
     final Destination dest = new ClickhouseDestination();
     DestinationConfig.initialize(config, dest.isV2Destination());
     final SerializedAirbyteMessageConsumer consumer = dest.getSerializedMessageConsumer(config, catalog,
-                                                                                        Destination::defaultOutputRecordCollector);
+        Destination::defaultOutputRecordCollector);
     final List<AirbyteMessage> expectedRecords = generateRecords(10);
 
     consumer.start();
@@ -115,8 +115,8 @@ public class ClickhouseDestinationTest {
     final var abMessage = Jsons.jsonNode(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-                       .withData(Jsons.jsonNode(ImmutableMap.of(DB_NAME + "." + STREAM_NAME, 10)))
-        )).toString();
+            .withData(Jsons.jsonNode(ImmutableMap.of(DB_NAME + "." + STREAM_NAME, 10)))))
+        .toString();
     consumer.accept(abMessage, abMessage.getBytes(StandardCharsets.UTF_8).length);
     consumer.close();
 
@@ -134,7 +134,7 @@ public class ClickhouseDestinationTest {
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery(
             String.format("SELECT * FROM %s.%s;", "airbyte_internal",
-                          StreamId.concatenateRawTableName(DB_NAME, STREAM_NAME))),
+                StreamId.concatenateRawTableName(DB_NAME, STREAM_NAME))),
         JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     assertEquals(
