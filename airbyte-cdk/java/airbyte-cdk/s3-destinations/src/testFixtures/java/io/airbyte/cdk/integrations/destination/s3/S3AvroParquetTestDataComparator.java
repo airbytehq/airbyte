@@ -12,7 +12,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class S3BaseAvroParquetTestDataComparator extends AdvancedTestDataComparator {
+public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator {
 
   @Override
   protected boolean compareDateValues(String airbyteMessageValue, String destinationValue) {
