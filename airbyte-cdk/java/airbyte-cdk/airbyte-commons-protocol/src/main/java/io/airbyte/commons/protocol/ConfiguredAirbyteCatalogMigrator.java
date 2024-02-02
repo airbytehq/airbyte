@@ -8,12 +8,9 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.protocol.migrations.ConfiguredAirbyteCatalogMigration;
 import io.airbyte.commons.protocol.migrations.MigrationContainer;
 import io.airbyte.commons.version.Version;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Set;
 
-@Singleton
 public class ConfiguredAirbyteCatalogMigrator {
 
   private final MigrationContainer<ConfiguredAirbyteCatalogMigration<?, ?>> migrationContainer;
@@ -22,7 +19,6 @@ public class ConfiguredAirbyteCatalogMigrator {
     migrationContainer = new MigrationContainer<>(migrations);
   }
 
-  @PostConstruct
   public void initialize() {
     migrationContainer.initialize();
   }

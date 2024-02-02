@@ -30,12 +30,12 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import com.mongodb.connection.ServerDescription;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -60,6 +60,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,6 +68,7 @@ import java.util.function.Consumer;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -108,6 +110,8 @@ class MongoDbCdcInitializerTest {
   private MongoCursor<Document> findCursor;
   private ChangeStreamIterable<BsonDocument> changeStreamIterable;
   private MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector;
+  private static final List<Bson> PIPELINE = Collections.singletonList(Aggregates.match(
+      Filters.in("ns.coll", List.of(COLLECTION))));
 
   @BeforeEach
   void setUp() {
@@ -134,6 +138,7 @@ class MongoDbCdcInitializerTest {
     when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoDatabase.watch(PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
     when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);

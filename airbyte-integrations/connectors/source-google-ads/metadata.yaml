@@ -18,6 +18,10 @@ data:
   icon: google-adwords.svg
   license: Elv2
   name: Google Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-ads
   registries:
     cloud:
       enabled: true

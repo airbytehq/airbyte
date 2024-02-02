@@ -15,6 +15,10 @@ data:
   icon: close.svg
   license: MIT
   name: Close.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-close-com
   registries:
     cloud:
       enabled: true

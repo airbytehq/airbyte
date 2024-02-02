@@ -4,6 +4,10 @@ data:
       - app-us*.wrike.com
       - app-eu*.wrike.com
       - www.wrike.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-wrike
   registries:
     oss:
       enabled: true

@@ -52,6 +52,20 @@
                 },
                 "fieldType": {
                   "type": ["null", "string"]
+                },
+                "validation": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "blockedEmailDomains": {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "useDefaultBlockList": {
+                      "type": ["null", "boolean"]
+                    }
+                  }
                 }
               }
             }
@@ -169,6 +183,9 @@
               "type": ["null", "string"]
             }
           }
+        },
+        "cssClass": {
+          "type": ["null", "string"]
         }
       }
     },
