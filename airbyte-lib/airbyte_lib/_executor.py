@@ -217,6 +217,8 @@ class VenvExecutor(Executor):
 
         # Assuming the installation succeeded, store the installed version
         self.reported_version = self._get_installed_version(raise_on_error=False, recheck=True)
+
+        # TODO: Get this docs URL from metadata
         docs_url = "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace(
             "source-", ""
         )
