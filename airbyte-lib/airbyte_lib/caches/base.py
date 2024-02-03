@@ -120,7 +120,7 @@ class SQLCacheBase(RecordProcessor):
         self._ensure_schema_exists()
         self._catalog_manager = CatalogManager(
             engine=self.get_sql_engine(),
-            table_name_resolver=lambda stream_name: self.get_sql_table_name(stream_name)
+            table_name_resolver=lambda stream_name: self.get_sql_table_name(stream_name),
         )
         self.file_writer = file_writer or self.file_writer_class(
             config, catalog_manager=self._catalog_manager
