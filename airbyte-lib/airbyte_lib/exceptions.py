@@ -72,13 +72,13 @@ class AirbyteError(Exception):
     def __str__(self) -> str:
         special_properties = ["message", "guidance", "help_url", "log_text", "context"]
         display_properties = {
-            k: v for k, v in self.__dict__.items()
+            k: v
+            for k, v in self.__dict__.items()
             if k not in special_properties and not k.startswith("_") and v is not None
         }
         display_properties.update(self.context or {})
         context_str = "\n    ".join(
-            f"{str(k).replace('_', ' ').title()}: {v!r}"
-            for k, v in display_properties.items()
+            f"{str(k).replace('_', ' ').title()}: {v!r}" for k, v in display_properties.items()
         )
         exception_str = f"{self.__class__.__name__}: {self.get_message()}\n"
         if context_str:
