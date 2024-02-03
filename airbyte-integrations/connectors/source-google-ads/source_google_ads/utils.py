@@ -64,6 +64,7 @@ REPORT_MAPPING = {
     "shopping_performance_report": "shopping_performance_view",
     "user_interest": "user_interest",
     "user_location_report": "user_location_view",
+    "topic_performance_report": "topic_view",
 }
 
 
