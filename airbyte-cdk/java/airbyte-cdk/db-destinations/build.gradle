@@ -95,5 +95,15 @@ dependencies {
     testImplementation libs.junit.jupiter.system.stubs
 }
 
-compileKotlin {}
-compileTestKotlin {}
+compileKotlin {
+    compilerOptions {
+        jvmTarget = "17"
+        languageVersion = "1.9"
+    }
+}
+compileTestKotlin {
+    compilerOptions {
+        jvmTarget = "17"
+        languageVersion = "1.9"
+    }
+}

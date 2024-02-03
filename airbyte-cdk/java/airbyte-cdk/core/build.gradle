@@ -105,8 +105,17 @@ dependencies {
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
     testImplementation 'org.mockito:mockito-core:4.6.1'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
-compileKotlin {}
-compileTestKotlin {}
+compileKotlin {
+    compilerOptions {
+        jvmTarget = "17"
+        languageVersion = "1.9"
+    }
+}
+compileTestKotlin {
+    compilerOptions {
+        jvmTarget = "17"
+        languageVersion = "1.9"
+    }
+}
