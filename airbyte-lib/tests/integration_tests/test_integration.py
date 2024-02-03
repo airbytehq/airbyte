@@ -63,7 +63,7 @@ def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
             {"column1": "value2", "column2": 2},
         ],
         "stream2": [
-            {"column1": "value1", "column2": 1},
+            {"column1": "value1", "column2": 1, "empty_column": None},
         ],
     }
 
@@ -219,7 +219,7 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
 
 def test_read_result_mapping():
     source = ab.get_connector("source-test", config={"apiKey": "test"})
-    result: ReadResult = source.read()
+    result: ReadResult = source.read(ab.new_local_cache())
     assert len(result) == 2
     assert isinstance(result, Mapping)
     assert "stream1" in result
@@ -230,7 +230,7 @@ def test_read_result_mapping():
 
 def test_dataset_list_and_len(expected_test_stream_data):
     source = ab.get_connector("source-test", config={"apiKey": "test"})
-    result: ReadResult = source.read()
+    result: ReadResult = source.read(ab.new_local_cache())
     stream_1 = result["stream1"]
     assert len(stream_1) == 2
     assert len(list(stream_1)) == 2
@@ -584,7 +584,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
     mock_requests.post = mock_post
 
     source = ab.get_connector("source-test", config={"apiKey": api_key})
-    cache = ab.get_default_cache()
+    cache = ab.new_local_cache()
 
     if request_call_fails:
         mock_post.side_effect = Exception("test exception")

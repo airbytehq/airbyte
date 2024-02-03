@@ -31,6 +31,7 @@ sample_catalog = {
                     "properties": {
                         "column1": {"type": "string"},
                         "column2": {"type": "number"},
+                        "empty_column": {"type": "string"},
                     },
                 },
             },
