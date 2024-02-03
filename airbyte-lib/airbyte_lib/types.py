@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import cast
 
 import sqlalchemy
+from rich import print
 
 
 # Compare to documentation here: https://docs.airbyte.com/understanding-airbyte/supported-data-types

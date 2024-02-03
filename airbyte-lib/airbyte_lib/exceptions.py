@@ -36,6 +36,7 @@ In addition, the following principles are applied for exception class design:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from textwrap import indent
 from typing import Any
 
 
@@ -69,27 +70,31 @@ class AirbyteError(Exception):
         return self.__doc__.split("\n")[0] if self.__doc__ else ""
 
     def __str__(self) -> str:
-        special_properties = ["message", "guidance", "help_url", "log_text"]
-        properties_str = ", ".join(
-            f"{k}={v!r}"
+        special_properties = ["message", "guidance", "help_url", "log_text", "context"]
+        display_properties = {
+            k: v
             for k, v in self.__dict__.items()
             if k not in special_properties and not k.startswith("_") and v is not None
+        }
+        display_properties.update(self.context or {})
+        context_str = "\n    ".join(
+            f"{str(k).replace('_', ' ').title()}: {v!r}" for k, v in display_properties.items()
         )
-        exception_str = f"{self.__class__.__name__}: {self.get_message()}."
-        if properties_str:
-            exception_str += f" ({properties_str})"
+        exception_str = f"{self.__class__.__name__}: {self.get_message()}\n"
+        if context_str:
+            exception_str += "    " + context_str
 
         if self.log_text:
             if isinstance(self.log_text, list):
                 self.log_text = "\n".join(self.log_text)
 
-            exception_str += f"\n\n Log output: {self.log_text}"
+            exception_str += f"\nLog output: \n    {indent(self.log_text, '    ')}"
 
         if self.guidance:
-            exception_str += f"\n\n Suggestion: {self.guidance}"
+            exception_str += f"\nSuggestion: {self.guidance}"
 
         if self.help_url:
-            exception_str += f"\n\n More info: {self.help_url}"
+            exception_str += f"\nMore info: {self.help_url}"
 
         return exception_str
 
@@ -225,7 +230,11 @@ class AirbyteConnectorMissingSpecError(AirbyteConnectorError):
 
 
 class AirbyteConnectorCheckFailedError(AirbyteConnectorError):
-    """Connector did not return a spec."""
+    """Connector check failed."""
+
+    guidance = (
+        "Please double-check your config or review the connector's logs for more information."
+    )
 
 
 @dataclass

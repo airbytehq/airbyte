@@ -14,6 +14,7 @@ import tempfile
 from pathlib import Path
 
 import yaml
+from rich import print
 
 import airbyte_lib as ab
 from airbyte_lib import exceptions as exc
