@@ -201,7 +201,10 @@ class VenvExecutor(Executor):
         )
 
         pip_path = str(self._get_venv_path() / "bin" / "pip")
-        print(f"Installing '{self.name}' from '{self.pip_url}'...")
+        print(
+            f"Installing '{self.name}' into virtual environment '{self._get_venv_path()!s}'."
+            f"Running 'pip install {self.pip_url}'..."
+        )
         try:
             self._run_subprocess_and_raise_on_failure(
                 args=[pip_path, "install", *shlex.split(self.pip_url)]
@@ -223,8 +226,8 @@ class VenvExecutor(Executor):
             "source-", ""
         )
         print(
-            "Installation completed successfully."
-            f"For configuration instructions, see: \n{docs_url}#reference\n"
+            "Installation completed successfully. For configuration instructions, see: \n"
+            f"{docs_url}#reference\n"
         )
 
     def _get_installed_version(
