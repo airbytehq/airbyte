@@ -118,12 +118,15 @@ class SQLCacheBase(RecordProcessor):
         self.config: SQLCacheConfigBase
         self._engine: Engine | None = None
         self._connection_to_reuse: Connection | None = None
-        super().__init__(config, **kwargs)
+        super().__init__(
+            config,
+            # catalog_manager=catalog_manager,  # TODO: Clean this up.
+        )
         self._ensure_schema_exists()
-        self._catalog_manager: CatalogManager = CatalogManager(
+        catalog_manager = CatalogManager(
             self.get_sql_engine(), lambda stream_name: self.get_sql_table_name(stream_name)
         )
-
+        self._catalog_manager = catalog_manager
         self.file_writer = file_writer or self.file_writer_class(
             config, catalog_manager=self._catalog_manager
         )
@@ -454,7 +457,7 @@ class SQLCacheBase(RecordProcessor):
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> FileWriterBatchHandle:
         """Process a record batch.
 
@@ -762,7 +765,7 @@ class SQLCacheBase(RecordProcessor):
     @overrides
     def _streams_with_data(self) -> set[str]:
         """Return a list of known streams."""
-        if not self._catalog_manager.source_catalog:
+        if not self._catalog_manager:
             raise exc.AirbyteLibInternalError(
                 message="Cannot get streams with data without a catalog.",
             )

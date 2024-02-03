@@ -47,7 +47,7 @@ class CatalogManager:
     ) -> None:
         self._engine: Engine = engine
         self._table_name_resolver = table_name_resolver
-        self.source_catalog: ConfiguredAirbyteCatalog | None = None
+        self.source_catalog: ConfiguredAirbyteCatalog
         self._load_catalog_from_internal_table()
         assert self.source_catalog is not None
 

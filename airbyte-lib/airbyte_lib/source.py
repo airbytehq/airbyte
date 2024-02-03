@@ -449,7 +449,7 @@ class Source:
         cache.register_source(
             source_name=self.name,
             incoming_source_catalog=self.configured_catalog,
-            stream_names=self.get_selected_streams(),
+            stream_names=set(self.get_selected_streams()),
         )
         cache.process_airbyte_messages(self._tally_records(self._read(cache.get_telemetry_info())))
 

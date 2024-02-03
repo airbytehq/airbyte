@@ -64,6 +64,7 @@ class RecordProcessor(abc.ABC):
     def __init__(
         self,
         config: CacheConfigBase | dict | None,
+        *,
         catalog_manager: CatalogManager | None = None,
     ) -> None:
         if isinstance(config, dict):
@@ -96,6 +97,10 @@ class RecordProcessor(abc.ABC):
         stream_names: set[str],
     ) -> None:
         """Register the source name and catalog."""
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
         self._catalog_manager.register_source(
             source_name,
             incoming_source_catalog=incoming_source_catalog,
@@ -223,7 +228,7 @@ class RecordProcessor(abc.ABC):
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> BatchHandle:
         """Process a single batch.
 
@@ -334,6 +339,11 @@ class RecordProcessor(abc.ABC):
         stream_name: str,
     ) -> ConfiguredAirbyteStream:
         """Return the column definitions for the given stream."""
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+
         return self._catalog_manager.get_stream_config(stream_name)
 
     @final
