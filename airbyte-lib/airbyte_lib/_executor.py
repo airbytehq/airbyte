@@ -169,10 +169,7 @@ class VenvExecutor(Executor):
     def _get_connector_path(self) -> Path:
         return self._get_venv_path() / "bin" / self.name
 
-    def _run_subprocess_and_raise_on_failure(
-        self,
-        args: list[str],
-    ) -> None:
+    def _run_subprocess_and_raise_on_failure(self, args: list[str]) -> None:
         result = subprocess.run(
             args,
             check=False,
@@ -202,8 +199,8 @@ class VenvExecutor(Executor):
 
         pip_path = str(self._get_venv_path() / "bin" / "pip")
         print(
-            f"Installing '{self.name}' into virtual environment '{self._get_venv_path()!s}'."
-            f"Running 'pip install {self.pip_url}'..."
+            f"Installing '{self.name}' into virtual environment '{self._get_venv_path()!s}'.\n"
+            f"Running 'pip install {self.pip_url}'...\n"
         )
         try:
             self._run_subprocess_and_raise_on_failure(
@@ -226,7 +223,7 @@ class VenvExecutor(Executor):
             "source-", ""
         )
         print(
-            "Installation completed successfully. For configuration instructions, see: \n"
+            "Source connector installed successfully! For configuration instructions, see: \n"
             f"{docs_url}#reference\n"
         )
 
