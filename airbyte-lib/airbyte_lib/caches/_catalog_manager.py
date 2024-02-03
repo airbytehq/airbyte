@@ -46,9 +46,23 @@ class CatalogManager:
     ) -> None:
         self._engine: Engine = engine
         self._table_name_resolver = table_name_resolver
-        self.source_catalog: ConfiguredAirbyteCatalog
+        self._source_catalog: ConfiguredAirbyteCatalog | None = None
         self._load_catalog_from_internal_table()
-        assert self.source_catalog is not None
+        assert self._source_catalog is not None
+
+    @property
+    def source_catalog(self) -> ConfiguredAirbyteCatalog:
+        """Return the source catalog.
+
+        Raises:
+            AirbyteLibInternalError: If the source catalog is not set.
+        """
+        if not self._source_catalog:
+            raise exc.AirbyteLibInternalError(
+                message="Source catalog should be initialized but is not.",
+            )
+
+        return self._source_catalog
 
     def _ensure_internal_tables(self) -> None:
         engine = self._engine
@@ -61,30 +75,51 @@ class CatalogManager:
         incoming_stream_names: set[str],
     ) -> None:
         """Register a source and its streams in the cache."""
-        if not self.source_catalog:
-            self.source_catalog = ConfiguredAirbyteCatalog(
+        self._update_catalog(
+            incoming_source_catalog=incoming_source_catalog,
+            incoming_stream_names=incoming_stream_names,
+        )
+        self._save_catalog_to_internal_table(
+            source_name=source_name,
+            incoming_source_catalog=incoming_source_catalog,
+            incoming_stream_names=incoming_stream_names,
+        )
+
+    def _update_catalog(
+        self,
+        incoming_source_catalog: ConfiguredAirbyteCatalog,
+        incoming_stream_names: set[str],
+    ) -> None:
+        if not self._source_catalog:
+            self._source_catalog = ConfiguredAirbyteCatalog(
                 streams=[
                     stream
                     for stream in incoming_source_catalog.streams
                     if stream.stream.name in incoming_stream_names
                 ],
             )
-            assert len(self.source_catalog.streams) == len(incoming_stream_names)
+            assert len(self._source_catalog.streams) == len(incoming_stream_names)
+            return
 
-        else:
-            # Keep existing streams untouched if not incoming
-            unchanged_streams: list[ConfiguredAirbyteStream] = [
-                stream
-                for stream in self.source_catalog.streams
-                if stream.stream.name not in incoming_stream_names
-            ]
-            new_streams: list[ConfiguredAirbyteStream] = [
-                stream
-                for stream in incoming_source_catalog.streams
-                if stream.stream.name in incoming_stream_names
-            ]
-            self.source_catalog = ConfiguredAirbyteCatalog(streams=unchanged_streams + new_streams)
+        # Keep existing streams untouched if not incoming
+        unchanged_streams: list[ConfiguredAirbyteStream] = [
+            stream
+            for stream in self._source_catalog.streams
+            if stream.stream.name not in incoming_stream_names
+        ]
+        new_streams: list[ConfiguredAirbyteStream] = [
+            stream
+            for stream in incoming_source_catalog.streams
+            if stream.stream.name in incoming_stream_names
+        ]
+        self._source_catalog = ConfiguredAirbyteCatalog(streams=unchanged_streams + new_streams)
 
+    def _save_catalog_to_internal_table(
+        self,
+        source_name: str,
+        incoming_source_catalog: ConfiguredAirbyteCatalog,
+        incoming_stream_names: set[str],
+    ) -> str:
         self._ensure_internal_tables()
         engine = self._engine
         with Session(engine) as session:
@@ -153,13 +188,13 @@ class CatalogManager:
             streams: list[CachedStream] = session.query(CachedStream).all()
             if not streams:
                 # no streams means the cache is pristine
-                if not self.source_catalog:
-                    self.source_catalog = ConfiguredAirbyteCatalog(streams=[])
+                if not self._source_catalog:
+                    self._source_catalog = ConfiguredAirbyteCatalog(streams=[])
 
                 return
 
             # load the catalog
-            self.source_catalog = ConfiguredAirbyteCatalog(
+            self._source_catalog = ConfiguredAirbyteCatalog(
                 streams=[
                     ConfiguredAirbyteStream(
                         stream=AirbyteStream(
