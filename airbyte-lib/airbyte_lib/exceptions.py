@@ -75,13 +75,13 @@ class AirbyteError(Exception):
             if k not in special_properties and not k.startswith("_") and v is not None
         }
         display_properties.update(self.context or {})
-        context_str = "\n    ".join(
+        context_str = "\n".join(
             f"{str(k).replace('_', ' ').title()}: {v!r}"
             for k, v in display_properties.items()
         )
-        exception_str = f"{self.__class__.__name__}: {self.get_message()}."
+        exception_str = f"{self.__class__.__name__}: {self.get_message()}\n"
         if context_str:
-            exception_str += f"Additional Context:\n    {context_str}"
+            exception_str += context_str
 
         if self.log_text:
             if isinstance(self.log_text, list):
