@@ -119,7 +119,7 @@ class CatalogManager:
         source_name: str,
         incoming_source_catalog: ConfiguredAirbyteCatalog,
         incoming_stream_names: set[str],
-    ) -> str:
+    ) -> None:
         self._ensure_internal_tables()
         engine = self._engine
         with Session(engine) as session:
