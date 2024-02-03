@@ -3,6 +3,7 @@
 #
 
 import logging
+import os
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
@@ -89,8 +90,7 @@ class AwsHandler:
         elif self._config.credentials_type == CredentialsType.IAM_ROLE:
             client = boto3.client("sts")
             role = client.assume_role(
-                RoleArn=self._config.role_arn,
-                RoleSessionName="airbyte-destination-aws-datalake",
+                RoleArn=self._config.role_arn, RoleSessionName="airbyte-destination-aws-datalake", ExternalId=os.getenv("AWS_EXTERNAL_ID")
             )
             creds = role.get("Credentials", {})
             self._session = boto3.Session(
