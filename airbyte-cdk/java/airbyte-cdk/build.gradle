@@ -1,3 +1,9 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
+}
+
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
@@ -5,6 +11,7 @@ allprojects {
     apply plugin: 'airbyte-integration-test-java'
     apply plugin: 'airbyte-performance-test-java'
     apply plugin: 'java-test-fixtures'
+    apply plugin: 'org.jetbrains.kotlin.jvm'
 
     group 'io.airbyte.cdk'
     version = getCdkTargetVersion()
@@ -39,6 +46,19 @@ subprojects { subproject ->
                     username System.getenv('CLOUDREPO_USER')
                     password System.getenv('CLOUDREPO_PASSWORD')
                 }
+            }
+        }
+
+        compileKotlin {
+            compilerOptions {
+                jvmTarget = JvmTarget.JVM_17
+                languageVersion = KotlinVersion.KOTLIN_1_9
+            }
+        }
+        compileTestKotlin {
+            compilerOptions {
+                jvmTarget = JvmTarget.JVM_17
+                languageVersion = KotlinVersion.KOTLIN_1_9
             }
         }
     }
@@ -118,3 +138,4 @@ cleanLocalCache.configure {
     dependsOn tasks.named('clean')
     dependsOn subprojects.collect { it.tasks.named('clean') }
 }
+
