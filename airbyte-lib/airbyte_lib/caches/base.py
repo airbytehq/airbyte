@@ -116,15 +116,12 @@ class SQLCacheBase(RecordProcessor):
         self.config: SQLCacheConfigBase
         self._engine: Engine | None = None
         self._connection_to_reuse: Connection | None = None
-        super().__init__(
-            config,
-            # catalog_manager=catalog_manager,  # TODO: Clean this up.
-        )
+        super().__init__(config)
         self._ensure_schema_exists()
-        catalog_manager = CatalogManager(
-            self.get_sql_engine(), lambda stream_name: self.get_sql_table_name(stream_name)
+        self._catalog_manager = CatalogManager(
+            engine=self.get_sql_engine(),
+            table_name_resolver=lambda stream_name: self.get_sql_table_name(stream_name)
         )
-        self._catalog_manager = catalog_manager
         self.file_writer = file_writer or self.file_writer_class(
             config, catalog_manager=self._catalog_manager
         )
