@@ -295,10 +295,8 @@ class Source:
                 yield {**record, **appended_dict}
 
         iterator: Iterator[dict[str, Any]] = _with_missing_columns(
-                protocol_util.airbyte_messages_to_record_dicts(
-                self._read_with_catalog(
-                    streaming_cache_info, configured_catalog
-                ),
+            protocol_util.airbyte_messages_to_record_dicts(
+                self._read_with_catalog(streaming_cache_info, configured_catalog),
             )
         )
         return LazyDataset(iterator)

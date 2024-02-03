@@ -9,7 +9,7 @@ from typing import cast
 import pyarrow as pa
 import ulid
 from overrides import overrides
-from pyarrow import null, parquet
+from pyarrow import parquet
 
 from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers.base import (
@@ -49,15 +49,10 @@ class ParquetWriter(FileWriterBase):
     ) -> list[str]:
         """Return a list of columns that are missing in the batch."""
         if not self._catalog_manager:
-            raise exc.AirbyteLibInternalError(
-                message="Catalog manager should exist but does not."
-            )
+            raise exc.AirbyteLibInternalError(message="Catalog manager should exist but does not.")
         stream = self._catalog_manager.get_stream_config(stream_name)
         stream_property_names = stream.stream.json_schema["properties"].keys()
-        return [
-            col for col in stream_property_names
-            if col not in record_batch.schema.names
-        ]
+        return [col for col in stream_property_names if col not in record_batch.schema.names]
 
     @overrides
     def _write_batch(

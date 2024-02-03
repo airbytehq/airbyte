@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING, Any, cast, final
 
 import pyarrow as pa
 import ulid
-from overrides import overrides
 
 from airbyte_protocol.models import (
     AirbyteMessage,

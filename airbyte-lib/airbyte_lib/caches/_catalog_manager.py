@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING, Callable
-from pytest import Config
 
 from sqlalchemy import Column, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -75,18 +74,16 @@ class CatalogManager:
         else:
             # Keep existing streams untouched if not incoming
             unchanged_streams: list[ConfiguredAirbyteStream] = [
-                stream for stream in
-                self.source_catalog.streams
+                stream
+                for stream in self.source_catalog.streams
                 if stream.stream.name not in incoming_stream_names
             ]
             new_streams: list[ConfiguredAirbyteStream] = [
-                stream for stream in
-                incoming_source_catalog.streams
+                stream
+                for stream in incoming_source_catalog.streams
                 if stream.stream.name in incoming_stream_names
             ]
-            self.source_catalog = ConfiguredAirbyteCatalog(
-                streams=unchanged_streams + new_streams
-            )
+            self.source_catalog = ConfiguredAirbyteCatalog(streams=unchanged_streams + new_streams)
 
         self._ensure_internal_tables()
         engine = self._engine
@@ -96,9 +93,11 @@ class CatalogManager:
                 self._table_name_resolver(incoming_stream_name)
                 for incoming_stream_name in incoming_stream_names
             ]
-            result = session.query(CachedStream).filter(
-                CachedStream.table_name.in_(table_name_entries_to_delete)
-            ).delete()
+            result = (
+                session.query(CachedStream)
+                .filter(CachedStream.table_name.in_(table_name_entries_to_delete))
+                .delete()
+            )
             _ = result
             session.commit()
             insert_streams = [
@@ -131,10 +130,9 @@ class CatalogManager:
                 stream_name=stream_name,
                 context={
                     "available_streams": [
-                        stream.stream.name
-                        for stream in self.source_catalog.streams
+                        stream.stream.name for stream in self.source_catalog.streams
                     ],
-                }
+                },
             )
 
         if len(matching_streams) > 1:

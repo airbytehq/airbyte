@@ -7,7 +7,7 @@ import abc
 import enum
 from contextlib import contextmanager
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, cast, final
+from typing import TYPE_CHECKING, cast, final
 
 import pandas as pd
 import pyarrow as pa
@@ -38,7 +38,6 @@ if TYPE_CHECKING:
 
     from airbyte_protocol.models import (
         ConfiguredAirbyteCatalog,
-        ConfiguredAirbyteStream,
     )
 
     from airbyte_lib.datasets._base import DatasetBase
@@ -113,7 +112,6 @@ class SQLCacheBase(RecordProcessor):
         self,
         config: SQLCacheConfigBase | None = None,
         file_writer: FileWriterBase | None = None,
-        **kwargs: dict[str, Any],  # Added for future proofing purposes.
     ) -> None:
         self.config: SQLCacheConfigBase
         self._engine: Engine | None = None
