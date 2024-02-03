@@ -69,15 +69,19 @@ class AirbyteError(Exception):
         return self.__doc__.split("\n")[0] if self.__doc__ else ""
 
     def __str__(self) -> str:
-        special_properties = ["message", "guidance", "help_url", "log_text"]
-        properties_str = ", ".join(
-            f"{k}={v!r}"
-            for k, v in self.__dict__.items()
+        special_properties = ["message", "guidance", "help_url", "log_text", "context"]
+        display_properties = {
+            k: v for k, v in self.__dict__.items()
             if k not in special_properties and not k.startswith("_") and v is not None
+        }
+        display_properties.update(self.context or {})
+        context_str = "\n    ".join(
+            f"{str(k).replace('_', ' ').title()}: {v!r}"
+            for k, v in display_properties
         )
         exception_str = f"{self.__class__.__name__}: {self.get_message()}."
-        if properties_str:
-            exception_str += f" ({properties_str})"
+        if context_str:
+            exception_str += f"Additional Context:\n    {context_str}"
 
         if self.log_text:
             if isinstance(self.log_text, list):
