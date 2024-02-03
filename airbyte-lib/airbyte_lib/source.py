@@ -216,9 +216,8 @@ class Source:
     def docs_url(self) -> str:
         """Get the URL to the connector's documentation."""
         # TODO: Replace with docs URL from metadata when available
-        return (
-            "https://docs.airbyte.com/integrations/sources/" +
-            self.name.lower().replace("source-", "")
+        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace(
+            "source-", ""
         )
 
     @property
@@ -330,7 +329,7 @@ class Source:
                             help_url=self.docs_url,
                             context={
                                 "failure_reason": msg.connectionStatus.message,
-                            }
+                            },
                         )
                 raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
             except exc.AirbyteConnectorReadError as ex:
