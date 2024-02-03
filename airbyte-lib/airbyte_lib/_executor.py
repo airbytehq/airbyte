@@ -10,6 +10,8 @@ from pathlib import Path
 from shutil import rmtree
 from typing import IO, TYPE_CHECKING, Any, NoReturn, cast
 
+from rich import print
+
 from airbyte_lib import exceptions as exc
 from airbyte_lib.registry import ConnectorMetadata
 from airbyte_lib.telemetry import SourceTelemetryInfo, SourceType
@@ -188,6 +190,14 @@ class VenvExecutor(Executor):
 
         self.reported_version = None  # Reset the reported version from the previous installation
 
+    @property
+    def docs_url(self) -> str:
+        """Get the URL to the connector's documentation."""
+        # TODO: Refactor installation so that this can just live in the Source class.
+        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace(
+            "source-", ""
+        )
+
     def install(self) -> None:
         """Install the connector in a virtual environment.
 
@@ -217,7 +227,7 @@ class VenvExecutor(Executor):
 
         # Assuming the installation succeeded, store the installed version
         self.reported_version = self._get_installed_version(raise_on_error=False, recheck=True)
-        print("Source connector installed successfully!\n")
+        print(f"Connector '{self.name}' installed successfully!\n")
 
     def _get_installed_version(
         self,
