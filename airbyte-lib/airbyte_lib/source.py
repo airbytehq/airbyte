@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 import jsonschema
 import yaml
+from rich import print
 
 from airbyte_protocol.models import (
     AirbyteCatalog,
@@ -213,6 +214,14 @@ class Source:
         return yaml.dump(spec_dict)
 
     @property
+    def docs_url(self) -> str:
+        """Get the URL to the connector's documentation."""
+        # TODO: Replace with docs URL from metadata when available
+        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace(
+            "source-", ""
+        )
+
+    @property
     def discovered_catalog(self) -> AirbyteCatalog:
         """Get the raw catalog for the given streams.
 
@@ -318,9 +327,10 @@ class Source:
                             return  # Success!
 
                         raise exc.AirbyteConnectorCheckFailedError(
+                            help_url=self.docs_url,
                             context={
-                                "message": msg.connectionStatus.message,
-                            }
+                                "failure_reason": msg.connectionStatus.message,
+                            },
                         )
                 raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
             except exc.AirbyteConnectorReadError as ex:
@@ -332,6 +342,7 @@ class Source:
     def install(self) -> None:
         """Install the connector if it is not yet installed."""
         self.executor.install()
+        print("For configuration instructions, see: \n" f"{self.docs_url}#reference\n")
 
     def uninstall(self) -> None:
         """Uninstall the connector if it is installed.
