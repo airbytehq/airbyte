@@ -110,6 +110,16 @@ class Source:
                 )
         self._selected_stream_names = streams
 
+    def get_selected_streams(self) -> list[str]:
+        """Get the selected streams.
+
+        If no streams are selected, return all available streams.
+        """
+        if self._selected_stream_names:
+            return self._selected_stream_names
+
+        return self.get_available_streams()
+
     def set_config(
         self,
         config: dict[str, Any],
@@ -274,8 +284,20 @@ class Source:
                 },
             ) from KeyError(stream)
 
-        iterator: Iterator[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
-            self._read_with_catalog(streaming_cache_info, configured_catalog),
+        configured_stream = configured_catalog.streams[0]
+        col_list = configured_stream.stream.json_schema["properties"].keys()
+
+        def _with_missing_columns(records: Iterable[dict[str, Any]]) -> Iterator[dict[str, Any]]:
+            """Add missing columns to the record with null values."""
+            for record in records:
+                appended_columns = set(col_list) - set(record.keys())
+                appended_dict = {col: None for col in appended_columns}
+                yield {**record, **appended_dict}
+
+        iterator: Iterator[dict[str, Any]] = _with_missing_columns(
+            protocol_util.airbyte_messages_to_record_dicts(
+                self._read_with_catalog(streaming_cache_info, configured_catalog),
+            )
         )
         return LazyDataset(iterator)
 
@@ -423,7 +445,9 @@ class Source:
             cache = get_default_cache()
 
         cache.register_source(
-            source_name=self.name, incoming_source_catalog=self.configured_catalog
+            source_name=self.name,
+            incoming_source_catalog=self.configured_catalog,
+            stream_names=set(self.get_selected_streams()),
         )
         cache.process_airbyte_messages(self._tally_records(self._read(cache.get_telemetry_info())))
 

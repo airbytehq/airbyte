@@ -51,7 +51,7 @@ class FileWriterBase(RecordProcessor, abc.ABC):
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> FileWriterBatchHandle:
         """Process a record batch.
 
@@ -64,7 +64,7 @@ class FileWriterBase(RecordProcessor, abc.ABC):
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> FileWriterBatchHandle:
         """Write a batch of records to the cache.
 

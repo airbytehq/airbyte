@@ -7,7 +7,7 @@ import abc
 import enum
 from contextlib import contextmanager
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, cast, final
+from typing import TYPE_CHECKING, cast, final
 
 import pandas as pd
 import pyarrow as pa
@@ -38,7 +38,6 @@ if TYPE_CHECKING:
 
     from airbyte_protocol.models import (
         ConfiguredAirbyteCatalog,
-        ConfiguredAirbyteStream,
     )
 
     from airbyte_lib.datasets._base import DatasetBase
@@ -113,18 +112,19 @@ class SQLCacheBase(RecordProcessor):
         self,
         config: SQLCacheConfigBase | None = None,
         file_writer: FileWriterBase | None = None,
-        **kwargs: dict[str, Any],  # Added for future proofing purposes.
     ) -> None:
         self.config: SQLCacheConfigBase
         self._engine: Engine | None = None
         self._connection_to_reuse: Connection | None = None
-        super().__init__(config, **kwargs)
+        super().__init__(config)
         self._ensure_schema_exists()
-        self._catalog_manager: CatalogManager = CatalogManager(
-            self.get_sql_engine(), lambda stream_name: self.get_sql_table_name(stream_name)
+        self._catalog_manager = CatalogManager(
+            engine=self.get_sql_engine(),
+            table_name_resolver=lambda stream_name: self.get_sql_table_name(stream_name),
         )
-
-        self.file_writer = file_writer or self.file_writer_class(config)
+        self.file_writer = file_writer or self.file_writer_class(
+            config, catalog_manager=self._catalog_manager
+        )
         self.type_converter = self.type_converter_class()
 
     def __getitem__(self, stream: str) -> DatasetBase:
@@ -447,28 +447,12 @@ class SQLCacheBase(RecordProcessor):
         # columns["_airbyte_loaded_at"] = sqlalchemy.TIMESTAMP()
         return columns
 
-    @final
-    def _get_stream_config(
-        self,
-        stream_name: str,
-    ) -> ConfiguredAirbyteStream:
-        """Return the column definitions for the given stream."""
-        return self._catalog_manager.get_stream_config(stream_name)
-
-    @final
-    def _get_stream_json_schema(
-        self,
-        stream_name: str,
-    ) -> dict[str, Any]:
-        """Return the column definitions for the given stream."""
-        return self._get_stream_config(stream_name).stream.json_schema
-
     @overrides
     def _write_batch(
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> FileWriterBatchHandle:
         """Process a record batch.
 
@@ -756,15 +740,27 @@ class SQLCacheBase(RecordProcessor):
         self,
         source_name: str,
         incoming_source_catalog: ConfiguredAirbyteCatalog,
+        stream_names: set[str],
     ) -> None:
+        """Register the source with the cache.
+
+        We use stream_names to determine which streams will receive data, and
+        we only register the stream if is expected to receive data.
+
+        This method is called by the source when it is initialized.
+        """
         self._ensure_schema_exists()
-        self._catalog_manager.register_source(source_name, incoming_source_catalog)
+        super().register_source(
+            source_name,
+            incoming_source_catalog,
+            stream_names=stream_names,
+        )
 
     @property
     @overrides
     def _streams_with_data(self) -> set[str]:
         """Return a list of known streams."""
-        if not self._catalog_manager.source_catalog:
+        if not self._catalog_manager:
             raise exc.AirbyteLibInternalError(
                 message="Cannot get streams with data without a catalog.",
             )
