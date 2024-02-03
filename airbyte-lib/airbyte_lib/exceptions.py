@@ -77,7 +77,7 @@ class AirbyteError(Exception):
         display_properties.update(self.context or {})
         context_str = "\n    ".join(
             f"{str(k).replace('_', ' ').title()}: {v!r}"
-            for k, v in display_properties
+            for k, v in display_properties.items()
         )
         exception_str = f"{self.__class__.__name__}: {self.get_message()}."
         if context_str:
