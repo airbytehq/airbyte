@@ -4,17 +4,39 @@ airbyte-lib is a library that allows to run Airbyte syncs embedded into any Pyth
 
 ## Development
 
-* Make sure [Poetry is installed](https://python-poetry.org/docs/#).
-* Run `poetry install`
-* For examples, check out the `examples` folder. They can be run via `poetry run python examples/<example file>`
-* Unit tests and type checks can be run via `poetry run pytest`
+- Make sure [Poetry is installed](https://python-poetry.org/docs/#).
+- Run `poetry install`
+- For examples, check out the `examples` folder. They can be run via `poetry run python examples/<example file>`
+- Unit tests and type checks can be run via `poetry run pytest`
 
 ## Release
 
-* In your PR:
-   * Bump the version in `pyproject.toml`
-   * Add a changelog entry to the table below
-* Once the PR is merged, go to Github and trigger the `Publish AirbyteLib Manually` workflow. This will publish the new version to PyPI.
+- In your PR:
+  - Bump the version in `pyproject.toml`
+  - Add a changelog entry to the table below
+- Once the PR is merged, go to Github and trigger the `Publish AirbyteLib Manually` workflow. This will publish the new version to PyPI.
+
+## Secrets Management
+
+AirbyteLib can auto-import secrets from the following sources:
+
+1. Environment variables.
+2. Google Colab secrets.
+
+### Retrieving Secrets
+
+```python
+from airbyte_lib import get_secret, SecretSource
+
+source = get_connection("source-github")
+source.set_config(
+   "credentials": {
+      "personal_access_token": get_secret("GITHUB_PERSONAL_ACCESS_TOKEN"),
+   }
+)
+```
+
+The `get_secret()` function accepts an optional `source` argument of enum type `SecretSource`. If left blank, the `source` arg will be `SecretSource.ANY`. If `source` is set to a specific source, then only that source will be checked. If a list of `SecretSource` entries is passed, then the sources will be checked using the provided ordering.
 
 ### Versioning
 
@@ -30,7 +52,7 @@ A unit test validates the documentation is up to date.
 
 To validate a source connector for compliance, the `airbyte-lib-validate-source` script can be used. It can be used like this:
 
-```
+```bash
 airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.json
 ```
 
