@@ -131,7 +131,6 @@ so we insert as values instead.</p>
             </div>
             <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="DuckDBCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
-                <dd id="DuckDBCache.source_catalog" class="variable">source_catalog</dd>
                 <dd id="DuckDBCache.process_stdin" class="function">process_stdin</dd>
                 <dd id="DuckDBCache.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="DuckDBCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
@@ -479,6 +478,23 @@ methods except for __getitem__, __iter__, and __len__.</p>
 <p>TODO: In the future if not set, the default behavior may exclude streams which the connector
 would default to disabled. (For instance, streams that require a premium license
 are sometimes disabled by default within the connector.)</p>
+</div>
+
+
+                            </div>
+                            <div id="Source.get_selected_streams" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_selected_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.get_selected_streams"></a>
+    
+            <div class="docstring"><p>Get the selected streams.</p>
+
+<p>If no streams are selected, return all available streams.</p>
 </div>
 
 
