@@ -341,6 +341,10 @@ class Source:
     def install(self) -> None:
         """Install the connector if it is not yet installed."""
         self.executor.install()
+        print(
+            "For configuration instructions, see: \n"
+            f"{self.docs_url}#reference\n"
+        )
 
     def uninstall(self) -> None:
         """Uninstall the connector if it is installed.

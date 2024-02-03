@@ -217,10 +217,7 @@ class VenvExecutor(Executor):
 
         # Assuming the installation succeeded, store the installed version
         self.reported_version = self._get_installed_version(raise_on_error=False, recheck=True)
-        print(
-            "Source connector installed successfully! For configuration instructions, see: \n"
-            f"{self.docs_url}#reference\n"
-        )
+        print("Source connector installed successfully!\n")
 
     def _get_installed_version(
         self,
