@@ -37,6 +37,10 @@ def get_secret(
     then the sources will be checked using the provided ordering.
     """
     sources = [source] if not isinstance(source, list) else source
+    if SecretSource.ANY in sources:
+        sources += [s for s in ALL_SOURCES if s not in sources]
+        sources.remove(SecretSource.ANY)
+
     for s in sources:
         val = _get_secret_from_source(secret_name, s)
         if val:
