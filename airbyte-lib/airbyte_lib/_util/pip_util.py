@@ -12,7 +12,13 @@ def github_pip_url(
     package_name: str | None = None,
     subdirectory: str | None = None,
 ) -> str:
-    """Return the pip URL for a GitHub repository."""
+    """Return the pip URL for a GitHub repository.
+
+    Results will look like:
+    - `git+airbytehq/airbyte.git@master#egg=airbyte-lib&subdirectory=airbyte-lib'
+    - `git+airbytehq/airbyte.git@my-branch#egg=source-github
+       &subdirectory=airbyte-integrations/connectors/source-github'
+    """
     if not branch_or_ref:
         branch_or_ref = "master" if repo == "airbyte" else "main"
 
