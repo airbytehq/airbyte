@@ -35,15 +35,17 @@ def github_pip_url(
 
 def connector_pip_url(
     connector_name: str,
+    /,
+    branch: str,
     *,
-    branch: str | None = None,
+    owner: str = "airbytehq",
 ) -> str:
     """Return a pip URL for a connector in the main `airbytehq/airbyte` git repo."""
     if not connector_name.startswith("source-") and not connector_name.startswith("destination-"):
         connector_name = "source-" + connector_name
 
     return github_pip_url(
-        owner="airbytehq",
+        owner=owner,
         repo="airbyte",
         branch_or_ref=branch,
         package_name=f"source-{connector_name}",
