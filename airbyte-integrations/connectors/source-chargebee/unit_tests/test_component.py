@@ -3,7 +3,7 @@
 #
 
 import pytest
-from source_chargebee.components import CustomFieldTransformation
+from source_chargebee.components import CustomFieldTransformation, IncrementalSingleSliceCursor
 
 
 @pytest.mark.parametrize(
@@ -27,3 +27,12 @@ def test_field_transformation(record, expected_record):
     transformer = CustomFieldTransformation()
     transformed_record = transformer.transform(record)
     assert transformed_record == expected_record
+
+def test_slicer():
+    date_time_dict = {"updated_at": 1662459010}
+    slicer = IncrementalSingleSliceCursor(config={}, parameters={}, cursor_field="updated_at")
+    slicer.close_slice(date_time_dict, date_time_dict)
+    assert slicer.get_stream_state() == date_time_dict
+    assert slicer.get_request_headers() == {}
+    assert slicer.get_request_body_data() == {}
+    assert slicer.get_request_body_json() == {}
