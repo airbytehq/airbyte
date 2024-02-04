@@ -294,13 +294,16 @@ class Source:
             ) from KeyError(stream)
 
         configured_stream = configured_catalog.streams[0]
-        col_list = configured_stream.stream.json_schema["properties"].keys()
+        all_properties = set(configured_stream.stream.json_schema["properties"].keys())
 
         def _with_missing_columns(records: Iterable[dict[str, Any]]) -> Iterator[dict[str, Any]]:
             """Add missing columns to the record with null values."""
             for record in records:
-                appended_columns = set(col_list) - set(record.keys())
-                appended_dict = {col: None for col in appended_columns}
+                existing_properties_lower = set(map(str.lower, (record.keys())))
+                appended_dict = {
+                    prop: None for prop in all_properties
+                    if prop.lower() not in existing_properties_lower
+                }
                 yield {**record, **appended_dict}
 
         iterator: Iterator[dict[str, Any]] = _with_missing_columns(
