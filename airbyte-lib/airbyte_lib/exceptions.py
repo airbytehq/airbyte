@@ -256,6 +256,9 @@ class AirbyteLibSecretNotFoundError(AirbyteError):
     """Secret not found."""
 
     guidance = "Please ensure that the secret is set."
+    help_url = (
+        "https://docs.airbyte.com/using-airbyte/airbyte-lib/getting-started#secrets-management"
+    )
 
     secret_name: str | None = None
     sources: list[str] | None = None
