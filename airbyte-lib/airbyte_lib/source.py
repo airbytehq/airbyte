@@ -301,7 +301,8 @@ class Source:
             for record in records:
                 existing_properties_lower = set(map(str.lower, (record.keys())))
                 appended_dict = {
-                    prop: None for prop in all_properties
+                    prop: None
+                    for prop in all_properties
                     if prop.lower() not in existing_properties_lower
                 }
                 yield {**record, **appended_dict}

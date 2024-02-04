@@ -56,8 +56,9 @@ class ParquetWriter(FileWriterBase):
         stream = self._catalog_manager.get_stream_config(stream_name)
         stream_property_names = stream.stream.json_schema["properties"].keys()
         return [
-            col for col in stream_property_names if col.lower()
-            not in set(map(str.lower, record_batch.schema.names))
+            col
+            for col in stream_property_names
+            if col.lower() not in set(map(str.lower, record_batch.schema.names))
         ]
 
     @overrides
