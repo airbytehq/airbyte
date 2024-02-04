@@ -47,12 +47,18 @@ class ParquetWriter(FileWriterBase):
         stream_name: str,
         record_batch: pa.Table,
     ) -> list[str]:
-        """Return a list of columns that are missing in the batch."""
+        """Return a list of columns that are missing in the batch.
+
+        The comparison is based on a case-insensitive comparison of the column names.
+        """
         if not self._catalog_manager:
             raise exc.AirbyteLibInternalError(message="Catalog manager should exist but does not.")
         stream = self._catalog_manager.get_stream_config(stream_name)
         stream_property_names = stream.stream.json_schema["properties"].keys()
-        return [col for col in stream_property_names if col not in record_batch.schema.names]
+        return [
+            col for col in stream_property_names if col.lower()
+            not in set(map(str.lower, record_batch.schema.names))
+        ]
 
     @overrides
     def _write_batch(
