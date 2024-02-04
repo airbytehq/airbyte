@@ -12,16 +12,14 @@ from __future__ import annotations
 import airbyte_lib as ab
 
 
-ab.get_secret("GITHUB_PERSONAL_ACCESS_TOKEN")
-
-SCALE = 5_000_000  # Number of records to generate between users and purchases.
+GITHUB_TOKEN = ab.get_secret("GITHUB_PERSONAL_ACCESS_TOKEN")
 
 
 source = ab.get_connector("source-github")
 source.set_config({
     "repositories": ["airbytehq/airbyte"],
     "credentials": {
-        "personal_access_token": ab.get_secret("GITHUB_PERSONAL_ACCESS_TOKEN")
+        "personal_access_token": GITHUB_TOKEN
     }
 })
 source.check()
