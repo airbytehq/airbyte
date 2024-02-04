@@ -80,6 +80,18 @@ definitions:
           updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     incremental_sync:
       $ref: "#/definitions/date_stream_slicer"
+  semi_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_chargebee.components.IncrementalSingleSliceCursor
+      cursor_field: "updated_at"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/nested_selector"
+        record_filter:
+          condition: "{{ record['updated_at'] >= ( stream_state.get('prior_state', {}).get('updated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}"
   addon_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -205,7 +217,7 @@ definitions:
       path: "/events"
       stream_cursor_field: "occurred_at"
   gift_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     $parameters:
       name: "gift"
       primary_key: "id"
@@ -289,7 +301,7 @@ definitions:
       path: "/transactions"
       stream_cursor_field: "updated_at"
   unbilled_charge_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     $parameters:
       name: "unbilled_charge"
       primary_key: "id"
@@ -350,6 +362,16 @@ definitions:
       path: "/quotes/{{ stream_slice.id }}/quote_line_groups"
   site_migration_detail_stream:
     $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_chargebee.components.IncrementalSingleSliceCursor
+      cursor_field: "migrated_at"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/nested_selector"
+        record_filter:
+          condition: "{{ record['updated_at'] >= ( stream_state.get('prior_state', {}).get('updated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}"
     $parameters:
       name: "site_migration_detail"
       primary_key: "entity_id"
