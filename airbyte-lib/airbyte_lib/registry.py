@@ -105,3 +105,8 @@ def get_connector_metadata(name: str) -> ConnectorMetadata:
             },
         )
     return cache[name]
+
+
+def get_all_source_names() -> list[str]:
+    """Return a list of all available source names."""
+    return sorted(_get_registry_cache().keys())

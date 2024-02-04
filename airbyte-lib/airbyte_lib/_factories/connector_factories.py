@@ -1,14 +1,51 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
+import difflib
 import shutil
 from pathlib import Path
 from typing import Any
 
+from numpy import short
+
 from airbyte_lib import exceptions as exc
 from airbyte_lib._executor import PathExecutor, VenvExecutor
-from airbyte_lib.registry import ConnectorMetadata, get_connector_metadata
+from airbyte_lib.registry import ConnectorMetadata, get_all_source_names, get_connector_metadata
 from airbyte_lib.source import Source
+
+
+def _find_source_by_name(source_name: str) -> tuple[str | None, list[str] | None]:
+    """Find a source by name, using fuzzy lookups if necessary.
+
+    Returns a tuple with the following values:
+    - The found source name if it exists.
+    - A list of similar source names if the source does not exist.
+
+    Usage:
+    ```
+    source_name, similar_source_names = _find_source("source-google-sheets")
+    if source_name:
+        print(f"Found source: {source_name}")
+    else:
+        print(f"Source not found. Did you mean one of these? {similar_source_names}")
+    ```
+    """
+    all_source_names = get_all_source_names()
+    short_name = source_name.replace("source-", "")
+    if source_name in all_source_names:
+        return short_name, None
+
+    all_short_names = [
+        connector_name.replace("source-", "")
+        for connector_name in all_source_names
+    ]
+    if short_name in all_short_names:
+        return short_name, None
+
+    matches: list[str] = difflib.get_close_matches(
+        word=short_name, possibilities=all_short_names, n=5, cutoff=0.6
+    )
+    return None, matches
 
 
 def get_connector(
@@ -87,4 +124,71 @@ def get_connector(
         executor=executor,
         name=name,
         config=config,
+    )
+
+
+def _normalize_source_name(source_name: str) -> str:
+    """Normalize a source name.
+
+    All spaces or underscores will be normalized to dashes. For example, "google sheets" and
+    "google_sheets" will normalize to "google-sheets". If the source name has the "source-" prefix,
+    it will be removed. The source name will also be lower-cased.
+
+    Args:
+        source_name: source name
+
+    Returns:
+        str: normalized source name
+    """
+    return source_name.lower() \
+        .replace("_", "-").replace(" ", "-") \
+        .replace("source-", "")
+
+
+def get_source(
+    source_name: str,
+    version: str | None = None,
+    pip_url: str | None = None,
+    config: dict[str, Any] | None = None,
+    *,
+    local_executable: Path | str | None = None,
+    install_if_missing: bool = True,
+) -> Source:
+    """Get a source by name.
+
+    All spaces or underscores will be normalized to dashes. For example, "google sheets" and
+    "google_sheets" will normalize to "google-sheets". If an exact match is not found, a fuzzy
+    lookup will be performed and an error will print that provides the closest-known matches.
+
+    Args:
+        source_name: source name. The name may in the format "source-<connector-name>" or just
+            "<connector-name>". For example, "source-google-sheets" and "google-sheets" are both
+            valid.
+
+    Returns:
+        Source: The created source object.
+
+    Raises:
+        AirbyteLibInputError: if the source is not found. The error message will include a list of
+            similar source names if any are found.
+    """
+    normalized_short_name = _normalize_source_name(source_name)
+    if normalized_short_name != source_name:
+        print(f"Normalizing input '{source_name}' to source name '{normalized_short_name}'...")
+        source_name = normalized_short_name
+
+    found_source_name, similar_source_names = _find_source_by_name(source_name)
+    if found_source_name is None:
+        err_msg = f"Source '{source_name}' not found."
+        if similar_source_names:
+            err_msg += f" Did you mean one of these? {similar_source_names}"
+        raise exc.AirbyteLibInputError(message=err_msg)
+
+    return get_connector(
+        f"source-{found_source_name}",
+        version=version,
+        pip_url=pip_url,
+        config=config,
+        local_executable=local_executable,
+        install_if_missing=install_if_missing,
     )
