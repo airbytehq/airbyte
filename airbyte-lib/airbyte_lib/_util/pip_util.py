@@ -22,7 +22,7 @@ def github_pip_url(
     if not branch_or_ref:
         branch_or_ref = "master" if repo == "airbyte" else "main"
 
-    result = f"git+{owner}/{repo}.git"
+    result = f"git+https://github.com/{owner}/{repo}.git"
     if branch_or_ref:
         result += f"@{branch_or_ref}"
     if package_name:
@@ -43,7 +43,9 @@ def connector_pip_url(
         connector_name = "source-" + connector_name
 
     return github_pip_url(
-        branch=branch,
+        owner="airbytehq",
+        repo="airbyte",
+        branch_or_ref=branch,
         package_name=f"source-{connector_name}",
         subdirectory=f"airbyte-integrations/connectors/{connector_name}",
     )
