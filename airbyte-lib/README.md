@@ -22,6 +22,7 @@ AirbyteLib can auto-import secrets from the following sources:
 
 1. Environment variables.
 2. [Google Colab secrets](https://medium.com/@parthdasawant/how-to-use-secrets-in-google-colab-450c38e3ec75).
+3. Manual entry via [`getpass`](https://docs.python.org/3.9/library/getpass.html).
 
 _Note: Additional secret store options may be supported in the future. [More info here.](https://github.com/airbytehq/airbyte-lib-private-beta/discussions/5)_
 
@@ -40,6 +41,8 @@ source.set_config(
 
 The `get_secret()` function accepts an optional `source` argument of enum type `SecretSource`. If omitted or set to `SecretSource.ANY`, AirbyteLib will search all available secrets sources. If `source` is set to a specific source, then only that source will be checked. If a list of `SecretSource` entries is passed, then the sources will be checked using the provided ordering.
 
+By default, AirbyteLib will prompt the user for any requested secrets that are not provided via other secret managers. You can disable this prompt by passing `prompt=False` to `get_secret()`.
+
 ### Versioning
 
 Versioning follows [Semantic Versioning](https://semver.org/). For new features, bump the minor version. For bug fixes, bump the patch version. For pre-releases, append `dev.N` to the version. For example, `0.1.0dev.1` is the first pre-release of the `0.1.0` version.
@@ -48,7 +51,7 @@ Versioning follows [Semantic Versioning](https://semver.org/). For new features,
 
 Regular documentation lives in the `/docs` folder. Based on the doc strings of public methods, we generate API documentation using [pdoc](https://pdoc.dev). To generate the documentation, run `poetry run generate-docs`. The documentation will be generated in the `docs/generate` folder. This needs to be done manually when changing the public interface of the library.
 
-A unit test validates the documentation is up to date. 
+A unit test validates the documentation is up to date.
 
 ## Validating source connectors
 
