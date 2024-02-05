@@ -107,6 +107,8 @@ public abstract class DebeziumPropertiesManager {
     }
   }
 
+  // We need to keep the validation rule the same as debezium engine, which is defined here:
+  // https://github.com/debezium/debezium/blob/c51ef3099a688efb41204702d3aa6d4722bb4825/debezium-core/src/main/java/io/debezium/schema/AbstractTopicNamingStrategy.java#L178
   private static boolean isValidCharacter(char c) {
     return c == '.' || c == '_' || c == '-' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9';
   }
