@@ -58,7 +58,7 @@ class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
     this.methodNames = methodNames;
   }
 
-  static private String createMapKey(Class<?> containerFactoryClass,  String imageName, String... methods) {
+  static private String createMapKey(Class<?> containerFactoryClass, String imageName, String... methods) {
     final Stream<String> mapKeyElements = Stream.concat(Stream.of(containerFactoryClass.getCanonicalName(), imageName), Stream.of(methods));
     return mapKeyElements.collect(Collectors.joining("+"));
   }

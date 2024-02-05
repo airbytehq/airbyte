@@ -15,8 +15,8 @@ public interface ContainerFactory<C extends JdbcDatabaseContainer<?>> {
 
   /**
    * Creates a new, unshared testcontainer instance. This usually wraps the default constructor for
-   * the testcontainer type.
-   * Unless you know exactly what you're doing, call {@link #shared(String, String...)} or {@link #unshared(String, String...)} instead.
+   * the testcontainer type. Unless you know exactly what you're doing, call
+   * {@link #shared(String, String...)} or {@link #unshared(String, String...)} instead.
    */
   C createNewContainer(DockerImageName imageName);
 
@@ -38,4 +38,5 @@ public interface ContainerFactory<C extends JdbcDatabaseContainer<?>> {
   default C unshared(String imageName, String... methods) {
     return ContainerFactoryWrapper.createUnshared(this, imageName, methods);
   }
+
 }
