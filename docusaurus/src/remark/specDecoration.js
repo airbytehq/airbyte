@@ -53,10 +53,13 @@ async function injectDefaultAirbyteLibSection(vfile, ast) {
       });
     }
   });
+  if (!added) {
+    throw new Error(`Could not find a changelog heading in ${vfile.path} to add the default airbyte-lib section. This connector won't have a reference section. Make sure there is either a ## Changelog section or add a manual reference section.`);
+  }
 }
 
 function isChangelogHeading(node) {
-  return node.depth === 2 && node.children.length === 1 && node.children[0].value === "Changelog";
+  return node.depth === 2 && node.children.length === 1 && node.children[0].value.toLowerCase() === "changelog";
 }
 
 
