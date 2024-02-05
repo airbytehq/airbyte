@@ -26,4 +26,9 @@ data:
     sl: 100
     ql: 200
   supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: 2023-08-30
+        message: "Update spec to use token and ingest all 3 streams correctly"
 metadataSpecVersion: "1.0"
