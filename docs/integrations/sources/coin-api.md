@@ -10,8 +10,8 @@ syncs.
 
 This source is capable of syncing the following streams:
 
-* `ohlcv_historical_data`
-* `trades_historical_data`
+- `ohlcv_historical_data`
+- `trades_historical_data`
 
 ### Features
 
