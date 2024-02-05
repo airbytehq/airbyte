@@ -58,7 +58,7 @@ def _run_subprocess_and_raise_on_failure(args: list[str]) -> None:
 
 def full_tests(connector_name: str, sample_config: str) -> None:
     print("Creating source and validating spec and version...")
-    source = ab.get_connector(
+    source = ab.get_source(
         # TODO: FIXME: noqa: SIM115, PTH123
         connector_name,
         config=json.load(open(sample_config)),  # noqa: SIM115, PTH123,
@@ -90,7 +90,7 @@ def full_tests(connector_name: str, sample_config: str) -> None:
 
 def install_only_test(connector_name: str) -> None:
     print("Creating source and validating spec is returned successfully...")
-    source = ab.get_connector(connector_name)
+    source = ab.get_source(connector_name)
     source._get_spec(force_refresh=True)  # noqa: SLF001
 
 
