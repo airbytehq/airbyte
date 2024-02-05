@@ -113,12 +113,6 @@
           "updated_time": { "type": "string", "format": "date-time" }
         }
       }
-    },
-    "brand_safety_content_filter_levels": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
     }
   }
 }

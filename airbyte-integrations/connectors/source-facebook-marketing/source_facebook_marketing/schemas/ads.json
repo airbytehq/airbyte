@@ -449,12 +449,6 @@
           }
         }
       }
-    },
-    "brand_safety_content_filter_levels": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
     }
   }
 }
