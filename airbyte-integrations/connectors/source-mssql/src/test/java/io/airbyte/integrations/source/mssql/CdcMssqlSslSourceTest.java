@@ -17,7 +17,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @Disabled
 public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
@@ -27,11 +26,7 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
   }
 
   protected MSSQLServerContainer<?> createContainer() {
-    final MsSQLContainerFactory containerFactory = new MsSQLContainerFactory();
-    final MSSQLServerContainer<?> container =
-        containerFactory.createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
-    containerFactory.withSslCertificates(container);
-    return container;
+    return new MsSQLContainerFactory().unshared("mcr.microsoft.com/mssql/server:2022-latest", "withAgent", "withSslCertificates");
   }
 
   @Override
