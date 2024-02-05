@@ -39,37 +39,51 @@ def test_documentation_prerequisites_section(connector_spec, docs_path, should_f
 
 
 @pytest.mark.parametrize(
-    "metadata, docs_path, should_fail",
+    "metadata, docs_path, should_fail, failure",
     (
             # FAIL: Docs does not have required headers from standard template
             (
                     {"data": {"name": "GitHub"}},
                     "data/docs/incorrect_not_all_structure.md",
                     True,
+                    "Missing headers:",
             ),
-            # SUCCESS: Docs follow standard template
+            # FAIL: Docs does not have required headers from standard template
+            (
+                    {"data": {"name": "Oracle Netsuite"}},
+                    "data/docs/with_not_required_steps.md",
+                    True,
+                    "Actual Heading: 'Create Oracle NetSuite account'. Possible correct heading",
+            ),
+            # # SUCCESS: Docs follow standard template
             (
                     {"data": {"name": "GitHub"}},
                     "data/docs/correct.md",
                     False,
+                    "",
+            ),
+            # Fail: Incorrect header order
+            (
+                    {"data": {"name": "GitHub"}},
+                    "data/docs/incorrect_header_order.md",
+                    True,
+                    "Actual Heading: 'Prerequisites'. Expected Heading: 'GitHub'",
             ),
     )
 )
-def test_docs_structure_is_correct(mocker, metadata, docs_path, should_fail):
-    mocker.patch.object(conftest.pytest, "fail")
-
+def test_docs_structure_is_correct(mocker, metadata, docs_path, should_fail, failure):
     t = _TestConnectorDocumentation()
 
     docs_path = Path(__file__).parent / docs_path
     with open(docs_path, "r") as f:
         documentation = f.read().rstrip()
 
-    t.test_docs_structure(documentation, metadata)
-
-    if should_fail is True:
-        conftest.pytest.fail.assert_called_once()
+    if should_fail:
+        with pytest.raises(BaseException) as e:
+            t.test_docs_structure(documentation, metadata)
+        assert e.match(failure)
     else:
-        conftest.pytest.fail.assert_not_called()
+        t.test_docs_structure(documentation, metadata)
 
 
 @pytest.mark.parametrize(
@@ -80,12 +94,6 @@ def test_docs_structure_is_correct(mocker, metadata, docs_path, should_fail):
                     {"data": {"name": "GitHub"}},
                     "data/docs/incorrect_not_all_structure.md",
                     True,
-            ),
-            # SUCCESS: Section descriptions follow standard template
-            (
-                    {"data": {"name": "GitHub"}},
-                    "data/docs/correct.md",
-                    False,
             ),
             # SUCCESS: Section descriptions follow standard template
             (
@@ -136,7 +144,7 @@ def test_docs_description(mocker, metadata, docs_path, should_fail):
 )
 def test_docs_urls(docs_path, should_fail):
     t = _TestConnectorDocumentation()
-
+    docs_path = Path(__file__).parent / docs_path
     with open(docs_path, "r") as f:
         documentation = f.read().rstrip()
 
