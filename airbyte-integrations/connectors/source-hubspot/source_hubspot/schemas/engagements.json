@@ -221,15 +221,15 @@
         },
         "preMeetingProspectReminders": {
           "type": ["null", "array"],
-          "items" : {}
+          "items": {}
         },
         "attendeeOwnerIds": {
           "type": ["null", "array"],
-          "items" : {}
+          "items": {}
         },
         "guestEmails": {
           "type": ["null", "array"],
-          "items" : {}
+          "items": {}
         },
         "from": {
           "type": ["null", "object"],
@@ -437,11 +437,11 @@
     },
     "metadata_attendeeOwnerIds": {
       "type": ["null", "array"],
-      "items" : {}
+      "items": {}
     },
     "metadata_guestEmails": {
       "type": ["null", "array"],
-      "items" : {}
+      "items": {}
     },
     "metadata_iCalUid": {
       "type": ["null", "string"]
@@ -466,7 +466,7 @@
     },
     "metadata_preMeetingProspectReminders": {
       "type": ["null", "array"],
-      "items" : {}
+      "items": {}
     },
     "metadata_body": {
       "type": ["null", "string"]
