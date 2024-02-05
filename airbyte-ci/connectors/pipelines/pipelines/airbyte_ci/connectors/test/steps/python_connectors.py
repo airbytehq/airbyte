@@ -210,7 +210,6 @@ class AirbyteLibValidation(Step):
             return self.skip("Connector is not published on pypi, skipping airbyte-lib validation.")
 
         test_environment = await self.install_testing_environment(with_poetry(self.context))
-
         test_execution = test_environment.with_(
             hacks.never_fail_exec(["airbyte-lib-validate-source", "--connector-dir", ".", "--validate-install-only"])
         )
