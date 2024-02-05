@@ -206,7 +206,6 @@ class AirbyteLibValidation(Step):
         Returns:
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
-        print(self.context.connector.metadata)
         if dpath.util.get(self.context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
             return self.skip("Connector is not published on pypi, skipping airbyte-lib validation.")
 
