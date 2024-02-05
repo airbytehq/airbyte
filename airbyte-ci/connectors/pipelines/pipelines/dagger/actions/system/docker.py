@@ -52,8 +52,6 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
                 ]
             )
         )
-        # Expose the docker host port.
-        .with_exposed_port(DOCKER_HOST_PORT)
         # We cache /tmp for file sharing between client and daemon.
         .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
@@ -143,9 +141,13 @@ def with_global_dockerd_service(
     if docker_hub_username_secret and docker_hub_password_secret:
         # Docker login happens late because there's a cache buster in the docker login command.
         dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
-    return dockerd_container.with_exec(
-        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
-    ).as_service()
+    return (
+        dockerd_container.with_exec(
+            ["dockerd", "--log-level=debug", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
+        )
+        .with_exposed_port(DOCKER_HOST_PORT)
+        .as_service()
+    )
 
 
 def with_bound_docker_host(
