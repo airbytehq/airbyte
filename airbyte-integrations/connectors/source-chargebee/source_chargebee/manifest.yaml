@@ -222,6 +222,7 @@ definitions:
       name: "gift"
       primary_key: "id"
       path: "/gifts"
+      stream_cursor_field: "updated_at"
   order_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -306,6 +307,7 @@ definitions:
       name: "unbilled_charge"
       primary_key: "id"
       path: "/unbilled_charges"
+      stream_cursor_field: "updated_at"
   virtual_bank_account_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -376,6 +378,7 @@ definitions:
       name: "site_migration_detail"
       primary_key: "entity_id"
       path: "/site_migration_details"
+      cursor_field: "migrated_at"
   comment_stream:
     $ref: "#/definitions/base_stream"
     retriever:
