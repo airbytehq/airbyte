@@ -251,6 +251,7 @@ class AirbyteStreamNotFoundError(AirbyteConnectorError):
     stream_name: str | None = None
     available_streams: list[str] | None = None
 
+
 @dataclass
 class AirbyteLibSecretNotFoundError(AirbyteError):
     """Secret not found."""
