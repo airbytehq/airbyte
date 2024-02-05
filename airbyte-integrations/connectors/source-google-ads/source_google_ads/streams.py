@@ -38,32 +38,8 @@ class GoogleAdsStream(Stream, ABC):
         return query
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
-        logger.info("Primary key: " + str(self.primary_key) + " Name " + str(self.name))
-        if self.primary_key:
-            latest_records = {}
-            for result in response:
-                if self.name == 'ad_group_ad_asset_view':
-                    yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-                    continue
-
-                record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-                record_id = tuple(record.get(key) for key in self.primary_key)
-
-                current_record_date = record.get("segments.date")
-                latest_record_date = latest_records.get(record_id, {}).get("segments.date")
-
-                if (latest_records.get(record_id) is None
-                        or current_record_date is None
-                        or (latest_record_date and pendulum.parse(latest_record_date) < pendulum.parse(current_record_date))):
-                    latest_records[record_id] = record
-
-            if latest_records:
-                for value in latest_records.values():
-                    yield value
-
-        else:
-            for result in response:
-                yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+        for result in response:
+            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
