@@ -89,7 +89,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.tdLocks = new ConcurrentHashMap<>();
     this.internalTdLocks = new ConcurrentHashMap<>();
     this.executorService = Executors.newFixedThreadPool(getCountOfTypeAndDedupeThreads(),
-                                                        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
+        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
   public DefaultTyperDeduper(

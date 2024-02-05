@@ -50,7 +50,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
     this.v1V2Migrator = v1V2Migrator;
     this.v2TableMigrator = v2TableMigrator;
     this.executorService = Executors.newFixedThreadPool(getCountOfTypeAndDedupeThreads(),
-                                                        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
+        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
   @Override
