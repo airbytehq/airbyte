@@ -1408,7 +1408,9 @@ class TestConnectorDocumentation(BaseTest):
         }
         return descriptions_paths
 
-    def test_prerequisites_content(self, operational_certification_test, actual_connector_spec: ConnectorSpecification, connector_documentation: str, docs_path: str):
+    def test_prerequisites_content(
+        self, operational_certification_test, actual_connector_spec: ConnectorSpecification, connector_documentation: str, docs_path: str
+    ):
         node = docs_utils.documentation_node(connector_documentation)
         header_line_map = {docs_utils.header_name(n): n.map[1] for n in node if n.type == self.HEADING}
         headings = tuple(header_line_map.keys())
@@ -1426,8 +1428,9 @@ class TestConnectorDocumentation(BaseTest):
             required_titles, has_credentials = docs_utils.required_titles_from_spec(actual_connector_spec.connectionSpecification)
 
             for title in required_titles:
-                assert title in prereq_content, (f"Required '{title}' field is not in {self.PREREQUISITES} section "
-                                                 f"or title in spec doesn't match name in the docs.")
+                assert title in prereq_content, (
+                    f"Required '{title}' field is not in {self.PREREQUISITES} section " f"or title in spec doesn't match name in the docs."
+                )
 
             if has_credentials:
                 # credentials has specific check for keywords as we have a lot of way how to describe this step
@@ -1456,7 +1459,7 @@ class TestConnectorDocumentation(BaseTest):
             if template_headings_value == self.CONNECTOR_SPECIFIC_HEADINGS:
                 # check that actual header is not in required headers, as required headers should be on a right place and order
                 if heading_names_value not in template_headings:
-                    heading_names_index += 1 # go to the next actual header as CONNECTOR_SPECIFIC_HEADINGS can be more than one
+                    heading_names_index += 1  # go to the next actual header as CONNECTOR_SPECIFIC_HEADINGS can be more than one
                     continue
                 else:
                     # if actual header is required go to the next template header to validate actual header order
@@ -1479,7 +1482,9 @@ class TestConnectorDocumentation(BaseTest):
         if template_headings_index != template_headings_len:
             pytest.fail(docs_utils.reason_missing_titles(template_headings_index, template_headings))
 
-    def test_docs_descriptions(self, operational_certification_test, docs_path: str, connector_documentation: str, connector_metadata: dict):
+    def test_docs_descriptions(
+        self, operational_certification_test, docs_path: str, connector_documentation: str, connector_metadata: dict
+    ):
         connector_name = connector_metadata["data"]["name"]
         template_descriptions = self._headings_description(connector_name)
 

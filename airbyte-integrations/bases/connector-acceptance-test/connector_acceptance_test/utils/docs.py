@@ -45,7 +45,7 @@ def header_name(n: SyntaxTreeNode) -> str:
 def prepare_lines_to_compare(connector_name: str, docs_line: str, template_line: str) -> tuple[str]:
     def _replace_link(docs_string: str, link_to_replace: str) -> str:
         try:
-            docs_string = docs_string[: docs_string.index("(")] + link_to_replace + docs_string[docs_string.index(")") + 1:]
+            docs_string = docs_string[: docs_string.index("(")] + link_to_replace + docs_string[docs_string.index(")") + 1 :]
             return docs_string
         except ValueError:  # ValueError if actual docs doesn't have expected links
             return docs_string
@@ -100,8 +100,10 @@ def remove_not_required_step_headers(headers: tuple[str]) -> tuple[str]:
 
 
 def reason_titles_not_match(heading_names_value: str, template_headings_value: str, template_headings: list[str]) -> str:
-    reason = (f"Documentation structure doesn't follow standard template. Heading '{heading_names_value}' is not in the right place, "
-              f"the name of heading is incorrect or the heading name is not expected.\n")
+    reason = (
+        f"Documentation structure doesn't follow standard template. Heading '{heading_names_value}' is not in the right place, "
+        f"the name of heading is incorrect or the heading name is not expected.\n"
+    )
     close_titles = get_close_matches(heading_names_value, template_headings)
     if close_titles and close_titles[0] != heading_names_value:
         diff = f"Diff:\nActual Heading: '{heading_names_value}'. Possible correct heading: '{close_titles}'. Expected Heading: '{template_headings_value}'."
@@ -111,8 +113,10 @@ def reason_titles_not_match(heading_names_value: str, template_headings_value: s
 
 
 def reason_missing_titles(template_headings_index: int, template_headings: list[str]) -> str:
-    return (f"Documentation structure doesn't follow standard template. docs is not full."
-            f"\nMissing headers: {template_headings[template_headings_index:]}")
+    return (
+        f"Documentation structure doesn't follow standard template. docs is not full."
+        f"\nMissing headers: {template_headings[template_headings_index:]}"
+    )
 
 
 def description_end_line_index(heading: str, actual_headings: list[str], header_line_map: dict[str, int]) -> int:
