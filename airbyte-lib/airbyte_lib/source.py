@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 import jsonschema
 import yaml
+from rich import print
 
 from airbyte_protocol.models import (
     AirbyteCatalog,
@@ -20,6 +21,7 @@ from airbyte_protocol.models import (
     DestinationSyncMode,
     Status,
     SyncMode,
+    TraceType,
     Type,
 )
 
@@ -111,6 +113,16 @@ class Source:
                     available_streams=available_streams,
                 )
         self._selected_stream_names = streams
+
+    def get_selected_streams(self) -> list[str]:
+        """Get the selected streams.
+
+        If no streams are selected, return all available streams.
+        """
+        if self._selected_stream_names:
+            return self._selected_stream_names
+
+        return self.get_available_streams()
 
     def set_config(
         self,
@@ -209,6 +221,14 @@ class Source:
         return yaml.dump(spec_dict)
 
     @property
+    def docs_url(self) -> str:
+        """Get the URL to the connector's documentation."""
+        # TODO: Replace with docs URL from metadata when available
+        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace(
+            "source-", ""
+        )
+
+    @property
     def discovered_catalog(self) -> AirbyteCatalog:
         """Get the raw catalog for the given streams.
 
@@ -280,11 +300,23 @@ class Source:
                 },
             ) from KeyError(stream)
 
-        iterator: Iterator[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
-            self._read_with_catalog(
-                streaming_cache_info,
-                configured_catalog,
-            ),
+        configured_stream = configured_catalog.streams[0]
+        col_list = configured_stream.stream.json_schema["properties"].keys()
+
+        def _with_missing_columns(records: Iterable[dict[str, Any]]) -> Iterator[dict[str, Any]]:
+            """Add missing columns to the record with null values."""
+            for record in records:
+                appended_columns = set(col_list) - set(record.keys())
+                appended_dict = {col: None for col in appended_columns}
+                yield {**record, **appended_dict}
+
+        iterator: Iterator[dict[str, Any]] = _with_missing_columns(
+            protocol_util.airbyte_messages_to_record_dicts(
+                self._read_with_catalog(
+                    streaming_cache_info,
+                    configured_catalog,
+                ),
+            )
         )
         return LazyDataset(iterator)
 
@@ -305,9 +337,10 @@ class Source:
                             return  # Success!
 
                         raise exc.AirbyteConnectorCheckFailedError(
+                            help_url=self.docs_url,
                             context={
-                                "message": msg.connectionStatus.message,
-                            }
+                                "failure_reason": msg.connectionStatus.message,
+                            },
                         )
                 raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
             except exc.AirbyteConnectorReadError as ex:
@@ -319,6 +352,7 @@ class Source:
     def install(self) -> None:
         """Install the connector if it is not yet installed."""
         self.executor.install()
+        print("For configuration instructions, see: \n" f"{self.docs_url}#reference\n")
 
     def uninstall(self) -> None:
         """Uninstall the connector if it is installed.
@@ -428,6 +462,8 @@ class Source:
                     yield message
                     if message.type == Type.LOG:
                         self._add_to_logs(message.log.message)
+                    if message.type == Type.TRACE and message.trace.type == TraceType.ERROR:
+                        self._add_to_logs(message.trace.error.message)
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
@@ -493,6 +529,7 @@ class Source:
         cache.register_source(
             source_name=self.name,
             incoming_source_catalog=self.configured_catalog,
+            stream_names=set(self.get_selected_streams()),
         )
         state = cache.get_state() if not force_full_refresh else None
         cache.process_airbyte_messages(
