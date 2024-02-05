@@ -15,11 +15,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import javax.sql.DataSource;
-import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@Disabled
 public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
 
   CdcMssqlSslSourceTest() {
