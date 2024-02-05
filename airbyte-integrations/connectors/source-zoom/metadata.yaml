@@ -10,7 +10,8 @@ data:
   name: Zoom
   remoteRegistries:
     pypi:
-      enabled: true
+      # TODO: Enable once build problems are fixed
+      enabled: false
       packageName: airbyte-source-zoom
   registries:
     cloud:
