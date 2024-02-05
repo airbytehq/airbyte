@@ -3,15 +3,15 @@
 #
 
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 setup(
-    name="source_broken",
+    name="airbyte-source-broken",
     version="0.0.1",
     description="Test Soutce",
     author="Airbyte",
     author_email="contact@airbyte.io",
-    packages=find_packages(),
+    packages=["source_broken"],
     entry_points={
         "console_scripts": [
             "source-broken=source_broken.run:run",

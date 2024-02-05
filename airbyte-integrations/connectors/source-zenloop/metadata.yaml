@@ -11,6 +11,10 @@ data:
   icon: zenloop.svg
   license: MIT
   name: Zenloop
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zenloop
   registries:
     cloud:
       enabled: true

@@ -17,13 +17,30 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-my-hours=source_my_hours.run:run",
+        ],
+    },
     name="source_my_hours",
     description="Source implementation for My Hours.",
     author="Wisse Jelgersma",
     author_email="wisse@vrowl.nl",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={
+        "": [
+            # Include yaml files in the package (if any)
+            "*.yml",
+            "*.yaml",
+            # Include all json files in the package, up to 4 levels deep
+            "*.json",
+            "*/*.json",
+            "*/*/*.json",
+            "*/*/*/*.json",
+            "*/*/*/*/*.json",
+        ]
+    },
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

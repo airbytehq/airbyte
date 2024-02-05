@@ -7,6 +7,8 @@ from contextlib import contextmanager, suppress
 from typing import TYPE_CHECKING, Any
 
 import jsonschema
+import yaml
+from rich import print
 
 from airbyte_protocol.models import (
     AirbyteCatalog,
@@ -18,6 +20,7 @@ from airbyte_protocol.models import (
     DestinationSyncMode,
     Status,
     SyncMode,
+    TraceType,
     Type,
 )
 
@@ -25,6 +28,7 @@ from airbyte_lib import exceptions as exc
 from airbyte_lib._factories.cache_factories import get_default_cache
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.datasets._lazy import LazyDataset
+from airbyte_lib.progress import progress
 from airbyte_lib.results import ReadResult
 from airbyte_lib.telemetry import (
     CacheTelemetryInfo,
@@ -68,8 +72,13 @@ class Source:
         name: str,
         config: dict[str, Any] | None = None,
         streams: list[str] | None = None,
+        *,
+        validate: bool = False,
     ) -> None:
-        self._processed_records = 0
+        """Initialize the source.
+
+        If config is provided, it will be validated against the spec if validate is True.
+        """
         self.executor = executor
         self.name = name
         self._processed_records = 0
@@ -79,7 +88,7 @@ class Source:
         self._spec: ConnectorSpecification | None = None
         self._selected_stream_names: list[str] | None = None
         if config is not None:
-            self.set_config(config)
+            self.set_config(config, validate=validate)
         if streams is not None:
             self.set_streams(streams)
 
@@ -102,8 +111,32 @@ class Source:
                 )
         self._selected_stream_names = streams
 
-    def set_config(self, config: dict[str, Any]) -> None:
-        self._validate_config(config)
+    def get_selected_streams(self) -> list[str]:
+        """Get the selected streams.
+
+        If no streams are selected, return all available streams.
+        """
+        if self._selected_stream_names:
+            return self._selected_stream_names
+
+        return self.get_available_streams()
+
+    def set_config(
+        self,
+        config: dict[str, Any],
+        *,
+        validate: bool = False,
+    ) -> None:
+        """Set the config for the connector.
+
+        If validate is True, raise an exception if the config fails validation.
+
+        If validate is False, validation will be deferred until check() or validate_config()
+        is called.
+        """
+        if validate:
+            self.validate_config(config)
+
         self._config_dict = config
 
     @property
@@ -131,9 +164,13 @@ class Source:
                 log_text=self._last_log_messages,
             )
 
-    def _validate_config(self, config: dict[str, Any]) -> None:
-        """Validate the config against the spec."""
+    def validate_config(self, config: dict[str, Any] | None = None) -> None:
+        """Validate the config against the spec.
+
+        If config is not provided, the already-set config will be validated.
+        """
         spec = self._get_spec(force_refresh=False)
+        config = self._config if config is None else config
         jsonschema.validate(config, spec.connectionSpecification)
 
     def get_available_streams(self) -> list[str]:
@@ -159,6 +196,29 @@ class Source:
 
         raise exc.AirbyteConnectorMissingSpecError(
             log_text=self._last_log_messages,
+        )
+
+    @property
+    def _yaml_spec(self) -> str:
+        """Get the spec as a yaml string.
+
+        For now, the primary use case is for writing and debugging a valid config for a source.
+
+        This is private for now because we probably want better polish before exposing this
+        as a stable interface. This will also get easier when we have docs links with this info
+        for each connector.
+        """
+        spec_obj: ConnectorSpecification = self._get_spec()
+        spec_dict = spec_obj.dict(exclude_unset=True)
+        # convert to a yaml string
+        return yaml.dump(spec_dict)
+
+    @property
+    def docs_url(self) -> str:
+        """Get the URL to the connector's documentation."""
+        # TODO: Replace with docs URL from metadata when available
+        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace(
+            "source-", ""
         )
 
     @property
@@ -233,8 +293,20 @@ class Source:
                 },
             ) from KeyError(stream)
 
-        iterator: Iterator[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
-            self._read_with_catalog(streaming_cache_info, configured_catalog),
+        configured_stream = configured_catalog.streams[0]
+        col_list = configured_stream.stream.json_schema["properties"].keys()
+
+        def _with_missing_columns(records: Iterable[dict[str, Any]]) -> Iterator[dict[str, Any]]:
+            """Add missing columns to the record with null values."""
+            for record in records:
+                appended_columns = set(col_list) - set(record.keys())
+                appended_dict = {col: None for col in appended_columns}
+                yield {**record, **appended_dict}
+
+        iterator: Iterator[dict[str, Any]] = _with_missing_columns(
+            protocol_util.airbyte_messages_to_record_dicts(
+                self._read_with_catalog(streaming_cache_info, configured_catalog),
+            )
         )
         return LazyDataset(iterator)
 
@@ -248,21 +320,29 @@ class Source:
         * Make sure the subprocess is killed when the function returns.
         """
         with as_temp_files([self._config]) as [config_file]:
-            for msg in self._execute(["check", "--config", config_file]):
-                if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
-                    if msg.connectionStatus.status != Status.FAILED:
-                        return  # Success!
+            try:
+                for msg in self._execute(["check", "--config", config_file]):
+                    if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
+                        if msg.connectionStatus.status != Status.FAILED:
+                            return  # Success!
 
-                    raise exc.AirbyteConnectorCheckFailedError(
-                        context={
-                            "message": msg.connectionStatus.message,
-                        }
-                    )
-            raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
+                        raise exc.AirbyteConnectorCheckFailedError(
+                            help_url=self.docs_url,
+                            context={
+                                "failure_reason": msg.connectionStatus.message,
+                            },
+                        )
+                raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
+            except exc.AirbyteConnectorReadError as ex:
+                raise exc.AirbyteConnectorCheckFailedError(
+                    message="The connector failed to check the connection.",
+                    log_text=ex.log_text,
+                ) from ex
 
     def install(self) -> None:
         """Install the connector if it is not yet installed."""
         self.executor.install()
+        print("For configuration instructions, see: \n" f"{self.docs_url}#reference\n")
 
     def uninstall(self) -> None:
         """Uninstall the connector if it is installed.
@@ -338,7 +418,8 @@ class Source:
         * Read the output line by line of the subprocess and serialize them AirbyteMessage objects.
           Drop if not valid.
         """
-        self.executor.ensure_installation()
+        # Fail early if the connector is not installed.
+        self.executor.ensure_installation(auto_fix=False)
 
         try:
             self._last_log_messages = []
@@ -348,6 +429,8 @@ class Source:
                     yield message
                     if message.type == Type.LOG:
                         self._add_to_logs(message.log.message)
+                    if message.type == Type.TRACE and message.trace.type == TraceType.ERROR:
+                        self._add_to_logs(message.trace.error.message)
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
@@ -361,16 +444,21 @@ class Source:
     ) -> Generator[AirbyteRecordMessage, Any, None]:
         """This method simply tallies the number of records processed and yields the messages."""
         self._processed_records = 0  # Reset the counter before we start
+        progress.reset(len(self._selected_stream_names or []))
+
         for message in messages:
             self._processed_records += 1
             yield message
+            progress.log_records_read(self._processed_records)
 
     def read(self, cache: SQLCacheBase | None = None) -> ReadResult:
         if cache is None:
             cache = get_default_cache()
 
         cache.register_source(
-            source_name=self.name, incoming_source_catalog=self.configured_catalog
+            source_name=self.name,
+            incoming_source_catalog=self.configured_catalog,
+            stream_names=set(self.get_selected_streams()),
         )
         cache.process_airbyte_messages(self._tally_records(self._read(cache.get_telemetry_info())))
 
