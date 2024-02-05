@@ -15,7 +15,7 @@ public class MsSQLContainerFactory implements ContainerFactory<MSSQLServerContai
   @Override
   public MSSQLServerContainer<?> createNewContainer(DockerImageName imageName) {
     var container = new MSSQLServerContainer<>(imageName.asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server")).acceptLicense();
-    container.addEnv("MSSQL_MEMORY_LIMIT_MB", "384");
+    container.addEnv("MSSQL_MEMORY_LIMIT_MB", "768");
     return container;
   }
 
