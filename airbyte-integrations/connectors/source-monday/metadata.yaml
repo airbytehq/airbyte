@@ -34,6 +34,10 @@ data:
   icon: monday.svg
   license: MIT
   name: Monday
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-monday
   registries:
     cloud:
       enabled: true

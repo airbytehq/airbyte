@@ -1,4 +1,4 @@
-# Astra Destination
+# Astra DB Destination
 
 This page contains the setup guide and reference information for the destination-astra connector.
 
@@ -38,4 +38,5 @@ This page contains the setup guide and reference information for the destination
 ## Changelog
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.1.1   | 2024-01-26 |                                                          | DS Branding Update          |
 | 0.1.0   | 2024-01-08 |                                                          | Initial Release             |

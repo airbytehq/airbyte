@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.60.2
+Improve error messages for concurrent CDK
+
+## 0.60.1
+Emit state when no partitions are generated for ccdk and update StateBuilder
+
+## 0.60.0
+File-based CDK: run full refresh syncs with concurrency
+
 ## 0.59.2
 Fix CCDK overlapping message due to print in entrypoint
 
