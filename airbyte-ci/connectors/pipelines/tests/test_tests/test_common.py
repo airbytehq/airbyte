@@ -342,6 +342,15 @@ class TestCheckPythonRegistryPublishConfiguration:
         step_result = await check_python_registry_config.run()
         assert step_result.status == StepStatus.SUCCESS
 
+    async def test_pass_on_community_connector_published(self, mocker, dagger_client):
+        test_context = mocker.MagicMock(
+            dagger_client=dagger_client,
+            connector=self._get_connector_with_metadata(mocker, ["language:python"], "community", {"enabled": True}),
+        )
+        check_python_registry_config = common.CheckPythonRegistryPublishConfiguration(test_context)
+        step_result = await check_python_registry_config.run()
+        assert step_result.status == StepStatus.SUCCESS
+
     async def test_fail_on_certified_connector_not_published(self, mocker, dagger_client):
         test_context = mocker.MagicMock(
             dagger_client=dagger_client,

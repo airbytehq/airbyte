@@ -426,6 +426,15 @@ If the current version of the connector is already published to the registry, th
 
 On a pre-release, the connector will be published as a `.dev<N>` version.
 
+The `remoteRegistries.pypi.packageName` field holds the name of the used package name. It should be set to `airbyte-source-<package name>`. Certified Python connectors are required to have PyPI publishing enabled.
+
+An example `remoteRegistries` entry in a connector `metadata.yaml` looks like this:
+```yaml
+remoteRegistries:
+  pypi:
+    enabled: true
+    packageName: airbyte-source-pokeapi
+```
 
 ### <a id="connectors-bump_version"></a>`connectors bump_version` command
 
