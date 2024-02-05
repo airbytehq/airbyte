@@ -7,8 +7,7 @@ from typing import Any, Dict, List
 class ConfigBuilder:
     def __init__(self) -> None:
         self._config: Dict[str, Any] = {
-            "credentials": {"option_title": "PAT Credentials",
-                            "personal_access_token": "GITHUB_TEST_TOKEN"},
+            "credentials": {"option_title": "PAT Credentials", "personal_access_token": "GITHUB_TEST_TOKEN"},
             "start_date": "2020-05-01T00:00:00Z",
         }
 

@@ -41,32 +41,26 @@ def _create_catalog(sync_mode: SyncMode = SyncMode.full_refresh):
 
 
 def _create_event_request() -> GithubRequestBuilder:
-    return GithubRequestBuilder.events_endpoint(repo='airbytehq/integration_test', token=_TOKEN)
+    return GithubRequestBuilder.events_endpoint(repo="airbytehq/integration_test", token=_TOKEN)
 
 
 def _create_response() -> HttpResponseBuilder:
     return create_response_builder(
-        response_template=find_template("events", __file__),
-        records_path=FieldPath(),
-        pagination_strategy=GitHubPaginationStrategy()
+        response_template=find_template("events", __file__), records_path=FieldPath(), pagination_strategy=GitHubPaginationStrategy()
     )
 
 
 def _create_record(resource: str) -> RecordBuilder:
     return create_record_builder(
-        find_template(resource, __file__),
-        FieldPath(),
-        record_id_path=FieldPath("id"),
-        record_cursor_path=FieldPath("created_at")
+        find_template(resource, __file__), FieldPath(), record_id_path=FieldPath("id"), record_cursor_path=FieldPath("created_at")
     )
 
 
-_CONFIG = ConfigBuilder().with_repositories(['airbytehq/integration-test']).build()
+_CONFIG = ConfigBuilder().with_repositories(["airbytehq/integration-test"]).build()
 
 
 # @freezegun.freeze_time(_NOW.isoformat())
 class EventsTest(TestCase):
-
     @HttpMocker()
     def test_full_refresh(self, http_mocker):
         # http_mocker.get(
@@ -90,51 +84,37 @@ class EventsTest(TestCase):
                 headers={
                     "Accept": "application/vnd.github+json",
                     "X-GitHub-Api-Version": "2022-11-28",
-                    "Authorization": 'token GITHUB_TEST_TOKEN'
-                })
-            ,
-            HttpResponse(json.dumps({
-                "resources": {
-                    "core": {
-                        "limit": 5000,
-                        "used": 0,
-                        "remaining": 5000,
-                        "reset": 5070908800
-                    },
-                    "graphql": {
-                        "limit": 5000,
-                        "used": 0,
-                        "remaining": 5000,
-                        "reset": 5070908800
+                    "Authorization": "token GITHUB_TEST_TOKEN",
+                },
+            ),
+            HttpResponse(
+                json.dumps(
+                    {
+                        "resources": {
+                            "core": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
+                            "graphql": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
+                        }
                     }
-                }
-            }))
+                )
+            ),
         )
         http_mocker.get(
-            HttpRequest(
-                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}",
-                query_params={'per_page': 100},
-                headers={}
-            ),
-            HttpResponse(json.dumps({"full_name": "airbytehq/integration-test", "default_branch": "master"}))
+            HttpRequest(url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}", query_params={"per_page": 100}, headers={}),
+            HttpResponse(json.dumps({"full_name": "airbytehq/integration-test", "default_branch": "master"})),
         )
 
         http_mocker.get(
             HttpRequest(
-                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/branches",
-                query_params={'per_page': 100},
-                headers={}
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/branches", query_params={"per_page": 100}, headers={}
             ),
-            HttpResponse(json.dumps([{"repository": "airbytehq/integration-test", "name": "master"}]))
+            HttpResponse(json.dumps([{"repository": "airbytehq/integration-test", "name": "master"}])),
         )
 
         http_mocker.get(
             HttpRequest(
-                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
-                query_params={'per_page': 100},
-                headers={}
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events", query_params={"per_page": 100}, headers={}
             ),
-            HttpResponse(json.dumps(find_template("events", __file__)))
+            HttpResponse(json.dumps(find_template("events", __file__))),
         )
 
         source = SourceGithub()
