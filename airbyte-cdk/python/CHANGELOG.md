@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.60.2
+Improve error messages for concurrent CDK
+
 ## 0.60.1
 Emit state when no partitions are generated for ccdk and update StateBuilder
 
