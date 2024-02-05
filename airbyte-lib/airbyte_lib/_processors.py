@@ -27,9 +27,11 @@ from airbyte_protocol.models import (
     AirbyteStateType,
     AirbyteStreamState,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
     Type,
 )
 
+from airbyte_lib import exceptions as exc
 from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.progress import progress
 
@@ -37,6 +39,7 @@ from airbyte_lib.progress import progress
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable, Iterator
 
+    from airbyte_lib.caches._catalog_manager import CatalogManager
     from airbyte_lib.config import CacheConfigBase
 
 
@@ -60,6 +63,8 @@ class RecordProcessor(abc.ABC):
     def __init__(
         self,
         config: CacheConfigBase | dict | None,
+        *,
+        catalog_manager: CatalogManager | None = None,
     ) -> None:
         if isinstance(config, dict):
             config = self.config_class(**config)
@@ -72,8 +77,6 @@ class RecordProcessor(abc.ABC):
             )
             raise TypeError(err_msg)
 
-        self.source_catalog: ConfiguredAirbyteCatalog | None = None
-
         self._pending_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
         self._finalized_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
 
@@ -83,22 +86,25 @@ class RecordProcessor(abc.ABC):
             list[AirbyteStateMessage],
         ] = defaultdict(list, {})
 
+        self._catalog_manager: CatalogManager | None = catalog_manager
         self._setup()
 
     def register_source(
         self,
         source_name: str,
         incoming_source_catalog: ConfiguredAirbyteCatalog,
+        stream_names: set[str],
     ) -> None:
-        """Register the source name and catalog.
-
-        For now, only one source at a time is supported.
-        If this method is called multiple times, the last call will overwrite the previous one.
-
-        TODO: Expand this to handle multiple sources.
-        """
-        _ = source_name
-        self.source_catalog = incoming_source_catalog
+        """Register the source name and catalog."""
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+        self._catalog_manager.register_source(
+            source_name,
+            incoming_source_catalog=incoming_source_catalog,
+            incoming_stream_names=stream_names,
+        )
 
     @property
     def _streams_with_data(self) -> set[str]:
@@ -215,7 +221,7 @@ class RecordProcessor(abc.ABC):
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> BatchHandle:
         """Process a single batch.
 
@@ -319,3 +325,24 @@ class RecordProcessor(abc.ABC):
     def __del__(self) -> None:
         """Teardown temporary resources when instance is unloaded from memory."""
         self._teardown()
+
+    @final
+    def _get_stream_config(
+        self,
+        stream_name: str,
+    ) -> ConfiguredAirbyteStream:
+        """Return the column definitions for the given stream."""
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+
+        return self._catalog_manager.get_stream_config(stream_name)
+
+    @final
+    def _get_stream_json_schema(
+        self,
+        stream_name: str,
+    ) -> dict[str, Any]:
+        """Return the column definitions for the given stream."""
+        return self._get_stream_config(stream_name).stream.json_schema
