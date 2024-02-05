@@ -10,7 +10,8 @@ data:
   name: Zoom
   remoteRegistries:
     pypi:
-      enabled: true
+      # TODO: Enable once build problems are fixed
+      enabled: false
       packageName: airbyte-source-zoom
   registries:
     cloud:
@@ -26,9 +27,4 @@ data:
     sl: 100
     ql: 200
   supportLevel: community
-  releases:
-    breakingChanges:
-      1.0.0:
-        upgradeDeadline: 2023-08-30
-        message: "Replace JWT Auth methods with server-to-server Oauth"
 metadataSpecVersion: "1.0"
