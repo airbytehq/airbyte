@@ -13,7 +13,6 @@ from rich import print
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
-    AirbyteRecordMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
@@ -352,7 +351,7 @@ class Source:
         """
         self.executor.uninstall()
 
-    def _read(self, cache_info: CacheTelemetryInfo) -> Iterable[AirbyteRecordMessage]:
+    def _read(self, cache_info: CacheTelemetryInfo) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
 
@@ -440,14 +439,15 @@ class Source:
 
     def _tally_records(
         self,
-        messages: Iterable[AirbyteRecordMessage],
-    ) -> Generator[AirbyteRecordMessage, Any, None]:
+        messages: Iterable[AirbyteMessage],
+    ) -> Generator[AirbyteMessage, Any, None]:
         """This method simply tallies the number of records processed and yields the messages."""
         self._processed_records = 0  # Reset the counter before we start
         progress.reset(len(self._selected_stream_names or []))
 
         for message in messages:
-            self._processed_records += 1
+            if message.type is Type.RECORD:
+                self._processed_records += 1
             yield message
             progress.log_records_read(self._processed_records)
 
