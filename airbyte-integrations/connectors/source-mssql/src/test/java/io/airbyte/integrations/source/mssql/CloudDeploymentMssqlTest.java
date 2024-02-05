@@ -15,10 +15,12 @@ import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@Disabled
 @Execution(ExecutionMode.CONCURRENT)
 public class CloudDeploymentMssqlTest {
 

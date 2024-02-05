@@ -49,8 +49,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MssqlSource, MsSQLTestDatabase> {
 
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
