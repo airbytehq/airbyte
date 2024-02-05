@@ -46,7 +46,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       iteratorHasNextValue = messageIterator.hasNext();
     } catch (final Exception ex) {
       LOGGER.info("Caught exception while trying to get the next from message iterator. Treating hasNext to false. ", ex);
-      this.streamFailure = false;
+      this.streamFailure = true;
       this.streamFailureException = ex;
     }
     if (iteratorHasNextValue) {
