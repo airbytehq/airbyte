@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.testutils;
 
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.MdcScope;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -25,6 +27,10 @@ class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
 
   static private final Logger LOGGER = LoggerFactory.getLogger(ContainerFactoryWrapper.class);
   static private final ConcurrentHashMap<String, ContainerFactoryWrapper<?>> SHARED_SINGLETONS = new ConcurrentHashMap<>();
+
+  static public final MdcScope.Builder TESTCONTAINER_LOG_MDC_BUILDER = new MdcScope.Builder()
+      .setLogPrefix("testcontainer")
+      .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND);
 
   @SuppressWarnings("unchecked")
   static <C extends JdbcDatabaseContainer<?>> C getOrCreateShared(ContainerFactory<C> factory, String imageName, String... methods) {
@@ -89,7 +95,9 @@ class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
         methods.add(factory.getClass().getMethod(methodName, factory.getContainerClass()));
       }
       sharedContainer = factory.createNewContainer(parsed);
-      sharedContainer.withLogConsumer(new Slf4jLogConsumer(LOGGER));
+      final var logConsumer = new Slf4jLogConsumer(LOGGER);
+      TESTCONTAINER_LOG_MDC_BUILDER.produceMappings(logConsumer::withMdc);
+      sharedContainer.withLogConsumer(logConsumer);
       for (Method method : methods) {
         LOGGER.info("Calling {} in {} on new container based on {}.",
             method.getName(), factory.getClass().getName(), imageName);
