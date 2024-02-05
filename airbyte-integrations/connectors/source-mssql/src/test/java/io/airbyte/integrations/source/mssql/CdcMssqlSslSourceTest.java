@@ -22,7 +22,7 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
   }
 
   protected MSSQLServerContainer<?> createContainer() {
-    return new MsSQLContainerFactory().unshared("mcr.microsoft.com/mssql/server:2022-latest", "withAgent", "withSslCertificates");
+    return new MsSQLContainerFactory().exclusive("mcr.microsoft.com/mssql/server:2022-latest", "withAgent", "withSslCertificates");
   }
 
   @Override

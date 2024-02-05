@@ -69,7 +69,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   }
 
   protected MSSQLServerContainer<?> createContainer() {
-    return new MsSQLContainerFactory().unshared("mcr.microsoft.com/mssql/server:2022-latest", "withAgent");
+    return new MsSQLContainerFactory().exclusive("mcr.microsoft.com/mssql/server:2022-latest", "withAgent");
   }
 
   @AfterAll

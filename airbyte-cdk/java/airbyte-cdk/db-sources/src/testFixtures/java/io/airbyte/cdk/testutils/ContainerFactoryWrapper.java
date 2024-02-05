@@ -39,7 +39,7 @@ class ContainerFactoryWrapper<C extends GenericContainer<?>> {
     return ((ContainerFactoryWrapper<C>) singleton).getOrCreate(factory);
   }
 
-  static <C extends GenericContainer<?>> C createUnshared(ContainerFactory<C> factory, String imageName, String... methods) {
+  static <C extends GenericContainer<?>> C createExclusive(ContainerFactory<C> factory, String imageName, String... methods) {
     return new ContainerFactoryWrapper<C>(imageName, List.of(methods)).getOrCreate(factory);
   }
 
