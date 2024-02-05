@@ -187,7 +187,7 @@ class GradleTask(Step, ABC):
 
         # Run the gradle task that we actually care about.
         connector_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
-        gradle_container = gradle_container.with_exec(
+        gradle_container = gradle_container.with_env_variable("LOG_LEVEL", "DEBUG").with_exec(
             sh_dash_c(
                 [
                     # Run the gradle task.
