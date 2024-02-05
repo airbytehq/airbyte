@@ -33,9 +33,9 @@ def test_documentation_prerequisites_section(connector_spec, docs_path, should_f
 
     if should_fail is True:
         with pytest.raises(AssertionError):
-            t.test_prerequisites_content(ConnectorSpecification(connectionSpecification=connector_spec), documentation, docs_path)
+            t.test_prerequisites_content(True, ConnectorSpecification(connectionSpecification=connector_spec), documentation, docs_path)
     else:
-        t.test_prerequisites_content(ConnectorSpecification(connectionSpecification=connector_spec), documentation, docs_path)
+        t.test_prerequisites_content(True, ConnectorSpecification(connectionSpecification=connector_spec), documentation, docs_path)
 
 
 @pytest.mark.parametrize(
@@ -80,10 +80,10 @@ def test_docs_structure_is_correct(mocker, metadata, docs_path, should_fail, fai
 
     if should_fail:
         with pytest.raises(BaseException) as e:
-            t.test_docs_structure(documentation, metadata)
+            t.test_docs_structure(True, documentation, metadata)
         assert e.match(failure)
     else:
-        t.test_docs_structure(documentation, metadata)
+        t.test_docs_structure(True, documentation, metadata)
 
 
 @pytest.mark.parametrize(
@@ -120,9 +120,9 @@ def test_docs_description(mocker, metadata, docs_path, should_fail):
 
     if should_fail is True:
         with pytest.raises(AssertionError):
-            t.test_docs_descriptions(docs_path, documentation, metadata)
+            t.test_docs_descriptions(True, docs_path, documentation, metadata)
     else:
-        t.test_docs_descriptions(docs_path, documentation, metadata)
+        t.test_docs_descriptions(True, docs_path, documentation, metadata)
 
 
 @pytest.mark.parametrize(
@@ -150,6 +150,6 @@ def test_docs_urls(docs_path, should_fail):
 
     if should_fail is True:
         with pytest.raises(AssertionError):
-            t.test_validate_links(documentation)
+            t.test_validate_links(True, documentation)
     else:
-        t.test_validate_links(documentation)
+        t.test_validate_links(True, documentation)
