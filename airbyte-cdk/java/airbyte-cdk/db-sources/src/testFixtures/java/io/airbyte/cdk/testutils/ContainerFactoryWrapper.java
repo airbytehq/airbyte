@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -22,11 +24,12 @@ import org.testcontainers.utility.DockerImageName;
 class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
 
   static private final Logger LOGGER = LoggerFactory.getLogger(ContainerFactoryWrapper.class);
-  static private final ConcurrentHashMap<String, ContainerFactoryWrapper<?>> LAZY = new ConcurrentHashMap<>();
+  static private final ConcurrentHashMap<String, ContainerFactoryWrapper<?>> SHARED_SINGLETONS = new ConcurrentHashMap<>();
 
   @SuppressWarnings("unchecked")
-  static <C extends JdbcDatabaseContainer<?>> C getOrCreate(String mapKey, ContainerFactory<C> factory) {
-    final ContainerFactoryWrapper<?> singleton = LAZY.computeIfAbsent(mapKey, ContainerFactoryWrapper<C>::new);
+  static <C extends JdbcDatabaseContainer<?>> C getOrCreateShared(ContainerFactory<C> factory, String imageName, String... methods) {
+    final String mapKey = createMapKey(factory.getClass(), imageName, methods);
+    final ContainerFactoryWrapper<?> singleton = SHARED_SINGLETONS.computeIfAbsent(mapKey, ContainerFactoryWrapper<C>::new);
     return ((ContainerFactoryWrapper<C>) singleton).getOrCreate(factory);
   }
 
@@ -36,10 +39,18 @@ class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
   private C sharedContainer;
   private RuntimeException containerCreationError;
 
-  private ContainerFactoryWrapper(String imageNamePlusMethods) {
-    final String[] parts = imageNamePlusMethods.split("\\+");
-    this.imageName = parts[0];
-    this.methodNames = Arrays.stream(parts).skip(2).toList();
+  private ContainerFactoryWrapper(String mapKey) {
+    this.imageName = mapKeyElements(mapKey).skip(1).findFirst().get();
+    this.methodNames = mapKeyElements(mapKey).skip(2).toList();
+  }
+
+  static private String createMapKey(Class<?> containerFactoryClass,  String imageName, String... methods) {
+    final Stream<String> mapKeyElements = Stream.concat(Stream.of(containerFactoryClass.getCanonicalName(), imageName), Stream.of(methods));
+    return mapKeyElements.collect(Collectors.joining("+"));
+  }
+
+  static private Stream<String> mapKeyElements(String mapKey) {
+    return Arrays.stream(mapKey.split("\\+"));
   }
 
   private synchronized C getOrCreate(ContainerFactory<C> factory) {

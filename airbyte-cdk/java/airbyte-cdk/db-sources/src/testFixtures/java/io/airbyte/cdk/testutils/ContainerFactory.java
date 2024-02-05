@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.testutils;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -30,11 +28,7 @@ public interface ContainerFactory<C extends JdbcDatabaseContainer<?>> {
    * Returns a shared instance of the testcontainer.
    */
   default C shared(String imageName, String... methods) {
-    final String mapKey = Stream.concat(
-        Stream.of(imageName, this.getClass().getCanonicalName()),
-        Stream.of(methods))
-        .collect(Collectors.joining("+"));
-    return ContainerFactoryWrapper.getOrCreate(mapKey, this);
+    return ContainerFactoryWrapper.getOrCreateShared(this, imageName, methods);
   }
 
 }
