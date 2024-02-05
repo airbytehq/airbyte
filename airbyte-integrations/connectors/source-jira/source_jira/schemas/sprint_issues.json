@@ -17,6 +17,10 @@
     "fields": {
       "type": "object",
       "properties": {
+        "created": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
         "flagged": {
           "type": ["null", "boolean"]
         },
@@ -53,6 +57,10 @@
         },
         "timetracking": {
           "type": ["null", "object"]
+        },
+        "status": {
+          "type": ["null", "object"],
+          "additionalProperties": true
         }
       }
     },

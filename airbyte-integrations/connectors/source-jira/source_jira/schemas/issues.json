@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "expand": {
       "type": "string",
@@ -27,9 +28,9 @@
     },
     "renderedFields": {
       "type": "object",
-      "additionalProperties": true,
       "description": "The rendered value of each field present on the issue.",
       "readOnly": true,
+      "additionalProperties": true,
       "properties": {
         "statuscategorychangedate": {
           "type": ["null", "string"]
@@ -153,6 +154,7 @@
         },
         "comment": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "comments": {
               "type": ["null", "array"],
@@ -512,6 +514,9 @@
                     "field": {
                       "type": ["null", "string"]
                     },
+                    "fieldId": {
+                      "type": ["null", "string"]
+                    },
                     "fieldtype": {
                       "type": ["null", "string"]
                     },
@@ -582,6 +587,5 @@
       "description": "This field transformed from fields attr",
       "readOnly": true
     }
-  },
-  "additionalProperties": true
+  }
 }
