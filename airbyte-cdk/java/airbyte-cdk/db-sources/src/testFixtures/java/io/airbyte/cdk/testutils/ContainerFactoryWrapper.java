@@ -16,14 +16,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
  * This class wraps a specific shared testcontainer instance, which is created exactly once.
  */
-class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
+class ContainerFactoryWrapper<C extends GenericContainer<?>> {
 
   static private final Logger LOGGER = LoggerFactory.getLogger(ContainerFactoryWrapper.class);
   static private final ConcurrentHashMap<String, ContainerFactoryWrapper<?>> SHARED_SINGLETONS = new ConcurrentHashMap<>();
@@ -33,13 +33,13 @@ class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
       .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND);
 
   @SuppressWarnings("unchecked")
-  static <C extends JdbcDatabaseContainer<?>> C getOrCreateShared(ContainerFactory<C> factory, String imageName, String... methods) {
+  static <C extends GenericContainer<?>> C getOrCreateShared(ContainerFactory<C> factory, String imageName, String... methods) {
     final String mapKey = createMapKey(factory.getClass(), imageName, methods);
     final ContainerFactoryWrapper<?> singleton = SHARED_SINGLETONS.computeIfAbsent(mapKey, ContainerFactoryWrapper<C>::new);
     return ((ContainerFactoryWrapper<C>) singleton).getOrCreate(factory);
   }
 
-  static <C extends JdbcDatabaseContainer<?>> C createUnshared(ContainerFactory<C> factory, String imageName, String... methods) {
+  static <C extends GenericContainer<?>> C createUnshared(ContainerFactory<C> factory, String imageName, String... methods) {
     return new ContainerFactoryWrapper<C>(imageName, List.of(methods)).getOrCreate(factory);
   }
 

@@ -4,14 +4,14 @@
 
 package io.airbyte.cdk.testutils;
 
-import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
  * ContainerFactory is the companion interface to {@link TestDatabase} for providing it with
  * suitable testcontainer instances.
  */
-public interface ContainerFactory<C extends JdbcDatabaseContainer<?>> {
+public interface ContainerFactory<C extends GenericContainer<?>> {
 
   /**
    * Creates a new, unshared testcontainer instance. This usually wraps the default constructor for
