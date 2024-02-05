@@ -1349,6 +1349,16 @@ class TestConnectorDocumentation(BaseTest):
     CREDENTIALS_KEYWORDS = ["account", "auth", "credentials", "access"]
     CONNECTOR_SPECIFIC_HEADINGS = "<Connector-specific features>"
 
+    @pytest.fixture(name="operational_certification_test")
+    async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
+        """
+        Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
+        against operational certification criteria
+        """
+        if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+            pytest.skip("Skipping testing source connector documentation due to low ql.")
+        return True
+
     def _get_template_headings(self, connector_name: str) -> tuple[tuple[str], tuple[str]]:
         """
         https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw - standard template
@@ -1398,7 +1408,7 @@ class TestConnectorDocumentation(BaseTest):
         }
         return descriptions_paths
 
-    def test_prerequisites_content(self, actual_connector_spec: ConnectorSpecification, connector_documentation: str, docs_path: str):
+    def test_prerequisites_content(self, operational_certification_test, actual_connector_spec: ConnectorSpecification, connector_documentation: str, docs_path: str):
         node = docs_utils.documentation_node(connector_documentation)
         header_line_map = {docs_utils.header_name(n): n.map[1] for n in node if n.type == self.HEADING}
         headings = tuple(header_line_map.keys())
@@ -1424,7 +1434,7 @@ class TestConnectorDocumentation(BaseTest):
                 credentials_validation = [k in prereq_content for k in self.CREDENTIALS_KEYWORDS]
                 assert True in credentials_validation, f"Required 'credentials' field is not in {self.PREREQUISITES} section."
 
-    def test_docs_structure(self, connector_documentation: str, connector_metadata: dict):
+    def test_docs_structure(self, operational_certification_test, connector_documentation: str, connector_metadata: dict):
         """
         test_docs_structure gets all top-level headers from source documentation file and check that the order is correct.
         The order of the headers should follow our standard template https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw.
@@ -1469,7 +1479,7 @@ class TestConnectorDocumentation(BaseTest):
         if template_headings_index != template_headings_len:
             pytest.fail(docs_utils.reason_missing_titles(template_headings_index, template_headings))
 
-    def test_docs_descriptions(self, docs_path: str, connector_documentation: str, connector_metadata: dict):
+    def test_docs_descriptions(self, operational_certification_test, docs_path: str, connector_documentation: str, connector_metadata: dict):
         connector_name = connector_metadata["data"]["name"]
         template_descriptions = self._headings_description(connector_name)
 
@@ -1492,7 +1502,7 @@ class TestConnectorDocumentation(BaseTest):
                         d, t = docs_utils.prepare_lines_to_compare(connector_name, d, t)
                         assert d == t, f"Description for '{heading}' does not follow structure.\nExpected: {t} Actual: {d}"
 
-    def test_validate_links(self, connector_documentation: str):
+    def test_validate_links(self, operational_certification_test, connector_documentation: str):
         valid_status_codes = [200, 403, 401, 405]  # we skip 4xx due to needed access
         links = re.findall("(https?://[^\s)]+)", connector_documentation)
         invalid_links = []
