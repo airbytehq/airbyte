@@ -167,27 +167,138 @@ Before upgrading the chart update values.yaml as stated above and then run:
 - Perform upgrade of chart by running `helm upgrade %release_name% airbyte/airbyte --set auth.rootPassword=$ROOT_PASSWORD`
   - If you get an error about setting the auth.rootPassword, then you forgot to update the `values.yaml` file
 
-### Custom logging and jobs configuration
+### External Logs
 
-Starting from `0.39.37-alpha` if you've configured logging yourself using `logging or jobs` section of `values.yaml` file, you need to update your configuration so you can continue to use your custom logging and jobs configuration.
+::info
+This was tested using [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13) and S3 logs only.
+Previous or newer version can change how to setup the external logs.
+:::
 
-Simply declare global value in `values.yaml` file and move everything related to logging and jobs under that section like in the example bellow:
+Create a file called `airbyte-logs-secrets.yaml` to store the AWS Keys and other informations:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-logs-secrets
+type: Opaque
+stringData:
+  AWS_KEY: <AWS_KEY>
+  AWS_SECRET_KEY: <AWS_SECRET_KEY>
+  S3_LOG_BUCKET: <BUCKET_NAME>
+  S3_LOG_BUCKET_REGION: <REGION>
+```
+Run `kubectl apply -f airbyte-logs-secrets.yaml -n <NAMESPACE>` to create the secret in the namespace you're using Airbyte.
+This file contains more than just the keys but it needs for now. Future updates will make the configuration easier.
 
-```text
+Change the global section to use `S3` external logs.
+```yaml
 global:
-    logging:
-        %your_logging_options_here%
-    jobs:
-        %your_jobs_options_here%
+  # <...>
+  state:
+    # -- Determines which state storage will be utilized; "MINIO", "S3", or "GCS"
+    storage:
+      type: "S3"
+  # <...>
+  logs:
+    accessKey:
+      password: ""
+      existingSecret: "airbyte-logs-secrets"
+      existingSecretKey: "AWS_KEY"
+    secretKey:
+      password: ""
+      existingSecret: "airbyte-logs-secrets"
+      existingSecretKey: "AWS_SECRET_KEY"
+  # <...>
+  storage:
+      type: "S3"
+
+  minio:
+    # Change from true to false
+    enabled: false
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+```
+You can try to use `GCS` or `External Minio` but both weren't tested yet. Feel free to run tests and update the documentation.
+
+Add extra env variables to the following blocks:
+```yaml
+worker:
+  extraEnv:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: STATE_STORAGE_S3_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_BUCKET_NAME
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET
+    - name: STATE_STORAGE_S3_REGION
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET_REGION
 ```
 
-After updating `values.yaml` simply upgrade your chart by running command:
+and also edit the server block:
 
-```shell
-helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
+```yaml
+server:
+  extraEnv:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: STATE_STORAGE_S3_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_BUCKET_NAME
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET
+    - name: STATE_STORAGE_S3_REGION
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET_REGION
 ```
+
+Than run:
+`helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.50.13`
 
 ### External Airbyte Database
+
 
 ::info
 This was tested using [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13).
