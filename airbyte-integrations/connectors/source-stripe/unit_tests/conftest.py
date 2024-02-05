@@ -5,6 +5,7 @@
 import os
 
 import pytest
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -45,6 +46,10 @@ def stream_by_name(config):
         streams = source.streams(source_config)
         for stream in streams:
             if stream.name == stream_name:
+                if isinstance(stream, StreamFacade):
+                    # to avoid breaking changes for tests, we will return the legacy test. Tests that would be affected by not having this
+                    # would probably need to be moved to integration tests or unit tests
+                    return stream._legacy_stream
                 return stream
 
     return mocker

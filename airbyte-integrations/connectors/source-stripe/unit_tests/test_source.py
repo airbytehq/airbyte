@@ -97,7 +97,9 @@ def test_when_streams_return_full_refresh_as_concurrent():
         _NO_STATE,
     ).streams(_a_valid_config())
 
-    assert len(list(filter(lambda stream: isinstance(stream, StreamFacade), streams))) == 2  # bank_accounts (as it is defined as full_refresh and events as it is always concurrent now
+    # bank_accounts (as it is defined as full_refresh)
+    # balance_transactions, events, files, file_links and shipping_rates (as it is always concurrent now)
+    assert len(list(filter(lambda stream: isinstance(stream, StreamFacade), streams))) == 6
 
 
 @pytest.mark.parametrize(
