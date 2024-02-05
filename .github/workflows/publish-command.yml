@@ -45,4 +45,4 @@ jobs:
             The connector publication happens on merge to the master branch.<br>
             Please use /legacy-publish if you need to publish normalization images.<br>
             Please join the #connector-publish-updates slack channel to track ongoing publish pipelines.<br>
-            Please reach out to the @dev-extensibility team if you need support in publishing a connector.
+            Please reach out to the @airbytehq/connector-extensibility team if you need support in publishing a connector.
