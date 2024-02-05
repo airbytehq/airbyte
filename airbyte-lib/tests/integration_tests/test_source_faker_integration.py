@@ -8,6 +8,7 @@ and available on PATH for the poetry-managed venv.
 from __future__ import annotations
 from collections.abc import Generator
 import os
+from pathlib import Path
 import sys
 import shutil
 from unittest.mock import _patch_dict
@@ -17,6 +18,7 @@ import pytest
 import airbyte_lib as ab
 from airbyte_lib import caches
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+import ulid
 
 
 # Product count is always the same, regardless of faker scale.
@@ -237,5 +239,22 @@ def test_incremental_sync(
     # Second run should not return records as it picks up the state and knows it's up to date.
     result2 = source_faker_seed_b.read(duckdb_cache)
 
+    assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
+    assert len(list(result2.cache.streams["purchases"])) == FAKER_SCALE_A
+
+def test_incremental_state_cache_persistence(
+    source_faker_seed_a: ab.Source,
+) -> None:
+    config_a = source_faker_seed_a.get_config()
+    config_a["always_updated"] = False
+    source_faker_seed_a.set_config(config_a)
+    cache_name = str(ulid.ULID())
+    cache = ab.new_local_cache(cache_name)
+    source_faker_seed_a.read(cache)
+    second_cache = ab.new_local_cache(cache_name)
+    # The state should be persisted across cache instances.
+    result2 = source_faker_seed_a.read(second_cache)
+
+    assert not second_cache.get_state() == [] 
     assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result2.cache.streams["purchases"])) == FAKER_SCALE_A
