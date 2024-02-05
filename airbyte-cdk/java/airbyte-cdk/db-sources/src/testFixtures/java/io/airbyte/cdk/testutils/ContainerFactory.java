@@ -28,15 +28,17 @@ public interface ContainerFactory<C extends GenericContainer<?>> {
   /**
    * Returns a shared instance of the testcontainer.
    */
+  @SuppressWarnings("unchecked")
   default C shared(String imageName, String... methods) {
-    return ContainerFactoryWrapper.getOrCreateShared(this, imageName, methods);
+    return (C) ContainerFactoryWrapper.getOrCreateShared(this, imageName, methods);
   }
 
   /**
    * Returns a new, unshared instance of the testcontainer.
    */
+  @SuppressWarnings("unchecked")
   default C exclusive(String imageName, String... methods) {
-    return ContainerFactoryWrapper.createExclusive(this, imageName, methods);
+    return (C) ContainerFactoryWrapper.createExclusive(this, imageName, methods);
   }
 
 }

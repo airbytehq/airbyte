@@ -23,30 +23,29 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * This class wraps a specific shared testcontainer instance, which is created exactly once.
  */
-class ContainerFactoryWrapper<C extends GenericContainer<?>> {
+class ContainerFactoryWrapper {
 
   static private final Logger LOGGER = LoggerFactory.getLogger(ContainerFactoryWrapper.class);
-  static private final ConcurrentHashMap<String, ContainerFactoryWrapper<?>> SHARED_SINGLETONS = new ConcurrentHashMap<>();
+  static private final ConcurrentHashMap<String, ContainerFactoryWrapper> SHARED_SINGLETONS = new ConcurrentHashMap<>();
 
   static public final MdcScope.Builder TESTCONTAINER_LOG_MDC_BUILDER = new MdcScope.Builder()
       .setLogPrefix("testcontainer")
       .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND);
 
-  @SuppressWarnings("unchecked")
-  static <C extends GenericContainer<?>> C getOrCreateShared(ContainerFactory<C> factory, String imageName, String... methods) {
+  static GenericContainer<?> getOrCreateShared(ContainerFactory<?> factory, String imageName, String... methods) {
     final String mapKey = createMapKey(factory.getClass(), imageName, methods);
-    final ContainerFactoryWrapper<?> singleton = SHARED_SINGLETONS.computeIfAbsent(mapKey, ContainerFactoryWrapper<C>::new);
-    return ((ContainerFactoryWrapper<C>) singleton).getOrCreate(factory);
+    final ContainerFactoryWrapper singleton = SHARED_SINGLETONS.computeIfAbsent(mapKey, ContainerFactoryWrapper::new);
+    return singleton.getOrCreate(factory);
   }
 
-  static <C extends GenericContainer<?>> C createExclusive(ContainerFactory<C> factory, String imageName, String... methods) {
-    return new ContainerFactoryWrapper<C>(imageName, List.of(methods)).getOrCreate(factory);
+  static GenericContainer<?> createExclusive(ContainerFactory<?> factory, String imageName, String... methods) {
+    return new ContainerFactoryWrapper(imageName, List.of(methods)).getOrCreate(factory);
   }
 
   final String imageName;
   final List<String> methodNames;
 
-  private C testcontainer;
+  private GenericContainer<?> testcontainer;
   private RuntimeException containerCreationError;
 
   private ContainerFactoryWrapper(String mapKey) {
@@ -67,7 +66,7 @@ class ContainerFactoryWrapper<C extends GenericContainer<?>> {
     return Arrays.stream(mapKey.split("\\+"));
   }
 
-  private synchronized C getOrCreate(ContainerFactory<C> factory) {
+  private synchronized GenericContainer<?> getOrCreate(ContainerFactory<?> factory) {
     if (testcontainer == null && containerCreationError == null) {
       try {
         create(imageName, factory, methodNames);
@@ -86,7 +85,7 @@ class ContainerFactoryWrapper<C extends GenericContainer<?>> {
     return testcontainer;
   }
 
-  private void create(String imageName, ContainerFactory<C> factory, List<String> methodNames) {
+  private void create(String imageName, ContainerFactory<?> factory, List<String> methodNames) {
     LOGGER.info("Creating new container based on {} with {}.", imageName, methodNames);
     try {
       final var parsed = DockerImageName.parse(imageName);
