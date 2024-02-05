@@ -355,7 +355,14 @@ def test_do_not_propagate_parameters_on_inline_schema_loader():
         "streams": [
             {
                 "type": "DeclarativeStream",
-                "schema_loader": {"type": "InlineSchemaLoader", "file_path": './source_coffee/schemas/{{ parameters["name"] }}.json'},
+                "schema_loader": {
+                    "type": "InlineSchemaLoader",
+                    "schema": {
+                        "type": "object",
+                        "$schema": "http://json-schema.org/schema#",
+                        "properties": {"id": {"type": "string"}},
+                    },
+                },
                 "$parameters": {
                     "name": "roasters",
                     "primary_key": "id",
@@ -373,7 +380,11 @@ def test_do_not_propagate_parameters_on_inline_schema_loader():
                 "primary_key": "id",
                 "schema_loader": {
                     "type": "InlineSchemaLoader",
-                    "file_path": './source_coffee/schemas/{{ parameters["name"] }}.json',
+                    "schema": {
+                        "type": "object",
+                        "$schema": "http://json-schema.org/schema#",
+                        "properties": {"id": {"type": "string"}},
+                    },
                 },
                 "$parameters": {
                     "name": "roasters",
