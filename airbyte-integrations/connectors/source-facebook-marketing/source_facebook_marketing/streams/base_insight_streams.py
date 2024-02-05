@@ -205,8 +205,6 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         self._next_cursor_value = self._get_start_date()
         for ts_start in self._date_intervals():
-            if ts_start in self._completed_slices:
-                continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
             for account in self._api.accounts:
