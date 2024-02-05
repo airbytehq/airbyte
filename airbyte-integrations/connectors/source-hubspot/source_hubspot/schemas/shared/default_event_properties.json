@@ -102,6 +102,24 @@
     "id": {
       "type": ["null", "string"]
     },
+    "properties_hs_base_url": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_form_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_form_type": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_url_domain": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_url_path": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_visitor_type": {
+      "type": ["null", "string"]
+    },
     "objectId": {
       "type": ["null", "string"]
     },
@@ -112,7 +130,8 @@
       "type": ["null", "string"]
     },
     "occurredAt": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

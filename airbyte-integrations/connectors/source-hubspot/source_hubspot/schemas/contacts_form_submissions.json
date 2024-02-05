@@ -5,6 +5,9 @@
     "canonical-vid": {
       "type": ["null", "integer"]
     },
+    "conversion-id": {
+      "type": ["null", "string"]
+    },
     "timestamp": {
       "type": ["null", "integer"]
     },

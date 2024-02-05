@@ -201,6 +201,36 @@
         "body": {
           "type": ["null", "string"]
         },
+        "meetingOutcome": {
+          "type": ["null", "string"]
+        },
+        "locationType": {
+          "type": ["null", "string"]
+        },
+        "location": {
+          "type": ["null", "string"]
+        },
+        "internalMeetingNotes": {
+          "type": ["null", "string"]
+        },
+        "includeDescriptionInReminder": {
+          "type": ["null", "boolean"]
+        },
+        "iCalUid": {
+          "type": ["null", "string"]
+        },
+        "preMeetingProspectReminders": {
+          "type": ["null", "array"],
+          "items" : {}
+        },
+        "attendeeOwnerIds": {
+          "type": ["null", "array"],
+          "items" : {}
+        },
+        "guestEmails": {
+          "type": ["null", "array"],
+          "items" : {}
+        },
         "from": {
           "type": ["null", "object"],
           "properties": {
@@ -299,6 +329,9 @@
           "type": ["null", "integer"]
         },
         "title": {
+          "type": ["null", "string"]
+        },
+        "timezone": {
           "type": ["null", "string"]
         },
         "toNumber": {
@@ -401,6 +434,39 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "metadata_attendeeOwnerIds": {
+      "type": ["null", "array"],
+      "items" : {}
+    },
+    "metadata_guestEmails": {
+      "type": ["null", "array"],
+      "items" : {}
+    },
+    "metadata_iCalUid": {
+      "type": ["null", "string"]
+    },
+    "metadata_iCalUid": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_internalMeetingNotes": {
+      "type": ["null", "string"]
+    },
+    "metadata_location": {
+      "type": ["null", "string"]
+    },
+    "metadata_locationType": {
+      "type": ["null", "string"]
+    },
+    "metadata_meetingOutcome": {
+      "type": ["null", "string"]
+    },
+    "metadata_timezone": {
+      "type": ["null", "string"]
+    },
+    "metadata_preMeetingProspectReminders": {
+      "type": ["null", "array"],
+      "items" : {}
     },
     "metadata_body": {
       "type": ["null", "string"]
