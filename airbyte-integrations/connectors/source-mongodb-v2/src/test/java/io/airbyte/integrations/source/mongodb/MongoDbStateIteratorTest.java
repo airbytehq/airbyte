@@ -187,7 +187,7 @@ class MongoDbStateIteratorTest {
         message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
         "state status should be in_progress");
 
-    assertFalse(iter.hasNext(), "should have no more records");
+    assertThrows(RuntimeException.class, iter::hasNext, "next iteration should throw exception to fail the sync");
   }
 
   @Test
