@@ -68,6 +68,9 @@ acceptance_tests:
               bypass_reason: "Value can be updated by Google Ads"
             - name: metrics.cost_per_all_conversions
               bypass_reason: "Value can be updated by Google Ads"
+          ad_group:
+            - name: ad_group.url_custom_parameters
+              bypass_reason: "Value can be updated by Google Ads"
           customer:
             - name: customer.optimization_score_weight
               bypass_reason: "Value can be updated by Google Ads"
