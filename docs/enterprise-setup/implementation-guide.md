@@ -105,6 +105,10 @@ To configure basic auth (deploy without SSO), remove the entire `auth:` section 
 
 For Self-Managed Enterprise deployments, we recommend using a dedicated database instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL) instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
 
+:::info
+Currently, Airbyte requires connection to a Postgres 13 instance.
+:::
+
 We assume in the following that you've already configured a Postgres instance:
 
 <details>
