@@ -5,7 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
-import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.countOfTypingDedupingThreads;
+import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.getCountOfTypeAndDedupeThreads;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtilKt.prepareAllSchemas;
 
@@ -43,15 +43,14 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
                                             final DestinationHandler<DialectTableDefinition> destinationHandler,
                                             final ParsedCatalog parsedCatalog,
                                             final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
-                                            final V2TableMigrator v2TableMigrator,
-                                            final int defaultThreadCount) {
+                                            final V2TableMigrator v2TableMigrator) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
     this.v1V2Migrator = v1V2Migrator;
     this.v2TableMigrator = v2TableMigrator;
-    this.executorService = Executors.newFixedThreadPool(countOfTypingDedupingThreads(defaultThreadCount),
-        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
+    this.executorService = Executors.newFixedThreadPool(getCountOfTypeAndDedupeThreads(),
+                                                        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
   @Override

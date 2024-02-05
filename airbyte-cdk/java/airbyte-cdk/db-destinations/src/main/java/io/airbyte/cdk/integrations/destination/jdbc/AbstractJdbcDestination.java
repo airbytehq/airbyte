@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 
 import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 import static io.airbyte.cdk.integrations.util.ConfiguredCatalogUtilKt.addDefaultNamespaceToStreams;
-import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.countOfTypingDedupingThreads;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -323,11 +322,10 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     final boolean disableTypeDedupe = !config.has(DISABLE_TYPE_DEDUPE) || config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
     final TyperDeduper typerDeduper;
     if (disableTypeDedupe) {
-      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator,
-                                                              countOfTypingDedupingThreads());
+      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator);
     } else {
       typerDeduper =
-          new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator, countOfTypingDedupingThreads());
+          new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator);
     }
     return typerDeduper;
   }

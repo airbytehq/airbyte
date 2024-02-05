@@ -5,7 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
-import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.countOfTypingDedupingThreads;
+import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.getCountOfTypeAndDedupeThreads;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtilKt.prepareAllSchemas;
 import static java.util.Collections.singleton;
@@ -78,8 +78,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final DestinationHandler<DialectTableDefinition> destinationHandler,
                              final ParsedCatalog parsedCatalog,
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
-                             final V2TableMigrator v2TableMigrator,
-                             final int defaultThreadCount) {
+                             final V2TableMigrator v2TableMigrator) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
@@ -89,8 +88,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams().size());
     this.tdLocks = new ConcurrentHashMap<>();
     this.internalTdLocks = new ConcurrentHashMap<>();
-    this.executorService = Executors.newFixedThreadPool(countOfTypingDedupingThreads(defaultThreadCount),
-        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
+    this.executorService = Executors.newFixedThreadPool(getCountOfTypeAndDedupeThreads(),
+                                                        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
   public DefaultTyperDeduper(
@@ -99,7 +98,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final ParsedCatalog parsedCatalog,
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
                              final int defaultThreadCount) {
-    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator(), defaultThreadCount);
+    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator());
   }
 
   private void prepareSchemas(final ParsedCatalog parsedCatalog) throws Exception {
