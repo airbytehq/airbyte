@@ -46,7 +46,7 @@ class ContainerFactoryWrapper<C extends GenericContainer<?>> {
   final String imageName;
   final List<String> methodNames;
 
-  private C sharedContainer;
+  private C testcontainer;
   private RuntimeException containerCreationError;
 
   private ContainerFactoryWrapper(String mapKey) {
@@ -68,11 +68,11 @@ class ContainerFactoryWrapper<C extends GenericContainer<?>> {
   }
 
   private synchronized C getOrCreate(ContainerFactory<C> factory) {
-    if (sharedContainer == null && containerCreationError == null) {
+    if (testcontainer == null && containerCreationError == null) {
       try {
         create(imageName, factory, methodNames);
       } catch (RuntimeException e) {
-        sharedContainer = null;
+        testcontainer = null;
         containerCreationError = e;
       }
     }
@@ -83,7 +83,7 @@ class ContainerFactoryWrapper<C extends GenericContainer<?>> {
               + ", methods=" + methodNames,
           containerCreationError);
     }
-    return sharedContainer;
+    return testcontainer;
   }
 
   private void create(String imageName, ContainerFactory<C> factory, List<String> methodNames) {
@@ -94,16 +94,16 @@ class ContainerFactoryWrapper<C extends GenericContainer<?>> {
       for (String methodName : methodNames) {
         methods.add(factory.getClass().getMethod(methodName, factory.getContainerClass()));
       }
-      sharedContainer = factory.createNewContainer(parsed);
+      testcontainer = factory.createNewContainer(parsed);
       final var logConsumer = new Slf4jLogConsumer(LOGGER);
       TESTCONTAINER_LOG_MDC_BUILDER.produceMappings(logConsumer::withMdc);
-      sharedContainer.withLogConsumer(logConsumer);
+      testcontainer.withLogConsumer(logConsumer);
       for (Method method : methods) {
         LOGGER.info("Calling {} in {} on new container based on {}.",
             method.getName(), factory.getClass().getName(), imageName);
-        method.invoke(factory, sharedContainer);
+        method.invoke(factory, testcontainer);
       }
-      sharedContainer.start();
+      testcontainer.start();
     } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
       throw new RuntimeException(e);
     }
