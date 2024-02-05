@@ -104,6 +104,11 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   }
 
   @Override
+  protected String createTableSqlFmt() {
+    return "CREATE TABLE `%s`.`%s`(%s);";
+  }
+
+  @Override
   protected String modelsSchema() {
     return testdb.getDatabaseName();
   }

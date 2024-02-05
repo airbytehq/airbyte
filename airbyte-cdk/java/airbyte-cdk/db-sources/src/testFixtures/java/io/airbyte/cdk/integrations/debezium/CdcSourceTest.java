@@ -84,11 +84,11 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
   protected T testdb;
 
   protected String createTableSqlFmt() {
-    return "CREATE TABLE `%s`.`%s`(%s);";
+    return "CREATE TABLE %s.%s(%s);";
   }
 
   protected String createSchemaSqlFmt() {
-    return "CREATE SCHEMA `%s`;";
+    return "CREATE SCHEMA %s;";
   }
 
   protected String modelsSchema() {
