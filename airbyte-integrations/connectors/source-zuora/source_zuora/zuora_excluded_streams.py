@@ -13,4 +13,8 @@ Extend this list if needed.
 
 ZUORA_EXCLUDED_STREAMS: List = [
     "aggregatedataqueryslowdata",
+    "archived_guidedusage",
+    "archived_prepaidbalancetransaction",
+    "archived_processedusage",
+    "archived_usage"
 ]
