@@ -379,11 +379,11 @@
         "order": 4,
         "type": "string"
       },
-      "region_name" : {
-        "title" : "AWS Region",
-        "description" : "AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
-        "order" : 5,
-        "type" : "string"
+      "region_name": {
+        "title": "AWS Region",
+        "description": "AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
+        "order": 5,
+        "type": "string"
       },
       "dataset": {
         "title": "Output Stream Name",
@@ -642,11 +642,11 @@
             "order": 4,
             "type": "string"
           },
-          "region_name" : {
-            "title" : "AWS Region",
-            "description" : "AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
-            "order" : 5,
-            "type" : "string"
+          "region_name": {
+            "title": "AWS Region",
+            "description": "AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
+            "order": 5,
+            "type": "string"
           },
           "start_date": {
             "title": "Start Date",
