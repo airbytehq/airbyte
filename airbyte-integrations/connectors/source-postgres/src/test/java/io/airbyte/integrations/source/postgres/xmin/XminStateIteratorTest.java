@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import java.sql.SQLException;
 import java.util.Iterator;
 import org.junit.jupiter.api.Test;
@@ -57,9 +58,11 @@ public class XminStateIteratorTest {
         PAIR1,
         XMIN_STATUS1);
 
+    var expectedStateMessage = XMIN_STATE_MESSAGE_1.withState(XMIN_STATE_MESSAGE_1.getState().withSourceStats(new AirbyteStateStats().withRecordCount(2.0)));
+
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
-    assertEquals(XMIN_STATE_MESSAGE_1, iterator.next());
+    assertEquals(expectedStateMessage, iterator.next());
     assertFalse(iterator.hasNext());
   }
 

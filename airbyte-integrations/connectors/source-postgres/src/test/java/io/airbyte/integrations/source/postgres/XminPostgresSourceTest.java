@@ -27,6 +27,7 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -225,7 +226,8 @@ class XminPostgresSourceTest {
     // Even though no records were emitted, a state message is still expected
     final List<AirbyteStateMessage> stateAfterXminSync = extractStateMessage(syncWithXminStateType);
     assertEquals(1, stateAfterXminSync.size());
-    // Since no records were returned so the state should be the same as before
+    // Since no records were returned so the state should be the same as before without the count.
+    thirdStateMessage.setSourceStats(new AirbyteStateStats().withRecordCount(0.0));
     assertEquals(thirdStateMessage, stateAfterXminSync.get(0));
 
     // We add some data and perform a third read. We should verify that (i) a delete is not captured and
