@@ -41,9 +41,10 @@ def connector_pip_url(
     /,
     branch: str,
     *,
-    owner: str = "airbytehq",
+    owner: str | None = None,
 ) -> str:
     """Return a pip URL for a connector in the main `airbytehq/airbyte` git repo."""
+    owner = owner or "airbytehq"
     if not connector_name.startswith("source-") and not connector_name.startswith("destination-"):
         connector_name = "source-" + connector_name
 
