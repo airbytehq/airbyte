@@ -266,6 +266,7 @@ subprojects { subproj ->
             exceptionFormat 'full'
             // Swallow the logs when running in airbyte-ci, rely on test reports instead.
             showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+            showStandardStreams = true
         }
 
         // Set the timezone to UTC instead of picking up the host machine's timezone,
