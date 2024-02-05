@@ -206,17 +206,14 @@ class AirbyteLibValidation(Step):
         Returns:
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
+        print(self.context.connector.metadata)
         if dpath.util.get(self.context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
             return self.skip("Connector is not published on pypi, skipping airbyte-lib validation.")
 
         test_environment = await self.install_testing_environment(with_poetry(self.context))
 
-        connector_secrets = await self.context.get_connector_secrets()
-        first_secret_name = list(connector_secrets.keys())[0]
         test_execution = test_environment.with_(
-            hacks.never_fail_exec(
-                ["airbyte-lib-validate-source", "--connector-dir", ".", "--sample-config", "secrets/" + first_secret_name]
-            )
+            hacks.never_fail_exec(["airbyte-lib-validate-source", "--connector-dir", ".", "--validate-install-only"])
         )
 
         return await self.get_step_result(test_execution)
@@ -227,21 +224,16 @@ class AirbyteLibValidation(Step):
     ) -> Container:
         """Add airbyte-lib and secrets to the test environment."""
         context: ConnectorContext = self.context
-        secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets")
 
         container_with_test_deps = await pipelines.dagger.actions.python.common.with_python_package(
             self.context, built_connector_container.with_entrypoint([]), str(context.connector.code_directory)
         )
-        return (
-            container_with_test_deps.with_exec(
-                [
-                    "pip",
-                    "install",
-                    "airbyte-lib",
-                ]
-            )
-            # Mount the secrets
-            .with_(secret_mounting_function).with_env_variable("PYTHONPATH", ".")
+        return container_with_test_deps.with_exec(
+            [
+                "pip",
+                "install",
+                "airbyte-lib",
+            ]
         )
 
 
