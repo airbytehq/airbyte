@@ -347,3 +347,43 @@ def test_only_propagate_parameters_to_components():
     actual_component = transformer.propagate_types_and_parameters("", component, {})
 
     assert actual_component == expected_component
+
+
+def test_do_not_propagate_parameters_on_inline_schema_loader():
+    component = {
+        "type": "DeclarativeStream",
+        "streams": [
+            {
+                "type": "DeclarativeStream",
+                "schema_loader": {"type": "InlineSchemaLoader", "file_path": './source_coffee/schemas/{{ parameters["name"] }}.json'},
+                "$parameters": {
+                    "name": "roasters",
+                    "primary_key": "id",
+                },
+            }
+        ],
+    }
+
+    expected_component = {
+        "type": "DeclarativeStream",
+        "streams": [
+            {
+                "type": "DeclarativeStream",
+                "name": "roasters",
+                "primary_key": "id",
+                "schema_loader": {
+                    "type": "InlineSchemaLoader",
+                    "file_path": './source_coffee/schemas/{{ parameters["name"] }}.json',
+                },
+                "$parameters": {
+                    "name": "roasters",
+                    "primary_key": "id",
+                },
+            }
+        ],
+    }
+
+    transformer = ManifestComponentTransformer()
+    actual_component = transformer.propagate_types_and_parameters("", component, {})
+
+    assert actual_component == expected_component
