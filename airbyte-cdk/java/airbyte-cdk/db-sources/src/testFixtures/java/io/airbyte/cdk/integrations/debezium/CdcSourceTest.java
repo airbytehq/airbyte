@@ -213,7 +213,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
                               final String idCol,
                               final String makeIdCol,
                               final String modelCol) {
-    testdb.with("INSERT INTO `%s`.`%s` (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
+    testdb.with("INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
         idCol, makeIdCol, modelCol,
         recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
         recordJson.get(modelCol).asText());
@@ -346,7 +346,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
     assertExpectedStateMessages(stateMessages1);
 
-    testdb.with("DELETE FROM `%s`.%s WHERE %s = %s", modelsSchema(), MODELS_STREAM_NAME, COL_ID, 11);
+    testdb.with("DELETE FROM %s.%s WHERE %s = %s", modelsSchema(), MODELS_STREAM_NAME, COL_ID, 11);
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> read2 = source()
@@ -375,7 +375,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
     assertExpectedStateMessages(stateMessages1);
 
-    testdb.with("UPDATE `%s`.`%s` SET `%s` = '%s' WHERE %s = %s", modelsSchema(), MODELS_STREAM_NAME,
+    testdb.with("UPDATE %s.%s SET %s = '%s' WHERE %s = %s", modelsSchema(), MODELS_STREAM_NAME,
         COL_MODEL, updatedModel, COL_ID, 11);
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
@@ -536,7 +536,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
   @DisplayName("When no records exist, no records are returned.")
   void testNoData() throws Exception {
 
-    testdb.with("DELETE FROM `%s`.%s", modelsSchema(), MODELS_STREAM_NAME);
+    testdb.with("DELETE FROM %s.%s", modelsSchema(), MODELS_STREAM_NAME);
 
     final AutoCloseableIterator<AirbyteMessage> read = source().read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
