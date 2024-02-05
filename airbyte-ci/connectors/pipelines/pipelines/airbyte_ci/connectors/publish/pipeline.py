@@ -60,7 +60,7 @@ class CheckPythonRegistryPackageDoesNotExist(Step):
 
     async def _run(self) -> StepResult:
         is_published = is_package_published(
-            self.context.package_metadata.name, self.context.package_metadata.version, self.context.registry
+            self.context.package_metadata.name, self.context.package_metadata.version, self.context.registry_check_url
         )
         if is_published:
             return StepResult(

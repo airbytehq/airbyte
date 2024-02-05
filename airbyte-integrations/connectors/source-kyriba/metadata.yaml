@@ -8,6 +8,10 @@ data:
   icon: kyriba.svg
   license: MIT
   name: Kyriba
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-kyriba
   registries:
     cloud:
       enabled: false

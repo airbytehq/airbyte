@@ -397,6 +397,7 @@ Publish all connectors modified in the head commit: `airbyte-ci connectors --mod
 | `--ci-requirements`                  | False    |                                 |                                    | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.                                                                                               |
 | `--python-registry-token`            | False    |                                 | `PYTHON_REGISTRY_TOKEN`            | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified      |
 | `--python-registry-url`              | False    | https://upload.pypi.org/legacy/ | `PYTHON_REGISTRY_URL`              | The python registry to publish to. Defaults to main pypi                                                 |
+| `--python-registry-check-url`        | False    | https://pypi.org/pypi           | `PYTHON_REGISTRY_CHECK_URL`        | The python registry url to check whether a package is published already                                                 |
 
 
 I've added an empty "Default" column, and you can fill in the default values as needed.
@@ -421,7 +422,7 @@ flowchart TD
 
 If `remoteRegistries.pypi.enabled` in the connector metadata is set to `true`, the connector will be published to the python registry.
 To do so, the `--python-registry-token` and `--python-registry-url` options are used to authenticate with the registry and publish the connector.
-If the current version of the connector is already published to the registry, the publish will be skipped.
+If the current version of the connector is already published to the registry, the publish will be skipped (the `--python-registry-check-url` is used for the check).
 
 On a pre-release, the connector will be published as a `.dev<N>` version.
 
@@ -609,6 +610,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 3.10.0  | [#34606](https://github.com/airbytehq/airbyte/pull/34606)  | Allow configuration of separate check URL to check whether package exists already.                                         |
 | 3.9.0   | [#34606](https://github.com/airbytehq/airbyte/pull/34606)  | Allow configuration of python registry URL via environment variable.                                                       |
 | 3.8.1   | [#34607](https://github.com/airbytehq/airbyte/pull/34607)  | Improve gradle dependency cache volume protection.                                                                         |
 | 3.8.0   | [#34316](https://github.com/airbytehq/airbyte/pull/34316)  | Expose Dagger engine image name in `--ci-requirements` and add `--ci-requirements` to the `airbyte-ci` root command group. |
