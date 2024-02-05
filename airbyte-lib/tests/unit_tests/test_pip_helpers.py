@@ -15,8 +15,8 @@ def test_github_pip_url(owner, repo, branch_or_ref, package_name, subdirectory, 
     assert result == expected
 
 @pytest.mark.parametrize('connector_name, branch, owner, expected', [
-    ('source-coin-api', 'my-branch', None, 'git+https://github.com/airbytehq/airbyte.git@my-branch#egg=source-source-coin-api&subdirectory=airbyte-integrations/connectors/source-coin-api'),
-    ('source-coin-api', 'my-branch', 'my-fork', 'git+https://github.com/my-fork/airbyte.git@my-branch#egg=source-source-coin-api&subdirectory=airbyte-integrations/connectors/source-coin-api'),
+    ('source-coin-api', 'my-branch', None, 'git+https://github.com/airbytehq/airbyte.git@my-branch#egg=source-coin-api&subdirectory=airbyte-integrations/connectors/source-coin-api'),
+    ('source-coin-api', 'my-branch', 'my-fork', 'git+https://github.com/my-fork/airbyte.git@my-branch#egg=source-coin-api&subdirectory=airbyte-integrations/connectors/source-coin-api'),
 ])
 def test_connector_pip_url(connector_name, branch, owner, expected):
     result = connector_pip_url(

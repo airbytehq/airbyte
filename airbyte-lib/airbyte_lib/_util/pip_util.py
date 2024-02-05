@@ -52,6 +52,6 @@ def connector_pip_url(
         owner=owner,
         repo="airbyte",
         branch_or_ref=branch,
-        package_name=f"source-{connector_name}",
+        package_name=connector_name,
         subdirectory=f"airbyte-integrations/connectors/{connector_name}",
     )
