@@ -303,10 +303,10 @@ def test_interpolate_config():
     )
 
     assert isinstance(authenticator, DeclarativeOauth2Authenticator)
-    assert authenticator.client_id.eval(input_config) == "some_client_id"
-    assert authenticator.client_secret.string == "some_client_secret"
-    assert authenticator.token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
-    assert authenticator.refresh_token.eval(input_config) == "verysecrettoken"
+    assert authenticator._client_id.eval(input_config) == "some_client_id"
+    assert authenticator._client_secret.string == "some_client_secret"
+    assert authenticator._token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
+    assert authenticator._refresh_token.eval(input_config) == "verysecrettoken"
     assert authenticator._refresh_request_body.mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
     assert authenticator.get_refresh_request_body() == {"body_field": "yoyoyo", "interpolated_body_field": "verysecrettoken"}
 
@@ -332,9 +332,9 @@ def test_interpolate_config_with_token_expiry_date_format():
     assert isinstance(authenticator, DeclarativeOauth2Authenticator)
     assert authenticator.token_expiry_date_format == "%Y-%m-%d %H:%M:%S.%f+00:00"
     assert authenticator.token_expiry_is_time_of_expiration
-    assert authenticator.client_id.eval(input_config) == "some_client_id"
-    assert authenticator.client_secret.string == "some_client_secret"
-    assert authenticator.token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
+    assert authenticator._client_id.eval(input_config) == "some_client_id"
+    assert authenticator._client_secret.string == "some_client_secret"
+    assert authenticator._token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
 
 
 def test_single_use_oauth_branch():

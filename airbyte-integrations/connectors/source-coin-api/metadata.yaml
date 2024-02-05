@@ -8,6 +8,10 @@ data:
   icon: coinapi.svg
   license: MIT
   name: Coin API
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-coin-api
   registries:
     cloud:
       enabled: true

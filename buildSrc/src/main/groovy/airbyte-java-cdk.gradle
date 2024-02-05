@@ -32,7 +32,7 @@ class AirbyteJavaCdkPlugin implements Plugin<Project> {
         @TaskAction
         public void disableLocalCdkRefs() {
             // Step through the project tree and set useLocalCdk to false on all connectors
-            getProject().fileTree(dir: '.', include: '**/build.gradle').forEach(file -> {
+            getProject().rootProject.fileTree(dir: '.', include: '**/build.gradle').forEach(file -> {
                 String content = file.getText()
                 if (content.contains("useLocalCdk = true")) {
                     content = content.replace("useLocalCdk = true", "useLocalCdk = false")
@@ -48,7 +48,7 @@ class AirbyteJavaCdkPlugin implements Plugin<Project> {
         public void assertNotUsingLocalCdk() {
             List<String> foundPaths = new ArrayList<>()
 
-            for (File file : getProject().fileTree(dir: '.', include: '**/build.gradle')) {
+            for (File file : getProject().rootProject.fileTree(dir: '.', include: '**/build.gradle')) {
                 String content = file.getText()
                 if (content.contains("useLocalCdk = true")) {
                     System.err.println("Found usage of 'useLocalCdk = true' in " + file.getPath())

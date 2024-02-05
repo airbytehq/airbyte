@@ -9,11 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -28,7 +24,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.function.Supplier;
 import org.bson.BsonDocument;
@@ -87,14 +82,14 @@ public class MongoDbCdcInitializer {
 
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(config.rawConfig());
     final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(config.rawConfig());
-    final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
+    final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.getDatabaseName();
     final boolean isEnforceSchema = config.getEnforceSchema();
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     logOplogInfo(mongoClient);
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
+    final BsonDocument initialResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, catalog);
     final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeToken, mongoClient, databaseName);
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, mongoClient, databaseName);
     final MongoDbCdcState cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null)
         ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
         : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
@@ -137,18 +132,14 @@ public class MongoDbCdcInitializer {
             emittedAt, config.getCheckpointInterval(), isEnforceSchema);
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
-        new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
+        new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
+    final var propertiesManager = new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.rawConfig(), catalog);
+    final var eventConverter = new MongoDbDebeziumEventConverter(cdcMetadataInjector, catalog, emittedAt, config.rawConfig());
 
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-        cdcSavedInfoFetcher,
-        mongoDbCdcStateHandler,
-        cdcMetadataInjector,
-        defaultDebeziumProperties,
-        DebeziumPropertiesManager.DebeziumConnectorType.MONGODB,
-        emittedAt,
-        false);
+    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+        propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
 
     // We can close the client after the initial snapshot is complete, incremental
     // iterator does not make use of the client.
@@ -164,8 +155,8 @@ public class MongoDbCdcInitializer {
       final Document command = new Document("collStats", "oplog.rs");
       final Document result = localDatabase.runCommand(command);
       if (result != null) {
-        LOGGER.info("Max oplog size is {} bytes", result.getInteger("maxSize"));
-        LOGGER.info("Free space in oplog is {} bytes", result.getInteger("freeStorageSize"));
+        LOGGER.info("Max oplog size is {} bytes", result.getLong("maxSize"));
+        LOGGER.info("Free space in oplog is {} bytes", result.getLong("freeStorageSize"));
       }
     } catch (final Exception e) {
       LOGGER.warn("Unable to query for op log stats, exception: {}" + e.getMessage());

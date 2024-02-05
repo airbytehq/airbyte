@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
 import static io.airbyte.cdk.db.jdbc.DateTimeConverter.putJavaSQLTime;
+import static io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations.escapeStringLiteral;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,10 +18,11 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
-import io.airbyte.integrations.base.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import java.nio.file.Files;
@@ -31,15 +33,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
-import org.jooq.InsertValuesStepN;
-import org.jooq.Name;
-import org.jooq.Record;
+import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
@@ -48,7 +46,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest<TableDefinition> {
+public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest {
 
   /**
    * Redshift's JDBC driver doesn't map certain data types onto {@link java.sql.JDBCType} usefully.
@@ -139,7 +137,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   }
 
   @Override
-  protected SqlGenerator<TableDefinition> getSqlGenerator() {
+  protected JdbcSqlGenerator getSqlGenerator() {
     return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
 
       // Override only for tests to print formatted SQL. The actual implementation should use unformatted
@@ -172,50 +170,15 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     return SQLDialect.POSTGRES;
   }
 
-  /**
-   * Insert arbitrary records into an arbitrary table.
-   *
-   * @param columnsToParseJson Columns that must be wrapped in JSON_PARSE, because we're inserting
-   *        them into a SUPER column. Naively inserting a string results a SUPER value containing a
-   *        json string, rather than a json object.
-   */
-  protected void insertRecords(final Name tableName, final List<String> columnNames, final List<JsonNode> records, final String... columnsToParseJson)
-      throws SQLException {
-    InsertValuesStepN<Record> insert = DSL.insertInto(
-        DSL.table(tableName),
-        columnNames.stream().map(DSL::field).toList());
-    for (final JsonNode record : records) {
-      insert = insert.values(
-          columnNames.stream()
-              .map(fieldName -> {
-                // Convert this field to a string. Pretty naive implementation.
-                final JsonNode column = record.get(fieldName);
-                final String columnAsString;
-                if (column == null) {
-                  columnAsString = null;
-                } else if (column.isTextual()) {
-                  columnAsString = column.asText();
-                } else {
-                  columnAsString = column.toString();
-                }
-
-                if (Arrays.asList(columnsToParseJson).contains(fieldName)) {
-                  // TODO this is redshift-specific. If we try and genericize this class, we need to handle this
-                  // specifically
-                  return DSL.function("JSON_PARSE", String.class, DSL.inline(escapeStringLiteral(columnAsString)));
-                } else {
-                  return DSL.inline(escapeStringLiteral(columnAsString));
-                }
-              })
-              .toList());
-    }
-    database.execute(insert.getSQL());
+  @Override
+  protected Field<?> toJsonValue(final String valueAsString) {
+    return DSL.function("JSON_PARSE", String.class, DSL.val(escapeStringLiteral(valueAsString)));
   }
 
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    final String sql = generator.createTable(incrementalDedupStream, "", false);
+    final Sql sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
     final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(incrementalDedupStream.id());
@@ -241,16 +204,6 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
         () -> assertEquals("date", existingTable.get().columns().get("date").type()),
         () -> assertEquals("super", existingTable.get().columns().get("unknown").type()));
     // TODO assert on table clustering, etc.
-  }
-
-  private static String escapeStringLiteral(final String str) {
-    if (str == null) {
-      return null;
-    } else {
-      // jooq handles most things
-      // but we need to manually escape backslashes for some reason
-      return str.replace("\\", "\\\\");
-    }
   }
 
 }

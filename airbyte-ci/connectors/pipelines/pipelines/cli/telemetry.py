@@ -1,27 +1,34 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import getpass
 import hashlib
 import os
 import platform
 import sys
+from typing import TYPE_CHECKING
 
-import segment.analytics as analytics
+import segment.analytics as analytics  # type: ignore
 from asyncclick import get_current_context
+
+if TYPE_CHECKING:
+    from typing import Any, Callable, Dict, Tuple
+
+    from asyncclick import Command
 
 analytics.write_key = "G6G7whgro81g9xM00kN2buclGKvcOjFd"
 analytics.send = True
 analytics.debug = False
 
 
-def _is_airbyte_user():
+def _is_airbyte_user() -> bool:
     """Returns True if the user is airbyter, False otherwise."""
     return os.getenv("AIRBYTE_ROLE") == "airbyter"
 
 
-def _get_anonymous_system_id():
+def _get_anonymous_system_id() -> str:
     """Returns a unique anonymous hashid of the current system info."""
     # Collect machine-specific information
     machine_info = platform.node()
@@ -35,12 +42,12 @@ def _get_anonymous_system_id():
     return unique_id
 
 
-def click_track_command(f):
+def click_track_command(f: Callable) -> Callable:
     """
     Decorator to track CLI commands with segment.io
     """
 
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Tuple, **kwargs: Dict[str, Any]) -> Command:
         ctx = get_current_context()
         top_level_command = ctx.command_path
         full_cmd = " ".join(sys.argv)

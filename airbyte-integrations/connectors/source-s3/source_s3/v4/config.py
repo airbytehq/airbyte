@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 from typing import Any, Dict, Optional
 
 import dpath.util
@@ -29,6 +28,14 @@ class Config(AbstractFileBasedSpec):
         "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
         order=2,
+    )
+
+    role_arn: Optional[str] = Field(
+        title=f"AWS Role ARN",
+        default=None,
+        description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
+        f"requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
+        order=6,
     )
 
     aws_secret_access_key: Optional[str] = Field(

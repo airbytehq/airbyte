@@ -31,6 +31,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
@@ -365,7 +366,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
     // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
     bq.getDataset(namespace).delete();
-    var sqlGenerator = new BigQuerySqlGenerator(projectId, "asia-east1");
+    final var sqlGenerator = new BigQuerySqlGenerator(projectId, "asia-east1");
     destinationHandler.execute(sqlGenerator.createSchema(namespace));
     destinationHandler.execute(sqlGenerator.createTable(incrementalDedupStream, "", false));
 
@@ -412,7 +413,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
         });
 
-    final String createTable = generator.createTable(stream, "", false);
+    final Sql createTable = generator.createTable(stream, "", false);
     assertThrows(
         BigQueryException.class,
         () -> destinationHandler.execute(createTable));

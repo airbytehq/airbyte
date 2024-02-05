@@ -106,7 +106,6 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
                                 \t@role_name     = N'%s',
                                 \t@supports_net_changes = 0""";
     testdb
-        .withSnapshotIsolation()
         .withCdc()
         .withWaitUntilAgentRunning()
         // create tables
@@ -118,6 +117,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         // enable cdc on tables for designated role
         .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME, CDC_ROLE_NAME)
         .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME2, CDC_ROLE_NAME)
+        .withShortenedCapturePollingInterval()
         .withWaitUntilMaxLsnAvailable()
         // revoke user permissions
         .with("REVOKE ALL FROM %s CASCADE;", testdb.getUserName())

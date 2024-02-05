@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -11,7 +11,20 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .api import Addresses, Charges, Collections, Customers, Discounts, Metafields, Onetimes, Orders, Products, Shop, Subscriptions
+from .api import (
+    Addresses,
+    Charges,
+    Collections,
+    Customers,
+    Discounts,
+    Metafields,
+    Onetimes,
+    OrdersDeprecatedApi,
+    OrdersModernApi,
+    Products,
+    Shop,
+    Subscriptions,
+)
 
 
 class RechargeTokenAuthenticator(TokenAuthenticator):
@@ -30,6 +43,12 @@ class SourceRecharge(AbstractSource):
         except Exception as error:
             return False, f"Unable to connect to Recharge API with the provided credentials - {repr(error)}"
 
+    def select_orders_stream(self, config: Mapping[str, Any], **kwargs) -> Union[OrdersDeprecatedApi, OrdersModernApi]:
+        if config.get("use_orders_deprecated_api"):
+            return OrdersDeprecatedApi(config, **kwargs)
+        else:
+            return OrdersModernApi(config, **kwargs)
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = RechargeTokenAuthenticator(token=config["access_token"])
         return [
@@ -40,7 +59,8 @@ class SourceRecharge(AbstractSource):
             Discounts(config, authenticator=auth),
             Metafields(config, authenticator=auth),
             Onetimes(config, authenticator=auth),
-            Orders(config, authenticator=auth),
+            # select the Orders stream class, based on the UI toggle "Use `Orders` Deprecated API"
+            self.select_orders_stream(config, authenticator=auth),
             Products(config, authenticator=auth),
             Shop(config, authenticator=auth),
             Subscriptions(config, authenticator=auth),

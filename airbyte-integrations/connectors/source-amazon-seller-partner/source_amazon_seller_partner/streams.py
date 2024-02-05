@@ -8,6 +8,7 @@ import gzip
 import json as json_lib
 import time
 from abc import ABC, abstractmethod
+from enum import Enum
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -130,10 +131,18 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+        latest_record_state = latest_record[self.cursor_field]
+        if stream_state := current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_record_state, stream_state)}
+        return {self.cursor_field: latest_record_state}
+
+
+class ReportProcessingStatus(str, Enum):
+    CANCELLED = "CANCELLED"
+    DONE = "DONE"
+    FATAL = "FATAL"
+    IN_PROGRESS = "IN_PROGRESS"
+    IN_QUEUE = "IN_QUEUE"
 
 
 class ReportsAmazonSPStream(HttpStream, ABC):
@@ -161,6 +170,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     availability_sla_days = (
         1  # see data availability sla at https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
     )
+    availability_strategy = None
 
     def __init__(
         self,
@@ -311,7 +321,6 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         """
         report_payload = {}
         stream_slice = stream_slice or {}
-        is_processed = False
         start_time = pendulum.now("utc")
         seconds_waited = 0
         try:
@@ -319,20 +328,29 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         except DefaultBackoffException as e:
             logger.warning(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
             return []
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == requests.codes.FORBIDDEN:
+                logger.warning(
+                    f"The endpoint {e.response.url} returned {e.response.status_code}: {e.response.reason}. "
+                    "This is most likely due to insufficient permissions on the credentials in use. "
+                    "Try to grant required permissions/scopes or re-authenticate."
+                )
+                return []
+            raise e
 
         # create and retrieve the report
-        while not is_processed and seconds_waited < self.max_wait_seconds:
+        processed = False
+        while not processed and seconds_waited < self.max_wait_seconds:
             report_payload = self._retrieve_report(report_id=report_id)
             seconds_waited = (pendulum.now("utc") - start_time).seconds
-            is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
-            time.sleep(self.sleep_seconds)
+            processed = report_payload.get("processingStatus") not in (ReportProcessingStatus.IN_QUEUE, ReportProcessingStatus.IN_PROGRESS)
+            if not processed:
+                time.sleep(self.sleep_seconds)
 
-        is_done = report_payload.get("processingStatus") == "DONE"
-        is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
-        is_fatal = report_payload.get("processingStatus") == "FATAL"
+        processing_status = report_payload.get("processingStatus")
         report_end_date = pendulum.parse(report_payload.get("dataEndTime", stream_slice.get("dataEndTime")))
 
-        if is_done:
+        if processing_status == ReportProcessingStatus.DONE:
             # retrieve and decrypt the report document
             document_id = report_payload["reportDocumentId"]
             request_headers = self.request_headers()
@@ -346,12 +364,12 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                 if report_end_date:
                     record["dataEndTime"] = report_end_date.strftime(DATE_FORMAT)
                 yield record
-        elif is_fatal:
+        elif processing_status == ReportProcessingStatus.FATAL:
             raise AirbyteTracedException(message=f"The report for stream '{self.name}' was not created - skip reading")
-        elif is_cancelled:
+        elif processing_status == ReportProcessingStatus.CANCELLED:
             logger.warning(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
-            raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")
+            raise Exception(f"Unknown response for stream '{self.name}'. Response body {report_payload}")
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
@@ -359,15 +377,25 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
     def cursor_field(self) -> Union[str, List[str]]:
         return "dataEndTime"
 
+    def _transform_report_record_cursor_value(self, date_string: str) -> str:
+        """
+        Parse report date field based using transformer defined in the stream class
+        """
+        return (
+            self.transformer._custom_normalizer(date_string, self.get_json_schema()["properties"][self.cursor_field])
+            if self.transformer._custom_normalizer
+            else date_string
+        )
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+        latest_record_state = self._transform_report_record_cursor_value(latest_record[self.cursor_field])
+        if stream_state := current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_record_state, stream_state)}
+        return {self.cursor_field: latest_record_state}
 
 
 class MerchantReports(IncrementalReportsAmazonSPStream, ABC):
@@ -392,14 +420,6 @@ class MerchantReports(IncrementalReportsAmazonSPStream, ABC):
 class MerchantListingsReports(MerchantReports):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
     primary_key = "listing-id"
-
-
-class NetPureProductMarginReport(IncrementalReportsAmazonSPStream):
-    name = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
-
-
-class RapidRetailAnalyticsInventoryReport(IncrementalReportsAmazonSPStream):
-    name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
 
 
 class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
@@ -711,10 +731,10 @@ class IncrementalAnalyticsStream(AnalyticsStream):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+        latest_record_state = latest_record[self.cursor_field]
+        if stream_state := current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_record_state, stream_state)}
+        return {self.cursor_field: latest_record_state}
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -731,7 +751,6 @@ class IncrementalAnalyticsStream(AnalyticsStream):
             start_date = pendulum.parse(state)
 
         start_date = min(start_date, end_date)
-        slices = []
 
         while start_date < end_date:
             # If request only returns data on day level
@@ -741,15 +760,22 @@ class IncrementalAnalyticsStream(AnalyticsStream):
                 slice_range = self.period_in_days
 
             end_date_slice = start_date.add(days=slice_range)
-            slices.append(
-                {
-                    "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
-                    "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
-                }
-            )
+            yield {
+                "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
+                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
+            }
             start_date = end_date_slice
 
-        return slices
+
+class NetPureProductMarginReport(IncrementalAnalyticsStream):
+    name = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
+    result_key = "netPureProductMarginByAsin"
+
+
+class RapidRetailAnalyticsInventoryReport(IncrementalAnalyticsStream):
+    name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
+    result_key = "reportData"
+    cursor_field = "endTime"
 
 
 class BrandAnalyticsMarketBasketReports(IncrementalAnalyticsStream):
@@ -769,16 +795,6 @@ class BrandAnalyticsSearchTermsReports(IncrementalAnalyticsStream):
 
 class BrandAnalyticsRepeatPurchaseReports(IncrementalAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
-    result_key = "dataByAsin"
-
-
-class BrandAnalyticsAlternatePurchaseReports(IncrementalAnalyticsStream):
-    name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
-    result_key = "dataByAsin"
-
-
-class BrandAnalyticsItemComparisonReports(IncrementalAnalyticsStream):
-    name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
     result_key = "dataByAsin"
 
 
@@ -862,7 +878,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
             if original_value and "format" in field_schema and field_schema["format"] == "date":
                 date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(self.marketplace_id)
                 if not date_format:
-                    raise KeyError(f"Date format not found for Markeplace ID: {self.marketplace_id}")
+                    raise KeyError(f"Date format not found for Marketplace ID: {self.marketplace_id}")
                 transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
                 return transformed_value
 

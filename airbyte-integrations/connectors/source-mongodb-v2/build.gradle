@@ -5,7 +5,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.7.9'
+    cdkVersionRequired = '0.16.3'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -35,15 +35,26 @@ sourceSets {
     }
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes"
+    }
+}
+
 dependencies {
     implementation libs.mongo.driver.sync
+
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
+    implementation libs.debezium.mongodb
 
     testImplementation libs.testcontainers.mongodb
 
     integrationTestJavaImplementation libs.apache.commons.lang
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
 
-    dataGeneratorImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    dataGeneratorImplementation platform(libs.fasterxml)
+    dataGeneratorImplementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
 
     dataGeneratorImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
     dataGeneratorImplementation libs.mongo.driver.sync

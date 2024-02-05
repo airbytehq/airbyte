@@ -58,13 +58,13 @@ To make complex changes or edit multiple files, edit the files on your local mac
 
    ```bash
    cd docusaurus
-   yarn install
+   pnpm install
    ```
 
    To see changes as you make them, run:
 
    ```bash
-   yarn start
+   pnpm start
    ```
 
    Then navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you will see them reflected in the server. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
@@ -72,8 +72,8 @@ To make complex changes or edit multiple files, edit the files on your local mac
    You can also build the docs locally and see the resulting changes. This is useful if you introduce changes that need to be run at build-time (e.g. adding a docs plug-in). To do so, run:
 
    ```bash
-   yarn build
-   yarn serve
+   pnpm build
+   pnpm serve
    ```
   
    Then navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
@@ -323,6 +323,26 @@ Some **dangerous** content with _Markdown_ `syntax`.
 Back to ordinary markdown content.
 ```
 Eagle-eyed readers may note that _all_ markdown should support this feature since it's part of the html spec. However, it's worth special mention since these dropdowns have been styled to be a graceful visual fit within our rendered documentation in all environments.
+
+#### Documenting airbyte-lib usage
+
+airbyte-lib is a Python library that allows to run syncs within a Python script for a subset of connectors. Documentation around airbyte-lib connectors is automatically generated from the connector's JSON schema spec.
+There are a few approaches to combine full control over the documentation with automatic generation for common cases:
+* If a connector is airbyte-lib enabled (`remoteRegistries.pypi.enabled` set in the `metadata.yaml` file of the connector) and there is no second-level heading `Usage with airbyte-lib` in the documentation, the documentation will be automatically generated and placed above the `Changelog` section.
+* By manually specifying a `Usage with airbyte-lib` section, this automatism is disabled. The following is a good starting point for this section:
+```md
+<HideInUI>
+
+## Usage with airbyte-lib
+
+<AirbyteLibExample connector="source-google-sheets" />
+
+<SpecSchema connector="source-google-sheets" />
+
+</HideInUI>
+```
+
+The `AirbyteLibExample` component will generate a code example that can be run with airbyte-lib, excluding an auto-generated sample configuration based on the configuration schema. The `SpecSchema` component will generate a reference table with the connector's JSON schema spec, like a non-interactive version of the connector form in the UI. It can be used on any docs page.
 
 ## Additional guidelines
 

@@ -17,23 +17,15 @@ on:
       test-connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors test' command"
         default: "--modified"
-      runner:
-        description: "The runner to use for this job"
-        default: "ci-runner-connector-test-large-dagger-0-6-4"
-      airbyte_ci_binary_url:
-        description: "The URL to download the airbyte-ci binary from"
-        required: false
-        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
   pull_request:
     types:
       - opened
       - synchronize
-      - ready_for_review
 jobs:
   connectors_ci:
     name: Connectors CI
+    runs-on: connector-test-large
     timeout-minutes: 1440 # 24 hours
-    runs-on: ${{ inputs.runner || 'ci-runner-connector-test-large-dagger-0-6-4'}}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -57,9 +49,10 @@ jobs:
         run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
       - name: Test connectors [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -70,13 +63,12 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
-          airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
-          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -86,5 +78,4 @@ jobs:
           github_token: ${{ env.PAT }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "connectors --modified test"

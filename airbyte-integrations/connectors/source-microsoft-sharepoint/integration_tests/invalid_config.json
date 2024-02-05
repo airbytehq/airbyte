@@ -1,0 +1,20 @@
+{
+  "credentials": {
+    "auth_type": "Client",
+    "client_id": "client_id",
+    "tenant_id": "tenant_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "folder_path": "folder_path",
+  "streams": [
+    {
+      "name": "test_stream",
+      "globs": ["*.csv"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "csv"
+      }
+    }
+  ]
+}

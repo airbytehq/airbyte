@@ -16,11 +16,11 @@ from airbyte_protocol.models import FailureType
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v15.services.services.google_ads_service.pagers import SearchPager
 from google.ads.googleads.v15.services.types.google_ads_service import SearchGoogleAdsResponse
-from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests
+from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests, Unauthenticated
 
 from .google_ads import GoogleAds, logger
 from .models import CustomerModel
-from .utils import ExpiredPageTokenError, chunk_date_range, generator_backoff, get_resource_name, parse_dates, traced_exception
+from .utils import ExpiredPageTokenError, chunk_date_range, detached, generator_backoff, get_resource_name, parse_dates, traced_exception
 
 
 class GoogleAdsStream(Stream, ABC):
@@ -42,19 +42,36 @@ class GoogleAdsStream(Stream, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
-            yield {"customer_id": customer.id}
+            yield {"customer_id": customer.id, "login_customer_id": customer.login_customer_id}
+
+    @generator_backoff(
+        wait_gen=backoff.constant,
+        exception=(TimeoutError),
+        max_tries=5,
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error {details['exception']} after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        interval=1,
+    )
+    @detached(timeout_minutes=5)
+    def request_records_job(self, customer_id, login_customer_id, query, stream_slice):
+        response_records = self.google_ads_client.send_request(query=query, customer_id=customer_id, login_customer_id=login_customer_id)
+        yield from self.parse_records_with_backoff(response_records, stream_slice)
 
     def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         if stream_slice is None:
             return []
 
         customer_id = stream_slice["customer_id"]
-        try:
-            response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
+        login_customer_id = stream_slice["login_customer_id"]
 
-            yield from self.parse_records_with_backoff(response_records, stream_slice)
-        except GoogleAdsException as exception:
+        try:
+            yield from self.request_records_job(customer_id, login_customer_id, self.get_query(stream_slice), stream_slice)
+        except (GoogleAdsException, Unauthenticated) as exception:
             traced_exception(exception, customer_id, self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
+        except TimeoutError as exception:
+            # Prevent sync failure
+            logger.warning(f"Timeout: Failed to access {self.name} stream data. {str(exception)}")
 
     @generator_backoff(
         wait_gen=backoff.expo,
@@ -134,6 +151,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             ):
                 if chunk:
                     chunk["customer_id"] = customer.id
+                    chunk["login_customer_id"] = customer.login_customer_id
                 yield chunk
 
     def _update_state(self, customer_id: str, record: MutableMapping[str, Any]):
@@ -213,6 +231,62 @@ class Customer(IncrementalGoogleAdsStream):
             yield record
 
 
+class CustomerClient(GoogleAdsStream):
+    """
+    Customer Client stream: https://developers.google.com/google-ads/api/fields/v15/customer_client
+    """
+
+    primary_key = ["customer_client.id"]
+
+    def __init__(self, customer_status_filter: List[str], **kwargs):
+        self.customer_status_filter = customer_status_filter
+        super().__init__(**kwargs)
+
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
+        table_name = get_resource_name(self.name)
+
+        active_customers_condition = []
+        if self.customer_status_filter:
+            customer_status_filter = ", ".join([f"'{status}'" for status in self.customer_status_filter])
+            active_customers_condition = [f"customer_client.status in ({customer_status_filter})"]
+
+        query = GoogleAds.convert_schema_into_query(fields=fields, table_name=table_name, conditions=active_customers_condition)
+        return query
+
+    def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        This method is overridden to avoid using login_customer_id from dummy_customers.
+
+        login_customer_id is used in the stream_slices to pass it to child customers,
+        but we don't need it here as this class iterate over customers accessible from user creds.
+        """
+        if stream_slice is None:
+            return []
+
+        customer_id = stream_slice["customer_id"]
+
+        try:
+            response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
+
+            yield from self.parse_records_with_backoff(response_records, stream_slice)
+        except GoogleAdsException as exception:
+            traced_exception(exception, customer_id, self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
+
+    def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
+        """
+        login_cusotmer_id is populated to child customers if they are under managers account
+        """
+        records = [record for record in super().parse_response(response)]
+
+        # read_records get all customers connected to customer_id from stream_slice
+        # if the result is more than one customer, it's a manager, otherwise it is client account for which we don't need login_customer_id
+        root_is_manager = len(records) > 1
+        for record in records:
+            record["login_customer_id"] = stream_slice["login_customer_id"] if root_is_manager else "default"
+            yield record
+
+
 class CustomerLabel(GoogleAdsStream):
     """
     Customer Label stream: https://developers.google.com/google-ads/api/fields/v15/customer_label
@@ -278,6 +352,21 @@ class AdGroup(IncrementalGoogleAdsStream):
     """
 
     primary_key = ["ad_group.id", "segments.date"]
+
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
+        # validation that the customer is not a manager
+        # due to unsupported metrics.cost_micros field and removing it in case custom is a manager
+        if [customer for customer in self.customers if customer.id == stream_slice["customer_id"]][0].is_manager_account:
+            fields = [field for field in fields if field != "metrics.cost_micros"]
+        table_name = get_resource_name(self.name)
+        start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
+        cursor_condition = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
+
+        query = GoogleAds.convert_schema_into_query(
+            fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
+        )
+        return query
 
 
 class AdGroupLabel(GoogleAdsStream):
@@ -574,7 +663,13 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
             yield from slices_generator
         else:
             for customer in self.customers:
-                yield {"customer_id": customer.id, "updated_ids": set(), "deleted_ids": set(), "record_changed_time_map": dict()}
+                yield {
+                    "customer_id": customer.id,
+                    "login_customer_id": customer.login_customer_id,
+                    "updated_ids": set(),
+                    "deleted_ids": set(),
+                    "record_changed_time_map": dict(),
+                }
 
     def _process_parent_record(self, parent_record: MutableMapping[str, Any], child_slice: MutableMapping[str, Any]) -> bool:
         """Process a single parent_record and update the child_slice."""
@@ -598,7 +693,13 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state.get(self.parent_stream_name)
         ):
             customer_id = parent_slice.get("customer_id")
-            child_slice = {"customer_id": customer_id, "updated_ids": set(), "deleted_ids": set(), "record_changed_time_map": dict()}
+            child_slice = {
+                "customer_id": customer_id,
+                "updated_ids": set(),
+                "deleted_ids": set(),
+                "record_changed_time_map": dict(),
+                "login_customer_id": parent_slice.get("login_customer_id"),
+            }
             if not self.get_current_state(customer_id):
                 yield child_slice
                 continue
@@ -658,13 +759,20 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
         record_changed_time_map = child_slice["record_changed_time_map"]
         customer_id = child_slice["customer_id"]
+        login_customer_id = child_slice["login_customer_id"]
 
         # Split the updated_ids into chunks and yield them
         for i in range(0, len(updated_ids), chunk_size):
             chunk_ids = set(updated_ids[i : i + chunk_size])
             chunk_time_map = {k: record_changed_time_map[k] for k in chunk_ids}
 
-            yield {"updated_ids": chunk_ids, "record_changed_time_map": chunk_time_map, "customer_id": customer_id, "deleted_ids": set()}
+            yield {
+                "updated_ids": chunk_ids,
+                "record_changed_time_map": chunk_time_map,
+                "customer_id": customer_id,
+                "deleted_ids": set(),
+                "login_customer_id": login_customer_id,
+            }
 
     def read_records(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs

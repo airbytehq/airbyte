@@ -8,6 +8,6 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from .source import Source{{properCase name}}
 
-if __name__ == "__main__":
+def run():
     source = Source{{properCase name}}()
     launch(source, sys.argv[1:])

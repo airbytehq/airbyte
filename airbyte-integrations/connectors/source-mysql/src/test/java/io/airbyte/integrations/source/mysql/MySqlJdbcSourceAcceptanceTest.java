@@ -38,6 +38,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -402,7 +403,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
         .withCursor("5")
         .withCursorRecordCount(1L);
 
-    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
+    expectedMessages.addAll(createExpectedTestMessages(List.of(state), 2L));
     return expectedMessages;
   }
 
@@ -477,14 +478,15 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
 
   // Override from parent class as we're no longer including the legacy Data field.
   @Override
-  protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states) {
+  protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states, final long numRecords) {
     return states.stream()
         .map(s -> new AirbyteMessage().withType(Type.STATE)
             .withState(
                 new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
                     .withStream(new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
-                        .withStreamState(Jsons.jsonNode(s)))))
+                        .withStreamState(Jsons.jsonNode(s)))
+                    .withSourceStats(new AirbyteStateStats().withRecordCount((double) numRecords))))
         .collect(
             Collectors.toList());
   }

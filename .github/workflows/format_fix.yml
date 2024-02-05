@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
 jobs:
   format-fix:
-    runs-on: "ci-runner-connector-format-medium-dagger-0-6-4"
     name: "Run airbyte-ci format fix all"
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -22,16 +22,16 @@ jobs:
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
 
       - name: Run airbyte-ci format fix all
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         continue-on-error: true
         with:
           context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "format fix all"
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
