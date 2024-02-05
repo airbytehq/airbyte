@@ -12,7 +12,9 @@ import requests
 
 from airbyte_lib.version import get_version
 
+
 TRACKING_KEY = os.environ.get("AIRBYTE_TRACKING_KEY", "") or "cukeSffc0G6gFQehKDhhzSurDzVSZ2OP"
+
 
 class SourceType(str, Enum):
     VENV = "venv"
