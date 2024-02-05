@@ -325,6 +325,9 @@
     "metadata": {
       "type": ["null", "object"],
       "properties": {
+        "suspension_type_id": {
+          "type": ["null", "integer"]
+        },
         "custom": {
           "type": ["null", "object"],
           "properties": {},
