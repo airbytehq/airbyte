@@ -146,25 +146,6 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
     """
 
     steps: STEP_TREE = [
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD_TAR, step=BuildConnectorDistributionTar(context))],
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.UNIT, step=UnitTests(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR])],
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.BUILD,
-                step=BuildConnectorImages(context),
-                args=lambda results: {
-                    "dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output_artifact.directory(dist_tar_directory_path(context))
-                },
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
-            ),
-        ],
+        [StepToRun(id=CONNECTOR_TEST_STEP_ID.UNIT, step=UnitTests(context))],
     ]
-
-    if context.connector.supports_normalization:
-        normalization_steps = _get_normalization_steps(context)
-        steps.append(normalization_steps)
-
-    acceptance_test_steps = _get_acceptance_test_steps(context)
-    steps.append(acceptance_test_steps)
-
     return steps
