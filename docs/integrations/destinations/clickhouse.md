@@ -89,7 +89,8 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                       |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+|:--------|:-----------| :--------------------------------------------------------- |:----------------------------------------------------------------------------------------------|
+| 1.0.0   | 2024-02-07 | [\#34637](https://github.com/airbytehq/airbyte/pull/34637) | Update the raw table schema                                                                   |
 | 0.2.5   | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                             |
 | 0.2.4   | 2023-06-05 | [\#27036](https://github.com/airbytehq/airbyte/pull/27036) | Internal code change for future development (install normalization packages inside connector) |
 | 0.2.3   | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                         |
