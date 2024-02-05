@@ -194,7 +194,7 @@ def snowflake_config():
     yield config
 
 
-@pytest.fixture(auto_use=True)
+@pytest.fixture(autouse=True)
 def source_test_registry(monkeypatch):
     """
     Set environment variables for the test source.
