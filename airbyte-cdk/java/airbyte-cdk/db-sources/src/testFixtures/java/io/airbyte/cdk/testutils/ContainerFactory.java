@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.testutils;
 
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.MdcScope;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -64,6 +66,10 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
 
   private static final ConcurrentMap<ContainerKey, ContainerOrException> SHARED_CONTAINERS = new ConcurrentHashMap<>();
 
+  private static final MdcScope.Builder TESTCONTAINER_LOG_MDC_BUILDER = new MdcScope.Builder()
+      .setLogPrefix("testcontainer")
+      .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND);
+
   /**
    * Creates a new, unshared testcontainer instance. This usually wraps the default constructor for
    * the testcontainer type.
@@ -102,7 +108,9 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
       for (String methodName : methodNames) {
         methods.add(getClass().getMethod(methodName, container.getClass()));
       }
-      container.withLogConsumer(new Slf4jLogConsumer(LOGGER));
+      final var logConsumer = new Slf4jLogConsumer(LOGGER);
+      TESTCONTAINER_LOG_MDC_BUILDER.produceMappings(logConsumer::withMdc);
+      container.withLogConsumer(logConsumer);
       for (Method method : methods) {
         LOGGER.info("Calling {} in {} on new shared container based on {}.",
             method.getName(), getClass().getName(), imageName);
