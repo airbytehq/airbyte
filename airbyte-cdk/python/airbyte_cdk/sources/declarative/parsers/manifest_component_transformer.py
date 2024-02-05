@@ -74,6 +74,10 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
     "SimpleRetriever.partition_router": "CustomPartitionRouter",
 }
 
+_PROPAGATION_EXCLUSION_TYPES = {
+    "InlineSchemaLoader"  # propagation of extra parameters leads to invalid JSON schemas
+}
+
 
 class ManifestComponentTransformer:
     def propagate_types_and_parameters(
@@ -103,7 +107,7 @@ class ManifestComponentTransformer:
                 propagated_component["type"] = found_type
 
         # When there is no resolved type, we're not processing a component (likely a regular object) and don't need to propagate parameters
-        if "type" not in propagated_component:
+        if "type" not in propagated_component or propagated_component["type"] in _PROPAGATION_EXCLUSION_TYPES:
             return propagated_component
 
         # Combines parameters defined at the current level with parameters from parent components. Parameters at the current
