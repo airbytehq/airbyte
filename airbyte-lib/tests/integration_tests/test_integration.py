@@ -63,7 +63,7 @@ def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
             {"column1": "value2", "column2": 2},
         ],
         "stream2": [
-            {"column1": "value1", "column2": 1},
+            {"column1": "value1", "column2": 1, "empty_column": None},
         ],
     }
 
@@ -117,6 +117,9 @@ def test_non_existing_connector():
     with pytest.raises(Exception):
         ab.get_connector("source-not-existing", config={"apiKey": "abc"})
 
+def test_non_enabled_connector():
+    with pytest.raises(exc.AirbyteConnectorNotPyPiPublishedError):
+        ab.get_connector("source-non-published", config={"apiKey": "abc"})
 
 @pytest.mark.parametrize(
     "latest_available_version, requested_version, raises",
@@ -138,7 +141,7 @@ def test_version_enforcement(raises, latest_available_version, requested_version
     In this test, the actually installed version is 0.0.1
     """
     patched_entry = registry.ConnectorMetadata(
-        name="source-test", latest_available_version=latest_available_version
+        name="source-test", latest_available_version=latest_available_version, pypi_package_name="airbyte-source-test"
     )
     with patch.dict("airbyte_lib.registry.__cache", {"source-test": patched_entry}, clear=False):
         if raises:
@@ -212,6 +215,35 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
 
     assert result.processed_records == 3
     assert_cache_data(expected_test_stream_data, cache)
+
+
+def test_read_result_mapping():
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    result: ReadResult = source.read(ab.new_local_cache())
+    assert len(result) == 2
+    assert isinstance(result, Mapping)
+    assert "stream1" in result
+    assert "stream2" in result
+    assert "stream3" not in result
+    assert result.keys() == {"stream1", "stream2"}
+
+
+def test_dataset_list_and_len(expected_test_stream_data):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    result: ReadResult = source.read(ab.new_local_cache())
+    stream_1 = result["stream1"]
+    assert len(stream_1) == 2
+    assert len(list(stream_1)) == 2
+    # Make sure we can iterate over the stream after calling len
+    assert list(stream_1) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
+    # Make sure we can iterate over the stream a second time
+    assert list(stream_1) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
+
+    assert isinstance(result, Mapping)
+    assert "stream1" in result
+    assert "stream2" in result
+    assert "stream3" not in result
+    assert result.keys() == {"stream1", "stream2"}
 
 
 def test_read_from_cache(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
@@ -552,7 +584,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
     mock_requests.post = mock_post
 
     source = ab.get_connector("source-test", config={"apiKey": api_key})
-    cache = ab.get_default_cache()
+    cache = ab.new_local_cache()
 
     if request_call_fails:
         mock_post.side_effect = Exception("test exception")

@@ -8,6 +8,10 @@ data:
   icon: webflow.svg
   license: MIT
   name: Webflow
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-webflow
   registries:
     cloud:
       enabled: true
