@@ -1,0 +1,740 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "department": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "attributes": {
+                  "properties": {
+                    "id": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10160976": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10160978": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10160979": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10160981": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10161033": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10161034": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10161036": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10161037": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10161038": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10161039": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10161040": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10161041": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_10161324": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_4376233": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_5282510": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_5282512": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_7560118": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_7720476": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_7720477": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_7720478": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_9964989": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dynamic_9988460": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "email": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "employment_type": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "first_name": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "hire_date": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "id": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "last_name": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "office": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "attributes": {
+                  "properties": {
+                    "id": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "position": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "profile_picture": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "status": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "subcompany": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "attributes": {
+                  "properties": {
+                    "id": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "team": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "attributes": {
+                  "properties": {
+                    "id": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "termination_date": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "weekly_working_hours": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "work_schedule": {
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "universal_id": {
+              "type": "string"
+            },
+            "value": {
+              "properties": {
+                "attributes": {
+                  "properties": {
+                    "friday": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "number"
+                    },
+                    "monday": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "saturday": {
+                      "type": "string"
+                    },
+                    "sunday": {
+                      "type": "string"
+                    },
+                    "thursday": {
+                      "type": "string"
+                    },
+                    "tuesday": {
+                      "type": "string"
+                    },
+                    "valid_from": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "wednesday": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

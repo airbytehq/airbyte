@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "approval_required": {
+          "type": "boolean"
+        },
+        "category": {
+          "type": "string"
+        },
+        "certification_required": {
+          "type": "boolean"
+        },
+        "certification_submission_timeframe": {
+          "type": "number"
+        },
+        "half_day_requests_enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "number"
+        },
+        "legacy_category": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "substitute_option": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

@@ -1,0 +1,161 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "_airbyte_incremental_sync": {
+      "type": "string"
+    },
+    "attributes": {
+      "properties": {
+        "certificate": {
+          "properties": {
+            "status": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "created_by": {
+          "type": "string"
+        },
+        "days_count": {
+          "type": "number"
+        },
+        "employee": {
+          "properties": {
+            "attributes": {
+              "properties": {
+                "email": {
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "universal_id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "first_name": {
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "universal_id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "id": {
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "universal_id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                },
+                "last_name": {
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "universal_id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "end_date": {
+          "type": "string"
+        },
+        "half_day_end": {
+          "type": "number"
+        },
+        "half_day_start": {
+          "type": "number"
+        },
+        "id": {
+          "type": "number"
+        },
+        "start_date": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "time_off_type": {
+          "properties": {
+            "attributes": {
+              "properties": {
+                "category": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "number"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

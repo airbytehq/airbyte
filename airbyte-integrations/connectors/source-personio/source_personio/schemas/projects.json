@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "number"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

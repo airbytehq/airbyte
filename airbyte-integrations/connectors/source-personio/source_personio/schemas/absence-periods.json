@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "absence_type": {
+          "properties": {
+            "attributes": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "time_off_type_id": {
+                  "type": "number"
+                }
+              },
+              "type": "object"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "approved_at": {
+          "type": "string"
+        },
+        "breakdowns": {
+          "items": {
+            "properties": {
+              "date": {
+                "type": "string"
+              },
+              "effective_duration": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "certificate": {
+          "properties": {
+            "status": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "created_by": {
+          "type": "number"
+        },
+        "effective_duration": {
+          "type": "number"
+        },
+        "employee": {
+          "properties": {
+            "attributes": {
+              "properties": {
+                "email": {
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "universal_id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "first_name": {
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "universal_id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "id": {
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "universal_id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                },
+                "last_name": {
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "universal_id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "end": {
+          "type": "string"
+        },
+        "half_day_end": {
+          "type": "boolean"
+        },
+        "half_day_start": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        },
+        "measurement_unit": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "start": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "break": {
+          "type": "number"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "employee": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "is_holiday": {
+          "type": "boolean"
+        },
+        "is_on_time_off": {
+          "type": "boolean"
+        },
+        "start_time": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "number"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

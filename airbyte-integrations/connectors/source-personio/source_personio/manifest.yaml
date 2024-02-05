@@ -1,0 +1,1194 @@
+version: 0.57.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - employees
+streams:
+  - type: DeclarativeStream
+    name: employees
+    primary_key:
+      - attributes
+      - id
+      - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              department:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    properties:
+                      attributes:
+                        properties:
+                          id:
+                            type: number
+                          name:
+                            type: string
+                        type: object
+                      type:
+                        type: string
+                    type:
+                      - object
+                      - 'null'
+                type: object
+              dynamic_4376233:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              dynamic_5282510:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              dynamic_5282512:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              dynamic_5282513:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              dynamic_7560118:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type:
+                      - 'null'
+                      - string
+                type: object
+              dynamic_7720476:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type:
+                      - 'null'
+                      - string
+                type: object
+              dynamic_7720477:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type:
+                      - 'null'
+                      - string
+                type: object
+              dynamic_7720478:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type:
+                      - 'null'
+                      - string
+                type: object
+              dynamic_9964989:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              dynamic_9988460:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              email:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              employment_type:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              first_name:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              hire_date:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              id:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type: number
+                type: object
+              last_name:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              office:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    properties:
+                      attributes:
+                        properties:
+                          id:
+                            type: number
+                          name:
+                            type: string
+                        type: object
+                      type:
+                        type: string
+                    type:
+                      - object
+                      - 'null'
+                type: object
+              position:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              profile_picture:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type:
+                      - 'null'
+                      - string
+                type: object
+              status:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              subcompany:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    properties:
+                      attributes:
+                        properties:
+                          id:
+                            type: number
+                          name:
+                            type: string
+                        type: object
+                      type:
+                        type: string
+                    type:
+                      - object
+                      - 'null'
+                type: object
+              team:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    properties:
+                      attributes:
+                        properties:
+                          id:
+                            type: number
+                          name:
+                            type: string
+                        type: object
+                      type:
+                        type: string
+                    type:
+                      - object
+                      - 'null'
+                type: object
+              termination_date:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type:
+                      - 'null'
+                      - string
+                type: object
+              weekly_working_hours:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              work_schedule:
+                properties:
+                  label:
+                    type: string
+                  type:
+                    type: string
+                  universal_id:
+                    type: string
+                  value:
+                    properties:
+                      attributes:
+                        properties:
+                          friday:
+                            type: string
+                          id:
+                            type: number
+                          monday:
+                            type: string
+                          name:
+                            type: string
+                          saturday:
+                            type: string
+                          sunday:
+                            type: string
+                          thursday:
+                            type: string
+                          tuesday:
+                            type: string
+                          valid_from:
+                            type:
+                              - 'null'
+                              - string
+                          wednesday:
+                            type: string
+                        type: object
+                      type:
+                        type: string
+                    type: object
+                type: object
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.personio.de/v1
+        path: /company/employees
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: SessionTokenAuthenticator
+          login_requester:
+            type: HttpRequester
+            url_base: https://api.personio.de/v1
+            path: auth
+            authenticator:
+              type: NoAuth
+            http_method: POST
+            request_parameters: {}
+            request_headers:
+              accept: application/json
+              content-type: application/json
+            request_body_json:
+              client_id: '{{ config[''personio_client_id''] }}'
+              client_secret: '{{ config[''personio_client_secret''] }}'
+          session_token_path:
+            - data
+            - token
+          expiration_duration: P1D
+          request_authentication:
+            type: Bearer
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      partition_router: []
+  - type: DeclarativeStream
+    name: time-offs
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _airbyte_incremental_sync:
+            type: string
+          attributes:
+            properties:
+              certificate:
+                properties:
+                  status:
+                    type: string
+                type: object
+              comment:
+                type: string
+              created_at:
+                type: string
+              created_by:
+                type: string
+              days_count:
+                type: number
+              employee:
+                properties:
+                  attributes:
+                    properties:
+                      email:
+                        properties:
+                          label:
+                            type: string
+                          type:
+                            type: string
+                          universal_id:
+                            type: string
+                          value:
+                            type: string
+                        type: object
+                      first_name:
+                        properties:
+                          label:
+                            type: string
+                          type:
+                            type: string
+                          universal_id:
+                            type: string
+                          value:
+                            type: string
+                        type: object
+                      id:
+                        properties:
+                          label:
+                            type: string
+                          type:
+                            type: string
+                          universal_id:
+                            type: string
+                          value:
+                            type: number
+                        type: object
+                      last_name:
+                        properties:
+                          label:
+                            type: string
+                          type:
+                            type: string
+                          universal_id:
+                            type: string
+                          value:
+                            type: string
+                        type: object
+                    type: object
+                  type:
+                    type: string
+                type: object
+              end_date:
+                type: string
+              half_day_end:
+                type: number
+              half_day_start:
+                type: number
+              id:
+                type: number
+              start_date:
+                type: string
+              status:
+                type: string
+              time_off_type:
+                properties:
+                  attributes:
+                    properties:
+                      category:
+                        type: string
+                      id:
+                        type: number
+                      name:
+                        type: string
+                    type: object
+                  type:
+                    type: string
+                type: object
+              updated_at:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.personio.de/v1
+        path: /company/time-offs
+        http_method: GET
+        request_parameters:
+          start_time: '{{ config[''start_date_time_offs''] }}'
+        request_headers:
+          accept: application/json
+        authenticator:
+          type: SessionTokenAuthenticator
+          login_requester:
+            type: HttpRequester
+            url_base: https://api.personio.de/v1
+            path: auth
+            authenticator:
+              type: NoAuth
+            http_method: POST
+            request_parameters: {}
+            request_headers:
+              accept: application/json
+              content-type: application/json
+            request_body_json:
+              client_id: '{{ config[''personio_client_id''] }}'
+              client_secret: '{{ config[''personio_client_secret''] }}'
+          session_token_path:
+            - data
+            - token
+          expiration_duration: P1D
+          request_authentication:
+            type: Bearer
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - _airbyte_incremental_sync
+            value: '{{ record[''attributes''][''created_at'']}}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: _airbyte_incremental_sync
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S%z'
+      datetime_format: '%Y-%m-%d'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date_time_offs''] }}'
+        datetime_format: '%Y-%m-%d'
+      start_time_option:
+        type: RequestOption
+        field_name: start_date
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end_date
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P3M
+      cursor_granularity: P1D
+  - type: DeclarativeStream
+    name: attributes
+    primary_key:
+      - key
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          key:
+            type: string
+          label:
+            type: string
+          type:
+            type: string
+          universal_id:
+            type:
+              - 'null'
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.personio.de/v1
+        path: /company/employees/attributes
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: SessionTokenAuthenticator
+          login_requester:
+            type: HttpRequester
+            url_base: https://api.personio.de/v1
+            path: auth
+            authenticator:
+              type: NoAuth
+            http_method: POST
+            request_parameters: {}
+            request_headers:
+              accept: application/json
+              content-type: application/json
+            request_body_json:
+              client_id: '{{ config[''personio_client_id''] }}'
+              client_secret: '{{ config[''personio_client_secret''] }}'
+          session_token_path:
+            - data
+            - token
+          expiration_duration: P1D
+          request_authentication:
+            type: Bearer
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      partition_router: []
+  - type: DeclarativeStream
+    name: projects
+    primary_key:
+      - attributes
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              active:
+                type: boolean
+              created_at:
+                type: string
+              name:
+                type: string
+              updated_at:
+                type: string
+            type: object
+          id:
+            type: number
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.personio.de/v1
+        path: /company/attendances/projects
+        http_method: GET
+        request_parameters:
+          end_date: '2023-12-31'
+          start_date: '2021-01-01'
+        request_headers:
+          accept: application/json
+        authenticator:
+          type: SessionTokenAuthenticator
+          login_requester:
+            type: HttpRequester
+            url_base: https://api.personio.de/v1
+            path: auth
+            authenticator:
+              type: NoAuth
+            http_method: POST
+            request_parameters: {}
+            request_headers:
+              accept: application/json
+              content-type: application/json
+            request_body_json:
+              client_id: '{{ config[''personio_client_id''] }}'
+              client_secret: '{{ config[''personio_client_secret''] }}'
+          session_token_path:
+            - data
+            - token
+          expiration_duration: P1D
+          request_authentication:
+            type: Bearer
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 200
+      partition_router: []
+  - type: DeclarativeStream
+    name: attendances
+    primary_key:
+      - attributes
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              break:
+                type: number
+              comment:
+                type: string
+              date:
+                type: string
+              employee:
+                type: number
+              end_time:
+                type:
+                  - 'null'
+                  - string
+              is_holiday:
+                type: boolean
+              is_on_time_off:
+                type: boolean
+              start_time:
+                type: string
+              status:
+                type: string
+              updated_at:
+                type: string
+            type: object
+          id:
+            type: number
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.personio.de/v1
+        path: /company/attendances
+        http_method: GET
+        request_parameters:
+          end_date: '2023-12-31'
+          start_date: '2021-01-01'
+        request_headers:
+          accept: application/json
+        authenticator:
+          type: SessionTokenAuthenticator
+          login_requester:
+            type: HttpRequester
+            url_base: https://api.personio.de/v1
+            path: auth
+            authenticator:
+              type: NoAuth
+            http_method: POST
+            request_parameters: {}
+            request_headers:
+              accept: application/json
+              content-type: application/json
+            request_body_json:
+              client_id: '{{ config[''personio_client_id''] }}'
+              client_secret: '{{ config[''personio_client_secret''] }}'
+          session_token_path:
+            - data
+            - token
+          expiration_duration: P1D
+          request_authentication:
+            type: Bearer
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 200
+      partition_router: []
+  - type: DeclarativeStream
+    name: time-off-types
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              approval_required:
+                type: boolean
+              category:
+                type: string
+              certification_required:
+                type: boolean
+              certification_submission_timeframe:
+                type: number
+              half_day_requests_enabled:
+                type:
+                  - boolean
+                  - 'null'
+              id:
+                type: number
+              legacy_category:
+                type:
+                  - 'null'
+                  - string
+              name:
+                type: string
+              substitute_option:
+                type: string
+              unit:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.personio.de/v1
+        path: /company/time-off-types
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: SessionTokenAuthenticator
+          login_requester:
+            type: HttpRequester
+            url_base: https://api.personio.de/v1
+            path: auth
+            authenticator:
+              type: NoAuth
+            http_method: POST
+            request_parameters: {}
+            request_headers:
+              accept: application/json
+              content-type: application/json
+            request_body_json:
+              client_id: '{{ config[''personio_client_id''] }}'
+              client_secret: '{{ config[''personio_client_secret''] }}'
+          session_token_path:
+            - data
+            - token
+          expiration_duration: P1D
+          request_authentication:
+            type: Bearer
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      partition_router: []
+  - type: DeclarativeStream
+    name: absence-periods
+    primary_key:
+      - attributes
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              absence_type:
+                properties:
+                  attributes:
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      time_off_type_id:
+                        type: number
+                    type: object
+                  type:
+                    type: string
+                type: object
+              approved_at:
+                type: string
+              breakdowns:
+                items:
+                  properties:
+                    date:
+                      type: string
+                    effective_duration:
+                      type: number
+                  type: object
+                type: array
+              certificate:
+                properties:
+                  status:
+                    type: string
+                type: object
+              comment:
+                type: string
+              created_at:
+                type: string
+              created_by:
+                type: number
+              effective_duration:
+                type: number
+              employee:
+                properties:
+                  attributes:
+                    properties:
+                      email:
+                        properties:
+                          label:
+                            type: string
+                          type:
+                            type: string
+                          universal_id:
+                            type: string
+                          value:
+                            type: string
+                        type: object
+                      first_name:
+                        properties:
+                          label:
+                            type: string
+                          type:
+                            type: string
+                          universal_id:
+                            type: string
+                          value:
+                            type: string
+                        type: object
+                      id:
+                        properties:
+                          label:
+                            type: string
+                          type:
+                            type: string
+                          universal_id:
+                            type: string
+                          value:
+                            type: number
+                        type: object
+                      last_name:
+                        properties:
+                          label:
+                            type: string
+                          type:
+                            type: string
+                          universal_id:
+                            type: string
+                          value:
+                            type: string
+                        type: object
+                    type: object
+                  type:
+                    type: string
+                type: object
+              end:
+                type: string
+              half_day_end:
+                type: boolean
+              half_day_start:
+                type: boolean
+              id:
+                type: string
+              measurement_unit:
+                type: string
+              origin:
+                type: string
+              start:
+                type: string
+              status:
+                type: string
+              timezone:
+                type: string
+              updated_at:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.personio.de/v1
+        path: /company/absence-periods
+        http_method: GET
+        request_parameters:
+          end_date: '2023-12-31'
+          start_date: '2021-01-01'
+        request_headers:
+          accept: application/json
+        authenticator:
+          type: SessionTokenAuthenticator
+          login_requester:
+            type: HttpRequester
+            url_base: https://api.personio.de/v1
+            path: auth
+            authenticator:
+              type: NoAuth
+            http_method: POST
+            request_parameters: {}
+            request_headers:
+              accept: application/json
+              content-type: application/json
+            request_body_json:
+              client_id: '{{ config[''personio_client_id''] }}'
+              client_secret: '{{ config[''personio_client_secret''] }}'
+          session_token_path:
+            - data
+            - token
+          expiration_duration: P1D
+          request_authentication:
+            type: Bearer
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 200
+      partition_router: []
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - personio_client_id
+      - personio_client_secret
+      - start_date_time_offs
+    properties:
+      personio_client_id:
+        type: string
+        order: 0
+        title: Personio Client ID
+        description: >-
+          Needed for Authentication
+          (https://developer.personio.de/reference/post_auth)
+        airbyte_secret: true
+      personio_client_secret:
+        type: string
+        order: 1
+        title: Personio Client Secret
+        description: >-
+          Needed for Authentication
+          (https://developer.personio.de/reference/post_auth)
+        airbyte_secret: true
+      start_date_time_offs:
+        type: string
+        order: 2
+        title: Start Date Time-Offs
+        format: date
+        default: '2021-01-01'
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        description: >-
+          Too many "time-offs" tend to lead to errors (Personio: Gateway
+          Timeout)
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    employees: true
+    time-offs: true
+    attributes: true
+    projects: true
+    attendances: true
+    time-off-types: true
+    absence-periods: true
