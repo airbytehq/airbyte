@@ -5,15 +5,13 @@ from typing import List
 from unittest import TestCase
 
 import freezegun
-# from airbyte_cdk.connector_builder.models import HttpResponse
-from airbyte_cdk.test.mock_http import HttpResponse
-from airbyte_cdk.test.mock_http import HttpRequestMatcher
-
-from airbyte_cdk.test.mock_http.request import HttpRequest
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker
+
+# from airbyte_cdk.connector_builder.models import HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequestMatcher, HttpResponse
+from airbyte_cdk.test.mock_http.request import HttpRequest
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -25,12 +23,14 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStreamStatus, Level
-from .config import ConfigBuilder
-from .pagination import GitHubPaginationStrategy
+
 # from integration.pagination import StripePaginationStrategy
 # from integration.request_builder import GithubBuilder
 # from integration.response_builder import a_response_with_status
 from source_github import SourceGithub
+
+from .config import ConfigBuilder
+from .pagination import GitHubPaginationStrategy
 from .request_builder import GithubRequestBuilder
 
 _TOKEN = "GITHUB_TEST_TOKEN"
