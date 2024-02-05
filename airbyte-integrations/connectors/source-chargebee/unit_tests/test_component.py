@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
 from typing import Any, MutableMapping
+
+import pytest
 from source_chargebee.components import CustomFieldTransformation, IncrementalSingleSliceCursor
 
 

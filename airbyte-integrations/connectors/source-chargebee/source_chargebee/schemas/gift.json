@@ -45,7 +45,6 @@
         "object": {
           "type": ["string", "null"]
         }
-
       }
     },
     "gift_receiver": {
