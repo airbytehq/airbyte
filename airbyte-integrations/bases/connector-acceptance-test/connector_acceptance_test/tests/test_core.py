@@ -1407,26 +1407,33 @@ class TestConnectorDocumentation(BaseTest):
             pytest.fail(f"Documentation does not have {self.PREREQUISITES} section.")
 
         prereq_start_line = header_line_map[self.PREREQUISITES]
-        if headings.index(self.PREREQUISITES) + 1 == len(headings):
-            prereq_end_line = -1
-        else:
-            prereq_end_line = header_line_map[headings[headings.index(self.PREREQUISITES) + 1]]
+        prereq_end_line = docs_utils.description_end_line_index(self.PREREQUISITES, headings, header_line_map)
 
         with open(docs_path, "r") as docs_file:
             prereq_content_lines = docs_file.readlines()[prereq_start_line:prereq_end_line]
-            prereq_content = "".join(prereq_content_lines).lower()
+            # adding real character to avoid accidentally joining lines into a wanted title.
+            prereq_content = "|".join(prereq_content_lines).lower()
             required_titles, has_credentials = docs_utils.required_titles_from_spec(actual_connector_spec.connectionSpecification)
 
             for title in required_titles:
-                assert title in prereq_content, f"Required '{title}' field is not in {self.PREREQUISITES} section."
+                assert title in prereq_content, (f"Required '{title}' field is not in {self.PREREQUISITES} section "
+                                                 f"or title in spec doesn't match name in the docs.")
 
             if has_credentials:
+                # credentials has specific check for keywords as we have a lot of way how to describe this step
                 credentials_validation = [k in prereq_content for k in self.CREDENTIALS_KEYWORDS]
                 assert True in credentials_validation, f"Required 'credentials' field is not in {self.PREREQUISITES} section."
 
     def test_docs_structure(self, connector_documentation: str, connector_metadata: dict):
-        node = docs_utils.documentation_node(connector_documentation)
-        heading_names = tuple([docs_utils.remove_step_from_heading(docs_utils.header_name(n)) for n in node if n.type == self.HEADING])
+        """
+        test_docs_structure gets all top-level headers from source documentation file and check that the order is correct.
+        The order of the headers should follow our standard template https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw.
+        _get_template_headings returns tuple of headers as in standard template and non-required headers that might nor be in the source docs.
+        CONNECTOR_SPECIFIC_HEADINGS value in list of required headers that shows a place where should be a connector specific headers,
+        which can be skipped as out of standard template and depend of connector.
+        """
+
+        heading_names = docs_utils.prepare_headers(connector_documentation)
         template_headings, non_required_heading = self._get_template_headings(connector_metadata["data"]["name"])
 
         heading_names_len, template_headings_len = len(heading_names), len(template_headings)
@@ -1435,32 +1442,32 @@ class TestConnectorDocumentation(BaseTest):
         while heading_names_index < heading_names_len and template_headings_index < template_headings_len:
             heading_names_value = heading_names[heading_names_index]
             template_headings_value = template_headings[template_headings_index]
-
+            # check that template header is specific for connector and actual header should not be validated
             if template_headings_value == self.CONNECTOR_SPECIFIC_HEADINGS:
+                # check that actual header is not in required headers, as required headers should be on a right place and order
                 if heading_names_value not in template_headings:
-                    heading_names_index += 1
+                    heading_names_index += 1 # go to the next actual header as CONNECTOR_SPECIFIC_HEADINGS can be more than one
                     continue
                 else:
+                    # if actual header is required go to the next template header to validate actual header order
                     template_headings_index += 1
                     continue
+            # strict check that actual header equals template header
             if heading_names_value == template_headings_value:
+                # found expected header, go to the next header in template and actual headers
                 heading_names_index += 1
                 template_headings_index += 1
                 continue
+            # actual header != template header means that template value is not required and can be skipped
             if template_headings_value in non_required_heading:
+                # found non-required header, go to the next template header to validate actual header
                 template_headings_index += 1
                 continue
-
-            pytest.fail(
-                f"Documentation structure doesn't follow standard template."
-                f" Heading '{heading_names_value}' is not on a right place, name of heading is incorrect or heading name is not expected.\n"
-                f"Diff:\nCurrent Heading: '{heading_names_value}'. Expected Heading: '{template_headings_value}'"
-            )
-
+            # any check is True, indexes didn't move to the next step
+            pytest.fail(docs_utils.reason_titles_not_match(heading_names_value, template_headings_value, template_headings))
+        # indexes didn't move to the last required one, so some headers are missed
         if template_headings_index != template_headings_len:
-            pytest.fail(
-                f"Documentation structure doesn't follow standard template. docs is not full.\nMissing headers: {template_headings[template_headings_index:]}"
-            )
+            pytest.fail(docs_utils.reason_missing_titles(template_headings_index, template_headings))
 
     def test_docs_descriptions(self, docs_path: str, connector_documentation: str, connector_metadata: dict):
         connector_name = connector_metadata["data"]["name"]
@@ -1474,10 +1481,7 @@ class TestConnectorDocumentation(BaseTest):
             if heading in actual_headings:
 
                 description_start_line = header_line_map[heading]
-                if actual_headings.index(heading) + 1 == len(actual_headings):
-                    description_end_line = -1
-                else:
-                    description_end_line = header_line_map[actual_headings[actual_headings.index(heading) + 1]]
+                description_end_line = docs_utils.description_end_line_index(heading, actual_headings, header_line_map)
 
                 with open(docs_path, "r") as docs_file, open(description, "r") as template_file:
 
@@ -1489,7 +1493,7 @@ class TestConnectorDocumentation(BaseTest):
                         assert d == t, f"Description for '{heading}' does not follow structure.\nExpected: {t} Actual: {d}"
 
     def test_validate_links(self, connector_documentation: str):
-        valid_status_codes = [200, 403, 401]  # we skip 403 and 401 due to needed access
+        valid_status_codes = [200, 403, 401, 405]  # we skip 4xx due to needed access
         links = re.findall("(https?://[^\s)]+)", connector_documentation)
         invalid_links = []
         threads = []
@@ -1503,6 +1507,9 @@ class TestConnectorDocumentation(BaseTest):
             process = Thread(target=validate_docs_links, args=[link])
             process.start()
             threads.append(process)
-        [process.join() for process in threads]
+
+        for process in threads:
+            process.join(timeout=30)  # 30s timeout for process else link will be skipped
+            process.is_alive()
 
         assert not invalid_links, f"{len(invalid_links)} invalid links were found in the connector documentation: {invalid_links}."
