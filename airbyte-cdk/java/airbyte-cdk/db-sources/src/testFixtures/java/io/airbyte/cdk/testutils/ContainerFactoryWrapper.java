@@ -33,6 +33,10 @@ class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
     return ((ContainerFactoryWrapper<C>) singleton).getOrCreate(factory);
   }
 
+  static <C extends JdbcDatabaseContainer<?>> C createUnshared(ContainerFactory<C> factory, String imageName, String... methods) {
+    return new ContainerFactoryWrapper<C>(imageName, List.of(methods)).getOrCreate(factory);
+  }
+
   final String imageName;
   final List<String> methodNames;
 
@@ -40,8 +44,12 @@ class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
   private RuntimeException containerCreationError;
 
   private ContainerFactoryWrapper(String mapKey) {
-    this.imageName = mapKeyElements(mapKey).skip(1).findFirst().get();
-    this.methodNames = mapKeyElements(mapKey).skip(2).toList();
+    this(mapKeyElements(mapKey).skip(1).findFirst().get(), mapKeyElements(mapKey).skip(2).toList());
+  }
+
+  private ContainerFactoryWrapper(String imageName, List<String> methodNames) {
+    this.imageName = imageName;
+    this.methodNames = methodNames;
   }
 
   static private String createMapKey(Class<?> containerFactoryClass,  String imageName, String... methods) {
@@ -73,7 +81,7 @@ class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
   }
 
   private void create(String imageName, ContainerFactory<C> factory, List<String> methodNames) {
-    LOGGER.info("Creating new shared container based on {} with {}.", imageName, methodNames);
+    LOGGER.info("Creating new container based on {} with {}.", imageName, methodNames);
     try {
       final var parsed = DockerImageName.parse(imageName);
       final var methods = new ArrayList<Method>();
@@ -83,7 +91,7 @@ class ContainerFactoryWrapper<C extends JdbcDatabaseContainer<?>> {
       sharedContainer = factory.createNewContainer(parsed);
       sharedContainer.withLogConsumer(new Slf4jLogConsumer(LOGGER));
       for (Method method : methods) {
-        LOGGER.info("Calling {} in {} on new shared container based on {}.",
+        LOGGER.info("Calling {} in {} on new container based on {}.",
             method.getName(), factory.getClass().getName(), imageName);
         method.invoke(factory, sharedContainer);
       }
