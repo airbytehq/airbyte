@@ -74,9 +74,7 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
     "SimpleRetriever.partition_router": "CustomPartitionRouter",
 }
 
-_PROPAGATION_EXCLUSION_TYPES = {
-    "InlineSchemaLoader"  # propagation of extra parameters leads to invalid JSON schemas
-}
+_PROPAGATION_EXCLUSION_TYPES = {"InlineSchemaLoader"}  # propagation of extra parameters leads to invalid JSON schemas
 
 
 class ManifestComponentTransformer:
