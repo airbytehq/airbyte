@@ -11,7 +11,16 @@
       "url": {
         "type": ["null", "string"]
       },
+      "malware_scan_result": {
+        "type": ["null", "string"]
+      },
       "inline": {
+        "type": ["null", "boolean"]
+      },
+      "deleted": {
+        "type": ["null", "boolean"]
+      },
+      "malware_access_override": {
         "type": ["null", "boolean"]
       },
       "height": {
