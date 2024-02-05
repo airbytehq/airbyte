@@ -345,3 +345,28 @@ class CheckBaseImageIsUsed(Step):
                 stdout=f"Connector is certified but is still using a Dockerfile. {migration_hint}",
             )
         return StepResult(self, StepStatus.SUCCESS, stdout="Connector is certified and uses our base image.")
+
+
+class CheckPythonRegistryPublishConfiguration(Step):
+    context: ConnectorContext
+    title = "Check connector is published to python registry if it's a certified python connector"
+
+    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
+        tags = self.context.connector.metadata.get("tags", [])
+        is_python_registry_compatible = ("language:python" in tags or "language:low-code" in tags) and not "language:java" in tags
+        is_certified = self.context.connector.metadata.get("supportLevel") == "certified"
+        is_source = self.context.connector.metadata.get("connectorType") == "source"
+        if not is_source or not is_certified or not is_python_registry_compatible:
+            return self.skip(
+                "Connector is not a certified python source connector, it does not require to be published to python registry."
+            )
+
+        is_python_registry_published = self.context.connector.metadata.get("remoteRegistries", {}).get("pypi", {}).get("enabled", False)
+        migration_hint = f"Check the airbyte-lib readme under https://github.com/airbytehq/airbyte/blob/master/airbyte-lib/README.md for how to make a connector compatible and configure publishing."
+        if not is_python_registry_published:
+            return StepResult(
+                self,
+                StepStatus.FAILURE,
+                stdout=f"Connector is a certified python source but is not published to pypi. {migration_hint}",
+            )
+        return StepResult(self, StepStatus.SUCCESS, stdout="Connector is a certified python source and is published to pypi.")

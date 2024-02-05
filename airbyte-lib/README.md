@@ -24,7 +24,42 @@ Versioning follows [Semantic Versioning](https://semver.org/). For new features,
 
 Regular documentation lives in the `/docs` folder. Based on the doc strings of public methods, we generate API documentation using [pdoc](https://pdoc.dev). To generate the documentation, run `poetry run generate-docs`. The documentation will be generated in the `docs/generate` folder. This needs to be done manually when changing the public interface of the library.
 
-A unit test validates the documentation is up to date. 
+A unit test validates the documentation is up to date.
+
+## Connector compatibility
+
+To make a connector compatible with airbyte-lib, the following requirements must be met:
+* The connector must be a Python package, with a `pyproject.toml` or a `setup.py` file.
+* In the package, there must be a `run.py` file that contains a `run` method. This method should read arguments from the command line, and run the connector with them, outputting messages to stdout.
+* The `pyproject.toml` or `setup.py` file must specify a command line entry point for the `run` method called `source-<connector name>`. This is usually done by adding a `console_scripts` section to the `pyproject.toml` file, or a `entry_points` section to the `setup.py` file. For example:
+
+```toml
+[tool.poetry.scripts]
+source-my-connector = "my_connector.run:run"
+```
+
+```python
+setup(
+    ...
+    entry_points={
+        'console_scripts': [
+            'source-my-connector = my_connector.run:run',
+        ],
+    },
+    ...
+)
+```
+
+To publish a connector to PyPI, specify the `pypi` section in the `metadata.yaml` file. For example:
+
+```yaml
+data:
+ # ...
+ remoteRegistries:
+   pypi:
+     enabled: true
+     packageName: "airbyte-source-my-connector"
+```
 
 ## Validating source connectors
 

@@ -610,6 +610,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 3.10.2  | [#34756](https://github.com/airbytehq/airbyte/pull/34756)  | Add check for python registry publishing enabled for certified python sources.                                             |
 | 3.10.1  | [#34756](https://github.com/airbytehq/airbyte/pull/34756)  | Enable connectors tests in draft PRs.                                                                                      |
 | 3.10.0  | [#34606](https://github.com/airbytehq/airbyte/pull/34606)  | Allow configuration of separate check URL to check whether package exists already.                                         |
 | 3.9.0   | [#34606](https://github.com/airbytehq/airbyte/pull/34606)  | Allow configuration of python registry URL via environment variable.                                                       |
