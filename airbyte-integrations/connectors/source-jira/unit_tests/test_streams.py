@@ -397,6 +397,30 @@ def test_stream_updated_state(config):
     assert {"22": {"updated": "2023-10-01T00:00:00Z"}} == stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
 
 
+def test_board_stream_get_starting_point_method(config):
+
+    authenticator = SourceJira().get_authenticator(config=config)
+
+    board_issues = BoardIssues(authenticator=authenticator, domain="example.com", projects=["PROJ"])
+    board_issues._lookback_window_minutes = pendulum.duration(minutes=10)
+    board_issues._start_date = pendulum.parse("2022-01-01")
+
+    # Test case where stream_state is provided
+    stream_state = {"1": {"updated": "2022-02-01T10:00:00Z"}}
+    stream_slice = {"board_id": "1"}
+    expected = pendulum.parse("2022-02-01T09:50:00Z")  # 10 minutes before the state time
+
+    result = board_issues._get_starting_point(stream_state, stream_slice)
+    assert result == expected
+
+    # Test case where stream_state is not provided
+    stream_state = {}
+    expected = board_issues._start_date
+
+    result = board_issues._get_starting_point(stream_state, stream_slice)
+    assert result == expected
+
+
 @responses.activate
 def test_filter_sharing_stream(config, mock_filter_response, filter_sharing_response):
     responses.add(
