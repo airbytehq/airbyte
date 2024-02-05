@@ -60,6 +60,9 @@
             },
             "multi_share_end_card": {
               "type": ["null", "boolean"]
+            },
+            "is_click_to_message": {
+              "type": ["null", "boolean"]
             }
           }
         },
@@ -1397,6 +1400,9 @@
     },
     "link_url": {
       "type": ["null", "string"]
+    },
+    "use_flexible_image_aspect_ratio": {
+      "type": ["null", "boolean"]
     }
   },
   "type": ["null", "object"]
