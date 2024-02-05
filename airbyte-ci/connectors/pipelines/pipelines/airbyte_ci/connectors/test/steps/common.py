@@ -357,7 +357,7 @@ class CheckPythonRegistryPublishConfiguration(Step):
             return StepResult(self, StepStatus.SUCCESS, stdout="Connector is published to PyPI.")
 
         tags = self.context.connector.metadata.get("tags", [])
-        is_python_registry_compatible = ("language:python" in tags or "language:low-code" in tags) and not "language:java" in tags
+        is_python_registry_compatible = ("language:python" in tags or "language:low-code" in tags) and "language:java" not in tags
         is_certified = self.context.connector.metadata.get("supportLevel") == "certified"
         is_source = self.context.connector.metadata.get("connectorType") == "source"
         if not is_source or not is_certified or not is_python_registry_compatible:
@@ -365,7 +365,7 @@ class CheckPythonRegistryPublishConfiguration(Step):
                 "Connector is not a certified python source connector, it does not require to be published to python registry."
             )
 
-        migration_hint = f"Check the airbyte-ci readme under https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/pipelines#python-registry-publishing for how to configure publishing."
+        migration_hint = "Check the airbyte-ci readme under https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/pipelines#python-registry-publishing for how to configure publishing."
         if not is_python_registry_published:
             return StepResult(
                 self,
