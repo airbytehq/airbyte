@@ -20,6 +20,8 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceStateIterator.class);
   private final Iterator<T> messageIterator;
   private boolean hasEmittedFinalState = false;
+  private boolean streamFailure = false;
+  private Exception streamFailureException;
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();
 
@@ -34,15 +36,22 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   @CheckForNull
   @Override
   protected AirbyteMessage computeNext() {
+    // If the initial snapshot is incomplete for this stream, throw an exception failing the sync. This will ensure the platform retry logic
+    // kicks in and keeps retrying the sync until the initial snapshot is complete.
+    if (hasEmittedFinalState && streamFailure) {
+      throw new RuntimeException(streamFailureException);
+    }
     boolean iteratorHasNextValue = false;
     try {
       iteratorHasNextValue = messageIterator.hasNext();
-    } catch (Exception ex) {
+    } catch (final Exception ex) {
       LOGGER.info("Caught exception while trying to get the next from message iterator. Treating hasNext to false. ", ex);
+      this.streamFailure = false;
+      this.streamFailureException = ex;
     }
     if (iteratorHasNextValue) {
       if (sourceStateIteratorManager.shouldEmitStateMessage(recordCount, lastCheckpoint)) {
-        AirbyteStateMessage stateMessage = sourceStateIteratorManager.generateStateMessageAtCheckpoint();
+        final AirbyteStateMessage stateMessage = sourceStateIteratorManager.generateStateMessageAtCheckpoint();
         stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
 
         recordCount = 0L;
@@ -62,15 +71,15 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      final AirbyteStateMessage finalStateMessage = sourceStateIteratorManager.createFinalStateMessage();
-      finalStateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
+      final AirbyteStateMessage finalStateMessageForStream = streamFailure ? sourceStateIteratorManager.generateStateMessageAtCheckpoint()
+          : sourceStateIteratorManager.createFinalStateMessage();
+      finalStateMessageForStream.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
       recordCount = 0L;
       return new AirbyteMessage()
           .withType(Type.STATE)
-          .withState(finalStateMessage);
+          .withState(finalStateMessageForStream);
     } else {
       return endOfData();
     }
   }
-
 }
