@@ -20,8 +20,6 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceStateIterator.class);
   private final Iterator<T> messageIterator;
   private boolean hasEmittedFinalState = false;
-  private boolean streamFailure = false;
-  private Exception streamFailureException;
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();
 
@@ -36,18 +34,15 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   @CheckForNull
   @Override
   protected AirbyteMessage computeNext() {
-    // If the initial snapshot is incomplete for this stream, throw an exception failing the sync. This will ensure the platform retry logic
-    // kicks in and keeps retrying the sync until the initial snapshot is complete.
-    if (hasEmittedFinalState && streamFailure) {
-      throw new RuntimeException(streamFailureException);
-    }
+
     boolean iteratorHasNextValue = false;
     try {
       iteratorHasNextValue = messageIterator.hasNext();
     } catch (final Exception ex) {
-      LOGGER.info("Caught exception while trying to get the next from message iterator. Treating hasNext to false. ", ex);
-      this.streamFailure = true;
-      this.streamFailureException = ex;
+      // If the initial snapshot is incomplete for this stream, throw an exception failing the sync. This
+      // will ensure the platform retry logic
+      // kicks in and keeps retrying the sync until the initial snapshot is complete.
+      throw new RuntimeException(ex);
     }
     if (iteratorHasNextValue) {
       if (sourceStateIteratorManager.shouldEmitStateMessage(recordCount, lastCheckpoint)) {
@@ -71,8 +66,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      final AirbyteStateMessage finalStateMessageForStream = streamFailure ? sourceStateIteratorManager.generateStateMessageAtCheckpoint()
-          : sourceStateIteratorManager.createFinalStateMessage();
+      final AirbyteStateMessage finalStateMessageForStream = sourceStateIteratorManager.createFinalStateMessage();
       finalStateMessageForStream.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
       recordCount = 0L;
       return new AirbyteMessage()
@@ -82,4 +76,5 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       return endOfData();
     }
   }
+
 }
