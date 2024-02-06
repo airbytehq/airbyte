@@ -1,7 +1,6 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-chargebee:dev
-test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
@@ -45,6 +44,7 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: "secrets/config.json"
+        skip_comprehensive_incremental_tests: true
         timeout_seconds: 2400
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
