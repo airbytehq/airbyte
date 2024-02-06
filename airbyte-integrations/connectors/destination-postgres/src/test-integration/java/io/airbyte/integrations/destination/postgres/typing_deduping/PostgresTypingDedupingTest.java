@@ -6,10 +6,9 @@ package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest;
 import io.airbyte.commons.json.Jsons;
@@ -26,7 +25,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -36,30 +34,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
-
-  public static class TestMessage {
-
-    private final Map<String, Object> additionalProperties = new HashMap<>();
-
-    // Empty constructor for jackson
-    public TestMessage() {}
-
-    @JsonAnyGetter
-    public Map<String, Object> getAdditionalProperties() {
-      return this.additionalProperties;
-    }
-
-    @JsonAnySetter
-    public void setAdditionalProperty(String name, Object value) {
-      this.additionalProperties.put(name, value);
-    }
-
-    public TestMessage withAdditionalProperty(String name, Object value) {
-      this.additionalProperties.put(name, value);
-      return this;
-    }
-
-  }
 
   protected static PostgresTestDatabase testContainer;
 
@@ -169,17 +143,16 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
 
     final AirbyteMessage message = new AirbyteMessage();
     final String largeString = generateBigString();
-    final TestMessage testMessage =
-        new TestMessage()
-            .withAdditionalProperty("id1", 1)
-            .withAdditionalProperty("id2", 200)
-            .withAdditionalProperty("updated_at", "2021-01-01T00:00:00Z")
-            .withAdditionalProperty("name", largeString);
+    final Map<String, Object> data = ImmutableMap.of(
+        "id1", 1,
+        "id2", 200,
+        "updated_at", "2021-01-01T00:00:00Z",
+        "name", largeString);
     message.setType(Type.RECORD);
     message.setRecord(new AirbyteRecordMessage()
         .withNamespace(streamNamespace)
         .withStream(streamName)
-        .withData(Jsons.jsonNode(testMessage))
+        .withData(Jsons.jsonNode(data))
         .withEmittedAt(1000L));
     final List<AirbyteMessage> messages1 = new ArrayList<>();
     messages1.add(message);
