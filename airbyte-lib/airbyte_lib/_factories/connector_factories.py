@@ -11,12 +11,12 @@ from airbyte_lib.registry import ConnectorMetadata, get_connector_metadata
 from airbyte_lib.source import Source
 
 
-def get_connector(
+def get_source(
     name: str,
-    version: str | None = None,
-    pip_url: str | None = None,
     config: dict[str, Any] | None = None,
     *,
+    version: str | None = None,
+    pip_url: str | None = None,
     local_executable: Path | str | None = None,
     install_if_missing: bool = True,
 ) -> Source:
@@ -24,13 +24,13 @@ def get_connector(
 
     Args:
         name: connector name
+        config: connector config - if not provided, you need to set it later via the set_config
+            method.
         version: connector version - if not provided, the currently installed version will be used.
             If no version is installed, the latest available version will be used. The version can
             also be set to "latest" to force the use of the latest available version.
         pip_url: connector pip URL - if not provided, the pip url will be inferred from the
             connector name.
-        config: connector config - if not provided, you need to set it later via the set_config
-            method.
         local_executable: If set, the connector will be assumed to already be installed and will be
             executed using this path or executable name. Otherwise, the connector will be installed
             automatically in a virtual environment.
