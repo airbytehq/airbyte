@@ -8,6 +8,7 @@ from typing import Any
 from unittest.mock import Mock, call, patch
 import tempfile
 from pathlib import Path
+from urllib import request
 from airbyte_lib.caches.base import SQLCacheBase
 
 from sqlalchemy import column, text
@@ -29,30 +30,19 @@ from airbyte_lib import exceptions as exc
 import ulid
 
 
-LOCAL_TEST_REGISTRY_URL = "./tests/integration_tests/fixtures/registry.json"
+@pytest.fixture(scope="module", autouse=True)
+def autouse_source_test_installation(source_test_installation):
+    return
 
 
-@pytest.fixture(scope="package", autouse=True)
-def prepare_test_env():
-    """
-    Prepare test environment. This will pre-install the test source from the fixtures array and set the environment variable to use the local json file as registry.
-    """
-    venv_dir = ".venv-source-test"
-    if os.path.exists(venv_dir):
-        shutil.rmtree(venv_dir)
+@pytest.fixture(scope="function", autouse=True)
+def autouse_source_test_registry(source_test_registry):
+    return
 
-    subprocess.run(["python", "-m", "venv", venv_dir], check=True)
-    subprocess.run([f"{venv_dir}/bin/pip", "install", "-e", "./tests/integration_tests/fixtures/source-test"], check=True)
 
-    os.environ["AIRBYTE_LOCAL_REGISTRY"] = LOCAL_TEST_REGISTRY_URL
-    os.environ["DO_NOT_TRACK"] = "true"
-
-    # Force-refresh the registry cache
-    _ = registry._get_registry_cache(force_refresh=True)
-
-    yield
-
-    shutil.rmtree(".venv-source-test")
+@pytest.fixture
+def source_test(source_test_env) -> ab.Source:
+    return ab.get_connector("source-test", config={"apiKey": "test"})
 
 
 @pytest.fixture
@@ -63,13 +53,11 @@ def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
             {"column1": "value2", "column2": 2},
         ],
         "stream2": [
-            {"column1": "value1", "column2": 1},
+            {"column1": "value1", "column2": 1, "empty_column": None},
         ],
     }
 
 def test_registry_get():
-    assert registry._get_registry_url() == LOCAL_TEST_REGISTRY_URL
-
     metadata = registry.get_connector_metadata("source-test")
     assert metadata.name == "source-test"
     assert metadata.latest_available_version == "0.0.1"
@@ -124,14 +112,18 @@ def test_non_enabled_connector():
 @pytest.mark.parametrize(
     "latest_available_version, requested_version, raises",
     [
-        ("0.0.1", None, False),
-        ("1.2.3", None, False),
         ("0.0.1", "latest", False),
-        ("1.2.3", "latest", True),
         ("0.0.1", "0.0.1", False),
+        ("0.0.1", None, False),
+        ("1.2.3", None, False), # Don't raise if a version is not requested
+        ("1.2.3", "latest", True),
         ("1.2.3", "1.2.3", True),
     ])
-def test_version_enforcement(raises, latest_available_version, requested_version):
+def test_version_enforcement(
+    raises: bool,
+    latest_available_version,
+    requested_version,
+):
     """"
     Ensures version enforcement works as expected:
     * If no version is specified, the current version is accepted
@@ -143,6 +135,9 @@ def test_version_enforcement(raises, latest_available_version, requested_version
     patched_entry = registry.ConnectorMetadata(
         name="source-test", latest_available_version=latest_available_version, pypi_package_name="airbyte-source-test"
     )
+
+    # We need to initialize the cache before we can patch it.
+    _ = registry._get_registry_cache()
     with patch.dict("airbyte_lib.registry.__cache", {"source-test": patched_entry}, clear=False):
         if raises:
             with pytest.raises(Exception):
@@ -160,6 +155,10 @@ def test_version_enforcement(raises, latest_available_version, requested_version
                 config={"apiKey": "abc"},
                 install_if_missing=False,
             )
+            if requested_version: # Don't raise if a version is not requested
+                assert source.executor._get_installed_version(raise_on_error=True) == (
+                    requested_version or latest_available_version
+                ).replace("latest", latest_available_version)
             source.executor.ensure_installation(auto_fix=False)
 
 
@@ -217,9 +216,38 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
     assert_cache_data(expected_test_stream_data, cache)
 
 
+def test_read_result_mapping():
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    result: ReadResult = source.read(ab.new_local_cache())
+    assert len(result) == 2
+    assert isinstance(result, Mapping)
+    assert "stream1" in result
+    assert "stream2" in result
+    assert "stream3" not in result
+    assert result.keys() == {"stream1", "stream2"}
+
+
+def test_dataset_list_and_len(expected_test_stream_data):
+    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    result: ReadResult = source.read(ab.new_local_cache())
+    stream_1 = result["stream1"]
+    assert len(stream_1) == 2
+    assert len(list(stream_1)) == 2
+    # Make sure we can iterate over the stream after calling len
+    assert list(stream_1) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
+    # Make sure we can iterate over the stream a second time
+    assert list(stream_1) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
+
+    assert isinstance(result, Mapping)
+    assert "stream1" in result
+    assert "stream2" in result
+    assert "stream3" not in result
+    assert result.keys() == {"stream1", "stream2"}
+
+
 def test_read_from_cache(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     """
-    Test that we can read from a cache that already has data (identigier by name)
+    Test that we can read from a cache that already has data (identifier by name)
     """
     cache_name = str(ulid.ULID())
     source = ab.get_connector("source-test", config={"apiKey": "test"})
@@ -555,7 +583,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
     mock_requests.post = mock_post
 
     source = ab.get_connector("source-test", config={"apiKey": api_key})
-    cache = ab.get_default_cache()
+    cache = ab.new_local_cache()
 
     if request_call_fails:
         mock_post.side_effect = Exception("test exception")

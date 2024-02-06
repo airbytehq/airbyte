@@ -11,7 +11,12 @@ import ulid
 from overrides import overrides
 from pyarrow import parquet
 
-from .base import FileWriterBase, FileWriterBatchHandle, FileWriterConfigBase
+from airbyte_lib import exceptions as exc
+from airbyte_lib._file_writers.base import (
+    FileWriterBase,
+    FileWriterBatchHandle,
+    FileWriterConfigBase,
+)
 
 
 class ParquetWriterConfig(FileWriterConfigBase):
@@ -37,12 +42,24 @@ class ParquetWriter(FileWriterBase):
         target_dir.mkdir(parents=True, exist_ok=True)
         return target_dir / f"{stream_name}_{batch_id}.parquet"
 
+    def _get_missing_columns(
+        self,
+        stream_name: str,
+        record_batch: pa.Table,
+    ) -> list[str]:
+        """Return a list of columns that are missing in the batch."""
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(message="Catalog manager should exist but does not.")
+        stream = self._catalog_manager.get_stream_config(stream_name)
+        stream_property_names = stream.stream.json_schema["properties"].keys()
+        return [col for col in stream_property_names if col not in record_batch.schema.names]
+
     @overrides
     def _write_batch(
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> FileWriterBatchHandle:
         """Process a record batch.
 
@@ -51,8 +68,15 @@ class ParquetWriter(FileWriterBase):
         _ = batch_id  # unused
         output_file_path = self.get_new_cache_file_path(stream_name)
 
-        with parquet.ParquetWriter(output_file_path, record_batch.schema) as writer:
-            writer.write_table(cast(pa.Table, record_batch))
+        missing_columns = self._get_missing_columns(stream_name, record_batch)
+        if missing_columns:
+            # We need to append columns with the missing column name(s) and a null type
+            null_array = cast(pa.Array, pa.array([None] * len(record_batch), type=pa.null()))
+            for col in missing_columns:
+                record_batch = record_batch.append_column(col, null_array)
+
+        with parquet.ParquetWriter(output_file_path, schema=record_batch.schema) as writer:
+            writer.write_table(record_batch)
 
         batch_handle = FileWriterBatchHandle()
         batch_handle.files.append(output_file_path)

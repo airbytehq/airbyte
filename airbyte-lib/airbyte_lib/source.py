@@ -8,17 +8,18 @@ from typing import TYPE_CHECKING, Any
 
 import jsonschema
 import yaml
+from rich import print
 
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
-    AirbyteRecordMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
     Status,
     SyncMode,
+    TraceType,
     Type,
 )
 
@@ -28,6 +29,7 @@ from airbyte_lib._util import protocol_util  # Internal utility functions
 from airbyte_lib.datasets._lazy import LazyDataset
 from airbyte_lib.progress import progress
 from airbyte_lib.results import ReadResult
+from airbyte_lib.strategies import WriteStrategy
 from airbyte_lib.telemetry import (
     CacheTelemetryInfo,
     SyncState,
@@ -44,10 +46,11 @@ if TYPE_CHECKING:
 
 
 @contextmanager
-def as_temp_files(files: list[Any]) -> Generator[list[Any], Any, None]:
+def as_temp_files(files_contents: list[dict]) -> Generator[list[str], Any, None]:
+    """Write the given contents to temporary files and yield the file paths as strings."""
     temp_files: list[Any] = []
     try:
-        for content in files:
+        for content in files_contents:
             temp_file = tempfile.NamedTemporaryFile(mode="w+t", delete=True)
             temp_file.write(
                 json.dumps(content) if isinstance(content, dict) else content,
@@ -108,6 +111,16 @@ class Source:
                     available_streams=available_streams,
                 )
         self._selected_stream_names = streams
+
+    def get_selected_streams(self) -> list[str]:
+        """Get the selected streams.
+
+        If no streams are selected, return all available streams.
+        """
+        if self._selected_stream_names:
+            return self._selected_stream_names
+
+        return self.get_available_streams()
 
     def set_config(
         self,
@@ -202,6 +215,14 @@ class Source:
         return yaml.dump(spec_dict)
 
     @property
+    def docs_url(self) -> str:
+        """Get the URL to the connector's documentation."""
+        # TODO: Replace with docs URL from metadata when available
+        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace(
+            "source-", ""
+        )
+
+    @property
     def discovered_catalog(self) -> AirbyteCatalog:
         """Get the raw catalog for the given streams.
 
@@ -230,13 +251,13 @@ class Source:
             streams=[
                 # TODO: Set sync modes and primary key to a sensible adaptive default
                 ConfiguredAirbyteStream(
-                    stream=s,
+                    stream=stream,
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
-                    primary_key=None,
+                    primary_key=stream.source_defined_primary_key,
                 )
-                for s in self.discovered_catalog.streams
-                if streams_filter is None or s.name in streams_filter
+                for stream in self.discovered_catalog.streams
+                if streams_filter is None or stream.name in streams_filter
             ],
         )
 
@@ -273,8 +294,24 @@ class Source:
                 },
             ) from KeyError(stream)
 
-        iterator: Iterator[dict[str, Any]] = protocol_util.airbyte_messages_to_record_dicts(
-            self._read_with_catalog(streaming_cache_info, configured_catalog),
+        configured_stream = configured_catalog.streams[0]
+        col_list = configured_stream.stream.json_schema["properties"].keys()
+
+        def _with_missing_columns(records: Iterable[dict[str, Any]]) -> Iterator[dict[str, Any]]:
+            """Add missing columns to the record with null values."""
+            for record in records:
+                appended_columns = set(col_list) - set(record.keys())
+                appended_dict = {col: None for col in appended_columns}
+                yield {**record, **appended_dict}
+
+        iterator: Iterator[dict[str, Any]] = _with_missing_columns(
+            protocol_util.airbyte_messages_to_record_dicts(
+                self._read_with_catalog(
+                    streaming_cache_info,
+                    configured_catalog,
+                    force_full_refresh=True,  # Always full refresh when skipping the cache
+                ),
+            )
         )
         return LazyDataset(iterator)
 
@@ -295,9 +332,10 @@ class Source:
                             return  # Success!
 
                         raise exc.AirbyteConnectorCheckFailedError(
+                            help_url=self.docs_url,
                             context={
-                                "message": msg.connectionStatus.message,
-                            }
+                                "failure_reason": msg.connectionStatus.message,
+                            },
                         )
                 raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
             except exc.AirbyteConnectorReadError as ex:
@@ -309,6 +347,7 @@ class Source:
     def install(self) -> None:
         """Install the connector if it is not yet installed."""
         self.executor.install()
+        print("For configuration instructions, see: \n" f"{self.docs_url}#reference\n")
 
     def uninstall(self) -> None:
         """Uninstall the connector if it is installed.
@@ -318,7 +357,12 @@ class Source:
         """
         self.executor.uninstall()
 
-    def _read(self, cache_info: CacheTelemetryInfo) -> Iterable[AirbyteRecordMessage]:
+    def _read(
+        self,
+        cache_info: CacheTelemetryInfo,
+        *,
+        force_full_refresh: bool,
+    ) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
 
@@ -327,17 +371,23 @@ class Source:
         * Generate a configured catalog that syncs all streams in full_refresh mode
         * Write the configured catalog and the config to a temporary file
         * execute the connector with read --config <config_file> --catalog <catalog_file>
-        * Listen to the messages and return the AirbyteRecordMessages that come along.
+        * Listen to the messages and return the AirbyteMessage that come along.
         """
         # Ensure discovered and configured catalog properties are cached before we start reading
         _ = self.discovered_catalog
         _ = self.configured_catalog
-        yield from self._read_with_catalog(cache_info, catalog=self.configured_catalog)
+        yield from self._read_with_catalog(
+            cache_info,
+            catalog=self.configured_catalog,
+            force_full_refresh=force_full_refresh,
+        )
 
     def _read_with_catalog(
         self,
         cache_info: CacheTelemetryInfo,
         catalog: ConfiguredAirbyteCatalog,
+        *,
+        force_full_refresh: bool,
     ) -> Iterator[AirbyteMessage]:
         """Call read on the connector.
 
@@ -347,7 +397,11 @@ class Source:
         * Listen to the messages and return the AirbyteRecordMessages that come along.
         * Send out telemetry on the performed sync (with information about which source was used and
           the type of the cache)
+
+        TODO: When we add support for incremental syncs, we should only send `--state <state_file>`
+              if force_full_refresh is False.
         """
+        _ = force_full_refresh  # TODO: Use this decide whether to send `--state <state_file>`
         source_tracking_information = self.executor.get_telemetry_info()
         send_telemetry(source_tracking_information, cache_info, SyncState.STARTED)
         try:
@@ -356,6 +410,7 @@ class Source:
                 catalog_file,
             ]:
                 yield from self._execute(
+                    # TODO: Add support for incremental syncs by sending `--state <state_file>`
                     ["read", "--config", config_file, "--catalog", catalog_file],
                 )
         except Exception:
@@ -395,6 +450,8 @@ class Source:
                     yield message
                     if message.type == Type.LOG:
                         self._add_to_logs(message.log.message)
+                    if message.type == Type.TRACE and message.trace.type == TraceType.ERROR:
+                        self._add_to_logs(message.trace.error.message)
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
@@ -404,25 +461,74 @@ class Source:
 
     def _tally_records(
         self,
-        messages: Iterable[AirbyteRecordMessage],
-    ) -> Generator[AirbyteRecordMessage, Any, None]:
+        messages: Iterable[AirbyteMessage],
+    ) -> Generator[AirbyteMessage, Any, None]:
         """This method simply tallies the number of records processed and yields the messages."""
         self._processed_records = 0  # Reset the counter before we start
         progress.reset(len(self._selected_stream_names or []))
 
         for message in messages:
-            self._processed_records += 1
+            if message.type is Type.RECORD:
+                self._processed_records += 1
             yield message
             progress.log_records_read(self._processed_records)
 
-    def read(self, cache: SQLCacheBase | None = None) -> ReadResult:
+    def read(
+        self,
+        cache: SQLCacheBase | None = None,
+        *,
+        write_strategy: str | WriteStrategy = WriteStrategy.AUTO,
+        force_full_refresh: bool = False,
+    ) -> ReadResult:
+        """Read from the connector and write to the cache.
+
+        Args:
+            cache: The cache to write to. If None, a default cache will be used.
+            write_strategy: The strategy to use when writing to the cache. If a string, it must be
+                one of "append", "upsert", "replace", or "auto". If a WriteStrategy, it must be one
+                of WriteStrategy.APPEND, WriteStrategy.UPSERT, WriteStrategy.REPLACE, or
+                WriteStrategy.AUTO.
+            force_full_refresh: If True, the source will operate in full refresh mode. Otherwise,
+                streams will be read in incremental mode if supported by the connector. This option
+                must be True when using the "replace" strategy.
+        """
+        if write_strategy == WriteStrategy.REPLACE and not force_full_refresh:
+            raise exc.AirbyteLibInputError(
+                message="The replace strategy requires full refresh mode.",
+                context={
+                    "write_strategy": write_strategy,
+                    "force_full_refresh": force_full_refresh,
+                },
+            )
         if cache is None:
             cache = get_default_cache()
 
+        if isinstance(write_strategy, str):
+            try:
+                write_strategy = WriteStrategy(write_strategy)
+            except ValueError:
+                raise exc.AirbyteLibInputError(
+                    message="Invalid strategy",
+                    context={
+                        "write_strategy": write_strategy,
+                        "available_strategies": [s.value for s in WriteStrategy],
+                    },
+                ) from None
+
         cache.register_source(
-            source_name=self.name, incoming_source_catalog=self.configured_catalog
+            source_name=self.name,
+            incoming_source_catalog=self.configured_catalog,
+            stream_names=set(self.get_selected_streams()),
         )
-        cache.process_airbyte_messages(self._tally_records(self._read(cache.get_telemetry_info())))
+        cache.process_airbyte_messages(
+            self._tally_records(
+                self._read(
+                    cache.get_telemetry_info(),
+                    force_full_refresh=force_full_refresh,
+                ),
+            ),
+            write_strategy=write_strategy,
+        )
 
         return ReadResult(
             processed_records=self._processed_records,
