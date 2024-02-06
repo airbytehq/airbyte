@@ -581,12 +581,15 @@ class SQLCacheBase(RecordProcessor):
             raise exc.AirbyteLibInternalError(
                 message="Catalog manager should exist but does not.",
             )
-        if state_messages and self._source_name:
-            self._catalog_manager.save_state(
-                source_name=self._source_name,
-                stream_name=stream_name,
-                state=state_messages[-1],
-            )
+        _ = stream_name, state_messages
+        # TODO: Debug this and then uncomment:
+        # https://github.com/airbytehq/airbyte-lib-private-beta/issues/12
+        # if state_messages and self._source_name:
+        #     self._catalog_manager.save_state(
+        #         source_name=self._source_name,
+        #         stream_name=stream_name,
+        #         state=state_messages[-1],
+        #     )
 
     def get_state(self) -> list[dict]:
         """Return the current state of the source."""
