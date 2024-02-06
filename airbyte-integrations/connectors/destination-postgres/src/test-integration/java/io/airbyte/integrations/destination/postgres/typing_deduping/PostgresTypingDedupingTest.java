@@ -163,11 +163,9 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(new AirbyteStream()
-                            .withNamespace(streamNamespace)
-                            .withName(streamName)
-                            .withJsonSchema(SCHEMA))));
-
-
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
 
     final AirbyteMessage message = new AirbyteMessage();
     final String largeString = generateBigString();
