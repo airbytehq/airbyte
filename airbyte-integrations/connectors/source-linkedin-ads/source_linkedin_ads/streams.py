@@ -70,7 +70,7 @@ class LinkedinAdsStream(HttpStream, ABC):
         https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
         """
         parsed_response = response.json()
-        if len(parsed_response.get("elements")) == 0:
+        if len(parsed_response.get("elements")) < self.records_limit and (parsed_response.get("paging")["start"] + self.records_limit > parsed_response.get("paging")["total"]):
             return None
         return {"start": parsed_response.get("paging").get("start") + self.records_limit}
 
