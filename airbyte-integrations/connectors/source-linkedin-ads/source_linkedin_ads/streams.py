@@ -70,7 +70,7 @@ class LinkedinAdsStream(HttpStream, ABC):
         https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
         """
         parsed_response = response.json()
-        if len(parsed_response.get("elements")) == 0:
+        if len(parsed_response.get("elements")) < self.records_limit and (parsed_response.get("paging")["start"] + self.records_limit > parsed_response.get("paging")["total"]):
             return None
         return {"start": parsed_response.get("paging").get("start") + self.records_limit}
 
@@ -447,7 +447,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         (See Restrictions: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-09&tabs=http#restrictions)
         """
         parsed_response = response.json()
-        if len(parsed_response.get("elements")) == 0:
+        if len(parsed_response.get("elements")) < self.records_limit and (parsed_response.get("paging")["start"] + self.records_limit > parsed_response.get("paging")["total"]):
             return None
         raise Exception(
             f"Limit {self.records_limit} elements exceeded. "
