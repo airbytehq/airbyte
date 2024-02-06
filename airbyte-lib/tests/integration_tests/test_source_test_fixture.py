@@ -598,7 +598,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
 
     mock_post.assert_has_calls([
             call("https://api.segment.io/v1/track",
-            auth=("jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1", ""),
+            auth=("cukeSffc0G6gFQehKDhhzSurDzVSZ2OP", ""),
             json={
                 "anonymousId": "airbyte-lib-user",
                 "event": "sync",
@@ -615,7 +615,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
         ),
     call(
             "https://api.segment.io/v1/track",
-            auth=("jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1", ""),
+            auth=("cukeSffc0G6gFQehKDhhzSurDzVSZ2OP", ""),
             json={
                 "anonymousId": "airbyte-lib-user",
                 "event": "sync",
