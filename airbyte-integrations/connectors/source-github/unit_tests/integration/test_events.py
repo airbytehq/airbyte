@@ -35,7 +35,6 @@ from .request_builder import GithubRequestBuilder
 
 _TOKEN = "GITHUB_TEST_TOKEN"
 
-
 _CONFIG = ConfigBuilder().with_repositories(["airbytehq/integration-test"]).build()
 
 
@@ -59,31 +58,30 @@ def _create_record(resource: str) -> RecordBuilder:
     )
 
 
-# @freezegun.freeze_time(_NOW.isoformat())
 class EventsTest(TestCase):
+    rate_limit_request = HttpRequest(
+        url="https://api.github.com/rate_limit",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "Authorization": "token GITHUB_TEST_TOKEN",
+        },
+    )
+    rate_limit_response = HttpResponse(
+        json.dumps(
+            {
+                "resources": {
+                    "core": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
+                    "graphql": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
+                }
+            }
+        )
+    )
+
     @HttpMocker()
     def test_full_refresh_no_pagination(self, http_mocker):
-        http_mocker.get(
-            HttpRequest(
-                url="https://api.github.com/rate_limit",
-                # params={},
-                headers={
-                    "Accept": "application/vnd.github+json",
-                    "X-GitHub-Api-Version": "2022-11-28",
-                    "Authorization": "token GITHUB_TEST_TOKEN",
-                },
-            ),
-            HttpResponse(
-                json.dumps(
-                    {
-                        "resources": {
-                            "core": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
-                            "graphql": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
-                        }
-                    }
-                )
-            ),
-        )
+        """Ensure http integration and record extraction"""
+        http_mocker.get(self.rate_limit_request, self.rate_limit_response)
         http_mocker.get(
             HttpRequest(url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}", query_params={"per_page": 100}, headers={}),
             HttpResponse(json.dumps({"full_name": "airbytehq/integration-test", "default_branch": "master"})),
@@ -110,26 +108,8 @@ class EventsTest(TestCase):
 
     @HttpMocker()
     def test_full_refresh_with_pagination(self, http_mocker):
-        http_mocker.get(
-            HttpRequest(
-                url="https://api.github.com/rate_limit",
-                headers={
-                    "Accept": "application/vnd.github+json",
-                    "X-GitHub-Api-Version": "2022-11-28",
-                    "Authorization": "token GITHUB_TEST_TOKEN",
-                },
-            ),
-            HttpResponse(
-                json.dumps(
-                    {
-                        "resources": {
-                            "core": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
-                            "graphql": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
-                        }
-                    }
-                )
-            ),
-        )
+        """Ensure pagination"""
+        http_mocker.get(self.rate_limit_request, self.rate_limit_response)
         http_mocker.get(
             HttpRequest(url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}", query_params={"per_page": 100}, headers={}),
             HttpResponse(json.dumps({"full_name": "airbytehq/integration-test", "default_branch": "master"})),
@@ -164,3 +144,63 @@ class EventsTest(TestCase):
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 4
+
+    @HttpMocker()
+    def test_incremental_read(self, http_mocker):
+        """Ensure incremental sync.
+         Stream `Events` is semi-incremental, so all request  will be performed and only new records will be extracted"""
+
+        http_mocker.get(self.rate_limit_request, self.rate_limit_response)
+        http_mocker.get(
+            HttpRequest(url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}", query_params={"per_page": 100}, headers={}),
+            HttpResponse(json.dumps({"full_name": "airbytehq/integration-test", "default_branch": "master"})),
+        )
+
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/branches", query_params={"per_page": 100}, headers={}
+            ),
+            HttpResponse(json.dumps([{"repository": "airbytehq/integration-test", "name": "master"}])),
+        )
+
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events", query_params={"per_page": 100}, headers={}
+            ),
+            HttpResponse(json.dumps(find_template("events", __file__))),
+        )
+
+        source = SourceGithub()
+        actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental),
+                               state=StateBuilder().with_stream_state("events", {"airbytehq/integration-test": {"created_at": "2022-06-09T10:00:00Z"}}).build(),
+                               )
+        assert len(actual_messages.records) == 1
+
+    @HttpMocker()
+    def test_read_with_error(self, http_mocker):
+        """Ensure read() method does not raises an error"""
+
+        http_mocker.get(self.rate_limit_request, self.rate_limit_response)
+        http_mocker.get(
+            HttpRequest(url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}", query_params={"per_page": 100}, headers={}),
+            HttpResponse(json.dumps({"full_name": "airbytehq/integration-test", "default_branch": "master"})),
+        )
+
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/branches", query_params={"per_page": 100}, headers={}
+            ),
+            HttpResponse(json.dumps([{"repository": "airbytehq/integration-test", "name": "master"}])),
+        )
+
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events", query_params={"per_page": 100}, headers={}
+            ),
+            HttpResponse(body='{"message":"some_error_message"}', status_code=403),
+        )
+
+        source = SourceGithub()
+        actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
+
+        assert len(actual_messages.records) == 0
