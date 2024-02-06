@@ -2,9 +2,10 @@
 
 
 class HttpResponse:
-    def __init__(self, body: str, status_code: int = 200):
+    def __init__(self, body: str, status_code: int = 200, headers: dict = {}):
         self._body = body
         self._status_code = status_code
+        self._headers = headers
 
     @property
     def body(self) -> str:
@@ -13,3 +14,7 @@ class HttpResponse:
     @property
     def status_code(self) -> int:
         return self._status_code
+
+    @property
+    def headers(self) -> dict:
+        return self._headers
