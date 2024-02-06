@@ -267,6 +267,7 @@ flowchart TD
         build[Build connector docker image]
         unit[Run unit tests]
         integration[Run integration tests]
+        airbyte_lib_validation[Run airbyte-lib validation tests]
         cat[Run connector acceptance tests]
         secret[Load connector configuration]
 
@@ -274,6 +275,7 @@ flowchart TD
         unit-->build
         secret-->integration
         secret-->cat
+        secret-->airbyte_lib_validation
         build-->integration
         build-->cat
     end
@@ -434,6 +436,17 @@ connector. If the current version of the connector is already published to the r
 will be skipped (the `--python-registry-check-url` is used for the check).
 
 On a pre-release, the connector will be published as a `.dev<N>` version.
+
+The `remoteRegistries.pypi.packageName` field holds the name of the used package name. It should be set to `airbyte-source-<package name>`. Certified Python connectors are required to have PyPI publishing enabled.
+
+An example `remoteRegistries` entry in a connector `metadata.yaml` looks like this:
+
+```yaml
+remoteRegistries:
+  pypi:
+    enabled: true
+    packageName: airbyte-source-pokeapi
+```
 
 ### <a id="connectors-bump_version"></a>`connectors bump_version` command
 
@@ -631,7 +644,9 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 3.10.2  | [#34867](https://github.com/airbytehq/airbyte/pull/34867)  | Remove connector ops team                                                                                                  |
+| 3.10.4  | [#34867](https://github.com/airbytehq/airbyte/pull/34867)  | Remove connector ops team                                                                                                  |
+| 3.10.3  | [#34836](https://github.com/airbytehq/airbyte/pull/34836)  | Add check for python registry publishing enabled for certified python sources.                                             |
+| 3.10.2  | [#34044](https://github.com/airbytehq/airbyte/pull/34044)  | Add pypi validation testing.                                                                                               |
 | 3.10.1  | [#34756](https://github.com/airbytehq/airbyte/pull/34756)  | Enable connectors tests in draft PRs.                                                                                      |
 | 3.10.0  | [#34606](https://github.com/airbytehq/airbyte/pull/34606)  | Allow configuration of separate check URL to check whether package exists already.                                         |
 | 3.9.0   | [#34606](https://github.com/airbytehq/airbyte/pull/34606)  | Allow configuration of python registry URL via environment variable.                                                       |
