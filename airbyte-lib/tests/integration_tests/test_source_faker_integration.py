@@ -52,7 +52,7 @@ def test_which_source_faker() -> None:
 @pytest.fixture(scope="function")  # Each test gets a fresh source-faker instance.
 def source_faker_seed_a() -> ab.Source:
     """Fixture to return a source-faker connector instance."""
-    source = ab.get_connector(
+    source = ab.get_source(
         "source-faker",
         local_executable="source-faker",
         config={
@@ -74,7 +74,7 @@ def source_faker_seed_a() -> ab.Source:
 @pytest.fixture(scope="function")  # Each test gets a fresh source-faker instance.
 def source_faker_seed_b() -> ab.Source:
     """Fixture to return a source-faker connector instance."""
-    source = ab.get_connector(
+    source = ab.get_source(
         "source-faker",
         local_executable="source-faker",
         config={

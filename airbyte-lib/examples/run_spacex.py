@@ -13,7 +13,7 @@ import airbyte_lib as ab
 # In separate terminal:
 #   poetry run python examples/run_spacex.py
 
-source = ab.get_connector(
+source = ab.get_source(
     "source-spacex-api",
     config={"id": "605b4b6aaa5433645e37d03f"},
     install_if_missing=True,

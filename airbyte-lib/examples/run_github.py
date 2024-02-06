@@ -15,7 +15,7 @@ import airbyte_lib as ab
 GITHUB_TOKEN = ab.get_secret("GITHUB_PERSONAL_ACCESS_TOKEN")
 
 
-source = ab.get_connector("source-github")
+source = ab.get_source("source-github")
 source.set_config(
     {"repositories": ["airbytehq/airbyte"], "credentials": {"personal_access_token": GITHUB_TOKEN}}
 )

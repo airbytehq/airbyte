@@ -144,7 +144,7 @@ class Source:
     def _config(self) -> dict[str, Any]:
         if self._config_dict is None:
             raise exc.AirbyteConnectorConfigurationMissingError(
-                guidance="Provide via get_connector() or set_config()"
+                guidance="Provide via get_source() or set_config()"
             )
         return self._config_dict
 
