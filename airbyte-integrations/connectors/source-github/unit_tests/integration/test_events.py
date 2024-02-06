@@ -3,6 +3,8 @@
 from unittest import TestCase
 
 import responses
+from airbyte_protocol.models import Level
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -115,7 +117,7 @@ class EventsTest(TestCase):
 
     @responses.activate
     def test_read_with_error(self):
-        """Ensure read() method does not raises an error"""
+        """Ensure read() method does not raise an Exception and log message with error is in output"""
 
         responses.get(
             f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
@@ -127,3 +129,4 @@ class EventsTest(TestCase):
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 0
+        assert Level.ERROR in [x.log.level for x in actual_messages.logs]
