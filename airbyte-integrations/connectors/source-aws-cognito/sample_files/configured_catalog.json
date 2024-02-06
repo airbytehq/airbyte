@@ -1,0 +1,224 @@
+{
+	"streams": [
+		{
+			"stream": {
+				"name": "us-east-1_AAAAAAAA",
+				"json_schema": {
+					"$schema": "http://json-schema.org/draft-07/schema",
+					"type": [
+						"null",
+						"object"
+					],
+					"pool_id": "us-east-1_AAAAAAAA",
+					"properties": {
+						"Username": {
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						"UserCreateDate": {
+							"type": [
+								"null",
+								"date-time"
+							]
+						},
+						"UserLastModifiedDate": {
+							"type": [
+								"null",
+								"date-time"
+							]
+						},
+						"Enabled": {
+							"type": [
+								"null",
+								"boolean"
+							]
+						},
+						"UserStatus": {
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						"Attributes": {
+							"type": [
+								"null",
+								"array"
+							],
+							"items": {
+								"type": "object",
+								"properties": {
+									"Name": {
+										"type": [
+											"null",
+											"string"
+										]
+									},
+									"Value": {
+										"type": [
+											"null",
+											"string"
+										]
+									}
+								}
+							}
+						}
+					}
+				},
+				"supported_sync_modes": [
+					"full_refresh"
+				],
+				"source_defined_cursor": false
+			},
+			"sync_mode": "full_refresh",
+			"destination_sync_mode": "overwrite"
+		},
+		{
+			"stream": {
+				"name": "us-east-1_AAAAAAAA_group_Consumer",
+				"json_schema": {
+					"$schema": "http://json-schema.org/draft-07/schema",
+					"type": [
+						"null",
+						"object"
+					],
+					"properties": {
+						"Username": {
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						"UserCreateDate": {
+							"type": [
+								"null",
+								"date-time"
+							]
+						},
+						"UserLastModifiedDate": {
+							"type": [
+								"null",
+								"date-time"
+							]
+						},
+						"Enabled": {
+							"type": [
+								"null",
+								"boolean"
+							]
+						},
+						"UserStatus": {
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						"Attributes": {
+							"type": [
+								"null",
+								"array"
+							],
+							"items": {
+								"type": "object",
+								"properties": {
+									"Name": {
+										"type": [
+											"null",
+											"string"
+										]
+									},
+									"Value": {
+										"type": [
+											"null",
+											"string"
+										]
+									}
+								}
+							}
+						}
+					}
+				},
+				"supported_sync_modes": [
+					"full_refresh"
+				],
+				"source_defined_cursor": false
+			},
+			"sync_mode": "full_refresh",
+			"destination_sync_mode": "overwrite"
+		},
+		{
+			"stream": {
+				"name": "us-east-1_AAAAAAAA_group_Professional",
+				"json_schema": {
+					"$schema": "http://json-schema.org/draft-07/schema",
+					"type": [
+						"null",
+						"object"
+					],
+					"properties": {
+						"Username": {
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						"UserCreateDate": {
+							"type": [
+								"null",
+								"date-time"
+							]
+						},
+						"UserLastModifiedDate": {
+							"type": [
+								"null",
+								"date-time"
+							]
+						},
+						"Enabled": {
+							"type": [
+								"null",
+								"boolean"
+							]
+						},
+						"UserStatus": {
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						"Attributes": {
+							"type": [
+								"null",
+								"array"
+							],
+							"items": {
+								"type": "object",
+								"properties": {
+									"Name": {
+										"type": [
+											"null",
+											"string"
+										]
+									},
+									"Value": {
+										"type": [
+											"null",
+											"string"
+										]
+									}
+								}
+							}
+						}
+					}
+				},
+				"supported_sync_modes": [
+					"full_refresh"
+				],
+				"source_defined_cursor": false
+			},
+			"sync_mode": "full_refresh",
+			"destination_sync_mode": "overwrite"
+		}
+	]
+}

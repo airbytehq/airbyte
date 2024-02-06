@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!main.py
+!source_aws_cognito
+!setup.py
+!secrets
