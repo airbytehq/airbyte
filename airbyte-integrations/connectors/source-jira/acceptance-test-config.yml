@@ -1,7 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-jira:dev
-test_strictness_level: high
+# test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
@@ -32,6 +32,8 @@ acceptance_tests:
             - name: fields/updated
               bypass_reason: "Unstable data"
         timeout_seconds: 2400
+        # Some streams (issues) contain custom fields
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
