@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[file-based]==0.59.2",  # temporarily pin until concurrency can be released
+    "airbyte-cdk[file-based]>=0.60.1",
     "smart-open[s3]==5.1.0",
     "wcmatch==8.4",
     "dill==0.3.4",
