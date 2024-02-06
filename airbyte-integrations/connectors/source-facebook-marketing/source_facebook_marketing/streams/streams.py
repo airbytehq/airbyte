@@ -106,6 +106,15 @@ class Ads(FBMarketingIncrementalStream):
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
 
 
+class AdRuleLibraries(FBMarketingIncrementalStream):
+    """doc: https://developers.facebook.com/docs/marketing-api/ad-rules/guides/trigger-based-rules"""
+
+    entity_prefix = "ad_rule_libraries"
+
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_ad_rules_library(params=params, fields=self.fields)
+
+
 class AdSets(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign"""
 
