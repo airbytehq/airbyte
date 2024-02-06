@@ -53,6 +53,41 @@ Regular documentation lives in the `/docs` folder. Based on the doc strings of p
 
 A unit test validates the documentation is up to date.
 
+## Connector compatibility
+
+To make a connector compatible with airbyte-lib, the following requirements must be met:
+* The connector must be a Python package, with a `pyproject.toml` or a `setup.py` file.
+* In the package, there must be a `run.py` file that contains a `run` method. This method should read arguments from the command line, and run the connector with them, outputting messages to stdout.
+* The `pyproject.toml` or `setup.py` file must specify a command line entry point for the `run` method called `source-<connector name>`. This is usually done by adding a `console_scripts` section to the `pyproject.toml` file, or a `entry_points` section to the `setup.py` file. For example:
+
+```toml
+[tool.poetry.scripts]
+source-my-connector = "my_connector.run:run"
+```
+
+```python
+setup(
+    ...
+    entry_points={
+        'console_scripts': [
+            'source-my-connector = my_connector.run:run',
+        ],
+    },
+    ...
+)
+```
+
+To publish a connector to PyPI, specify the `pypi` section in the `metadata.yaml` file. For example:
+
+```yaml
+data:
+ # ...
+ remoteRegistries:
+   pypi:
+     enabled: true
+     packageName: "airbyte-source-my-connector"
+```
+
 ## Validating source connectors
 
 To validate a source connector for compliance, the `airbyte-lib-validate-source` script can be used. It can be used like this:
