@@ -4,17 +4,44 @@ airbyte-lib is a library that allows to run Airbyte syncs embedded into any Pyth
 
 ## Development
 
-* Make sure [Poetry is installed](https://python-poetry.org/docs/#).
-* Run `poetry install`
-* For examples, check out the `examples` folder. They can be run via `poetry run python examples/<example file>`
-* Unit tests and type checks can be run via `poetry run pytest`
+- Make sure [Poetry is installed](https://python-poetry.org/docs/#).
+- Run `poetry install`
+- For examples, check out the `examples` folder. They can be run via `poetry run python examples/<example file>`
+- Unit tests and type checks can be run via `poetry run pytest`
 
 ## Release
 
-* In your PR:
-   * Bump the version in `pyproject.toml`
-   * Add a changelog entry to the table below
-* Once the PR is merged, go to Github and trigger the `Publish AirbyteLib Manually` workflow. This will publish the new version to PyPI.
+- In your PR:
+  - Bump the version in `pyproject.toml`
+  - Add a changelog entry to the table below
+- Once the PR is merged, go to Github and trigger the `Publish AirbyteLib Manually` workflow. This will publish the new version to PyPI.
+
+## Secrets Management
+
+AirbyteLib can auto-import secrets from the following sources:
+
+1. Environment variables.
+2. [Google Colab secrets](https://medium.com/@parthdasawant/how-to-use-secrets-in-google-colab-450c38e3ec75).
+3. Manual entry via [`getpass`](https://docs.python.org/3.9/library/getpass.html).
+
+_Note: Additional secret store options may be supported in the future. [More info here.](https://github.com/airbytehq/airbyte-lib-private-beta/discussions/5)_
+
+### Retrieving Secrets
+
+```python
+from airbyte_lib import get_secret, SecretSource
+
+source = get_connection("source-github")
+source.set_config(
+   "credentials": {
+      "personal_access_token": get_secret("GITHUB_PERSONAL_ACCESS_TOKEN"),
+   }
+)
+```
+
+The `get_secret()` function accepts an optional `source` argument of enum type `SecretSource`. If omitted or set to `SecretSource.ANY`, AirbyteLib will search all available secrets sources. If `source` is set to a specific source, then only that source will be checked. If a list of `SecretSource` entries is passed, then the sources will be checked using the provided ordering.
+
+By default, AirbyteLib will prompt the user for any requested secrets that are not provided via other secret managers. You can disable this prompt by passing `prompt=False` to `get_secret()`.
 
 ### Versioning
 
@@ -24,13 +51,13 @@ Versioning follows [Semantic Versioning](https://semver.org/). For new features,
 
 Regular documentation lives in the `/docs` folder. Based on the doc strings of public methods, we generate API documentation using [pdoc](https://pdoc.dev). To generate the documentation, run `poetry run generate-docs`. The documentation will be generated in the `docs/generate` folder. This needs to be done manually when changing the public interface of the library.
 
-A unit test validates the documentation is up to date. 
+A unit test validates the documentation is up to date.
 
 ## Validating source connectors
 
 To validate a source connector for compliance, the `airbyte-lib-validate-source` script can be used. It can be used like this:
 
-```
+```bash
 airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.json
 ```
 
