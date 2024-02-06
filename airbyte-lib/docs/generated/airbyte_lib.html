@@ -296,6 +296,29 @@ working directory.</p>
 
 
                 </section>
+                <section id="get_secret">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_secret</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">secret_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">source</span><span class="p">:</span> <span class="n"><a href="#SecretSource">SecretSource</a></span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="#SecretSource">SecretSource</a></span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n"><a href="#SecretSource.ANY">SecretSource.ANY</a></span><span class="p">:</span> <span class="mi">3</span><span class="o">&gt;</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">prompt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#get_secret"></a>
+    
+            <div class="docstring"><p>Get a secret from the environment.</p>
+
+<p>The optional <code>source</code> argument of enum type <code><a href="#SecretSource">SecretSource</a></code> or list of <code><a href="#SecretSource">SecretSource</a></code> options.
+If left blank, the <code>source</code> arg will be <code><a href="#SecretSource.ANY">SecretSource.ANY</a></code>. If <code>source</code> is set to a specific
+source, then only that source will be checked. If a list of <code><a href="#SecretSource">SecretSource</a></code> entries is passed,
+then the sources will be checked using the provided ordering.</p>
+
+<p>If <code>prompt</code> to <code>True</code> or if <a href="#SecretSource.PROMPT">SecretSource.PROMPT</a> is declared in the <code>source</code> arg, then the
+user will be prompted to enter the secret if it is not found in any of the other sources.</p>
+</div>
+
+
+                </section>
                 <section id="new_local_cache">
                     <div class="attr function">
             
@@ -403,6 +426,79 @@ methods except for __getitem__, __iter__, and __len__.</p>
                 <dd id="ReadResult.keys" class="function">keys</dd>
                 <dd id="ReadResult.items" class="function">items</dd>
                 <dd id="ReadResult.values" class="function">values</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="SecretSource">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SecretSource</span><wbr>(<span class="base">enum.Enum</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource"></a>
+    
+            <div class="docstring"><p>An enumeration.</p>
+</div>
+
+
+                            <div id="SecretSource.ENV" class="classattr">
+                                <div class="attr variable">
+            <span class="name">ENV</span>        =
+<span class="default_value">&lt;<a href="#SecretSource.ENV">SecretSource.ENV</a>: 1&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource.ENV"></a>
+    
+    
+
+                            </div>
+                            <div id="SecretSource.GOOGLE_COLAB" class="classattr">
+                                <div class="attr variable">
+            <span class="name">GOOGLE_COLAB</span>        =
+<span class="default_value">&lt;<a href="#SecretSource.GOOGLE_COLAB">SecretSource.GOOGLE_COLAB</a>: 2&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource.GOOGLE_COLAB"></a>
+    
+    
+
+                            </div>
+                            <div id="SecretSource.ANY" class="classattr">
+                                <div class="attr variable">
+            <span class="name">ANY</span>        =
+<span class="default_value">&lt;<a href="#SecretSource.ANY">SecretSource.ANY</a>: 3&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource.ANY"></a>
+    
+    
+
+                            </div>
+                            <div id="SecretSource.PROMPT" class="classattr">
+                                <div class="attr variable">
+            <span class="name">PROMPT</span>        =
+<span class="default_value">&lt;<a href="#SecretSource.PROMPT">SecretSource.PROMPT</a>: 4&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource.PROMPT"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>enum.Enum</dt>
+                                <dd id="SecretSource.name" class="variable">name</dd>
+                <dd id="SecretSource.value" class="variable">value</dd>
 
             </div>
                                 </dl>
