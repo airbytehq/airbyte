@@ -256,6 +256,46 @@ def check_metadata_version_matches_dockerfile_label(connector: Connector) -> boo
     return version_in_dockerfile == connector.version
 
 
+def check_is_using_poetry(connector: Connector) -> bool:
+    if not connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+        raise ValueError(f"check_is_using_poetry is only applicable to Python connectors. Got {connector.language}")
+    if not connector.has_poetry_lock:
+        print(f"Connector {connector.technical_name} is not using Poetry, it must have poetry.lock file")
+        return False
+    if not connector.has_pyproject_toml:
+        print(f"Connector {connector.technical_name} is not using Poetry, it must have pyproject.toml file")
+        return False
+    return True
+
+
+def check_has_no_setup_py(connector: Connector) -> bool:
+    if not connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+        raise ValueError(f"check_has_no_setup_py is only applicable to Python connectors. Got {connector.language}")
+    if connector.has_setup_py:
+        print(f"Connector {connector.technical_name} is using setup.py, it must not have setup.py file")
+        return False
+    return True
+
+
+def check_is_using_python_base_image(connector: Connector) -> bool:
+    if not connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+        raise ValueError(f"check_has_no_setup_py is only applicable to Python connectors. Got {connector.language}")
+    if not connector.metadata:
+        print(f"Connector {connector.technical_name} is missing metadata")
+        return False
+    if not connector.metadata.get("connectorBuildOptions", {}).get("baseImage"):
+        print(f"Connector {connector.technical_name} is missing connectorBuildOptions.baseImage in metadata")
+        return False
+    if "python-connector-base" not in connector.metadata["connectorBuildOptions"]["baseImage"]:
+        print(f"Connector {connector.technical_name} is not using python-connector-base as the base image")
+        return False
+    return True
+
+
+def check_publish_to_pypi_is_enabled(connector: Connector) -> bool:
+    return connector.metadata and connector.metadata.get("remoteRegistries", {}).get("pypi", {}).get("enabled", False)
+
+
 DEFAULT_QA_CHECKS = (
     check_documentation_file_exists,
     check_migration_guide,
@@ -270,10 +310,19 @@ DEFAULT_QA_CHECKS = (
     check_connector_has_no_critical_vulnerabilities,
 )
 
+PYTHON_SOURCE_SPECIFIC_QA_CHECKS = (
+    check_is_using_poetry,
+    check_has_no_setup_py,
+    check_publish_to_pypi_is_enabled,
+    check_is_using_python_base_image,
+)
+
 
 def get_qa_checks_to_run(connector: Connector) -> Tuple[Callable]:
-    if connector.has_dockerfile:
-        return DEFAULT_QA_CHECKS + (check_metadata_version_matches_dockerfile_label,)
+
+    if connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE] and connector.connector_type == "source":
+        return DEFAULT_QA_CHECKS + PYTHON_SOURCE_SPECIFIC_QA_CHECKS
+    breakpoint()
     return DEFAULT_QA_CHECKS
 
 

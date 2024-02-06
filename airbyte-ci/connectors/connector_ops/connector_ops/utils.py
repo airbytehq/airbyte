@@ -363,6 +363,18 @@ class Connector:
         return (self.code_directory / "Dockerfile").is_file()
 
     @property
+    def has_poetry_lock(self) -> bool:
+        return (self.code_directory / "poetry.lock").is_file()
+
+    @property
+    def has_setup_py(self) -> bool:
+        return (self.code_directory / "setup.py").is_file()
+
+    @property
+    def has_pyproject_toml(self) -> bool:
+        return (self.code_directory / "pyproject.toml").is_file()
+
+    @property
     def metadata_file_path(self) -> Path:
         return self.code_directory / METADATA_FILE_NAME
 
