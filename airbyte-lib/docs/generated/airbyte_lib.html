@@ -236,8 +236,7 @@ is not also a path, such as "md:" to connect the user's default MotherDuck DB.</
 
             </div>
             <div><dt>airbyte_lib.caches.base.SQLCacheConfigBase</dt>
-                                <dd id="DuckDBCacheConfig.dedupe_mode" class="variable">dedupe_mode</dd>
-                <dd id="DuckDBCacheConfig.table_prefix" class="variable">table_prefix</dd>
+                                <dd id="DuckDBCacheConfig.table_prefix" class="variable">table_prefix</dd>
                 <dd id="DuckDBCacheConfig.table_suffix" class="variable">table_suffix</dd>
 
             </div>
@@ -687,13 +686,25 @@ airbyte-lib.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">read</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#ReadResult">ReadResult</a></span>:</span></span>
+        <span class="name">read</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">write_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">strategies</span><span class="o">.</span><span class="n">WriteStrategy</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">WriteStrategy</span><span class="o">.</span><span class="n">AUTO</span><span class="p">:</span> <span class="s1">&#39;auto&#39;</span><span class="o">&gt;</span>,</span><span class="param">	<span class="n">force_full_refresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></span><span class="return-annotation">) -> <span class="n"><a href="#ReadResult">ReadResult</a></span>:</span></span>
 
         
     </div>
     <a class="headerlink" href="#Source.read"></a>
     
-    
+            <div class="docstring"><p>Read from the connector and write to the cache.</p>
+
+<p>Args:
+    cache: The cache to write to. If None, a default cache will be used.
+    write_strategy: The strategy to use when writing to the cache. If a string, it must be
+        one of "append", "upsert", "replace", or "auto". If a WriteStrategy, it must be one
+        of WriteStrategy.APPEND, WriteStrategy.UPSERT, WriteStrategy.REPLACE, or
+        WriteStrategy.AUTO.
+    force_full_refresh: If True, the source will operate in full refresh mode. Otherwise,
+        streams will be read in incremental mode if supported by the connector. This option
+        must be True when using the "replace" strategy.</p>
+</div>
+
 
                             </div>
                 </section>
