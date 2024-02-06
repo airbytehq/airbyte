@@ -379,6 +379,12 @@
         "attachedVideoOpened": {
           "type": ["null", "boolean"]
         },
+        "bounceErrorDetail": {
+          "type": ["null", "object"]
+        },
+        "emailSendEventId": {
+          "type": ["null", "object"]
+        },
         "attachedVideoWatched": {
           "type": ["null", "boolean"]
         },
@@ -439,6 +445,40 @@
       "type": ["null", "array"],
       "items": {}
     },
+    "ownerIdsBcc": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "ownerIdsFrom": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "ownerIdsTo": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "pendingInlineImageIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "validationSkipped": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "ownerIdsCc": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
     "metadata_guestEmails": {
       "type": ["null", "array"],
       "items": {}
@@ -446,7 +486,7 @@
     "metadata_iCalUid": {
       "type": ["null", "string"]
     },
-    "metadata_iCalUid": {
+    "metadata_includeDescriptionInReminder": {
       "type": ["null", "boolean"]
     },
     "metadata_internalMeetingNotes": {

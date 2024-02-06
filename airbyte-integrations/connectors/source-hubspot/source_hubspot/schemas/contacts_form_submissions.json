@@ -5,7 +5,13 @@
     "canonical-vid": {
       "type": ["null", "integer"]
     },
+    "canonical-url": {
+      "type": ["null", "string"]
+    },
     "conversion-id": {
+      "type": ["null", "string"]
+    },
+    "page-title": {
       "type": ["null", "string"]
     },
     "timestamp": {

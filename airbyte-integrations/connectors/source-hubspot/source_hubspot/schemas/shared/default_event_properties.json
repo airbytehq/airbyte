@@ -69,6 +69,9 @@
     "properties_hs_region": {
       "type": ["null", "string"]
     },
+    "properties_hs_url": {
+      "type": ["null", "string"]
+    },
     "properties_hs_screen_height": {
       "type": ["null", "string"]
     },
