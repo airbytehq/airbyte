@@ -1105,6 +1105,17 @@
                     },
                     "type": ["null", "object"]
                   },
+                  "place_data": {
+                    "properties": {
+                      "location_source_id": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "type": ["null", "object"]
+                  },
                   "caption": {
                     "type": ["null", "string"]
                   },
@@ -1128,6 +1139,9 @@
                 "type": ["null", "object"]
               },
               "type": ["null", "array"]
+            },
+            "format_option": {
+              "type": ["null", "string"]
             },
             "multi_share_optimized": {
               "type": ["null", "boolean"]
