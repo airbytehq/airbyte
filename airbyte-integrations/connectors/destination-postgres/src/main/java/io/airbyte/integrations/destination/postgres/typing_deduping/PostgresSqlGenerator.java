@@ -103,6 +103,19 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
+  public DataType<?> toDialectType(AirbyteProtocolType airbyteProtocolType) {
+    if (airbyteProtocolType.equals(AirbyteProtocolType.STRING)) {
+      // https://www.postgresql.org/docs/current/datatype-character.html
+      // If specified, the length n must be greater than zero and cannot exceed 10,485,760 (10 MB).
+      // If you desire to store long strings with no specific upper limit,
+      // use text or character varying without a length specifier,
+      // rather than making up an arbitrary length limit.
+      return SQLDataType.VARCHAR;
+    }
+    return super.toDialectType(airbyteProtocolType);
+  }
+
+  @Override
   public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
     final List<Sql> statements = new ArrayList<>();
     final Name finalTableName = name(stream.id().finalNamespace(), stream.id().finalName() + suffix);
