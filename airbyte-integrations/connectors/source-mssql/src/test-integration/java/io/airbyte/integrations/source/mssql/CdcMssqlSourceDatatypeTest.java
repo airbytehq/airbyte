@@ -23,6 +23,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
   @Override
   protected Database setupDatabase() {
     testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT)
+        .withWaitUntilAgentRunning()
         .withCdc();
     return testdb.getDatabase();
   }

@@ -18,10 +18,6 @@ import org.testcontainers.utility.DockerImageName;
 
 public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
 
-  CdcMssqlSslSourceTest() {
-    super();
-  }
-
   protected MSSQLServerContainer<?> createContainer() {
     var factory = new MsSQLContainerFactory();
     var container = factory.createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
@@ -39,8 +35,8 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
         .withConnectionProperty("trustServerCertificate", "true")
         .initialized()
-        .withCdc()
-        .withWaitUntilAgentRunning();
+        .withWaitUntilAgentRunning()
+        .withCdc();
   }
 
   @Override

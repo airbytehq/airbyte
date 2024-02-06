@@ -45,7 +45,6 @@ import java.util.Optional;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -76,12 +75,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     factory.withAgent(container);
     factory.withResourceConfig(container);
     return container;
-  }
-
-  @BeforeAll
-  public void beforeAll() {
-    new MsSQLContainerFactory().withAgent(privateContainer);
-    privateContainer.start();
   }
 
   @AfterAll

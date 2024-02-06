@@ -106,8 +106,8 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
                                 \t@role_name     = N'%s',
                                 \t@supports_net_changes = 0""";
     testdb
-        .withCdc()
         .withWaitUntilAgentRunning()
+        .withCdc()
         // create tables
         .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME)
         .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME2)

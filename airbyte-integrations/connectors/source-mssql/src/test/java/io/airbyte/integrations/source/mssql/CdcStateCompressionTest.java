@@ -37,10 +37,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
+import org.testcontainers.utility.DockerImageName;
 
 public class CdcStateCompressionTest {
 
@@ -54,20 +56,30 @@ public class CdcStateCompressionTest {
 
   static private final int ADDED_COLUMNS = 1000;
 
-  static private final MSSQLServerContainer<?> CONTAINER = new MsSQLContainerFactory().shared(
-      "mcr.microsoft.com/mssql/server:2022-latest", "withAgent");
-
+  private final MSSQLServerContainer<?> container;
   private MsSQLTestDatabase testdb;
+
+  public CdcStateCompressionTest() {
+    var factory = new MsSQLContainerFactory();
+    container = factory.createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
+    factory.withAgent(container);
+    factory.withResourceConfig(container);
+  }
+
+  @AfterAll
+  void closeContainer() {
+    container.close();
+  }
 
   @BeforeEach
   public void setup() {
-    testdb = new MsSQLTestDatabase(CONTAINER);
+    testdb = new MsSQLTestDatabase(container);
     testdb = testdb
         .withConnectionProperty("encrypt", "false")
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
         .initialized()
-        .withCdc()
-        .withWaitUntilAgentRunning();
+        .withWaitUntilAgentRunning()
+        .withCdc();
 
     // Create a test schema and a bunch of test tables with CDC enabled.
     // Insert one row in each table so that they're not empty.
