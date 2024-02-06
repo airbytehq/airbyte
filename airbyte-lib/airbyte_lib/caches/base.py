@@ -414,6 +414,8 @@ class SQLCacheBase(RecordProcessor):
                     violation="Cache table is missing expected columns.",
                     context={
                         "missing_columns": missing_columns,
+                        "stream_column_names": set(stream_column_names),
+                        "table_column_names": set(table_column_names),
                     },
                 )
             return False  # Some columns are missing.
