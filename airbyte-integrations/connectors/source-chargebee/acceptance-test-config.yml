@@ -31,7 +31,11 @@ acceptance_tests:
           - name: "event"
             bypass_reason: "Unstable data. Test data is not persistent."
           - name: "site_migration_detail"
-            bypass_reason: "Cannnot populate with test data."
+            bypass_reason: "Cannot populate with test data."
+          - name: "hosted_page"
+            bypass_reason: "Cannot populate with test data."
+          - name: "item_family"
+            bypass_reason: "Cannot populate with test data."
         ignored_fields:
           subscription:
             - name: "current_term_start"

@@ -31,10 +31,19 @@ connectionSpecification:
       examples:
         - "2021-01-25T00:00:00Z"
       order: 2
+    end_date:
+      type: string
+      format: date-time
+      title: End Date
+      description: UTC date and time in the format 2017-01-25T00:00:00.000Z. Any data after this date will not be replicated. If no end date is specified, will default to current date.
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      examples:
+        - "2021-01-25T00:00:00Z"
+      order: 3
     product_catalog:
       type: string
       title: Product Catalog
       description: Product Catalog version of your Chargebee site. Instructions on how to find your version you may find <a href="https://apidocs.chargebee.com/docs/api?prod_cat_ver=2">here</a> under `API Version` section. If left blank, the product catalog version will be set to 2.0.
       enum: ["1.0", "2.0"]
       default: "2.0"
-      order: 3
+      order: 4

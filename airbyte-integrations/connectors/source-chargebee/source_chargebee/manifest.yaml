@@ -34,7 +34,7 @@ definitions:
       datetime: "{{ format_datetime(config['start_date'], '%s') }}"
       datetime_format: "%s"
     end_datetime:
-      datetime: "{{ now_utc().strftime('%s') }}"
+      datetime: "{{ format_datetime((config['end_date'] or now_utc()), '%s') }}"
       datetime_format: "%s"
     datetime_format: "%s"
     cursor_granularity: PT1S
