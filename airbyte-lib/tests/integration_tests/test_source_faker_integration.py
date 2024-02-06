@@ -122,16 +122,19 @@ def postgres_cache(new_pg_cache_config) -> Generator[caches.PostgresCache, None,
 
 @pytest.fixture
 def all_cache_types(
+    request,
     duckdb_cache: ab.DuckDBCache,
-    snowflake_cache: ab.SnowflakeCache,
-    postgres_cache: ab.PostgresCache,
 ):
-    _ = postgres_cache
-    return [
-        duckdb_cache,
-        postgres_cache,
-        # snowflake_cache,  # Snowflake works, but is slow and expensive to test. # TODO: Re-enable.
-    ]
+    if 'not slow' in request.config.getoption("-m"):
+        # Return only duckdb_cache if 'slow' tests are excluded
+        return [duckdb_cache]
+    else:
+        # Return all caches otherwise
+        return [
+            duckdb_cache,
+            request.getfixturevalue("postgres_cache"),
+            # request.getfixturevalue("snowflake_cache"),  # Snowflake works, but is very slow and expensive to test. # TODO: Re-enable.
+        ]
 
 
 def test_faker_pks(

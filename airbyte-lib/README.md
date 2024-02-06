@@ -7,7 +7,7 @@ airbyte-lib is a library that allows to run Airbyte syncs embedded into any Pyth
 - Make sure [Poetry is installed](https://python-poetry.org/docs/#).
 - Run `poetry install`
 - For examples, check out the `examples` folder. They can be run via `poetry run python examples/<example file>`
-- Unit tests and type checks can be run via `poetry run pytest`
+- Unit tests and type checks can be run via `poetry run pytest`. Snowflake and postgres integration tests run a little longer, to do a quick local validation you can skip them by running `poetry run pytest -m "not slow"`
 
 ## Release
 
