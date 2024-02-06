@@ -50,7 +50,8 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
   private final Duration syncCheckpointDuration;
   private final Long syncCheckpointRecords;
   private OffsetDateTime dateTimeLastSync;
-  private long recordsLastSync, recordsAllSyncs;
+  private long recordsLastSync;
+  private long recordsAllSyncs;
   private boolean sendCheckpointMessage = false;
 
   /**
