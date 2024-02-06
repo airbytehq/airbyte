@@ -8,12 +8,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
@@ -22,97 +24,95 @@ import org.testcontainers.utility.DockerImageName;
  * ContainerFactory is the companion interface to {@link TestDatabase} for providing it with
  * suitable testcontainer instances.
  */
-public interface ContainerFactory<C extends JdbcDatabaseContainer<?>> {
+public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
+
+  static private final Logger LOGGER = LoggerFactory.getLogger(ContainerFactory.class);
+
+  private record ContainerKey(Class<? extends ContainerFactory> clazz, DockerImageName imageName, List<String> methods) {};
+
+  private static class ContainerOrException {
+
+    private final Supplier<GenericContainer<?>> containerSupplier;
+    private volatile RuntimeException exception = null;
+    private volatile GenericContainer<?> _container = null;
+
+    ContainerOrException(Supplier<GenericContainer<?>> containerSupplier) {
+      this.containerSupplier = containerSupplier;
+    }
+
+    GenericContainer<?> container() {
+      if (exception == null && _container == null) {
+        synchronized (this) {
+          if (_container == null && exception == null) {
+            try {
+              _container = containerSupplier.get();
+            } catch (RuntimeException e) {
+              exception = e;
+            }
+          }
+        }
+      }
+      return _container;
+    }
+
+  }
+
+  private static final ConcurrentMap<ContainerKey, ContainerOrException> SHARED_CONTAINERS = new ConcurrentHashMap<>();
 
   /**
    * Creates a new, unshared testcontainer instance. This usually wraps the default constructor for
    * the testcontainer type.
    */
-  C createNewContainer(DockerImageName imageName);
-
-  /**
-   * Returns the class object of the testcontainer.
-   */
-  Class<?> getContainerClass();
+  protected abstract C createNewContainer(DockerImageName imageName);
 
   /**
    * Returns a shared instance of the testcontainer.
    */
-  default C shared(String imageName, String... methods) {
-    final String mapKey = Stream.concat(
-        Stream.of(imageName, this.getClass().getCanonicalName()),
-        Stream.of(methods))
-        .collect(Collectors.joining("+"));
-    return Singleton.getOrCreate(mapKey, this);
+  public final C shared(String imageName, String... methods) {
+    List<String> methodList = methods == null ? Collections.emptyList() : Arrays.asList(methods);
+    DockerImageName dockerImageName = DockerImageName.parse(imageName);
+    final ContainerKey containerKey = new ContainerKey(getClass(), dockerImageName, methodList);
+    ContainerOrException containerOrError = SHARED_CONTAINERS.computeIfAbsent(containerKey, this::createContainerOrError);
+    if (containerOrError.container() == null) {
+      throw containerOrError.exception;
+    }
+    return (C) containerOrError.container();
   }
 
-  /**
-   * This class is exclusively used by {@link #shared(String, String...)}. It wraps a specific shared
-   * testcontainer instance, which is created exactly once.
-   */
-  class Singleton<C extends JdbcDatabaseContainer<?>> {
+  public final C exclusive(String imageName, String... methods) {
+    DockerImageName dockerImageName = DockerImageName.parse(imageName);
+    List<String> methodList = methods == null ? Collections.emptyList() : Arrays.asList(methods);
+    return (C) createContainerSupplier(dockerImageName, methodList).get();
+  }
 
-    static private final Logger LOGGER = LoggerFactory.getLogger(Singleton.class);
-    static private final ConcurrentHashMap<String, Singleton<?>> LAZY = new ConcurrentHashMap<>();
+  private ContainerOrException createContainerOrError(ContainerKey containerKey) {
+    DockerImageName imageName = containerKey.imageName();
+    List<String> methodNames = containerKey.methods();
+    return new ContainerOrException(createContainerSupplier(imageName, methodNames));
+  }
 
-    @SuppressWarnings("unchecked")
-    static private <C extends JdbcDatabaseContainer<?>> C getOrCreate(String mapKey, ContainerFactory<C> factory) {
-      final Singleton<?> singleton = LAZY.computeIfAbsent(mapKey, Singleton<C>::new);
-      return ((Singleton<C>) singleton).getOrCreate(factory);
-    }
-
-    final private String imageName;
-    final private List<String> methodNames;
-
-    private C sharedContainer;
-    private RuntimeException containerCreationError;
-
-    private Singleton(String imageNamePlusMethods) {
-      final String[] parts = imageNamePlusMethods.split("\\+");
-      this.imageName = parts[0];
-      this.methodNames = Arrays.stream(parts).skip(2).toList();
-    }
-
-    private synchronized C getOrCreate(ContainerFactory<C> factory) {
-      if (sharedContainer == null && containerCreationError == null) {
-        try {
-          create(imageName, factory, methodNames);
-        } catch (RuntimeException e) {
-          sharedContainer = null;
-          containerCreationError = e;
-        }
-      }
-      if (containerCreationError != null) {
-        throw new RuntimeException(
-            "Error during container creation for imageName=" + imageName
-                + ", factory=" + factory.getClass().getName()
-                + ", methods=" + methodNames,
-            containerCreationError);
-      }
-      return sharedContainer;
-    }
-
-    private void create(String imageName, ContainerFactory<C> factory, List<String> methodNames) {
+  private Supplier<GenericContainer<?>> createContainerSupplier(DockerImageName imageName, List<String> methodNames) {
+    return () -> {
       LOGGER.info("Creating new shared container based on {} with {}.", imageName, methodNames);
       try {
-        final var parsed = DockerImageName.parse(imageName);
+        GenericContainer container = createNewContainer(imageName);
+
         final var methods = new ArrayList<Method>();
         for (String methodName : methodNames) {
-          methods.add(factory.getClass().getMethod(methodName, factory.getContainerClass()));
+          methods.add(getClass().getMethod(methodName, container.getClass()));
         }
-        sharedContainer = factory.createNewContainer(parsed);
-        sharedContainer.withLogConsumer(new Slf4jLogConsumer(LOGGER));
+        container.withLogConsumer(new Slf4jLogConsumer(LOGGER));
         for (Method method : methods) {
           LOGGER.info("Calling {} in {} on new shared container based on {}.",
-              method.getName(), factory.getClass().getName(), imageName);
-          method.invoke(factory, sharedContainer);
+              method.getName(), getClass().getName(), imageName);
+          method.invoke(this, container);
         }
-        sharedContainer.start();
+        container.start();
+        return container;
       } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
         throw new RuntimeException(e);
       }
-    }
-
+    };
   }
 
 }
