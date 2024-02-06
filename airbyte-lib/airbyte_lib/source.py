@@ -26,7 +26,8 @@ from airbyte_protocol.models import (
 
 from airbyte_lib import exceptions as exc
 from airbyte_lib._factories.cache_factories import get_default_cache
-from airbyte_lib._util import protocol_util  # Internal utility functions
+from airbyte_lib._util import protocol_util
+from airbyte_lib._util.text_util import lower_case_set  # Internal utility functions
 from airbyte_lib.datasets._lazy import LazyDataset
 from airbyte_lib.progress import progress
 from airbyte_lib.results import ReadResult
@@ -305,7 +306,7 @@ class Source:
         def _with_missing_columns(records: Iterable[dict[str, Any]]) -> Iterator[dict[str, Any]]:
             """Add missing columns to the record with null values."""
             for record in records:
-                existing_properties_lower = set(map(str.lower, (record.keys())))
+                existing_properties_lower = lower_case_set(record.keys())
                 appended_dict = {
                     prop: None
                     for prop in all_properties

@@ -17,6 +17,7 @@ from airbyte_lib._file_writers.base import (
     FileWriterBatchHandle,
     FileWriterConfigBase,
 )
+from airbyte_lib._util.text_util import lower_case_set
 
 
 class ParquetWriterConfig(FileWriterConfigBase):
@@ -58,7 +59,7 @@ class ParquetWriter(FileWriterBase):
         return [
             col
             for col in stream_property_names
-            if col.lower() not in set(map(str.lower, record_batch.schema.names))
+            if col.lower() not in lower_case_set(record_batch.schema.names)
         ]
 
     @overrides

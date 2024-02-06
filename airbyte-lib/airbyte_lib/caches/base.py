@@ -29,6 +29,7 @@ from sqlalchemy.sql.elements import TextClause
 from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
+from airbyte_lib._util.text_util import lower_case_set
 from airbyte_lib.caches._catalog_manager import CatalogManager
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.datasets._sql import CachedDataset
@@ -407,7 +408,12 @@ class SQLCacheBase(RecordProcessor):
         stream_column_names: list[str] = json_schema["properties"].keys()
         table_column_names: list[str] = self.get_sql_table(stream_name).columns.keys()
 
-        missing_columns: set[str] = set(stream_column_names) - set(table_column_names)
+        lower_case_table_column_names = lower_case_set(table_column_names)
+        missing_columns = [
+            stream_col
+            for stream_col in stream_column_names
+            if stream_col.lower() not in lower_case_table_column_names
+        ]
         if missing_columns:
             if raise_on_error:
                 raise exc.AirbyteLibCacheTableValidationError(
