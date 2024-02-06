@@ -9,6 +9,7 @@ import pendulum
 from airbyte_cdk.config_observation import create_connector_config_control_message, emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 
 
 class Oauth2Authenticator(AbstractOauth2Authenticator):
@@ -246,6 +247,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
 
     def refresh_access_token(self) -> Tuple[str, str, str]:
         response_json = self._get_refresh_access_token_response()
+        add_to_secrets([response_json[self.get_refresh_token_name()]])
         return (
             response_json[self.get_access_token_name()],
             response_json[self.get_expires_in_name()],
