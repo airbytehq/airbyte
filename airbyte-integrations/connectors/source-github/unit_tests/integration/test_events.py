@@ -36,6 +36,9 @@ from .request_builder import GithubRequestBuilder
 _TOKEN = "GITHUB_TEST_TOKEN"
 
 
+_CONFIG = ConfigBuilder().with_repositories(["airbytehq/integration-test"]).build()
+
+
 def _create_catalog(sync_mode: SyncMode = SyncMode.full_refresh):
     return CatalogBuilder().with_stream(name="events", sync_mode=sync_mode).build()
 
@@ -56,27 +59,10 @@ def _create_record(resource: str) -> RecordBuilder:
     )
 
 
-_CONFIG = ConfigBuilder().with_repositories(["airbytehq/integration-test"]).build()
-
-
 # @freezegun.freeze_time(_NOW.isoformat())
 class EventsTest(TestCase):
     @HttpMocker()
-    def test_full_refresh(self, http_mocker):
-        # http_mocker.get(
-        #     _create_event_request().with_limit(100).build(),
-        #     _create_response().with_record(record=_create_record("events")).build(),
-        # )
-
-        # http_mocker.get(
-        #     _create_persons_request().with_limit(100).build(),
-        #     _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-        # )
-        #
-        # http_mocker.get(
-        #     _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
-        #     _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
-        # )
+    def test_full_refresh_no_pagination(self, http_mocker):
         http_mocker.get(
             HttpRequest(
                 url="https://api.github.com/rate_limit",
@@ -121,3 +107,60 @@ class EventsTest(TestCase):
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 2
+
+    @HttpMocker()
+    def test_full_refresh_with_pagination(self, http_mocker):
+        http_mocker.get(
+            HttpRequest(
+                url="https://api.github.com/rate_limit",
+                headers={
+                    "Accept": "application/vnd.github+json",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                    "Authorization": "token GITHUB_TEST_TOKEN",
+                },
+            ),
+            HttpResponse(
+                json.dumps(
+                    {
+                        "resources": {
+                            "core": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
+                            "graphql": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
+                        }
+                    }
+                )
+            ),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}", query_params={"per_page": 100}, headers={}),
+            HttpResponse(json.dumps({"full_name": "airbytehq/integration-test", "default_branch": "master"})),
+        )
+
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/branches", query_params={"per_page": 100}, headers={}
+            ),
+            HttpResponse(json.dumps([{"repository": "airbytehq/integration-test", "name": "master"}])),
+        )
+
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events", query_params={"per_page": 100}, headers={}
+            ),
+            HttpResponse(
+                json.dumps(find_template("events", __file__)),
+                headers={"Link": '<https://api.github.com/repos/{}/events?page=2>; rel="next"'.format(_CONFIG.get("repositories")[0])},
+            ),
+        )
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
+                query_params={"per_page": 100, "page": 2},
+                headers={},
+            ),
+            HttpResponse(json.dumps(find_template("events", __file__))),
+        )
+
+        source = SourceGithub()
+        actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
+
+        assert len(actual_messages.records) == 4
