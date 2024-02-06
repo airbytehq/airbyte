@@ -45,6 +45,15 @@
     "properties_hs_language": {
       "type": ["null", "string"]
     },
+    "properties_hs_document_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_presentation_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_user_id": {
+      "type": ["null", "string"]
+    },
     "properties_hs_link_href": {
       "type": ["null", "string"]
     },

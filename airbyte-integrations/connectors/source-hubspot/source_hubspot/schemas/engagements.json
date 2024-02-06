@@ -204,6 +204,15 @@
         "meetingOutcome": {
           "type": ["null", "string"]
         },
+        "calendarEventHash": {
+          "type": ["null", "string"]
+        },
+        "createdFromLinkId": {
+          "type": ["null", "integer"]
+        },
+        "meetingChangeId": {
+          "type": ["null", "string"]
+        },
         "locationType": {
           "type": ["null", "string"]
         },
@@ -468,6 +477,15 @@
     "metadata_attendeeOwnerIds": {
       "type": ["null", "array"],
       "items": {}
+    },
+    "metadata_calendarEventHash": {
+      "type": ["null", "string"]
+    },
+    "metadata_createdFromLinkId": {
+      "type": ["null", "integer"]
+    },
+    "metadata_meetingChangeId": {
+      "type": ["null", "string"]
     },
     "ownerIdsBcc": {
       "type": ["null", "array"],
