@@ -23,7 +23,7 @@ Data can be extracted from sources and loaded into caches:
 ```python
 import airbyte_lib as ab
 
-source = ab.get_connector(
+source = ab.get_source(
     "source-faker",
     config={"count": 5_000},
     install_if_missing=True,
