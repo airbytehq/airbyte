@@ -268,6 +268,8 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     }
 
     public B withCredentials() {
+      System.out.println("use credentials: " + testDatabase.getUserName() + "  ; "+testDatabase.getPassword());
+
       return this
           .with(JdbcUtils.USERNAME_KEY, testDatabase.getUserName())
           .with(JdbcUtils.PASSWORD_KEY, testDatabase.getPassword());
