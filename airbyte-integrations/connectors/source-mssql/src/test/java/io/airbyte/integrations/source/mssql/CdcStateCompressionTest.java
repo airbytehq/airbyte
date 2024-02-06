@@ -41,9 +41,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CdcStateCompressionTest {
 
   static private final String CDC_ROLE_NAME = "cdc_selector";
