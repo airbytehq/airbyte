@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "type": { "type": "string" },
+    "id": { "type": "string" },
+    "campaign_id": { "type": "string" },
+    "updated_at": { "type": ["null", "string"], "format": "date-time" },
+    "attributes": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "type": "string" },
+        "created_at": { "type": ["null", "string"], "format": "date-time" },
+        "updated_at": { "type": ["null", "string"], "format": "date-time" }
+      }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    }
+  }
+}

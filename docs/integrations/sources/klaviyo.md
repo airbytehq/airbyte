@@ -36,9 +36,12 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 ## Supported Streams
 
 - [Campaigns](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
+- [Campaign Messages](https://developers.klaviyo.com/en/reference/get_campaign_campaign_messages)
 - [Email Templates](https://developers.klaviyo.com/en/reference/get_templates)
 - [Events](https://developers.klaviyo.com/en/reference/get_events)
 - [Flows](https://developers.klaviyo.com/en/reference/get_flows)
+- [Flow Actions](https://developers.klaviyo.com/en/reference/get_flow_flow_actions)
+- [Flow Messages](https://developers.klaviyo.com/en/reference/get_flow_action_messages)
 - [GlobalExclusions](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
 - [Lists](https://developers.klaviyo.com/en/reference/get_lists)
 - [Metrics](https://developers.klaviyo.com/en/reference/get_metrics)
@@ -63,6 +66,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| `2.1.1`  | 2024-02-05 | [00000](https://github.com/airbytehq/airbyte/pull/00000)   | Add `Campaign Messages` `Flow Actions` `Flow Messages` streams                                                                |
 | `2.1.0`  | 2023-12-07 | [33237](https://github.com/airbytehq/airbyte/pull/33237)   | Continue syncing streams even when one of the stream fails                                                                    |
 | `2.0.2`  | 2023-12-05 | [33099](https://github.com/airbytehq/airbyte/pull/33099)   | Fix filtering for archived records stream                                                                                     |
 | `2.0.1`  | 2023-11-08 | [32291](https://github.com/airbytehq/airbyte/pull/32291)   | Add logic to have regular checkpointing schedule                                                                              |
