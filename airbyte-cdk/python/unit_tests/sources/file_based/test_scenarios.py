@@ -81,11 +81,11 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
 
     sorted_expected_records = sorted(
         filter(lambda e: "data" in e, expected_records),
-        key=lambda x: ",".join(f"{k}={v}" for k, v in sorted(x["data"].items(), key=lambda x: x[0]) if k != "emitted_at"),
+        key=lambda record: ",".join(f"{k}={v}" for k, v in sorted(record["data"].items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"),
     )
     sorted_records = sorted(
         filter(lambda r: r.record, records),
-        key=lambda x: ",".join(f"{k}={v}" for k, v in sorted(x.record.data.items(), key=lambda x: x[0]) if k != "emitted_at"),
+        key=lambda record: ",".join(f"{k}={v}" for k, v in sorted(record.record.data.items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"),
     )
     for actual, expected in zip(sorted_records, sorted_expected_records):
         if actual.record:
