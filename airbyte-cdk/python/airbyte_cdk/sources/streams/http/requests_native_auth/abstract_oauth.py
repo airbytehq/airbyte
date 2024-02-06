@@ -117,14 +117,16 @@ class AbstractOauth2Authenticator(AuthBase):
     def _get_refresh_access_token_response(self) -> Any:
         try:
             response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
-            response.raise_for_status()
-
-            response_json = response.json()
-            # Add the access token to the list of secrets so it is replaced before logging the response
-            access_key = response_json[self.get_access_token_name()]
-            add_to_secrets(access_key)
-            self._log_response(response)
-            return response_json
+            if response.ok:
+                response_json = response.json()
+                # Add the access token to the list of secrets so it is replaced before logging the response
+                access_key = response_json[self.get_access_token_name()]
+                add_to_secrets(access_key)
+                self._log_response(response)
+                return response_json
+            else:
+                self._log_response(response)
+                response.raise_for_status()
         except requests.exceptions.RequestException as e:
             if e.response is not None:
                 if e.response.status_code == 429 or e.response.status_code >= 500:
