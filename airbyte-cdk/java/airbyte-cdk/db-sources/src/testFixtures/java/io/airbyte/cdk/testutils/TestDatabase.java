@@ -16,13 +16,10 @@ import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
@@ -182,23 +179,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
   }
 
   protected void execInContainer(Stream<String> cmds) {
-    final List<String> cmd = cmds.toList();
-    if (cmd.isEmpty()) {
-      return;
-    }
-    try {
-      LOGGER.debug("executing {}", Strings.join(cmd, " "));
-      final var exec = getContainer().execInContainer(cmd.toArray(new String[0]));
-      if (exec.getExitCode() == 0) {
-        LOGGER.debug("execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr());
-      } else {
-        LOGGER.error("execution failure, code {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
-      }
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    ContainerFactory.execInContainer(getContainer(), cmds);
   }
 
   public <X> X query(final ContextQueryFunction<X> transform) throws SQLException {

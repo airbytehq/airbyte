@@ -45,6 +45,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
     NETWORK("withNetwork"),
     AGENT("withAgent"),
+    WITH_RESOURCE_CONFIG("withResourceConfig"),
     WITH_SSL_CERTIFICATES("withSslCertificates");
 
     private final String methodName;
@@ -56,7 +57,8 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   static public MsSQLTestDatabase in(final BaseImage imageName, final ContainerModifier... methods) {
-    final String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
+    final var allMethods = Stream.concat(Stream.of(methods), Stream.of(ContainerModifier.WITH_RESOURCE_CONFIG));
+    final String[] methodNames = allMethods.map(im -> im.methodName).toArray(String[]::new);
     final var container = new MsSQLContainerFactory().shared(imageName.reference, methodNames);
     final var testdb = new MsSQLTestDatabase(container);
     return testdb

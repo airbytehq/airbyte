@@ -4,6 +4,9 @@
 
 package io.airbyte.cdk.testutils;
 
+import io.airbyte.commons.string.Strings;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -113,6 +116,28 @@ public interface ContainerFactory<C extends JdbcDatabaseContainer<?>> {
       }
     }
 
+  }
+
+  Logger LOGGER = LoggerFactory.getLogger(ContainerFactory.class);
+
+  static void execInContainer(JdbcDatabaseContainer<?> container, Stream<String> cmds) {
+    final List<String> cmd = cmds.toList();
+    if (cmd.isEmpty()) {
+      return;
+    }
+    try {
+      LOGGER.debug("executing {}", Strings.join(cmd, " "));
+      final var exec = container.execInContainer(cmd.toArray(new String[0]));
+      if (exec.getExitCode() == 0) {
+        LOGGER.debug("execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr());
+      } else {
+        LOGGER.error("execution failure, code {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

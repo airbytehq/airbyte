@@ -5,12 +5,17 @@
 package io.airbyte.integrations.source.mssql;
 
 import io.airbyte.cdk.testutils.ContainerFactory;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
 public class MsSQLContainerFactory implements ContainerFactory<MSSQLServerContainer<?>> {
+
+  static private final Logger LOGGER = LoggerFactory.getLogger(MsSQLContainerFactory.class);
 
   @Override
   public MSSQLServerContainer<?> createNewContainer(DockerImageName imageName) {
@@ -23,6 +28,25 @@ public class MsSQLContainerFactory implements ContainerFactory<MSSQLServerContai
   @Override
   public Class<?> getContainerClass() {
     return MSSQLServerContainer.class;
+  }
+
+  public void withResourceConfig(MSSQLServerContainer<?> container) {
+    container.start();
+    final String tsql = String.join("; ",
+        "EXEC sys.sp_configure 'show advanced options', 1",
+        "RECONFIGURE",
+        "EXEC sp_configure 'max worker threads', 128",
+        "EXEC sys.sp_configure 'min server memory', 2048",
+        "RECONFIGURE");
+    final Stream<String> cmd = Stream.of(
+        "/opt/mssql-tools/bin/sqlcmd",
+        "-U",
+        container.getUsername(),
+        "-P",
+        container.getPassword(),
+        "-Q",
+        tsql);
+    ContainerFactory.execInContainer(container, cmd);
   }
 
   /**

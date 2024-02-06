@@ -23,10 +23,11 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
   }
 
   protected MSSQLServerContainer<?> createContainer() {
-    final MsSQLContainerFactory containerFactory = new MsSQLContainerFactory();
-    final MSSQLServerContainer<?> container =
-        containerFactory.createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
-    containerFactory.withSslCertificates(container);
+    var factory = new MsSQLContainerFactory();
+    var container = factory.createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
+    factory.withAgent(container);
+    factory.withSslCertificates(container);
+    factory.withResourceConfig(container);
     return container;
   }
 
