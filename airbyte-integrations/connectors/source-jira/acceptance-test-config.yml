@@ -32,7 +32,7 @@ acceptance_tests:
             - name: fields/updated
               bypass_reason: "Unstable data"
         timeout_seconds: 2400
-        # Some streams (issues) contain custom fields
+        # Some streams (example: issues) contain custom fields
         fail_on_extra_columns: false
   incremental:
     tests:
