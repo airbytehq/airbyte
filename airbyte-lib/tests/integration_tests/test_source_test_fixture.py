@@ -8,7 +8,6 @@ from typing import Any
 from unittest.mock import Mock, call, patch
 import tempfile
 from pathlib import Path
-from urllib import request
 from airbyte_lib.caches.base import SQLCacheBase
 
 from sqlalchemy import column, text
