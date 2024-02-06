@@ -232,12 +232,14 @@ def test_incremental_sync(
     result1 = source_faker_seed_a.read(duckdb_cache)
     assert len(list(result1.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result1.cache.streams["purchases"])) == FAKER_SCALE_A
+    assert result1.processed_records == NUM_PRODUCTS + FAKER_SCALE_A
 
     assert not duckdb_cache.get_state() == [] 
 
     # Second run should not return records as it picks up the state and knows it's up to date.
     result2 = source_faker_seed_b.read(duckdb_cache)
 
+    assert result2.processed_records == 0
     assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result2.cache.streams["purchases"])) == FAKER_SCALE_A
 
@@ -254,10 +256,12 @@ def test_incremental_state_cache_persistence(
     source_faker_seed_b.set_config(config_b)
     cache_name = str(ulid.ULID())
     cache = ab.new_local_cache(cache_name)
-    source_faker_seed_a.read(cache)
+    result = source_faker_seed_a.read(cache)
+    assert result.processed_records == NUM_PRODUCTS + FAKER_SCALE_A
     second_cache = ab.new_local_cache(cache_name)
     # The state should be persisted across cache instances.
     result2 = source_faker_seed_b.read(second_cache)
+    assert result2.processed_records == 0
 
     assert not second_cache.get_state() == [] 
     assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
@@ -279,9 +283,11 @@ def test_incremental_state_prefix_isolation(
     cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="prefix_"))
     different_prefix_cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="different_prefix_"))
 
-    source_faker_seed_a.read(cache)
+    result = source_faker_seed_a.read(cache)
+    assert result.processed_records == NUM_PRODUCTS + FAKER_SCALE_A
 
     result2 = source_faker_seed_b.read(different_prefix_cache)
+    assert result2.processed_records == NUM_PRODUCTS + FAKER_SCALE_B
 
     assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result2.cache.streams["purchases"])) == FAKER_SCALE_B
