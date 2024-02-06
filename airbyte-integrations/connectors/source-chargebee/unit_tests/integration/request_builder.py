@@ -6,6 +6,7 @@ from typing import List, Optional
 from airbyte_cdk.test.mock_http import HttpRequest
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 
+
 class ChargebeeRequestBuilder:
 
   @classmethod

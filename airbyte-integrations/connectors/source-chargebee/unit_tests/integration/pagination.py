@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 from airbyte_cdk.test.mock_http.response_builder import PaginationStrategy
 
+
 class ChargebeePaginationStrategy(PaginationStrategy):
     @staticmethod
     def update(response: Dict[str, Any]) -> None:

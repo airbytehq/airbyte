@@ -3,6 +3,7 @@
 from datetime import datetime
 from typing import Any, Dict
 
+
 class ConfigBuilder:
     def __init__(self) -> None:
         self._config: Dict[str, Any] = {
