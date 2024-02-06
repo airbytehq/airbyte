@@ -75,7 +75,7 @@ definitions:
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
-          sort_by[asc]: updated_at
+          sort_by[asc]: "updated_at"
           include_deleted: "true"
           updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     incremental_sync:
@@ -178,7 +178,7 @@ definitions:
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
-          sort_by[asc]: updated_at
+          sort_by[asc]: "created_at"
           include_deleted: "true"
           updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
@@ -193,7 +193,7 @@ definitions:
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
-          sort_by[asc]: updated_at
+          sort_by[asc]: "date"
           include_deleted: "true"
           updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
@@ -279,7 +279,7 @@ definitions:
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
-          sort_by[asc]: created_at
+          sort_by[asc]: "created_at"
           include_deleted: "true"
           created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
@@ -322,7 +322,7 @@ definitions:
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
-          sort_by[asc]: updated_at
+          sort_by[asc]: "date"
           include_deleted: "true"
           updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
