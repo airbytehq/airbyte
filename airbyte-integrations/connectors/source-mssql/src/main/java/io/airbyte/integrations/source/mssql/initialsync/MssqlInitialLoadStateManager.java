@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public interface MssqlInitialLoadStateManager {
 
-  long MSSQL_STATE_VERSION = 2;
+  public static long MSSQL_STATE_VERSION = 2;
   String STATE_TYPE_KEY = "state_type";
   String ORDERED_COL_STATE_TYPE = "ordered_column";
 

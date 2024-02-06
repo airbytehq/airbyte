@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mssql.cursor_based;
 
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.MSSQL_STATE_VERSION;
+
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
@@ -72,7 +74,7 @@ public class MssqlCursorBasedStateManager extends StreamStateManager {
                                                   final CursorInfo cursorInfo) {
     final CursorBasedStatus state = new CursorBasedStatus();
     state.setStateType(StateType.CURSOR_BASED);
-    state.setVersion(2L);
+    state.setVersion(MSSQL_STATE_VERSION);
     state.setStreamName(airbyteStreamNameNamespacePair.getName());
     state.setStreamNamespace(airbyteStreamNameNamespacePair.getNamespace());
     state.setCursorField(cursorInfo.getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(cursorInfo.getCursorField()));
