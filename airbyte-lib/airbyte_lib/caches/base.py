@@ -388,6 +388,8 @@ class SQLCacheBase(RecordProcessor):
                 raise exc.AirbyteLibCacheTableValidationError(
                     violation="Cache table is missing expected columns.",
                     context={
+                        "stream_column_names": stream_column_names,
+                        "table_column_names": table_column_names,
                         "missing_columns": missing_columns,
                     },
                 )
