@@ -345,3 +345,31 @@ class CheckBaseImageIsUsed(Step):
                 stdout=f"Connector is certified but is still using a Dockerfile. {migration_hint}",
             )
         return StepResult(self, StepStatus.SUCCESS, stdout="Connector is certified and uses our base image.")
+
+
+class CheckPythonRegistryPublishConfiguration(Step):
+    context: ConnectorContext
+    title = "Check connector is published to python registry if it's a certified python connector"
+
+    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
+        is_python_registry_published = self.context.connector.metadata.get("remoteRegistries", {}).get("pypi", {}).get("enabled", False)
+        if is_python_registry_published:
+            return StepResult(self, StepStatus.SUCCESS, stdout="Connector is published to PyPI.")
+
+        tags = self.context.connector.metadata.get("tags", [])
+        is_python_registry_compatible = ("language:python" in tags or "language:low-code" in tags) and "language:java" not in tags
+        is_certified = self.context.connector.metadata.get("supportLevel") == "certified"
+        is_source = self.context.connector.metadata.get("connectorType") == "source"
+        if not is_source or not is_certified or not is_python_registry_compatible:
+            return self.skip(
+                "Connector is not a certified python source connector, it does not require to be published to python registry."
+            )
+
+        migration_hint = "Check the airbyte-ci readme under https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/pipelines#python-registry-publishing for how to configure publishing."
+        if not is_python_registry_published:
+            return StepResult(
+                self,
+                StepStatus.FAILURE,
+                stdout=f"Connector is a certified python source but publication to PyPI is not enabled. {migration_hint}",
+            )
+        return StepResult(self, StepStatus.SUCCESS, stdout="Connector is a certified python source and is published to PyPI.")
