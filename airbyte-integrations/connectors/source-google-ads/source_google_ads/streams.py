@@ -412,7 +412,7 @@ class AdGroupAdAssetView(IncrementalGoogleAdsStream):
     Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
     """
 
-    primary_key = ["asset.id"]
+    primary_key = ["asset.id", "segments.date"]
 
 class AdGroupAdLabel(GoogleAdsStream):
     """

@@ -82,6 +82,37 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": [],
       "primary_key": [["ad_group.id"], ["ad_group_ad.ad.id"]]
+    },
+    {
+      "stream" : {
+        "name" : "ad_group_ad_asset_view",
+        "json_schema" : {},
+        "supported_sync_modes" : [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor" : true,
+        "default_cursor_field" : [
+          "segments.date"
+        ],
+        "source_defined_primary_key" : [
+          [
+            "asset.id",
+            "segments.date"
+          ]
+        ]
+      },
+      "sync_mode" : "incremental",
+      "destination_sync_mode" : "overwrite",
+      "cursor_field" : [
+        "segments.date"
+      ],
+      "primary_key" : [
+        [
+          "asset.id",
+          "segments.date"
+        ]
+      ]
     }
   ]
 }

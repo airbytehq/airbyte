@@ -19,6 +19,7 @@ from .streams import (
     AccountPerformanceReport,
     AdGroup,
     AdGroupAd,
+    AdGroupAdAssetView,
     AdGroupAdLabel,
     AdGroupAdLegacy,
     AdGroupBiddingStrategy,
@@ -226,6 +227,7 @@ class SourceGoogleAds(AbstractSource):
         streams = [
             AdGroup(**default_config),
             AdGroupAd(**default_config),
+            AdGroupAdAssetView(**incremental_config),
             AdGroupAdLabel(**default_config),
             AdGroupBiddingStrategy(**incremental_config),
             AdGroupCriterion(**default_config),
