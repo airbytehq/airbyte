@@ -165,8 +165,7 @@ is not also a path, such as "md:" to connect the user's default MotherDuck DB.</
 
             </div>
             <div><dt>airbyte_lib.caches.base.SQLCacheConfigBase</dt>
-                                <dd id="DuckDBCacheConfig.dedupe_mode" class="variable">dedupe_mode</dd>
-                <dd id="DuckDBCacheConfig.table_prefix" class="variable">table_prefix</dd>
+                                <dd id="DuckDBCacheConfig.table_prefix" class="variable">table_prefix</dd>
                 <dd id="DuckDBCacheConfig.table_suffix" class="variable">table_suffix</dd>
 
             </div>
@@ -226,7 +225,7 @@ or another import method. (Relatively low priority, since for now it works fine 
                             <div id="PostgresCache.supports_merge_insert" class="classattr">
                                 <div class="attr variable">
             <span class="name">supports_merge_insert</span>        =
-<span class="default_value">True</span>
+<span class="default_value">False</span>
 
         
     </div>
@@ -404,8 +403,7 @@ or another import method. (Relatively low priority, since for now it works fine 
 
             </div>
             <div><dt>airbyte_lib.caches.base.SQLCacheConfigBase</dt>
-                                <dd id="PostgresCacheConfig.dedupe_mode" class="variable">dedupe_mode</dd>
-                <dd id="PostgresCacheConfig.schema_name" class="variable">schema_name</dd>
+                                <dd id="PostgresCacheConfig.schema_name" class="variable">schema_name</dd>
                 <dd id="PostgresCacheConfig.table_prefix" class="variable">table_prefix</dd>
                 <dd id="PostgresCacheConfig.table_suffix" class="variable">table_suffix</dd>
 
@@ -613,7 +611,7 @@ or another import method. (Relatively low priority, since for now it works fine 
     </div>
     <a class="headerlink" href="#SQLCacheBase.get_sql_table"></a>
     
-            <div class="docstring"><p>Return a temporary table name.</p>
+            <div class="docstring"><p>Return the main table object for the stream.</p>
 </div>
 
 

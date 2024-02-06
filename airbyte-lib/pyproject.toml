@@ -46,6 +46,7 @@ types-jsonschema = "^4.20.0.0"
 google-cloud-secret-manager = "^2.17.0"
 types-requests = "2.31.0.4"
 freezegun = "^1.4.0"
+airbyte-source-faker = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core"]

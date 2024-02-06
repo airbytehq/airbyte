@@ -5,8 +5,12 @@
 import json
 import logging
 import os
+import shutil
 import socket
+import subprocess
 import time
+
+import ulid
 from airbyte_lib.caches.snowflake import SnowflakeCacheConfig
 
 import docker
@@ -24,6 +28,8 @@ logger = logging.getLogger(__name__)
 PYTEST_POSTGRES_IMAGE = "postgres:13"
 PYTEST_POSTGRES_CONTAINER = "postgres_pytest_container"
 PYTEST_POSTGRES_PORT = 5432
+
+LOCAL_TEST_REGISTRY_URL = "./tests/integration_tests/fixtures/registry.json"
 
 
 def pytest_collection_modifyitems(items: list[Item]) -> None:
@@ -145,6 +151,10 @@ def pg_dsn():
 
 @pytest.fixture
 def new_pg_cache_config(pg_dsn):
+    """Fixture to return a fresh cache.
+
+    Each test that uses this fixture will get a unique table prefix.
+    """
     config = PostgresCacheConfig(
         host=pg_dsn,
         port=PYTEST_POSTGRES_PORT,
@@ -152,6 +162,9 @@ def new_pg_cache_config(pg_dsn):
         password="postgres",
         database="postgres",
         schema_name="public",
+
+        # TODO: Move this to schema name when we support it (breaks as of 2024-01-31):
+        table_prefix=f"test{str(ulid.ULID())[-6:]}_",
     )
     yield config
 
@@ -175,6 +188,56 @@ def snowflake_config():
         database=secret["database"],
         warehouse=secret["warehouse"],
         role=secret["role"],
+        schema_name=f"test{str(ulid.ULID()).lower()[-6:]}",
     )
 
     yield config
+
+
+@pytest.fixture(autouse=True)
+def source_test_registry(monkeypatch):
+    """
+    Set environment variables for the test source.
+
+    These are applied to this test file only.
+
+    This means the normal registry is not usable. Expect AirbyteConnectorNotRegisteredError for
+    other connectors.
+    """
+    env_vars = {
+        "AIRBYTE_LOCAL_REGISTRY": LOCAL_TEST_REGISTRY_URL,
+    }
+    for key, value in env_vars.items():
+        monkeypatch.setenv(key, value)
+
+
+@pytest.fixture(autouse=True)
+def do_not_track(monkeypatch):
+    """
+    Set environment variables for the test source.
+
+    These are applied to this test file only.
+    """
+    env_vars = {
+        "DO_NOT_TRACK": "true"
+    }
+    for key, value in env_vars.items():
+        monkeypatch.setenv(key, value)
+
+
+@pytest.fixture(scope="package")
+def source_test_installation():
+    """
+    Prepare test environment. This will pre-install the test source from the fixtures array and set
+    the environment variable to use the local json file as registry.
+    """
+    venv_dir = ".venv-source-test"
+    if os.path.exists(venv_dir):
+        shutil.rmtree(venv_dir)
+
+    subprocess.run(["python", "-m", "venv", venv_dir], check=True)
+    subprocess.run([f"{venv_dir}/bin/pip", "install", "-e", "./tests/integration_tests/fixtures/source-test"], check=True)
+
+    yield
+
+    shutil.rmtree(venv_dir)
