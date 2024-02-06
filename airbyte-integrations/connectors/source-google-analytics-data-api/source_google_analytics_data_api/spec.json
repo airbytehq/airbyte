@@ -2242,6 +2242,13 @@
         "description": "If false, each row with all metrics equal to 0 will not be returned. If true, these rows will be returned if they are not separately removed by a filter. More information is available in <a href=\"https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport#request-body\">the documentation</a>.",
         "default": false,
         "order": 6
+      },
+      "convert_conversions_purchase": {
+        "type": "boolean",
+        "title": "Convert `conversions:purchase` Metric to Float",
+        "description": "Determines whether the `conversions:purchase` metric, typically returned as an integer, should be converted to a float to prevent rounding. This option is useful if you're encountering issues with the API returning float values for the `conversions:purchase` field.",
+        "default": false,
+        "order": 7
       }
     }
   },
