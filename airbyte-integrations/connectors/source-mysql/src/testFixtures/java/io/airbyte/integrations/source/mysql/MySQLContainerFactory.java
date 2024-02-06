@@ -15,7 +15,9 @@ public class MySQLContainerFactory implements ContainerFactory<MySQLContainer<?>
 
   @Override
   public MySQLContainer<?> createNewContainer(DockerImageName imageName) {
-    return new MySQLContainer<>(imageName.asCompatibleSubstituteFor("mysql"));
+    var container = new MySQLContainer<>(imageName.asCompatibleSubstituteFor("mysql"));
+    container.addEnv("MYSQL_ROOT_HOST", "%%");
+    return container;
   }
 
   @Override
