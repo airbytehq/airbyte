@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.63.1"
+version = "0.63.2"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte-cdk-0.63.1.tar.gz", hash = "sha256:e1442e2219d8620ee1716c6830b17de51190cf81061381e42c7a362cc5a63501"},
-    {file = "airbyte_cdk-0.63.1-py3-none-any.whl", hash = "sha256:d699012515939c8bae82d7f83a8e6d66306ef3da6904def4c8a90e0d371e09e2"},
+    {file = "airbyte-cdk-0.63.2.tar.gz", hash = "sha256:b2edc160f560352a816f3a266b5dfa6dfe37868add1e3a0a2628eb19ba771ed1"},
+    {file = "airbyte_cdk-0.63.2-py3-none-any.whl", hash = "sha256:8698cb94514f35577123520954503cb2da407423af109dffd03644ba8b0093cd"},
 ]
 
 [package.dependencies]
@@ -140,17 +140,17 @@ lxml = ["lxml"]
 
 [[package]]
 name = "boto3"
-version = "1.34.43"
+version = "1.34.45"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">= 3.8"
 files = [
-    {file = "boto3-1.34.43-py3-none-any.whl", hash = "sha256:179cdcff2dee116ff0bbe10c21a374fff8ae0d9ea3842bd8dd2c9f69e8185d91"},
-    {file = "boto3-1.34.43.tar.gz", hash = "sha256:ed646f600b76939d54fa1ff868415793551a5a08b9de0a09696b46d116da7da5"},
+    {file = "boto3-1.34.45-py3-none-any.whl", hash = "sha256:5c96bed1269f77788780aa2005811dc3a37d4122f08b8e54063a1f4c1b9314a1"},
+    {file = "boto3-1.34.45.tar.gz", hash = "sha256:46432fd506708fec6caec4392d758c6f5b79a376dee67d3284fe8b6bfbafeaf4"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.43,<1.35.0"
+botocore = ">=1.34.45,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -159,13 +159,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.43"
+version = "1.34.45"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">= 3.8"
 files = [
-    {file = "botocore-1.34.43-py3-none-any.whl", hash = "sha256:ab7d8046a8c3326ecf3d9f9884e79aa77fed864416ed8af52b9e22ab055acf4e"},
-    {file = "botocore-1.34.43.tar.gz", hash = "sha256:00dea9fd602dc97420318d373079bdfcc8da34501aaa908ab98b477526bdefec"},
+    {file = "botocore-1.34.45-py3-none-any.whl", hash = "sha256:e17874ac708fef295d2ea16bb2570ea0512c920de9f25f796de0d8c778f06a02"},
+    {file = "botocore-1.34.45.tar.gz", hash = "sha256:bf4fe24dd00a6262a27573dea1690ea68eb20f939e7086effadf19aa1acb44d1"},
 ]
 
 [package.dependencies]
@@ -2070,13 +2070,13 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "requests-cache"
-version = "1.1.1"
+version = "1.2.0"
 description = "A persistent cache for python requests"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.8"
 files = [
-    {file = "requests_cache-1.1.1-py3-none-any.whl", hash = "sha256:c8420cf096f3aafde13c374979c21844752e2694ffd8710e6764685bb577ac90"},
-    {file = "requests_cache-1.1.1.tar.gz", hash = "sha256:764f93d3fa860be72125a568c2cc8eafb151cf29b4dc2515433a56ee657e1c60"},
+    {file = "requests_cache-1.2.0-py3-none-any.whl", hash = "sha256:490324301bf0cb924ff4e6324bd2613453e7e1f847353928b08adb0fdfb7f722"},
+    {file = "requests_cache-1.2.0.tar.gz", hash = "sha256:db1c709ca343cc1cd5b6c8b1a5387298eceed02306a6040760db538c885e3838"},
 ]
 
 [package.dependencies]
@@ -2088,15 +2088,15 @@ url-normalize = ">=1.4"
 urllib3 = ">=1.25.5"
 
 [package.extras]
-all = ["boto3 (>=1.15)", "botocore (>=1.18)", "itsdangerous (>=2.0)", "pymongo (>=3)", "pyyaml (>=5.4)", "redis (>=3)", "ujson (>=5.4)"]
+all = ["boto3 (>=1.15)", "botocore (>=1.18)", "itsdangerous (>=2.0)", "pymongo (>=3)", "pyyaml (>=6.0.1)", "redis (>=3)", "ujson (>=5.4)"]
 bson = ["bson (>=0.5)"]
-docs = ["furo (>=2023.3,<2024.0)", "linkify-it-py (>=2.0,<3.0)", "myst-parser (>=1.0,<2.0)", "sphinx (>=5.0.2,<6.0.0)", "sphinx-autodoc-typehints (>=1.19)", "sphinx-automodapi (>=0.14)", "sphinx-copybutton (>=0.5)", "sphinx-design (>=0.2)", "sphinx-notfound-page (>=0.8)", "sphinxcontrib-apidoc (>=0.3)", "sphinxext-opengraph (>=0.6)"]
+docs = ["furo (>=2023.3,<2024.0)", "linkify-it-py (>=2.0,<3.0)", "myst-parser (>=1.0,<2.0)", "sphinx (>=5.0.2,<6.0.0)", "sphinx-autodoc-typehints (>=1.19)", "sphinx-automodapi (>=0.14)", "sphinx-copybutton (>=0.5)", "sphinx-design (>=0.2)", "sphinx-notfound-page (>=0.8)", "sphinxcontrib-apidoc (>=0.3)", "sphinxext-opengraph (>=0.9)"]
 dynamodb = ["boto3 (>=1.15)", "botocore (>=1.18)"]
 json = ["ujson (>=5.4)"]
 mongodb = ["pymongo (>=3)"]
 redis = ["redis (>=3)"]
 security = ["itsdangerous (>=2.0)"]
-yaml = ["pyyaml (>=5.4)"]
+yaml = ["pyyaml (>=6.0.1)"]
 
 [[package]]
 name = "requests-mock"
@@ -2550,13 +2550,13 @@ files = [
 
 [[package]]
 name = "xlsxwriter"
-version = "3.1.9"
+version = "3.2.0"
 description = "A Python module for creating Excel XLSX files."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "XlsxWriter-3.1.9-py3-none-any.whl", hash = "sha256:b61c1a0c786f82644936c0936ec96ee96cd3afb9440094232f7faef9b38689f0"},
-    {file = "XlsxWriter-3.1.9.tar.gz", hash = "sha256:de810bf328c6a4550f4ffd6b0b34972aeb7ffcf40f3d285a0413734f9b63a929"},
+    {file = "XlsxWriter-3.2.0-py3-none-any.whl", hash = "sha256:ecfd5405b3e0e228219bcaf24c2ca0915e012ca9464a14048021d21a995d490e"},
+    {file = "XlsxWriter-3.2.0.tar.gz", hash = "sha256:9977d0c661a72866a61f9f7a809e25ebbb0fb7036baa3b9fe74afcfca6b3cb8c"},
 ]
 
 [[package]]
