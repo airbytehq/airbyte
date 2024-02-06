@@ -27,6 +27,12 @@
     "properties_hs_device_type": {
       "type": ["null", "string"]
     },
+    "properties_hs_title": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_form_correlation_id": {
+      "type": ["null", "string"]
+    },
     "properties_hs_element_class": {
       "type": ["null", "string"]
     },

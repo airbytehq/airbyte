@@ -231,6 +231,30 @@
           "type": ["null", "array"],
           "items": {}
         },
+        "ownerIdsBcc": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsCc": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsFrom": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsTo": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "pendingInlineImageIds": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "validationSkipped": {
+          "type": ["null", "array"],
+          "items": {}
+        },
         "from": {
           "type": ["null", "object"],
           "properties": {
@@ -575,6 +599,36 @@
           }
         }
       }
+    },
+    "metadata_bounceErrorDetail": {
+      "type": ["null", "object"]
+    },
+    "metadata_emailSendEventId": {
+      "type": ["null", "object"]
+    },
+    "metadata_ownerIdsBcc": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_ownerIdsCc": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_ownerIdsFrom": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_ownerIdsTo": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_pendingInlineImageIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_validationSkipped": {
+      "type": ["null", "array"],
+      "items": {}
     },
     "metadata_bcc": {
       "type": ["null", "array"],
