@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Getting Support
 
 Hold up! Have you looked at [our docs](https://docs.airbyte.com/) yet? We recommend searching the wealth of knowledge in our documentation as many times the answer you are looking for is there!
@@ -17,13 +21,6 @@ If you require personalized support, reach out to our sales team to inquire abou
 ### Airbyte Forum
 
 We are driving our community support from our [forum](https://github.com/airbytehq/airbyte/discussions) on GitHub.
-
-### Office Hour
-
-Airbyte provides a [Daily Office Hour](https://airbyte.com/daily-office-hour) to discuss issues. 
-It is a 45 minute meeting, the first 20 minutes are reserved to a weekly topic presentation about Airbyte concepts and the others 25 minutes are for general questions. The schedule is:
-* Monday, Wednesday and Fridays: 1 PM PST/PDT 
-* Tuesday and Thursday: 4 PM CEST
 
 
 ## Airbyte Cloud Support

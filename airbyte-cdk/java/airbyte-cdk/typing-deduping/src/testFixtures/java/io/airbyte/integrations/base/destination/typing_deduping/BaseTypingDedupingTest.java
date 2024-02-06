@@ -35,6 +35,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -118,7 +121,7 @@ public abstract class BaseTypingDedupingTest {
    * @return
    * @throws Exception
    */
-  protected boolean checkTableExists(String streamNamespace, String streamName) {
+  protected boolean checkTableExists(final String streamNamespace, final String streamName) {
     // Implementation is specific to destination's tests.
     return true;
   }
@@ -185,7 +188,7 @@ public abstract class BaseTypingDedupingTest {
    */
   protected synchronized String getUniqueSuffix() {
     if (randomSuffix == null) {
-      randomSuffix = "_" + RandomStringUtils.randomAlphabetic(5).toLowerCase();
+      randomSuffix = "_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
     }
     return randomSuffix;
   }
@@ -596,20 +599,21 @@ public abstract class BaseTypingDedupingTest {
     // Start two concurrent syncs
     final AirbyteDestination sync1 = startSync(catalog1);
     final AirbyteDestination sync2 = startSync(catalog2);
+    CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outFuture1 = destinationOutputFuture(sync1);
+    CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outFuture2 = destinationOutputFuture(sync2);
+
     // Write some messages to both syncs. Write a lot of data to sync 2 to try and force a flush.
     pushMessages(messages1, sync1);
     for (int i = 0; i < 100_000; i++) {
       pushMessages(messages2, sync2);
     }
-    // This will dump sync1's entire stdout to our stdout
-    endSync(sync1);
+    endSync(sync1, outFuture1);
     // Write some more messages to the second sync. It should not be affected by the first sync's
     // shutdown.
     for (int i = 0; i < 100_000; i++) {
       pushMessages(messages2, sync2);
     }
-    // And this will dump sync2's entire stdout to our stdout
-    endSync(sync2);
+    endSync(sync2, outFuture2);
 
     // For simplicity, don't verify the raw table. Assume that if the final table is correct, then
     // the raw data is correct. This is generally a safe assumption.
@@ -705,7 +709,7 @@ public abstract class BaseTypingDedupingTest {
 
   protected void verifySyncResult(final List<JsonNode> expectedRawRecords,
                                   final List<JsonNode> expectedFinalRecords,
-                                  boolean disableFinalTableComparison)
+                                  final boolean disableFinalTableComparison)
       throws Exception {
     verifySyncResult(expectedRawRecords, expectedFinalRecords, streamNamespace, streamName, disableFinalTableComparison);
   }
@@ -714,7 +718,7 @@ public abstract class BaseTypingDedupingTest {
                                 final List<JsonNode> expectedFinalRecords,
                                 final String streamNamespace,
                                 final String streamName,
-                                boolean disableFinalTableComparison)
+                                final boolean disableFinalTableComparison)
       throws Exception {
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
     if (disableFinalTableComparison) {
@@ -764,11 +768,29 @@ public abstract class BaseTypingDedupingTest {
   protected void runSync(final ConfiguredAirbyteCatalog catalog,
                          final List<AirbyteMessage> messages,
                          final String imageName,
-                         Function<JsonNode, JsonNode> configTransformer)
+                         final Function<JsonNode, JsonNode> configTransformer)
       throws Exception {
     final AirbyteDestination destination = startSync(catalog, imageName, configTransformer);
+    final CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outputFuture = destinationOutputFuture(destination);
     pushMessages(messages, destination);
-    endSync(destination);
+    endSync(destination, outputFuture);
+  }
+
+  // In the background, read messages from the destination until it terminates. We need to clear
+  // stdout in real time, to prevent the buffer from filling up and blocking the destination.
+  private CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> destinationOutputFuture(final AirbyteDestination destination) {
+    final CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> outputFuture = new CompletableFuture<>();
+    Executors.newSingleThreadExecutor().submit((Callable<Void>) () -> {
+      final List<io.airbyte.protocol.models.AirbyteMessage> destinationMessages = new ArrayList<>();
+      while (!destination.isFinished()) {
+        // attemptRead isn't threadsafe, we read stdout fully here.
+        // i.e. we shouldn't call attemptRead anywhere else.
+        destination.attemptRead().ifPresent(destinationMessages::add);
+      }
+      outputFuture.complete(destinationMessages);
+      return null;
+    });
+    return outputFuture;
   }
 
   protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog) throws Exception {
@@ -790,7 +812,7 @@ public abstract class BaseTypingDedupingTest {
    */
   protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog,
                                          final String imageName,
-                                         Function<JsonNode, JsonNode> configTransformer)
+                                         final Function<JsonNode, JsonNode> configTransformer)
       throws Exception {
     synchronized (this) {
       catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
@@ -833,14 +855,13 @@ public abstract class BaseTypingDedupingTest {
         message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
   }
 
-  // TODO Eventually we'll want to somehow extract the state messages while a sync is running, to
-  // verify checkpointing.
-  // That's going to require some nontrivial changes to how attemptRead() works.
-  protected static void endSync(final AirbyteDestination destination) throws Exception {
+  protected void endSync(final AirbyteDestination destination,
+                         final CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> destinationOutputFuture)
+      throws Exception {
     destination.notifyEndOfInput();
-    while (!destination.isFinished()) {
-      destination.attemptRead();
-    }
+    // TODO Eventually we'll want to somehow extract the state messages while a sync is running, to
+    // verify checkpointing.
+    destinationOutputFuture.join();
     destination.close();
   }
 

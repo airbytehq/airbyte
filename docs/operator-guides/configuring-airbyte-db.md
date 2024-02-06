@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Configuring the Airbyte Database
 
 Airbyte uses different objects to store internal state and metadata. This data is stored and manipulated by the various Airbyte components, but you have the ability to manage the deployment of this database in the following two ways:
@@ -20,6 +24,10 @@ Note that no actual data from the source \(or destination\) connectors ever tran
 If you need to interact with it, for example, to make back-ups or perform some clean-up maintenances, you can also gain access to the Export and Import functionalities of this database via the API or the UI \(in the Admin page, in the Configuration Tab\).
 
 ## Connecting to an External Postgres database
+
+:::info
+Currently, Airbyte requires connection to a Postgres 13 instance.
+:::
 
 Let's walk through what is required to use a Postgres instance that is not managed by Airbyte. First, for the sake of the tutorial, we will run a new instance of Postgres in its own docker container with the command below. If you already have Postgres running elsewhere, you can skip this step and use the credentials for that in future steps.
 

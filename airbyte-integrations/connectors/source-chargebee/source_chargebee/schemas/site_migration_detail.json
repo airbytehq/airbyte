@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Site Migration Detail",
+  "type": "object",
+  "properties": {
+    "entity_id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "other_site_name": {
+      "type": ["string", "null"],
+      "minLength": 4,
+      "maxLength": 100
+    },
+    "entity_id_at_other_site": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "migrated_at": {
+      "type": ["integer", "null"]
+    },
+    "entity_type": {
+      "type": ["string", "null"],
+      "enum": [
+        "customer",
+        "subscription",
+        "invoice",
+        "credit_note",
+        "transaction",
+        "order"
+      ]
+    },
+    "status": {
+      "type": ["string", "null"],
+      "enum": ["moved_in", "moved_out", "moving_out"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    }
+  }
+}

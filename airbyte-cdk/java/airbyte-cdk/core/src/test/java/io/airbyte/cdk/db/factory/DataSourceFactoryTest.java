@@ -12,12 +12,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.zaxxer.hikari.HikariDataSource;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.MySQLContainer;
 
 /**
@@ -55,7 +55,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         password,
         driverClassName,
         jdbcUrl,
-        connectionProperties);
+        connectionProperties,
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(61000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -70,7 +71,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         password,
         driverClassName,
         jdbcUrl,
-        connectionProperties);
+        connectionProperties,
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(30000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -87,23 +89,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
           mySQLContainer.getPassword(),
           mySQLContainer.getDriverClassName(),
           mySQLContainer.getJdbcUrl(),
-          connectionProperties);
-      assertNotNull(dataSource);
-      assertEquals(HikariDataSource.class, dataSource.getClass());
-      assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
-    }
-  }
-
-  @Test
-  void testCreatingMsSQLServerDataSourceWithConnectionTimeoutSetBelowDefault() {
-    try (var mssqlServerContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense()) {
-      mssqlServerContainer.start();
-      final DataSource dataSource = DataSourceFactory.create(
-          mssqlServerContainer.getUsername(),
-          mssqlServerContainer.getPassword(),
-          mssqlServerContainer.getDriverClassName(),
-          mssqlServerContainer.getJdbcUrl(),
-          Map.of("loginTimeout", "5"));
+          connectionProperties,
+          JdbcConnector.getConnectionTimeout(connectionProperties, mySQLContainer.getDriverClassName()));
       assertNotNull(dataSource);
       assertEquals(HikariDataSource.class, dataSource.getClass());
       assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -119,7 +106,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         password,
         driverClassName,
         jdbcUrl,
-        connectionProperties);
+        connectionProperties,
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(Integer.MAX_VALUE, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -133,7 +121,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
         password,
         driverClassName,
         jdbcUrl,
-        connectionProperties);
+        connectionProperties,
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(10000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -149,7 +138,8 @@ class DataSourceFactoryTest extends CommonFactoryTest {
           mySQLContainer.getPassword(),
           mySQLContainer.getDriverClassName(),
           mySQLContainer.getJdbcUrl(),
-          connectionProperties);
+          connectionProperties,
+          JdbcConnector.getConnectionTimeout(connectionProperties, mySQLContainer.getDriverClassName()));
       assertNotNull(dataSource);
       assertEquals(HikariDataSource.class, dataSource.getClass());
       assertEquals(60000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
@@ -169,7 +159,13 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   void testCreatingADataSourceWithJdbcUrlAndConnectionProperties() {
     final Map<String, String> connectionProperties = Map.of("foo", "bar");
 
-    final DataSource dataSource = DataSourceFactory.create(username, password, driverClassName, jdbcUrl, connectionProperties);
+    final DataSource dataSource = DataSourceFactory.create(
+        username,
+        password,
+        driverClassName,
+        jdbcUrl,
+        connectionProperties,
+        JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName));
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(10, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());

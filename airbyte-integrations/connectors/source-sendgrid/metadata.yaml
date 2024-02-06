@@ -17,6 +17,10 @@ data:
   icon: sendgrid.svg
   license: MIT
   name: Sendgrid
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sendgrid
   registries:
     cloud:
       enabled: true

@@ -8,6 +8,10 @@ data:
   icon: cart.svg
   license: MIT
   name: Cart.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-cart
   registries:
     cloud:
       enabled: true

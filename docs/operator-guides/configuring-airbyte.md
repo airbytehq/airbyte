@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Configuring Airbyte
 
 This section covers how to configure Airbyte, and the various configuration Airbyte accepts.

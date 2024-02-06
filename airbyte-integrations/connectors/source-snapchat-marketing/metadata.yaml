@@ -12,6 +12,10 @@ data:
   icon: snapchat.svg
   license: MIT
   name: Snapchat Marketing
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-snapchat-marketing
   registries:
     cloud:
       enabled: true

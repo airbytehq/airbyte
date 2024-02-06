@@ -128,7 +128,6 @@ public class S3ConsumerFactory {
         writeConfig.addStoredFile(storageOperations.uploadRecordsToBucket(
             writer,
             writeConfig.getNamespace(),
-            writeConfig.getStreamName(),
             writeConfig.getFullOutputPath()));
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and upload buffer to storage:", e);
@@ -139,7 +138,7 @@ public class S3ConsumerFactory {
 
   private OnCloseFunction onCloseFunction(final BlobStorageOperations storageOperations,
                                           final List<WriteConfig> writeConfigs) {
-    return (hasFailed) -> {
+    return (hasFailed, streamSyncSummaries) -> {
       if (hasFailed) {
         LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
         for (final WriteConfig writeConfig : writeConfigs) {

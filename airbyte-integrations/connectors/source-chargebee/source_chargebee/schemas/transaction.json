@@ -132,6 +132,28 @@
       "type": ["string", "null"],
       "max-length": 500
     },
+    "base_currency_code": {
+      "type": ["string", "null"],
+      "maxLength": 3
+    },
+    "business_entity_id": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "error_text": {
+      "type": ["string", "null"],
+      "maxLength": 65000
+    },
+    "payment_method_details": {
+      "type": ["string", "null"]
+    },
+    "reference_number": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
     "linked_invoices": {
       "type": ["array", "null"],
       "items": {
