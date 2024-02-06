@@ -29,6 +29,7 @@ from sqlalchemy.sql.elements import TextClause
 from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
+from airbyte_lib._util.text_util import lower_case_set
 from airbyte_lib.caches._catalog_manager import CatalogManager
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.datasets._sql import CachedDataset
@@ -407,12 +408,19 @@ class SQLCacheBase(RecordProcessor):
         stream_column_names: list[str] = json_schema["properties"].keys()
         table_column_names: list[str] = self.get_sql_table(stream_name).columns.keys()
 
-        missing_columns: set[str] = set(stream_column_names) - set(table_column_names)
+        lower_case_table_column_names = lower_case_set(table_column_names)
+        missing_columns = [
+            stream_col
+            for stream_col in stream_column_names
+            if stream_col.lower() not in lower_case_table_column_names
+        ]
         if missing_columns:
             if raise_on_error:
                 raise exc.AirbyteLibCacheTableValidationError(
                     violation="Cache table is missing expected columns.",
                     context={
+                        "stream_column_names": stream_column_names,
+                        "table_column_names": table_column_names,
                         "missing_columns": missing_columns,
                     },
                 )
@@ -870,7 +878,7 @@ class SQLCacheBase(RecordProcessor):
 
         # Define a condition that checks for records in temp_table that do not have a corresponding
         # record in final_table
-        where_not_exists_clause = final_table.c.id == null()
+        where_not_exists_clause = getattr(final_table.c, pk_columns[0]) == null()
 
         # Select records from temp_table that are not in final_table
         select_new_records_stmt = (
