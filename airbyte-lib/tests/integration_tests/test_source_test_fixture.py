@@ -42,7 +42,7 @@ def autouse_source_test_registry(source_test_registry):
 
 @pytest.fixture
 def source_test(source_test_env) -> ab.Source:
-    return ab.get_connector("source-test", config={"apiKey": "test"})
+    return ab.get_source("source-test", config={"apiKey": "test"})
 
 
 @pytest.fixture
