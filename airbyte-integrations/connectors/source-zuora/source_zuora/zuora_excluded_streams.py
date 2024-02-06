@@ -16,5 +16,7 @@ ZUORA_EXCLUDED_STREAMS: List = [
     "archived_guidedusage",
     "archived_prepaidbalancetransaction",
     "archived_processedusage",
-    "archived_usage"
+    "archived_usage",
+    "schemamigrations",
+    "arinternalmetadata"
 ]
