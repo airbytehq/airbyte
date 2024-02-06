@@ -247,7 +247,6 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
 
     def refresh_access_token(self) -> Tuple[str, str, str]:
         response_json = self._get_refresh_access_token_response()
-        add_to_secrets([response_json[self.get_refresh_token_name()]])
         return (
             response_json[self.get_access_token_name()],
             response_json[self.get_expires_in_name()],
