@@ -428,6 +428,15 @@ If the current version of the connector is already published to the registry, th
 
 On a pre-release, the connector will be published as a `.dev<N>` version.
 
+The `remoteRegistries.pypi.packageName` field holds the name of the used package name. It should be set to `airbyte-source-<package name>`. Certified Python connectors are required to have PyPI publishing enabled.
+
+An example `remoteRegistries` entry in a connector `metadata.yaml` looks like this:
+```yaml
+remoteRegistries:
+  pypi:
+    enabled: true
+    packageName: airbyte-source-pokeapi
+```
 
 ### <a id="connectors-bump_version"></a>`connectors bump_version` command
 
@@ -612,6 +621,7 @@ E.G.: running `pytest` on a specific test folder:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 3.10.3  | [#34836](https://github.com/airbytehq/airbyte/pull/34836)  | Add check for python registry publishing enabled for certified python sources.                                             |
 | 3.10.2  | [#34044](https://github.com/airbytehq/airbyte/pull/34044)  | Add pypi validation testing.                                                                                               |
 | 3.10.1  | [#34756](https://github.com/airbytehq/airbyte/pull/34756)  | Enable connectors tests in draft PRs.                                                                                      |
 | 3.10.0  | [#34606](https://github.com/airbytehq/airbyte/pull/34606)  | Allow configuration of separate check URL to check whether package exists already.                                         |
