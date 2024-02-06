@@ -13,6 +13,7 @@ from rich import print
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
+    AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
@@ -46,7 +47,7 @@ if TYPE_CHECKING:
 
 
 @contextmanager
-def as_temp_files(files_contents: list[dict]) -> Generator[list[str], Any, None]:
+def as_temp_files(files_contents: list[Any]) -> Generator[list[str], Any, None]:
     """Write the given contents to temporary files and yield the file paths as strings."""
     temp_files: list[Any] = []
     try:
@@ -139,6 +140,10 @@ class Source:
             self.validate_config(config)
 
         self._config_dict = config
+
+    def get_config(self) -> dict[str, Any]:
+        """Get the config for the connector."""
+        return self._config
 
     @property
     def _config(self) -> dict[str, Any]:
@@ -252,7 +257,7 @@ class Source:
                 # TODO: Set sync modes and primary key to a sensible adaptive default
                 ConfiguredAirbyteStream(
                     stream=stream,
-                    sync_mode=SyncMode.full_refresh,
+                    sync_mode=SyncMode.incremental,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                     primary_key=stream.source_defined_primary_key,
                 )
@@ -309,7 +314,6 @@ class Source:
                 self._read_with_catalog(
                     streaming_cache_info,
                     configured_catalog,
-                    force_full_refresh=True,  # Always full refresh when skipping the cache
                 ),
             )
         )
@@ -360,8 +364,7 @@ class Source:
     def _read(
         self,
         cache_info: CacheTelemetryInfo,
-        *,
-        force_full_refresh: bool,
+        state: list[AirbyteStateMessage] | None = None,
     ) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
@@ -379,15 +382,14 @@ class Source:
         yield from self._read_with_catalog(
             cache_info,
             catalog=self.configured_catalog,
-            force_full_refresh=force_full_refresh,
+            state=state,
         )
 
     def _read_with_catalog(
         self,
         cache_info: CacheTelemetryInfo,
         catalog: ConfiguredAirbyteCatalog,
-        *,
-        force_full_refresh: bool,
+        state: list[AirbyteStateMessage] | None = None,
     ) -> Iterator[AirbyteMessage]:
         """Call read on the connector.
 
@@ -397,21 +399,27 @@ class Source:
         * Listen to the messages and return the AirbyteRecordMessages that come along.
         * Send out telemetry on the performed sync (with information about which source was used and
           the type of the cache)
-
-        TODO: When we add support for incremental syncs, we should only send `--state <state_file>`
-              if force_full_refresh is False.
         """
-        _ = force_full_refresh  # TODO: Use this decide whether to send `--state <state_file>`
         source_tracking_information = self.executor.get_telemetry_info()
         send_telemetry(source_tracking_information, cache_info, SyncState.STARTED)
         try:
-            with as_temp_files([self._config, catalog.json()]) as [
+            with as_temp_files(
+                [self._config, catalog.json(), json.dumps(state) if state else "[]"]
+            ) as [
                 config_file,
                 catalog_file,
+                state_file,
             ]:
                 yield from self._execute(
-                    # TODO: Add support for incremental syncs by sending `--state <state_file>`
-                    ["read", "--config", config_file, "--catalog", catalog_file],
+                    [
+                        "read",
+                        "--config",
+                        config_file,
+                        "--catalog",
+                        catalog_file,
+                        "--state",
+                        state_file,
+                    ],
                 )
         except Exception:
             send_telemetry(
@@ -520,11 +528,12 @@ class Source:
             incoming_source_catalog=self.configured_catalog,
             stream_names=set(self.get_selected_streams()),
         )
+        state = cache.get_state() if not force_full_refresh else None
         cache.process_airbyte_messages(
             self._tally_records(
                 self._read(
                     cache.get_telemetry_info(),
-                    force_full_refresh=force_full_refresh,
+                    state=state,
                 ),
             ),
             write_strategy=write_strategy,

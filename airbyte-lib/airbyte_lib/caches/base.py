@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.base import Executable
 
     from airbyte_protocol.models import (
+        AirbyteStateMessage,
         ConfiguredAirbyteCatalog,
     )
 
@@ -561,6 +562,36 @@ class SQLCacheBase(RecordProcessor):
             # Return the batch handles as measure of work completed.
             return batches_to_finalize
 
+    @overrides
+    def _finalize_state_messages(
+        self,
+        stream_name: str,
+        state_messages: list[AirbyteStateMessage],
+    ) -> None:
+        """Handle state messages by passing them to the catalog manager."""
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+        if state_messages and self._source_name:
+            self._catalog_manager.save_state(
+                source_name=self._source_name,
+                stream_name=stream_name,
+                state=state_messages[-1],
+            )
+
+    def get_state(self) -> list[dict]:
+        """Return the current state of the source."""
+        if not self._source_name:
+            return []
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+        return (
+            self._catalog_manager.get_state(self._source_name, list(self._streams_with_data)) or []
+        )
+
     def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult:
         """Execute the given SQL statement."""
         if isinstance(sql, str):
@@ -881,6 +912,7 @@ class SQLCacheBase(RecordProcessor):
 
         This method is called by the source when it is initialized.
         """
+        self._source_name = source_name
         self._ensure_schema_exists()
         super().register_source(
             source_name,
