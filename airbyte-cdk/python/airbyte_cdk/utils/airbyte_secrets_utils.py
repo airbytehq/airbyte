@@ -61,6 +61,11 @@ def update_secrets(secrets: List[str]):
     global __SECRETS_FROM_CONFIG
     __SECRETS_FROM_CONFIG = secrets
 
+def add_to_secrets(secrets: List[str]):
+    """Add to the list of secrets to be replaced"""
+    global __SECRETS_FROM_CONFIG
+    __SECRETS_FROM_CONFIG.extend(secrets)
+
 
 def filter_secrets(string: str) -> str:
     """Filter secrets from a string by replacing them with ****"""

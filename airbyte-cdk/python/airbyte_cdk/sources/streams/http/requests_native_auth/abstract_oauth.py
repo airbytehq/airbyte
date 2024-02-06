@@ -3,6 +3,7 @@
 #
 
 import logging
+import secrets
 from abc import abstractmethod
 from json import JSONDecodeError
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.utils import AirbyteTracedException
 from requests.auth import AuthBase
 
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from ..exceptions import DefaultBackoffException
 
 logger = logging.getLogger("airbyte")
@@ -115,9 +117,12 @@ class AbstractOauth2Authenticator(AuthBase):
     def _get_refresh_access_token_response(self) -> Any:
         try:
             response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+            response_json = response.json()
+            access_key = response_json[self.get_access_token_name()]
+            add_to_secrets([access_key])
             self._log_response(response)
             response.raise_for_status()
-            return response.json()
+            return response_json
         except requests.exceptions.RequestException as e:
             if e.response is not None:
                 if e.response.status_code == 429 or e.response.status_code >= 500:
