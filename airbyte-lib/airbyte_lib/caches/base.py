@@ -574,7 +574,7 @@ class SQLCacheBase(RecordProcessor):
                 message="Catalog manager should exist but does not.",
             )
         if state_messages and self._source_name:
-            self._catalog_manager.record_state(
+            self._catalog_manager.save_state(
                 source_name=self._source_name,
                 stream_name=stream_name,
                 state=state_messages[-1],

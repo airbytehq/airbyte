@@ -90,7 +90,7 @@ class CatalogManager:
         engine = self._engine
         Base.metadata.create_all(engine)
 
-    def record_state(
+    def save_state(
         self,
         source_name: str,
         state: AirbyteStateMessage,
