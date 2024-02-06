@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MongoDbSource extends BaseConnector implements Source {
-
+  // some change
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
   private final MongoDbCdcInitializer cdcInitializer;
