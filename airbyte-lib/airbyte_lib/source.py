@@ -400,9 +400,6 @@ class Source:
         * Listen to the messages and return the AirbyteRecordMessages that come along.
         * Send out telemetry on the performed sync (with information about which source was used and
           the type of the cache)
-
-        TODO: When we add support for incremental syncs, we should only send `--state <state_file>`
-              if force_full_refresh is False.
         """
         source_tracking_information = self.executor.get_telemetry_info()
         send_telemetry(source_tracking_information, cache_info, SyncState.STARTED)

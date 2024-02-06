@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import datetime
 import math
+import sys
 import time
 from contextlib import suppress
 from typing import cast
@@ -13,6 +14,8 @@ from rich.errors import LiveError
 from rich.live import Live as RichLive
 from rich.markdown import Markdown as RichMarkdown
 
+
+IS_REPL = hasattr(sys, "ps1")  # True if we're in a Python REPL, in which case we can use Rich.
 
 try:
     IS_NOTEBOOK = True
@@ -93,7 +96,7 @@ class ReadProgress:
         self.last_update_time: float | None = None
 
         self.rich_view: RichLive | None = None
-        if not IS_NOTEBOOK:
+        if not IS_NOTEBOOK and not IS_REPL:
             # If we're in a terminal, use a Rich view to display the progress updates.
             self.rich_view = RichLive()
             try:

@@ -8,10 +8,9 @@ and available on PATH for the poetry-managed venv.
 from __future__ import annotations
 from collections.abc import Generator
 import os
-from pathlib import Path
 import sys
 import shutil
-from unittest.mock import _patch_dict
+from pathlib import Path
 
 import pytest
 
@@ -242,19 +241,47 @@ def test_incremental_sync(
     assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result2.cache.streams["purchases"])) == FAKER_SCALE_A
 
+
 def test_incremental_state_cache_persistence(
     source_faker_seed_a: ab.Source,
+    source_faker_seed_b: ab.Source,
 ) -> None:
     config_a = source_faker_seed_a.get_config()
+    config_b = source_faker_seed_b.get_config()
     config_a["always_updated"] = False
+    config_b["always_updated"] = False
     source_faker_seed_a.set_config(config_a)
+    source_faker_seed_b.set_config(config_b)
     cache_name = str(ulid.ULID())
     cache = ab.new_local_cache(cache_name)
     source_faker_seed_a.read(cache)
     second_cache = ab.new_local_cache(cache_name)
     # The state should be persisted across cache instances.
-    result2 = source_faker_seed_a.read(second_cache)
+    result2 = source_faker_seed_b.read(second_cache)
 
     assert not second_cache.get_state() == [] 
     assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result2.cache.streams["purchases"])) == FAKER_SCALE_A
+
+
+def test_incremental_state_prefix_isolation(
+    source_faker_seed_a: ab.Source,
+    source_faker_seed_b: ab.Source,
+) -> None:
+    """
+    Test that state in the cache correctly isolates streams when different table prefixes are used
+    """
+    config_a = source_faker_seed_a.get_config()
+    config_a["always_updated"] = False
+    source_faker_seed_a.set_config(config_a)
+    cache_name = str(ulid.ULID())
+    db_path = Path(f"./.cache/{cache_name}.duckdb")
+    cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="prefix_"))
+    different_prefix_cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="different_prefix_"))
+
+    source_faker_seed_a.read(cache)
+
+    result2 = source_faker_seed_b.read(different_prefix_cache)
+
+    assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
+    assert len(list(result2.cache.streams["purchases"])) == FAKER_SCALE_B
