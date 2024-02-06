@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.61.0
+File-based CDK: log warning on no sync mode instead of raising exception
+
 ## 0.60.2
 Improve error messages for concurrent CDK
 
