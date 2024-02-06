@@ -13,6 +13,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     BUILD_TAR = "build_tar"
     BUILD = "build"
     CHECK_BASE_IMAGE = "check_base_image"
+    CHECK_PYTHON_REGISTRY_PUBLISH_CONFIGURATION = "check_python_registry_publish_configuration"
     INTEGRATION = "integration"
     AIRBYTE_LIB_VALIDATION = "airbyte_lib_validation"
     METADATA_VALIDATION = "metadata_validation"
