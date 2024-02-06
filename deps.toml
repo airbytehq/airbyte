@@ -1,7 +1,7 @@
 [versions]
 airbyte-protocol = "0.5.0"
 commons_io = "2.7"
-testcontainers = "1.19.0"
+testcontainers = "1.19.4"
 datadog-version = "0.111.0"
 fasterxml_version = "2.15.2"
 flyway = "7.14.0"
