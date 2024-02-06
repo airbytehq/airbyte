@@ -881,7 +881,7 @@ class SQLCacheBase(RecordProcessor):
 
         # Define a condition that checks for records in temp_table that do not have a corresponding
         # record in final_table
-        where_not_exists_clause = final_table.c.id == null()
+        where_not_exists_clause = getattr(final_table.c, pk_columns[0]) == null()
 
         # Select records from temp_table that are not in final_table
         select_new_records_stmt = (
