@@ -19,7 +19,7 @@ public class MySQLTestDatabase extends
 
   public static enum BaseImage {
 
-    MYSQL_8("mysql:8.0"),
+    MYSQL_8("mysql:8.0.36"),
     ;
 
     private final String reference;
