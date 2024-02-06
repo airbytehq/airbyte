@@ -49,6 +49,7 @@ class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
                 password=self.password,
                 database=self.database,
                 warehouse=self.warehouse,
+                schema=self.schema_name,
                 role=self.role,
             )
         )
