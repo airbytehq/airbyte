@@ -9,7 +9,6 @@ import pendulum
 from airbyte_cdk.config_observation import create_connector_config_control_message, emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
-from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 
 
 class Oauth2Authenticator(AbstractOauth2Authenticator):
