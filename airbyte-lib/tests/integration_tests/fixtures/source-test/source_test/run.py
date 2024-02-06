@@ -124,6 +124,7 @@ def run():
         args = parse_args()
         catalog = get_json_file(args["--catalog"])
         config = get_json_file(args["--config"])
+        print(json.dumps({"type": "LOG", "log": {"level": "INFO", "message": "Starting sync"}}))
         for stream in catalog["streams"]:
             if stream["stream"]["name"] == "stream1":
                 print(json.dumps(sample_record1_stream1))

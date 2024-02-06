@@ -200,7 +200,7 @@ class ReadProgress:
         # We want to update the display more often when the count is low, and less
         # often when the count is high.
         updated_period = min(
-            MAX_UPDATE_FREQUENCY, 10 ** math.floor(math.log10(self.total_records_read) / 4)
+            MAX_UPDATE_FREQUENCY, 10 ** math.floor(math.log10(max(self.total_records_read, 1)) / 4)
         )
         if self.total_records_read % updated_period != 0:
             return

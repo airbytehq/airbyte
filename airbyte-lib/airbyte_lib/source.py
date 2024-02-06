@@ -13,7 +13,6 @@ from rich import print
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
-    AirbyteRecordMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
@@ -363,7 +362,7 @@ class Source:
         cache_info: CacheTelemetryInfo,
         *,
         force_full_refresh: bool,
-    ) -> Iterable[AirbyteRecordMessage]:
+    ) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
 
@@ -372,7 +371,7 @@ class Source:
         * Generate a configured catalog that syncs all streams in full_refresh mode
         * Write the configured catalog and the config to a temporary file
         * execute the connector with read --config <config_file> --catalog <catalog_file>
-        * Listen to the messages and return the AirbyteRecordMessages that come along.
+        * Listen to the messages and return the AirbyteMessage that come along.
         """
         # Ensure discovered and configured catalog properties are cached before we start reading
         _ = self.discovered_catalog
@@ -462,14 +461,15 @@ class Source:
 
     def _tally_records(
         self,
-        messages: Iterable[AirbyteRecordMessage],
-    ) -> Generator[AirbyteRecordMessage, Any, None]:
+        messages: Iterable[AirbyteMessage],
+    ) -> Generator[AirbyteMessage, Any, None]:
         """This method simply tallies the number of records processed and yields the messages."""
         self._processed_records = 0  # Reset the counter before we start
         progress.reset(len(self._selected_stream_names or []))
 
         for message in messages:
-            self._processed_records += 1
+            if message.type is Type.RECORD:
+                self._processed_records += 1
             yield message
             progress.log_records_read(self._processed_records)
 
