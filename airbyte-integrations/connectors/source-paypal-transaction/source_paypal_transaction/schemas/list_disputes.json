@@ -6,6 +6,7 @@
       "dispute_id": { "type": ["null", "string"] },
       "create_time": { "type": "string", "format": "date-time" },
       "update_time": { "type": "string", "format": "date-time" },
+      "updated_time_cut": { "type": "string", "format": "date-time" },
       "status": { "type": ["null", "string"] },
       "reason": { "type": ["null", "string"] },
       "dispute_state": { "type": ["null", "string"] },
@@ -17,11 +18,14 @@
         }
       },
       "links": {
-        "type": ["null", "object"],
-        "properties": {
+        "type": ["null", "array"],
+        "items": {
+          "type": ["null", "object"],
+          "properties": {
             "href": {"type": ["null", "string"]},
             "rel": {"type": ["null", "string"]},
-            "methid": {"type": ["null", "string"]}
+            "method": {"type": ["null", "string"]}
+          }
         }
       }
     }

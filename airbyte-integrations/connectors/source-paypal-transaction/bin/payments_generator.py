@@ -65,13 +65,12 @@ def create_payment(token, security_context):
             "payment_method": "paypal"
         },
         "redirect_urls": {
-            "return_url": "http://example.com/return",
-            "cancel_url": "http://example.com/cancel"
+            "return_url": "https://example.com/return",
+            "cancel_url": "https://example.com/cancel"
         }
     }
-    print("AQUIIIII")
+    
     response = requests.post(url, headers=headers, json=payload)
-    print("PASOOOOOOOO")
     return response.json()
 
 def update_payment(token, payment_id, updates):
