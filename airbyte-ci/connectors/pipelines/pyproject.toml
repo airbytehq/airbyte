@@ -41,6 +41,8 @@ pytest = "^6.2.5"
 pytest-mock = "^3.10.0"
 mypy = "^1.7.1"
 ruff = "^0.1.9"
+types-toml = "^0.10.8"
+types-requests = "2.28.2"
 
 [tool.poetry.scripts]
 airbyte-ci = "pipelines.cli.airbyte_ci:airbyte_ci"
@@ -49,3 +51,13 @@ airbyte-ci-dev = "pipelines.cli.airbyte_ci:airbyte_ci"
 [tool.poe.tasks.build-release-binary]
 shell = "pyinstaller --additional-hooks-dir=pyinstaller_hooks --collect-all pipelines --collect-all beartype --collect-all dagger --hidden-import strawberry --name $ARTIFACT_NAME --onefile pipelines/cli/airbyte_ci.py"
 args = [{name = "ARTIFACT_NAME", default="airbyte-ci", positional = true}]
+
+[tool.poe.tasks]
+test = "pytest tests"
+type_check = "mypy pipelines --disallow-untyped-defs"
+lint = "ruff check pipelines"
+
+[tool.airbyte_ci]
+extra_poetry_groups = ["dev"]
+poe_tasks = ["type_check", "lint", "test"]
+mount_docker_socket = true
