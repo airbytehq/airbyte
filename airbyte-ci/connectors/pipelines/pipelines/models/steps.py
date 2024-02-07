@@ -71,6 +71,7 @@ class Result:
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
     stdout: Optional[str] = None
+    report: Optional[str] = None
     exc_info: Optional[Exception] = None
     output_artifact: Any = None
 
