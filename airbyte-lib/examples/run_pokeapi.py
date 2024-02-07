@@ -12,7 +12,7 @@ from __future__ import annotations
 import airbyte_lib as ab
 
 
-source = ab.get_connector(
+source = ab.get_source(
     "source-pokeapi",
     config={"pokemon_name": "bulbasaur"},
     install_if_missing=True,
