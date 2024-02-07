@@ -15,8 +15,6 @@ from source_github import SourceGithub
 
 from .config import ConfigBuilder
 
-_TOKEN = "GITHUB_TEST_TOKEN"
-
 _CONFIG = ConfigBuilder().with_repositories(["airbytehq/integration-test"]).build()
 
 
