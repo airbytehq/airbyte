@@ -102,6 +102,11 @@ class GenericSQLCacheConfig(SQLCacheConfigBase):
         return self.sql_alchemy_url
 
 
+def quote_identifier(identifier: str) -> str:
+    """Return the given identifier, quoted."""
+    return f'"{identifier}"'
+
+
 class SQLCacheBase(RecordProcessor):
     """A base class to be used for SQL Caches.
 
@@ -325,7 +330,7 @@ class SQLCacheBase(RecordProcessor):
         table_name: str,
     ) -> str:
         """Return the fully qualified name of the given table."""
-        return f"{self.config.schema_name}.{table_name}"
+        return f"{self.config.schema_name}.{quote_identifier(table_name)}"
 
     @final
     def _create_table_for_loading(
@@ -337,7 +342,7 @@ class SQLCacheBase(RecordProcessor):
         """Create a new table for loading data."""
         temp_table_name = self._get_temp_table_name(stream_name, batch_id)
         column_definition_str = ",\n  ".join(
-            f"{column_name} {sql_type}"
+            f"{quote_identifier(column_name)} {sql_type}"
             for column_name, sql_type in self._get_sql_column_definitions(stream_name).items()
         )
         self._create_table(temp_table_name, column_definition_str)
@@ -381,7 +386,7 @@ class SQLCacheBase(RecordProcessor):
         did_exist = self._table_exists(table_name)
         if not did_exist and create_if_missing:
             column_definition_str = ",\n  ".join(
-                f"{column_name} {sql_type}"
+                f"{quote_identifier(column_name)} {sql_type}"
                 for column_name, sql_type in self._get_sql_column_definitions(
                     stream_name,
                 ).items()
@@ -741,7 +746,7 @@ class SQLCacheBase(RecordProcessor):
         stream_name: str,
     ) -> None:
         nl = "\n"
-        columns = self._get_sql_column_definitions(stream_name).keys()
+        columns = [quote_identifier(c) for c in self._get_sql_column_definitions(stream_name)]
         self._execute_sql(
             f"""
             INSERT INTO {self._fully_qualified(final_table_name)} (
@@ -813,8 +818,8 @@ class SQLCacheBase(RecordProcessor):
         Databases that do not support this syntax can override this method.
         """
         nl = "\n"
-        columns = self._get_sql_column_definitions(stream_name).keys()
-        pk_columns = self._get_primary_keys(stream_name)
+        columns = {quote_identifier(c) for c in self._get_sql_column_definitions(stream_name)}
+        pk_columns = {quote_identifier(c) for c in self._get_primary_keys(stream_name)}
         non_pk_columns = columns - pk_columns
         join_clause = "{nl} AND ".join(f"tmp.{pk_col} = final.{pk_col}" for pk_col in pk_columns)
         set_clause = "{nl}    ".join(f"{col} = tmp.{col}" for col in non_pk_columns)
