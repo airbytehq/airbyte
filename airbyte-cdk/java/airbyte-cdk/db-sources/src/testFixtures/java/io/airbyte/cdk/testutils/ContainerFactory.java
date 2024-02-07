@@ -79,7 +79,9 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
     List<String> methodList = methods == null ? Collections.emptyList() : Arrays.asList(methods);
     DockerImageName dockerImageName = DockerImageName.parse(imageName);
     final ContainerKey containerKey = new ContainerKey(getClass(), dockerImageName, methodList);
-    ContainerOrException containerOrError = SHARED_CONTAINERS.computeIfAbsent(containerKey, this::createContainerOrError);
+    ContainerOrException containerOrError = SHARED_CONTAINERS.computeIfAbsent(containerKey, key ->
+      new ContainerOrException(() -> createAndStartContainer(key.imageName(), key.methods()))
+    );
     return (C) containerOrError.container();
   }
 
@@ -88,12 +90,6 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
     DockerImageName dockerImageName = DockerImageName.parse(imageName);
     List<String> methodList = methods == null ? Collections.emptyList() : Arrays.asList(methods);
     return (C) createAndStartContainer(dockerImageName, methodList);
-  }
-
-  private ContainerOrException createContainerOrError(ContainerKey containerKey) {
-    DockerImageName imageName = containerKey.imageName();
-    List<String> methodNames = containerKey.methods();
-    return new ContainerOrException(() -> createAndStartContainer(imageName, methodNames));
   }
 
   private GenericContainer<?> createAndStartContainer(DockerImageName imageName, List<String> methodNames) {
