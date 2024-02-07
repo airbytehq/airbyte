@@ -12,10 +12,14 @@ import java.io.UncheckedIOException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 
 public class MySQLTestDatabase extends
     TestDatabase<MySQLContainer<?>, MySQLTestDatabase, MySQLTestDatabase.MySQLConfigBuilder> {
+
+  static private final Logger LOGGER = LoggerFactory.getLogger(MySQLTestDatabase.class);
 
   public static enum BaseImage {
 
@@ -102,6 +106,9 @@ public class MySQLTestDatabase extends
 
   @Override
   protected Stream<Stream<String>> inContainerBootstrapCmd() {
+    LOGGER.atInfo().log("cat etc/hosts:" + catFileInContainer("/etc/hosts"));
+    LOGGER.atInfo().log("cat etc/my.cnf:" + catFileInContainer("/etc/my.cnf"));
+
     return Stream.of(mysqlCmd(Stream.of(
         String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
         String.format("CREATE DATABASE \\`%s\\`", getDatabaseName()),

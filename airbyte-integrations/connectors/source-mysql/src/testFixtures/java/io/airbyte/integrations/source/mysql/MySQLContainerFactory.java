@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -24,6 +25,7 @@ public class MySQLContainerFactory extends ContainerFactory<MySQLContainer<?>> {
         .withAccessToHost(true)
         .withUsername("root")
         .withInitScript("init.sql");
+    Testcontainers.exposeHostPorts(container.getMappedPort(3306));
     return container;
   }
 
