@@ -24,7 +24,7 @@ public class MySQLContainerFactory implements ContainerFactory<MySQLContainer<?>
         .withCreateContainerCmdModifier(cmd -> {
           cmd.getHostConfig()
               .withMemory(800l * 1024l * 1024l)
-              .withMemorySwap(1500l * 1024l * 1024l)});
+              .withMemorySwap(1500l * 1024l * 1024l);});
     container.addEnv("MYSQL_ROOT_HOST", "%%");
     return container;
   }
