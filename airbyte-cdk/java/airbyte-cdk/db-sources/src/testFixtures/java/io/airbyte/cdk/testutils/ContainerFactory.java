@@ -68,6 +68,7 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
   /**
    * Returns a shared instance of the testcontainer.
    */
+  @SuppressWarnings("unchecked")
   public final C shared(String imageName, String... methods) {
     List<String> methodList = methods == null ? Collections.emptyList() : Arrays.asList(methods);
     DockerImageName dockerImageName = DockerImageName.parse(imageName);
@@ -79,6 +80,7 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
     return (C) containerOrError.container();
   }
 
+  @SuppressWarnings("unchecked")
   public final C exclusive(String imageName, String... methods) {
     DockerImageName dockerImageName = DockerImageName.parse(imageName);
     List<String> methodList = methods == null ? Collections.emptyList() : Arrays.asList(methods);
@@ -95,7 +97,7 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
     return () -> {
       LOGGER.info("Creating new shared container based on {} with {}.", imageName, methodNames);
       try {
-        GenericContainer container = createNewContainer(imageName);
+        GenericContainer<?> container = createNewContainer(imageName);
 
         final var methods = new ArrayList<Method>();
         for (String methodName : methodNames) {
