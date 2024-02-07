@@ -134,6 +134,7 @@ class AirbyteLibInputError(AirbyteError, ValueError):
     input_value: str | None = None
 
 
+@dataclass
 class AirbyteLibNoStreamsSelectedError(AirbyteLibInputError):
     """No streams were selected for the source."""
 
