@@ -122,6 +122,7 @@ def test_secret_filtering():
     filtered = filter_secrets(sensitive_str)
     assert filtered == f"**** {NOT_SECRET_VALUE} **** ****"
 
+
 def test_secrets_added_are_filtered():
     ADDED_SECRET = "only_a_secret_if_added"
     sensitive_str = f"{ADDED_SECRET} {NOT_SECRET_VALUE}"
