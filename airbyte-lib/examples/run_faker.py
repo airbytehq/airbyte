@@ -15,7 +15,7 @@ import airbyte_lib as ab
 SCALE = 5_000_000  # Number of records to generate between users and purchases.
 
 
-source = ab.get_connector(
+source = ab.get_source(
     "source-faker",
     config={"count": SCALE / 2},
     install_if_missing=True,
@@ -26,4 +26,4 @@ source.set_streams(["products", "users", "purchases"])
 result = source.read()
 
 for name, records in result.streams.items():
-    print(f"Stream {name}: {len(list(records))} records")
+    print(f"Stream {name}: {len(records)} records")

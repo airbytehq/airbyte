@@ -76,6 +76,15 @@
                     "type": ["null", "object"]
                   },
                   "type": ["null", "array"]
+                },
+                "deleted": {
+                  "type": ["null", "boolean"]
+                },
+                "malware_access_override": {
+                  "type": ["null", "boolean"]
+                },
+                "malware_scan_result": {
+                  "type": ["null", "string"]
                 }
               },
               "type": ["null", "object"]
@@ -89,6 +98,36 @@
           "data": {
             "type": ["null", "object"],
             "properties": {
+              "author_id": {
+                "type": ["null", "integer"]
+              },
+              "brand_id": {
+                "type": ["null", "integer"]
+              },
+              "call_id": {
+                "type": ["null", "integer"]
+              },
+              "line_type": {
+                "type": ["null", "string"]
+              },
+              "location": {
+                "type": ["null", "string"]
+              },
+              "public": {
+                "type": ["null", "boolean"]
+              },
+              "recorded": {
+                "type": ["null", "boolean"]
+              },
+              "recording_consent_action": {
+                "type": ["null", "string"]
+              },
+              "recording_type": {
+                "type": ["null", "string"]
+              },
+              "via_id": {
+                "type": ["null", "integer"]
+              },
               "transcription_status": {
                 "type": ["null", "string"]
               },
@@ -117,6 +156,18 @@
               "from": {
                 "type": ["null", "string"]
               }
+            }
+          },
+          "current_followers": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "previous_followers": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
             }
           },
           "formatted_from": {
@@ -274,6 +325,9 @@
     "metadata": {
       "type": ["null", "object"],
       "properties": {
+        "suspension_type_id": {
+          "type": ["null", "integer"]
+        },
         "custom": {
           "type": ["null", "object"],
           "properties": {},
@@ -288,6 +342,51 @@
             "type": ["null", "integer"]
           }
         },
+        "decoration": {
+          "type": ["null", "object"],
+          "properties": {
+            "channels": {
+              "type": ["null", "object"],
+              "properties": {
+                "allow_channelback": {
+                  "type": ["null", "boolean"]
+                }
+              },
+              "additionalProperties": true
+            },
+            "source": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "zendesk_id": {
+                  "type": ["null", "integer"]
+                }
+              },
+              "additionalProperties": true
+            },
+            "created_at": {
+              "type": ["null", "string"]
+            },
+            "external_id": {
+              "type": ["null", "string"]
+            },
+            "resource_type": {
+              "type": ["null", "string"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "version": {
+              "type": ["null", "integer"]
+            }
+          },
+          "additionalProperties": true
+        },
         "flags_options": {
           "type": ["null", "object"],
           "properties": {
@@ -300,6 +399,22 @@
               }
             },
             "11": {
+              "type": ["null", "object"],
+              "properties": {
+                "trusted": {
+                  "type": ["null", "boolean"]
+                },
+                "message": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "user": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "15": {
               "type": ["null", "object"],
               "properties": {
                 "trusted": {
@@ -349,6 +464,12 @@
             },
             "latitude": {
               "type": ["null", "number"]
+            },
+            "email_id": {
+              "type": ["null", "string"]
+            },
+            "eml_redacted": {
+              "type": ["null", "boolean"]
             }
           }
         }
@@ -385,10 +506,19 @@
                 "subject": {
                   "type": ["null", "string"]
                 },
+                "channel": {
+                  "type": ["null", "string"]
+                },
                 "name": {
                   "type": ["null", "string"]
                 },
                 "address": {
+                  "type": ["null", "string"]
+                },
+                "formatted_phone": {
+                  "type": ["null", "string"]
+                },
+                "phone": {
                   "type": ["null", "string"]
                 },
                 "original_recipients": {
@@ -417,7 +547,16 @@
                 "name": {
                   "type": ["null", "string"]
                 },
+                "brand_id": {
+                  "type": ["null", "integer"]
+                },
                 "address": {
+                  "type": ["null", "string"]
+                },
+                "formatted_phone": {
+                  "type": ["null", "string"]
+                },
+                "phone": {
                   "type": ["null", "string"]
                 }
               }
@@ -427,6 +566,62 @@
             }
           }
         }
+      }
+    },
+    "attachments": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "content_type": {
+            "type": ["null", "string"]
+          },
+          "content_url": {
+            "type": ["null", "string"]
+          },
+          "deleted": {
+            "type": ["null", "boolean"]
+          },
+          "file_name": {
+            "type": ["null", "string"]
+          },
+          "height": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "inline": {
+            "type": ["null", "boolean"]
+          },
+          "malware_access_override": {
+            "type": ["null", "boolean"]
+          },
+          "malware_scan_result": {
+            "type": ["null", "string"]
+          },
+          "mapped_content_url": {
+            "type": ["null", "string"]
+          },
+          "size": {
+            "type": ["null", "integer"]
+          },
+          "thumbnails": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {},
+              "additionalProperties": true
+            }
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "width": {
+            "type": ["null", "integer"]
+          }
+        },
+        "additionalProperties": true
       }
     }
   }

@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[file-based]>=0.60.1",
+    "airbyte-cdk[file-based]>=0.61.0",
     "google-cloud-storage==2.12.0",
     "smart-open[s3]==5.1.0",
     "pandas==1.5.3",
