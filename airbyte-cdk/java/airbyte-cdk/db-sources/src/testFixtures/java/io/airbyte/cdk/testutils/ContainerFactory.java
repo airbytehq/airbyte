@@ -21,7 +21,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * ContainerFactory is the companion interface to {@link TestDatabase} for providing it with
+ * ContainerFactory is the companion to {@link TestDatabase} and provides it with
  * suitable testcontainer instances.
  */
 public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
