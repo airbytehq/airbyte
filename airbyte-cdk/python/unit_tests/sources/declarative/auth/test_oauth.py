@@ -12,6 +12,8 @@ import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from requests import Response
 
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+
 LOGGER = logging.getLogger(__name__)
 
 resp = Response()
@@ -164,6 +166,9 @@ class TestOauth2Authenticator:
         token = oauth.refresh_access_token()
 
         assert ("access_token", 1000) == token
+
+        filtered = filter_secrets("access_token")
+        assert filtered == "****"
 
     @pytest.mark.parametrize(
         "timestamp, expected_date",
