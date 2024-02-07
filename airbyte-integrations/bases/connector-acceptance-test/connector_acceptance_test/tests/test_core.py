@@ -978,7 +978,9 @@ class TestBasicRead(BaseTest):
             return inputs.validate_schema
 
     @pytest.fixture(name="should_validate_stream_statuses")
-    def should_validate_stream_statuses_fixture(self, inputs: BasicReadTestConfig, test_strictness_level: Config.TestStrictnessLevel, connector_metadata: dict):
+    def should_validate_stream_statuses_fixture(
+        self, inputs: BasicReadTestConfig, test_strictness_level: Config.TestStrictnessLevel, connector_metadata: dict
+    ):
         if not inputs.validate_stream_statuses and test_strictness_level is Config.TestStrictnessLevel.high:
             pytest.fail("High strictness level error: validate_stream_statuses must be set to true in the basic read test configuration.")
         elif connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
@@ -1265,10 +1267,14 @@ class TestBasicRead(BaseTest):
         for status in statuses:
             stream_statuses[f"{status.stream_descriptor.namespace}-{status.stream_descriptor.name}"].append(status.status)
 
-        assert set(f"{x.stream.namespace}-{x.stream.name}" for x in configured_catalog.streams) == set(stream_statuses), "All stream must emit status"
+        assert set(f"{x.stream.namespace}-{x.stream.name}" for x in configured_catalog.streams) == set(
+            stream_statuses
+        ), "All stream must emit status"
 
         for stream_name, status_list in stream_statuses.items():
-            assert len(status_list) >= 3, f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`,... `COMPLETE`"
+            assert (
+                len(status_list) >= 3
+            ), f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`,... `COMPLETE`"
             assert status_list[0] == AirbyteStreamStatus.STARTED
             assert status_list[-1] == AirbyteStreamStatus.COMPLETE
             assert all(x == AirbyteStreamStatus.RUNNING for x in status_list[1:-1])
