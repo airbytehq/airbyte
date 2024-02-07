@@ -213,8 +213,11 @@ class ReportsAmazonSPStream(HttpStream, ABC):
 
     @property
     def retry_factor(self) -> float:
-        # https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference#post-reports2021-06-30reports
-        return 60.0
+        """
+        Set this 60.0 due to https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference#post-reports2021-06-30reports
+        Override to 0 for integration testing purposes
+        """
+        return 0 if IS_TESTING else 60.0
 
     @property
     def url_base(self) -> str:
@@ -389,12 +392,6 @@ class ReportsAmazonSPStream(HttpStream, ABC):
             logger.warning(f"The report for stream '{self.name}' was cancelled or there is no data to return.")
         else:
             raise Exception(f"Unknown response for stream '{self.name}'. Response body: {report_payload}.")
-
-    def retry_factor(self) -> float:
-        """
-        Override for testing purposes
-        """
-        return 0 if IS_TESTING else super().retry_factor
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):

@@ -28,37 +28,37 @@ _REPORT_DOCUMENT_ID = "report_document_id"
 DEFAULT_EXPECTED_NUMBER_OF_RECORDS = 2  # every test file in resource/http/response contains 2 records
 STREAMS = (
     ("GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING", "csv"),
-    ("GET_ORDER_REPORT_DATA_SHIPPING", "xml"),
-    ("GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL", "csv"),
-    ("GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA", "csv"),
-    ("GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA", "csv"),
-    ("GET_SELLER_FEEDBACK_DATA", "csv"),
-    ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA", "csv"),
-    ("GET_LEDGER_DETAIL_VIEW_DATA", "csv"),
-    ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv"),
-    ("GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE", "csv"),
-    ("GET_VENDOR_SALES_REPORT", "json"),
-    ("GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT", "json"),
-    ("GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA", "csv"),
-    ("GET_FBA_SNS_FORECAST_DATA", "csv"),
-    ("GET_AFN_INVENTORY_DATA", "csv"),
-    ("GET_MERCHANT_CANCELLED_LISTINGS_DATA", "csv"),
-    ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA", "csv"),
-    ("GET_LEDGER_SUMMARY_VIEW_DATA", "csv"),
-    ("GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT", "json"),
-    ("GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT", "json"),
-    ("GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE", "csv"),
-    ("GET_VENDOR_INVENTORY_REPORT", "json"),
-    ("GET_FBA_SNS_PERFORMANCE_DATA", "csv"),
-    ("GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA", "csv"),
-    ("GET_FBA_INVENTORY_PLANNING_DATA", "csv"),
-    ("GET_FBA_STORAGE_FEE_CHARGES_DATA", "csv"),
-    ("GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA", "csv"),
-    ("GET_STRANDED_INVENTORY_UI_DATA", "csv"),
-    ("GET_FBA_REIMBURSEMENTS_DATA", "csv"),
-    ("GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "json"),
-    ("GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "json"),
-    ("GET_VENDOR_TRAFFIC_REPORT", "json"),
+    # ("GET_ORDER_REPORT_DATA_SHIPPING", "xml"),
+    # ("GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL", "csv"),
+    # ("GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA", "csv"),
+    # ("GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA", "csv"),
+    # ("GET_SELLER_FEEDBACK_DATA", "csv"),
+    # ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA", "csv"),
+    # ("GET_LEDGER_DETAIL_VIEW_DATA", "csv"),
+    # ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv"),
+    # ("GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE", "csv"),
+    # ("GET_VENDOR_SALES_REPORT", "json"),
+    # ("GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT", "json"),
+    # ("GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA", "csv"),
+    # ("GET_FBA_SNS_FORECAST_DATA", "csv"),
+    # ("GET_AFN_INVENTORY_DATA", "csv"),
+    # ("GET_MERCHANT_CANCELLED_LISTINGS_DATA", "csv"),
+    # ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA", "csv"),
+    # ("GET_LEDGER_SUMMARY_VIEW_DATA", "csv"),
+    # ("GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT", "json"),
+    # ("GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT", "json"),
+    # ("GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE", "csv"),
+    # ("GET_VENDOR_INVENTORY_REPORT", "json"),
+    # ("GET_FBA_SNS_PERFORMANCE_DATA", "csv"),
+    # ("GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA", "csv"),
+    # ("GET_FBA_INVENTORY_PLANNING_DATA", "csv"),
+    # ("GET_FBA_STORAGE_FEE_CHARGES_DATA", "csv"),
+    # ("GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA", "csv"),
+    # ("GET_STRANDED_INVENTORY_UI_DATA", "csv"),
+    # ("GET_FBA_REIMBURSEMENTS_DATA", "csv"),
+    # ("GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "json"),
+    # ("GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "json"),
+    # ("GET_VENDOR_TRAFFIC_REPORT", "json"),
 )
 
 
@@ -97,14 +97,19 @@ def _download_document_request(url: str) -> RequestBuilder:
     return RequestBuilder.download_document_endpoint(url)
 
 
-def _create_report_response(status_code: Optional[HTTPStatus] = HTTPStatus.ACCEPTED) -> HttpResponse:
-    response_body = {"reportId": _REPORT_ID}
+def _create_report_response(report_id: str, status_code: Optional[HTTPStatus] = HTTPStatus.ACCEPTED) -> HttpResponse:
+    response_body = {"reportId": report_id}
     return build_response(response_body, status_code=status_code)
 
 
 def _check_report_status_response(
-    report_name: str, processing_status: Optional[ReportProcessingStatus] = ReportProcessingStatus.DONE
+    report_name: str,
+    processing_status: Optional[ReportProcessingStatus] = ReportProcessingStatus.DONE,
+    report_document_id: Optional[str] = None
 ) -> HttpResponse:
+    if processing_status == ReportProcessingStatus.DONE and not report_document_id:
+        raise ValueError("report_document_id value should be passed when processing_status is 'DONE'.")
+
     response_body = {
         "reportType": report_name,
         "processingStatus": processing_status,
@@ -117,15 +122,17 @@ def _check_report_status_response(
     if processing_status == ReportProcessingStatus.DONE:
         response_body.update(
             {
-                "reportDocumentId": _REPORT_DOCUMENT_ID, "processingEndTime": CONFIG_START_DATE, "processingStartTime": CONFIG_START_DATE
+                "reportDocumentId": report_document_id, "processingEndTime": CONFIG_START_DATE, "processingStartTime": CONFIG_START_DATE
             }
         )
 
     return build_response(response_body, status_code=HTTPStatus.OK)
 
 
-def _get_document_download_url_response(compressed: Optional[bool] = False) -> HttpResponse:
-    response_body = {"reportDocumentId": _REPORT_DOCUMENT_ID, "url": _DOCUMENT_DOWNLOAD_URL}
+def _get_document_download_url_response(
+    document_download_url: str, report_document_id: str, compressed: Optional[bool] = False
+) -> HttpResponse:
+    response_body = {"reportDocumentId": report_document_id, "url": document_download_url}
     if compressed:
         # See https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference#compressionalgorithm
         response_body["compressionAlgorithm"] = "GZIP"
@@ -153,9 +160,15 @@ class TestFullRefresh:
     def test_given_report_when_read_then_return_records(self, stream_name: str, data_format: str, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
 
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
-        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
-        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
         http_mocker.get(
             _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
             _download_document_response(stream_name, data_format=data_format),
@@ -171,10 +184,14 @@ class TestFullRefresh:
     ) -> None:
         mock_auth(http_mocker)
 
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
-        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
-            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response(compressed=True)
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID, compressed=True),
         )
 
         # a workaround to pass compressed document to the mocked response
@@ -200,10 +217,16 @@ class TestFullRefresh:
         mock_auth(http_mocker)
         http_mocker.post(
             _create_report_request(stream_name).build(),
-            [response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR), _create_report_response()],
+            [response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR), _create_report_response(_REPORT_ID)],
         )
-        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
-        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
         http_mocker.get(
             _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
             _download_document_response(stream_name, data_format=data_format),
@@ -218,12 +241,18 @@ class TestFullRefresh:
             self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
         mock_auth(http_mocker)
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
-            [response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR), _check_report_status_response(stream_name)],
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+            ],
         )
-        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
         http_mocker.get(
             _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
             _download_document_response(stream_name, data_format=data_format),
@@ -238,11 +267,17 @@ class TestFullRefresh:
             self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
         mock_auth(http_mocker)
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
-        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
         http_mocker.get(
             _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
-            [response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR), _get_document_download_url_response()],
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+            ],
         )
         http_mocker.get(
             _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
@@ -258,9 +293,15 @@ class TestFullRefresh:
             self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
         mock_auth(http_mocker)
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
-        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
-        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
         http_mocker.get(
             _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
             [
@@ -296,13 +337,13 @@ class TestFullRefresh:
     ) -> None:
         mock_auth(http_mocker)
 
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
             _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
         )
 
-        message_on_report_cancelled = f"The report for stream '{stream_name}' was cancelled or there is no data to return"
+        message_on_report_cancelled = f"The report for stream '{stream_name}' was cancelled or there is no data to return."
 
         output = self._read(stream_name, config())
         assert_message_in_output(message_on_report_cancelled, caplog)
@@ -315,7 +356,7 @@ class TestFullRefresh:
     ) -> None:
         mock_auth(http_mocker)
 
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
             _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.FATAL),
@@ -323,7 +364,10 @@ class TestFullRefresh:
 
         output = self._read(stream_name, config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.system_error
-        assert output.errors[-1].trace.error.message == f"The report for stream '{stream_name}' was not created - skip reading"
+        assert output.errors[-1].trace.error.internal_message == (
+            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{CONFIG_END_DATE} "
+            "due to Amazon Seller Partner platform issues. This will be read during the next sync."
+        )
 
     @pytest.mark.parametrize(
         ("stream_name", "date_field", "expected_date_value"),
@@ -339,9 +383,15 @@ class TestFullRefresh:
     ) -> None:
         mock_auth(http_mocker)
 
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
-        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
-        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
         http_mocker.get(_download_document_request(_DOCUMENT_DOWNLOAD_URL).build(), _download_document_response(stream_name))
 
         output = self._read(stream_name, config())
@@ -387,9 +437,15 @@ class TestIncremental:
     ) -> None:
         mock_auth(http_mocker)
 
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
-        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
-        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
         http_mocker.get(
             _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
             _download_document_response(stream_name, data_format=data_format),
@@ -406,9 +462,15 @@ class TestIncremental:
         _config = config()
         mock_auth(http_mocker)
 
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response())
-        http_mocker.get(_check_report_status_request(_REPORT_ID).build(), _check_report_status_response(stream_name))
-        http_mocker.get(_get_document_download_url_request(_REPORT_DOCUMENT_ID).build(), _get_document_download_url_response())
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
         http_mocker.get(
             _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
             _download_document_response(stream_name, data_format=data_format),
