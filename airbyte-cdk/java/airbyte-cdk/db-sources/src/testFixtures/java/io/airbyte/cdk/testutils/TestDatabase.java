@@ -31,6 +31,7 @@ import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 /**
  * TestDatabase provides a convenient pattern for interacting with databases when testing SQL
@@ -188,6 +189,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     }
     try {
       LOGGER.debug("executing {}", Strings.join(cmd, " "));
+
       final var exec = getContainer().execInContainer(cmd.toArray(new String[0]));
       if (exec.getExitCode() == 0) {
         LOGGER.info("other info: container.getjdbcurl: " + this.getContainer().getJdbcUrl());

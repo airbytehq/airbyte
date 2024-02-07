@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 public class MySQLContainerFactory implements ContainerFactory<MySQLContainer<?>> {
@@ -19,7 +20,8 @@ public class MySQLContainerFactory implements ContainerFactory<MySQLContainer<?>
 
   @Override
   public MySQLContainer<?> createNewContainer(DockerImageName imageName) {
-    var container = new MySQLContainer<>(imageName.asCompatibleSubstituteFor("mysql")).withLogConsumer(new Slf4jLogConsumer(logger));
+    var container = new MySQLContainer<>(imageName.asCompatibleSubstituteFor("mysql")).withLogConsumer(new Slf4jLogConsumer(logger))
+        .waitingFor(Wait.forListeningPort());
     container.addEnv("MYSQL_ROOT_HOST", "%%");
     return container;
   }
