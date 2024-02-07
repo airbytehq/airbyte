@@ -29,6 +29,7 @@ source = ab.get_source(
     install_if_missing=True,
 )
 source.check()
+source.select_all_streams()
 result = source.read()
 
 for name, records in result.streams.items():
