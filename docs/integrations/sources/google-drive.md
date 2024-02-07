@@ -247,6 +247,7 @@ Before parsing each document, the connector exports Google Document files to Doc
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |---------|------------|-----------------------------------------------------------|--------------------------------------------------------------|
+| 0.0.9   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936)  | Bump CDK version to avoid missing SyncMode errors                      |
 | 0.0.8   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681)  | Unpin CDK version to make compatible with the Concurrent CDK                      |
 | 0.0.7   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661)  | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
 | 0.0.6   | 2023-12-16 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
