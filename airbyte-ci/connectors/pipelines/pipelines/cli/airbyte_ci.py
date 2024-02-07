@@ -34,7 +34,7 @@ from pipelines.cli.click_decorators import (
 from pipelines.cli.confirm_prompt import pre_confirm_all_flag
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
-from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, CIContext
+from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_BUILD_PLATFORM, CIContext
 from pipelines.dagger.actions.connector.hooks import get_dagger_sdk_version
 from pipelines.helpers import github
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
@@ -53,6 +53,7 @@ def log_context_info(ctx: click.Context) -> None:
     main_logger.info(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
     main_logger.info(f"Pull Request Number: {ctx.obj['pull_request_number']}")
     main_logger.info(f"Pipeline Start Timestamp: {ctx.obj['pipeline_start_timestamp']}")
+    main_logger.info(f"Local build platform: {LOCAL_BUILD_PLATFORM}")
 
 
 def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:

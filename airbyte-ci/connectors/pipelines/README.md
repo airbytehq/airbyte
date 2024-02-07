@@ -613,39 +613,34 @@ flowchart TD
 
 ### <a id="tests-command"></a>`tests` command
 
-This command runs the Python tests for a airbyte-ci poetry package.
+This command runs the poe tasks declared in the `[tool.airbyte-ci]` section of our internal poetry packages.
+Feel free to checkout this [Pydantic model](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/models.py#L9) to see the list of available options in `[tool.airbyte-ci]` section.
 
-#### Arguments
-
-| Option                | Required | Default | Mapped environment variable | Description                         |
-| --------------------- | -------- | ------- | --------------------------- | ----------------------------------- |
-| `poetry_package_path` | True     |         |                             | The path to poetry package to test. |
+You can find the list of internal packages [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/__init__.py#L1)
 
 #### Options
 
-| Option                    | Required | Default | Mapped environment variable | Description                                                                                 |
-| ------------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
-| `-c/--poetry-run-command` | True     | None    |                             | The command to run with `poetry run`                                                        |
-| `-e/--pass-env-var`       | False    | None    |                             | Host environment variable that is passed to the container running the poetry command        |
-| `--ci-requirements`       | False    |         |                             | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
+| Option                    | Required | Multiple| Description                                                                                 |
+| ------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------- |
+| `--poetry-package-path/-p`| False    | True    | Poetry packages path to run the poe tasks for.                                              |
+| `--modified`              | False    | False   | Run poe tasks of modified internal poetry packages.                                         |
+| `--ci-requirements`       | False    | False   | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 #### Examples
+You can pass multiple `--poetry-package-path` options to run poe tasks.
 
-You can pass multiple `-c/--poetry-run-command` options to run multiple commands.
+E.G.: running Poe tasks on `airbyte-lib` and `airbyte-ci/connectors/pipelines`:
+`airbyte-ci test --poetry-package-path=airbyte-ci/connectors/pipelines --poetry-package-path=airbyte-lib`
 
-E.G.: running `pytest` and `mypy`:
-`airbyte-ci test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines'`
+E.G.: running Poe tasks on the modified internal packages of the current branch:
+`airbyte-ci test --modified`
 
-E.G.: passing the environment variable `GCP_GSM_CREDENTIALS` environment variable to the container
-running the poetry command: `airbyte-ci test airbyte-lib --pass-env-var='GCP_GSM_CREDENTIALS'`
-
-E.G.: running `pytest` on a specific test folder:
-`airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest tests/unit_tests'`
 
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.0.0  | [#34736](https://github.com/airbytehq/airbyte/pull/34736)  | Run poe tasks declared in internal poetry packages.                                         |
 | 3.10.4  | [#34867](https://github.com/airbytehq/airbyte/pull/34867)  | Remove connector ops team                                                                                                  |
 | 3.10.3  | [#34836](https://github.com/airbytehq/airbyte/pull/34836)  | Add check for python registry publishing enabled for certified python sources.                                             |
 | 3.10.2  | [#34044](https://github.com/airbytehq/airbyte/pull/34044)  | Add pypi validation testing.                                                                                               |

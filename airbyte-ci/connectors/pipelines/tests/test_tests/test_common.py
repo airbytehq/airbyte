@@ -208,37 +208,34 @@ class TestAcceptanceTests:
 
         with freeze_time(initial_datetime) as frozen_datetime:
             acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context_ci, test_input_dir)
-            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+            first_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 dummy_connector_under_test_container, test_input_dir
             )
-            cat_container = cat_container.with_exec(["date"])
-            fist_date_result = await cat_container.stdout()
+            fist_date_result = await first_cat_container.with_exec(["date"]).stdout()
 
             frozen_datetime.tick(delta=datetime.timedelta(hours=5))
             # Check that cache is used in the same day
-            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+            second_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 dummy_connector_under_test_container, test_input_dir
             )
-            cat_container = cat_container.with_exec(["date"])
-            second_date_result = await cat_container.stdout()
+
+            second_date_result = await second_cat_container.with_exec(["date"]).stdout()
             assert fist_date_result == second_date_result
 
             # Check that cache bursted after a day
-            frozen_datetime.tick(delta=datetime.timedelta(days=1, seconds=1))
-            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+            frozen_datetime.tick(delta=datetime.timedelta(days=1, minutes=10))
+            third_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 dummy_connector_under_test_container, test_input_dir
             )
-            cat_container = cat_container.with_exec(["date"])
-            third_date_result = await cat_container.stdout()
+            third_date_result = await third_cat_container.with_exec(["date"]).stdout()
             assert third_date_result != second_date_result
 
             time.sleep(1)
             # Check that changing the container invalidates the cache
-            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+            fourth_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 another_dummy_connector_under_test_container, test_input_dir
             )
-            cat_container = cat_container.with_exec(["date"])
-            fourth_date_result = await cat_container.stdout()
+            fourth_date_result = await fourth_cat_container.with_exec(["date"]).stdout()
             assert fourth_date_result != third_date_result
 
     async def test_params(self, dagger_client, mocker, test_context_ci, test_input_dir):

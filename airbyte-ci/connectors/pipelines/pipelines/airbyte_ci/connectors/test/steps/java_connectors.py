@@ -64,7 +64,7 @@ class IntegrationTests(GradleTask):
                     tg.start_soon(self._load_normalization_image, normalization_tar_file)
                 tg.start_soon(self._load_connector_image, connector_tar_file)
         except QueryError as e:
-            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
         # Run the gradle integration test task now that the required docker images have been loaded.
         return await super()._run()
 

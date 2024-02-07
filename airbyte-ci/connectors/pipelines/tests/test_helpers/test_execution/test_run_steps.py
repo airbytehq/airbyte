@@ -15,7 +15,7 @@ class TestStep(Step):
     title = "Test Step"
 
     async def _run(self, result_status=StepStatus.SUCCESS) -> StepResult:
-        return StepResult(self, result_status)
+        return StepResult(step=self, status=result_status)
 
 
 @pytest.mark.anyio
@@ -215,7 +215,7 @@ async def test_run_steps_concurrent():
         async def _run(self, name, sleep) -> StepResult:
             await anyio.sleep(sleep)
             ran_at[name] = time.time()
-            return StepResult(self, StepStatus.SUCCESS)
+            return StepResult(step=self, status=StepStatus.SUCCESS)
 
     steps = [
         StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 2}),
@@ -242,7 +242,7 @@ async def test_run_steps_concurrency_of_1():
         async def _run(self, name, sleep) -> StepResult:
             ran_at[name] = time.time()
             await anyio.sleep(sleep)
-            return StepResult(self, StepStatus.SUCCESS)
+            return StepResult(step=self, status=StepStatus.SUCCESS)
 
     steps = [
         StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 1}),
@@ -269,7 +269,7 @@ async def test_run_steps_sequential():
         async def _run(self, name, sleep) -> StepResult:
             await anyio.sleep(sleep)
             ran_at[name] = time.time()
-            return StepResult(self, StepStatus.SUCCESS)
+            return StepResult(step=self, status=StepStatus.SUCCESS)
 
     steps = [
         [StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 1})],
@@ -310,7 +310,7 @@ async def test_run_steps_passes_results():
 
         async def _run(self, arg1, arg2) -> StepResult:
             output_artifact = f"{arg1}:{arg2}"
-            return StepResult(self, StepStatus.SUCCESS, output_artifact=output_artifact)
+            return StepResult(step=self, status=StepStatus.SUCCESS, output_artifact=output_artifact)
 
     async def async_args(results):
         return {"arg1": results["step2"].output_artifact, "arg2": "4"}

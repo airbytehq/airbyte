@@ -43,15 +43,15 @@ class CheckConnectorImageDoesNotExist(Step):
             crane_ls_stdout = await crane_ls.stdout()
         except ExecError as e:
             if "NAME_UNKNOWN" in e.stderr:
-                return StepResult(self, status=StepStatus.SUCCESS, stdout=f"The docker repository {docker_repository} does not exist.")
+                return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"The docker repository {docker_repository} does not exist.")
             else:
-                return StepResult(self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout)
+                return StepResult(step=self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout)
         else:  # The docker repo exists and ls was successful
             existing_tags = crane_ls_stdout.split("\n")
             docker_tag_already_exists = docker_tag in existing_tags
             if docker_tag_already_exists:
-                return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image} already exists.")
-            return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image}.")
+                return StepResult(step=self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image} already exists.")
+            return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image}.")
 
 
 class CheckPythonRegistryPackageDoesNotExist(Step):
@@ -64,13 +64,13 @@ class CheckPythonRegistryPackageDoesNotExist(Step):
         )
         if is_published:
             return StepResult(
-                self,
+                step=self,
                 status=StepStatus.SKIPPED,
                 stderr=f"{self.context.package_metadata.name} already exists in version {self.context.package_metadata.version}.",
             )
         else:
             return StepResult(
-                self,
+                step=self,
                 status=StepStatus.SUCCESS,
                 stdout=f"{self.context.package_metadata.name} does not exist in version {self.context.package_metadata.version}.",
             )
@@ -97,14 +97,14 @@ class PushConnectorImageToRegistry(Step):
                     platform_variants=built_containers_per_platform[1:],
                     forced_compression=ImageLayerCompression.Gzip,
                 )
-            return StepResult(self, status=StepStatus.SUCCESS, stdout=f"Published {image_ref}")
+            return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"Published {image_ref}")
         except QueryError as e:
             if attempts > 0:
                 self.context.logger.error(str(e))
                 self.context.logger.warn(f"Failed to publish {self.context.docker_image}. Retrying. {attempts} attempts left.")
                 await anyio.sleep(5)
                 return await self._run(built_containers_per_platform, attempts - 1)
-            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
 
 class PullConnectorImageFromRegistry(Step):
@@ -145,16 +145,16 @@ class PullConnectorImageFromRegistry(Step):
                     await anyio.sleep(10)
                     return await self._run(attempt - 1)
                 else:
-                    return StepResult(self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image}")
+                    return StepResult(step=self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image}")
             if not await self.check_if_image_only_has_gzip_layers():
                 return StepResult(
-                    self,
+                    step=self,
                     status=StepStatus.FAILURE,
                     stderr=f"Image {self.context.docker_image} does not only have gzip compressed layers. Please rebuild the connector with Docker < 21.",
                 )
             else:
                 return StepResult(
-                    self,
+                    step=self,
                     status=StepStatus.SUCCESS,
                     stdout=f"Pulled {self.context.docker_image} and validated it has gzip only compressed layers and we can run spec on it.",
                 )
@@ -162,7 +162,7 @@ class PullConnectorImageFromRegistry(Step):
             if attempt > 0:
                 await anyio.sleep(10)
                 return await self._run(attempt - 1)
-            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
 
 class UploadSpecToCache(Step):
@@ -214,7 +214,7 @@ class UploadSpecToCache(Step):
             oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
             cloud_spec: str = await self._get_connector_spec(built_connector, "CLOUD")
         except InvalidSpecOutputError as e:
-            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
         specs_to_uploads: List[Tuple[str, File]] = [(self.oss_spec_key, await self._get_spec_as_file(oss_spec))]
 
@@ -231,8 +231,8 @@ class UploadSpecToCache(Step):
                 flags=['--cache-control="no-cache"'],
             )
             if exit_code != 0:
-                return StepResult(self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
-        return StepResult(self, status=StepStatus.SUCCESS, stdout="Uploaded connector spec to spec cache bucket.")
+                return StepResult(step=self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout="Uploaded connector spec to spec cache bucket.")
 
 
 # Pipeline
@@ -356,7 +356,7 @@ async def _run_python_registry_publish_pipeline(context: PublishConnectorContext
         # If the python registry token or url are not set, we can't publish to the python registry - stop the pipeline.
         return [
             StepResult(
-                PublishToPythonRegistry(python_registry_context),
+                step=PublishToPythonRegistry(python_registry_context),
                 status=StepStatus.FAILURE,
                 stderr="Pypi publishing is enabled, but python registry token or url are not set.",
             )

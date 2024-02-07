@@ -44,8 +44,8 @@ class SetCDKVersion(Step):
                 updated_connector_dir = await self.upgrade_cdk_version_for_java_connector(og_connector_dir)
             else:
                 return StepResult(
-                    self,
-                    StepStatus.FAILURE,
+                    step=self,
+                    status=StepStatus.FAILURE,
                     stderr=f"No CDK for connector {self.context.connector.technical_name} of written in {self.context.connector.language}",
                 )
 
@@ -55,15 +55,17 @@ class SetCDKVersion(Step):
             exported_successfully = await diff.export(os.path.join(git.get_git_repo_path(), context.connector.code_directory))
             if not exported_successfully:
                 return StepResult(
-                    self,
-                    StepStatus.FAILURE,
+                    step=self,
+                    status=StepStatus.FAILURE,
                     stdout="Could not export diff to local git repo.",
                 )
-            return StepResult(self, StepStatus.SUCCESS, stdout=f"Updated CDK version to {self.new_version}", output_artifact=diff)
+            return StepResult(
+                step=self, status=StepStatus.SUCCESS, stdout=f"Updated CDK version to {self.new_version}", output_artifact=diff
+            )
         except ValueError as e:
             return StepResult(
-                self,
-                StepStatus.FAILURE,
+                step=self,
+                status=StepStatus.FAILURE,
                 stderr=f"Could not set CDK version: {e}",
                 exc_info=e,
             )

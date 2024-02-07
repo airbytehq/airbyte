@@ -39,16 +39,16 @@ class BuildConnectorImagesBase(Step, ABC):
                     await connector.with_exec(["spec"])
                 except ExecError:
                     return StepResult(
-                        self, StepStatus.FAILURE, stderr=f"Failed to run spec on the connector built for platform {platform}."
+                        step=self, status=StepStatus.FAILURE, stderr=f"Failed to run spec on the connector built for platform {platform}."
                     )
                 build_results_per_platform[platform] = connector
             except QueryError as e:
-                return StepResult(self, StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}")
+                return StepResult(step=self, status=StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}")
         success_message = (
             f"The {self.context.connector.technical_name} docker image "
             f"was successfully built for platform(s) {', '.join(self.build_platforms)}"
         )
-        return StepResult(self, StepStatus.SUCCESS, stdout=success_message, output_artifact=build_results_per_platform)
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout=success_message, output_artifact=build_results_per_platform)
 
     async def _build_connector(self, platform: Platform, *args: Any, **kwargs: Any) -> Container:
         """Implement the generation of the image for the platform and return the corresponding container.
@@ -89,8 +89,8 @@ class LoadContainerToLocalDockerHost(Step):
             _, exported_tar_path = await export_container_to_tarball(self.context, container, platform)
             if not exported_tar_path:
                 return StepResult(
-                    self,
-                    StepStatus.FAILURE,
+                    step=self,
+                    status=StepStatus.FAILURE,
                     stderr=f"Failed to export the connector image {self.image_name}:{self.image_tag} to a tarball.",
                 )
             try:
@@ -104,7 +104,7 @@ class LoadContainerToLocalDockerHost(Step):
                     loaded_images.append(full_image_name)
             except docker.errors.DockerException as e:
                 return StepResult(
-                    self, StepStatus.FAILURE, stderr=f"Something went wrong while interacting with the local docker client: {e}"
+                    step=self, status=StepStatus.FAILURE, stderr=f"Something went wrong while interacting with the local docker client: {e}"
                 )
 
-        return StepResult(self, StepStatus.SUCCESS, stdout=f"Loaded image {','.join(loaded_images)} to your Docker host ({image_sha}).")
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"Loaded image {','.join(loaded_images)} to your Docker host ({image_sha}).")
