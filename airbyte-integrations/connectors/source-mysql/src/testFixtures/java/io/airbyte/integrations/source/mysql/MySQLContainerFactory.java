@@ -19,13 +19,9 @@ public class MySQLContainerFactory implements ContainerFactory<MySQLContainer<?>
 
   @Override
   public MySQLContainer<?> createNewContainer(DockerImageName imageName) {
-    var container = new MySQLContainer<>(imageName.asCompatibleSubstituteFor("mysql")).withLogConsumer(new Slf4jLogConsumer(logger))
-        .withCreateContainerCmdModifier(cmd -> {
-          cmd.getHostConfig()
-              .withMemory(800l * 1024l * 1024l)
-              .withMemorySwap(1500l * 1024l * 1024l);});
-    execInContainer(container,
-        "'bind-address = 0.0.0.0' >> /etc/my.cnf");
+    var container = new MySQLContainer<>(imageName.asCompatibleSubstituteFor("mysql"))
+        .withLogConsumer(new Slf4jLogConsumer(logger))
+        .withAccessToHost(true);
     return container;
   }
 
