@@ -54,7 +54,7 @@ if TYPE_CHECKING:
     from airbyte_lib.telemetry import CacheTelemetryInfo
 
 
-DEBUG_MODE = False  # Set to True to enable additional debug logging.
+DEBUG_MODE = True  # Set to True to enable additional debug logging.
 
 
 class RecordDedupeMode(enum.Enum):

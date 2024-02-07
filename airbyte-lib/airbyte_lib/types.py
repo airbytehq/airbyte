@@ -32,7 +32,7 @@ class SQLTypeConversionError(Exception):
 
 
 def _get_airbyte_type(
-    json_schema_property_def: dict[str, str | dict],
+    json_schema_property_def: dict[str, str | dict] | list[dict[str, str | dict]]
 ) -> tuple[str, str | None]:
     """Get the airbyte type and subtype from a JSON schema property definition.
 
@@ -44,6 +44,10 @@ def _get_airbyte_type(
 
     json_schema_type = json_schema_property_def.get("type", None)
     json_schema_format = json_schema_property_def.get("format", None)
+
+    # if json_schema_type is an array of two strings with one of them being "null", pick the other one
+    if isinstance(json_schema_type, list) and len(json_schema_type) == 2 and "null" in json_schema_type:
+        json_schema_type = [t for t in json_schema_type if t != "null"][0]
 
     if json_schema_type == "string":
         if json_schema_format == "date":
@@ -77,7 +81,7 @@ class SQLTypeConverter:
     @staticmethod
     def get_failover_type() -> sqlalchemy.types.TypeEngine:
         """Get the 'last resort' type to use if no other type is found."""
-        return sqlalchemy.types.VARCHAR()
+        return sqlalchemy.types.JSON()
 
     def to_sql_type(
         self,
