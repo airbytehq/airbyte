@@ -19,11 +19,11 @@ data:
   name: S3
   remoteRegistries:
     pypi:
-      enabled: false
-      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      enabled: true
       packageName: airbyte-source-s3
   registries:
     cloud:
+      dockerImageTag: 4.4.1
       enabled: true
     oss:
       enabled: true
