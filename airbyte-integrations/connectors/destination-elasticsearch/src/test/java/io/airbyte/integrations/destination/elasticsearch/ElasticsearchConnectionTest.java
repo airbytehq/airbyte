@@ -20,7 +20,7 @@ public class ElasticsearchConnectionTest {
     config.getAuthenticationMethod().setMethod(ElasticsearchAuthenticationMethod.none);
     final var connection = new ElasticsearchConnection(config);
     final var headers = connection.configureHeaders(config);
-    Assertions.assertEquals(0, headers.length);
+    Assertions.assertEquals(1, headers.length);
   }
 
   @Test
@@ -32,7 +32,8 @@ public class ElasticsearchConnectionTest {
     config.getAuthenticationMethod().setMethod(ElasticsearchAuthenticationMethod.basic);
     final var connection = new ElasticsearchConnection(config);
     final var headers = connection.configureHeaders(config);
-    Assertions.assertEquals(1, headers.length);
+
+    Assertions.assertEquals(2, headers.length); // 1 - auth, 2 - user-agent
 
     final var headerValues = headers[0].getValue().split(" ");
     Assertions.assertEquals("Basic", headerValues[0]);
@@ -49,7 +50,7 @@ public class ElasticsearchConnectionTest {
     config.getAuthenticationMethod().setMethod(ElasticsearchAuthenticationMethod.secret);
     final var connection = new ElasticsearchConnection(config);
     final var headers = connection.configureHeaders(config);
-    Assertions.assertEquals(1, headers.length);
+    Assertions.assertEquals(2, headers.length);
 
     final var headerValues = headers[0].getValue().split(" ");
     Assertions.assertEquals("ApiKey", headerValues[0]);
@@ -57,4 +58,21 @@ public class ElasticsearchConnectionTest {
     Assertions.assertTrue("id:secret".contentEquals(new String(decoded, Charset.defaultCharset())));
   }
 
+  @Test
+  public void testDefaultUserAgent() {
+    final var config = new ConnectorConfiguration();
+    config.setEndpoint(endpoint);
+    config.getAuthenticationMethod().setUsername("user");
+    config.getAuthenticationMethod().setPassword("password");
+    config.getAuthenticationMethod().setMethod(ElasticsearchAuthenticationMethod.basic);
+    final var connection = new ElasticsearchConnection(config);
+    final var headers = connection.configureHeaders(config);
+
+    Assertions.assertEquals(2, headers.length); // 1 - auth, 2 - user-agent
+    final var headerName = headers[1].getName();
+    final var headerValue = headers[1].getValue();
+    Assertions.assertNotNull(headerValue);
+    Assertions.assertEquals(headerName, "user-agent");
+    Assertions.assertTrue(headerValue.matches("airbyte-destination-elasticsearch/.*"));
+  }
 }
