@@ -203,8 +203,8 @@ class GradleTask(Step, ABC):
     async def get_step_result(self, container: Container) -> StepResult:
         step_result = await super().get_step_result(container)
         return StepResult(
-            step_result.step,
-            step_result.status,
+            step=step_result.step,
+            status=step_result.status,
             stdout=step_result.stdout,
             stderr=step_result.stderr,
             report=await self._collect_test_report(container),
@@ -238,7 +238,7 @@ class GradleTask(Step, ABC):
         return render_junit_xml(testsuites)
 
 
-def render_junit_xml(testsuites: List[dict[str, dict]]) -> str:
+def render_junit_xml(testsuites: List[Any]) -> str:
     """Renders the JUnit XML report as something readable in the HTML test report."""
     # Transform the dict contents.
     indent = "  "
