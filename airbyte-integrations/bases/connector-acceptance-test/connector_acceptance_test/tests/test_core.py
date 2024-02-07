@@ -978,9 +978,11 @@ class TestBasicRead(BaseTest):
             return inputs.validate_schema
 
     @pytest.fixture(name="should_validate_stream_statuses")
-    def should_validate_stream_statuses_fixture(self, inputs: BasicReadTestConfig, test_strictness_level: Config.TestStrictnessLevel):
+    def should_validate_stream_statuses_fixture(self, inputs: BasicReadTestConfig, test_strictness_level: Config.TestStrictnessLevel, connector_metadata: dict):
         if not inputs.validate_stream_statuses and test_strictness_level is Config.TestStrictnessLevel.high:
             pytest.fail("High strictness level error: validate_stream_statuses must be set to true in the basic read test configuration.")
+        elif connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+            return False
         else:
             return inputs.validate_stream_statuses
 
