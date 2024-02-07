@@ -241,3 +241,12 @@ ignore_missing_imports = true  # No stubs yet (😢)
 [tool.poetry.scripts]
 generate-docs = "docs:run"
 airbyte-lib-validate-source = "airbyte_lib.validate:run"
+
+[tool.poe.tasks]
+test = "pytest tests"
+
+[tool.airbyte_ci]
+extra_poetry_groups = ["dev"]
+poe_tasks = ["test"]
+required_environment_variables = ["GCP_GSM_CREDENTIALS"]
+side_car_docker_engine = true
