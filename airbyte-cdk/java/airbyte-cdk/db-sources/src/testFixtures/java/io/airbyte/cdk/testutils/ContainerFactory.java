@@ -87,37 +87,34 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
   public final C exclusive(String imageName, String... methods) {
     DockerImageName dockerImageName = DockerImageName.parse(imageName);
     List<String> methodList = methods == null ? Collections.emptyList() : Arrays.asList(methods);
-    return (C) createContainerSupplier(dockerImageName, methodList).get();
+    return (C) createAndStartContainer(dockerImageName, methodList);
   }
 
   private ContainerOrException createContainerOrError(ContainerKey containerKey) {
     DockerImageName imageName = containerKey.imageName();
     List<String> methodNames = containerKey.methods();
-    return new ContainerOrException(createContainerSupplier(imageName, methodNames));
+    return new ContainerOrException(() -> createAndStartContainer(imageName, methodNames));
   }
 
-  private Supplier<GenericContainer<?>> createContainerSupplier(DockerImageName imageName, List<String> methodNames) {
-    return () -> {
-      LOGGER.info("Creating new shared container based on {} with {}.", imageName, methodNames);
-      try {
-        GenericContainer<?> container = createNewContainer(imageName);
-
-        final var methods = new ArrayList<Method>();
-        for (String methodName : methodNames) {
-          methods.add(getClass().getMethod(methodName, container.getClass()));
-        }
-        container.withLogConsumer(new Slf4jLogConsumer(LOGGER));
-        for (Method method : methods) {
-          LOGGER.info("Calling {} in {} on new shared container based on {}.",
-              method.getName(), getClass().getName(), imageName);
-          method.invoke(this, container);
-        }
-        container.start();
-        return container;
-      } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        throw new RuntimeException(e);
+  private GenericContainer<?> createAndStartContainer(DockerImageName imageName, List<String> methodNames) {
+    LOGGER.info("Creating new shared container based on {} with {}.", imageName, methodNames);
+    try {
+      GenericContainer<?> container = createNewContainer(imageName);
+      final var methods = new ArrayList<Method>();
+      for (String methodName : methodNames) {
+        methods.add(getClass().getMethod(methodName, container.getClass()));
       }
-    };
+      container.withLogConsumer(new Slf4jLogConsumer(LOGGER));
+      for (Method method : methods) {
+        LOGGER.info("Calling {} in {} on new shared container based on {}.",
+            method.getName(), getClass().getName(), imageName);
+        method.invoke(this, container);
+      }
+      container.start();
+      return container;
+    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }
