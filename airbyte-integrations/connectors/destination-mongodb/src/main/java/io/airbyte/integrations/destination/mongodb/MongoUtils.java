@@ -69,9 +69,9 @@ public class MongoUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoUtils.class);
 
   // Shared constants
-  public static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=admin&ssl=%s";
+  public static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=%s&ssl=%s";
   public static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
-  public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
+  public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
   public static final String USER = "user";
   public static final String INSTANCE_TYPE = "instance_type";
   public static final String INSTANCE = "instance";
