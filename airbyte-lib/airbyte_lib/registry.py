@@ -108,7 +108,10 @@ def get_connector_metadata(name: str) -> ConnectorMetadata:
 
 
 def get_available_connectors() -> list[str]:
-    """Return a list of all available connectors."""
+    """Return a list of all available connectors.
+
+    Connectors will be returned in alphabetical order, with the standard prefix "source-".
+    """
     return sorted(
         conn.name for conn in _get_registry_cache().values() if conn.pypi_package_name is not None
     )
