@@ -7,12 +7,11 @@ package io.airbyte.cdk.testutils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -76,9 +75,7 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
    */
   @SuppressWarnings("unchecked")
   public final C shared(String imageName, String... methods) {
-    List<String> methodList = methods == null ? Collections.emptyList() : Arrays.asList(methods);
-    DockerImageName dockerImageName = DockerImageName.parse(imageName);
-    final ContainerKey containerKey = new ContainerKey(getClass(), dockerImageName, methodList);
+    final var containerKey = new ContainerKey(getClass(), DockerImageName.parse(imageName), Stream.of(methods).toList());
     // We deliberately avoid creating the container itself eagerly during the evaluation of the map value.
     // Container creation can be exceedingly slow.
     // Furthermore, we need to handle exceptions raised during container creation.
@@ -94,9 +91,7 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
    */
   @SuppressWarnings("unchecked")
   public final C exclusive(String imageName, String... methods) {
-    DockerImageName dockerImageName = DockerImageName.parse(imageName);
-    List<String> methodList = methods == null ? Collections.emptyList() : Arrays.asList(methods);
-    return (C) createAndStartContainer(dockerImageName, methodList);
+    return (C) createAndStartContainer(DockerImageName.parse(imageName), Stream.of(methods).toList());
   }
 
   private GenericContainer<?> createAndStartContainer(DockerImageName imageName, List<String> methodNames) {
