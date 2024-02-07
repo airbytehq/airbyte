@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[file-based]>=0.60.1",
+    "airbyte-cdk[file-based]>=0.61.0",
     "google-api-python-client==2.104.0",
     "google-auth-httplib2==0.1.1",
     "google-auth-oauthlib==1.1.0",
