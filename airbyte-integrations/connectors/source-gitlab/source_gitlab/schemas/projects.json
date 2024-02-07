@@ -504,6 +504,12 @@
     },
     "ci_restrict_pipeline_cancellation_role": {
       "type": ["null", "string"]
+    },
+    "repository_object_format": {
+      "type": ["null", "string"]
+    },
+    "warn_about_potentially_unwanted_characters": {
+      "type": ["null", "boolean"]
     }
   }
 }
