@@ -15,9 +15,9 @@ from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from requests.auth import AuthBase
 
-from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from ..exceptions import DefaultBackoffException
 
 logger = logging.getLogger("airbyte")

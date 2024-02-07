@@ -3,7 +3,7 @@
 #
 
 import pytest
-from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, get_secret_paths, get_secrets, update_secrets, add_to_secrets
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets, filter_secrets, get_secret_paths, get_secrets, update_secrets
 
 SECRET_STRING_KEY = "secret_key1"
 SECRET_STRING_VALUE = "secret_value"
