@@ -134,6 +134,17 @@ class AirbyteLibInputError(AirbyteError, ValueError):
     input_value: str | None = None
 
 
+class AirbyteLibNoStreamsSelectedError(AirbyteLibInputError):
+    """No streams were selected for the source."""
+
+    guidance = (
+        "Please call `select_streams()` to select at least one stream from the list provided. "
+        "You can also call `select_all_streams()` to select all available streams for this source."
+    )
+    connector_name: str | None = None
+    available_streams: list[str] | None = None
+
+
 # AirbyteLib Cache Errors
 
 
