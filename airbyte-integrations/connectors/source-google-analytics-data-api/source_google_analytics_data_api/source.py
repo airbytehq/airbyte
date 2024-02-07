@@ -213,9 +213,11 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             }
         )
 
-        # change the type of `conversions:purchase` metric from int to float: https://github.com/airbytehq/oncall/issues/4130
-        if self.config.get("convert_conversions_purchase", False) and "conversions:purchase" in schema["properties"]:
-            schema["properties"]["conversions:purchase"]["type"] = ["null", "float"]
+        # change the type of `conversions:*` metrics from int to float: https://github.com/airbytehq/oncall/issues/4130
+        if self.config.get("convert_conversions_event", False):
+            for schema_field in schema["properties"]:
+                if schema_field.startswith("conversions:"):
+                    schema["properties"][schema_field]["type"] = ["null", "float"]
 
         return schema
 
@@ -255,9 +257,11 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
         metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}]) if "name" in h}
 
-        # change the type of `conversions:purchase` metric from int to float: https://github.com/airbytehq/oncall/issues/4130
-        if self.config.get("convert_conversions_purchase", False) and "conversions:purchase" in metrics_type_map:
-            metrics_type_map["conversions:purchase"] = "TYPE_FLOAT"
+        # change the type of `conversions:*` metrics from int to float: https://github.com/airbytehq/oncall/issues/4130
+        if self.config.get("convert_conversions_event", False):
+            for schema_field in metrics_type_map:
+                if schema_field.startswith("conversions:"):
+                    metrics_type_map[schema_field] = "TYPE_FLOAT"
 
         for row in r.get("rows", []):
             record = {
