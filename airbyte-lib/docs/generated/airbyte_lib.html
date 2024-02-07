@@ -568,13 +568,45 @@ methods except for __getitem__, __iter__, and __len__.</p>
     </div>
     <a class="headerlink" href="#Source.set_streams"></a>
     
-            <div class="docstring"><p>Optionally, select the stream names that should be read from the connector.</p>
+            <div class="docstring"><p>Deprecated. See select_streams().</p>
+</div>
+
+
+                            </div>
+                            <div id="Source.select_all_streams" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">select_all_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.select_all_streams"></a>
+    
+            <div class="docstring"><p>Select all streams.</p>
+
+<p>This is a more streamlined equivalent to:</p>
+
+<blockquote>
+  <p>source.select_streams(source.get_available_streams()).</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="Source.select_streams" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">select_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.select_streams"></a>
+    
+            <div class="docstring"><p>Select the stream names that should be read from the connector.</p>
 
 <p>Currently, if this is not set, all streams will be read.</p>
-
-<p>TODO: In the future if not set, the default behavior may exclude streams which the connector
-would default to disabled. (For instance, streams that require a premium license
-are sometimes disabled by default within the connector.)</p>
 </div>
 
 
@@ -591,7 +623,7 @@ are sometimes disabled by default within the connector.)</p>
     
             <div class="docstring"><p>Get the selected streams.</p>
 
-<p>If no streams are selected, return all available streams.</p>
+<p>If no streams are selected, return an empty list.</p>
 </div>
 
 

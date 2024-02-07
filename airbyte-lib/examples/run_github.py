@@ -24,7 +24,7 @@ source.set_config(
     }
 )
 source.check()
-source.set_streams(["issues", "pull_requests", "commits"])
+source.select_streams(["issues", "pull_requests", "commits"])
 
 result = source.read()
 
