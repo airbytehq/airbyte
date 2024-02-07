@@ -1,12 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import html
+import re
 from abc import ABC
 from typing import Any, ClassVar, List, Optional, Tuple
 
 import pipelines.dagger.actions.system.docker
-from dagger import CacheSharingMode, CacheVolume
+import xmltodict
+from dagger import CacheSharingMode, CacheVolume, Container, QueryError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
@@ -33,6 +35,7 @@ class GradleTask(Step, ABC):
     gradle_task_name: ClassVar[str]
     bind_to_docker_host: ClassVar[bool] = False
     mount_connector_secrets: ClassVar[bool] = False
+    with_test_report: ClassVar[bool] = False
     accept_extra_params = True
 
     @property
@@ -196,3 +199,84 @@ class GradleTask(Step, ABC):
             )
         )
         return await self.get_step_result(gradle_container)
+
+    async def get_step_result(self, container: Container) -> StepResult:
+        step_result = await super().get_step_result(container)
+        return StepResult(
+            step=step_result.step,
+            status=step_result.status,
+            stdout=step_result.stdout,
+            stderr=step_result.stderr,
+            report=await self._collect_test_report(container),
+            output_artifact=step_result.output_artifact,
+        )
+
+    async def _collect_test_report(self, gradle_container: Container) -> Optional[str]:
+        if not self.with_test_report:
+            return None
+
+        junit_xml_path = f"{self.context.connector.code_directory}/build/test-results/{self.gradle_task_name}"
+        testsuites = []
+        try:
+            junit_xml_dir = await gradle_container.directory(junit_xml_path)
+            for file_name in await junit_xml_dir.entries():
+                if file_name.endswith(".xml"):
+                    junit_xml = await junit_xml_dir.file(file_name).contents()
+                    # This will be embedded in the HTML report in a <pre lang="xml"> block.
+                    # The java logging backend will have already taken care of masking any secrets.
+                    # Nothing to do in that regard.
+                    try:
+                        if testsuite := xmltodict.parse(junit_xml):
+                            testsuites.append(testsuite)
+                    except Exception as e:
+                        self.context.logger.error(str(e))
+                        self.context.logger.warn(f"Failed to parse junit xml file {file_name}.")
+        except QueryError as e:
+            self.context.logger.error(str(e))
+            self.context.logger.warn(f"Failed to retrieve junit test results from {junit_xml_path} gradle container.")
+            return None
+        return render_junit_xml(testsuites)
+
+
+MAYBE_STARTS_WITH_XML_TAG = re.compile("^ *<")
+ESCAPED_ANSI_COLOR_PATTERN = re.compile(r"\?\[m|\?\[[34][0-9]m")
+
+
+def render_junit_xml(testsuites: List[Any]) -> str:
+    """Renders the JUnit XML report as something readable in the HTML test report."""
+    # Transform the dict contents.
+    indent = "  "
+    for testsuite in testsuites:
+        testsuite = testsuite.get("testsuite")
+        massage_system_out_and_err(testsuite, indent, 4)
+        if testcases := testsuite.get("testcase"):
+            if not isinstance(testcases, list):
+                testcases = [testcases]
+            for testcase in testcases:
+                massage_system_out_and_err(testcase, indent, 5)
+    # Transform back to XML string.
+    # Try to respect the JUnit XML test result schema.
+    root = {"testsuites": {"testsuite": testsuites}}
+    xml = xmltodict.unparse(root, pretty=True, short_empty_elements=True, indent=indent)
+    # Escape < and > and so forth to make them render properly, but not in the log messages.
+    # These lines will already have been escaped by xmltodict.unparse.
+    lines = xml.splitlines()
+    for idx, line in enumerate(lines):
+        if MAYBE_STARTS_WITH_XML_TAG.match(line):
+            lines[idx] = html.escape(line)
+    return "\n".join(lines)
+
+
+def massage_system_out_and_err(d: dict, indent: str, indent_levels: int) -> None:
+    """Makes the system-out and system-err text prettier."""
+    if d:
+        for key in ["system-out", "system-err"]:
+            if s := d.get(key):
+                lines = s.splitlines()
+                s = ""
+                for line in lines:
+                    stripped = line.strip()
+                    if stripped:
+                        s += "\n" + indent * indent_levels + ESCAPED_ANSI_COLOR_PATTERN.sub("", line.strip())
+                s = s + "\n" + indent * (indent_levels - 1) if s else None
+                d[key] = s

@@ -267,6 +267,11 @@ subprojects { subproj ->
             // Swallow the logs when running in airbyte-ci, rely on test reports instead.
             showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
         }
+        reports {
+            junitXml {
+                outputPerTestCase = true
+            }
+        }
 
         // Set the timezone to UTC instead of picking up the host machine's timezone,
         // which on a developer's laptop is more likely to be PST.
