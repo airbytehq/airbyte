@@ -89,6 +89,9 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
     return (C) containerOrError.container();
   }
 
+  /**
+   * Returns an exclusive instance of the testcontainer.
+   */
   @SuppressWarnings("unchecked")
   public final C exclusive(String imageName, String... methods) {
     DockerImageName dockerImageName = DockerImageName.parse(imageName);
