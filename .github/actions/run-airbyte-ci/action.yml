@@ -111,11 +111,6 @@ runs:
       with:
         airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
 
-    - name: Run mysql
-      id: run-mysql-service
-      run: |
-        sudo /etc/init.d/mysql start
-
     - name: Run airbyte-ci
       id: run-airbyte-ci
       shell: bash
