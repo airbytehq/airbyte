@@ -26,5 +26,4 @@ data:
   supportLevel: certified
   tags:
     - language:java
-    - language:python
 metadataSpecVersion: "1.0"
