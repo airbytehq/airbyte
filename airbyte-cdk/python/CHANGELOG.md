@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.61.1
+Align version in CDK Dockerfile to be consistent. Before this change, the docker images was mistakenly pinned to version 0.58.5.
+
 ## 0.61.0
 File-based CDK: log warning on no sync mode instead of raising exception
 
