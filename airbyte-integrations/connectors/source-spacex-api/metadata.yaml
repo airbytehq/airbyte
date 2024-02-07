@@ -8,6 +8,10 @@ data:
   icon: spacex.svg
   license: MIT
   name: SpaceX API
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-spacex-api
   registries:
     cloud:
       enabled: true

@@ -17,6 +17,10 @@ data:
   icon: freshdesk.svg
   license: MIT
   name: Freshdesk
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-freshdesk
   registries:
     cloud:
       enabled: true

@@ -109,6 +109,24 @@
           "items": {
             "type": ["null", "integer"]
           }
+        },
+        "contentIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
+        },
+        "quoteIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
+        },
+        "marketingEventIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
         }
       }
     },

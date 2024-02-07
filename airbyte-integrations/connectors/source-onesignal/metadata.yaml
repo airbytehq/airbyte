@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "onesignal.com"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-onesignal
   registries:
     oss:
       enabled: true
