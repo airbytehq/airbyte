@@ -2243,10 +2243,10 @@
         "default": false,
         "order": 6
       },
-      "convert_conversions_purchase": {
+      "convert_conversions_event": {
         "type": "boolean",
-        "title": "Convert `conversions:purchase` Metric to Float",
-        "description": "Determines whether the `conversions:purchase` metric, typically returned as an integer, should be converted to a float to prevent rounding. This option is useful if you're encountering issues with the API returning float values for the `conversions:purchase` field.",
+        "title": "Convert `conversions:*` Metrics to Float",
+        "description": "Enables conversion of `conversions:*` event metrics from integers to floats. This is beneficial for preventing data rounding when the API returns float values for any `conversions:*` fields.",
         "default": false,
         "order": 7
       }
