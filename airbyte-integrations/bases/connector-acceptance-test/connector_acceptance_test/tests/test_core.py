@@ -1256,19 +1256,22 @@ class TestBasicRead(BaseTest):
 
     @staticmethod
     def _validate_stream_statuses(configured_catalog: ConfiguredAirbyteCatalog, statuses: List[AirbyteStreamStatusTraceMessage]):
-        """Validate all statuses for all streams in the catalogs were emitted in correct order"""
+        """Validate all statuses for all streams in the catalogs were emitted in correct order:
+        1. STARTED
+        2. RUNNING (can be >1)
+        3. COMPLETE
+        """
         stream_statuses = defaultdict(list)
         for status in statuses:
-            stream_statuses[status.stream_descriptor.name].append(status.status)
+            stream_statuses[f"{status.stream_descriptor.namespace}-{status.stream_descriptor.name}"].append(status.status)
 
-        assert set(x.stream.name for x in configured_catalog.streams) == set(stream_statuses), "All stream must emit status"
+        assert set(f"{x.stream.namespace}-{x.stream.name}" for x in configured_catalog.streams) == set(stream_statuses), "All stream must emit status"
 
         for stream_name, status_list in stream_statuses.items():
-            assert status_list == [
-                AirbyteStreamStatus.STARTED,
-                AirbyteStreamStatus.RUNNING,
-                AirbyteStreamStatus.COMPLETE,
-            ], f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`, `COMPLETE`"
+            assert len(status_list) >= 3, f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`,... `COMPLETE`"
+            assert status_list[0] == AirbyteStreamStatus.STARTED
+            assert status_list[-1] == AirbyteStreamStatus.COMPLETE
+            assert all(x == AirbyteStreamStatus.RUNNING for x in status_list[1:-1])
 
 
 @pytest.mark.default_timeout(TEN_MINUTES)
