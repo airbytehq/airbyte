@@ -33,7 +33,7 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
   private static class ContainerOrException {
 
     private final Supplier<GenericContainer<?>> containerSupplier;
-    private volatile RuntimeException exception = null;
+    private volatile RuntimeException _exception = null;
     private volatile GenericContainer<?> _container = null;
 
     ContainerOrException(Supplier<GenericContainer<?>> containerSupplier) {
@@ -41,16 +41,22 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
     }
 
     GenericContainer<?> container() {
-      if (exception == null && _container == null) {
+      if (_exception == null && _container == null) {
         synchronized (this) {
-          if (_container == null && exception == null) {
+          if (_container == null && _exception == null) {
             try {
               _container = containerSupplier.get();
+              if (_container == null) {
+                throw new IllegalStateException("testcontainer instance was not constructed");
+              }
             } catch (RuntimeException e) {
-              exception = e;
+              _exception = e;
             }
           }
         }
+      }
+      if (_exception != null) {
+        throw _exception;
       }
       return _container;
     }
@@ -74,9 +80,6 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
     DockerImageName dockerImageName = DockerImageName.parse(imageName);
     final ContainerKey containerKey = new ContainerKey(getClass(), dockerImageName, methodList);
     ContainerOrException containerOrError = SHARED_CONTAINERS.computeIfAbsent(containerKey, this::createContainerOrError);
-    if (containerOrError.container() == null) {
-      throw containerOrError.exception;
-    }
     return (C) containerOrError.container();
   }
 
