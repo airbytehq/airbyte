@@ -22,8 +22,8 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * ContainerFactory is the companion to {@link TestDatabase} and provides it with
- * suitable testcontainer instances.
+ * ContainerFactory is the companion to {@link TestDatabase} and provides it with suitable
+ * testcontainer instances.
  */
 public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
 
@@ -82,12 +82,12 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
   @SuppressWarnings("unchecked")
   public final C shared(String imageName, String... methods) {
     final var containerKey = new ContainerKey(getClass(), DockerImageName.parse(imageName), Stream.of(methods).toList());
-    // We deliberately avoid creating the container itself eagerly during the evaluation of the map value.
+    // We deliberately avoid creating the container itself eagerly during the evaluation of the map
+    // value.
     // Container creation can be exceedingly slow.
     // Furthermore, we need to handle exceptions raised during container creation.
-    ContainerOrException containerOrError = SHARED_CONTAINERS.computeIfAbsent(containerKey, key ->
-      new ContainerOrException(() -> createAndStartContainer(key.imageName(), key.methods()))
-    );
+    ContainerOrException containerOrError = SHARED_CONTAINERS.computeIfAbsent(containerKey,
+        key -> new ContainerOrException(() -> createAndStartContainer(key.imageName(), key.methods())));
     // Instead, the container creation (if applicable) is deferred to here.
     return (C) containerOrError.container();
   }
