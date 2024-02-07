@@ -19,6 +19,9 @@ export const SpecSchema = ({
 function JSONSchemaViewer(props) {
   return <div>
     <Heading as="h4">Config fields reference</Heading>
+    <pre>
+      {JSON.stringify(props.schema, null, 2)}
+    </pre>
     <div class={styles.grid}>
       <div class={className(styles.headerItem, styles.tableHeader)}>
         Field
@@ -83,11 +86,11 @@ function isObjectArray(schema) {
 }
 
 function showCollapsible(schema) {
-  return (schema.type === "array" && schema.items && schema.items.type !== "object") || (schema.type === "object" && schema.properties) || showDescription(schema)
+  return (schema.type === "object" && schema.properties) || showDescription(schema)
 }
 
 function showDescription(schema) {
-  return typeof schema.default !== "undefined" || schema.pattern || schema.examples || schema.description || isOneOf(schema);
+  return typeof schema.default !== "undefined" || schema.pattern || schema.examples || schema.description || isOneOf(schema) || (schema.type === "array" && schema.items && schema.items.type === "object");
 }
 
 function getIndentStyle(depth) {
