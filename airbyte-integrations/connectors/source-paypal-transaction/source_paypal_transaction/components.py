@@ -5,6 +5,7 @@
 import base64
 import logging
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 import backoff
 import requests
@@ -67,13 +68,21 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
                 , data=request_body
                 , headers=request_headers
             )
+
             self._log_response(response)
             response.raise_for_status()
+            
+            response_json = response.json()
+
+            self.access_token = response_json.get('access_token')
+
             return response.json()
+        
         except requests.exceptions.RequestException as e:
-            if e.response.status_code == 429 or e.response.status_code >= 500:
+            if e.response and (e.response.status_code == 429 or e.response.status_code >= 500):
                 raise DefaultBackoffException(request=e.response.request, response=e.response)
             raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
+        
         

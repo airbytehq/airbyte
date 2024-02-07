@@ -6,53 +6,83 @@
         "id": { "type": ["null", "string"] },
         "status": { "type": ["null", "string"] },
         "primary_recipients": {
-            "type": ["null", "object"],
-            "properties": {
-                "billing_info": {
-                    "type": ["null", "object"],
-                    "properties": {
-                        "business_name": {"type": ["null", "string"]},
-                        "name": {"type": ["null", "string"]},
-                        "address": {"type": ["null", "string"]},
-                        "phones": {"type": ["null", "array"]},
-                        "additiona_info": {"type": ["null", "string"]},
-                        "email_address": {"type": ["null", "string"]},
-                        "language": {"type": ["null", "string"]}
-                    },
-                "shipping_info": {
-                    "type": ["null", "object"],
-                    "properties": {
-                        "business_name": {"type": ["null", "string"]},
-                        "name": {
-                            "type": ["null", "object"],
-                            "properties": {
-                                "prefix": {"type": ["null", "string"]},
-                                "given_name": {"type": ["null", "string"]},
-                                "surname": {"type": ["null", "string"]},
-                                "middle_name": {"type": ["null", "string"]},
-                                "suffix": {"type": ["null", "string"]},
-                                "alternate_full_name": {"type": ["null", "string"]},
-                                "full_name": {"type": ["null", "string"]}
+            "type": ["null", "array"],
+            "items": {
+                "type": ["null", "object"],
+                "properties": {
+                    "billing_info": {
+                        "type": ["null", "object"],
+                        "properties": {
+                            "business_name": {"type": ["null", "string"]},
+                            "name": {
+                                "type": ["null", "object"],
+                                "properties": {
+                                    "prefix": {"type": ["null", "string"]},
+                                    "given_name": {"type": ["null", "string"]},
+                                    "surname": {"type": ["null", "string"]},
+                                    "middle_name": {"type": ["null", "string"]},
+                                    "suffix": {"type": ["null", "string"]},
+                                    "alternate_full_name": {"type": ["null", "string"]},
+                                    "full_name": {"type": ["null", "string"]}
+                                    }
+                            },
+                            "address": {
+                                "type": ["null", "object"],
+                                "properties": {
+                                    "address_line_1": {"type": ["null", "string"]},
+                                    "address_line_2": {"type": ["null", "string"]},
+                                    "address_line_3": {"type": ["null", "string"]},
+                                    "address_line_4": {"type": ["null", "string"]},
+                                    "admin_area_1": {"type": ["null", "string"]},
+                                    "admin_area_2": {"type": ["null", "string"]},
+                                    "admin_area_3": {"type": ["null", "string"]},
+                                    "postal_code": {"type": ["null", "string"]},
+                                    "country_code": {"type": ["null", "string"]},
+                                    "address_details": {"type": ["null", "object"]},
+                                    "phones": {"type": ["null", "array"]},
+                                    "additiona_info": {"type": ["null", "string"]},
+                                    "email_address": {"type": ["null", "string"]},
+                                    "language": {"type": ["null", "string"]}
                                 }
-                        },
-                        "address": {
-                            "type": ["null", "object"],
-                            "properties": {
-                                "address_line_1": {"type": ["null", "string"]},
-                                "address_line_2": {"type": ["null", "string"]},
-                                "address_line_3": {"type": ["null", "string"]},
-                                "admin_area_1": {"type": ["null", "string"]},
-                                "admin_area_2": {"type": ["null", "string"]},
-                                "admin_area_3": {"type": ["null", "string"]},
-                                "postal_code": {"type": ["null", "string"]},
-                                "country_code": {"type": ["null", "string"]},
-                                "address_details": {"type": ["null", "object"]}
+                            }
+                        }
+                    },
+                    "shipping_info": {
+                        "type": ["null", "object"],
+                        "properties": {
+                            "business_name": {"type": ["null", "string"]},
+                            "name": {
+                                "type": ["null", "object"],
+                                "properties": {
+                                    "prefix": {"type": ["null", "string"]},
+                                    "given_name": {"type": ["null", "string"]},
+                                    "surname": {"type": ["null", "string"]},
+                                    "middle_name": {"type": ["null", "string"]},
+                                    "suffix": {"type": ["null", "string"]},
+                                    "alternate_full_name": {"type": ["null", "string"]},
+                                    "full_name": {"type": ["null", "string"]}
+                                    }
+                            },
+                            "address": {
+                                "type": ["null", "object"],
+                                "properties": {
+                                    "address_line_1": {"type": ["null", "string"]},
+                                    "address_line_2": {"type": ["null", "string"]},
+                                    "address_line_3": {"type": ["null", "string"]},
+                                    "address_line_4": {"type": ["null", "string"]},
+                                    "admin_area_1": {"type": ["null", "string"]},
+                                    "admin_area_2": {"type": ["null", "string"]},
+                                    "admin_area_3": {"type": ["null", "string"]},
+                                    "postal_code": {"type": ["null", "string"]},
+                                    "country_code": {"type": ["null", "string"]},
+                                    "address_details": {"type": ["null", "object"]}
+                                }
                             }
                         }
                     }
+            
                 }
             }
-        }
         },
         "additional_recipients": { "type": ["null", "array"]},
         "detail": {
@@ -77,12 +107,12 @@
                 },
                 "currency_code": { "type": ["null", "string"] },
                 "invoice_number": { "type": ["null", "string"] },
-                "invoice_date": { "type": ["null", "string"], "format": "date-time" },            
+                "invoice_date": { "type": ["null", "string"], "format": "date" },            
                 "payment_term": {
                     "type": ["null", "object"],
                     "properties": {
                         "term_type": { "type": ["null", "string"]},
-                        "due_date": { "type": ["null", "string"], "format": "date-time" }
+                        "due_date": { "type": ["null", "string"], "format": "date" }
                     }
                 },
                 "metadata": {

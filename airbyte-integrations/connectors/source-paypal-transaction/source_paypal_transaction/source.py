@@ -4,6 +4,7 @@
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 import logging
+from airbyte_cdk import AirbyteLogger
 logger = logging.getLogger("airbyte")
 
 
