@@ -251,10 +251,9 @@ def render_junit_xml(testsuites: List[Any]) -> str:
             for testcase in testcases:
                 massage_system_out_and_err(testcase, indent, 5)
     # Transform back to XML string.
+    # Try to respect the JUnit XML test result schema.
     root = {"testsuites": {"testsuite": testsuites}}
     xml = xmltodict.unparse(root, pretty=True, short_empty_elements=True, indent=indent)
-    # Strip the <?xml ... header.
-    xml = xml[xml.find("\n") + 1 :]
     # Escape < and > and so forth to make them render properly.
     return html.escape(xml)
 
