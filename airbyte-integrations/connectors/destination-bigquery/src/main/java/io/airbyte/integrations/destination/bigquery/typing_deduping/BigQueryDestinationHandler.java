@@ -24,6 +24,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.math.BigInteger;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,6 +51,11 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   public Optional<TableDefinition> findExistingTable(final StreamId id) {
     final Table table = bq.getTable(id.finalNamespace(), id.finalName());
     return Optional.ofNullable(table).map(Table::getDefinition);
+  }
+
+  @Override
+  public LinkedHashMap<String, TableDefinition> findExistingFinalTables(List<StreamId> streamIds) throws Exception {
+    return null;
   }
 
   @Override

@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - ${domain_name}/api/v2
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-freshservice
   registries:
     oss:
       enabled: true

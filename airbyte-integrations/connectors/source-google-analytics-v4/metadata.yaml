@@ -20,6 +20,10 @@ data:
   icon: google-analytics.svg
   license: Elv2
   name: Google Analytics (Universal Analytics)
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-analytics-v4
   registries:
     cloud:
       enabled: false

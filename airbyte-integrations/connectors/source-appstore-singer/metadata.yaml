@@ -8,6 +8,11 @@ data:
   icon: appstore.svg
   license: MIT
   name: Appstore
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-appstore-singer
   registries:
     cloud:
       enabled: false
