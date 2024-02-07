@@ -124,6 +124,7 @@ class AbstractOauth2Authenticator(AuthBase):
                 self._log_response(response)
                 return response_json
             else:
+                # log the response even if the request failed for troubleshooting purposes
                 self._log_response(response)
                 response.raise_for_status()
         except requests.exceptions.RequestException as e:
