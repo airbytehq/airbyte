@@ -22,6 +22,7 @@ public class MySQLContainerFactory extends ContainerFactory<MySQLContainer<?>> {
     var container = new MySQLContainer<>(imageName.asCompatibleSubstituteFor("mysql"))
         .withLogConsumer(new Slf4jLogConsumer(logger))
         .withAccessToHost(true)
+        .withUsername("root")
         .withInitScript("init.sql");
     return container;
   }
