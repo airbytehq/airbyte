@@ -64,7 +64,8 @@ public class MySQLContainerFactory extends ContainerFactory<MySQLContainer<?>> {
     container.start();
     try {
       for (String command : commands) {
-        container.execInContainer("sh", "-c", command);
+        var result = container.execInContainer("sh", "-c", command);
+        logger.atInfo().log("exec result: " + result.getStdout());
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);

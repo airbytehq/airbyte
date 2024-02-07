@@ -102,7 +102,6 @@ public class MySQLTestDatabase extends
 
   @Override
   protected Stream<Stream<String>> inContainerBootstrapCmd() {
-    System.out.println("User created: " + String.format("CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", getUserName(), getPassword()));
     return Stream.of(mysqlCmd(Stream.of(
         String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
         String.format("CREATE DATABASE \\`%s\\`", getDatabaseName()),
