@@ -21,7 +21,10 @@ public class MySQLContainerFactory implements ContainerFactory<MySQLContainer<?>
   @Override
   public MySQLContainer<?> createNewContainer(DockerImageName imageName) {
     var container = new MySQLContainer<>(imageName.asCompatibleSubstituteFor("mysql")).withLogConsumer(new Slf4jLogConsumer(logger))
-        .waitingFor(Wait.forListeningPort());
+        .withCreateContainerCmdModifier(cmd -> {
+          cmd.getHostConfig()
+              .withMemory(800l * 1024l * 1024l)
+              .withMemorySwap(1500l * 1024l * 1024l)});
     container.addEnv("MYSQL_ROOT_HOST", "%%");
     return container;
   }
