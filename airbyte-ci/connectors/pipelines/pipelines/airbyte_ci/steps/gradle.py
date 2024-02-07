@@ -238,6 +238,10 @@ class GradleTask(Step, ABC):
         return render_junit_xml(testsuites)
 
 
+MAYBE_STARTS_WITH_XML_TAG = re.compile("^ *<")
+ESCAPED_ANSI_COLOR_PATTERN = re.compile(r"\?\[m|\?\[[34][0-9]m")
+
+
 def render_junit_xml(testsuites: List[Any]) -> str:
     """Renders the JUnit XML report as something readable in the HTML test report."""
     # Transform the dict contents.
@@ -254,11 +258,13 @@ def render_junit_xml(testsuites: List[Any]) -> str:
     # Try to respect the JUnit XML test result schema.
     root = {"testsuites": {"testsuite": testsuites}}
     xml = xmltodict.unparse(root, pretty=True, short_empty_elements=True, indent=indent)
-    # Escape < and > and so forth to make them render properly.
-    return html.escape(xml)
-
-
-ESCAPED_ANSI_COLOR_PATTERN = re.compile("\?\[m|\?\[[34][0-9]m")
+    # Escape < and > and so forth to make them render properly, but not in the log messages.
+    # These lines will already have been escaped by xmltodict.unparse.
+    lines = xml.splitlines()
+    for idx, line in enumerate(lines):
+        if MAYBE_STARTS_WITH_XML_TAG.match(line):
+            lines[idx] = html.escape(line)
+    return "\n".join(lines)
 
 
 def massage_system_out_and_err(d: dict, indent: str, indent_levels: int) -> None:
