@@ -22,8 +22,8 @@ CONVERSION_MAP = {
     "time_without_timezone": sqlalchemy.types.TIME,
     # Technically 'object' and 'array' as JSON Schema types, not airbyte types.
     # We include them here for completeness.
-    "object": sqlalchemy.types.VARCHAR,
-    "array": sqlalchemy.types.VARCHAR,
+    "object": sqlalchemy.types.JSON,
+    "array": sqlalchemy.types.JSON,
 }
 
 
@@ -31,8 +31,8 @@ class SQLTypeConversionError(Exception):
     """An exception to be raised when a type conversion fails."""
 
 
-def _get_airbyte_type(
-    json_schema_property_def: dict[str, str | dict] | list[dict[str, str | dict]]
+def _get_airbyte_type(  # noqa: PLR0911
+    json_schema_property_def: dict[str, str | dict | list],
 ) -> tuple[str, str | None]:
     """Get the airbyte type and subtype from a JSON schema property definition.
 
@@ -45,9 +45,12 @@ def _get_airbyte_type(
     json_schema_type = json_schema_property_def.get("type", None)
     json_schema_format = json_schema_property_def.get("format", None)
 
-    # if json_schema_type is an array of two strings with one of them being "null", pick the other one
-    if isinstance(json_schema_type, list) and len(json_schema_type) == 2 and "null" in json_schema_type:
-        json_schema_type = [t for t in json_schema_type if t != "null"][0]
+    # if json_schema_type is an array of two strings with one of them being null, pick the other one
+    # this strategy is often used by connectors to indicate a field might not be set all the time
+    if isinstance(json_schema_type, list) and "null" in json_schema_type:
+        non_null_types = [t for t in json_schema_type if t != "null"]
+        if len(non_null_types) == 1:
+            json_schema_type = non_null_types[0]
 
     if json_schema_type == "string":
         if json_schema_format == "date":
@@ -65,6 +68,9 @@ def _get_airbyte_type(
     if json_schema_type == "object" and "properties" in json_schema_property_def:
         return "object", None
 
+    if json_schema_type == "array" and "items" in json_schema_property_def:
+        return "array", None
+
     err_msg = f"Could not determine airbyte type from JSON schema type: {json_schema_property_def}"
     raise SQLTypeConversionError(err_msg)
 
@@ -81,11 +87,11 @@ class SQLTypeConverter:
     @staticmethod
     def get_failover_type() -> sqlalchemy.types.TypeEngine:
         """Get the 'last resort' type to use if no other type is found."""
-        return sqlalchemy.types.JSON()
+        return sqlalchemy.types.VARCHAR()
 
     def to_sql_type(
         self,
-        json_schema_property_def: dict[str, str | dict],
+        json_schema_property_def: dict[str, str | dict | list],
     ) -> sqlalchemy.types.TypeEngine:
         """Convert a value to a SQL type."""
         try:

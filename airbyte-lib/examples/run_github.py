@@ -17,10 +17,13 @@ GITHUB_TOKEN = ab.get_secret("GITHUB_PERSONAL_ACCESS_TOKEN")
 
 source = ab.get_source("source-github")
 source.set_config(
-    {"repositories": ["airbytehq/integration-test"], "credentials": {"personal_access_token": GITHUB_TOKEN}}
+    {
+        "repositories": ["airbytehq/integration-test"],
+        "credentials": {"personal_access_token": GITHUB_TOKEN},
+    }
 )
 source.check()
-source.set_streams(["issues"])
+source.set_streams(["issues", "collaborators"])
 
 # for record in source.get_records("issues"):
 #     print(record)
