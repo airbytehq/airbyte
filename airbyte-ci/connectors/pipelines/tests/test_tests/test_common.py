@@ -299,3 +299,63 @@ class TestCheckBaseImageIsUsed:
         check_base_image_is_used_step = common.CheckBaseImageIsUsed(test_context)
         step_result = await check_base_image_is_used_step.run()
         assert step_result.status == StepStatus.FAILURE
+
+
+class TestCheckPythonRegistryPublishConfiguration:
+    @pytest.fixture
+    def test_context(self, mocker, dagger_client):
+        return mocker.MagicMock(dagger_client=dagger_client)
+
+    def _get_connector_with_metadata(self, mocker, tags, support_level, pypi=None):
+        connector = mocker.MagicMock()
+        connector.metadata = {
+            "supportLevel": support_level,
+            "tags": tags,
+            "connectorType": "source",
+        }
+        if pypi:
+            connector.metadata["remoteRegistries"] = {"pypi": pypi}
+        return connector
+
+    async def test_pass_on_community_connector_not_published(self, mocker, dagger_client):
+        test_context = mocker.MagicMock(
+            dagger_client=dagger_client, connector=self._get_connector_with_metadata(mocker, ["language:python"], "community")
+        )
+        check_python_registry_config = common.CheckPythonRegistryPublishConfiguration(test_context)
+        step_result = await check_python_registry_config.run()
+        assert step_result.status == StepStatus.SKIPPED
+
+    async def test_pass_on_java_connector_not_published(self, mocker, dagger_client):
+        test_context = mocker.MagicMock(
+            dagger_client=dagger_client, connector=self._get_connector_with_metadata(mocker, ["language:java"], "certified")
+        )
+        check_python_registry_config = common.CheckPythonRegistryPublishConfiguration(test_context)
+        step_result = await check_python_registry_config.run()
+        assert step_result.status == StepStatus.SKIPPED
+
+    async def test_pass_on_certified_connector_published(self, mocker, dagger_client):
+        test_context = mocker.MagicMock(
+            dagger_client=dagger_client,
+            connector=self._get_connector_with_metadata(mocker, ["language:python"], "certified", {"enabled": True}),
+        )
+        check_python_registry_config = common.CheckPythonRegistryPublishConfiguration(test_context)
+        step_result = await check_python_registry_config.run()
+        assert step_result.status == StepStatus.SUCCESS
+
+    async def test_pass_on_community_connector_published(self, mocker, dagger_client):
+        test_context = mocker.MagicMock(
+            dagger_client=dagger_client,
+            connector=self._get_connector_with_metadata(mocker, ["language:python"], "community", {"enabled": True}),
+        )
+        check_python_registry_config = common.CheckPythonRegistryPublishConfiguration(test_context)
+        step_result = await check_python_registry_config.run()
+        assert step_result.status == StepStatus.SUCCESS
+
+    async def test_fail_on_certified_connector_not_published(self, mocker, dagger_client):
+        test_context = mocker.MagicMock(
+            dagger_client=dagger_client,
+            connector=self._get_connector_with_metadata(mocker, ["language:python"], "certified", {"enabled": False}),
+        )
+        check_python_registry_config = common.CheckPythonRegistryPublishConfiguration(test_context)
+        step_result = await check_python_registry_config.run()
+        assert step_result.status == StepStatus.FAILURE

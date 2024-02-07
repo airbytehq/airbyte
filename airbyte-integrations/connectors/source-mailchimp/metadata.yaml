@@ -17,6 +17,10 @@ data:
   icon: mailchimp.svg
   license: MIT
   name: Mailchimp
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-mailchimp
   registries:
     cloud:
       enabled: true
