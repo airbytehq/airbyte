@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import shutil
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,32 @@ from airbyte_lib import exceptions as exc
 from airbyte_lib._executor import PathExecutor, VenvExecutor
 from airbyte_lib.registry import ConnectorMetadata, get_connector_metadata
 from airbyte_lib.source import Source
+
+
+def get_connector(
+    name: str,
+    config: dict[str, Any] | None = None,
+    *,
+    version: str | None = None,
+    pip_url: str | None = None,
+    local_executable: Path | str | None = None,
+    install_if_missing: bool = True,
+) -> Source:
+    """Deprecated. Use get_source instead."""
+    warnings.warn(
+        "The `get_connector()` function is deprecated and will be removed in a future version."
+        "Please use `get_source()` instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return get_source(
+        name=name,
+        config=config,
+        version=version,
+        pip_url=pip_url,
+        local_executable=local_executable,
+        install_if_missing=install_if_missing,
+    )
 
 
 def get_source(
