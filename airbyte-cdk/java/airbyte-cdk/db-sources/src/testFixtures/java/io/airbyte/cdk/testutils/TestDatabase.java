@@ -193,7 +193,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         LOGGER.debug("execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr());
       } else {
         LOGGER.error("execution failure, code {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
-        throw new RuntimeException("error executing bootstrap command: " + exec.getStdout() + ";" + exec.getStderr());
+        throw new RuntimeException("error executing bootstrap command: " + cmd + "; output: " + exec.getStdout() + "; error: " + exec.getStderr());
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
