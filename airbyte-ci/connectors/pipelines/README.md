@@ -640,6 +640,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.1.0  | [#34923](https://github.com/airbytehq/airbyte/pull/34923)  | Include gradle test reports in HTML connector test report.                                                                 |
 | 4.0.0  | [#34736](https://github.com/airbytehq/airbyte/pull/34736)  | Run poe tasks declared in internal poetry packages.                                         |
 | 3.10.4  | [#34867](https://github.com/airbytehq/airbyte/pull/34867)  | Remove connector ops team                                                                                                  |
 | 3.10.3  | [#34836](https://github.com/airbytehq/airbyte/pull/34836)  | Add check for python registry publishing enabled for certified python sources.                                             |
