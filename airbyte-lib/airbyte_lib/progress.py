@@ -8,6 +8,7 @@ import math
 import sys
 import time
 from contextlib import suppress
+from enum import Enum, auto
 from typing import cast
 
 from rich.errors import LiveError
@@ -15,6 +16,7 @@ from rich.live import Live as RichLive
 from rich.markdown import Markdown as RichMarkdown
 
 
+DEFAULT_REFRESHES_PER_SECOND = 2
 IS_REPL = hasattr(sys, "ps1")  # True if we're in a Python REPL, in which case we can use Rich.
 
 try:
@@ -24,6 +26,25 @@ try:
 except ImportError:
     ipy_display = None
     IS_NOTEBOOK = False
+
+
+class ProgressStyle(Enum):
+    """An enum of progress bar styles."""
+
+    AUTO = auto()
+    """Automatically select the best style for the environment."""
+
+    RICH = auto()
+    """A Rich progress bar."""
+
+    IPYTHON = auto()
+    """Use IPython display methods."""
+
+    PLAIN = auto()
+    """A plain text progress print."""
+
+    NONE = auto()
+    """Skip progress prints."""
 
 
 MAX_UPDATE_FREQUENCY = 1000
@@ -71,7 +92,10 @@ def _get_elapsed_time_str(seconds: int) -> str:
 class ReadProgress:
     """A simple progress bar for the command line and IPython notebooks."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        style: ProgressStyle = ProgressStyle.AUTO,
+    ) -> None:
         """Initialize the progress tracker."""
         # Streams expected (for progress bar)
         self.num_streams_expected = 0
@@ -95,20 +119,48 @@ class ReadProgress:
 
         self.last_update_time: float | None = None
 
-        self.rich_view: RichLive | None = None
-        if not IS_NOTEBOOK and not IS_REPL:
-            # If we're in a terminal, use a Rich view to display the progress updates.
-            self.rich_view = RichLive()
-            try:
-                self.rich_view.start()
-            except LiveError:
-                self.rich_view = None
+        self._rich_view: RichLive | None = None
+        self.style: ProgressStyle = style
+        if self.style == ProgressStyle.AUTO:
+            self.style = ProgressStyle.PLAIN
+            if IS_NOTEBOOK:
+                self.style = ProgressStyle.IPYTHON
+
+            elif IS_REPL:
+                self.style = ProgressStyle.PLAIN
+
+            else:
+                # Test for Rich availability:
+                self._rich_view = RichLive()
+                try:
+                    self._rich_view.start()
+                    self._rich_view.stop()
+                    self._rich_view = None
+                    self.style = ProgressStyle.RICH
+                except LiveError:
+                    # Rich live view not available. Using plain text progress.
+                    self._rich_view = None
+                    self.style = ProgressStyle.PLAIN
+
+    def _start(self) -> None:
+        """Start the progress bar."""
+        if self.style == ProgressStyle.RICH and not self._rich_view:
+            self._rich_view = RichLive(
+                auto_refresh=True,
+                refresh_per_second=DEFAULT_REFRESHES_PER_SECOND,
+            )
+            self._rich_view.start()
+
+    def _stop(self) -> None:
+        """Stop the progress bar."""
+        if self._rich_view:
+            with suppress(Exception):
+                self._rich_view.stop()
+                self._rich_view = None
 
     def __del__(self) -> None:
         """Close the Rich view."""
-        if self.rich_view:
-            with suppress(Exception):
-                self.rich_view.stop()
+        self._stop()
 
     def log_success(self) -> None:
         """Log success and stop tracking progress."""
@@ -118,9 +170,7 @@ class ReadProgress:
             self.finalize_end_time = time.time()
 
             self.update_display(force_refresh=True)
-            if self.rich_view:
-                with suppress(Exception):
-                    self.rich_view.stop()
+            self._stop()
 
     def reset(self, num_streams_expected: int) -> None:
         """Reset the progress tracker."""
@@ -143,6 +193,8 @@ class ReadProgress:
         self.total_records_finalized = 0
         self.total_batches_finalized = 0
         self.finalized_stream_names = set()
+
+        self._start()
 
     @property
     def elapsed_seconds(self) -> int:
@@ -242,10 +294,9 @@ class ReadProgress:
     def log_stream_finalized(self, stream_name: str) -> None:
         """Log that a stream has been finalized."""
         self.finalized_stream_names.add(stream_name)
+        self.update_display(force_refresh=True)
         if len(self.finalized_stream_names) == self.num_streams_expected:
             self.log_success()
-
-        self.update_display(force_refresh=True)
 
     def update_display(self, *, force_refresh: bool = False) -> None:
         """Update the display."""
@@ -259,13 +310,20 @@ class ReadProgress:
 
         status_message = self._get_status_message()
 
-        if IS_NOTEBOOK:
+        if self.style == ProgressStyle.IPYTHON:
             # We're in a notebook so use the IPython display.
             ipy_display.clear_output(wait=True)
             ipy_display.display(ipy_display.Markdown(status_message))
 
-        elif self.rich_view is not None:
-            self.rich_view.update(RichMarkdown(status_message))
+        elif self.style == ProgressStyle.RICH and self._rich_view is not None:
+            self._rich_view.update(RichMarkdown(status_message))
+
+        elif self.style == ProgressStyle.PLAIN:
+            # TODO: Add a plain text progress print option that isn't too noisy.
+            pass
+
+        elif self.style == ProgressStyle.NONE:
+            pass
 
         self.last_update_time = time.time()
 

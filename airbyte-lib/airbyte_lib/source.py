@@ -7,6 +7,7 @@ from contextlib import contextmanager, suppress
 from typing import TYPE_CHECKING, Any
 
 import jsonschema
+import pendulum
 import yaml
 from rich import print
 
@@ -338,7 +339,8 @@ class Source:
                 for msg in self._execute(["check", "--config", config_file]):
                     if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
                         if msg.connectionStatus.status != Status.FAILED:
-                            return  # Success!
+                            print(f"Connection check succeeded for `{self.name}`.")
+                            return
 
                         raise exc.AirbyteConnectorCheckFailedError(
                             help_url=self.docs_url,
@@ -534,6 +536,7 @@ class Source:
             stream_names=set(self.get_selected_streams()),
         )
         state = cache.get_state() if not force_full_refresh else None
+        print(f"Started `{self.name}` read operation at {pendulum.now().format('HH:mm:ss')}...")
         cache.process_airbyte_messages(
             self._tally_records(
                 self._read(
@@ -543,6 +546,7 @@ class Source:
             ),
             write_strategy=write_strategy,
         )
+        print(f"Completed `{self.name}` read operation at {pendulum.now().format('HH:mm:ss')}.")
 
         return ReadResult(
             processed_records=self._processed_records,

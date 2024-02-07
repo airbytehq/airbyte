@@ -57,6 +57,7 @@ def get_source(
                     raise FileNotFoundError(local_executable)
                 local_executable = Path(which_executable).absolute()
 
+        print(f"Using local `{name}` executable: {local_executable!s}")
         return Source(
             name=name,
             config=config,
@@ -65,6 +66,8 @@ def get_source(
                 path=local_executable,
             ),
         )
+
+    # else: we are installing a connector in a virtual environment:
 
     metadata: ConnectorMetadata | None = None
     try:
