@@ -22,6 +22,7 @@ public class LoggingHelper {
     YELLOW_BACKGROUND("\u001b[43m"), // destination
     GREEN_BACKGROUND("\u001b[42m"), // normalization
     CYAN_BACKGROUND("\u001b[46m"), // container runner
+    RED_BACKGROUND("\u001b[41m"), // testcontainers
     PURPLE_BACKGROUND("\u001b[45m"); // dbt
 
     private final String ansi;
