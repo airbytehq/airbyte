@@ -349,7 +349,7 @@ def test_only_propagate_parameters_to_components():
     assert actual_component == expected_component
 
 
-def test_do_not_propagate_parameters_on_inline_schema_loader():
+def test_do_not_propagate_parameters_on_json_schema_object():
     component = {
         "type": "DeclarativeStream",
         "streams": [
@@ -380,10 +380,16 @@ def test_do_not_propagate_parameters_on_inline_schema_loader():
                 "primary_key": "id",
                 "schema_loader": {
                     "type": "InlineSchemaLoader",
+                    "name": "roasters",
+                    "primary_key": "id",
                     "schema": {
                         "type": "object",
                         "$schema": "http://json-schema.org/schema#",
                         "properties": {"id": {"type": "string"}},
+                    },
+                    "$parameters": {
+                        "name": "roasters",
+                        "primary_key": "id",
                     },
                 },
                 "$parameters": {
