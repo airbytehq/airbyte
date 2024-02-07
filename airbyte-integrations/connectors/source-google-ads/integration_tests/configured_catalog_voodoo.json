@@ -97,7 +97,7 @@
         ],
         "source_defined_primary_key" : [
           [
-            "asset.id",
+            "asset.id", "customer.id", "campaign.id", "ad_group.id", "ad_group_ad.id",
             "segments.date"
           ]
         ]
@@ -109,7 +109,7 @@
       ],
       "primary_key" : [
         [
-          "asset.id",
+          "asset.id", "customer.id", "campaign.id", "ad_group.id", "ad_group_ad.id",
           "segments.date"
         ]
       ]
