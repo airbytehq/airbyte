@@ -193,6 +193,7 @@ To perform the text extraction from PDF and Docx files, the connector uses the [
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.3.4   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936)  | Bump CDK version to avoid missing SyncMode errors                                            |
 | 0.3.3   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681)  | Unpin CDK version to make compatible with the Concurrent CDK                                 |
 | 0.3.2   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661)  | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
 | 0.3.1   | 2024-01-10 | [34084](https://github.com/airbytehq/airbyte/pull/34084)  | Fix bug for running check with document file format                                          |

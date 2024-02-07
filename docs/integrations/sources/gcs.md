@@ -148,6 +148,7 @@ Leaving this field blank (default option) will disallow escaping.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------|
+| 0.3.7   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936)  | Bump CDK version to avoid missing SyncMode errors                           |
 | 0.3.6   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681)  | Unpin CDK version to make compatible with the Concurrent CDK                           |
 | 0.3.5   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661)  | Pin CDK version until upgrade for compatibility with the Concurrent CDK                |
 | 0.3.4   | 2024-01-11 | [34158](https://github.com/airbytehq/airbyte/pull/34158) | Fix issue in stream reader for document file type parser                               |

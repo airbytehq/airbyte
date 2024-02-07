@@ -76,7 +76,7 @@ def _get_secret_from_source(
     if (
         source in [SecretSource.GOOGLE_COLAB, SecretSource.ANY]
         and colab_userdata is not None
-        and colab_userdata.get(secret_name, None)
+        and colab_userdata.get(secret_name)
     ):
         return colab_userdata.get(secret_name)
 

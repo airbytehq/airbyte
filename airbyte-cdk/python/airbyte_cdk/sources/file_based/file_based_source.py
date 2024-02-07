@@ -182,7 +182,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             for catalog_stream in self.catalog.streams:
                 if stream.name == catalog_stream.stream.name:
                     return catalog_stream.sync_mode
-            raise RuntimeError(f"No sync mode was found for {stream.name}.")
+            self.logger.warning(f"No sync mode was found for {stream.name}.")
         return None
 
     def read(

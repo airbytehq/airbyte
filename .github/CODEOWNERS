@@ -9,7 +9,7 @@
 # CDK and Connector Acceptance Tests
 /airbyte-cdk/python @airbytehq/connector-extensibility
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
-/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/connector-operations @lazebnyi @oustynova
+/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/connector-extensibility @lazebnyi @oustynova
 
 # Protocol related items
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
@@ -62,7 +62,7 @@ airbyte-cdk/java/airbyte-cdk/typing-deduping/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-tidb/ @airbytehq/destinations
 
 # Build customization file change
-/airbyte-integrations/connectors/**/build_customization.py @airbytehq/connector-operations
+/airbyte-integrations/connectors/**/build_customization.py @airbytehq/connector-extensibility
 
 # airbyte-ci
-/airbyte-ci @airbytehq/connector-operations
+/airbyte-ci @airbytehq/connector-extensibility

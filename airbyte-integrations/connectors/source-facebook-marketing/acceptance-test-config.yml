@@ -37,6 +37,8 @@ acceptance_tests:
           ad_creatives:
             - name: thumbnail_url
               bypass_reason: is changeable
+            - name: image_url
+              bypass_reason: is changeable
           images:
             - name: permalink_url
               bypass_reason: is changeable
