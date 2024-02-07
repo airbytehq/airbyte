@@ -29,20 +29,8 @@ acceptance_tests:
           extra_records: yes
         timeout_seconds: 3600
         empty_streams:
-          - name: form_submissions
-            bypass_reason: Unable to populate
-          - name: ticket_pipelines
-            bypass_reason: Unable to populate
-          - name: engagements_meetings
-            bypass_reason: Unable to populate
-          - name: engagements_emails
-            bypass_reason: Unable to populate
           - name: engagements_calls
-            bypass_reason: Unable to populate
-          - name: quotes
-            bypass_reason: Unable to populate
-          - name: deals_archived
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate cost $20/month
           - name: owners_archived
             bypass_reason: unable to populate
           - name: tickets_web_analytics
