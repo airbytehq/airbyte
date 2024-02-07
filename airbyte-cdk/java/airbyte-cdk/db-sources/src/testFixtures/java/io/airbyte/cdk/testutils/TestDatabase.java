@@ -190,6 +190,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
       LOGGER.debug("executing {}", Strings.join(cmd, " "));
       final var exec = getContainer().execInContainer(cmd.toArray(new String[0]));
       if (exec.getExitCode() == 0) {
+        LOGGER.info("other info: container.getjdbcurl: " + this.getContainer().getJdbcUrl());
         LOGGER.debug("execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr());
       } else {
         LOGGER.error("execution failure, code {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
