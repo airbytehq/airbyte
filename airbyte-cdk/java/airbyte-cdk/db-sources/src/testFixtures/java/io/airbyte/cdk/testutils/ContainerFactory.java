@@ -79,9 +79,13 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
     List<String> methodList = methods == null ? Collections.emptyList() : Arrays.asList(methods);
     DockerImageName dockerImageName = DockerImageName.parse(imageName);
     final ContainerKey containerKey = new ContainerKey(getClass(), dockerImageName, methodList);
+    // We deliberately avoid creating the container itself eagerly during the evaluation of the map value.
+    // Container creation can be exceedingly slow.
+    // Furthermore, we need to handle exceptions raised during container creation.
     ContainerOrException containerOrError = SHARED_CONTAINERS.computeIfAbsent(containerKey, key ->
       new ContainerOrException(() -> createAndStartContainer(key.imageName(), key.methods()))
     );
+    // Instead, the container creation (if applicable) is deferred to here.
     return (C) containerOrError.container();
   }
 
