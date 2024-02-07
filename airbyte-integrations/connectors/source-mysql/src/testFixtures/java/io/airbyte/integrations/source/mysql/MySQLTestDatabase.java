@@ -53,15 +53,6 @@ public class MySQLTestDatabase extends
     return new MySQLTestDatabase(container).initialized();
   }
 
-  static public MySQLTestDatabase inWithDbName(BaseImage baseImage, String dbName, ContainerModifier... methods) {
-    String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
-    final var container = new MySQLContainerFactory().shared(baseImage.reference, methodNames);
-    MySQLTestDatabase db = new MySQLTestDatabase(container);
-    db.setDatabaseName(dbName);
-    db.initialized();
-    return db;
-  }
-
   public MySQLTestDatabase(MySQLContainer<?> container) {
     super(container);
   }
@@ -79,33 +70,13 @@ public class MySQLTestDatabase extends
   }
 
   static private final int MAX_CONNECTIONS = 1000;
-  private String databaseName = "";
-
-  @Override
-  public String getDatabaseName() {
-    if (databaseName.isBlank()) {
-      return super.getDatabaseName();
-    } else {
-      return databaseName;
-    }
-  }
-
-  @Override
-  public void close() {
-    super.close();
-    databaseName = "";
-  }
-
-  public void setDatabaseName(final String databaseName) {
-    this.databaseName = databaseName;
-  }
 
   @Override
   protected Stream<Stream<String>> inContainerBootstrapCmd() {
     return Stream.of(mysqlCmd(Stream.of(
         String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
-        String.format("CREATE DATABASE \\`%s\\`", getDatabaseName()),
-        String.format("CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", getUserName(), getPassword()),
+        String.format("CREATE DATABASE %s", getDatabaseName()),
+        String.format("CREATE USER '%s' IDENTIFIED BY '%s'", getUserName(), getPassword()),
         // Grant privileges also to the container's user, which is not root.
         String.format("GRANT ALL PRIVILEGES ON *.* TO '%s', '%s' WITH GRANT OPTION", getUserName(),
             getContainer().getUsername()))));
@@ -115,7 +86,7 @@ public class MySQLTestDatabase extends
   protected Stream<String> inContainerUndoBootstrapCmd() {
     return mysqlCmd(Stream.of(
         String.format("DROP USER '%s'", getUserName()),
-        String.format("DROP DATABASE \\`%s\\`", getDatabaseName())));
+        String.format("DROP DATABASE %s", getDatabaseName())));
   }
 
   @Override

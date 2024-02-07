@@ -100,12 +100,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected String createSchemaSqlFmt() {
-    return "CREATE DATABASE IF NOT EXISTS `%s`;";
-  }
-
-  @Override
-  protected String createTableSqlFmt() {
-    return "CREATE TABLE `%s`.`%s`(%s);";
+    return "CREATE DATABASE IF NOT EXISTS %s;";
   }
 
   @Override
