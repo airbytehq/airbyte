@@ -62,7 +62,7 @@ class EventsTest(TestCase):
 
     @responses.activate
     def test_full_refresh_no_pagination(self):
-        """Ensure http integration and record extraction"""
+        """Ensure http integration, record extraction and transformation"""
         responses.get(
             f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
             match=[matchers.query_param_matcher({"per_page": 100})],
@@ -73,6 +73,7 @@ class EventsTest(TestCase):
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 2
+        assert all(('repository', 'airbytehq/integration-test') in x.record.data.items() for x in actual_messages.records)
 
     @responses.activate
     def test_full_refresh_with_pagination(self):
