@@ -262,7 +262,7 @@ def render_junit_xml(testsuites: List[Any]) -> str:
 ESCAPED_ANSI_COLOR_PATTERN = re.compile("\?\[m|\?\[[34][0-9]m")
 
 
-def massage_system_out_and_err(d: dict, indent: str, indent_levels: int):
+def massage_system_out_and_err(d: dict, indent: str, indent_levels: int) -> None:
     """Makes the system-out and system-err text prettier."""
     if d:
         for key in ["system-out", "system-err"]:
