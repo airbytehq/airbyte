@@ -44,3 +44,10 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.dagster]
 module_name = "orchestrator"
+
+[tool.poe.tasks]
+test = "pytest tests"
+
+[tool.airbyte_ci]
+extra_poetry_groups = ["dev"]
+poe_tasks = ["test"]

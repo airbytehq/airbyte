@@ -41,4 +41,10 @@ urllib3 = "<2.0"
 requests = "<2.29.0"
 pytest-xdist = "^3.3.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poe.tasks]
+test = "pytest unit_tests"
+ci = ["test"]
+
+[tool.airbyte_ci]
+poe_tasks = ["test"]
+mount_docker_socket = true

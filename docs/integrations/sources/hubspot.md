@@ -207,6 +207,11 @@ The HubSpot source connector supports the following streams:
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 
+### Notes on the `property_history` streams
+
+Even though the stream is Incremental, there are some record types that are not affected by the last sync timestamp pointer. For example records of type `CALCULATED` will allways have most recent timestamp equal to the requset time, so whenever you sync there will be a bunch of records in return.
+
+
 ### Notes on the `engagements` stream
 
 1. Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties are set for that object in the `engagements_metadata` table in the destination:
