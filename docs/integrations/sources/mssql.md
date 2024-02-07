@@ -342,7 +342,6 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.6.2 | 2024-02-06 | [34892](https://github.com/airbytehq/airbyte/pull/34892) | Adopt CDK v0.16.5. |
 | 3.6.1 | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573) | Adopt CDK v0.16.0. |
 | 3.6.0   | 2024-01-10 | [33700](https://github.com/airbytehq/airbyte/pull/33700)                                                          | Remove CDC config options for data_to_sync and snapshot isolation.                                                                              |
 | 3.5.1   | 2024-01-05 | [33510](https://github.com/airbytehq/airbyte/pull/33510)                                                          | Test-only changes.                                                                                                                              |
