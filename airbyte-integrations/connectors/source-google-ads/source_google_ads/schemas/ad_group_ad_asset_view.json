@@ -21,7 +21,7 @@
       "type": ["null", "number"]
     },
     "metrics.clicks": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.conversions": {
       "type": ["null", "number"]
@@ -33,7 +33,7 @@
       "type": ["null", "number"]
     },
     "metrics.cost_micros": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.cost_per_all_conversions": {
       "type": ["null", "number"]
