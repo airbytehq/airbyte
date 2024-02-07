@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 public class MySQLContainerFactory implements ContainerFactory<MySQLContainer<?>> {
@@ -25,7 +24,8 @@ public class MySQLContainerFactory implements ContainerFactory<MySQLContainer<?>
           cmd.getHostConfig()
               .withMemory(800l * 1024l * 1024l)
               .withMemorySwap(1500l * 1024l * 1024l);});
-    container.addEnv("MYSQL_ROOT_HOST", "%%");
+    execInContainer(container,
+        "'bind-address = 0.0.0.0' >> /etc/my.cnf");
     return container;
   }
 
