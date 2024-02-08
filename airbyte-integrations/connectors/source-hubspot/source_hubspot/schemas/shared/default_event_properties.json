@@ -27,6 +27,12 @@
     "properties_hs_device_type": {
       "type": ["null", "string"]
     },
+    "properties_hs_title": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_form_correlation_id": {
+      "type": ["null", "string"]
+    },
     "properties_hs_element_class": {
       "type": ["null", "string"]
     },
@@ -37,6 +43,15 @@
       "type": ["null", "string"]
     },
     "properties_hs_language": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_document_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_presentation_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_user_id": {
       "type": ["null", "string"]
     },
     "properties_hs_link_href": {
@@ -67,6 +82,9 @@
       "type": ["null", "string"]
     },
     "properties_hs_region": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_url": {
       "type": ["null", "string"]
     },
     "properties_hs_screen_height": {
@@ -102,6 +120,24 @@
     "id": {
       "type": ["null", "string"]
     },
+    "properties_hs_base_url": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_form_id": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_form_type": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_url_domain": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_url_path": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_visitor_type": {
+      "type": ["null", "string"]
+    },
     "objectId": {
       "type": ["null", "string"]
     },
@@ -112,7 +148,8 @@
       "type": ["null", "string"]
     },
     "occurredAt": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }
