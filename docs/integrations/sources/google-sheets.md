@@ -118,7 +118,7 @@ The Google Sheets source connector supports the following sync modes:
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
+|:-----------------|:-------------|:------|
 | any type         | `string`     |       |
 
 ## Limitations & Troubleshooting
@@ -150,8 +150,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
-| ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| 0.3.15  | 2024-02-07 | [34944](https://github.com/airbytehq/airbyte/pull/34944) | Manage dependencies with Poetry.                                                  |
+|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
 | 0.3.14  | 2024-01-23 | [34437](https://github.com/airbytehq/airbyte/pull/34437) | Fix header cells filtering                                                        |
 | 0.3.13  | 2024-01-19 | [34376](https://github.com/airbytehq/airbyte/pull/34376) | Fix names conversion                                                              |
 | 0.3.12  | 2023-12-14 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib                                                           |
