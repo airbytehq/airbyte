@@ -1,0 +1,129 @@
+name: Community CI Spike
+
+concurrency:
+  # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
+  #
+  # - github.head_ref is only defined on PR runs, it makes sure that the concurrency group is unique for pull requests
+  #  ensuring that only one run per pull request is active at a time.
+  #
+  # - github.run_id is defined on all runs, it makes sure that the concurrency group is unique for workflow dispatches.
+  # This allows us to run multiple workflow dispatches in parallel.
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      test-connectors-options:
+        description: "Options to pass to the 'airbyte-ci connectors test' command"
+        default: "--modified"
+  pull_request_target:
+jobs:
+  determine_runner_environment:
+    runs-on: ubuntu-latest
+    name: Determine runner and environment
+    steps:
+      # Checkout is required here to:
+      # - fetch the local actions stored in .github/actions
+      # - install airbyte-ci in dev mode if the PR modified airbyte-ci
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          # This checkouts the fork
+          # /!\ untrusted code
+          # It's deemed safe as the following step is not executing code from forks
+          ref: ${{ github.head_ref }}
+          # Ensures that the git token is not persisted
+          # It helps prevent access to token from code executed in the workflow
+          persist-credentials: false
+          fetch-depth: 1
+
+      # Disabling this step for safety during the spike
+      # - name: Get CI runner
+      #   id: get_ci_runner
+      #   uses: ./.github/actions/airbyte-ci-requirements
+      #   with:
+      #     runner_type: "test"
+      #     runner_size: "large"
+      #     airbyte_ci_command: "connectors test"
+      #     is_fork: ${{ github.event.pull_request.head.repo.fork }}
+
+      # We set the environment to community-ci if the PR is from a fork
+      # The community-ci environment requires manual reviewer approval to run
+      # This is a safety measure to prevent untrusted code from running on our infrastructure
+      # The internal-ci environment is reserved for internal PRs (non-forked PRs)
+      - name: Determine environment
+        id: determine_environment
+        if: github.event_name == 'pull_request_target'
+        shell: bash
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
+            echo "environment=community-ci" >> $GITHUB_OUTPUT
+          else
+            echo "environment=internal-ci" >> $GITHUB_OUTPUT
+          fi
+    outputs:
+      environment: ${{ steps.get_ci_runner.outputs.environment }}
+      runner_name: ci-runner-connector-test-large-dagger-0-9-6
+      #runner_name: ${{ steps.get_ci_runner.outputs.runner_name }}
+
+  connectors_ci:
+    name: Connectors CI
+    needs: determine_runner_environment
+    environment: ${{ needs.determine_runner_environment.outputs.environment }}
+    runs-on: ${{ needs.determine_runner_environment.outputs.runner_name }}
+    timeout-minutes: 1440 # 24 hours
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          # This can checkouts forks
+          # /!\ untrusted code
+          # It's deemed safe as the community-ci environment requires manual reviewer approval to run
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+      - name: Extract branch name [WORKFLOW DISPATCH]
+        shell: bash
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: Fetch last commit id from remote branch [PULL REQUESTS]
+        if: github.event_name == 'pull_request_target'
+        id: fetch_last_commit_id_pr
+        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+      - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
+        if: github.event_name == 'workflow_dispatch'
+        id: fetch_last_commit_id_wd
+        run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
+      - name: Test connectors [WORKFLOW DISPATCH]
+        if: github.event_name == 'workflow_dispatch'
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          git_branch: ${{ steps.extract_branch.outputs.branch }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ env.PAT }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
+      - name: Test connectors [PULL REQUESTS]
+        if: github.event_name == 'pull_request_target'
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ env.PAT }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          subcommand: "connectors --modified test"
+          is_fork: ${{ github.event.pull_request.head.repo.fork }}

@@ -2242,6 +2242,13 @@
         "description": "If false, each row with all metrics equal to 0 will not be returned. If true, these rows will be returned if they are not separately removed by a filter. More information is available in <a href=\"https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport#request-body\">the documentation</a>.",
         "default": false,
         "order": 6
+      },
+      "convert_conversions_event": {
+        "type": "boolean",
+        "title": "Convert `conversions:*` Metrics to Float",
+        "description": "Enables conversion of `conversions:*` event metrics from integers to floats. This is beneficial for preventing data rounding when the API returns float values for any `conversions:*` fields.",
+        "default": false,
+        "order": 7
       }
     }
   },

@@ -3,145 +3,127 @@
 #
 from __future__ import annotations
 
-import logging
-import os
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import asyncclick as click
 import asyncer
+from pipelines.airbyte_ci.test import INTERNAL_POETRY_PACKAGES, INTERNAL_POETRY_PACKAGES_PATH, pipeline
 from pipelines.cli.click_decorators import click_ci_requirements_option, click_ignore_unused_kwargs, click_merge_args_into_context_obj
-from pipelines.consts import DOCKER_VERSION
-from pipelines.helpers.utils import sh_dash_c
+from pipelines.helpers.git import get_modified_files
+from pipelines.helpers.utils import transform_strs_to_paths
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
+from pipelines.models.steps import StepStatus
 
 if TYPE_CHECKING:
-    from typing import List, Tuple
+    from pathlib import Path
+    from typing import List, Set, Tuple
 
-    import dagger
 
-## HELPERS
-async def run_poetry_command(container: dagger.Container, command: str) -> Tuple[str, str]:
-    """Run a poetry command in a container and return the stdout and stderr.
+async def find_modified_internal_packages(pipeline_context: ClickPipelineContext) -> Set[Path]:
+    """Finds the modified internal packages according to the modified files on the branch/commit.
 
     Args:
-        container (dagger.Container): The container to run the command in.
-        command (str): The command to run.
+        pipeline_context (ClickPipelineContext): The context object.
 
     Returns:
-        Tuple[str, str]: The stdout and stderr of the command.
+        Set[Path]: The set of modified internal packages.
     """
-    container = container.with_exec(["poetry", "run", *command.split(" ")])
-    return await container.stdout(), await container.stderr()
+    modified_files = transform_strs_to_paths(
+        await get_modified_files(
+            pipeline_context.params["git_branch"],
+            pipeline_context.params["git_revision"],
+            pipeline_context.params["diffed_branch"],
+            pipeline_context.params["is_local"],
+            pipeline_context.params["ci_context"],
+        )
+    )
+    modified_packages = set()
+    for modified_file in modified_files:
+        for internal_package in INTERNAL_POETRY_PACKAGES_PATH:
+            if modified_file.is_relative_to(internal_package):
+                modified_packages.add(internal_package)
+    return modified_packages
 
 
-def validate_env_vars_exist(_ctx: dict, _param: dict, value: List[str]) -> List[str]:
-    for var in value:
-        if var not in os.environ:
-            raise click.BadParameter(f"Environment variable {var} does not exist.")
-    return value
+async def get_packages_to_run(pipeline_context: ClickPipelineContext) -> Set[Path]:
+    """Gets the packages to run the poe tasks on.
+
+    Args:
+        pipeline_context (ClickPipelineContext): The context object.
+
+    Raises:
+        click.ClickException: If no packages are specified to run the poe tasks on.
+
+    Returns:
+        Set[Path]: The set of packages to run the poe tasks on.
+    """
+    if not pipeline_context.params["poetry_package_paths"] and not pipeline_context.params["modified"]:
+        raise click.ClickException("You must specify at least one package to test.")
+
+    poetry_package_paths = set()
+    if pipeline_context.params["modified"]:
+        poetry_package_paths = await find_modified_internal_packages(pipeline_context)
+
+    return poetry_package_paths.union(set(pipeline_context.params["poetry_package_paths"]))
+
+
+def crash_on_any_failure(poetry_package_poe_tasks_results: List[Tuple[Path, asyncer.SoonValue]]) -> None:
+    """Fail the command if any of the poe tasks failed.
+
+    Args:
+        poetry_package_poe_tasks_results (List[Tuple[Path, asyncer.SoonValue]]): The results of the poe tasks.
+
+    Raises:
+        click.ClickException: If any of the poe tasks failed.
+    """
+    failed_packages = set()
+    for poetry_package_paths, package_result in poetry_package_poe_tasks_results:
+        poe_command_results = package_result.value
+        if any([result.status is StepStatus.FAILURE for result in poe_command_results]):
+            failed_packages.add(poetry_package_paths)
+    if failed_packages:
+        raise click.ClickException(
+            f"The following packages failed to run poe tasks:  {', '.join([str(package_path) for package_path in failed_packages])}"
+        )
+    return None
 
 
 @click.command()
-@click.argument("poetry_package_path")
+@click.option("--modified", default=False, is_flag=True, help="Run on modified internal packages.")
+@click.option(
+    "--poetry-package-path",
+    "-p",
+    "poetry_package_paths",
+    help="The path to the poetry package to test.",
+    type=click.Choice(INTERNAL_POETRY_PACKAGES),
+    multiple=True,
+)
 @click_ci_requirements_option()
-@click.option(
-    "-c",
-    "--poetry-run-command",
-    multiple=True,
-    help="The poetry run command to run.",
-    required=True,
-)
-@click.option(
-    "--pass-env-var",
-    "-e",
-    "passed_env_vars",
-    multiple=True,
-    help="The environment variables to pass to the container.",
-    required=False,
-    callback=validate_env_vars_exist,
-)
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
+# TODO this command should be renamed ci and go under the poetry command group
+# e.g. airbyte-ci poetry ci --poetry-package-path airbyte-ci/connectors/pipelines
 async def test(pipeline_context: ClickPipelineContext) -> None:
     """Runs the tests for the given airbyte-ci package
 
     Args:
         pipeline_context (ClickPipelineContext): The context object.
     """
-    poetry_package_path = pipeline_context.params["poetry_package_path"]
-    if not Path(f"{poetry_package_path}/pyproject.toml").exists():
-        raise click.UsageError(f"Could not find pyproject.toml in {poetry_package_path}")
+    poetry_package_paths = await get_packages_to_run(pipeline_context)
+    click.echo(f"Running poe tasks of the following packages: {', '.join([str(package_path) for package_path in poetry_package_paths])}")
+    dagger_client = await pipeline_context.get_dagger_client(pipeline_name="Internal poetry packages CI")
 
-    commands_to_run: List[str] = pipeline_context.params["poetry_run_command"]
-
-    logger = logging.getLogger(f"{poetry_package_path}.tests")
-    logger.info(f"Running tests for {poetry_package_path}")
-
-    # The following directories are always mounted because a lot of tests rely on them
-    directories_to_always_mount = [
-        ".git",  # This is needed as some package tests rely on being in a git repo
-        ".github",
-        "docs",
-        "airbyte-integrations",
-        "airbyte-ci",
-        "airbyte-cdk",
-        "pyproject.toml",
-        "LICENSE_SHORT",
-        "poetry.lock",
-        "spotless-maven-pom.xml",
-        "tools/gradle/codestyle/java-google-style.xml",
-    ]
-    directories_to_mount = list(set([poetry_package_path, *directories_to_always_mount]))
-
-    pipeline_name = f"Unit tests for {poetry_package_path}"
-    dagger_client = await pipeline_context.get_dagger_client(pipeline_name=pipeline_name)
-    test_container = await (
-        dagger_client.container()
-        .from_("python:3.10.12")
-        .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
-        .with_exec(
-            sh_dash_c(
-                [
-                    "apt-get update",
-                    "apt-get install -y bash git curl",
-                    "pip install pipx",
-                    "pipx ensurepath",
-                    "pipx install poetry",
-                ]
+    poetry_package_poe_tasks_results: List[Tuple[Path, asyncer.SoonValue]] = []
+    async with asyncer.create_task_group() as poetry_packages_task_group:
+        for poetry_package_path in poetry_package_paths:
+            poetry_package_poe_tasks_results.append(
+                (
+                    poetry_package_path,
+                    poetry_packages_task_group.soonify(pipeline.run_poe_tasks_for_package)(
+                        dagger_client, poetry_package_path, pipeline_context.params
+                    ),
+                )
             )
-        )
-        .with_env_variable("VERSION", DOCKER_VERSION)
-        .with_exec(sh_dash_c(["curl -fsSL https://get.docker.com | sh"]))
-        .with_mounted_directory(
-            "/airbyte",
-            dagger_client.host().directory(
-                ".",
-                exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**.log", "**/.gradle"],
-                include=directories_to_mount,
-            ),
-        )
-        .with_workdir(f"/airbyte/{poetry_package_path}")
-        .with_exec(["poetry", "install", "--with=dev"])
-        .with_unix_socket("/var/run/docker.sock", dagger_client.host().unix_socket("/var/run/docker.sock"))
-        .with_env_variable("CI", str(pipeline_context.params["is_ci"]))
-        .with_workdir(f"/airbyte/{poetry_package_path}")
-    )
 
-    # register passed env vars as secrets and add them to the container
-    for var in pipeline_context.params["passed_env_vars"]:
-        secret = dagger_client.set_secret(var, os.environ[var])
-        test_container = test_container.with_secret_variable(var, secret)
-
-    soon_command_executions_results = []
-    async with asyncer.create_task_group() as poetry_commands_task_group:
-        for command in commands_to_run:
-            logger.info(f"Running command: {command}")
-            soon_command_execution_result = poetry_commands_task_group.soonify(run_poetry_command)(test_container, command)
-            soon_command_executions_results.append(soon_command_execution_result)
-
-    for result in soon_command_executions_results:
-        stdout, stderr = result.value
-        logger.info(stdout)
-        logger.error(stderr)
+    crash_on_any_failure(poetry_package_poe_tasks_results)

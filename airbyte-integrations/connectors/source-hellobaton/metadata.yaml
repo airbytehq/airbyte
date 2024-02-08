@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - ${company}.hellobaton.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-hellobaton
   registries:
     oss:
       enabled: true
