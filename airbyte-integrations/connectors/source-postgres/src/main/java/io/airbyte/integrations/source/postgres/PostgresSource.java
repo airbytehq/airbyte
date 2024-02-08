@@ -846,3 +846,4 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
 }
+// TEST

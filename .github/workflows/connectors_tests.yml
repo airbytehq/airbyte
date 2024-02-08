@@ -78,4 +78,4 @@ jobs:
           github_token: ${{ env.PAT }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --modified test"
+          subcommand: "connectors --name=source-mysql test --only-step=integration"

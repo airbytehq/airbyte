@@ -587,3 +587,4 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
 }
+// TEST

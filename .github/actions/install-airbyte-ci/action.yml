@@ -72,6 +72,12 @@ runs:
       with:
         dagger_engine_image: ${{ steps.get-dagger-engine-image-name.outputs.dagger_engine_image }}
 
+    - name: Run dagger engine
+      id: run-dagger-engine
+      shell: bash
+      run: |
+        docker run --detach --privileged --name dagger-engine ${{ steps.get-dagger-engine-image-name.outputs.dagger_engine_image }}
+
 outputs:
   install_mode:
     description: "Whether Airbyte CI was installed from source or from a binary"
