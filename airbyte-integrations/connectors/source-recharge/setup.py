@@ -16,11 +16,6 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    entry_points={
-        "console_scripts": [
-            "source-recharge=source_recharge.run:run",
-        ],
-    },
     name="source_recharge",
     description="Source implementation for Recharge.",
     author="Airbyte",
@@ -39,6 +34,11 @@ setup(
             "*/*/*/*.json",
             "*/*/*/*/*.json",
         ]
+    },
+    entry_points={
+        "console_scripts": [
+            "source-recharge=source_recharge.run:run",
+        ],
     },
     extras_require={
         "tests": TEST_REQUIREMENTS,

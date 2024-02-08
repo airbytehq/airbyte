@@ -75,6 +75,96 @@
     "browser_ip": {
       "type": ["null", "string"]
     },
+    "charge": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "external_transaction_id": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "payment_processor": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "payment_processor_name": {
+          "type": ["null", "string"]
+        },
+        "status": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "client_details": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "browser_ip": {
+          "type": ["null", "string"]
+        },
+        "user_agent": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "discounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "error": {
+      "type": ["null", "string"]
+    },
+    "external_cart_token": {
+      "type": ["null", "string"]
+    },
+    "external_order_id": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "external_order_name": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "external_order_number": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "order_attributes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "taxable": {
+      "type": ["null", "boolean"]
+    },
+    "total_duties": {
+      "type": ["null", "string"]
+    },
+    "total_weight_grams": {
+      "type": ["null", "integer"]
+    },
     "charge_id": {
       "type": ["null", "integer"]
     },

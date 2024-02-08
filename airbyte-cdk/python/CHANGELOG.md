@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.62.0
+File-based CDK: functionality to make incremental syncs concurrent
+
+## 0.61.2
+[ISSUE #34755] do not propagate parameters on JSON schemas
+
+## 0.61.1
+Align version in CDK Dockerfile to be consistent. Before this change, the docker images was mistakenly pinned to version 0.58.5.
+
+## 0.61.0
+File-based CDK: log warning on no sync mode instead of raising exception
+
+## 0.60.2
+Improve error messages for concurrent CDK
+
 ## 0.60.1
 Emit state when no partitions are generated for ccdk and update StateBuilder
 
