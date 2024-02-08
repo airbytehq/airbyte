@@ -982,11 +982,10 @@ class TestBasicRead(BaseTest):
             return inputs.validate_schema
 
     @pytest.fixture(name="should_validate_stream_statuses")
-    def should_validate_stream_statuses_fixture(self, inputs: BasicReadTestConfig, connector_metadata: dict):
-        is_certified = connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") >= 400
-        if inputs.validate_stream_statuses is None and is_certified:
+    def should_validate_stream_statuses_fixture(self, inputs: BasicReadTestConfig, is_connector_certified: bool):
+        if inputs.validate_stream_statuses is None and is_connector_certified:
             return True
-        if not inputs.validate_stream_statuses and is_certified:
+        if not inputs.validate_stream_statuses and is_connector_certified:
             pytest.fail("High strictness level error: validate_stream_statuses must be set to true in the basic read test configuration.")
         return inputs.validate_stream_statuses
 
@@ -1210,15 +1209,13 @@ class TestBasicRead(BaseTest):
         return result
 
     @pytest.fixture(name="certified_file_based_connector")
-    def is_certified_file_based_connector(self, connector_metadata: Dict[str, Any]) -> bool:
+    def is_certified_file_based_connector(self, connector_metadata: Dict[str, Any], is_connector_certified: bool) -> bool:
         metadata = connector_metadata.get("data", {})
 
         # connector subtype is specified in data.connectorSubtype field
         file_based_connector = metadata.get("connectorSubtype") == "file"
-        # a certified connector has ab_internal.ql value >= 400
-        certified_connector = metadata.get("ab_internal", {}).get("ql", 0) >= 400
 
-        return file_based_connector and certified_connector
+        return file_based_connector and is_connector_certified
 
     @staticmethod
     def _get_file_extension(file_name: str) -> str:
@@ -1289,13 +1286,13 @@ class TestConnectorAttributes(BaseTest):
     MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []
 
     @pytest.fixture(name="operational_certification_test")
-    async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
+    async def operational_certification_test_fixture(self, is_connector_certified: bool) -> bool:
         """
         Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
         against operational certification criteria
         """
 
-        if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+        if not is_connector_certified:
             pytest.skip("Skipping operational connector certification test for uncertified connector")
         return True
 
@@ -1394,12 +1391,12 @@ class TestConnectorDocumentation(BaseTest):
     CONNECTOR_SPECIFIC_HEADINGS = "<Connector-specific features>"
 
     @pytest.fixture(name="operational_certification_test")
-    async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
+    async def operational_certification_test_fixture(self, is_connector_certified: bool) -> bool:
         """
         Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
         against operational certification criteria
         """
-        if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+        if not is_connector_certified:
             pytest.skip("Skipping testing source connector documentation due to low ql.")
         return True
 
