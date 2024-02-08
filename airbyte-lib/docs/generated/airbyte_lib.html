@@ -120,6 +120,7 @@ so we insert as values instead.</p>
                 <dd id="DuckDBCache.streams" class="variable">streams</dd>
                 <dd id="DuckDBCache.get_records" class="function">get_records</dd>
                 <dd id="DuckDBCache.get_pandas_dataframe" class="function">get_pandas_dataframe</dd>
+                <dd id="DuckDBCache.get_state" class="function">get_state</dd>
                 <dd id="DuckDBCache.register_source" class="function">register_source</dd>
 
             </div>
@@ -131,6 +132,7 @@ so we insert as values instead.</p>
             </div>
             <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="DuckDBCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="DuckDBCache.source_catalog" class="variable">source_catalog</dd>
                 <dd id="DuckDBCache.process_stdin" class="function">process_stdin</dd>
                 <dd id="DuckDBCache.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="DuckDBCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
@@ -236,8 +238,7 @@ is not also a path, such as "md:" to connect the user's default MotherDuck DB.</
 
             </div>
             <div><dt>airbyte_lib.caches.base.SQLCacheConfigBase</dt>
-                                <dd id="DuckDBCacheConfig.dedupe_mode" class="variable">dedupe_mode</dd>
-                <dd id="DuckDBCacheConfig.table_prefix" class="variable">table_prefix</dd>
+                                <dd id="DuckDBCacheConfig.table_prefix" class="variable">table_prefix</dd>
                 <dd id="DuckDBCacheConfig.table_suffix" class="variable">table_suffix</dd>
 
             </div>
@@ -249,27 +250,44 @@ is not also a path, such as "md:" to connect the user's default MotherDuck DB.</
                                 </dl>
                             </div>
                 </section>
-                <section id="get_connector">
+                <section id="get_available_connectors">
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_connector</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">pip_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">local_executable</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">install_if_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n"><a href="#Source">Source</a></span>:</span></span>
+        <span class="name">get_available_connectors</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#get_connector"></a>
+    <a class="headerlink" href="#get_available_connectors"></a>
+    
+            <div class="docstring"><p>Return a list of all available connectors.</p>
+
+<p>Connectors will be returned in alphabetical order, with the standard prefix "source-".</p>
+</div>
+
+
+                </section>
+                <section id="get_source">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">pip_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">local_executable</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">install_if_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n"><a href="#Source">Source</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#get_source"></a>
     
             <div class="docstring"><p>Get a connector by name and version.</p>
 
 <p>Args:
     name: connector name
+    config: connector config - if not provided, you need to set it later via the set_config
+        method.
     version: connector version - if not provided, the currently installed version will be used.
         If no version is installed, the latest available version will be used. The version can
         also be set to "latest" to force the use of the latest available version.
     pip_url: connector pip URL - if not provided, the pip url will be inferred from the
         connector name.
-    config: connector config - if not provided, you need to set it later via the set_config
-        method.
     local_executable: If set, the connector will be assumed to already be installed and will be
         executed using this path or executable name. Otherwise, the connector will be installed
         automatically in a virtual environment.
@@ -293,6 +311,29 @@ is not also a path, such as "md:" to connect the user's default MotherDuck DB.</
 
 <p>Cache files are stored in the <code>.cache</code> directory, relative to the current
 working directory.</p>
+</div>
+
+
+                </section>
+                <section id="get_secret">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_secret</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">secret_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">source</span><span class="p">:</span> <span class="n"><a href="#SecretSource">SecretSource</a></span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="#SecretSource">SecretSource</a></span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n"><a href="#SecretSource.ANY">SecretSource.ANY</a></span><span class="p">:</span> <span class="mi">3</span><span class="o">&gt;</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">prompt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#get_secret"></a>
+    
+            <div class="docstring"><p>Get a secret from the environment.</p>
+
+<p>The optional <code>source</code> argument of enum type <code><a href="#SecretSource">SecretSource</a></code> or list of <code><a href="#SecretSource">SecretSource</a></code> options.
+If left blank, the <code>source</code> arg will be <code><a href="#SecretSource.ANY">SecretSource.ANY</a></code>. If <code>source</code> is set to a specific
+source, then only that source will be checked. If a list of <code><a href="#SecretSource">SecretSource</a></code> entries is passed,
+then the sources will be checked using the provided ordering.</p>
+
+<p>If <code>prompt</code> to <code>True</code> or if <a href="#SecretSource.PROMPT">SecretSource.PROMPT</a> is declared in the <code>source</code> arg, then the
+user will be prompted to enter the secret if it is not found in any of the other sources.</p>
 </div>
 
 
@@ -409,6 +450,79 @@ methods except for __getitem__, __iter__, and __len__.</p>
                                 </dl>
                             </div>
                 </section>
+                <section id="SecretSource">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SecretSource</span><wbr>(<span class="base">enum.Enum</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource"></a>
+    
+            <div class="docstring"><p>An enumeration.</p>
+</div>
+
+
+                            <div id="SecretSource.ENV" class="classattr">
+                                <div class="attr variable">
+            <span class="name">ENV</span>        =
+<span class="default_value">&lt;<a href="#SecretSource.ENV">SecretSource.ENV</a>: 1&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource.ENV"></a>
+    
+    
+
+                            </div>
+                            <div id="SecretSource.GOOGLE_COLAB" class="classattr">
+                                <div class="attr variable">
+            <span class="name">GOOGLE_COLAB</span>        =
+<span class="default_value">&lt;<a href="#SecretSource.GOOGLE_COLAB">SecretSource.GOOGLE_COLAB</a>: 2&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource.GOOGLE_COLAB"></a>
+    
+    
+
+                            </div>
+                            <div id="SecretSource.ANY" class="classattr">
+                                <div class="attr variable">
+            <span class="name">ANY</span>        =
+<span class="default_value">&lt;<a href="#SecretSource.ANY">SecretSource.ANY</a>: 3&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource.ANY"></a>
+    
+    
+
+                            </div>
+                            <div id="SecretSource.PROMPT" class="classattr">
+                                <div class="attr variable">
+            <span class="name">PROMPT</span>        =
+<span class="default_value">&lt;<a href="#SecretSource.PROMPT">SecretSource.PROMPT</a>: 4&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource.PROMPT"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>enum.Enum</dt>
+                                <dd id="SecretSource.name" class="variable">name</dd>
+                <dd id="SecretSource.value" class="variable">value</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
                 <section id="Source">
                     <div class="attr class">
             
@@ -471,13 +585,45 @@ methods except for __getitem__, __iter__, and __len__.</p>
     </div>
     <a class="headerlink" href="#Source.set_streams"></a>
     
-            <div class="docstring"><p>Optionally, select the stream names that should be read from the connector.</p>
+            <div class="docstring"><p>Deprecated. See select_streams().</p>
+</div>
+
+
+                            </div>
+                            <div id="Source.select_all_streams" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">select_all_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.select_all_streams"></a>
+    
+            <div class="docstring"><p>Select all streams.</p>
+
+<p>This is a more streamlined equivalent to:</p>
+
+<blockquote>
+  <p>source.select_streams(source.get_available_streams()).</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="Source.select_streams" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">select_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.select_streams"></a>
+    
+            <div class="docstring"><p>Select the stream names that should be read from the connector.</p>
 
 <p>Currently, if this is not set, all streams will be read.</p>
-
-<p>TODO: In the future if not set, the default behavior may exclude streams which the connector
-would default to disabled. (For instance, streams that require a premium license
-are sometimes disabled by default within the connector.)</p>
 </div>
 
 
@@ -494,7 +640,7 @@ are sometimes disabled by default within the connector.)</p>
     
             <div class="docstring"><p>Get the selected streams.</p>
 
-<p>If no streams are selected, return all available streams.</p>
+<p>If no streams are selected, return an empty list.</p>
 </div>
 
 
@@ -515,6 +661,21 @@ are sometimes disabled by default within the connector.)</p>
 
 <p>If validate is False, validation will be deferred until check() or validate_config()
 is called.</p>
+</div>
+
+
+                            </div>
+                            <div id="Source.get_config" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.get_config"></a>
+    
+            <div class="docstring"><p>Get the config for the connector.</p>
 </div>
 
 
@@ -687,13 +848,25 @@ airbyte-lib.</p>
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">read</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#ReadResult">ReadResult</a></span>:</span></span>
+        <span class="name">read</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">SQLCacheBase</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">write_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">strategies</span><span class="o">.</span><span class="n">WriteStrategy</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">WriteStrategy</span><span class="o">.</span><span class="n">AUTO</span><span class="p">:</span> <span class="s1">&#39;auto&#39;</span><span class="o">&gt;</span>,</span><span class="param">	<span class="n">force_full_refresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></span><span class="return-annotation">) -> <span class="n"><a href="#ReadResult">ReadResult</a></span>:</span></span>
 
         
     </div>
     <a class="headerlink" href="#Source.read"></a>
     
-    
+            <div class="docstring"><p>Read from the connector and write to the cache.</p>
+
+<p>Args:
+    cache: The cache to write to. If None, a default cache will be used.
+    write_strategy: The strategy to use when writing to the cache. If a string, it must be
+        one of "append", "upsert", "replace", or "auto". If a WriteStrategy, it must be one
+        of WriteStrategy.APPEND, WriteStrategy.UPSERT, WriteStrategy.REPLACE, or
+        WriteStrategy.AUTO.
+    force_full_refresh: If True, the source will operate in full refresh mode. Otherwise,
+        streams will be read in incremental mode if supported by the connector. This option
+        must be True when using the "replace" strategy.</p>
+</div>
+
 
                             </div>
                 </section>
