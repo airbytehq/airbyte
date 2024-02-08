@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.62.0
+File-based CDK: functionality to make incremental syncs concurrent
+
 ## 0.61.2
 [ISSUE #34755] do not propagate parameters on JSON schemas
 
