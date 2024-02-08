@@ -207,6 +207,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         String resolveFile = getContainer().execInContainer("sh", "-c", "cat /etc/resolv.conf").getStdout();
         String hosts = getContainer().execInContainer("sh", "-c", "cat /etc/hosts").getStdout();
         String aliveTest = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest").getStdout();
+        String aliveTestError = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest").getStderr();
 
 
 
@@ -215,7 +216,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
             + this.getContainer().getJdbcUrl()
             + "\n resolve file: " + resolveFile
             + "\n etc/hosts: " + hosts
-            + "\n mysql test" + aliveTest
+            + "\n mysql test" + aliveTest + "  err: " + aliveTestError
             + " \nadditional logs:\n" + log);
       }
     } catch (IOException e) {
