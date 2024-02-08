@@ -83,5 +83,10 @@ class SnowflakeSQLCache(SQLCacheBase):
         return super()._write_files_to_new_table(files, stream_name, batch_id)
 
     @overrides
+    def _quote_identifier(self, identifier: str) -> str:
+        # TODO: Implement quoting for Snowflake - this is omitted for now because it doesn't play well with case-sensitivity.
+        return identifier
+
+    @overrides
     def get_telemetry_info(self) -> CacheTelemetryInfo:
         return CacheTelemetryInfo("snowflake")
