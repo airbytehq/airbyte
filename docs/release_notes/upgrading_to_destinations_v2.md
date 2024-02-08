@@ -193,7 +193,7 @@ In certain cases, numbers within sub-properties with long decimal values will ne
 ### Snowflake
 
 #### Explicitly uppercase column names in Final Tables
-Snowflake will implicitly uppercase column names if they are not quoted. Airbyte needs to quote the column names because a variety of sources have column/field names which contain special characters that required quoting in Snowflake.
+Snowflake will implicitly uppercase column names if they are not quoted. Airbyte needs to quote the column names because a variety of sources have column/field names which contain special characters that require quoting in Snowflake.
 However, when you quote a column name in Snowflake, it also preserves lowercase naming. During the Snowflake V2 beta, most customers found this behavior unexpected and expected column selection to be case-insensitive for columns without special characters.
 As a result of this feedback, we decided to explicitly uppercase column names in the final tables, which does mean that columns which previous required quoting, now also require you to convert to the upper case version.
 
