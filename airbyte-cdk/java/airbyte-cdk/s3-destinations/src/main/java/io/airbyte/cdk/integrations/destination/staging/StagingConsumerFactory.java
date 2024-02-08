@@ -153,18 +153,18 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
   }
 
   public static Builder builder(
-      final Consumer<AirbyteMessage> outputRecordCollector,
-      final JdbcDatabase database,
-      final StagingOperations stagingOperations,
-      final NamingConventionTransformer namingResolver,
-      final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final boolean purgeStagingData,
-      final TypeAndDedupeOperationValve typerDeduperValve,
-      final TyperDeduper typerDeduper,
-      final ParsedCatalog parsedCatalog,
-      final String defaultNamespace,
-      final boolean useDestinationsV2Columns) {
+                                final Consumer<AirbyteMessage> outputRecordCollector,
+                                final JdbcDatabase database,
+                                final StagingOperations stagingOperations,
+                                final NamingConventionTransformer namingResolver,
+                                final JsonNode config,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final boolean purgeStagingData,
+                                final TypeAndDedupeOperationValve typerDeduperValve,
+                                final TyperDeduper typerDeduper,
+                                final ParsedCatalog parsedCatalog,
+                                final String defaultNamespace,
+                                final boolean useDestinationsV2Columns) {
     final Builder builder = new Builder();
     builder.outputRecordCollector = outputRecordCollector;
     builder.database = database;
