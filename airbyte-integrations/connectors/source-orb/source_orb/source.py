@@ -595,9 +595,9 @@ class CreditsLedgerEntries(IncrementalOrbStream):
 
         for entry in ledger_entries:
             maybe_event_id: Optional[str] = entry.get("event_id")
-            min_created_at_timestamp = min(min_created_at_timestamp, pendulum.parse(entry["created_at"]))
-            max_created_at_timestamp = max(max_created_at_timestamp, pendulum.parse(entry["created_at"]))
             if maybe_event_id:
+                min_created_at_timestamp = min(min_created_at_timestamp, pendulum.parse(entry["created_at"]))
+                max_created_at_timestamp = max(max_created_at_timestamp, pendulum.parse(entry["created_at"]))
                 # There can be multiple entries with the same event ID
                 event_id_to_ledger_entries[maybe_event_id] = event_id_to_ledger_entries.get(maybe_event_id, []) + [entry]
 
