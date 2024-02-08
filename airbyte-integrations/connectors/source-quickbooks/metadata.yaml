@@ -7,12 +7,16 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e
-  dockerImageTag: 3.0.0
+  dockerImageTag: 3.0.1
   dockerRepository: airbyte/source-quickbooks
   githubIssueLabel: source-quickbooks
   icon: quickbooks.svg
   license: MIT
   name: QuickBooks
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-quickbooks
   registries:
     cloud:
       enabled: true

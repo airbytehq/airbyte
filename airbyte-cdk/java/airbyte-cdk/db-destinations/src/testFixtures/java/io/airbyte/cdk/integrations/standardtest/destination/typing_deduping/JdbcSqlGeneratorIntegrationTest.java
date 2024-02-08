@@ -12,6 +12,8 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.quotedName;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -68,7 +70,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIn
       throws SQLException {
     InsertValuesStepN<Record> insert = getDslContext().insertInto(
         DSL.table(tableName),
-        columnNames.stream().map(DSL::field).toList());
+        columnNames.stream().map(columnName -> field(quotedName(columnName))).toList());
     for (final JsonNode record : records) {
       insert = insert.values(
           columnNames.stream()

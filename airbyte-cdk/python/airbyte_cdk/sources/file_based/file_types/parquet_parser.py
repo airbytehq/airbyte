@@ -11,7 +11,7 @@ from urllib.parse import unquote
 import pyarrow as pa
 import pyarrow.parquet as pq
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ParquetFormat
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -64,19 +64,27 @@ class ParquetParser(FileTypeParser):
         if not isinstance(parquet_format, ParquetFormat):
             logger.info(f"Expected ParquetFormat, got {parquet_format}")
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR)
-        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
-            reader = pq.ParquetFile(fp)
-            partition_columns = {x.split("=")[0]: x.split("=")[1] for x in self._extract_partitions(file.uri)}
-            for row_group in range(reader.num_row_groups):
-                batch = reader.read_row_group(row_group)
-                for row in range(batch.num_rows):
-                    yield {
-                        **{
-                            column: ParquetParser._to_output_value(batch.column(column)[row], parquet_format)
-                            for column in batch.column_names
-                        },
-                        **partition_columns,
-                    }
+
+        line_no = 0
+        try:
+            with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
+                reader = pq.ParquetFile(fp)
+                partition_columns = {x.split("=")[0]: x.split("=")[1] for x in self._extract_partitions(file.uri)}
+                for row_group in range(reader.num_row_groups):
+                    batch = reader.read_row_group(row_group)
+                    for row in range(batch.num_rows):
+                        line_no += 1
+                        yield {
+                            **{
+                                column: ParquetParser._to_output_value(batch.column(column)[row], parquet_format)
+                                for column in batch.column_names
+                            },
+                            **partition_columns,
+                        }
+        except Exception as exc:
+            raise RecordParseError(
+                FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=f"{row_group=}, {line_no=}"
+            ) from exc
 
     @staticmethod
     def _extract_partitions(filepath: str) -> List[str]:

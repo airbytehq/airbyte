@@ -65,6 +65,7 @@ class WeaviateIndexingConfigModel(BaseModel):
     )
     batch_size: int = Field(title="Batch Size", description="The number of records to send to Weaviate in each batch", default=128)
     text_field: str = Field(title="Text Field", description="The field in the object that contains the embedded text", default="text")
+    tenant_id: str = Field(title="Tenant ID", description="The tenant ID to use for multi tenancy", airbyte_secret=True, default="")
     default_vectorizer: str = Field(
         title="Default Vectorizer",
         description="The vectorizer to use if new classes need to be created",

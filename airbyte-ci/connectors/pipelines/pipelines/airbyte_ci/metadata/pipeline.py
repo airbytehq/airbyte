@@ -13,7 +13,7 @@ from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
 from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
-from pipelines.helpers.run_steps import STEP_TREE, StepToRun, run_steps
+from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.helpers.utils import DAGGER_CONFIG, get_secret_host_variable
 from pipelines.models.reports import Report
 from pipelines.models.steps import MountPath, Step, StepResult
@@ -123,9 +123,7 @@ class DeployOrchestrator(Step):
         # mount metadata_service/lib and metadata_service/orchestrator
         parent_dir = self.context.get_repo_dir("airbyte-ci/connectors/metadata_service")
         python_base = with_python_base(self.context, "3.9")
-        python_with_dependencies = with_pip_packages(
-            python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0", "pendulum==2.1.2"]
-        )
+        python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.5.14", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
             self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN"
         )

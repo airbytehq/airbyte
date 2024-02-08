@@ -21,6 +21,7 @@ from source_stripe.availability_strategy import StripeAvailabilityStrategy, Stri
 
 STRIPE_API_VERSION = "2022-11-15"
 CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
+IS_TESTING = os.environ.get("DEPLOYMENT_MODE") == "testing"
 USE_CACHE = not CACHE_DISABLED
 
 
@@ -196,6 +197,12 @@ class StripeStream(HttpStream, ABC):
         if self.account_id:
             headers["Stripe-Account"] = self.account_id
         return headers
+
+    def retry_factor(self) -> float:
+        """
+        Override for testing purposes
+        """
+        return 0 if IS_TESTING else super(StripeStream, self).retry_factor
 
 
 class IStreamSelector(ABC):
@@ -699,20 +706,6 @@ class StripeLazySubStream(StripeStream, HttpSubStream):
             stream_slice = {"starting_after": items[-1]["id"], **stream_slice}
             items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
         yield from chain(items, items_next_pages)
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        )
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
-                self.logger.info(f"Fetching parent stream slices for stream {self.name}.")
-                yield {"parent": record}
 
 
 class IncrementalStripeLazySubStreamSelector(IStreamSelector):

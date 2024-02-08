@@ -7,6 +7,10 @@ data:
   githubIssueLabel: source-opsgenie
   license: MIT
   name: Opsgenie
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-opsgenie
   registries:
     cloud:
       enabled: false
@@ -15,7 +19,7 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/opsgenie
   tags:
-    - language:lowcode
+    - language:low-code
   ab_internal:
     sl: 100
     ql: 100

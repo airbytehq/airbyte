@@ -123,6 +123,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 1.1.1   | 2024-01-11 | [34157](https://github.com/airbytehq/airbyte/pull/34157) | Prepare for airbyte-lib                            |
 | 1.1.0   | 2023-12-20 | [32852](https://github.com/airbytehq/airbyte/pull/32852) | Add optional start_date for incremental streams                            |
 | 1.0.0   | 2023-12-19 | [32836](https://github.com/airbytehq/airbyte/pull/32836) | Add airbyte-type to `datetime` columns and remove `._links` column         |
 | 0.10.0  | 2023-11-23 | [32782](https://github.com/airbytehq/airbyte/pull/32782) | Add SegmentMembers stream                                                  |

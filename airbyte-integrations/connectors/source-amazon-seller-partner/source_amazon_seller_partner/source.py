@@ -15,8 +15,6 @@ from requests import HTTPError
 from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.streams import (
-    BrandAnalyticsAlternatePurchaseReports,
-    BrandAnalyticsItemComparisonReports,
     BrandAnalyticsMarketBasketReports,
     BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
@@ -187,8 +185,6 @@ class SourceAmazonSellerPartner(AbstractSource):
                 BrandAnalyticsMarketBasketReports,
                 BrandAnalyticsSearchTermsReports,
                 BrandAnalyticsRepeatPurchaseReports,
-                BrandAnalyticsAlternatePurchaseReports,
-                BrandAnalyticsItemComparisonReports,
                 SellerAnalyticsSalesAndTrafficReports,
                 VendorSalesReports,
                 VendorInventoryReports,

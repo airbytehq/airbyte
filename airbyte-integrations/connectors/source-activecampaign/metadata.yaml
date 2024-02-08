@@ -12,6 +12,10 @@ data:
   icon: activecampaign.svg
   license: MIT
   name: ActiveCampaign
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-activecampaign
   registries:
     cloud:
       enabled: false

@@ -59,7 +59,9 @@ PIP_CACHE_PATH = "/root/.cache/pip"
 POETRY_CACHE_VOLUME_NAME = "poetry_cache"
 POETRY_CACHE_PATH = "/root/.cache/pypoetry"
 STORAGE_DRIVER = "fuse-overlayfs"
-TAILSCALE_AUTH_KEY = os.getenv("TAILSCALE_AUTH_KEY")
+SETUP_PY_FILE_PATH = "setup.py"
+DEFAULT_PYTHON_PACKAGE_REGISTRY_URL = "https://upload.pypi.org/legacy/"
+DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL = "https://pypi.org/pypi"
 
 
 class CIContext(str, Enum):

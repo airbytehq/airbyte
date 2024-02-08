@@ -9,8 +9,6 @@ import io.airbyte.commons.protocol.migrations.AirbyteMessageMigration;
 import io.airbyte.commons.protocol.migrations.MigrationContainer;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,7 +19,6 @@ import java.util.Set;
  * This class is intended to apply the transformations required to go from one version of the
  * AirbyteProtocol to another.
  */
-@Singleton
 public class AirbyteMessageMigrator {
 
   private final MigrationContainer<AirbyteMessageMigration<?, ?>> migrationContainer;
@@ -30,7 +27,6 @@ public class AirbyteMessageMigrator {
     migrationContainer = new MigrationContainer<>(migrations);
   }
 
-  @PostConstruct
   public void initialize() {
     migrationContainer.initialize();
   }
