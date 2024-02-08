@@ -54,6 +54,7 @@ an Orb Account and API Key.
 
 | Version | Date       | Pull Request                                             | Subject |
 | --- |------------|----------------------------------------------------------| --- |
+| 1.1.1 | 2024-02-07 | [35005](https://github.com/airbytehq/airbyte/pull/35005) | Pass timeframe_start, timeframe_end to events query
 | 1.1.0 | 2023-03-03 | [24567](https://github.com/airbytehq/airbyte/pull/24567) | Add Invoices incremental stream (merged from [#24737](https://github.com/airbytehq/airbyte/pull/24737)
 | 1.0.0 | 2023-02-02 | [21951](https://github.com/airbytehq/airbyte/pull/21951) | Add SubscriptionUsage stream, and made `start_date` a required field
 | 0.1.4 | 2022-10-07 | [17761](https://github.com/airbytehq/airbyte/pull/17761) | Fix bug with enriching ledger entries with multiple credit blocks
