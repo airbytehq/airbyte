@@ -8,6 +8,7 @@ import io.airbyte.commons.logging.LoggingHelper.Color;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import org.slf4j.MDC;
 
 /**
@@ -70,22 +71,24 @@ public class MdcScope implements AutoCloseable {
       return this;
     }
 
-    public MdcScope build() {
-      final Map<String, String> extraMdcEntries = new HashMap<>();
-
+    public void produceMappings(final BiConsumer<String, String> mdcConsumer) {
       maybeLogPrefix.ifPresent(logPrefix -> {
         final String potentiallyColoredLog = maybePrefixColor
             .map(color -> LoggingHelper.applyColor(color, logPrefix))
             .orElse(logPrefix);
 
-        extraMdcEntries.put(LoggingHelper.LOG_SOURCE_MDC_KEY, potentiallyColoredLog);
+        mdcConsumer.accept(LoggingHelper.LOG_SOURCE_MDC_KEY, potentiallyColoredLog);
 
         if (simple) {
           // outputs much less information for this line. see log4j2.xml to see exactly what this does
-          extraMdcEntries.put("simple", "true");
+          mdcConsumer.accept("simple", "true");
         }
       });
+    }
 
+    public MdcScope build() {
+      final Map<String, String> extraMdcEntries = new HashMap<>();
+      produceMappings(extraMdcEntries::put);
       return new MdcScope(extraMdcEntries);
     }
 

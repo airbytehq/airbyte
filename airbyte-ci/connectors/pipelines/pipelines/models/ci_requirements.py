@@ -4,12 +4,6 @@ import json
 from dataclasses import dataclass
 from importlib import metadata
 
-INFRA_SUPPORTED_DAGGER_VERSIONS = {
-    "0.6.4",
-    "0.9.5",
-    "0.9.6",
-}
-
 
 @dataclass
 class CIRequirements:
@@ -20,15 +14,14 @@ class CIRequirements:
 
     dagger_version = metadata.version("dagger-io")
 
-    def __post_init__(self) -> None:
-        if self.dagger_version not in INFRA_SUPPORTED_DAGGER_VERSIONS:
-            raise ValueError(
-                f"Unsupported dagger version: {self.dagger_version}. " f"Supported versions are: {INFRA_SUPPORTED_DAGGER_VERSIONS}."
-            )
+    @property
+    def dagger_engine_image(self) -> str:
+        return f"registry.dagger.io/engine:v{self.dagger_version}"
 
     def to_json(self) -> str:
         return json.dumps(
             {
                 "dagger_version": self.dagger_version,
+                "dagger_engine_image": self.dagger_engine_image,
             }
         )

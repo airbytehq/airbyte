@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - TODO # Please change to the hostname of the source.
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-scaffold-source-python
   registries:
     oss:
       enabled: false

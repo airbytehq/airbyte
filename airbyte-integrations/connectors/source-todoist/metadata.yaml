@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.todoist.com/rest/v2
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-todoist
   registries:
     oss:
       enabled: true

@@ -334,7 +334,7 @@ def test_created_cursor_incremental_stream(
     for url, response in requests_mock_map.items():
         requests_mock.get(url, response)
 
-    slices = list(stream.stream_slices(sync_mode, stream_state=state))
+    slices = list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
     assert slices == expected_slices
     records = read_from_stream(stream, sync_mode, state)
     assert records == expected_records

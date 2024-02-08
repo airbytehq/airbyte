@@ -8,6 +8,10 @@ data:
   icon: appsflyer.svg
   license: MIT
   name: AppsFlyer
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-appsflyer
   registries:
     cloud:
       enabled: false

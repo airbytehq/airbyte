@@ -210,6 +210,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.3   | 2024-02-01 | [34728](https://github.com/airbytehq/airbyte/pull/34728)   | Upgrade CDK to 0.16.4; Notable changes from 0.14.2, 0.15.1 and 0.16.3                                                                                           |
 | 2.4.2   | 2024-01-24 | [34451](https://github.com/airbytehq/airbyte/pull/34451)   | Improve logging for unparseable input                                                                                                                           |
 | 2.4.1   | 2024-01-24 | [34458](https://github.com/airbytehq/airbyte/pull/34458)   | Improve error reporting                                                                                                                                         |
 | 2.4.0   | 2024-01-24 | [34468](https://github.com/airbytehq/airbyte/pull/34468)   | Upgrade CDK to 0.14.0                                                                                                                                           |

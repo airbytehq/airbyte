@@ -59,19 +59,19 @@ class TestReportsAmazonSPStream:
                 [{"dataStartTime": "2022-09-01T00:00:00Z", "dataEndTime": "2022-10-01T00:00:00Z"}],
             ),
             (
-                "2022-09-01T00:00:00Z",
-                "2023-01-01T00:00:00Z",
+                "2021-05-01T00:00:00Z",
+                "2022-09-05T00:00:00Z",
                 [
-                    {"dataStartTime": "2022-09-01T00:00:00Z", "dataEndTime": "2022-11-29T23:59:59Z"},
-                    {"dataStartTime": "2022-11-30T00:00:00Z", "dataEndTime": "2023-01-01T00:00:00Z"},
+                    {"dataStartTime": "2021-05-01T00:00:00Z", "dataEndTime": "2022-04-30T23:59:59Z"},
+                    {"dataStartTime": "2022-05-01T00:00:00Z", "dataEndTime": "2022-09-05T00:00:00Z"},
                 ],
             ),
             (
-                "2022-10-01T00:00:00Z",
+                "2021-10-01T00:00:00Z",
                 None,
                 [
-                    {"dataStartTime": "2022-10-01T00:00:00Z", "dataEndTime": "2022-12-29T23:59:59Z"},
-                    {"dataStartTime": "2022-12-30T00:00:00Z", "dataEndTime": "2023-01-01T00:00:00Z"}
+                    {"dataStartTime": "2021-10-01T00:00:00Z", "dataEndTime": "2022-09-30T23:59:59Z"},
+                    {"dataStartTime": "2022-10-01T00:00:00Z", "dataEndTime": "2023-01-01T00:00:00Z"}
                 ],
             ),
             (
@@ -122,13 +122,20 @@ class TestReportsAmazonSPStream:
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": ReportProcessingStatus.fatal, "dataEndTime": "2022-10-03T00:00:00Z"},
+            json={"processingStatus": ReportProcessingStatus.FATAL, "dataEndTime": "2022-10-03T00:00:00Z"},
         )
 
         stream = SomeReportStream(**report_init_kwargs)
+        stream_start = "2022-09-03T00:00:00Z"
+        stream_end = "2022-10-03T00:00:00Z"
         with pytest.raises(AirbyteTracedException) as e:
-            list(stream.read_records(sync_mode=SyncMode.full_refresh))
-        assert e.value.message == "The report for stream 'GET_TEST_REPORT' was not created - skip reading"
+            list(stream.read_records(
+                sync_mode=SyncMode.full_refresh, stream_slice={"dataStartTime": stream_start, "dataEndTime": stream_end})
+            )
+        assert e.value.internal_message == (
+            f"Failed to retrieve the report 'GET_TEST_REPORT' for period {stream_start}-{stream_end} "
+            "due to Amazon Seller Partner platform issues. This will be read during the next sync."
+        )
 
     def test_read_records_retrieve_cancelled(self, report_init_kwargs, mocker, requests_mock, caplog):
         mocker.patch("time.sleep", lambda x: None)
@@ -150,7 +157,7 @@ class TestReportsAmazonSPStream:
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": ReportProcessingStatus.cancelled, "dataEndTime": "2022-10-03T00:00:00Z"},
+            json={"processingStatus": ReportProcessingStatus.CANCELLED, "dataEndTime": "2022-10-03T00:00:00Z"},
         )
 
         stream = SomeReportStream(**report_init_kwargs)
@@ -178,7 +185,7 @@ class TestReportsAmazonSPStream:
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": ReportProcessingStatus.done, "dataEndTime": "2022-10-03T00:00:00Z", "reportDocumentId": document_id},
+            json={"processingStatus": ReportProcessingStatus.DONE, "dataEndTime": "2022-10-03T00:00:00Z", "reportDocumentId": document_id},
         )
         requests_mock.register_uri(
             "GET",

@@ -7,6 +7,7 @@ from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from deprecated.classic import deprecated
 
@@ -80,4 +81,11 @@ class AbstractStream(ABC):
     def log_stream_sync_configuration(self) -> None:
         """
         Logs the stream's configuration for debugging purposes.
+        """
+
+    @property
+    @abstractmethod
+    def cursor(self) -> Cursor:
+        """
+        :return: The cursor associated with this stream.
         """
