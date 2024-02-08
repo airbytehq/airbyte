@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.4.0
+Add TestConnectorDocumentation suite for validating connectors documentation structure and content. 
+
 ## 3.3.3
 Аix `NoAdditionalPropertiesValidator` if no type found in `items` 
 

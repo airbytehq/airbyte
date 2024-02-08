@@ -259,6 +259,11 @@ class ConnectorAttributesConfig(BaseConfig):
     )
 
 
+class TestConnectorDocumentationConfig(BaseConfig):
+    timeout_seconds: int = timeout_seconds
+    config_path: str = config_path
+
+
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
     bypass_reason: Optional[str]
     tests: Optional[List[TestConfigT]]
@@ -278,6 +283,7 @@ class AcceptanceTestConfigurations(BaseConfig):
     full_refresh: Optional[GenericTestConfig[FullRefreshConfig]]
     incremental: Optional[GenericTestConfig[IncrementalConfig]]
     connector_attributes: Optional[GenericTestConfig[ConnectorAttributesConfig]]
+    connector_documentation: Optional[GenericTestConfig[TestConnectorDocumentationConfig]]
 
 
 class Config(BaseConfig):
