@@ -41,10 +41,10 @@
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
-                "self": { 
+                "self": {
                   "type": "string"
                 },
-                "related": { 
+                "related": {
                   "type": "string"
                 }
               }
@@ -65,10 +65,10 @@
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
-                "self": { 
+                "self": {
                   "type": "string"
                 },
-                "related": { 
+                "related": {
                   "type": "string"
                 }
               }

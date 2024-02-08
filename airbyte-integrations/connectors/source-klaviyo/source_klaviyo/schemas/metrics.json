@@ -23,7 +23,7 @@
       "additionalProperties": true,
       "properties": {
         "self": { "type": "string" }
-      }    
+      }
     }
   }
 }

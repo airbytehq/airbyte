@@ -13,7 +13,7 @@
         "email": { "type": ["null", "string"] },
         "phone_number": { "type": ["null", "string"] },
         "anonymous_id": { "type": ["null", "string"] },
-        "external_id": { "type": ["null", "string"] },        
+        "external_id": { "type": ["null", "string"] },
         "first_name": { "type": ["null", "string"] },
         "last_name": { "type": ["null", "string"] },
         "organization": { "type": ["null", "string"] },
@@ -21,7 +21,10 @@
         "image": { "type": ["null", "string"] },
         "created": { "type": ["null", "string"], "format": "date-time" },
         "updated": { "type": ["null", "string"], "format": "date-time" },
-        "last_event_date": { "type": ["null", "string"], "format": "date-time" },
+        "last_event_date": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
         "location": {
           "type": ["null", "object"],
           "properties": {
@@ -53,10 +56,10 @@
           "type": ["null", "object"],
           "additionalProperties": true
         },
-        "subscriptions": { 
+        "subscriptions": {
           "type": ["null", "object"],
           "properties": {
-            "email": { 
+            "email": {
               "type": ["null", "object"],
               "properties": {
                 "marketing": {
@@ -64,19 +67,28 @@
                   "properties": {
                     "can_receive_email_marketing": { "type": "boolean" },
                     "consent": { "type": "string" },
-                    "timestamp": { "type": ["null", "string"], "format": "date-time" },
-                    "last_updated": { "type": ["null", "string"], "format": "date-time" },
+                    "timestamp": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
+                    "last_updated": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
                     "method": { "type": ["null", "string"] },
                     "method_detail": { "type": ["null", "string"] },
                     "custom_method_detail": { "type": ["null", "string"] },
                     "double_optin": { "type": ["null", "boolean"] },
-                    "suppressions": { 
+                    "suppressions": {
                       "type": ["null", "array"],
                       "items": {
                         "type": ["null", "object"],
                         "properties": {
                           "reason": { "type": "string" },
-                          "timestamp": { "type": "string", "format": "date-time" }
+                          "timestamp": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
                         }
                       }
                     },
@@ -87,7 +99,10 @@
                         "properties": {
                           "list_id": { "type": "string" },
                           "reason": { "type": "string" },
-                          "timestamp": { "type": "string", "format": "date-time" }
+                          "timestamp": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
                         }
                       }
                     }
@@ -103,7 +118,10 @@
                   "properties": {
                     "can_receive_sms_marketing": { "type": "boolean" },
                     "consent": { "type": "string" },
-                    "consent_timestamp": { "type": "string", "format": "date-time" },
+                    "consent_timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
                     "method": { "type": "string" },
                     "method_detail": { "type": ["null", "string"] },
                     "last_updated": { "type": "string", "format": "date-time" }
@@ -129,16 +147,16 @@
         }
       }
     },
-    "links": { 
+    "links": {
       "type": ["null", "object"],
       "properties": {
-        "self": { "type": ["null", "string"] }      
+        "self": { "type": ["null", "string"] }
       }
     },
-    "relationships": { 
+    "relationships": {
       "type": ["null", "object"],
       "properties": {
-        "lists": { 
+        "lists": {
           "type": ["null", "object"],
           "properties": {
             "links": {
@@ -150,10 +168,10 @@
             }
           }
         },
-        "segments": { 
+        "segments": {
           "type": ["null", "object"],
           "properties": {
-            "links": { 
+            "links": {
               "type": ["null", "object"],
               "properties": {
                 "self": { "type": ["null", "string"] },

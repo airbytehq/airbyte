@@ -47,15 +47,15 @@
             "is_add_utm": { "type": ["null", "boolean"] },
             "utm_params": {
               "type": ["null", "array"],
-              "items": { 
+              "items": {
                 "type": ["null", "object"],
                 "properties": {
                   "name": { "type": "string" },
                   "value": { "type": "string" }
-                } 
+                }
               }
             }
-          }        
+          }
         },
         "send_strategy": {
           "type": ["null", "object"],
@@ -71,7 +71,9 @@
                   "airbyte_type": "timestamp_without_timezone"
                 },
                 "is_local": { "type": ["null", "boolean"] },
-                "send_past_recipients_immediately": { "type": ["null", "boolean"] }
+                "send_past_recipients_immediately": {
+                  "type": ["null", "boolean"]
+                }
               }
             },
             "options_throttled": {
