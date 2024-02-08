@@ -21,7 +21,7 @@ class TestGradleTask:
         title = "Dummy Step"
 
         async def _run(self) -> steps.StepResult:
-            return steps.StepResult(self, steps.StepStatus.SUCCESS)
+            return steps.StepResult(step=self, status=steps.StepStatus.SUCCESS)
 
     @pytest.fixture
     def test_context(self, mocker, dagger_client):

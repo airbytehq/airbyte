@@ -61,8 +61,8 @@ class UpgradeBaseImageMetadata(Step):
         latest_base_image_address = await self.get_latest_base_image_address()
         if latest_base_image_address is None:
             return StepResult(
-                self,
-                StepStatus.SKIPPED,
+                step=self,
+                status=StepStatus.SKIPPED,
                 stdout="Could not find a base image for this connector language.",
                 output_artifact=self.repo_dir,
             )
@@ -73,16 +73,16 @@ class UpgradeBaseImageMetadata(Step):
 
         if current_base_image_address is None and not self.set_if_not_exists:
             return StepResult(
-                self,
-                StepStatus.SKIPPED,
+                step=self,
+                status=StepStatus.SKIPPED,
                 stdout="Connector does not have a base image metadata field.",
                 output_artifact=self.repo_dir,
             )
 
         if current_base_image_address == latest_base_image_address:
             return StepResult(
-                self,
-                StepStatus.SKIPPED,
+                step=self,
+                status=StepStatus.SKIPPED,
                 stdout="Connector already uses latest base image",
                 output_artifact=self.repo_dir,
             )
@@ -90,8 +90,8 @@ class UpgradeBaseImageMetadata(Step):
         updated_repo_dir = metadata_change_helpers.get_repo_dir_with_updated_metadata(self.repo_dir, metadata_path, updated_metadata)
 
         return StepResult(
-            self,
-            StepStatus.SUCCESS,
+            step=self,
+            status=StepStatus.SUCCESS,
             stdout=f"Updated base image to {latest_base_image_address} in {metadata_path}",
             output_artifact=updated_repo_dir,
         )
@@ -116,16 +116,16 @@ class DeleteConnectorFile(Step):
         file_to_delete_path = self.context.connector.code_directory / self.file_to_delete
         if not file_to_delete_path.exists():
             return StepResult(
-                self,
-                StepStatus.SKIPPED,
+                step=self,
+                status=StepStatus.SKIPPED,
                 stdout=f"Connector does not have a {self.file_to_delete}",
             )
         # As this is a deletion of a file, this has to happen on the host fs
         # Deleting the file in a Directory container would not work because the directory.export method would not export the deleted file from the Directory back to host.
         file_to_delete_path.unlink()
         return StepResult(
-            self,
-            StepStatus.SUCCESS,
+            step=self,
+            status=StepStatus.SUCCESS,
             stdout=f"Deleted {file_to_delete_path}",
         )
 
@@ -143,8 +143,8 @@ class AddBuildInstructionsToReadme(Step):
         readme_path = self.context.connector.code_directory / "README.md"
         if not readme_path.exists():
             return StepResult(
-                self,
-                StepStatus.SKIPPED,
+                step=self,
+                status=StepStatus.SKIPPED,
                 stdout="Connector does not have a documentation file.",
                 output_artifact=self.repo_dir,
             )
@@ -153,15 +153,15 @@ class AddBuildInstructionsToReadme(Step):
             updated_readme = self.add_build_instructions(current_readme)
         except Exception as e:
             return StepResult(
-                self,
-                StepStatus.FAILURE,
+                step=self,
+                status=StepStatus.FAILURE,
                 stdout=str(e),
                 output_artifact=self.repo_dir,
             )
         updated_repo_dir = await self.repo_dir.with_new_file(str(readme_path), contents=updated_readme)
         return StepResult(
-            self,
-            StepStatus.SUCCESS,
+            step=self,
+            status=StepStatus.SUCCESS,
             stdout=f"Added build instructions to {readme_path}",
             output_artifact=updated_repo_dir,
         )
