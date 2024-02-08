@@ -1,12 +1,15 @@
-import pytest
-import requests_mock
-import time
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import logging
-import requests
+import time
 from unittest.mock import patch
 
-from source_paypal_transaction.components import PayPalOauth2Authenticator
+import pytest
+import requests
+import requests_mock
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from source_paypal_transaction.components import PayPalOauth2Authenticator
+
 
 @pytest.fixture
 def mock_authenticator():

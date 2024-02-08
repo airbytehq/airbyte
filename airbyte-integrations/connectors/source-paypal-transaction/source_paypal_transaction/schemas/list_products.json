@@ -6,7 +6,7 @@
     "id": { "type": ["null", "string"] },
     "name": { "type": ["null", "string"] },
     "description": { "type": ["null", "string"] },
-    "create_time": { 
+    "create_time": {
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -16,9 +16,9 @@
         "type": "object",
         "additionalProperties": true,
         "properties": {
-          "href": {"type": ["null", "string"]},
-          "rel": {"type": ["null", "string"]},
-          "method": {"type": ["null", "string"]}
+          "href": { "type": ["null", "string"] },
+          "rel": { "type": ["null", "string"] },
+          "method": { "type": ["null", "string"] }
         }
       }
     }

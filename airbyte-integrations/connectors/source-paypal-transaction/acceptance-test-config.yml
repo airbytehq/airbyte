@@ -104,4 +104,3 @@ acceptance_tests:
           list_products:
             - name: description
               bypass_reason: "Sometimes it is not contained in the response"
-        

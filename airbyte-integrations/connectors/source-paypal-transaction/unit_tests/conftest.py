@@ -1,9 +1,11 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 # conftest.py
-import pytest
 import json
 from datetime import datetime
 from unittest.mock import patch
 
+import pytest
 from source_paypal_transaction import SourcePaypalTransaction
 
 

@@ -114,7 +114,7 @@ def get_api_token():
     auth = (client_id, secret)
     response = requests.request(method="POST", url=token_refresh_endpoint, data=data, headers=headers, auth=auth)
     response_json = response.json()
-    print("RESPONSE -->",response_json)
+    print("RESPONSE -->", response_json)
     API_TOKEN = response_json["access_token"]
     return API_TOKEN
 
@@ -153,7 +153,7 @@ def make_payment():
 
 # APPROVE PAYMENT
 def login():
-    #driver = webdriver.Chrome("/usr/bin/chromedriver")
+    # driver = webdriver.Chrome("/usr/bin/chromedriver")
     driver = webdriver.Chrome()
 
     # SIGN_IN
@@ -173,9 +173,7 @@ def approve_payment(driver, url):
     sleep(3)
     if not cookies_accepted:
         try:
-            cookies_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.ID, "acceptAllButton"))
-            )
+            cookies_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "acceptAllButton")))
             cookies_button.click()
             cookies_accepted = True
         except Exception as e:
@@ -198,6 +196,7 @@ def approve_payment(driver, url):
     wait.until(EC.title_is("Example Domain"))
     print(f"Payment approved: {driver.current_url}")
 
+
 def execute_payment(url):
     try:
         # Attempt to make the POST request
@@ -208,10 +207,13 @@ def execute_payment(url):
             print(f"Your payment has been successfully executed to {url} with STATE: {response_json['state']}")
         else:
             # If the response code is not 200, print the error message
-            print(f"Your payment execution was not successful. You got {response.status_code} with message {response.json().get('message', 'No message available')}.")
+            print(
+                f"Your payment execution was not successful. You got {response.status_code} with message {response.json().get('message', 'No message available')}."
+            )
     except requests.exceptions.RequestException as e:
         # If an error occurs during the request, print the error
         print(f"An error occurred: {e}")
+
 
 TOTAL_TRANSACTIONS = int(sys.argv[1]) if len(sys.argv) > 1 else 3
 
