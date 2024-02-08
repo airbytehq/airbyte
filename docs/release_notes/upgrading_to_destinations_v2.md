@@ -1,6 +1,6 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import {SnowflakeMigrationGenerator, BigQueryMigrationGenerator, RedshiftMigrationGenerator} from './destinations_v2.js'
+import {SnowflakeMigrationGenerator, BigQueryMigrationGenerator, RedshiftMigrationGenerator, PostgresMigrationGenerator} from './destinations_v2.js'
 
 # Upgrading to Destinations V2
 
@@ -53,6 +53,17 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 
 ![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
 
+:::caution Pay attention to the following before upgrade
+
+* The upgrading process entails hydrating the v2 format raw table by querying the v1 raw table through a standard query, such as "INSERT INTO v2_raw_table SELECT * FROM v1_raw_table." 
+The duration of this process can vary significantly based on the data size and may encounter failures contingent on the Destination's capacity to execute the query. 
+In some instances, establishing a new connection could potentially expedite the process. 
+* Following the successful migration of v1 raw tables to v2, the v1 raw tables will be dropped. However, it is essential to note that if there are any derived objects (materialized views) or referential 
+constraints (foreign keys) linked to the old raw table, this operation may encounter failure, resulting in an unsuccessful upgrade or broken derived objects (like materialized views etc). 
+
+If any of the above concerns are applicable to your existing setup, we recommend [Upgrading Connections One by One with Dual-Writing](#upgrading-connections-one-by-one-with-dual-writing) for a more controlled upgrade process
+:::
+
 After upgrading the out-of-date destination to a [Destinations V2 compatible version](#destinations-v2-effective-versions), the following will occur at the next sync **for each connection** sending data to the updated destination:
 
 1. Existing raw tables replicated to this destination will be copied to a new `airbyte_internal` schema.
@@ -72,7 +83,7 @@ Versions are tied to the destination. When you update the destination, **all con
 - [Testing Destinations V2 on a Single Connection](#testing-destinations-v2-for-a-single-connection)
 - [Upgrading Connections One by One Using CDC](#upgrade-paths-for-connections-using-cdc)
 - [Upgrading as a User of Raw Tables](#upgrading-as-a-user-of-raw-tables)
-- [Rolling back to Legacy Normalization](#oss-only-rolling-back-to-legacy-normalization)
+- [Rolling back to Legacy Normalization](#open-source-only-rolling-back-to-legacy-normalization)
 
 ## Advanced Upgrade Paths
 
@@ -108,6 +119,9 @@ These steps allow you to dual-write for connections incrementally syncing data w
   </TabItem>
   <TabItem value="redshift" label="Redshift">
     <RedshiftMigrationGenerator />
+  </TabItem>
+  <TabItem value="postgres" label="Postgres">
+    <PostgresMigrationGenerator />
   </TabItem>
 </Tabs>
 
