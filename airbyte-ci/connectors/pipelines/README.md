@@ -296,7 +296,7 @@ flowchart TD
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. 
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
 
 Note:
 
@@ -620,11 +620,11 @@ You can find the list of internal packages [here](https://github.com/airbytehq/a
 
 #### Options
 
-| Option                    | Required | Multiple| Description                                                                                 |
-| ------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------- |
-| `--poetry-package-path/-p`| False    | True    | Poetry packages path to run the poe tasks for.                                              |
-| `--modified`              | False    | False   | Run poe tasks of modified internal poetry packages.                                         |
-| `--ci-requirements`       | False    | False   | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
+| Option                     | Required | Multiple | Description                                                                                 |
+| -------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------- |
+| `--poetry-package-path/-p` | False    | True     | Poetry packages path to run the poe tasks for.                                              |
+| `--modified`               | False    | False    | Run poe tasks of modified internal poetry packages.                                         |
+| `--ci-requirements`        | False    | False    | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 #### Examples
 You can pass multiple `--poetry-package-path` options to run poe tasks.
@@ -640,10 +640,12 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 4.1.2  | [#34945](https://github.com/airbytehq/airbyte/pull/34945)  | Only install main dependencies when running poetry install.                                                                |
-| 4.1.1  | [#34430](https://github.com/airbytehq/airbyte/pull/34430)  | Speed up airbyte-ci startup (and airbyte-ci format).                                         |
-| 4.1.0  | [#34923](https://github.com/airbytehq/airbyte/pull/34923)  | Include gradle test reports in HTML connector test report.                                                                 |
-| 4.0.0  | [#34736](https://github.com/airbytehq/airbyte/pull/34736)  | Run poe tasks declared in internal poetry packages.                                         |
+| 4.1.3   | [#TBD](https://github.com/airbytehq/airbyte/pull/TBD)  | Use `poetry install --no-root` in the builder container.                                                                |
+
+| 4.1.2   | [#34945](https://github.com/airbytehq/airbyte/pull/34945)  | Only install main dependencies when running poetry install.                                                                |
+| 4.1.1   | [#34430](https://github.com/airbytehq/airbyte/pull/34430)  | Speed up airbyte-ci startup (and airbyte-ci format).                                                                       |
+| 4.1.0   | [#34923](https://github.com/airbytehq/airbyte/pull/34923)  | Include gradle test reports in HTML connector test report.                                                                 |
+| 4.0.0   | [#34736](https://github.com/airbytehq/airbyte/pull/34736)  | Run poe tasks declared in internal poetry packages.                                                                        |
 | 3.10.4  | [#34867](https://github.com/airbytehq/airbyte/pull/34867)  | Remove connector ops team                                                                                                  |
 | 3.10.3  | [#34836](https://github.com/airbytehq/airbyte/pull/34836)  | Add check for python registry publishing enabled for certified python sources.                                             |
 | 3.10.2  | [#34044](https://github.com/airbytehq/airbyte/pull/34044)  | Add pypi validation testing.                                                                                               |
