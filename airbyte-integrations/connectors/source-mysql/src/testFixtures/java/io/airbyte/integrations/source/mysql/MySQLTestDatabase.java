@@ -50,6 +50,11 @@ public class MySQLTestDatabase extends
   static public MySQLTestDatabase in(BaseImage baseImage, ContainerModifier... methods) {
     String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
     final var container = new MySQLContainerFactory().shared(baseImage.reference, methodNames);
+    try {
+      container.execInContainer("sh", "-c", "ln -s /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock");
+    } catch (Exception ex) {
+      throw new RuntimeException("soft link failed. Not expected as we need this hack to make ci runner to work.");
+    }
     return new MySQLTestDatabase(container).initialized();
   }
 
