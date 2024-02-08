@@ -96,7 +96,7 @@ public class GlobalAsyncStateManager {
   // All access to this field MUST be guarded by a synchronized(lock) block
   private long arrivalNumber = 0;
 
-  private final Object lock = new Object();
+  private final Object LOCK = new Object();
 
   public GlobalAsyncStateManager(final GlobalMemoryManager memoryManager) {
     this.memoryManager = memoryManager;
@@ -146,7 +146,7 @@ public class GlobalAsyncStateManager {
    * @param count to decrement.
    */
   public void decrement(final long stateId, final long count) {
-    synchronized (lock) {
+    synchronized (LOCK) {
       log.trace("decrementing state id: {}, count: {}", stateId, count);
       stateIdToCounter.get(getStateAfterAlias(stateId)).addAndGet(-count);
     }
@@ -164,7 +164,7 @@ public class GlobalAsyncStateManager {
   public List<PartialStateWithDestinationStats> flushStates() {
     final List<PartialStateWithDestinationStats> output = new ArrayList<>();
     Long bytesFlushed = 0L;
-    synchronized (lock) {
+    synchronized (LOCK) {
       for (final Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>> entry : descToStateIdQ.entrySet()) {
         // Remove all states with 0 counters.
         // Per-stream synchronized is required to make sure the state (at the head of the queue)
@@ -223,7 +223,7 @@ public class GlobalAsyncStateManager {
     if (descToStateIdQ.get(resolvedDescriptor) == null) {
       registerNewStreamDescriptor(resolvedDescriptor);
     }
-    synchronized (lock) {
+    synchronized (LOCK) {
       final Long stateId = descToStateIdQ.get(resolvedDescriptor).peekLast();
       final var update = stateIdToCounter.get(stateId).addAndGet(increment);
       if (increment >= 0) {
@@ -272,7 +272,7 @@ public class GlobalAsyncStateManager {
     if (stateType != AirbyteStateMessage.AirbyteStateType.STREAM) {// alias old stream-level state ids to single global state id
       // upon conversion, all previous tracking data structures need to be cleared as we move
       // into the non-STREAM world for correctness.
-      synchronized (lock) {
+      synchronized (LOCK) {
         aliasIds.addAll(descToStateIdQ.values().stream().flatMap(Collection::stream).toList());
         descToStateIdQ.clear();
         retroactiveGlobalStateId = StateIdProvider.getNextId();
@@ -309,7 +309,7 @@ public class GlobalAsyncStateManager {
    */
   private void closeState(final PartialAirbyteMessage message, final long sizeInBytes, final String defaultNamespace) {
     final StreamDescriptor resolvedDescriptor = extractStream(message, defaultNamespace).orElse(SENTINEL_GLOBAL_DESC);
-    synchronized (lock) {
+    synchronized (LOCK) {
       log.info("State with arrival number {} received", arrivalNumber);
       stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(new StateMessageWithArrivalNumber(message, arrivalNumber), sizeInBytes));
       arrivalNumber++;
@@ -385,7 +385,7 @@ public class GlobalAsyncStateManager {
   }
 
   private void registerNewStreamDescriptor(final StreamDescriptor resolvedDescriptor) {
-    synchronized (lock) {
+    synchronized (LOCK) {
       descToStateIdQ.put(resolvedDescriptor, new LinkedBlockingDeque<>());
     }
     registerNewStateId(resolvedDescriptor);
@@ -393,7 +393,7 @@ public class GlobalAsyncStateManager {
 
   private void registerNewStateId(final StreamDescriptor resolvedDescriptor) {
     final long stateId = StateIdProvider.getNextId();
-    synchronized (lock) {
+    synchronized (LOCK) {
       stateIdToCounter.put(stateId, new AtomicLong(0));
       stateIdToCounterForPopulatingDestinationStats.put(stateId, new AtomicLong(0));
       descToStateIdQ.get(resolvedDescriptor).add(stateId);

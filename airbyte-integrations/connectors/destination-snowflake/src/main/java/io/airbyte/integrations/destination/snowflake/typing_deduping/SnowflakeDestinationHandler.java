@@ -158,11 +158,6 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
     }
   }
 
-  @Override
-  public LinkedHashMap<String, SnowflakeTableDefinition> findExistingFinalTables(List<StreamId> streamIds) throws Exception {
-    return null;
-  }
-
   /**
    * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
    * know how to use
