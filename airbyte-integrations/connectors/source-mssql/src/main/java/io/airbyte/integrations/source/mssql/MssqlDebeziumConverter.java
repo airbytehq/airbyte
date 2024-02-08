@@ -38,7 +38,7 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
   private static final String SMALLMONEY_TYPE = "SMALLMONEY";
   private static final String GEOMETRY = "GEOMETRY";
   private static final String GEOGRAPHY = "GEOGRAPHY";
-  private static final String DEBEZIUM_DATETIMEOFFSET_FORMAT = "yyyy-MM-dd HH:mm:ss XXX";
+  private static final String DEBEZIUM_DATETIMEOFFSET_FORMAT = "yyyy-MM-dd HH:mm:ss[.][SSSSSSS] XXX";
 
   private static final String DATETIME_FORMAT_MICROSECONDS = "yyyy-MM-dd'T'HH:mm:ss[.][SSSSSS]";
 

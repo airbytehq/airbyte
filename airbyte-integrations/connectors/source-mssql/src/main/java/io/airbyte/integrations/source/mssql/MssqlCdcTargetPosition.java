@@ -11,6 +11,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.SnapshotMetadata;
+import io.airbyte.commons.json.Jsons;
 import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -52,7 +53,8 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
 
   @Override
   public Lsn extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
-    throw new RuntimeException("Heartbeat is not supported for MSSQL");
+    final Object commitLsnValue = sourceOffset.get("commit_lsn");
+    return (commitLsnValue == null) ? Lsn.NULL : Lsn.valueOf(commitLsnValue.toString());
   }
 
   private Lsn extractLsn(final JsonNode valueAsJson) {
@@ -109,6 +111,40 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
     } catch (final SQLException | IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public boolean isHeartbeatSupported() {
+    return true;
+  }
+
+  @Override
+  public boolean reachedTargetPosition(Lsn positionFromHeartbeat) {
+    return positionFromHeartbeat.compareTo(targetLsn) >= 0;
+  }
+
+  @Override
+  public boolean isEventAheadOffset(Map<String, String> offset, ChangeEventWithMetadata event) {
+    if (offset == null || offset.size() != 1) {
+      return false;
+    }
+    final Lsn eventLsn = extractLsn(event.eventValueAsJson());
+    final Lsn offsetLsn = offsetToLsn(offset);
+    return eventLsn.compareTo(offsetLsn) > 0;
+  }
+
+  @Override
+  public boolean isSameOffset(Map<String, String> offsetA, Map<String, String> offsetB) {
+    if ((offsetA == null || offsetA.size() != 1) || (offsetB == null || offsetB.size() != 1)) {
+      return false;
+    }
+    return offsetToLsn(offsetA).equals(offsetToLsn(offsetB));
+  }
+
+  private Lsn offsetToLsn(Map<String, String> offset) {
+    final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
+    final JsonNode commitLsnJson = offsetJson.get("commit_lsn");
+    return (commitLsnJson == null || commitLsnJson.isNull()) ? Lsn.NULL : Lsn.valueOf(commitLsnJson.asText());
   }
 
 }

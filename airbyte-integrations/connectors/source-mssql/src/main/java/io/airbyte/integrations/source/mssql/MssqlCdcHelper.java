@@ -57,7 +57,7 @@ public class MssqlCdcHelper {
     return false;
   }
 
-  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
+  public static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
     final JsonNode config = database.getSourceConfig();
     final JsonNode dbConfig = database.getDatabaseConfig();
 
@@ -94,8 +94,6 @@ public class MssqlCdcHelper {
             ? HEARTBEAT_INTERVAL_IN_TESTS
             : HEARTBEAT_INTERVAL;
     props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
-    // TODO: enable heartbeats in MS SQL Server.
-    props.setProperty("heartbeat.interval.ms", "0");
 
     if (config.has("ssl_method")) {
       final JsonNode sslConfig = config.get("ssl_method");
