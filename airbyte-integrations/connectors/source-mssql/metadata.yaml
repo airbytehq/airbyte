@@ -18,8 +18,12 @@ data:
   name: Microsoft SQL Server (MSSQL)
   registries:
     cloud:
+      # CI pipeline is broken for mssql
+      dockerImageTag: 3.6.1
       enabled: true
     oss:
+      # CI pipeline is broken for mssql
+      dockerImageTag: 3.6.1
       enabled: true
   releaseStage: alpha
   supportLevel: community
