@@ -12,6 +12,7 @@ from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteStateMessage,
+    AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConnectorSpecification,
     FailureType,
@@ -20,6 +21,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
@@ -31,12 +33,15 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
 from airbyte_cdk.sources.file_based.stream.concurrent.adapters import FileBasedStreamFacade
-from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedNoopCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import (
+    AbstractConcurrentFileBasedCursor,
+    FileBasedConcurrentCursor,
+    FileBasedNoopCursor,
+)
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
-from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository, MessageRepository
-from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.utils.analytics_message import create_analytics_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pydantic.error_wrappers import ValidationError
@@ -56,12 +61,12 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         spec_class: Type[AbstractFileBasedSpec],
         catalog: Optional[ConfiguredAirbyteCatalog],
         config: Optional[Mapping[str, Any]],
-        state: Optional[TState],
+        state: Optional[MutableMapping[str, Any]],
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
-        cursor_cls: Type[AbstractFileBasedCursor] = DefaultFileBasedCursor,
+        cursor_cls: Type[Union[AbstractConcurrentFileBasedCursor, AbstractFileBasedCursor]] = FileBasedConcurrentCursor,
     ):
         self.stream_reader = stream_reader
         self.spec_class = spec_class
@@ -137,52 +142,99 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         """
         Return a list of this source's streams.
         """
-        file_based_streams = self._get_file_based_streams(config)
 
-        configured_streams: List[Stream] = []
+        if self.catalog:
+            state_manager = ConnectorStateManager(
+                stream_instance_map={s.stream.name: s.stream for s in self.catalog.streams},
+                state=self.state,
+            )
+        else:
+            # During `check` operations we don't have a catalog so cannot create a state manager.
+            # Since the state manager is only required for incremental syncs, this is fine.
+            state_manager = None
 
-        for stream in file_based_streams:
-            sync_mode = self._get_sync_mode_from_catalog(stream)
-            if sync_mode == SyncMode.full_refresh and hasattr(self, "_concurrency_level") and self._concurrency_level is not None:
-                configured_streams.append(
-                    FileBasedStreamFacade.create_from_stream(stream, self, self.logger, None, FileBasedNoopCursor(stream.config))
-                )
-            else:
-                configured_streams.append(stream)
-
-        return configured_streams
-
-    def _get_file_based_streams(self, config: Mapping[str, Any]) -> List[AbstractFileBasedStream]:
         try:
             parsed_config = self._get_parsed_config(config)
             self.stream_reader.config = parsed_config
-            streams: List[AbstractFileBasedStream] = []
+            streams: List[Stream] = []
             for stream_config in parsed_config.streams:
-                self._validate_input_schema(stream_config)
-                streams.append(
-                    DefaultFileBasedStream(
-                        config=stream_config,
-                        catalog_schema=self.stream_schemas.get(stream_config.name),
-                        stream_reader=self.stream_reader,
-                        availability_strategy=self.availability_strategy,
-                        discovery_policy=self.discovery_policy,
-                        parsers=self.parsers,
-                        validation_policy=self._validate_and_get_validation_policy(stream_config),
-                        cursor=self.cursor_cls(stream_config),
-                        errors_collector=self.errors_collector,
-                    )
+                # Like state_manager, `catalog_stream` may be None during `check`
+                catalog_stream = self._get_stream_from_catalog(stream_config)
+                stream_state = (
+                    state_manager.get_stream_state(catalog_stream.name, catalog_stream.namespace)
+                    if (state_manager and catalog_stream)
+                    else None
                 )
+                self._validate_input_schema(stream_config)
+
+                sync_mode = self._get_sync_mode_from_catalog(stream_config.name)
+
+                if sync_mode == SyncMode.full_refresh and hasattr(self, "_concurrency_level") and self._concurrency_level is not None:
+                    cursor = FileBasedNoopCursor(stream_config)
+                    stream = FileBasedStreamFacade.create_from_stream(
+                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
+                    )
+
+                elif (
+                    sync_mode == SyncMode.incremental
+                    and issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor)
+                    and hasattr(self, "_concurrency_level")
+                    and self._concurrency_level is not None
+                ):
+                    assert (
+                        state_manager is not None
+                    ), "No ConnectorStateManager was created, but it is required for incremental syncs. This is unexpected. Please contact Support."
+
+                    cursor = self.cursor_cls(
+                        stream_config,
+                        stream_config.name,
+                        None,
+                        stream_state,
+                        self.message_repository,
+                        state_manager,
+                        CursorField(DefaultFileBasedStream.ab_last_mod_col),
+                    )
+                    stream = FileBasedStreamFacade.create_from_stream(
+                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
+                    )
+                else:
+                    cursor = self.cursor_cls(stream_config)
+                    stream = self._make_default_stream(stream_config, cursor)
+
+                streams.append(stream)
             return streams
 
         except ValidationError as exc:
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
 
-    def _get_sync_mode_from_catalog(self, stream: Stream) -> Optional[SyncMode]:
+    def _make_default_stream(
+        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor]
+    ) -> AbstractFileBasedStream:
+        return DefaultFileBasedStream(
+            config=stream_config,
+            catalog_schema=self.stream_schemas.get(stream_config.name),
+            stream_reader=self.stream_reader,
+            availability_strategy=self.availability_strategy,
+            discovery_policy=self.discovery_policy,
+            parsers=self.parsers,
+            validation_policy=self._validate_and_get_validation_policy(stream_config),
+            errors_collector=self.errors_collector,
+            cursor=cursor,
+        )
+
+    def _get_stream_from_catalog(self, stream_config: FileBasedStreamConfig) -> Optional[AirbyteStream]:
+        if self.catalog:
+            for stream in self.catalog.streams or []:
+                if stream.stream.name == stream_config.name:
+                    return stream.stream
+        return None
+
+    def _get_sync_mode_from_catalog(self, stream_name: str) -> Optional[SyncMode]:
         if self.catalog:
             for catalog_stream in self.catalog.streams:
-                if stream.name == catalog_stream.stream.name:
+                if stream_name == catalog_stream.stream.name:
                     return catalog_stream.sync_mode
-            self.logger.warning(f"No sync mode was found for {stream.name}.")
+            self.logger.warning(f"No sync mode was found for {stream_name}.")
         return None
 
     def read(
