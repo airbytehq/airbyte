@@ -10,6 +10,7 @@ from dagger import Client, Container, File, Secret, Service
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import (
+    DOCKER_DIND_LOG_LEVEL,
     DOCKER_HOST_NAME,
     DOCKER_HOST_PORT,
     DOCKER_REGISTRY_ADDRESS,
@@ -63,7 +64,7 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
     return base_container
 
 
-def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
+def get_dockerd_config_json(registry_mirror_url: Optional[str] = None) -> str:
     """Get the json representation of the docker daemon config.
 
     Args:
@@ -74,6 +75,9 @@ def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
     """
     daemon_config: Dict[str, Union[List[str], str]] = {
         "storage-driver": STORAGE_DRIVER,
+        "log-level": DOCKER_DIND_LOG_LEVEL,
+        "host": f"tcp://0.0.0.0:{DOCKER_HOST_PORT}",
+        "tls": False,
     }
     if registry_mirror_url:
         daemon_config["registry-mirrors"] = ["http://" + registry_mirror_url]
@@ -135,17 +139,15 @@ def with_global_dockerd_service(
         dockerd_container = dockerd_container.with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(
             ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True
         )
-        daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
+        dockerd_config_json = get_dockerd_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:
-        daemon_config_json = get_daemon_config_json()
+        dockerd_config_json = get_dockerd_config_json()
 
-    dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", contents=daemon_config_json)
+    dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", contents=dockerd_config_json)
     if docker_hub_username_secret and docker_hub_password_secret:
         # Docker login happens late because there's a cache buster in the docker login command.
         dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
-    return dockerd_container.with_exec(
-        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
-    ).as_service()
+    return dockerd_container.with_exec(["dockerd"], insecure_root_capabilities=True).as_service()
 
 
 def with_bound_docker_host(
