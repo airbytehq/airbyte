@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.cdc;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isDebugMode;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
