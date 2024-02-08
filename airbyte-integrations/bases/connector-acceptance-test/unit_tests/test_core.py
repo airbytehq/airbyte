@@ -1574,8 +1574,8 @@ async def test_read_validate_stream_statuses_exceptions(mocker, output):
 
 
 @pytest.mark.parametrize(
-    ("metadata", "expected_file_based"),
-    (
+    "metadata, expected_file_based, is_connector_certified",
+    [
         ({"data": {"connectorSubtype": "file", "ab_internal": {"ql": 400}}}, True, True),
         ({"data": {"connectorSubtype": "file", "ab_internal": {"ql": 500}}}, True, True),
         ({}, False, False),
@@ -1584,11 +1584,11 @@ async def test_read_validate_stream_statuses_exceptions(mocker, output):
         ({"data": {"connectorSubtype": "file"}}, False, False),
         ({"data": {"connectorSubtype": "file", "ab_internal": {"ql": 200}}}, False, False),
         ({"data": {"connectorSubtype": "not_file", "ab_internal": {"ql": 400}}}, False, False),
-    ),
+    ],
 )
 def test_is_certified_file_based_connector(metadata, is_connector_certified, expected_file_based):
     t = test_core.TestBasicRead()
-    assert test_core.TestBasicRead.is_certified_file_based_connector.__wrapped__(t, metadata) is expected_file_based
+    assert test_core.TestBasicRead.is_certified_file_based_connector.__wrapped__(t, metadata, is_connector_certified) is expected_file_based
 
 
 @pytest.mark.parametrize(
