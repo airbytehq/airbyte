@@ -16,15 +16,14 @@ import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -69,8 +68,8 @@ public class GlobalAsyncStateManager {
    */
   private final AtomicLong memoryUsed;
 
-  boolean preState = true;
-  private final ConcurrentMap<StreamDescriptor, LinkedList<Long>> descToStateIdQ = new ConcurrentHashMap<>();
+  private boolean preState = true;
+  private final ConcurrentMap<StreamDescriptor, LinkedBlockingDeque<Long>> descToStateIdQ = new ConcurrentHashMap<>();
   /**
    * Both {@link stateIdToCounter} and {@link stateIdToCounterForPopulatingDestinationStats} are used
    * to maintain a counter for the number of records associated with a give state i.e. before a state
@@ -87,18 +86,19 @@ public class GlobalAsyncStateManager {
    */
   private final ConcurrentMap<Long, AtomicLong> stateIdToCounter = new ConcurrentHashMap<>();
   private final ConcurrentMap<Long, AtomicLong> stateIdToCounterForPopulatingDestinationStats = new ConcurrentHashMap<>();
-  private final ConcurrentMap<Long, ImmutablePair<PartialAirbyteMessage, Long>> stateIdToState = new ConcurrentHashMap<>();
+  private final ConcurrentMap<Long, ImmutablePair<StateMessageWithArrivalNumber, Long>> stateIdToState = new ConcurrentHashMap<>();
 
   // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to one
   // single global id.
   // This only happens once.
   private final Set<Long> aliasIds = new ConcurrentHashSet<>();
   private long retroactiveGlobalStateId = 0;
+  private long arrivalNumber = 0;
 
   public GlobalAsyncStateManager(final GlobalMemoryManager memoryManager) {
     this.memoryManager = memoryManager;
-    memoryAllocated = new AtomicLong(memoryManager.requestMemory());
-    memoryUsed = new AtomicLong();
+    this.memoryAllocated = new AtomicLong(memoryManager.requestMemory());
+    this.memoryUsed = new AtomicLong();
   }
 
   // Always assume STREAM to begin, and convert only if needed. Most state is per stream anyway.
@@ -143,8 +143,10 @@ public class GlobalAsyncStateManager {
    * @param count to decrement.
    */
   public void decrement(final long stateId, final long count) {
-    log.trace("decrementing state id: {}, count: {}", stateId, count);
-    stateIdToCounter.get(getStateAfterAlias(stateId)).addAndGet(-count);
+    synchronized (this) {
+      log.trace("decrementing state id: {}, count: {}", stateId, count);
+      stateIdToCounter.get(getStateAfterAlias(stateId)).addAndGet(-count);
+    }
   }
 
   /**
@@ -160,12 +162,12 @@ public class GlobalAsyncStateManager {
     final List<PartialStateWithDestinationStats> output = new ArrayList<>();
     Long bytesFlushed = 0L;
     synchronized (this) {
-      for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : descToStateIdQ.entrySet()) {
+      for (final Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>> entry : descToStateIdQ.entrySet()) {
         // Remove all states with 0 counters.
         // Per-stream synchronized is required to make sure the state (at the head of the queue)
         // logic is applied to is the state actually removed.
 
-        final LinkedList<Long> stateIdQueue = entry.getValue();
+        final LinkedBlockingDeque<Long> stateIdQueue = entry.getValue();
         while (true) {
           final Long oldestStateId = stateIdQueue.peek();
           // no state to flush for this stream
@@ -175,7 +177,9 @@ public class GlobalAsyncStateManager {
 
           // technically possible this map hasn't been updated yet.
           final var oldestStateCounter = stateIdToCounter.get(oldestStateId);
-          Objects.requireNonNull(oldestStateCounter, "Invariant Violation: No record counter found for state message.");
+          if (oldestStateCounter == null) {
+            break;
+          }
 
           final var oldestState = stateIdToState.get(oldestStateId);
           // no state to flush for this stream
@@ -185,9 +189,10 @@ public class GlobalAsyncStateManager {
 
           final var allRecordsCommitted = oldestStateCounter.get() == 0;
           if (allRecordsCommitted) {
-            final PartialAirbyteMessage stateMessage = oldestState.getLeft();
+            final StateMessageWithArrivalNumber stateMessage = oldestState.getLeft();
             final double flushedRecordsAssociatedWithState = stateIdToCounterForPopulatingDestinationStats.get(oldestStateId).doubleValue();
-            output.add(new PartialStateWithDestinationStats(stateMessage,
+            LOGGER.info("State with arrival number {} emitted", stateMessage.arrivalNumber);
+            output.add(new PartialStateWithDestinationStats(stateMessage.partialAirbyteStateMessage(),
                 new AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState)));
             bytesFlushed += oldestState.getRight();
 
@@ -214,13 +219,15 @@ public class GlobalAsyncStateManager {
     if (descToStateIdQ.get(resolvedDescriptor) == null) {
       registerNewStreamDescriptor(resolvedDescriptor);
     }
-    final Long stateId = descToStateIdQ.get(resolvedDescriptor).peekLast();
-    final var update = stateIdToCounter.get(stateId).addAndGet(increment);
-    if (increment >= 0) {
-      stateIdToCounterForPopulatingDestinationStats.get(stateId).addAndGet(increment);
+    synchronized (this) {
+      final Long stateId = descToStateIdQ.get(resolvedDescriptor).peekLast();
+      final var update = stateIdToCounter.get(stateId).addAndGet(increment);
+      if (increment >= 0) {
+        stateIdToCounterForPopulatingDestinationStats.get(stateId).addAndGet(increment);
+      }
+      log.trace("State id: {}, count: {}", stateId, update);
+      return stateId;
     }
-    log.trace("State id: {}, count: {}", stateId, update);
-    return stateId;
   }
 
   /**
@@ -261,24 +268,24 @@ public class GlobalAsyncStateManager {
     if (stateType != AirbyteStateMessage.AirbyteStateType.STREAM) {// alias old stream-level state ids to single global state id
       // upon conversion, all previous tracking data structures need to be cleared as we move
       // into the non-STREAM world for correctness.
+      synchronized (this) {
+        aliasIds.addAll(descToStateIdQ.values().stream().flatMap(Collection::stream).toList());
+        descToStateIdQ.clear();
+        retroactiveGlobalStateId = StateIdProvider.getNextId();
 
-      aliasIds.addAll(descToStateIdQ.values().stream().flatMap(Collection::stream).toList());
-      descToStateIdQ.clear();
-      retroactiveGlobalStateId = StateIdProvider.getNextId();
+        descToStateIdQ.put(SENTINEL_GLOBAL_DESC, new LinkedBlockingDeque<>());
+        descToStateIdQ.get(SENTINEL_GLOBAL_DESC).add(retroactiveGlobalStateId);
 
-      descToStateIdQ.put(SENTINEL_GLOBAL_DESC, new LinkedList<>());
-      descToStateIdQ.get(SENTINEL_GLOBAL_DESC).add(retroactiveGlobalStateId);
+        final long combinedCounter = stateIdToCounter.values()
+            .stream()
+            .mapToLong(AtomicLong::get)
+            .sum();
+        stateIdToCounter.clear();
+        stateIdToCounter.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
 
-      final long combinedCounter = stateIdToCounter.values()
-          .stream()
-          .mapToLong(AtomicLong::get)
-          .sum();
-      stateIdToCounter.clear();
-      stateIdToCounter.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
-
-      stateIdToCounterForPopulatingDestinationStats.clear();
-      stateIdToCounterForPopulatingDestinationStats.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
-
+        stateIdToCounterForPopulatingDestinationStats.clear();
+        stateIdToCounterForPopulatingDestinationStats.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
+      }
     }
   }
 
@@ -298,7 +305,11 @@ public class GlobalAsyncStateManager {
    */
   private void closeState(final PartialAirbyteMessage message, final long sizeInBytes, final String defaultNamespace) {
     final StreamDescriptor resolvedDescriptor = extractStream(message, defaultNamespace).orElse(SENTINEL_GLOBAL_DESC);
-    stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
+    synchronized (this) {
+      log.info("State with arrival number {} received", arrivalNumber);
+      stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(new StateMessageWithArrivalNumber(message, arrivalNumber), sizeInBytes));
+      arrivalNumber++;
+    }
     registerNewStateId(resolvedDescriptor);
     allocateMemoryToState(sizeInBytes);
   }
@@ -370,15 +381,19 @@ public class GlobalAsyncStateManager {
   }
 
   private void registerNewStreamDescriptor(final StreamDescriptor resolvedDescriptor) {
-    descToStateIdQ.put(resolvedDescriptor, new LinkedList<>());
+    synchronized (this) {
+      descToStateIdQ.put(resolvedDescriptor, new LinkedBlockingDeque<>());
+    }
     registerNewStateId(resolvedDescriptor);
   }
 
   private void registerNewStateId(final StreamDescriptor resolvedDescriptor) {
     final long stateId = StateIdProvider.getNextId();
-    stateIdToCounter.put(stateId, new AtomicLong(0));
-    stateIdToCounterForPopulatingDestinationStats.put(stateId, new AtomicLong(0));
-    descToStateIdQ.get(resolvedDescriptor).add(stateId);
+    synchronized (this) {
+      stateIdToCounter.put(stateId, new AtomicLong(0));
+      stateIdToCounterForPopulatingDestinationStats.put(stateId, new AtomicLong(0));
+      descToStateIdQ.get(resolvedDescriptor).add(stateId);
+    }
   }
 
   /**
@@ -393,5 +408,7 @@ public class GlobalAsyncStateManager {
     }
 
   }
+
+  private record StateMessageWithArrivalNumber(PartialAirbyteMessage partialAirbyteStateMessage, long arrivalNumber) {}
 
 }
