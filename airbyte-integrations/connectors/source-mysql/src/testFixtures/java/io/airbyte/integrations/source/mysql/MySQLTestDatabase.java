@@ -108,14 +108,16 @@ public class MySQLTestDatabase extends
   protected Stream<Stream<String>> inContainerBootstrapCmd() {
     LOGGER.atInfo().log("cat etc/hosts:" + catFileInContainer("/etc/hosts"));
     LOGGER.atInfo().log("cat etc/my.cnf:" + catFileInContainer("/etc/my.cnf"));
+    LOGGER.atInfo().log("/etc/resolv.conf: " + catFileInContainer("/etc/resolv.conf"));
 
     return Stream.of(mysqlCmd(Stream.of(
         String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
         String.format("CREATE DATABASE \\`%s\\`", getDatabaseName()),
         String.format("CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", getUserName(), getPassword()),
         // Grant privileges also to the container's user, which is not root.
-        String.format("GRANT ALL PRIVILEGES ON *.* TO '%s', '%s' WITH GRANT OPTION", getUserName(),
-            getContainer().getUsername()))));
+        String.format("GRANT ALL PRIVILEGES ON *.* TO '%s' WITH GRANT OPTION", getUserName()),
+        String.format("GRANT ALL PRIVILEGES ON *.* TO '%s' WITH GRANT OPTION", getContainer().getUsername())
+        )));
   }
 
   @Override
@@ -143,8 +145,8 @@ public class MySQLTestDatabase extends
   public Stream<String> mysqlCmd(Stream<String> sql) {
     final String host = this.getContainer().getHost();
     return Stream.of("bash", "-c", String.format(
-        "set -o errexit -o pipefail; echo \"%s\" | mysql -v -v -v --host=%s --user=root --password=test",
-        sql.collect(Collectors.joining("; ")), host));
+        "set -o errexit -o pipefail; echo \"%s\" | mysql -v -v -v --user=root --password=test",
+        sql.collect(Collectors.joining("; "))));
   }
 
   static public class MySQLConfigBuilder extends ConfigBuilder<MySQLTestDatabase, MySQLConfigBuilder> {
