@@ -189,7 +189,7 @@ def snowflake_config():
         database=secret["database"],
         warehouse=secret["warehouse"],
         role=secret["role"],
-        schema_name=f"localtest{str(ulid.ULID()).lower()[-6:]}",
+        schema_name=f"test{str(ulid.ULID()).lower()[-6:]}",
     )
 
     yield config
