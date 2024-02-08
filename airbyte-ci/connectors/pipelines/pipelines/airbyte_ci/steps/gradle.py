@@ -239,7 +239,7 @@ class GradleTask(Step, ABC):
 
 
 MAYBE_STARTS_WITH_XML_TAG = re.compile("^ *<")
-ESCAPED_ANSI_COLOR_PATTERN = re.compile(r"\?\[m|\?\[[34][0-9]m")
+ESCAPED_ANSI_COLOR_PATTERN = re.compile(r"\?\[0?m|\?\[[34][0-9]m")
 
 
 def render_junit_xml(testsuites: List[Any]) -> str:
