@@ -29,30 +29,19 @@ from airbyte_lib import exceptions as exc
 import ulid
 
 
-LOCAL_TEST_REGISTRY_URL = "./tests/integration_tests/fixtures/registry.json"
+@pytest.fixture(scope="module", autouse=True)
+def autouse_source_test_installation(source_test_installation):
+    return
 
 
-@pytest.fixture(scope="package", autouse=True)
-def prepare_test_env():
-    """
-    Prepare test environment. This will pre-install the test source from the fixtures array and set the environment variable to use the local json file as registry.
-    """
-    venv_dir = ".venv-source-test"
-    if os.path.exists(venv_dir):
-        shutil.rmtree(venv_dir)
+@pytest.fixture(scope="function", autouse=True)
+def autouse_source_test_registry(source_test_registry):
+    return
 
-    subprocess.run(["python", "-m", "venv", venv_dir], check=True)
-    subprocess.run([f"{venv_dir}/bin/pip", "install", "-e", "./tests/integration_tests/fixtures/source-test"], check=True)
 
-    os.environ["AIRBYTE_LOCAL_REGISTRY"] = LOCAL_TEST_REGISTRY_URL
-    os.environ["DO_NOT_TRACK"] = "true"
-
-    # Force-refresh the registry cache
-    _ = registry._get_registry_cache(force_refresh=True)
-
-    yield
-
-    shutil.rmtree(".venv-source-test")
+@pytest.fixture
+def source_test(source_test_env) -> ab.Source:
+    return ab.get_source("source-test", config={"apiKey": "test"})
 
 
 @pytest.fixture
@@ -63,27 +52,29 @@ def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
             {"column1": "value2", "column2": 2},
         ],
         "stream2": [
-            {"column1": "value1", "column2": 1},
+            {"column1": "value1", "column2": 1, "empty_column": None},
         ],
     }
 
 def test_registry_get():
-    assert registry._get_registry_url() == LOCAL_TEST_REGISTRY_URL
-
     metadata = registry.get_connector_metadata("source-test")
     assert metadata.name == "source-test"
     assert metadata.latest_available_version == "0.0.1"
 
 
+def test_registry_list() -> None:
+    assert registry.get_available_connectors() == ["source-test"]
+
+
 def test_list_streams(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
-    source = ab.get_connector(
+    source = ab.get_source(
         "source-test", config={"apiKey": "test"}, install_if_missing=False
     )
     assert source.get_available_streams() == list(expected_test_stream_data.keys())
 
 
 def test_invalid_config():
-    source = ab.get_connector(
+    source = ab.get_source(
         "source-test", config={"apiKey": 1234}, install_if_missing=False
     )
     with pytest.raises(exc.AirbyteConnectorCheckFailedError):
@@ -95,7 +86,7 @@ def test_ensure_installation_detection():
     with patch("airbyte_lib._executor.VenvExecutor.install") as mock_venv_install, \
          patch("airbyte_lib.source.Source.install") as mock_source_install, \
          patch("airbyte_lib._executor.VenvExecutor.ensure_installation") as mock_ensure_installed:
-        source = ab.get_connector(
+        source = ab.get_source(
             "source-test",
             config={"apiKey": 1234},
             pip_url="https://pypi.org/project/airbyte-not-found",
@@ -107,7 +98,7 @@ def test_ensure_installation_detection():
 
 
 def test_source_yaml_spec():
-    source = ab.get_connector(
+    source = ab.get_source(
         "source-test", config={"apiKey": 1234}, install_if_missing=False
     )
     assert source._yaml_spec.startswith("connectionSpecification:\n  $schema:")
@@ -115,23 +106,27 @@ def test_source_yaml_spec():
 
 def test_non_existing_connector():
     with pytest.raises(Exception):
-        ab.get_connector("source-not-existing", config={"apiKey": "abc"})
+        ab.get_source("source-not-existing", config={"apiKey": "abc"})
 
 def test_non_enabled_connector():
     with pytest.raises(exc.AirbyteConnectorNotPyPiPublishedError):
-        ab.get_connector("source-non-published", config={"apiKey": "abc"})
+        ab.get_source("source-non-published", config={"apiKey": "abc"})
 
 @pytest.mark.parametrize(
     "latest_available_version, requested_version, raises",
     [
-        ("0.0.1", None, False),
-        ("1.2.3", None, False),
         ("0.0.1", "latest", False),
-        ("1.2.3", "latest", True),
         ("0.0.1", "0.0.1", False),
+        ("0.0.1", None, False),
+        ("1.2.3", None, False), # Don't raise if a version is not requested
+        ("1.2.3", "latest", True),
         ("1.2.3", "1.2.3", True),
     ])
-def test_version_enforcement(raises, latest_available_version, requested_version):
+def test_version_enforcement(
+    raises: bool,
+    latest_available_version,
+    requested_version,
+):
     """"
     Ensures version enforcement works as expected:
     * If no version is specified, the current version is accepted
@@ -143,10 +138,13 @@ def test_version_enforcement(raises, latest_available_version, requested_version
     patched_entry = registry.ConnectorMetadata(
         name="source-test", latest_available_version=latest_available_version, pypi_package_name="airbyte-source-test"
     )
+
+    # We need to initialize the cache before we can patch it.
+    _ = registry._get_registry_cache()
     with patch.dict("airbyte_lib.registry.__cache", {"source-test": patched_entry}, clear=False):
         if raises:
             with pytest.raises(Exception):
-                source = ab.get_connector(
+                source = ab.get_source(
                     "source-test",
                     version=requested_version,
                     config={"apiKey": "abc"},
@@ -154,17 +152,21 @@ def test_version_enforcement(raises, latest_available_version, requested_version
                 )
                 source.executor.ensure_installation(auto_fix=False)
         else:
-            source = ab.get_connector(
+            source = ab.get_source(
                 "source-test",
                 version=requested_version,
                 config={"apiKey": "abc"},
                 install_if_missing=False,
             )
+            if requested_version: # Don't raise if a version is not requested
+                assert source.executor._get_installed_version(raise_on_error=True) == (
+                    requested_version or latest_available_version
+                ).replace("latest", latest_available_version)
             source.executor.ensure_installation(auto_fix=False)
 
 
 def test_check():
-    source = ab.get_connector(
+    source = ab.get_source(
         "source-test",
         config={"apiKey": "test"},
         install_if_missing=False,
@@ -173,7 +175,7 @@ def test_check():
 
 
 def test_check_fail():
-    source = ab.get_connector("source-test", config={"apiKey": "wrong"})
+    source = ab.get_source("source-test", config={"apiKey": "wrong"})
 
     with pytest.raises(Exception):
         source.check()
@@ -185,7 +187,8 @@ def test_file_write_and_cleanup() -> None:
         cache_w_cleanup = ab.new_local_cache(cache_dir=temp_dir_1, cleanup=True)
         cache_wo_cleanup = ab.new_local_cache(cache_dir=temp_dir_2, cleanup=False)
 
-        source = ab.get_connector("source-test", config={"apiKey": "test"})
+        source = ab.get_source("source-test", config={"apiKey": "test"})
+        source.select_all_streams()
 
         _ = source.read(cache_w_cleanup)
         _ = source.read(cache_wo_cleanup)
@@ -208,7 +211,9 @@ def assert_cache_data(expected_test_stream_data: dict[str, list[dict[str, str | 
 
 
 def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = ab.new_local_cache()
 
     result: ReadResult = source.read(cache)
@@ -217,12 +222,46 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
     assert_cache_data(expected_test_stream_data, cache)
 
 
+def test_read_result_mapping():
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+    result: ReadResult = source.read(ab.new_local_cache())
+    assert len(result) == 2
+    assert isinstance(result, Mapping)
+    assert "stream1" in result
+    assert "stream2" in result
+    assert "stream3" not in result
+    assert result.keys() == {"stream1", "stream2"}
+
+
+def test_dataset_list_and_len(expected_test_stream_data):
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
+    result: ReadResult = source.read(ab.new_local_cache())
+    stream_1 = result["stream1"]
+    assert len(stream_1) == 2
+    assert len(list(stream_1)) == 2
+    # Make sure we can iterate over the stream after calling len
+    assert list(stream_1) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
+    # Make sure we can iterate over the stream a second time
+    assert list(stream_1) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
+
+    assert isinstance(result, Mapping)
+    assert "stream1" in result
+    assert "stream2" in result
+    assert "stream3" not in result
+    assert result.keys() == {"stream1", "stream2"}
+
+
 def test_read_from_cache(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     """
-    Test that we can read from a cache that already has data (identigier by name)
+    Test that we can read from a cache that already has data (identifier by name)
     """
     cache_name = str(ulid.ULID())
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = ab.new_local_cache(cache_name)
 
     source.read(cache)
@@ -240,7 +279,8 @@ def test_read_isolated_by_prefix(expected_test_stream_data: dict[str, list[dict[
     """
     cache_name = str(ulid.ULID())
     db_path = Path(f"./.cache/{cache_name}.duckdb")
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
     cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="prefix_"))
 
     source.read(cache)
@@ -274,7 +314,7 @@ def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[s
     Test that we can extend a cache with new streams
     """
     cache_name = str(ulid.ULID())
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache(cache_name)
 
     source.set_streams(["stream1"])
@@ -297,7 +337,9 @@ def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[s
 
 
 def test_read_result_as_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = ab.new_local_cache()
 
     result: ReadResult = source.read(cache)
@@ -308,7 +350,7 @@ def test_read_result_as_list(expected_test_stream_data: dict[str, list[dict[str,
 
 
 def test_get_records_result_as_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache()
 
     stream_1_list = list(source.get_records("stream1"))
@@ -326,7 +368,9 @@ def test_sync_with_merge_to_duckdb(expected_test_stream_data: dict[str, list[dic
 
     # TODO: Add a check with a primary key to ensure that the merge strategy works as expected.
     """
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = ab.new_local_cache()
 
     # Read twice to test merge strategy
@@ -345,7 +389,9 @@ def test_sync_with_merge_to_duckdb(expected_test_stream_data: dict[str, list[dic
 def test_cached_dataset(
     expected_test_stream_data: dict[str, list[dict[str, str | int]]],
 ) -> None:
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     result: ReadResult = source.read(ab.new_local_cache())
 
     stream_name = "stream1"
@@ -407,7 +453,9 @@ def test_cached_dataset(
 
 
 def test_cached_dataset_filter():
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     result: ReadResult = source.read(ab.new_local_cache())
 
     stream_name = "stream1"
@@ -450,7 +498,7 @@ def test_cached_dataset_filter():
 def test_lazy_dataset_from_source(
     expected_test_stream_data: dict[str, list[dict[str, str | int]]],
 ) -> None:
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
 
     stream_name = "stream1"
     not_a_stream_name = "not_a_stream"
@@ -491,7 +539,7 @@ def test_lazy_dataset_from_source(
     ],
 )
 def test_check_fail_on_missing_config(method_call):
-    source = ab.get_connector("source-test")
+    source = ab.get_source("source-test")
 
     with pytest.raises(exc.AirbyteConnectorConfigurationMissingError):
         method_call(source)
@@ -504,7 +552,9 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
 
     # TODO: Add a check with a primary key to ensure that the merge strategy works as expected.
     """
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = PostgresCache(config=new_pg_cache_config)
 
     # Read twice to test merge strategy
@@ -554,8 +604,10 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
     mock_post = Mock()
     mock_requests.post = mock_post
 
-    source = ab.get_connector("source-test", config={"apiKey": api_key})
-    cache = ab.get_default_cache()
+    source = ab.get_source("source-test", config={"apiKey": api_key})
+    source.select_all_streams()
+
+    cache = ab.new_local_cache()
 
     if request_call_fails:
         mock_post.side_effect = Exception("test exception")
@@ -570,7 +622,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
 
     mock_post.assert_has_calls([
             call("https://api.segment.io/v1/track",
-            auth=("jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1", ""),
+            auth=("cukeSffc0G6gFQehKDhhzSurDzVSZ2OP", ""),
             json={
                 "anonymousId": "airbyte-lib-user",
                 "event": "sync",
@@ -587,7 +639,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
         ),
     call(
             "https://api.segment.io/v1/track",
-            auth=("jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1", ""),
+            auth=("cukeSffc0G6gFQehKDhhzSurDzVSZ2OP", ""),
             json={
                 "anonymousId": "airbyte-lib-user",
                 "event": "sync",
@@ -607,7 +659,9 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
 
 
 def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = PostgresCache(config=new_pg_cache_config)
 
     result: ReadResult = source.read(cache)
@@ -621,7 +675,9 @@ def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_tes
         )
 
 def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = SnowflakeSQLCache(config=snowflake_config)
 
     with cache.get_sql_connection() as con:
@@ -638,7 +694,7 @@ def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test
         )
 
 def test_sync_limited_streams(expected_test_stream_data):
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache()
 
     source.set_streams(["stream2"])
@@ -654,27 +710,27 @@ def test_sync_limited_streams(expected_test_stream_data):
 
 
 def test_read_stream():
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
 
     assert list(source.get_records("stream1")) == [{"column1": "value1", "column2": 1}, {"column1": "value2", "column2": 2}]
 
 
 def test_read_stream_nonexisting():
-    source = ab.get_connector("source-test", config={"apiKey": "test"})
+    source = ab.get_source("source-test", config={"apiKey": "test"})
 
     with pytest.raises(Exception):
         list(source.get_records("non-existing"))
 
 def test_failing_path_connector():
     with pytest.raises(Exception):
-        ab.get_connector("source-test", config={"apiKey": "test"}, use_local_install=True)
+        ab.get_source("source-test", config={"apiKey": "test"}, use_local_install=True)
 
 def test_succeeding_path_connector():
     new_path = f"{os.path.abspath('.venv-source-test/bin')}:{os.environ['PATH']}"
 
     # Patch the PATH env var to include the test venv bin folder
     with patch.dict(os.environ, {"PATH": new_path}):
-        source = ab.get_connector(
+        source = ab.get_source(
             "source-test",
             config={"apiKey": "test"},
             local_executable="source-test",
@@ -683,7 +739,7 @@ def test_succeeding_path_connector():
 
 def test_install_uninstall():
     with tempfile.TemporaryDirectory() as temp_dir:
-        source = ab.get_connector(
+        source = ab.get_source(
             "source-test",
             pip_url="./tests/integration_tests/fixtures/source-test",
             config={"apiKey": "test"},
