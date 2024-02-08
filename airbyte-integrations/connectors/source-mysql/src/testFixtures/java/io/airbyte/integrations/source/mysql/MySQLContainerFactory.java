@@ -21,10 +21,7 @@ public class MySQLContainerFactory extends ContainerFactory<MySQLContainer<?>> {
   @Override
   protected MySQLContainer<?> createNewContainer(DockerImageName imageName) {
     var container = new MySQLContainer<>(imageName.asCompatibleSubstituteFor("mysql"))
-        .withLogConsumer(new Slf4jLogConsumer(logger))
-        .withAccessToHost(true)
-        .withUsername("root")
-        .withInitScript("init.sql");
+        .withLogConsumer(new Slf4jLogConsumer(logger));
 
     execInContainer(container, "sed -i '31 a bind_address=0.0.0.0' /etc/my.cnf");
     return container;

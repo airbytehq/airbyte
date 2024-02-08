@@ -141,9 +141,10 @@ public class MySQLTestDatabase extends
   }
 
   public Stream<String> mysqlCmd(Stream<String> sql) {
+    final String host = this.getContainer().getHost();
     return Stream.of("bash", "-c", String.format(
-        "set -o errexit -o pipefail; echo \"%s\" | mysql -v -v -v --user=root --password=test",
-        sql.collect(Collectors.joining("; "))));
+        "set -o errexit -o pipefail; echo \"%s\" | mysql -v -v -v --host=%s --user=root --password=test",
+        sql.collect(Collectors.joining("; ")), host));
   }
 
   static public class MySQLConfigBuilder extends ConfigBuilder<MySQLTestDatabase, MySQLConfigBuilder> {
