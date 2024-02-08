@@ -395,3 +395,16 @@ def pytest_sessionfinish(session, exitstatus):
 @pytest.fixture(name="connector_metadata")
 def connector_metadata_fixture(base_path) -> dict:
     return load_yaml_or_json_path(base_path / "metadata.yaml")
+
+
+@pytest.fixture(name="docs_path")
+def docs_path_fixture(base_path, connector_metadata) -> Path:
+    path_to_docs = connector_metadata["data"]["documentationUrl"].replace("https://docs.airbyte.com", "docs") + ".md"
+    airbyte_path = Path(base_path).parents[6]
+    return airbyte_path / path_to_docs
+
+
+@pytest.fixture(name="connector_documentation")
+def connector_documentation_fixture(docs_path: str) -> str:
+    with open(docs_path, "r") as f:
+        return f.read().rstrip()

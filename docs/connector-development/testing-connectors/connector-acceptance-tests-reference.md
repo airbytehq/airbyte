@@ -303,6 +303,16 @@ Some examples of the types of tests covered are verification that streams define
 | `allowed_hosts.bypass_reason`             | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `allowedHosts` check for the certified connector should be skipped |
 | `suggested_streams.bypass_reason`             | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `suggestedStreams` check for the certified connector should be skipped |
 
+## Test Connector Documentation
+
+Verifies that connectors documentation follows our standard template, does have correct order of headings, 
+does not have missing headings and all required fields in Prerequisites section. 
+
+| Input             | Type   | Default               | Note                                                               |
+|:------------------|:-------|:----------------------|:-------------------------------------------------------------------|
+| `config_path`     | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
+| `timeout_seconds` | int    | 20\*60                | Test execution timeout in seconds                                  |
+
 ## Strictness level
 
 To enforce maximal coverage of acceptances tests we expose a `test_strictness_level` field at the root of the `acceptance-test-config.yml` configuration.
