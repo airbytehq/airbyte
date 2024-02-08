@@ -12,7 +12,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import _get_unit_test_folder
-from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
+from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, Level, SyncMode
 from source_amazon_seller_partner import SourceAmazonSellerPartner
 
 from .config import ACCESS_TOKEN, ConfigBuilder
@@ -67,5 +67,7 @@ def mock_auth(http_mocker: HttpMocker) -> None:
     http_mocker.post(RequestBuilder.auth_endpoint().build(), build_response(response_body, status_code=HTTPStatus.OK))
 
 
-def assert_message_in_output(message: str, caplog: Any) -> None:
-    assert any(message in output_message for output_message in caplog.messages)
+def assert_message_in_log_output(message: str, entrypoint_output: EntrypointOutput, log_level: Optional[Level] = Level.WARN) -> None:
+    assert any(
+        message in airbyte_message.log.message for airbyte_message in entrypoint_output.logs if airbyte_message.log.level == log_level
+    )
