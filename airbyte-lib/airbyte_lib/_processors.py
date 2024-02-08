@@ -27,20 +27,24 @@ from airbyte_protocol.models import (
     AirbyteStateType,
     AirbyteStreamState,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
     Type,
 )
 
 from airbyte_lib import exceptions as exc
-from airbyte_lib._util import protocol_util  # Internal utility functions
+from airbyte_lib._util import protocol_util
+from airbyte_lib.progress import progress
+from airbyte_lib.strategies import WriteStrategy
 
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable, Iterator
 
+    from airbyte_lib.caches._catalog_manager import CatalogManager
     from airbyte_lib.config import CacheConfigBase
 
 
-DEFAULT_BATCH_SIZE = 10000
+DEFAULT_BATCH_SIZE = 10_000
 
 
 class BatchHandle:
@@ -60,6 +64,8 @@ class RecordProcessor(abc.ABC):
     def __init__(
         self,
         config: CacheConfigBase | dict | None,
+        *,
+        catalog_manager: CatalogManager | None = None,
     ) -> None:
         if isinstance(config, dict):
             config = self.config_class(**config)
@@ -73,6 +79,7 @@ class RecordProcessor(abc.ABC):
             raise TypeError(err_msg)
 
         self.source_catalog: ConfiguredAirbyteCatalog | None = None
+        self._source_name: str | None = None
 
         self._pending_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
         self._finalized_batches: dict[str, dict[str, Any]] = defaultdict(lambda: {}, {})
@@ -83,22 +90,25 @@ class RecordProcessor(abc.ABC):
             list[AirbyteStateMessage],
         ] = defaultdict(list, {})
 
+        self._catalog_manager: CatalogManager | None = catalog_manager
         self._setup()
 
     def register_source(
         self,
         source_name: str,
         incoming_source_catalog: ConfiguredAirbyteCatalog,
+        stream_names: set[str],
     ) -> None:
-        """Register the source name and catalog.
-
-        For now, only one source at a time is supported.
-        If this method is called multiple times, the last call will overwrite the previous one.
-
-        TODO: Expand this to handle mutliple sources.
-        """
-        _ = source_name
-        self.source_catalog = incoming_source_catalog
+        """Register the source name and catalog."""
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+        self._catalog_manager.register_source(
+            source_name,
+            incoming_source_catalog=incoming_source_catalog,
+            incoming_stream_names=stream_names,
+        )
 
     @property
     def _streams_with_data(self) -> set[str]:
@@ -108,6 +118,8 @@ class RecordProcessor(abc.ABC):
     @final
     def process_stdin(
         self,
+        write_strategy: WriteStrategy = WriteStrategy.AUTO,
+        *,
         max_batch_size: int = DEFAULT_BATCH_SIZE,
     ) -> None:
         """Process the input stream from stdin.
@@ -115,7 +127,9 @@ class RecordProcessor(abc.ABC):
         Return a list of summaries for testing.
         """
         input_stream = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8")
-        self.process_input_stream(input_stream, max_batch_size)
+        self.process_input_stream(
+            input_stream, write_strategy=write_strategy, max_batch_size=max_batch_size
+        )
 
     @final
     def _airbyte_messages_from_buffer(
@@ -129,6 +143,8 @@ class RecordProcessor(abc.ABC):
     def process_input_stream(
         self,
         input_stream: io.TextIOBase,
+        write_strategy: WriteStrategy = WriteStrategy.AUTO,
+        *,
         max_batch_size: int = DEFAULT_BATCH_SIZE,
     ) -> None:
         """Parse the input stream and process data in batches.
@@ -136,14 +152,27 @@ class RecordProcessor(abc.ABC):
         Return a list of summaries for testing.
         """
         messages = self._airbyte_messages_from_buffer(input_stream)
-        self.process_airbyte_messages(messages, max_batch_size)
+        self.process_airbyte_messages(
+            messages,
+            write_strategy=write_strategy,
+            max_batch_size=max_batch_size,
+        )
 
     @final
     def process_airbyte_messages(
         self,
         messages: Iterable[AirbyteMessage],
+        write_strategy: WriteStrategy,
+        *,
         max_batch_size: int = DEFAULT_BATCH_SIZE,
     ) -> None:
+        """Process a stream of Airbyte messages."""
+        if not isinstance(write_strategy, WriteStrategy):
+            raise exc.AirbyteInternalError(
+                message="Invalid `write_strategy` argument. Expected instance of WriteStrategy.",
+                context={"write_strategy": write_strategy},
+            )
+
         stream_batches: dict[str, list[dict]] = defaultdict(list, {})
 
         # Process messages, writing to batches as we go
@@ -157,6 +186,7 @@ class RecordProcessor(abc.ABC):
                 if len(stream_batch) >= max_batch_size:
                     record_batch = pa.Table.from_pylist(stream_batch)
                     self._process_batch(stream_name, record_batch)
+                    progress.log_batch_written(stream_name, len(stream_batch))
                     stream_batch.clear()
 
             elif message.type is Type.STATE:
@@ -168,26 +198,22 @@ class RecordProcessor(abc.ABC):
                     stream_name = stream_state.stream_descriptor.name
                     self._pending_state_messages[stream_name].append(state_msg)
 
-            elif message.type in [Type.LOG, Type.TRACE]:
+            else:
+                # Ignore unexpected or unhandled message types:
+                # Type.LOG, Type.TRACE, Type.CONTROL, etc.
                 pass
 
-            else:
-                raise exc.AirbyteConnectorError(
-                    message="Unexpected message type.",
-                    context={
-                        "message_type": message.type,
-                    },
-                )
-
         # We are at the end of the stream. Process whatever else is queued.
-        for stream_name, batch in stream_batches.items():
-            if batch:
-                record_batch = pa.Table.from_pylist(batch)
+        for stream_name, stream_batch in stream_batches.items():
+            if stream_batch:
+                record_batch = pa.Table.from_pylist(stream_batch)
                 self._process_batch(stream_name, record_batch)
+                progress.log_batch_written(stream_name, len(stream_batch))
 
         # Finalize any pending batches
         for stream_name in list(self._pending_batches.keys()):
-            self._finalize_batches(stream_name)
+            self._finalize_batches(stream_name, write_strategy=write_strategy)
+            progress.log_stream_finalized(stream_name)
 
     @final
     def _process_batch(
@@ -218,7 +244,7 @@ class RecordProcessor(abc.ABC):
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> BatchHandle:
         """Process a single batch.
 
@@ -257,13 +283,18 @@ class RecordProcessor(abc.ABC):
         batch_id = batch_id or self._new_batch_id()
         return f"{stream_name}_{batch_id}"
 
-    def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:
+    def _finalize_batches(
+        self,
+        stream_name: str,
+        write_strategy: WriteStrategy,
+    ) -> dict[str, BatchHandle]:
         """Finalize all uncommitted batches.
 
         Returns a mapping of batch IDs to batch handles, for processed batches.
 
         This is a generic implementation, which can be overridden.
         """
+        _ = write_strategy  # Unused
         with self._finalizing_batches(stream_name) as batches_to_finalize:
             if batches_to_finalize and not self.skip_finalize_step:
                 raise NotImplementedError(
@@ -272,6 +303,16 @@ class RecordProcessor(abc.ABC):
                 )
 
             return batches_to_finalize
+
+    @abc.abstractmethod
+    def _finalize_state_messages(
+        self,
+        stream_name: str,
+        state_messages: list[AirbyteStateMessage],
+    ) -> None:
+        """Handle state messages.
+        Might be a no-op if the processor doesn't handle incremental state."""
+        pass
 
     @final
     @contextlib.contextmanager
@@ -287,7 +328,11 @@ class RecordProcessor(abc.ABC):
         state_messages_to_finalize = self._pending_state_messages[stream_name].copy()
         self._pending_batches[stream_name].clear()
         self._pending_state_messages[stream_name].clear()
+
+        progress.log_batches_finalizing(stream_name, len(batches_to_finalize))
         yield batches_to_finalize
+        self._finalize_state_messages(stream_name, state_messages_to_finalize)
+        progress.log_batches_finalized(stream_name, len(batches_to_finalize))
 
         self._finalized_batches[stream_name].update(batches_to_finalize)
         self._finalized_state_messages[stream_name] += state_messages_to_finalize
@@ -319,3 +364,24 @@ class RecordProcessor(abc.ABC):
     def __del__(self) -> None:
         """Teardown temporary resources when instance is unloaded from memory."""
         self._teardown()
+
+    @final
+    def _get_stream_config(
+        self,
+        stream_name: str,
+    ) -> ConfiguredAirbyteStream:
+        """Return the column definitions for the given stream."""
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+
+        return self._catalog_manager.get_stream_config(stream_name)
+
+    @final
+    def _get_stream_json_schema(
+        self,
+        stream_name: str,
+    ) -> dict[str, Any]:
+        """Return the column definitions for the given stream."""
+        return self._get_stream_config(stream_name).stream.json_schema

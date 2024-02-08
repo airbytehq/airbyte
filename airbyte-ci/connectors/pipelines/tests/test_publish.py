@@ -5,7 +5,6 @@ import json
 import os
 import random
 from typing import List
-from unittest.mock import patch
 
 import anyio
 import pytest
@@ -339,13 +338,14 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
 
 
 @pytest.mark.parametrize(
-    "pypi_enabled, pypi_package_does_not_exist_status, publish_step_status, expect_publish_to_pypi_called, expect_build_connector_called",
+    "pypi_enabled, pypi_package_does_not_exist_status, publish_step_status, expect_publish_to_pypi_called, expect_build_connector_called,api_token",
     [
-        pytest.param(True, StepStatus.SUCCESS, StepStatus.SUCCESS, True, True, id="happy_path"),
-        pytest.param(False, StepStatus.SUCCESS, StepStatus.SUCCESS, False, True, id="pypi_disabled, skip all pypi steps"),
-        pytest.param(True, StepStatus.SKIPPED, StepStatus.SUCCESS, False, True, id="pypi_package_exists, skip publish_to_pypi"),
-        pytest.param(True, StepStatus.SUCCESS, StepStatus.FAILURE, True, False, id="publish_step_fails, abort"),
-        pytest.param(True, StepStatus.FAILURE, StepStatus.FAILURE, False, False, id="pypi_package_does_not_exist_fails, abort"),
+        pytest.param(True, StepStatus.SUCCESS, StepStatus.SUCCESS, True, True, "test", id="happy_path"),
+        pytest.param(False, StepStatus.SUCCESS, StepStatus.SUCCESS, False, True, "test", id="pypi_disabled, skip all pypi steps"),
+        pytest.param(True, StepStatus.SKIPPED, StepStatus.SUCCESS, False, True, "test", id="pypi_package_exists, skip publish_to_pypi"),
+        pytest.param(True, StepStatus.SUCCESS, StepStatus.FAILURE, True, False, "test", id="publish_step_fails, abort"),
+        pytest.param(True, StepStatus.FAILURE, StepStatus.FAILURE, False, False, "test", id="pypi_package_does_not_exist_fails, abort"),
+        pytest.param(True, StepStatus.SUCCESS, StepStatus.SUCCESS, False, False, None, id="no_api_token, abort"),
     ],
 )
 async def test_run_connector_python_registry_publish_pipeline(
@@ -355,6 +355,7 @@ async def test_run_connector_python_registry_publish_pipeline(
     publish_step_status,
     expect_publish_to_pypi_called,
     expect_build_connector_called,
+    api_token,
 ):
 
     for module, to_mock in STEPS_TO_PATCH:
@@ -389,14 +390,15 @@ async def test_run_connector_python_registry_publish_pipeline(
             code_directory="path/to/connector",
             metadata={"dockerImageTag": "1.2.3", "remoteRegistries": {"pypi": {"enabled": pypi_enabled, "packageName": "test"}}},
         ),
+        python_registry_token=api_token,
+        python_registry_url="https://test.pypi.org/legacy/",
     )
     semaphore = anyio.Semaphore(1)
-    with patch.dict(os.environ, {"PYTHON_REGISTRY_TOKEN": "test"}):
-        await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
+    await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
     if expect_publish_to_pypi_called:
         mocked_publish_to_python_registry.return_value.run.assert_called_once()
         # assert that the first argument passed to mocked_publish_to_pypi contains the things from the context
-        assert mocked_publish_to_python_registry.call_args.args[0].python_registry_token == "test"
+        assert mocked_publish_to_python_registry.call_args.args[0].python_registry_token == api_token
         assert mocked_publish_to_python_registry.call_args.args[0].package_metadata.name == "test"
         assert mocked_publish_to_python_registry.call_args.args[0].package_metadata.version == "1.2.3"
         assert mocked_publish_to_python_registry.call_args.args[0].registry == "https://test.pypi.org/legacy/"

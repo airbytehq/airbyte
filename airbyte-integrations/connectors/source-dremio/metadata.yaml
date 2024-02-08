@@ -8,6 +8,10 @@ data:
   icon: dremio.svg
   license: MIT
   name: Dremio
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-dremio
   registries:
     cloud:
       enabled: true

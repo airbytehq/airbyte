@@ -14,6 +14,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.utils import AirbyteTracedException
 from requests.exceptions import HTTPError
 
 from . import constants
@@ -214,10 +215,9 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
-        except GitHubAPILimitException:
-            self.logger.warning(
-                f"Stream: `{self.name}`, slice: `{stream_slice}`. Limits for all provided tokens are reached, please try again later"
-            )
+        except GitHubAPILimitException as e:
+            message = f"Stream: `{self.name}`, slice: `{stream_slice}`. Limits for all provided tokens are reached, please try again later"
+            raise AirbyteTracedException(message) from e
 
 
 class GithubStream(GithubStreamABC):

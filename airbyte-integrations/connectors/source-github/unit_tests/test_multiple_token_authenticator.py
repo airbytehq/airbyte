@@ -6,7 +6,9 @@ import json
 from unittest.mock import patch
 
 import pendulum
+import pytest
 import responses
+from airbyte_cdk.utils import AirbyteTracedException
 from freezegun import freeze_time
 from source_github import SourceGithub
 from source_github.streams import Organizations
@@ -39,7 +41,7 @@ def test_authenticator_counter(rate_limit_mock_response):
 
 
 @responses.activate
-def test_multiple_token_authenticator_with_rate_limiter(caplog):
+def test_multiple_token_authenticator_with_rate_limiter():
     """
     This test ensures that:
      1. The rate limiter iterates over all tokens one-by-one after the previous is fully drained.
@@ -91,10 +93,11 @@ def test_multiple_token_authenticator_with_rate_limiter(caplog):
         callback=request_callback_orgs,
         content_type="application/json",
     )
-
-    list(read_full_refresh(stream))
+    with pytest.raises(AirbyteTracedException) as e:
+        list(read_full_refresh(stream))
     assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(0, 500), (0, 500), (0, 500)]
-    assert "Stream: `organizations`, slice: `{'organization': 'org1'}`. Limits for all provided tokens are reached, please try again later" in caplog.messages
+    message = "Stream: `organizations`, slice: `{'organization': 'org1'}`. Limits for all provided tokens are reached, please try again later"
+    assert e.value.internal_message == message
 
 
 @freeze_time("2021-01-01 12:00:00")

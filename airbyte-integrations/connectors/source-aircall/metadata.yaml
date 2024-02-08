@@ -8,6 +8,10 @@ data:
   icon: aircall.svg
   license: MIT
   name: Aircall
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-aircall
   registries:
     cloud:
       enabled: true

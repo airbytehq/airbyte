@@ -8,6 +8,10 @@ data:
   icon: vitally.svg
   license: MIT
   name: Vitally
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-vitally
   registries:
     cloud:
       enabled: false

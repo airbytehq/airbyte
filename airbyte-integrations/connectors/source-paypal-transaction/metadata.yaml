@@ -18,6 +18,10 @@ data:
   icon: paypal.svg
   license: MIT
   name: Paypal Transaction
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-paypal-transaction
   registries:
     cloud:
       enabled: true

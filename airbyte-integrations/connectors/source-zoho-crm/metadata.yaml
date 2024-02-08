@@ -12,6 +12,10 @@ data:
   icon: zohocrm.svg
   license: MIT
   name: ZohoCRM
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zoho-crm
   registries:
     cloud:
       enabled: true

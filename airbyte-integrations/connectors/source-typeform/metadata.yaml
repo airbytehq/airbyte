@@ -17,6 +17,10 @@ data:
   icon: typeform.svg
   license: MIT
   name: Typeform
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-typeform
   registries:
     cloud:
       enabled: true
