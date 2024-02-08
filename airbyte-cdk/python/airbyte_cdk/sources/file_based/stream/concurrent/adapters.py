@@ -5,7 +5,7 @@
 import copy
 import logging
 from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource
@@ -19,6 +19,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedNoopCursor
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
@@ -32,6 +33,9 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
 
 """
 This module contains adapters to help enabling concurrency on File-based Stream objects without needing to migrate to AbstractStream
@@ -47,13 +51,14 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
         source: AbstractSource,
         logger: logging.Logger,
         state: Optional[MutableMapping[str, Any]],
-        cursor: FileBasedNoopCursor,
+        cursor: "AbstractConcurrentFileBasedCursor",
     ) -> "FileBasedStreamFacade":
         """
         Create a ConcurrentStream from a FileBasedStream object.
         """
         pk = get_primary_key_from_stream(stream.primary_key)
         cursor_field = get_cursor_field_from_stream(stream)
+        stream._cursor = cursor
 
         if not source.message_repository:
             raise ValueError(
@@ -62,7 +67,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
 
         message_repository = source.message_repository
         return FileBasedStreamFacade(
-            DefaultStream(  # type: ignore
+            DefaultStream(
                 partition_generator=FileBasedStreamPartitionGenerator(
                     stream,
                     message_repository,
@@ -90,14 +95,13 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
         self,
         stream: DefaultStream,
         legacy_stream: AbstractFileBasedStream,
-        cursor: FileBasedNoopCursor,
+        cursor: AbstractFileBasedCursor,
         slice_logger: SliceLogger,
         logger: logging.Logger,
     ):
         """
         :param stream: The underlying AbstractStream
         """
-        # super().__init__(stream, legacy_stream, cursor, slice_logger, logger)
         self._abstract_stream = stream
         self._legacy_stream = legacy_stream
         self._cursor = cursor
@@ -216,7 +220,7 @@ class FileBasedStreamPartition(Partition):
         sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
-        cursor: FileBasedNoopCursor,
+        cursor: "AbstractConcurrentFileBasedCursor",
     ):
         self._stream = stream
         self._slice = _slice
@@ -292,7 +296,7 @@ class FileBasedStreamPartitionGenerator(PartitionGenerator):
         sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
-        cursor: FileBasedNoopCursor,
+        cursor: "AbstractConcurrentFileBasedCursor",
     ):
         self._stream = stream
         self._message_repository = message_repository
@@ -305,19 +309,17 @@ class FileBasedStreamPartitionGenerator(PartitionGenerator):
         pending_partitions = []
         for _slice in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
             if _slice is not None:
-                pending_partitions.extend(
-                    [
+                for file in _slice.get("files", []):
+                    pending_partitions.append(
                         FileBasedStreamPartition(
                             self._stream,
-                            {"files": [copy.deepcopy(f)]},
+                            {"files": [copy.deepcopy(file)]},
                             self._message_repository,
                             self._sync_mode,
                             self._cursor_field,
                             self._state,
                             self._cursor,
                         )
-                        for f in _slice.get("files", [])
-                    ]
-                )
+                    )
         self._cursor.set_pending_partitions(pending_partitions)
         yield from pending_partitions
