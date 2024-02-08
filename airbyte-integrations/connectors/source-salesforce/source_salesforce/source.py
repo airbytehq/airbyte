@@ -195,7 +195,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
         streams = self.generate_streams(config, stream_objects, sf)
         streams.append(Describe(sf_api=sf, catalog=self.catalog))
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self.state)
+        if self.catalog:
+            state_manager = ConnectorStateManager(stream_instance_map={s.stream.name: s.stream for s in self.catalog.streams}, state=self.state)
+        else:
+            state_manager = None
 
         configured_streams = []
 
@@ -209,7 +212,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 if not isinstance(cursor_field_key, str):
                     raise AssertionError(f"A string cursor field key is required, but got {cursor_field_key}.")
                 cursor_field = CursorField(cursor_field_key)
-                legacy_state = state_manager.get_stream_state(stream.name, stream.namespace)
+                legacy_state = state_manager.get_stream_state(stream.name, stream.namespace) if state_manager else None
                 cursor = ConcurrentCursor(
                     stream.name,
                     stream.namespace,
