@@ -10,7 +10,9 @@
         "description": "The Facebook Ad account ID(s) to pull data from. The Ad account ID number is in the account dropdown menu or in your browser's address bar of your <a href=\"https://adsmanager.facebook.com/adsmanager/\">Meta Ads Manager</a>. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
         "order": 0,
         "pattern_descriptor": "The Ad Account ID must be a number.",
-        "examples": ["111111111111111"],
+        "examples": [
+          "111111111111111"
+        ],
         "type": "array",
         "minItems": 1,
         "items": {
@@ -50,7 +52,7 @@
       },
       "campaign_statuses": {
         "title": "Campaign Statuses",
-        "description": "Select statuses you want to to be loaded in the stream. Empty means all available.",
+        "description": "Select statuses you want to to be loaded in the stream. All means all available.",
         "default": [],
         "order": 4,
         "type": "array",
@@ -58,6 +60,7 @@
           "title": "ValidCampaignStatuses",
           "description": "An enumeration.",
           "enum": [
+            "ALL",
             "ACTIVE",
             "ARCHIVED",
             "DELETED",
@@ -69,7 +72,7 @@
       },
       "adset_statuses": {
         "title": "AdSet Statuses",
-        "description": "Select statuses you want to to be loaded in the stream. Empty means all available.",
+        "description": "Select statuses you want to to be loaded in the stream. All means all available.",
         "default": [],
         "order": 5,
         "type": "array",
@@ -77,6 +80,7 @@
           "title": "ValidAdSetStatuses",
           "description": "An enumeration.",
           "enum": [
+            "ALL",
             "ACTIVE",
             "ARCHIVED",
             "CAMPAIGN_PAUSED",
@@ -89,7 +93,7 @@
       },
       "ad_statuses": {
         "title": "Ad Statuses",
-        "description": "Select statuses you want to to be loaded in the stream. Empty means all available.",
+        "description": "Select statuses you want to to be loaded in the stream. All means all available.",
         "default": [],
         "order": 6,
         "type": "array",
@@ -97,6 +101,7 @@
           "title": "ValidAdStatuses",
           "description": "An enumeration.",
           "enum": [
+            "ALL",
             "ACTIVE",
             "ADSET_PAUSED",
             "ARCHIVED",
@@ -114,7 +119,7 @@
       },
       "adcreative_statuses": {
         "title": "AdCreative Statuses",
-        "description": "Select statuses you want to to be loaded in the stream. Empty means all available.",
+        "description": "Select statuses you want to to be loaded in the stream. All means all available.",
         "default": [],
         "order": 7,
         "type": "array",
@@ -122,6 +127,7 @@
           "title": "ValidAdCreativeStatuses",
           "description": "An enumeration.",
           "enum": [
+            "ALL",
             "ACTIVE",
             "DELETED",
             "IN_PROCESS",
@@ -486,7 +492,10 @@
         "type": "string"
       }
     },
-    "required": ["account_ids", "access_token"]
+    "required": [
+      "account_ids",
+      "access_token"
+    ]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": [
