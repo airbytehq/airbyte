@@ -196,7 +196,8 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         LOGGER.info("other info: container.getjdbcurl: " + this.getContainer().getJdbcUrl());
         LOGGER.info("logs from container: " + this.getContainer().getLogs());
         LOGGER.debug("execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr());
-        var mysqlTest = getContainer().execInContainer("sh", "-c", "ls /var/run/mysqld");
+        var mysqlTest = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest");
+
         var result = mysqlTest.getStdout();
         var error = mysqlTest.getStderr();
         LOGGER.info("result and error: " + result + error);
@@ -205,9 +206,8 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         String log = this.getContainer().getLogs();
         String resolveFile = getContainer().execInContainer("sh", "-c", "cat /etc/resolv.conf").getStdout();
         String hosts = getContainer().execInContainer("sh", "-c", "cat /etc/hosts").getStdout();
-        var mysqlTest = getContainer().execInContainer("sh", "-c", "mysql -u root -p test -e \"SELECT NOW();\"");
-            var result = mysqlTest.getStdout();
-        var error = mysqlTest.getStderr();
+        String aliveTest = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest").getStdout();
+
 
 
         throw new RuntimeException("error executing bootstrap command: " + cmd + ";\n output: " + exec.getStdout() + ";\n error: " + exec.getStderr()
@@ -215,7 +215,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
             + this.getContainer().getJdbcUrl()
             + "\n resolve file: " + resolveFile
             + "\n etc/hosts: " + hosts
-            + "\n mysql test" + result + "  error: " + error
+            + "\n mysql test" + aliveTest
             + " \nadditional logs:\n" + log);
       }
     } catch (IOException e) {
