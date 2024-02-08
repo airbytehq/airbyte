@@ -46,6 +46,5 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:low-code
     - language:python
 metadataSpecVersion: "1.0"
