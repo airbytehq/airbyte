@@ -62,6 +62,10 @@ def test_registry_get():
     assert metadata.latest_available_version == "0.0.1"
 
 
+def test_registry_list() -> None:
+    assert registry.get_available_connectors() == ["source-test"]
+
+
 def test_list_streams(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_source(
         "source-test", config={"apiKey": "test"}, install_if_missing=False
