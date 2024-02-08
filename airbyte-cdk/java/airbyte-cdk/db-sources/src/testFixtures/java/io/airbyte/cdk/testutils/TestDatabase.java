@@ -208,14 +208,16 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         String hosts = getContainer().execInContainer("sh", "-c", "cat /etc/hosts").getStdout();
         String aliveTest = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest").getStdout();
         String aliveTestError = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest").getStderr();
-
-
-
+        String socketFileCheck = getContainer().execInContainer("sh", "-c", "ls /var/run/mysqld/").getStdout();
+        String mysqldStatus = getContainer().execInContainer("sh", "-c", "service mysqld status").getStdout();
+        
         throw new RuntimeException("error executing bootstrap command: " + cmd + ";\n output: " + exec.getStdout() + ";\n error: " + exec.getStderr()
             + "other info: container.getjdbcurl: "
             + this.getContainer().getJdbcUrl()
             + "\n resolve file: " + resolveFile
             + "\n etc/hosts: " + hosts
+            + "\n socketFileCheck: " + socketFileCheck
+            + "\n mysqld status: " + mysqldStatus
             + "\n mysql test" + aliveTest + "  err: " + aliveTestError
             + " \nadditional logs:\n" + log);
       }
