@@ -12,6 +12,7 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/google-sheets"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
+packages = [ { include = "source_google_sheets"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
