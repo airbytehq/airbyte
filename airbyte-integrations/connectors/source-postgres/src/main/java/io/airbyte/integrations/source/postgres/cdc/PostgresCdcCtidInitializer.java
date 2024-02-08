@@ -11,6 +11,7 @@ import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintC
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
@@ -109,6 +110,7 @@ public class PostgresCdcCtidInitializer {
           savedOffset);
 
       if (!savedOffsetAfterReplicationSlotLSN) {
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
         LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
       } else if (!isDebugMode(sourceConfig) && PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
         // We do not want to acknowledge the WAL logs in debug mode.
