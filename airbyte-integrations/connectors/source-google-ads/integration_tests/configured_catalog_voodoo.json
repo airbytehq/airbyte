@@ -100,7 +100,7 @@
             "asset.id", "customer.id", "campaign.id", "ad_group.id", "ad_group_ad.ad.id",
             "segments.date"
           ]
-        ],
+        ]
       },
       "sync_mode" : "incremental",
       "destination_sync_mode" : "overwrite",
