@@ -37,6 +37,5 @@ data:
       - companies
   supportLevel: certified
   tags:
-    - language:low-code
     - language:python
 metadataSpecVersion: "1.0"
