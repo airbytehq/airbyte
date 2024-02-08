@@ -144,6 +144,11 @@ def with_global_dockerd_service(
         dockerd_config_json = get_dockerd_config_json()
 
     dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", contents=dockerd_config_json)
+
+    # We need to explicitly configure the log level for containerd regardless of dockerd.
+    containerd_config_toml = f'[debug]\n  level = "{DOCKER_DIND_LOG_LEVEL}"\n'
+    dockerd_container = dockerd_container.with_new_file("/etc/containerd/config.toml", contents=containerd_config_toml)
+
     if docker_hub_username_secret and docker_hub_password_secret:
         # Docker login happens late because there's a cache buster in the docker login command.
         dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
