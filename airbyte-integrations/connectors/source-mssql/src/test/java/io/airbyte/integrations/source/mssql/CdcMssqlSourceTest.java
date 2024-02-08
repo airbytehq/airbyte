@@ -63,13 +63,11 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestDatabase> {
@@ -89,14 +87,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   }
 
   protected MSSQLServerContainer<?> createContainer() {
-    return new MsSQLContainerFactory()
-        .createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
-  }
-
-  @BeforeAll
-  public void beforeAll() {
-    new MsSQLContainerFactory().withAgent(privateContainer);
-    privateContainer.start();
+    return new MsSQLContainerFactory().exclusive(
+        MsSQLTestDatabase.BaseImage.MSSQL_2022.reference,
+        MsSQLTestDatabase.ContainerModifier.AGENT.methodName);
   }
 
   @AfterAll
