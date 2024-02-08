@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.TestDatabase;
@@ -14,9 +15,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
+import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
@@ -67,6 +70,28 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   public MsSQLTestDatabase(final MSSQLServerContainer<?> container) {
     super(container);
+  }
+
+  protected void execSQL(String sql) {
+    int tries = 1;
+    while (tries < 10) {
+      tries++;
+      try {
+        super.execSQL(Stream.of(sql));
+        return;
+      } catch (DataAccessException e) {
+        if (!e.getMessage().contains("Cannot perform this operation while SQLServerAgent is starting")) {
+          throw e;
+        }
+        LOGGER.info("SQLServerAgent was starting when executing query. try #" + tries + ". SQL was " + sql);
+        Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
+      }
+    }
+  }
+
+  public MsSQLTestDatabase with(String fmtSql, Object... fmtArgs) {
+    this.execSQL(String.format(fmtSql, fmtArgs));
+    return this.self();
   }
 
   public MsSQLTestDatabase withCdc() {
