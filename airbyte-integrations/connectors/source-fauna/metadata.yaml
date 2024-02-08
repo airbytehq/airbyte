@@ -8,6 +8,10 @@ data:
   icon: fauna.svg
   license: MIT
   name: Fauna
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-fauna
   registries:
     cloud:
       enabled: true

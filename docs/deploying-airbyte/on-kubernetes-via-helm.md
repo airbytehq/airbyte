@@ -2,13 +2,22 @@
 
 ## Overview
 
-Airbyte allows scaling sync workloads horizontally using Kubernetes. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
+Airbyte allows scaling sync workloads horizontally using Kubernetes. The core components \(api server, worker, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
 ## Quickstart
 
 If you don't want to configure your own Kubernetes cluster and Airbyte instance, you can use the free, open-source project [Plural](https://www.plural.sh/) to bring up a Kubernetes cluster and Airbyte for you. Use [this guide](on-plural.md) to get started.
 
 Alternatively, you can deploy Airbyte on [Restack](https://www.restack.io) to provision your Kubernetes cluster on AWS. Follow [this guide](on-restack.md) to get started.
+
+:::note
+Airbyte running on Self-Hosted Kubernetes doesn't support DBT Transformations. Please refer to [#5901](https://github.com/airbytehq/airbyte/issues/5091)
+:::
+
+:::note
+Airbyte Kubernetes Community Edition does not support basic auth by default.
+To enable basic auth, consider adding a reverse proxy in front of Airbyte.
+:::
 
 ## Getting Started
 
@@ -122,41 +131,6 @@ After specifying your own configuration, run the following command:
 helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
 
-### (Early Access) Airbyte Enterprise deployment
-
-[Airbyte Enterprise](/airbyte-enterprise) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Enterprise license key](https://airbyte.com/company/talk-to-sales), you can install Airbyte Enterprise via helm by following these steps:
-
-1. Checkout the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
-
-2. Add your Airbyte Enterprise license key and [auth configuration details](/airbyte-enterprise#single-sign-on-sso) to a file called `airbyte.yml` in the `configs` directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
-
-```sh
-cp configs/airbyte.sample.yml configs/airbyte.yml
-```
-
-Then, open up `airbyte.yml` in your text editor to fill in the indicated fields.
-
-:::caution
-
-For now, auth configurations aren't easy to modify once initially installed, so please double check them to make sure they're accurate before proceeding! This will be improved in the near future.
-
-:::
-
-3. Make sure your helm repository is up to date:
-
-```text
-helm repo update
-```
-
-4. Install Airbyte Enterprise on helm using the following command:
-
-```text
-./tools/bin/install_airbyte_pro_on_helm.sh
-```
-
-The default release name is `airbyte-pro`. You can change this via the `RELEASE_NAME` environment
-variable.
-
 ## Migrate from old charts to new ones
 
 Starting from `0.39.37-alpha` we've revisited helm charts structure and separated all components of airbyte into their own independent charts, thus by allowing our developers to test single component without deploying airbyte as a whole and by upgrading single component at a time.
@@ -193,40 +167,203 @@ Before upgrading the chart update values.yaml as stated above and then run:
 - Perform upgrade of chart by running `helm upgrade %release_name% airbyte/airbyte --set auth.rootPassword=$ROOT_PASSWORD`
   - If you get an error about setting the auth.rootPassword, then you forgot to update the `values.yaml` file
 
-### Custom logging and jobs configuration
+### External Logs
 
-Starting from `0.39.37-alpha` if you've configured logging yourself using `logging or jobs` section of `values.yaml` file, you need to update your configuration so you can continue to use your custom logging and jobs configuration.
+::info
+This was tested using [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13) and S3 logs only.
+Previous or newer version can change how to setup the external logs.
+:::
 
-Simply declare global value in `values.yaml` file and move everything related to logging and jobs under that section like in the example bellow:
+Create a file called `airbyte-logs-secrets.yaml` to store the AWS Keys and other informations:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-logs-secrets
+type: Opaque
+stringData:
+  AWS_KEY: <AWS_KEY>
+  AWS_SECRET_KEY: <AWS_SECRET_KEY>
+  S3_LOG_BUCKET: <BUCKET_NAME>
+  S3_LOG_BUCKET_REGION: <REGION>
+```
+Run `kubectl apply -f airbyte-logs-secrets.yaml -n <NAMESPACE>` to create the secret in the namespace you're using Airbyte.
+This file contains more than just the keys but it needs for now. Future updates will make the configuration easier.
 
-```text
+Change the global section to use `S3` external logs.
+```yaml
 global:
-    logging:
-        %your_logging_options_here%
-    jobs:
-        %your_jobs_options_here%
+  # <...>
+  state:
+    # -- Determines which state storage will be utilized; "MINIO", "S3", or "GCS"
+    storage:
+      type: "S3"
+  # <...>
+  logs:
+    accessKey:
+      password: ""
+      existingSecret: "airbyte-logs-secrets"
+      existingSecretKey: "AWS_KEY"
+    secretKey:
+      password: ""
+      existingSecret: "airbyte-logs-secrets"
+      existingSecretKey: "AWS_SECRET_KEY"
+  # <...>
+  storage:
+      type: "S3"
+
+  minio:
+    # Change from true to false
+    enabled: false
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+```
+You can try to use `GCS` or `External Minio` but both weren't tested yet. Feel free to run tests and update the documentation.
+
+Add extra env variables to the following blocks:
+```yaml
+worker:
+  extraEnv:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: STATE_STORAGE_S3_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_BUCKET_NAME
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET
+    - name: STATE_STORAGE_S3_REGION
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET_REGION
 ```
 
-After updating `values.yaml` simply upgrade your chart by running command:
+and also edit the server block:
 
-```shell
-helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
+```yaml
+server:
+  extraEnv:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: STATE_STORAGE_S3_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_BUCKET_NAME
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET
+    - name: STATE_STORAGE_S3_REGION
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET_REGION
 ```
 
-### Database external secrets
+Than run:
+`helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.50.13`
 
-If you're using external DB secrets, then provide them in `values.yaml` under global.database section in the following format:
+### External Airbyte Database
 
-```text
+
+::info
+This was tested using [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13).
+Previous or newer version can change how the external database can be configured.
+:::
+
+The Airbyte Database only works with Postgres 13.
+Make sure the database is accessible inside the cluster using `busy-box` service using `telnet` or `ping` command.
+
+:::warning
+If you're using the external database for the first time you must ensure the database you're going to use exists. The default database Airbyte will try to use is `airbyte` but you can modified it in the `values.yaml`.
+:::
+
+:::warning
+You can use only one database to a one Airbyte Helm deployment. If you try to use the same database for a different deployment it will have conflict with Temporal internal databases.
+:::
+
+Create a Kubernetes secret to store the database password.
+Save the file as `db-secrets.yaml`.
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secrets
+type: Opaque
+stringData:
+  DATABASE_PASSWORD: <PASSWORD>
+```
+
+Run `kubectl apply -f db-secrets.yaml -n <NAMESPACE>` to create the secret in the namespace you're using Airbyte.
+
+Afterward, modify the following blocks in the Helm Chart `values.yaml` file:
+```yaml
+postgresql:
+  # Change the value from true to false.
+  enabled: false
+```
+Then:
+```yaml
+externalDatabase:
+  # Add the host, username and database name you're using.
+  host: <HOST>
+  user: <USERNAME>
+  database: <DATABASE_NAME>
+  password: ""
+  existingSecret: "db-secrets"
+  existingSecretPasswordKey: "DATABASE_PASSWORD"
+  port: 5432
+  jdbcUrl: ""
+```
+Keep password empty as the Chart will use the `db-secrets` value.
+Edit only the host, username, and database name. If your database is using a differnet `port` or need an special `jdbcUrl` you can edit here.
+This wasn't fully tested yet.
+
+Next, reference the secret in the global section:
+```yaml
+global:
   database:
-    secretName: "myOctaviaSecret"
-    secretValue: "postgresql-password"
-    host: "example.com"
-    port: "5432"
+    secretName: "db-secrets"
+    secretValue: "DATABASE_PASSWORD"
 ```
 
-And upgrade the chart by running:
+Unfortunately, the `airbyte-bootloader` configuration uses this variable. Future improvements are planned.
 
+Upgrade the chart by running:
 ```shell
-helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
+helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.50.13
 ```

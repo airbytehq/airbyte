@@ -1,5 +1,5 @@
 import org.jsonschema2pojo.SourceType
-import org.jsoup.Jsoup;
+import org.jsoup.Jsoup
 
 buildscript {
     dependencies {
@@ -32,12 +32,6 @@ project.configurations {
     testFixturesRuntimeOnly.extendsFrom runtimeOnly
 }
 
-configurations.all {
-    // From airbyte-test-utils
-    exclude group: 'io.micronaut.jaxrs'
-    exclude group: 'io.micronaut.sql'
-}
-
 // Convert yaml to java: relationaldb.models
 jsonSchema2Pojo {
     sourceType = SourceType.YAMLSCHEMA
@@ -60,7 +54,6 @@ dependencies {
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
@@ -69,7 +62,6 @@ dependencies {
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
 
     testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
 
@@ -92,16 +84,13 @@ dependencies {
     // TODO: Change these to 'compileOnly' or 'testCompileOnly'
 
     implementation libs.hikaricp
-    implementation libs.bundles.debezium.bundle
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
 
     implementation libs.bundles.datadog
     // implementation 'com.datadoghq:dd-trace-api'
     implementation 'org.apache.sshd:sshd-mina:2.8.0'
 
-    implementation libs.testcontainers
-    implementation libs.testcontainers.mysql
-    implementation libs.testcontainers.jdbc
-    implementation libs.testcontainers.postgresql
     testImplementation libs.testcontainers.jdbc
     testImplementation libs.testcontainers.mysql
     testImplementation libs.testcontainers.postgresql
@@ -113,7 +102,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
     testFixturesImplementation 'org.projectlombok:lombok:1.18.20'
-    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20' 
+    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
 
     testImplementation libs.junit.jupiter.system.stubs
 

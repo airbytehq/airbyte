@@ -4,7 +4,6 @@
 
 from typing import List, Literal, Union
 
-import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
@@ -12,10 +11,9 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     FromFieldEmbeddingConfigModel,
     OpenAICompatibleEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
-    ProcessingConfigModel,
+    VectorDBConfigModel,
 )
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
-from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
 
 
@@ -67,6 +65,7 @@ class WeaviateIndexingConfigModel(BaseModel):
     )
     batch_size: int = Field(title="Batch Size", description="The number of records to send to Weaviate in each batch", default=128)
     text_field: str = Field(title="Text Field", description="The field in the object that contains the embedded text", default="text")
+    tenant_id: str = Field(title="Tenant ID", description="The tenant ID to use for multi tenancy", airbyte_secret=True, default="")
     default_vectorizer: str = Field(
         title="Default Vectorizer",
         description="The vectorizer to use if new classes need to be created",
@@ -106,8 +105,8 @@ class NoEmbeddingConfigModel(BaseModel):
         discriminator = "mode"
 
 
-class ConfigModel(BaseModel):
-    processing: ProcessingConfigModel
+class ConfigModel(VectorDBConfigModel):
+    indexing: WeaviateIndexingConfigModel
     embedding: Union[
         NoEmbeddingConfigModel,
         AzureOpenAIEmbeddingConfigModel,
@@ -117,28 +116,3 @@ class ConfigModel(BaseModel):
         FakeEmbeddingConfigModel,
         OpenAICompatibleEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
-    indexing: WeaviateIndexingConfigModel
-
-    class Config:
-        title = "Weaviate Destination Config"
-        schema_extra = {
-            "groups": [
-                {"id": "processing", "title": "Processing"},
-                {"id": "embedding", "title": "Embedding"},
-                {"id": "indexing", "title": "Indexing"},
-            ]
-        }
-
-    @staticmethod
-    def remove_discriminator(schema: dict) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/*/discriminator")
-        dpath.util.delete(schema, "properties/**/discriminator")
-
-    @classmethod
-    def schema(cls):
-        """we're overriding the schema classmethod to enable some post-processing"""
-        schema = super().schema()
-        schema = resolve_refs(schema)
-        cls.remove_discriminator(schema)
-        return schema

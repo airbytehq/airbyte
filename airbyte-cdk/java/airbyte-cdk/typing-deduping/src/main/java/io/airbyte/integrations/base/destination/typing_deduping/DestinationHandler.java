@@ -5,11 +5,23 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Optional;
 
 public interface DestinationHandler<DialectTableDefinition> {
 
   Optional<DialectTableDefinition> findExistingTable(StreamId id) throws Exception;
+
+  /**
+   * Given a list of stream ids, return a map of stream ids to existing tables. If the table is
+   * missing, the key should not be present in the map.
+   *
+   * @param streamIds
+   * @return
+   * @throws Exception
+   */
+  LinkedHashMap<String, DialectTableDefinition> findExistingFinalTables(List<StreamId> streamIds) throws Exception;
 
   boolean isFinalTableEmpty(StreamId id) throws Exception;
 
@@ -19,8 +31,10 @@ public interface DestinationHandler<DialectTableDefinition> {
    * <p>
    * If the raw table is empty or does not exist, return an empty optional.
    */
-  Optional<Instant> getMinTimestampForSync(StreamId id) throws Exception;
+  InitialRawTableState getInitialRawTableState(StreamId id) throws Exception;
 
-  void execute(final String sql) throws Exception;
+  record InitialRawTableState(boolean hasUnprocessedRecords, Optional<Instant> maxProcessedTimestamp) {}
+
+  void execute(final Sql sql) throws Exception;
 
 }

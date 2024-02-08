@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "creator": {
+      "additionalProperties": true,
+      "properties": {
+        "email": {
+          "type": ["string", "null"]
+        },
+        "handle": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "groups": {
+      "items": {
+        "type": ["string", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "modified_at": {
+      "type": ["integer", "null"]
+    },
+    "monitor_ids": {
+      "items": {
+        "type": ["integer", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "monitor_tags": {
+      "items": {
+        "type": ["string", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "query": {
+      "additionalProperties": true,
+      "properties": {
+        "denominator": {
+          "type": ["string", "null"]
+        },
+        "numerator": {
+          "type": ["string", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "tags": {
+      "items": {
+        "type": ["string", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "target_threshold": {
+      "type": ["number", "null"]
+    },
+    "thresholds": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "target": {
+            "type": ["number", "null"]
+          },
+          "target_display": {
+            "type": ["string", "null"]
+          },
+          "timeframe": {
+            "type": ["string", "null"]
+          },
+          "warning": {
+            "type": ["number", "null"]
+          },
+          "warning_display": {
+            "type": ["string", "null"]
+          }
+        },
+        "type": ["object", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "timeframe": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "type_id": {
+      "type": ["integer", "null"]
+    },
+    "warning_threshold": {
+      "type": ["number", "null"]
+    }
+  },
+  "type": ["object", "null"]
+}

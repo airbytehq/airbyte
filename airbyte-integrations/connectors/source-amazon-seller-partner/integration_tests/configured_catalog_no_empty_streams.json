@@ -11,15 +11,6 @@
     },
     {
       "stream": {
-        "name": "GET_FBA_INVENTORY_AGED_DATA",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]

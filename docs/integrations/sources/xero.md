@@ -7,6 +7,18 @@ This page contains the setup guide and reference information for the Xero source
 - Tenant ID
 - Start Date
 
+**Required list of scopes to sync all streams:**
+- accounting.attachments.read
+- accounting.budgets.read
+- accounting.contacts.read
+- accounting.journals.read
+- accounting.reports.read
+- accounting.reports.tenninetynine.read
+- accounting.settings.read
+- accounting.transactions.read
+- assets.read
+- offline_access
+
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
@@ -16,6 +28,7 @@ This page contains the setup guide and reference information for the Xero source
 <!-- env:oss -->
 **For Airbyte Open Source:**
 
+Please follow [instruction](https://developer.xero.com/documentation/guides/oauth2/auth-flow/) to obtain all requirements:
 - Client ID
 - Client Secret
 - Refresh Token
@@ -91,6 +104,8 @@ The connector is restricted by Xero [API rate limits](https://developer.xero.com
 
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
+| 0.2.5   | 2024-01-11 | [34154](https://github.com/airbytehq/airbyte/pull/34154) | prepare for airbyte-lib                                                        |
+| 0.2.4   | 2023-11-24 | [32837](https://github.com/airbytehq/airbyte/pull/32837) | Handle 403 error                  |
 | 0.2.3   | 2023-06-19 | [27471](https://github.com/airbytehq/airbyte/pull/27471) | Update CDK to 0.40                |
 | 0.2.2   | 2023-06-06 | [27007](https://github.com/airbytehq/airbyte/pull/27007) | Update CDK                        |
 | 0.2.1   | 2023-03-20 | [24217](https://github.com/airbytehq/airbyte/pull/24217) | Certify to Beta                   |

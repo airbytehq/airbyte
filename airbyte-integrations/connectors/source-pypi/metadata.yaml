@@ -8,6 +8,10 @@ data:
   icon: pypi.svg
   license: MIT
   name: PyPI
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pypi
   registries:
     cloud:
       enabled: true

@@ -19,7 +19,11 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,6 +109,59 @@ public class S3StorageOperationsTest {
     assertEquals("filename", S3StorageOperations.getFilename("/filename"));
     assertEquals("filename", S3StorageOperations.getFilename("/p1/p2/filename"));
     assertEquals("filename.csv", S3StorageOperations.getFilename("/p1/p2/filename.csv"));
+  }
+
+  @Test
+  void getPartId() throws InterruptedException {
+
+    // Multithreaded utility class
+    class PartIdGetter implements Runnable {
+
+      final List<String> responses = new ArrayList<>();
+      final S3StorageOperations s3StorageOperations;
+
+      PartIdGetter(S3StorageOperations instance) {
+        s3StorageOperations = instance;
+      }
+
+      public void run() {
+        responses.add(s3StorageOperations.getPartId(FAKE_BUCKET_PATH));
+      }
+
+      List<String> getResponses() {
+        return responses;
+      }
+
+    }
+
+    PartIdGetter partIdGetter = new PartIdGetter(s3StorageOperations);
+
+    // single threaded
+    partIdGetter.run(); // 0
+    partIdGetter.run(); // 1
+    partIdGetter.run(); // 2
+
+    // multithreaded
+    ExecutorService executor = Executors.newFixedThreadPool(3);
+    for (int i = 0; i < 7; i++) {
+      executor.execute(partIdGetter);
+    }
+    executor.shutdown();
+    executor.awaitTermination(5, TimeUnit.SECONDS);
+
+    List<String> responses = partIdGetter.getResponses();
+    assertEquals(10, responses.size());
+    for (int i = 0; i <= 9; i++) {
+      assertTrue(responses.contains(Integer.toString(i)));
+    }
+  }
+
+  @Test
+  void getPartIdMultiplePaths() {
+    assertEquals("0", s3StorageOperations.getPartId(FAKE_BUCKET_PATH));
+    assertEquals("1", s3StorageOperations.getPartId(FAKE_BUCKET_PATH));
+
+    assertEquals("0", s3StorageOperations.getPartId("other_path"));
   }
 
 }

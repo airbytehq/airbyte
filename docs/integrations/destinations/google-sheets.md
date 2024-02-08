@@ -39,12 +39,18 @@ To create a Google account, visit [Google](https://support.google.com/accounts/a
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
- Authentication to Google Sheets is only available using OAuth for authentication. 
- 
- 1. Select **Google Sheets** from the Source type dropdown and enter a name for this connector.
-2. Follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. You will need to grant the scopes described in the [Google Sheets API](https://developers.google.com/identity/protocols/oauth2/scopes#sheets). 
-3. Copy your Client ID, Client secret, and Refresh Token from the previous step. 
-4. Copy the Google Sheet link to **Spreadsheet Link**
+
+Authentication to Google Sheets is only available using OAuth for authentication.
+
+1. Create a new [Google Cloud project](https://console.cloud.google.com/projectcreate).
+2. Enable the [Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com).
+3. Create a new [OAuth client ID](https://console.cloud.google.com/apis/credentials/oauthclient). Select `Web application` as the Application type, give it a `name` and add `https://developers.google.com/oauthplayground` as an Authorized redirect URI.
+4. Add a `Client Secret` (Add secret), and take note of both the `Client Secret` and `Client ID`.
+5. Go to [Google OAuth Playground](https://developers.google.com/oauthplayground/)
+6. Click the cog in the top-right corner, select `Use your own OAuth credentials` and enter the `OAuth Client ID` and `OAuth Client secret` from the previous step.
+7. In the left sidebar, find and select `Google Sheets API v4`, then choose the `https://www.googleapis.com/auth/spreadsheets` scope. Click `Authorize APIs`.
+8. In **step 2**, click `Exchange authorization code for tokens`. Take note of the `Refresh token`.
+9. Set up a new destination in Airbyte, select `Google Sheets` and enter the `Client ID`, `Client Secret`, `Refresh Token` and `Spreadsheet Link` from the previous steps.
 <!-- /env:oss -->
 
 ### Output schema

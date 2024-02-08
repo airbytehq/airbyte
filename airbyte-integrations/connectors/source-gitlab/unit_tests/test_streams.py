@@ -3,8 +3,10 @@
 #
 
 import datetime
+from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_gitlab.streams import (
     Branches,
@@ -276,3 +278,53 @@ def test_transform(requests_mock, stream, response_mocks, expected_records, requ
 def test_updated_state(stream, current_state, latest_record, new_state, request):
     stream = request.getfixturevalue(stream)
     assert stream.get_updated_state(current_state, latest_record) == new_state
+
+
+def test_parse_response_unsuported_response_type(request, caplog):
+    stream = request.getfixturevalue("pipelines")
+    from unittest.mock import MagicMock
+    response = MagicMock()
+    response.status_code = 200
+    response.json = MagicMock(return_value="")
+    list(stream.parse_response(response=response))
+    assert "Unsupported type of response data for stream pipelines" in caplog.text
+
+
+def test_stream_slices_child_stream(request, requests_mock):
+    commits = request.getfixturevalue("commits")
+    requests_mock.get("https://gitlab.com/api/v4/projects/p_1?per_page=50&statistics=1",
+                      json=[{"id": 13082000, "description": "", "name": "New CI Test Project"}])
+
+    slices = list(commits.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={"13082000": {""'created_at': "2021-03-10T23:58:1213"}}))
+    assert slices
+
+
+def test_next_page_token(request):
+    response = MagicMock()
+    response.status_code = 200
+    response.json = MagicMock(return_value=["some data"])
+    commits = request.getfixturevalue("commits")
+    assert not commits.next_page_token(response)
+    data = ["some data" for x in range(0, 50)]
+    response.json = MagicMock(return_value=data)
+    assert commits.next_page_token(response) == {'page': 2}
+    response.json = MagicMock(return_value={"data": "some data"})
+    assert not commits.next_page_token(response)
+
+
+def test_availability_strategy(request):
+    commits = request.getfixturevalue("commits")
+    assert not commits.availability_strategy
+
+
+def test_request_params(request):
+    commits = request.getfixturevalue("commits")
+    expected = {'per_page': 50, 'page': 2, 'with_stats': True}
+    assert commits.request_params(stream_slice={"updated_after": "2021-03-10T23:58:1213"}, next_page_token={'page': 2}) == expected
+
+
+def test_chunk_date_range(request):
+    commits = request.getfixturevalue("commits")
+    # start point in future
+    start_point = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1)
+    assert not list(commits._chunk_date_range(start_point))

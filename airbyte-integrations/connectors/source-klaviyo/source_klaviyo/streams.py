@@ -143,7 +143,10 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
                 latest_cursor = pendulum.parse(latest_cursor)
                 if stream_state_cursor_value:
                     latest_cursor = max(latest_cursor, pendulum.parse(stream_state_cursor_value))
-                latest_cursor = min(latest_cursor, pendulum.now())
+                # Klaviyo API will throw an error if the request filter is set too close to the current time.
+                # Setting a minimum value of at least 3 seconds from the current time ensures this will never happen,
+                # and allows our 'abnormal_state' acceptance test to pass.
+                latest_cursor = min(latest_cursor, pendulum.now().subtract(seconds=3))
                 params["filter"] = f"greater-than({self.cursor_field},{latest_cursor.isoformat()})"
             params["sort"] = self.cursor_field
         return params
@@ -196,9 +199,9 @@ class ArchivedRecordsStream(IncrementalKlaviyoStream):
         archived_stream_state = stream_state.get("archived") if stream_state else None
         params = super().request_params(archived_stream_state, next_page_token, **kwargs)
         archived_filter = "equals(archived,true)"
-        if "filter" in params:
+        if "filter" in params and archived_filter not in params["filter"]:
             params["filter"] = f"and({params['filter']},{archived_filter})"
-        else:
+        elif "filter" not in params:
             params["filter"] = archived_filter
         return params
 

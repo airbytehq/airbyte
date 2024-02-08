@@ -5,7 +5,7 @@
 
 from datetime import datetime
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypedDict
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypedDict, cast
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -31,7 +31,7 @@ ConvexState = TypedDict(
     },
 )
 
-CONVEX_CLIENT_VERSION = "0.2.0"
+CONVEX_CLIENT_VERSION = "0.4.0"
 
 
 # Source
@@ -39,14 +39,14 @@ class SourceConvex(AbstractSource):
     def _json_schemas(self, config: ConvexConfig) -> requests.Response:
         deployment_url = config["deployment_url"]
         access_key = config["access_key"]
-        url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format=convex_json"
+        url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format=json"
         headers = {
             "Authorization": f"Convex {access_key}",
             "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
         }
         return requests.get(url, headers=headers)
 
-    def check_connection(self, logger: Any, config: ConvexConfig) -> Tuple[bool, Any]:
+    def check_connection(self, logger: Any, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Connection check to validate that the user-provided config can be used to connect to the underlying API
 
@@ -54,16 +54,18 @@ class SourceConvex(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        config = cast(ConvexConfig, config)
         resp = self._json_schemas(config)
         if resp.status_code == 200:
             return True, None
         else:
             return False, format_http_error("Connection to Convex via json_schemas endpoint failed", resp)
 
-    def streams(self, config: ConvexConfig) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+        config = cast(ConvexConfig, config)
         resp = self._json_schemas(config)
         if resp.status_code != 200:
             raise Exception(format_http_error("Failed request to json_schemas", resp))
@@ -73,6 +75,7 @@ class SourceConvex(AbstractSource):
             ConvexStream(
                 config["deployment_url"],
                 config["access_key"],
+                "json",  # Use `json` export format
                 table_name,
                 json_schemas[table_name],
             )
@@ -81,8 +84,16 @@ class SourceConvex(AbstractSource):
 
 
 class ConvexStream(HttpStream, IncrementalMixin):
-    def __init__(self, deployment_url: str, access_key: str, table_name: str, json_schema: Mapping[str, Any]):
+    def __init__(
+        self,
+        deployment_url: str,
+        access_key: str,
+        fmt: str,
+        table_name: str,
+        json_schema: Dict[str, Any],
+    ):
         self.deployment_url = deployment_url
+        self.fmt = fmt
         self.table_name = table_name
         if json_schema:
             json_schema["additionalProperties"] = True
@@ -106,7 +117,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
     def url_base(self) -> str:
         return self.deployment_url
 
-    def get_json_schema(self) -> Mapping[str, Any]:
+    def get_json_schema(self) -> Mapping[str, Any]:  # type: ignore[override]
         return self.json_schema
 
     primary_key = "_id"
@@ -116,18 +127,20 @@ class ConvexStream(HttpStream, IncrementalMixin):
     state_checkpoint_interval = 128
 
     @property
-    def state(self) -> ConvexState:
-        return {
+    def state(self) -> MutableMapping[str, Any]:
+        value: ConvexState = {
             "snapshot_cursor": self._snapshot_cursor_value,
             "snapshot_has_more": self._snapshot_has_more,
             "delta_cursor": self._delta_cursor_value,
         }
+        return cast(MutableMapping[str, Any], value)
 
     @state.setter
-    def state(self, value: ConvexState) -> None:
-        self._snapshot_cursor_value = value["snapshot_cursor"]
-        self._snapshot_has_more = value["snapshot_has_more"]
-        self._delta_cursor_value = value["delta_cursor"]
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        state = cast(ConvexState, value)
+        self._snapshot_cursor_value = state["snapshot_cursor"]
+        self._snapshot_has_more = state["snapshot_has_more"]
+        self._delta_cursor_value = state["delta_cursor"]
 
     def next_page_token(self, response: requests.Response) -> Optional[ConvexState]:
         if response.status_code != 200:
@@ -140,13 +153,14 @@ class ConvexStream(HttpStream, IncrementalMixin):
         else:
             self._delta_cursor_value = resp_json["cursor"]
             self._delta_has_more = resp_json["hasMore"]
-        return self.state if self._delta_has_more else None
+        has_more = self._snapshot_has_more or self._delta_has_more
+        return cast(ConvexState, self.state) if has_more else None
 
     def path(
         self,
-        stream_state: Optional[ConvexState] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[ConvexState] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         # https://docs.convex.dev/http-api/#sync
         if self._snapshot_has_more:
@@ -157,10 +171,10 @@ class ConvexStream(HttpStream, IncrementalMixin):
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: ConvexState,
+        stream_state: Mapping[str, Any],
         stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[ConvexState] = None,
-    ) -> Iterable[Any]:
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         if response.status_code != 200:
             raise Exception(format_http_error("Failed request", response))
         resp_json = response.json()
@@ -168,11 +182,11 @@ class ConvexStream(HttpStream, IncrementalMixin):
 
     def request_params(
         self,
-        stream_state: ConvexState,
+        stream_state: Optional[Mapping[str, Any]],
         stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[ConvexState] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        params: Dict[str, Any] = {"tableName": self.table_name, "format": "convex_json"}
+        params: Dict[str, Any] = {"tableName": self.table_name, "format": self.fmt}
         if self._snapshot_has_more:
             if self._snapshot_cursor_value:
                 params["cursor"] = self._snapshot_cursor_value
@@ -185,9 +199,9 @@ class ConvexStream(HttpStream, IncrementalMixin):
 
     def request_headers(
         self,
-        stream_state: ConvexState,
+        stream_state: Optional[Mapping[str, Any]],
         stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[ConvexState] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Dict[str, str]:
         """
         Custom headers for each HTTP request, not including Authorization.
@@ -200,11 +214,12 @@ class ConvexStream(HttpStream, IncrementalMixin):
         """
         This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`.
         """
-        return self.state
+        return cast(ConvexState, self.state)
 
     def read_records(self, sync_mode: SyncMode, *args: Any, **kwargs: Any) -> Iterator[Any]:
         self._delta_has_more = sync_mode == SyncMode.incremental
-        for record in super().read_records(sync_mode, *args, **kwargs):
+        for read_record in super().read_records(sync_mode, *args, **kwargs):
+            record = dict(read_record)
             ts_ns = record["_ts"]
             ts_seconds = ts_ns / 1e9  # convert from nanoseconds.
             # equivalent of java's `new Timestamp(transactionMillis).toInstant().toString()`

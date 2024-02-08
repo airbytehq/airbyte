@@ -3,8 +3,9 @@
 #
 
 import copy
+import logging
 from base64 import standard_b64encode
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Type
 
 import pendulum
 import requests
@@ -18,9 +19,10 @@ from source_pinterest.reports import CampaignAnalyticsReport
 from .reports.reports import (
     AdGroupReport,
     AdGroupTargetingReport,
-    AdvertizerReport,
-    AdvertizerTargetingReport,
+    AdvertiserReport,
+    AdvertiserTargetingReport,
     CampaignTargetingReport,
+    CustomReport,
     KeywordReport,
     PinPromotionReport,
     PinPromotionTargetingReport,
@@ -52,6 +54,8 @@ from .streams import (
     UserAccountAnalytics,
 )
 
+logger = logging.getLogger("airbyte")
+
 
 class SourcePinterest(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any], amount_of_days_allowed_for_lookup: int = 89):
@@ -59,21 +63,26 @@ class SourcePinterest(AbstractSource):
         today = pendulum.today()
         latest_date_allowed_by_api = today.subtract(days=amount_of_days_allowed_for_lookup)
 
-        start_date = config["start_date"]
-        if not start_date:
-            config["start_date"] = latest_date_allowed_by_api
-        else:
+        start_date = config.get("start_date")
+
+        # transform to datetime
+        if start_date and isinstance(start_date, str):
             try:
-                config["start_date"] = pendulum.from_format(config["start_date"], "YYYY-MM-DD")
+                config["start_date"] = pendulum.from_format(start_date, "YYYY-MM-DD")
             except ValueError:
-                message = "Entered `Start Date` does not match format YYYY-MM-DD"
+                message = f"Entered `Start Date` {start_date} does not match format YYYY-MM-DD"
                 raise AirbyteTracedException(
                     message=message,
                     internal_message=message,
                     failure_type=FailureType.config_error,
                 )
-            if (today - config["start_date"]).days > amount_of_days_allowed_for_lookup:
-                config["start_date"] = latest_date_allowed_by_api
+
+        if not start_date or config["start_date"] < latest_date_allowed_by_api:
+            logger.info(
+                f"Current start_date: {start_date} does not meet API report requirements. Resetting start_date to: {latest_date_allowed_by_api}"
+            )
+            config["start_date"] = latest_date_allowed_by_api
+
         return config
 
     @staticmethod
@@ -144,8 +153,8 @@ class SourcePinterest(AbstractSource):
             Catalogs(config=config),
             CatalogsFeeds(config=config),
             CatalogsProductGroups(config=config),
-            AdvertizerReport(ad_accounts, config=report_config),
-            AdvertizerTargetingReport(ad_accounts, config=report_config),
+            AdvertiserReport(ad_accounts, config=report_config),
+            AdvertiserTargetingReport(ad_accounts, config=report_config),
             AdGroupReport(ad_accounts, config=report_config),
             AdGroupTargetingReport(ad_accounts, config=report_config),
             PinPromotionReport(ad_accounts, config=report_config),
@@ -154,4 +163,32 @@ class SourcePinterest(AbstractSource):
             ProductGroupTargetingReport(ad_accounts, config=report_config),
             KeywordReport(ad_accounts, config=report_config),
             ProductItemReport(ad_accounts, config=report_config),
-        ]
+        ] + self.get_custom_report_streams(ad_accounts, config=report_config)
+
+    def get_custom_report_streams(self, parent, config: dict) -> List[Type[Stream]]:
+        """return custom report streams"""
+        custom_streams = []
+        for report_config in config.get("custom_reports", []):
+            report_config["authenticator"] = config["authenticator"]
+
+            # https://developers.pinterest.com/docs/api/v5/#operation/analytics/get_report
+            if report_config.get("granularity") == "HOUR":
+                # Otherwise: Response Code: 400 {"code":1,"message":"HOURLY request must be less than 3 days"}
+                amount_of_days_allowed_for_lookup = 2
+            elif report_config.get("level") == "PRODUCT_ITEM":
+                amount_of_days_allowed_for_lookup = 91
+            else:
+                amount_of_days_allowed_for_lookup = 913
+
+            start_date = report_config.get("start_date")
+            if not start_date:
+                report_config["start_date"] = config.get("start_date")
+
+            report_config = self._validate_and_transform(report_config, amount_of_days_allowed_for_lookup)
+
+            stream = CustomReport(
+                parent=parent,
+                config=report_config,
+            )
+            custom_streams.append(stream)
+        return custom_streams

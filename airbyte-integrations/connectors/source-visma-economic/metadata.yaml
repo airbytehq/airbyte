@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "restapi.e-conomic.com"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-visma-economic
   registries:
     oss:
       enabled: true
@@ -21,5 +25,5 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
   tags:
-    - language:lowcode
+    - language:low-code
 metadataSpecVersion: "1.0"

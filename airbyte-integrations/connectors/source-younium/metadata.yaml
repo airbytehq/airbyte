@@ -1,4 +1,8 @@
 data:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-younium
   registries:
     oss:
       enabled: true
@@ -23,5 +27,5 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/younium
   tags:
-    - language:lowcode
+    - language:low-code
 metadataSpecVersion: "1.0"

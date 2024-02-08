@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - https://api.appfollow.io
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-appfollow
   registries:
     oss:
       enabled: true
@@ -20,7 +24,7 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/appfollow
   tags:
-    - language:lowcode
+    - language:low-code
   releases:
     breakingChanges:
       1.0.0:

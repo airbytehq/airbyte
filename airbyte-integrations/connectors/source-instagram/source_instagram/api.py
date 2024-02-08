@@ -65,7 +65,6 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
 class InstagramAPI:
     def __init__(self, access_token: str):
-        self._api = FacebookAdsApi.init(access_token=access_token)
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)

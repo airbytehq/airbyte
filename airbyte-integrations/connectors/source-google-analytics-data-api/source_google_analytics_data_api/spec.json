@@ -2095,6 +2095,132 @@
                   "required": ["field_name", "filter"]
                 }
               ]
+            },
+            "cohortSpec": {
+              "title": "Cohort Reports",
+              "description": "Cohort reports creates a time series of user retention for the cohort.",
+              "type": "object",
+              "order": 5,
+              "oneOf": [
+                {
+                  "title": "Disabled",
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "string",
+                      "const": "false"
+                    }
+                  }
+                },
+                {
+                  "title": "Enabled",
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "string",
+                      "const": "true"
+                    },
+                    "cohorts": {
+                      "name": "Cohorts",
+                      "order": 0,
+                      "type": "array",
+                      "always_show": true,
+                      "items": {
+                        "title": "Cohorts",
+                        "type": "object",
+                        "required": ["dimension", "dateRange"],
+                        "properties": {
+                          "name": {
+                            "title": "Name",
+                            "type": "string",
+                            "always_show": true,
+                            "pattern": "^(?!(cohort_|RESERVED_)).*$",
+                            "description": "Assigns a name to this cohort. If not set, cohorts are named by their zero based index cohort_0, cohort_1, etc.",
+                            "order": 0
+                          },
+                          "dimension": {
+                            "title": "Dimension",
+                            "description": "Dimension used by the cohort. Required and only supports `firstSessionDate`",
+                            "type": "string",
+                            "enum": ["firstSessionDate"],
+                            "order": 1
+                          },
+                          "dateRange": {
+                            "type": "object",
+                            "required": ["startDate", "endDate"],
+                            "properties": {
+                              "startDate": {
+                                "title": "Start Date",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                                "pattern_descriptor": "YYYY-MM-DD",
+                                "examples": ["2021-01-01"],
+                                "order": 2
+                              },
+                              "endDate": {
+                                "title": "End Date",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                                "pattern_descriptor": "YYYY-MM-DD",
+                                "examples": ["2021-01-01"],
+                                "order": 3
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "cohortsRange": {
+                      "type": "object",
+                      "order": 1,
+                      "required": ["granularity", "endOffset"],
+                      "properties": {
+                        "granularity": {
+                          "title": "Granularity",
+                          "description": "The granularity used to interpret the startOffset and endOffset for the extended reporting date range for a cohort report.",
+                          "type": "string",
+                          "enum": [
+                            "GRANULARITY_UNSPECIFIED",
+                            "DAILY",
+                            "WEEKLY",
+                            "MONTHLY"
+                          ],
+                          "order": 0
+                        },
+                        "startOffset": {
+                          "title": "Start Offset",
+                          "description": "Specifies the start date of the extended reporting date range for a cohort report.",
+                          "type": "integer",
+                          "minimum": 0,
+                          "order": 1
+                        },
+                        "endOffset": {
+                          "title": "End Offset",
+                          "description": "Specifies the end date of the extended reporting date range for a cohort report.",
+                          "type": "integer",
+                          "minimum": 0,
+                          "order": 2
+                        }
+                      }
+                    },
+                    "cohortReportSettings": {
+                      "type": "object",
+                      "title": "Cohort Report Settings",
+                      "description": "Optional settings for a cohort report.",
+                      "properties": {
+                        "accumulate": {
+                          "always_show": true,
+                          "title": "Accumulate",
+                          "description": "If true, accumulates the result from first touch day to the end day",
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
             }
           },
           "required": ["name", "dimensions", "metrics"]
@@ -2109,6 +2235,20 @@
         "maximum": 364,
         "default": 1,
         "order": 5
+      },
+      "keep_empty_rows": {
+        "type": "boolean",
+        "title": "Keep Empty Rows",
+        "description": "If false, each row with all metrics equal to 0 will not be returned. If true, these rows will be returned if they are not separately removed by a filter. More information is available in <a href=\"https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport#request-body\">the documentation</a>.",
+        "default": false,
+        "order": 6
+      },
+      "convert_conversions_event": {
+        "type": "boolean",
+        "title": "Convert `conversions:*` Metrics to Float",
+        "description": "Enables conversion of `conversions:*` event metrics from integers to floats. This is beneficial for preventing data rounding when the API returns float values for any `conversions:*` fields.",
+        "default": false,
+        "order": 7
       }
     }
   },

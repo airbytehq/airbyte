@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import java.util.HashMap;
@@ -130,6 +131,12 @@ public class AbstractJdbcDestinationTest {
     @Override
     public JsonNode toJdbcConfig(final JsonNode config) {
       return config;
+    }
+
+    @Override
+    protected JdbcSqlGenerator getSqlGenerator() {
+      // TODO do we need to populate this?
+      return null;
     }
 
   }

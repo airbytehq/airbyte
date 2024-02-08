@@ -13,4 +13,11 @@ import java.util.List;
  */
 public record UnsupportedOneOf(List<AirbyteType> options) implements AirbyteType {
 
+  public static final String TYPE = "UNSUPPORTED_ONE_OF";
+
+  @Override
+  public String getTypeName() {
+    return TYPE;
+  }
+
 }

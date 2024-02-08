@@ -55,6 +55,6 @@ dependencies {
     }
     implementation ('org.apache.parquet:parquet-avro:1.12.0') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-    
+
     implementation 'com.azure:azure-storage-blob:12.18.0'
 }
