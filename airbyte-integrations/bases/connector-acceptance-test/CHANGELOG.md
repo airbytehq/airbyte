@@ -1,7 +1,10 @@
 # Changelog
 
-## 3.4.0
+## 3.5.0
 Add `validate_stream_statuses` to TestBasicRead.test_read:: Validate all statuses for all streams in the catalogs were emitted in correct order.
+
+## 3.4.0
+Add TestConnectorDocumentation suite for validating connectors documentation structure and content. 
 
 ## 3.3.3
 Аix `NoAdditionalPropertiesValidator` if no type found in `items` 
