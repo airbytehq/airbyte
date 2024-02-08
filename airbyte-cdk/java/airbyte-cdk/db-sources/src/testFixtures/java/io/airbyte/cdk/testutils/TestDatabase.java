@@ -189,7 +189,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     }
     try {
       LOGGER.debug("executing {}", Strings.join(cmd, " "));
-      getContainer().execInContainer("sh", "-c", "ln /var/run/mysqld/mysqld.sock /var/lib/mysql/mysql.sock");
+      getContainer().execInContainer("sh", "-c", "ln -s /var/run/mysqld/mysqld.sock /var/lib/mysql/mysql.sock");
 
       final var exec = getContainer().execInContainer(cmd.toArray(new String[0]));
       if (exec.getExitCode() == 0) {
@@ -197,7 +197,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         LOGGER.info("other info: container.getjdbcurl: " + this.getContainer().getJdbcUrl());
         LOGGER.info("logs from container: " + this.getContainer().getLogs());
         LOGGER.debug("execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr());
-        var mysqlTest = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest");
+        String mysqlTest = getContainer().execInContainer("sh", "-c", "ls -l /var/lib/mysql/").getStdout();
         var logerror = getContainer().execInContainer("sh", "-c", "mysqld --verbose --help | grep -A 1 \"Default options\"\n").getStdout();
         var configs1 = getContainer().execInContainer("sh", "-c", "cat /etc/my.cnf").getStdout();
         var configs2 = getContainer().execInContainer("sh", "-c", "cat /etc/mysql/my.cnf").getStdout();
@@ -207,9 +207,8 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
 
         LOGGER.info("Log error: " + logerror);
         LOGGER.info("configs: " + configs1 + configs2 + configs3 + configs4);
-        var result = mysqlTest.getStdout();
-        var error = mysqlTest.getStderr();
-        LOGGER.info("result and error: " + result + error);
+
+        LOGGER.info("result and error: " + mysqlTest);
       } else {
         LOGGER.error("execution failure, code {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
         String log = this.getContainer().getLogs();
@@ -217,8 +216,8 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         String hosts = getContainer().execInContainer("sh", "-c", "cat /etc/hosts").getStdout();
         String aliveTest = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest").getStdout();
         String aliveTestError = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest").getStderr();
-        String socketFileCheck = getContainer().execInContainer("sh", "-c", "ls /var/run/mysqld/").getStdout();
-        String socketLibFileCheck = getContainer().execInContainer("sh", "-c", "ls /var/lib/mysql/").getStdout();
+        String socketFileCheck = getContainer().execInContainer("sh", "-c", "ls -l /var/run/mysqld/").getStdout();
+        String socketLibFileCheck = getContainer().execInContainer("sh", "-c", "ls -l /var/lib/mysql/").getStdout();
 
         String mysqldStatus = getContainer().execInContainer("sh", "-c", "service mysqld status").getStdout();
         var mysqlTest = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest");
@@ -241,7 +240,6 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
             + "\n configs: " + configs1 + configs2 + configs3 + configs4
             + "\n mysqld status: " + mysqldStatus
             + "\n mysql test" + aliveTest + "  err: " + aliveTestError
-
             + " \nadditional logs:\n" + log);
       }
     } catch (IOException e) {
