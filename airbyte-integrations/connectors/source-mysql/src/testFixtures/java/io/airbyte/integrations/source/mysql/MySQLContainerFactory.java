@@ -25,7 +25,8 @@ public class MySQLContainerFactory extends ContainerFactory<MySQLContainer<?>> {
         .withAccessToHost(true)
         .withUsername("root")
         .withInitScript("init.sql");
-    Testcontainers.exposeHostPorts(container.getMappedPort(3306));
+
+    execInContainer(container, "sed -i '31 a bind_address=0.0.0.0' /etc/my.cnf");
     return container;
   }
 
