@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.base;
 
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
+import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage;
@@ -50,6 +51,10 @@ public final class AirbyteTraceMessageUtility {
                 .withNamespace(streamNamespace))));
   }
 
+  public static void emitAnalyticsTrace(final AirbyteAnalyticsTraceMessage airbyteAnalyticsTraceMessage) {
+    emitMessage(makeAnalyticsTraceAirbyteMessage(airbyteAnalyticsTraceMessage));
+  }
+
   public static void emitErrorTrace(final Throwable e, final String displayMessage, final FailureType failureType) {
     emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType));
   }
@@ -86,6 +91,10 @@ public final class AirbyteTraceMessageUtility {
                 .withStackTrace(ExceptionUtils.getStackTrace(e))));
   }
 
+  private static AirbyteMessage makeAnalyticsTraceAirbyteMessage(final AirbyteAnalyticsTraceMessage airbyteAnalyticsTraceMessage) {
+    return new AirbyteMessage().withType(Type.TRACE).withTrace(new AirbyteTraceMessage().withAnalytics(airbyteAnalyticsTraceMessage));
+  }
+
   private static AirbyteMessage makeStreamStatusTraceAirbyteMessage(final AirbyteStreamStatusHolder airbyteStreamStatusHolder) {
     return makeAirbyteMessageFromTraceMessage(airbyteStreamStatusHolder.toTraceMessage());
   }
@@ -97,5 +106,4 @@ public final class AirbyteTraceMessageUtility {
   private static AirbyteTraceMessage makeAirbyteTraceMessage(final AirbyteTraceMessage.Type traceMessageType) {
     return new AirbyteTraceMessage().withType(traceMessageType).withEmittedAt((double) System.currentTimeMillis());
   }
-
 }
