@@ -1,6 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 # Make sure the paths you have in each path matches with your data.
+#For multiple env testing, you can duplicate the tests and change the path to the proper credentials file
 connector_image: airbyte/source-paypal-transaction:dev
 test_strictness_level: high
 acceptance_tests:
@@ -11,11 +12,6 @@ acceptance_tests:
         config_path: secrets/config.json
         backward_compatibility_tests_config:
           disable_for_version: "0.1.13"
-      #Test With Sandbox Credentials
-      # - spec_path: "source_paypal_transaction/spec.yaml"
-      #   config_path: secrets/config_sandbox.json
-      #   backward_compatibility_tests_config:
-      #     disable_for_version: "0.1.13"
   connection:
     tests:
       #Test With Prod Credentials
@@ -32,14 +28,12 @@ acceptance_tests:
       - config_path: secrets/config.json
         backward_compatibility_tests_config:
           disable_for_version: "2.0.0" # Change in cursor field for transactions stream
-      # - config_path: secrets/config_sandbox.json
-      #   backward_compatibility_tests_config:
-      #     disable_for_version: "2.0.0" # Change in cursor field for transactions stream
   basic_read:
     tests:
       #Test Prod Environment - Uncomment and change according to your prod setup
       #Change the expected records, remember to align them with the timeframe you have selected
       #Do not select streams that take more than 5 mins to load data as that can lead to timeouts
+      #You can comment the lines if you are sure you have data for the below streams.
       - config_path: secrets/config.json
         empty_streams:
           - name: show_product_details
@@ -48,6 +42,9 @@ acceptance_tests:
             bypass_reason: "Product List may be too big causing timeout errors"
           - name: search_invoices
             bypass_reason: "Order makes the diff fail."
+          #Have to add for testing PR CI. 
+          - name: lidt_disputes
+            bypass_reason: "Disputes may not exist."
         ignored_fields:
           balances:
             - name: last_refresh_time
@@ -62,30 +59,6 @@ acceptance_tests:
           exact_order: yes
           extra_records: no
         fail_on_extra_columns: False
-      ##################
-      ## Test Sandbox ##
-      # - config_path: secrets/config_sandbox.json
-      #   empty_streams:
-      #     - name: show_product_details
-      #       bypass_reason: "Products may not exist"
-      #     - name: list_disputes
-      #       bypass_reason: "There may not be Disputes in the Sandbox"
-      #     - name: search_invoices
-      #       bypass_reason: "Retrieval Order makes the diff fail."
-      #   ignored_fields:
-      #     balances:
-      #       - name: last_refresh_time
-      #         bypass_reason: "field changes during every read"
-      #     list_products:
-      #       - name: description
-      #         bypass_reason: "Sometimes it is not contained in the response"
-      #   timeout_seconds: 1200
-      #   expect_records:
-      #     path: "integration_tests/sample_files/expected_records_sandbox.jsonl"
-      #     extra_fields: no
-      #     exact_order: no
-      #     extra_records: yes
-      #   fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: secrets/config.json
