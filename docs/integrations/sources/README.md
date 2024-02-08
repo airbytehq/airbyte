@@ -4,7 +4,7 @@ import ConnectorRegistry from '@site/src/components/ConnectorRegistry';
 
 A source is an API, file, database, or data warehouse that you want to ingest data from.
 
-Learn about our [Connector Support Levels](/integrations/connector-support-levels) to understand what to expect from a connector.
+Learn about our [Connector Support Levels](/integrations/connector-support-levels.md) to understand what to expect from a connector.
 
 ## Sources
 
