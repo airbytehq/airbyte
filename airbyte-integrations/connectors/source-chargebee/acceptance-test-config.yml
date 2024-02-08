@@ -107,7 +107,6 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        skip_comprehensive_incremental_tests: true
         timeout_seconds: 2400
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
@@ -117,8 +116,8 @@ acceptance_tests:
               bypass_reason: "This stream is Full-Refresh only"
             - name: quote_line_group
               bypass_reason: "This stream is Full-Refresh only"
-            - name: event
-              bypass_reason: "Large dataset causes timeout."
+            - name: attached_item
+              bypass_reason: "This stream is Full-Refresh only"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

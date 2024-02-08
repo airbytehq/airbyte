@@ -100,6 +100,7 @@ definitions:
       path: "/addons"
       stream_cursor_field: "updated_at"
   attached_item_stream:
+    $comment: "As of 2/8/24 this stream should be full refresh only as there is an issue with state being appended rather than replaced, causing duplicates. See GH Issue: https://github.com/airbytehq/airbyte/issues/33854"
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
