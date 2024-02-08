@@ -82,7 +82,7 @@ public class MssqlQueryUtils {
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         if (jsonNodes != null) {
           jsonNodes.stream().map(node -> Jsons.convertValue(node, Index.class))
-              .forEach(i -> LOGGER.info(String.valueOf(i)));
+              .forEach(i -> LOGGER.info("Index {}", i));
         }
       } catch (final Exception ex) {
         LOGGER.info("Failed to get index for {}", fullTableName);
@@ -284,12 +284,12 @@ public class MssqlQueryUtils {
 
       // iterate through names and replace Hierarchyid field for query is with toString() function
       // Eventually would get columns like this: testColumn.toString as "testColumn"
-      // toString function in SQL server is the only way to get human readable value, but not mssql
+      // toString function in SQL server is the only way to get human-readable value, but not mssql
       // specific HEX value
       return String.join(", ", columnNames.stream()
           .map(
-              el -> hierarchyIdColumns.contains(el) ? String
-                  .format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
+              el -> hierarchyIdColumns.contains(el) ?
+                  String.format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
                   : getIdentifierWithQuoting(el, quoteString))
           .toList());
     } catch (final SQLException e) {
