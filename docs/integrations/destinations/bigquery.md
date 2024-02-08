@@ -190,6 +190,7 @@ The service account does not have the proper permissions.
 - If the GCS staging mode is selected, ensure the BigQuery service account has the right permissions
   to the GCS bucket and path or the `Cloud Storage Admin` role, which includes a superset of the
   required permissions.
+- If you're using per-table permissions, it's important to note that the connector briefly deletes the final tables after a reset. This deletion is sufficient for IAM permissions granted on a single table to be removed along with the table. You can set your permissions at the dataset level or use [authorized datasets/views](https://cloud.google.com/bigquery/docs/authorized-datasets) to access your Airbyte tables.
 
 The HMAC key is wrong.
 
