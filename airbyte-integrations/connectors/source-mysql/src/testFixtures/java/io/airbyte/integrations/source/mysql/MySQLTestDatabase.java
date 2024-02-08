@@ -109,6 +109,7 @@ public class MySQLTestDatabase extends
     LOGGER.atInfo().log("cat etc/hosts:" + catFileInContainer("/etc/hosts"));
     LOGGER.atInfo().log("cat etc/my.cnf:" + catFileInContainer("/etc/my.cnf"));
     LOGGER.atInfo().log("/etc/resolv.conf: " + catFileInContainer("/etc/resolv.conf"));
+    LOGGER.atInfo().log("check socket file exists: " + catFileInContainer("/var/run/mysqld/mysqld.sock"));
 
     return Stream.of(mysqlCmd(Stream.of(
         String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
@@ -145,7 +146,7 @@ public class MySQLTestDatabase extends
   public Stream<String> mysqlCmd(Stream<String> sql) {
     final String host = this.getContainer().getHost();
     return Stream.of("bash", "-c", String.format(
-        "set -o errexit -o pipefail; echo \"%s\" | mysql -v -v -v --user=root --password=test",
+        "set -o errexit -o pipefail; echo \"%s\" | mysql -v -v -v --user=root --password=test --socket=/var/run/mysqld/mysqld.sock",
         sql.collect(Collectors.joining("; "))));
   }
 

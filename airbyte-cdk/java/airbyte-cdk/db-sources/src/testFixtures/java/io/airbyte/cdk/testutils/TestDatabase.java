@@ -196,7 +196,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         LOGGER.info("other info: container.getjdbcurl: " + this.getContainer().getJdbcUrl());
         LOGGER.info("logs from container: " + this.getContainer().getLogs());
         LOGGER.debug("execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr());
-        var mysqlTest = getContainer().execInContainer("sh", "-c", "mysql -u root -p test -e \"SELECT NOW();\"");
+        var mysqlTest = getContainer().execInContainer("sh", "-c", "ls /var/run/mysqld");
         var result = mysqlTest.getStdout();
         var error = mysqlTest.getStderr();
         LOGGER.info("result and error: " + result + error);
