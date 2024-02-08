@@ -978,15 +978,13 @@ class TestBasicRead(BaseTest):
             return inputs.validate_schema
 
     @pytest.fixture(name="should_validate_stream_statuses")
-    def should_validate_stream_statuses_fixture(
-        self, inputs: BasicReadTestConfig, test_strictness_level: Config.TestStrictnessLevel, connector_metadata: dict
-    ):
-        if not inputs.validate_stream_statuses and test_strictness_level is Config.TestStrictnessLevel.high:
+    def should_validate_stream_statuses_fixture(self, inputs: BasicReadTestConfig, connector_metadata: dict):
+        is_certified = connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") >= 400
+        if inputs.validate_stream_statuses is None and is_certified:
+            return True
+        if not inputs.validate_stream_statuses and is_certified:
             pytest.fail("High strictness level error: validate_stream_statuses must be set to true in the basic read test configuration.")
-        elif connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
-            return False
-        else:
-            return inputs.validate_stream_statuses
+        return inputs.validate_stream_statuses
 
     @pytest.fixture(name="should_fail_on_extra_columns")
     def should_fail_on_extra_columns_fixture(self, inputs: BasicReadTestConfig):
