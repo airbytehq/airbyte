@@ -46,6 +46,6 @@ def test_date_formats_in_config(config):
     assert validate_date_format(config['dispute_start_date'], dispute_date_format), "Dispute start date format is incorrect"
     assert validate_date_format(config['dispute_end_date'], dispute_date_format), "Dispute end date format is incorrect"
 
-#@pytest.fixture(name="logger_mock")
+@pytest.fixture(name="logger_mock")
 def logger_mock_fixture():
     return patch("source_paypal_transactions.source.AirbyteLogger")

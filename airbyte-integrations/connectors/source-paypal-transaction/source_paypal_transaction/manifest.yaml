@@ -201,8 +201,7 @@ definitions:
   # New Stream - Show Product Details
   #Paypal API only has V1 for this stream
   #This can't be incremental as there is no time filtering. If you need to have the updates, you need to Append in the full_sync
-  # This stream works, however has some challenges with performance. This will be commented out on the stream list while
-  # we resolve the performance challenges for Gold cert.
+  # This stream works, however has some challenges with performance. Whith a big catalog it can take up to 3 hrs.
   show_product_details_stream:
     type: DeclarativeStream
     primary_key: id
@@ -313,7 +312,7 @@ definitions:
         pagination_strategy:
           type: PageIncrement
           start_from_page: 1
-          page_size: 20
+          page_size: 100
       requester:
         $ref: "#/definitions/requester"
         http_method: POST
@@ -372,7 +371,6 @@ definitions:
         type: MinMaxDatetime
         datetime: >-
           {{ format_datetime(config['end_date'] if config['end_date'] else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
-        #"{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
