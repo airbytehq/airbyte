@@ -126,13 +126,13 @@ class TestIncrementalAnalyticsStream:
                 [{"dataStartTime": "2023-09-06T00:00:00Z", "dataEndTime": "2023-09-06T23:59:59Z"}],
             ),
             (
-                "2023-05-01T00:00:00Z",
-                "2023-09-07T00:00:00Z",
+                "2022-05-01T00:00:00Z",
+                "2023-09-05T00:00:00Z",
                 None,
                 0,
                 [
-                    {"dataStartTime": "2023-05-01T00:00:00Z", "dataEndTime": "2023-07-29T23:59:59Z"},
-                    {"dataStartTime": "2023-07-30T00:00:00Z", "dataEndTime": "2023-09-07T00:00:00Z"},
+                    {"dataStartTime": "2022-05-01T00:00:00Z", "dataEndTime": "2023-04-30T23:59:59Z"},
+                    {"dataStartTime": "2023-05-01T00:00:00Z", "dataEndTime": "2023-09-05T00:00:00Z"},
                 ],
             ),
         ),
