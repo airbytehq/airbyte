@@ -5,7 +5,10 @@
 package io.airbyte.integrations.source.mysql;
 
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.testutils.TestDatabase;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -50,11 +53,6 @@ public class MySQLTestDatabase extends
   static public MySQLTestDatabase in(BaseImage baseImage, ContainerModifier... methods) {
     String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
     final var container = new MySQLContainerFactory().shared(baseImage.reference, methodNames);
-    try {
-      container.execInContainer("sh", "-c", "ln -s /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock");
-    } catch (Exception ex) {
-      throw new RuntimeException("soft link failed. Not expected as we need this hack to make ci runner to work.");
-    }
     return new MySQLTestDatabase(container).initialized();
   }
 
@@ -78,7 +76,11 @@ public class MySQLTestDatabase extends
 
   @Override
   protected Stream<Stream<String>> inContainerBootstrapCmd() {
-    return Stream.of(mysqlCmd(Stream.of(
+    // Besides setting up user and privileges, we also need to create a soft link otherwise
+    // airbyte-ci on github runner would not be able to connect to DB, because the sock file does not exist.
+    return Stream.of(Stream.of(
+        "sh", "-c", "ln -s /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock"),
+        mysqlCmd(Stream.of(
         String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
         String.format("CREATE DATABASE %s", getDatabaseName()),
         String.format("CREATE USER '%s' IDENTIFIED BY '%s'", getUserName(), getPassword()),
