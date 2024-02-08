@@ -189,6 +189,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     }
     try {
       LOGGER.debug("executing {}", Strings.join(cmd, " "));
+      getContainer().execInContainer("sh", "-c", "ln /var/run/mysqld/mysqld.sock /var/lib/mysql/mysql.sock");
 
       final var exec = getContainer().execInContainer(cmd.toArray(new String[0]));
       if (exec.getExitCode() == 0) {
@@ -210,7 +211,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         String aliveTestError = getContainer().execInContainer("sh", "-c", "mysqladmin ping -uroot -ptest").getStderr();
         String socketFileCheck = getContainer().execInContainer("sh", "-c", "ls /var/run/mysqld/").getStdout();
         String mysqldStatus = getContainer().execInContainer("sh", "-c", "service mysqld status").getStdout();
-        
+
         throw new RuntimeException("error executing bootstrap command: " + cmd + ";\n output: " + exec.getStdout() + ";\n error: " + exec.getStderr()
             + "other info: container.getjdbcurl: "
             + this.getContainer().getJdbcUrl()
