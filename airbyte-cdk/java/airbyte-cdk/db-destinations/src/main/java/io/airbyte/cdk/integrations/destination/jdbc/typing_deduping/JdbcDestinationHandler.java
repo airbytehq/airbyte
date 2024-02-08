@@ -14,10 +14,10 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
+import io.airbyte.commons.exceptions.SQLRuntimeException;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -57,6 +57,11 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
   }
 
   @Override
+  public LinkedHashMap<String, TableDefinition> findExistingFinalTables(List<StreamId> streamIds) throws Exception {
+    return null;
+  }
+
+  @Override
   public boolean isFinalTableEmpty(final StreamId id) throws Exception {
     return !jdbcDatabase.queryBoolean(
         select(
@@ -69,12 +74,16 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   @Override
   public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
-    final ResultSet tables = jdbcDatabase.getMetaData().getTables(
-        databaseName,
-        id.rawNamespace(),
-        id.rawName(),
-        null);
-    if (!tables.next()) {
+    boolean tableExists = jdbcDatabase.executeMetadataQuery(dbmetadata -> {
+      LOGGER.info("Retrieving table from Db metadata: {} {} {}", databaseName, id.rawNamespace(), id.rawName());
+      try (final ResultSet table = dbmetadata.getTables(databaseName, id.rawNamespace(), id.rawName(), null)) {
+        return table.next();
+      } catch (SQLException e) {
+        LOGGER.error("Failed to retrieve table info from metadata", e);
+        throw new SQLRuntimeException(e);
+      }
+    });
+    if (!tableExists) {
       // There's no raw table at all. Therefore there are no unprocessed raw records, and this sync
       // should not filter raw records by timestamp.
       return new InitialRawTableState(false, Optional.empty());
@@ -139,33 +148,40 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
                                                             final String schemaName,
                                                             final String tableName)
       throws SQLException {
-    final DatabaseMetaData metaData = jdbcDatabase.getMetaData();
-    // TODO: normalize namespace and finalName strings to quoted-lowercase (as needed. Snowflake
-    // requires uppercase)
-    final LinkedHashMap<String, ColumnDefinition> columnDefinitions = new LinkedHashMap<>();
-    try (final ResultSet columns = metaData.getColumns(databaseName, schemaName, tableName, null)) {
-      while (columns.next()) {
-        final String columnName = columns.getString("COLUMN_NAME");
-        final String typeName = columns.getString("TYPE_NAME");
-        final int columnSize = columns.getInt("COLUMN_SIZE");
-        final int datatype = columns.getInt("DATA_TYPE");
-        SQLType sqlType;
-        try {
-          sqlType = JDBCType.valueOf(datatype);
-        } catch (final IllegalArgumentException e) {
-          // Unknown jdbcType convert to customSqlType
-          LOGGER.warn("Unrecognized JDBCType {}; falling back to UNKNOWN", datatype, e);
-          sqlType = new CustomSqlType("Unknown", "Unknown", datatype);
+    final LinkedHashMap<String, ColumnDefinition> retrievedColumnDefns = jdbcDatabase.executeMetadataQuery(dbMetadata -> {
+
+      // TODO: normalize namespace and finalName strings to quoted-lowercase (as needed. Snowflake
+      // requires uppercase)
+      final LinkedHashMap<String, ColumnDefinition> columnDefinitions = new LinkedHashMap<>();
+      LOGGER.info("Retrieving existing columns for {}.{}.{}", databaseName, schemaName, tableName);
+      try (final ResultSet columns = dbMetadata.getColumns(databaseName, schemaName, tableName, null)) {
+        while (columns.next()) {
+          final String columnName = columns.getString("COLUMN_NAME");
+          final String typeName = columns.getString("TYPE_NAME");
+          final int columnSize = columns.getInt("COLUMN_SIZE");
+          final int datatype = columns.getInt("DATA_TYPE");
+          SQLType sqlType;
+          try {
+            sqlType = JDBCType.valueOf(datatype);
+          } catch (final IllegalArgumentException e) {
+            // Unknown jdbcType convert to customSqlType
+            LOGGER.warn("Unrecognized JDBCType {}; falling back to UNKNOWN", datatype, e);
+            sqlType = new CustomSqlType("Unknown", "Unknown", datatype);
+          }
+          columnDefinitions.put(columnName, new ColumnDefinition(columnName, typeName, sqlType, columnSize));
         }
-        columnDefinitions.put(columnName, new ColumnDefinition(columnName, typeName, sqlType, columnSize));
+      } catch (final SQLException e) {
+        LOGGER.error("Failed to retrieve column info for {}.{}.{}", databaseName, schemaName, tableName, e);
+        throw new SQLRuntimeException(e);
       }
-    }
+      return columnDefinitions;
+    });
     // Guard to fail fast
-    if (columnDefinitions.isEmpty()) {
+    if (retrievedColumnDefns.isEmpty()) {
       return Optional.empty();
     }
 
-    return Optional.of(new TableDefinition(columnDefinitions));
+    return Optional.of(new TableDefinition(retrievedColumnDefns));
   }
 
 }

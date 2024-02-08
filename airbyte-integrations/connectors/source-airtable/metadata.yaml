@@ -18,6 +18,10 @@ data:
   icon: airtable.svg
   license: MIT
   name: Airtable
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-airtable
   registries:
     cloud:
       enabled: true

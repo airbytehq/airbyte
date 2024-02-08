@@ -8,6 +8,10 @@ data:
   icon: waiteraid.svg
   license: MIT
   name: Waiteraid
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-waiteraid
   registries:
     cloud:
       enabled: false

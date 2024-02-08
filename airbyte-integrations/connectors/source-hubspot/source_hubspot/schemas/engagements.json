@@ -109,6 +109,24 @@
           "items": {
             "type": ["null", "integer"]
           }
+        },
+        "contentIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
+        },
+        "quoteIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
+        },
+        "marketingEventIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
         }
       }
     },
@@ -182,6 +200,69 @@
       "properties": {
         "body": {
           "type": ["null", "string"]
+        },
+        "meetingOutcome": {
+          "type": ["null", "string"]
+        },
+        "calendarEventHash": {
+          "type": ["null", "string"]
+        },
+        "createdFromLinkId": {
+          "type": ["null", "integer"]
+        },
+        "meetingChangeId": {
+          "type": ["null", "string"]
+        },
+        "locationType": {
+          "type": ["null", "string"]
+        },
+        "location": {
+          "type": ["null", "string"]
+        },
+        "internalMeetingNotes": {
+          "type": ["null", "string"]
+        },
+        "includeDescriptionInReminder": {
+          "type": ["null", "boolean"]
+        },
+        "iCalUid": {
+          "type": ["null", "string"]
+        },
+        "preMeetingProspectReminders": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "attendeeOwnerIds": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "guestEmails": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsBcc": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsCc": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsFrom": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsTo": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "pendingInlineImageIds": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "validationSkipped": {
+          "type": ["null", "array"],
+          "items": {}
         },
         "from": {
           "type": ["null", "object"],
@@ -283,6 +364,9 @@
         "title": {
           "type": ["null", "string"]
         },
+        "timezone": {
+          "type": ["null", "string"]
+        },
         "toNumber": {
           "type": ["null", "string"]
         },
@@ -327,6 +411,12 @@
         },
         "attachedVideoOpened": {
           "type": ["null", "boolean"]
+        },
+        "bounceErrorDetail": {
+          "type": ["null", "object"]
+        },
+        "emailSendEventId": {
+          "type": ["null", "object"]
         },
         "attachedVideoWatched": {
           "type": ["null", "boolean"]
@@ -383,6 +473,82 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "metadata_attendeeOwnerIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_calendarEventHash": {
+      "type": ["null", "string"]
+    },
+    "metadata_createdFromLinkId": {
+      "type": ["null", "integer"]
+    },
+    "metadata_meetingChangeId": {
+      "type": ["null", "string"]
+    },
+    "ownerIdsBcc": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "ownerIdsFrom": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "ownerIdsTo": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "pendingInlineImageIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "validationSkipped": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "ownerIdsCc": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "metadata_guestEmails": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_iCalUid": {
+      "type": ["null", "string"]
+    },
+    "metadata_includeDescriptionInReminder": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_internalMeetingNotes": {
+      "type": ["null", "string"]
+    },
+    "metadata_location": {
+      "type": ["null", "string"]
+    },
+    "metadata_locationType": {
+      "type": ["null", "string"]
+    },
+    "metadata_meetingOutcome": {
+      "type": ["null", "string"]
+    },
+    "metadata_timezone": {
+      "type": ["null", "string"]
+    },
+    "metadata_preMeetingProspectReminders": {
+      "type": ["null", "array"],
+      "items": {}
     },
     "metadata_body": {
       "type": ["null", "string"]
@@ -451,6 +617,36 @@
           }
         }
       }
+    },
+    "metadata_bounceErrorDetail": {
+      "type": ["null", "object"]
+    },
+    "metadata_emailSendEventId": {
+      "type": ["null", "object"]
+    },
+    "metadata_ownerIdsBcc": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_ownerIdsCc": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_ownerIdsFrom": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_ownerIdsTo": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_pendingInlineImageIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_validationSkipped": {
+      "type": ["null", "array"],
+      "items": {}
     },
     "metadata_bcc": {
       "type": ["null", "array"],

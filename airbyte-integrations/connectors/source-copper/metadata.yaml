@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - https://api.copper.com/
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-copper
   registries:
     oss:
       enabled: true

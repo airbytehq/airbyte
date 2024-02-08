@@ -8,6 +8,10 @@ data:
   icon: talkdesk-explore.svg
   license: MIT
   name: TalkDesk Explore
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-talkdesk-explore
   registries:
     cloud:
       enabled: false
