@@ -199,8 +199,10 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
       } else {
         LOGGER.error("execution failure, code {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
         String log = this.getContainer().getLogs();
+        String resolveFile = getContainer().execInContainer("sh", "-c", "cat /etc/resolv.conf").getStdout();
+
         throw new RuntimeException("error executing bootstrap command: " + cmd + ";\n output: " + exec.getStdout() + ";\n error: " + exec.getStderr()
-            + "other info: container.getjdbcurl: " + this.getContainer().getJdbcUrl() +" \nadditional logs:\n" + log);
+            + "other info: container.getjdbcurl: " + this.getContainer().getJdbcUrl() + "\n resolve file: " + resolveFile + " \nadditional logs:\n" + log);
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
