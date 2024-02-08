@@ -189,7 +189,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     }
     try {
       LOGGER.debug("executing {}", Strings.join(cmd, " "));
-      getContainer().execInContainer("sh", "-c", "ln -s /var/run/mysqld/mysqld.sock /var/lib/mysql/mysql.sock");
+      getContainer().execInContainer("sh", "-c", "ln -s /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock");
 
       final var exec = getContainer().execInContainer(cmd.toArray(new String[0]));
       if (exec.getExitCode() == 0) {
@@ -233,8 +233,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         throw new RuntimeException("error executing bootstrap command: " + cmd + ";\n output: " + exec.getStdout() + ";\n error: " + exec.getStderr()
             + "other info: container.getjdbcurl: "
             + this.getContainer().getJdbcUrl()
-            + "\n resolve file: " + resolveFile
-            + "\n etc/hosts: " + hosts
+            + "\n sql help: " + logerror
             + "\n socketFileCheck: " + socketFileCheck
             + "\n socketLibFileCheck: " + socketLibFileCheck
             + "\n configs: " + configs1 + configs2 + configs3 + configs4
