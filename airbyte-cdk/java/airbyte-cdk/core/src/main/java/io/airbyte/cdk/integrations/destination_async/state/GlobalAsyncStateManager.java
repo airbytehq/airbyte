@@ -93,7 +93,10 @@ public class GlobalAsyncStateManager {
   // This only happens once.
   private final Set<Long> aliasIds = new ConcurrentHashSet<>();
   private long retroactiveGlobalStateId = 0;
+  // All access to this field MUST be guarded by a synchronized(lock) block
   private long arrivalNumber = 0;
+
+  private final Object lock = new Object();
 
   public GlobalAsyncStateManager(final GlobalMemoryManager memoryManager) {
     this.memoryManager = memoryManager;
@@ -143,7 +146,7 @@ public class GlobalAsyncStateManager {
    * @param count to decrement.
    */
   public void decrement(final long stateId, final long count) {
-    synchronized (this) {
+    synchronized (lock) {
       log.trace("decrementing state id: {}, count: {}", stateId, count);
       stateIdToCounter.get(getStateAfterAlias(stateId)).addAndGet(-count);
     }
@@ -161,7 +164,7 @@ public class GlobalAsyncStateManager {
   public List<PartialStateWithDestinationStats> flushStates() {
     final List<PartialStateWithDestinationStats> output = new ArrayList<>();
     Long bytesFlushed = 0L;
-    synchronized (this) {
+    synchronized (lock) {
       for (final Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>> entry : descToStateIdQ.entrySet()) {
         // Remove all states with 0 counters.
         // Per-stream synchronized is required to make sure the state (at the head of the queue)
@@ -176,6 +179,7 @@ public class GlobalAsyncStateManager {
           }
 
           // technically possible this map hasn't been updated yet.
+          // This can be if you call the flush method if there are 0 records/states
           final var oldestStateCounter = stateIdToCounter.get(oldestStateId);
           if (oldestStateCounter == null) {
             break;
@@ -219,7 +223,7 @@ public class GlobalAsyncStateManager {
     if (descToStateIdQ.get(resolvedDescriptor) == null) {
       registerNewStreamDescriptor(resolvedDescriptor);
     }
-    synchronized (this) {
+    synchronized (lock) {
       final Long stateId = descToStateIdQ.get(resolvedDescriptor).peekLast();
       final var update = stateIdToCounter.get(stateId).addAndGet(increment);
       if (increment >= 0) {
@@ -268,7 +272,7 @@ public class GlobalAsyncStateManager {
     if (stateType != AirbyteStateMessage.AirbyteStateType.STREAM) {// alias old stream-level state ids to single global state id
       // upon conversion, all previous tracking data structures need to be cleared as we move
       // into the non-STREAM world for correctness.
-      synchronized (this) {
+      synchronized (lock) {
         aliasIds.addAll(descToStateIdQ.values().stream().flatMap(Collection::stream).toList());
         descToStateIdQ.clear();
         retroactiveGlobalStateId = StateIdProvider.getNextId();
@@ -305,7 +309,7 @@ public class GlobalAsyncStateManager {
    */
   private void closeState(final PartialAirbyteMessage message, final long sizeInBytes, final String defaultNamespace) {
     final StreamDescriptor resolvedDescriptor = extractStream(message, defaultNamespace).orElse(SENTINEL_GLOBAL_DESC);
-    synchronized (this) {
+    synchronized (lock) {
       log.info("State with arrival number {} received", arrivalNumber);
       stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(new StateMessageWithArrivalNumber(message, arrivalNumber), sizeInBytes));
       arrivalNumber++;
@@ -381,7 +385,7 @@ public class GlobalAsyncStateManager {
   }
 
   private void registerNewStreamDescriptor(final StreamDescriptor resolvedDescriptor) {
-    synchronized (this) {
+    synchronized (lock) {
       descToStateIdQ.put(resolvedDescriptor, new LinkedBlockingDeque<>());
     }
     registerNewStateId(resolvedDescriptor);
@@ -389,7 +393,7 @@ public class GlobalAsyncStateManager {
 
   private void registerNewStateId(final StreamDescriptor resolvedDescriptor) {
     final long stateId = StateIdProvider.getNextId();
-    synchronized (this) {
+    synchronized (lock) {
       stateIdToCounter.put(stateId, new AtomicLong(0));
       stateIdToCounterForPopulatingDestinationStats.put(stateId, new AtomicLong(0));
       descToStateIdQ.get(resolvedDescriptor).add(stateId);
