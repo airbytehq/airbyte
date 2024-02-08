@@ -23,6 +23,8 @@ import requests
 from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
@@ -979,6 +981,14 @@ class TestBasicRead(BaseTest):
         else:
             return inputs.validate_schema
 
+    @pytest.fixture(name="should_validate_stream_statuses")
+    def should_validate_stream_statuses_fixture(self, inputs: BasicReadTestConfig, is_connector_certified: bool):
+        if inputs.validate_stream_statuses is None and is_connector_certified:
+            return True
+        if not inputs.validate_stream_statuses and is_connector_certified:
+            pytest.fail("High strictness level error: validate_stream_statuses must be set to true in the basic read test configuration.")
+        return inputs.validate_stream_statuses
+
     @pytest.fixture(name="should_fail_on_extra_columns")
     def should_fail_on_extra_columns_fixture(self, inputs: BasicReadTestConfig):
         # TODO (Ella): enforce this param once all connectors are passing
@@ -1030,6 +1040,7 @@ class TestBasicRead(BaseTest):
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
+        should_validate_stream_statuses: Boolean,
         should_fail_on_extra_columns: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
@@ -1039,6 +1050,7 @@ class TestBasicRead(BaseTest):
         certified_file_based_connector: bool,
     ):
         output = await docker_runner.call_read(connector_config, configured_catalog)
+
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
         if certified_file_based_connector:
@@ -1070,6 +1082,14 @@ class TestBasicRead(BaseTest):
                 ignored_fields=ignored_fields,
                 detailed_logger=detailed_logger,
             )
+
+        if should_validate_stream_statuses:
+            all_statuses = [
+                message.trace.stream_status
+                for message in filter_output(output, Type.TRACE)
+                if message.trace.type == TraceType.STREAM_STATUS
+            ]
+            self._validate_stream_statuses(configured_catalog=configured_catalog, statuses=all_statuses)
 
     async def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
         if not inputs.expect_trace_message_on_failure:
@@ -1189,15 +1209,13 @@ class TestBasicRead(BaseTest):
         return result
 
     @pytest.fixture(name="certified_file_based_connector")
-    def is_certified_file_based_connector(self, connector_metadata: Dict[str, Any]) -> bool:
+    def is_certified_file_based_connector(self, connector_metadata: Dict[str, Any], is_connector_certified: bool) -> bool:
         metadata = connector_metadata.get("data", {})
 
         # connector subtype is specified in data.connectorSubtype field
         file_based_connector = metadata.get("connectorSubtype") == "file"
-        # a certified connector has ab_internal.ql value >= 400
-        certified_connector = metadata.get("ab_internal", {}).get("ql", 0) >= 400
 
-        return file_based_connector and certified_connector
+        return file_based_connector and is_connector_certified
 
     @staticmethod
     def _get_file_extension(file_name: str) -> str:
@@ -1237,6 +1255,29 @@ class TestBasicRead(BaseTest):
             "or add them to the `file_types -> unsupported_types` list in config."
         )
 
+    @staticmethod
+    def _validate_stream_statuses(configured_catalog: ConfiguredAirbyteCatalog, statuses: List[AirbyteStreamStatusTraceMessage]):
+        """Validate all statuses for all streams in the catalogs were emitted in correct order:
+        1. STARTED
+        2. RUNNING (can be >1)
+        3. COMPLETE
+        """
+        stream_statuses = defaultdict(list)
+        for status in statuses:
+            stream_statuses[f"{status.stream_descriptor.namespace}-{status.stream_descriptor.name}"].append(status.status)
+
+        assert set(f"{x.stream.namespace}-{x.stream.name}" for x in configured_catalog.streams) == set(
+            stream_statuses
+        ), "All stream must emit status"
+
+        for stream_name, status_list in stream_statuses.items():
+            assert (
+                len(status_list) >= 3
+            ), f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`,... `COMPLETE`"
+            assert status_list[0] == AirbyteStreamStatus.STARTED
+            assert status_list[-1] == AirbyteStreamStatus.COMPLETE
+            assert all(x == AirbyteStreamStatus.RUNNING for x in status_list[1:-1])
+
 
 @pytest.mark.default_timeout(TEN_MINUTES)
 class TestConnectorAttributes(BaseTest):
@@ -1245,13 +1286,13 @@ class TestConnectorAttributes(BaseTest):
     MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []
 
     @pytest.fixture(name="operational_certification_test")
-    async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
+    async def operational_certification_test_fixture(self, is_connector_certified: bool) -> bool:
         """
         Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
         against operational certification criteria
         """
 
-        if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+        if not is_connector_certified:
             pytest.skip("Skipping operational connector certification test for uncertified connector")
         return True
 
@@ -1350,12 +1391,12 @@ class TestConnectorDocumentation(BaseTest):
     CONNECTOR_SPECIFIC_HEADINGS = "<Connector-specific features>"
 
     @pytest.fixture(name="operational_certification_test")
-    async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
+    async def operational_certification_test_fixture(self, is_connector_certified: bool) -> bool:
         """
         Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
         against operational certification criteria
         """
-        if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+        if not is_connector_certified:
             pytest.skip("Skipping testing source connector documentation due to low ql.")
         return True
 

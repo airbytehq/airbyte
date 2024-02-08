@@ -408,3 +408,8 @@ def docs_path_fixture(base_path, connector_metadata) -> Path:
 def connector_documentation_fixture(docs_path: str) -> str:
     with open(docs_path, "r") as f:
         return f.read().rstrip()
+
+
+@pytest.fixture(name="is_connector_certified")
+def connector_certification_status_fixture(connector_metadata: dict) -> bool:
+    return connector_metadata.get("data", {}).get("ab_internal", {}).get("ql", 0) >= 400
