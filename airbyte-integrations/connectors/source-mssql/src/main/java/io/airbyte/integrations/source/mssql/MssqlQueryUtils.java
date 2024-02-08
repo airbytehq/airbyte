@@ -288,8 +288,7 @@ public class MssqlQueryUtils {
       // specific HEX value
       return String.join(", ", columnNames.stream()
           .map(
-              el -> hierarchyIdColumns.contains(el) ?
-                  String.format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
+              el -> hierarchyIdColumns.contains(el) ? String.format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
                   : getIdentifierWithQuoting(el, quoteString))
           .toList());
     } catch (final SQLException e) {
