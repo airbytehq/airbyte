@@ -84,6 +84,30 @@
           "null"
         ]
       },
+      "external_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fuel_type_id": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "fuel_type_name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "kpl": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "documents": {
         "type": "array"
       },
@@ -179,6 +203,30 @@
           },
           "void": {
             "type": "boolean"
+          },
+          "auto_voided_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "meter_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "type": "object"
@@ -195,7 +243,19 @@
           "null"
         ]
       },
+      "price_per_volume_unit": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "reference": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "region": {
         "type": [
           "string",
           "null"
@@ -207,7 +267,67 @@
           "null"
         ]
       },
+      "uk_gallons_per_hr": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "us_gallons_per_hr": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "usage_in_hr": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "usage_in_km": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "usage_in_mi": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "liters_per_hr": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "lp100k": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "mpg_uk": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "mpg_us": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "total_amount": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "total_amount_cents": {
         "type": [
           "number",
           "null"
@@ -220,6 +340,24 @@
         ]
       },
       "updated_at": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "cost_per_hr": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "cost_per_km": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "cost_per_mi": {
         "type": [
           "string",
           "null"
@@ -240,6 +378,30 @@
       "vehicle_name": {
         "type": [
           "string",
+          "null"
+        ]
+      },
+      "vehicle": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "vendor_id": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "vendor": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "watchers_count": {
+        "type": [
+          "number",
           "null"
         ]
       }

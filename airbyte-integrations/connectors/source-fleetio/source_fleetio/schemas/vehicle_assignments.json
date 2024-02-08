@@ -4,6 +4,18 @@
       "attachment_permissions": {
         "type": "object"
       },
+      "contact": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "vehicle": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
       "comments": {
         "items": {
           "properties": {
@@ -102,6 +114,18 @@
           "null"
         ]
       },
+      "started_at": {
+        "type": [
+          "string",
+           "null"
+        ]
+      },
+      "ended_at": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "contact_image_url": {
         "type": [
           "string",
@@ -151,6 +175,20 @@
       },
       "future": {
         "type": "boolean"
+      },
+      "starting_meter_entry_value": {
+        "type": [
+          "number",
+          "string",
+           "null"
+        ]
+      },
+      "ending_meter_entry_value": {
+        "type": [
+          "number",
+          "string",
+          "null"
+        ]
       },
       "id": {
         "type": [

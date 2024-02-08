@@ -6,22 +6,110 @@
         "type": "object"
       },
       "auto_integrate_repair_order_status_color": {
-        "type": ["string", "null"]
+        "type": "string"
+      },
+      "auto_integrate_repair_order_status": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "invoice": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "warranty_credits_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
+      "warranty_credits_percentage": {
+        "type": [
+          "number",
+          "string",
+          "null"
+        ]
+      },
+      "warranty_credits_type": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "labor_subtotal_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
+      "parts_subtotal_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
+      "subtotal_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
+      "discout_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
+      "tax_1_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
+      "tax_2_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
+      "total_amount_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
+      "warrant_credits_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
       },
       "comments": {
         "items": {
           "properties": {
             "comment": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "commentable_id": {
-              "type": ["number", "null"]
+              "type": "number"
             },
             "commentable_type": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "created_at": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "id": {
               "type": "number"
@@ -36,7 +124,7 @@
               "type": "string"
             },
             "user_full_name": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "user_id": {
               "type": [
@@ -59,36 +147,36 @@
         "type": "array"
       },
       "comments_count": {
-        "type": ["number", "null"]
+        "type": "number"
       },
       "completed_at": {
-        "type": ["string", "null"]
+        "type": "string"
       },
       "created_at": {
-        "type": ["string", "null"]
+        "type": "string"
       },
       "custom_fields": {
         "properties": {
           "datum": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "id_number": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "position": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "service_type": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "test_restricted_custom_fields": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "this": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "true_or_false": {
-            "type": ["string", "null"]
+            "type": "string"
           }
         },
         "type": "object"
@@ -105,41 +193,55 @@
       "discount_percentage": {
         "type": [
           "null",
-          "number"
+          "number",
+          "string"
+        ]
+      },
+      "fees_cents": {
+        "type": [
+          "number",
+          "null"
         ]
       },
       "discount_type": {
         "type": "string"
       },
+      "discount_cents": {
+        "type": [
+          "number",
+          "string",
+          "null"
+        ]
+      },
       "documents": {
         "items": {
           "properties": {
             "created_at": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "documentable_id": {
-              "type": ["number", "null"]
+              "type": "number"
             },
             "documentable_type": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "file_mime_type": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "file_name": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "file_size": {
-              "type": ["number", "null"]
+              "type": "number"
             },
             "file_url": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "full_file_url": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "id": {
-              "type": ["number", "null"]
+              "type": "number"
             },
             "updated_at": {
               "type": "string"
@@ -165,13 +267,13 @@
         "items": {
           "properties": {
             "created_at": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "file_mime_type": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "file_name": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "file_size": {
               "type": [
@@ -180,19 +282,19 @@
               ]
             },
             "file_url": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "full_url": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "id": {
               "type": "number"
             },
             "imageable_id": {
-              "type": ["number", "null"]
+              "type": "number"
             },
             "imageable_type": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "updated_at": {
               "type": "string"
@@ -236,7 +338,7 @@
                     ]
                   },
                   "comments_count": {
-                    "type": ["number", "null"]
+                    "type": "number"
                   },
                   "country": {
                     "type": [
@@ -250,28 +352,28 @@
                   "custom_fields": {
                     "properties": {
                       "birthday": {
-                        "type": ["string", "null"]
+                        "type": "string"
                       },
                       "certification": {
-                        "type": ["string", "null"]
+                        "type": "string"
                       },
                       "checkbox": {
-                        "type": ["string", "null"]
+                        "type": "string"
                       },
                       "dropdown": {
-                        "type": ["string", "null"]
+                        "type": "string"
                       },
                       "out_of_network_mechanic": {
-                        "type": ["string", "null"]
+                        "type": "string"
                       },
                       "pronouns": {
-                        "type": ["string", "null"]
+                        "type": "string"
                       },
                       "t-shirt_size": {
-                        "type": ["string", "null"]
+                        "type": "string"
                       },
                       "test_restricted_custom_fields": {
-                        "type": ["string", "null"]
+                        "type": "string"
                       }
                     },
                     "type": "object"
@@ -810,6 +912,12 @@
               },
               "type": "array"
             },
+            "auto_integration_repair_order_status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "linked_work_orders": {
               "items": {
                 "properties": {
@@ -1262,6 +1370,18 @@
                 },
                 "void": {
                   "type": "boolean"
+                },
+                "category": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "type": "object"
@@ -1385,6 +1505,12 @@
           "number"
         ]
       },
+      "primary_meter_entry":{
+        "type": [
+          "object",
+          "null"
+        ]
+      },
       "meter_entry": {
         "properties": {
           "auto_voided_at": {
@@ -1472,6 +1598,18 @@
           },
           "void": {
             "type": "boolean"
+          },
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "type": "object"
@@ -3305,7 +3443,8 @@
       "tax_1_percentage": {
         "type": [
           "null",
-          "number"
+          "number",
+          "string"
         ]
       },
       "tax_1_type": {
@@ -3323,7 +3462,8 @@
       "tax_2_percentage": {
         "type": [
           "null",
-          "number"
+          "number",
+          "string"
         ]
       },
       "tax_2_type": {
@@ -3347,6 +3487,12 @@
       "vehicle_name": {
         "type": "string"
       },
+      "vehicle": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
       "vendor_id": {
         "type": [
           "null",
@@ -3357,6 +3503,12 @@
         "type": [
           "null",
           "string"
+        ]
+      },
+      "vendor": {
+        "type": [
+          "object",
+          "null"
         ]
       },
       "vmrs_repair_priority_class": {

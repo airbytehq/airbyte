@@ -87,6 +87,12 @@
           "null"
         ]
       },
+      "middle_name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "group_id": {
         "type": [
           "number",
@@ -94,6 +100,12 @@
         ]
       },
       "group_name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "group_hierarchy": {
         "type": [
           "string",
           "null"
@@ -129,6 +141,144 @@
       "vehicle_operator": {
         "type": [
           "boolean",
+          "null"
+        ]
+      },
+      "birth_date": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "street_address": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "street_address_line_2": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "city": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "country": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "employee_number": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "home_phone_number": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "job_title": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "leave_date": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "license_class": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "license_plate": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "license_number": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "license_state": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "mobile_phone_number": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "other_phone_number": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "postal_code": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "region": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "start_date": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "work_phone_number": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "hourly_labor_rate_cents": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "attachment_permissions": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "default_image_url": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "account_membership_id": {
+        "type": [
+          "number",
           "null"
         ]
       }

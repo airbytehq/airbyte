@@ -13,6 +13,12 @@
       "asset_type": {
         "type": "string"
       },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "closed_at": {
         "type": [
           "null",
@@ -77,6 +83,31 @@
       "due_secondary_meter_value": {
         "type": [
           "null",
+          "number",
+          "string"
+        ]
+      },
+      "equipment": {
+        "type": [
+          "null",
+          "object"
+        ]
+      },
+      "attachment_permissions": {
+        "type": [
+          "null",
+          "object"
+        ]
+      },
+      "external_id": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "fault_id": {
+        "type": [
+          "null",
           "number"
         ]
       },
@@ -106,7 +137,8 @@
       "number": {
         "type": [
           "number",
-          "null"
+          "null",
+          "string"
         ]
       },
       "reported_at": {
@@ -116,10 +148,40 @@
         "properties": {
           "id": {
             "type": "number"
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "default_image_url": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "type": [
           "object",
+          "null"
+        ]
+      },
+      "due_primary_meter_value": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "overdue": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "resolvable_id": {
+        "type": [
+          "number",
           "null"
         ]
       },
@@ -152,6 +214,12 @@
       "state": {
         "type": "string"
       },
+      "submitted_inspection_form_id": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
       "submitted_inspection_form": {
         "properties": {
           "id": {
@@ -167,6 +235,12 @@
         "type": [
           "string",
           "null"
+        ]
+      },
+      "vehicle": {
+        "type": [
+          "null",
+          "object"
         ]
       },
       "updated_at": {

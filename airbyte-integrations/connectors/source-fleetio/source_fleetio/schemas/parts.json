@@ -80,7 +80,7 @@
               ]
             },
             "with_mentions": {
-              "type": ["boolean", "null"]
+              "type": "boolean"
             }
           },
           "type": "object"
@@ -150,10 +150,10 @@
               "type": "number"
             },
             "documentable_type": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "file_mime_type": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "file_name": {
               "type": ["string", "null"]
@@ -162,10 +162,10 @@
               "type": ["number", "null"]
             },
             "file_url": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "full_file_url": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "id": {
               "type": "number"
@@ -201,8 +201,7 @@
             },
             "file_mime_type": {
               "type": [
-                "string",
-                "null"
+                "string"
               ]
             },
             "file_name": {
@@ -215,19 +214,19 @@
               "type": ["number", "null"]
             },
             "file_url": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "full_url": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "id": {
               "type": "number"
             },
             "imageable_id": {
-              "type": ["number", "null"]
+              "type": "number"
             },
             "imageable_type": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "updated_at": {
               "type": [
@@ -247,7 +246,7 @@
         ]
       },
       "inventory_item": {
-        "type": ["boolean", "null"]
+        "type": "boolean"
       },
       "manufacturer_part_number": {
         "type": [
@@ -277,9 +276,52 @@
           },
           "tire_category": {
             "type": ["boolean", "null"]
+          },
+          "account_id": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "default": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tires_count": {
+            "type": [
+              "string",
+              "number",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
-        "type": "object"
+        "type": ["object", "null"]
       },
       "part_category_id": {
         "type": [
@@ -291,6 +333,12 @@
         "type": [
           "null",
           "string"
+        ]
+      },
+      "part_manufacturer": {
+        "type": [
+          "object",
+          "null"
         ]
       },
       "part_locations": {
@@ -412,10 +460,30 @@
           "number"
         ]
       },
+      "unit_cost_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
+      "average_unit_cost_cents": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
       "upc": {
         "type": [
           "null",
           "string"
+        ]
+      },
+      "archived_at": {
+        "type": [
+          "string",
+          "null"
         ]
       },
       "updated_at": {

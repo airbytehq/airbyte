@@ -106,28 +106,28 @@
         "items": {
           "properties": {
             "created_at": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "id": {
-              "type": ["number", "null"]
+              "type": "number"
             },
             "part_id": {
-              "type": ["number", "null"]
+              "type": "number"
             },
             "part_number": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "quantity": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "subtotal": {
-              "type": ["number", "null"]
+              "type": "number"
             },
             "total_quantity_received": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "unit_cost": {
-              "type": ["number", "null"]
+              "type": "number"
             },
             "updated_at": {
               "type": "string"
@@ -164,6 +164,7 @@
       "tax_1_percentage": {
         "type": [
           "number",
+          "string",
           "null"
         ]
       },
@@ -182,6 +183,7 @@
       "tax_2_percentage": {
         "type": [
           "number",
+          "string",
           "null"
         ]
       },
@@ -192,6 +194,157 @@
         ]
       },
       "total_amount": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "watchers_count": {
+        "type": [
+          "number",
+          "string",
+          "null"
+        ]
+      },
+      "status_name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "status_color": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "submitted_for_approval_at": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "rejected_at": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "purchased_at": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "received_partial_at": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "received_full_at": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "closed_at": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "discount_cents": {
+        "type": [
+          "number",
+          "string",
+          "null"
+        ]
+      },
+      "tax_1_cents": {
+        "type": [
+          "number",
+          "string",
+          "null"
+        ]
+      },
+      "tax_2_cents": {
+        "type": [
+          "number",
+          "string",
+          "null"
+        ]
+      },
+      "subtotal_cents": {
+        "type": [
+          "number",
+          "string",
+          "null"
+        ]
+      },
+      "shipping_cents": {
+        "type": [
+          "number",
+          "string",
+          "null"
+        ]
+      },
+      "total_amount_cents": {
+        "type": [
+          "number",
+          "string",
+          "null"
+        ]
+      },
+      "approved_by_id": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "created_by_id": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "closed_by_id": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "purchased_by_id": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "rejected_by_id": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "received_partial_by_id": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "received_full_by_id": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "purchase_order_status_id": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "submitted_for_approval_by_id": {
         "type": [
           "number",
           "null"
@@ -209,6 +362,18 @@
       "vendor_name": {
         "type": [
           "string",
+          "null"
+        ]
+      },
+      "vendor": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "labels": {
+        "type": [
+          "array",
           "null"
         ]
       }

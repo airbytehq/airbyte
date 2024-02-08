@@ -29,8 +29,9 @@ streams:
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          X-Api-Version: '2024-01-01'
-          X-Client-Name: fleetio_airbyte
+          X-Api-Version: '2024-03-15'
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
         request_body_json: {}
         request_parameters: {}
       record_selector:
@@ -40,7 +41,8 @@ streams:
           field_path:
             - records
       partition_router: []
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/submitted_inspection_forms.json"
@@ -52,31 +54,36 @@ streams:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
-          field_name: page
+          field_name: start_cursor
           inject_into: request_parameter
         pagination_strategy:
-          type: PageIncrement
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       requester:
         path: /v2/issues
         type: HttpRequester
-        url_base: https://demo.fleetio.com/api/
+        url_base: https://secure.fleetio.com/api/
         http_method: GET
         authenticator:
           type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          X-Client-Name: fleetio_airbyte
+          X-Api-Version: '2024-03-15'
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters:
-          q[s]: updated_at+asc
+        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
+          field_path:
+            - records
       partition_router: []
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/issues.json" 
@@ -88,31 +95,36 @@ streams:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
-          field_name: page
+          field_name: start_cursor
           inject_into: request_parameter
         pagination_strategy:
-          type: PageIncrement
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       requester:
         path: /v2/service_entries
         type: HttpRequester
-        url_base: https://demo.fleetio.com/api/
+        url_base: https://secure.fleetio.com/api/
         http_method: GET
         authenticator:
           type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          X-Client-Name: fleetio_airbyte
+          X-Api-Version: '2024-03-15'
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters:
-          q[s]: updated_at+asc
+        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
+          field_path:
+            - records
       partition_router: []
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/service_entries.json" 
@@ -133,15 +145,16 @@ streams:
       requester:
         path: /v1/vehicles
         type: HttpRequester
-        url_base: https://demo.fleetio.com/api/
+        url_base: https://secure.fleetio.com/api/
         http_method: GET
         authenticator:
           type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          X-Api-Version: '2024-01-01'
-          X-Client-Name: fleetio_airbyte
+          X-Api-Version: '2024-03-15'
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
         request_body_json: {}
         request_parameters: {}
       record_selector:
@@ -151,7 +164,11 @@ streams:
           field_path:
             - records
       partition_router: []
-    primary_key: []
+    primary_key:
+      - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/vehicles.json"
   - name: expense_entries
     type: DeclarativeStream
     retriever:
@@ -160,31 +177,36 @@ streams:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
-          field_name: page
+          field_name: start_cursor
           inject_into: request_parameter
         pagination_strategy:
-          type: PageIncrement
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       requester:
         path: /v1/expense_entries
         type: HttpRequester
-        url_base: https://demo.fleetio.com/api/
+        url_base: https://secure.fleetio.com/api/
         http_method: GET
         authenticator:
           type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          X-Client-Name: fleetio_airbyte
+          X-Api-Version: '2024-03-15'
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters:
-          q[s]: updated_at+asc
+        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
+          field_path:
+            - records
       partition_router: []
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/expense_entries.json"
@@ -205,15 +227,16 @@ streams:
       requester:
         path: /v2/contacts
         type: HttpRequester
-        url_base: https://demo.fleetio.com/api/
+        url_base: https://secure.fleetio.com/api/
         http_method: GET
         authenticator:
           type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          X-Api-Version: '2024-01-01'
-          X-Client-Name: fleetio_airbyte
+          X-Api-Version: '2024-03-15'
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
         request_body_json: {}
         request_parameters: {}
       record_selector:
@@ -223,7 +246,8 @@ streams:
           field_path:
             - records
       partition_router: []
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/contacts.json" 
@@ -235,31 +259,36 @@ streams:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
-          field_name: page
+          field_name: start_cursor
           inject_into: request_parameter
         pagination_strategy:
-          type: PageIncrement
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       requester:
         path: /v1/fuel_entries
         type: HttpRequester
-        url_base: https://demo.fleetio.com/api/
+        url_base: https://secure.fleetio.com/api/
         http_method: GET
         authenticator:
           type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          X-Client-Name: fleetio_airbyte
+          X-Api-Version: '2024-03-15'
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters:
-          q[s]: updated_at+asc
+        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
+          field_path:
+            - records
       partition_router: []
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/fuel_entries.json"
@@ -271,31 +300,36 @@ streams:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
-          field_name: page
+          field_name: start_cursor
           inject_into: request_parameter
         pagination_strategy:
-          type: PageIncrement
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       requester:
         path: /v1/parts
         type: HttpRequester
-        url_base: https://demo.fleetio.com/api/
+        url_base: https://secure.fleetio.com/api/
         http_method: GET
         authenticator:
           type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          X-Client-Name: fleetio_airbyte
+          X-Api-Version: '2024-03-15'
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters:
-          q[s]: updated_at+asc
+        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
+          field_path:
+            - records
       partition_router: []
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/parts.json"
@@ -307,31 +341,36 @@ streams:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
-          field_name: page
+          field_name: start_cursor
           inject_into: request_parameter
         pagination_strategy:
-          type: PageIncrement
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       requester:
         path: /v1/purchase_orders
         type: HttpRequester
-        url_base: https://demo.fleetio.com/api/
+        url_base: https://secure.fleetio.com/api/
         http_method: GET
         authenticator:
           type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          X-Client-Name: fleetio_airbyte
+          X-Api-Version: '2024-03-15'
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters:
-          q[s]: updated_at+asc
+        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
+          field_path:
+            - records
       partition_router: []
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/purchase_orders.json"
@@ -352,15 +391,16 @@ streams:
       requester:
         path: /v1/vehicle_assignments
         type: HttpRequester
-        url_base: https://demo.fleetio.com/api/
+        url_base: https://secure.fleetio.com/api/
         http_method: GET
         authenticator:
           type: NoAuth
         request_headers:
           Account-Token: '{{ config[''account_token''] }}'
           Authorization: Token {{ config['api_token'] }}
-          X-Api-Version: '2024-01-01'
-          X-Client-Name: fleetio_airbyte
+          X-Api-Version: '2024-03-15'
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
         request_body_json: {}
         request_parameters: {}
       record_selector:
@@ -370,7 +410,8 @@ streams:
           field_path:
             - records
       partition_router: []
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: JsonSchema
       file_path: "./source_fleetio/schemas/vehicle_assignments.json"

@@ -4,6 +4,24 @@
     "account_id": {
       "type": "number"
     },
+    "archived_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fuel_type_id": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "fuel_type_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "ai_enabled": {
       "type": "boolean"
     },
@@ -32,6 +50,12 @@
       "type": [
         "null",
         "string"
+      ]
+    },
+    "external_ids": {
+      "type": [
+        "object",
+        "null"
       ]
     },
     "documents_count": {
@@ -157,6 +181,18 @@
         "string"
       ]
     },
+    "secondary_meter_unit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "secondary_meter_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "primary_meter_value": {
       "type": "string"
     },
@@ -187,26 +223,32 @@
         "string"
       ]
     },
+    "registration_state": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "updated_at": {
       "type": "string"
     },
     "vehicle_renewal_reminders_count": {
-      "type": ["number", "null"]
+      "type": "number"
     },
     "vehicle_status_color": {
       "type": ["string", "null"]
     },
     "vehicle_status_id": {
-      "type": ["number", "null"]
+      "type": "number"
     },
     "vehicle_status_name": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "vehicle_type_id": {
-      "type": ["number", "null"]
+      "type": "number"
     },
     "vehicle_type_name": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "vin": {
       "type": [

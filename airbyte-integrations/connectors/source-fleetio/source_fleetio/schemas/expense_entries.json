@@ -90,6 +90,12 @@
           "null"
         ]
       },
+      "total_amount_cents": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
       "updated_at": {
         "type": "string"
       },
@@ -105,6 +111,12 @@
           "null"
         ]
       },
+      "vehicle": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
       "vendor_id": {
         "type": [
           "number",
@@ -114,6 +126,12 @@
       "vendor_name": {
         "type": [
           "string",
+          "null"
+        ]
+      },
+      "vendor": {
+        "type": [
+          "object",
           "null"
         ]
       }
