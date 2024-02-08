@@ -56,9 +56,6 @@
     "metrics.view_through_conversions": {
       "type": ["null", "number"]
     },
-    "segments.ad_network_type": {
-      "type": ["null", "string"]
-    },
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"
