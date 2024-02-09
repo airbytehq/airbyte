@@ -101,7 +101,7 @@ def get_connector_metadata(name: str) -> ConnectorMetadata:
             connector_name=name,
             context={
                 "registry_url": _get_registry_url(),
-                "available_connectors": sorted(cache.keys()),
+                "available_connectors": get_available_connectors(),
             },
         )
     return cache[name]
