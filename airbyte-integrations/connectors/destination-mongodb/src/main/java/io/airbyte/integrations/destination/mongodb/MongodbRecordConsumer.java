@@ -9,6 +9,7 @@ import static com.mongodb.client.model.Projections.excludeId;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.cdk.db.mongodb.MongoDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -18,6 +19,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
-import org.joda.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +123,7 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
       final var newDocument = new Document();
       newDocument.put(AIRBYTE_DATA, new Document(result));
       newDocument.put(AIRBYTE_DATA_HASH, newDocumentDataHashCode);
-      newDocument.put(AIRBYTE_EMITTED_AT, new LocalDateTime().toString());
+      newDocument.put(AIRBYTE_EMITTED_AT, LocalDateTime.now().toString());
 
       final var collection = writeConfig.getCollection();
 
