@@ -243,6 +243,12 @@ subprojects { subproj ->
             }
         }
 
+        // This is required by mockito, see https://github.com/mockito/mockito/issues/3037.
+        jvmArgs "-XX:+EnableDynamicAgentLoading"
+        // This is also required, to prevent stderr spam starting with
+        //   "OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader cl..."
+        jvmArgs "-Xshare:off"
+
         // Set the timezone to UTC instead of picking up the host machine's timezone,
         // which on a developer's laptop is more likely to be PST.
         systemProperty 'user.timezone', 'UTC'
