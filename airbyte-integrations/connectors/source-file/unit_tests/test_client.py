@@ -10,8 +10,8 @@ from airbyte_cdk.utils import AirbyteTracedException
 from pandas import read_csv, read_excel, testing
 from paramiko import SSHException
 from source_file.client import Client, URLFile
-from urllib3.exceptions import ProtocolError
 from source_file.utils import backoff_handler
+from urllib3.exceptions import ProtocolError
 
 
 @pytest.fixture
