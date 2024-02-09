@@ -39,9 +39,3 @@ dependencies {
     testImplementation "org.mockito:mockito-inline:4.1.0"
 
 }
-
-configurations.all {
-    resolutionStrategy {
-        force libs.jooq
-    }
-}
