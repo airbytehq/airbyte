@@ -15,6 +15,8 @@ import sqlalchemy
 import ulid
 from overrides import overrides
 from sqlalchemy import (
+    Column,
+    Table,
     and_,
     create_engine,
     insert,
@@ -29,6 +31,7 @@ from sqlalchemy.sql.elements import TextClause
 from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
+from airbyte_lib._util.text_util import lower_case_set
 from airbyte_lib.caches._catalog_manager import CatalogManager
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.datasets._sql import CachedDataset
@@ -46,6 +49,7 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.base import Executable
 
     from airbyte_protocol.models import (
+        AirbyteStateMessage,
         ConfiguredAirbyteCatalog,
     )
 
@@ -406,12 +410,19 @@ class SQLCacheBase(RecordProcessor):
         stream_column_names: list[str] = json_schema["properties"].keys()
         table_column_names: list[str] = self.get_sql_table(stream_name).columns.keys()
 
-        missing_columns: set[str] = set(stream_column_names) - set(table_column_names)
+        lower_case_table_column_names = lower_case_set(table_column_names)
+        missing_columns = [
+            stream_col
+            for stream_col in stream_column_names
+            if stream_col.lower() not in lower_case_table_column_names
+        ]
         if missing_columns:
             if raise_on_error:
                 raise exc.AirbyteLibCacheTableValidationError(
                     violation="Cache table is missing expected columns.",
                     context={
+                        "stream_column_names": stream_column_names,
+                        "table_column_names": table_column_names,
                         "missing_columns": missing_columns,
                     },
                 )
@@ -560,6 +571,36 @@ class SQLCacheBase(RecordProcessor):
 
             # Return the batch handles as measure of work completed.
             return batches_to_finalize
+
+    @overrides
+    def _finalize_state_messages(
+        self,
+        stream_name: str,
+        state_messages: list[AirbyteStateMessage],
+    ) -> None:
+        """Handle state messages by passing them to the catalog manager."""
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+        if state_messages and self._source_name:
+            self._catalog_manager.save_state(
+                source_name=self._source_name,
+                stream_name=stream_name,
+                state=state_messages[-1],
+            )
+
+    def get_state(self) -> list[dict]:
+        """Return the current state of the source."""
+        if not self._source_name:
+            return []
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+        return (
+            self._catalog_manager.get_state(self._source_name, list(self._streams_with_data)) or []
+        )
 
     def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult:
         """Execute the given SQL statement."""
@@ -800,6 +841,25 @@ class SQLCacheBase(RecordProcessor):
             """,
         )
 
+    def _get_column_by_name(self, table: str | Table, column_name: str) -> Column:
+        """Return the column object for the given column name.
+
+        This method is case-insensitive.
+        """
+        if isinstance(table, str):
+            table = self._get_table_by_name(table)
+        try:
+            # Try to get the column in a case-insensitive manner
+            return next(col for col in table.c if col.name.lower() == column_name.lower())
+        except StopIteration:
+            raise exc.AirbyteLibInternalError(
+                message="Could not find matching column.",
+                context={
+                    "table": table,
+                    "column_name": column_name,
+                },
+            ) from None
+
     def _emulated_merge_temp_table_to_final_table(
         self,
         stream_name: str,
@@ -820,13 +880,16 @@ class SQLCacheBase(RecordProcessor):
 
         # Create a dictionary mapping columns in users_final to users_stage for updating
         update_values = {
-            getattr(final_table.c, column): getattr(temp_table.c, column)
+            self._get_column_by_name(final_table, column): (
+                self._get_column_by_name(temp_table, column)
+            )
             for column in columns_to_update
         }
 
         # Craft the WHERE clause for composite primary keys
         join_conditions = [
-            getattr(final_table.c, pk_column) == getattr(temp_table.c, pk_column)
+            self._get_column_by_name(final_table, pk_column)
+            == self._get_column_by_name(temp_table, pk_column)
             for pk_column in pk_columns
         ]
         join_clause = and_(*join_conditions)
@@ -839,7 +902,7 @@ class SQLCacheBase(RecordProcessor):
 
         # Define a condition that checks for records in temp_table that do not have a corresponding
         # record in final_table
-        where_not_exists_clause = final_table.c.id == null()
+        where_not_exists_clause = self._get_column_by_name(final_table, pk_columns[0]) == null()
 
         # Select records from temp_table that are not in final_table
         select_new_records_stmt = (
@@ -881,6 +944,7 @@ class SQLCacheBase(RecordProcessor):
 
         This method is called by the source when it is initialized.
         """
+        self._source_name = source_name
         self._ensure_schema_exists()
         super().register_source(
             source_name,

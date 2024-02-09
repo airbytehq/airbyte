@@ -186,8 +186,38 @@ In addition to the changes which apply for all destinations described above, the
 
 ### BigQuery
 
-1. [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns. Previously, we had used TEXT, which made querying sub-properties more difficult.
-   - In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a _quirk_ of Bigquery. Learn more [here](https://github.com/airbytehq/airbyte/issues/29594).
+#### [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns
+Previously, we had used TEXT, which made querying sub-properties more difficult.
+In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a _quirk_ of Bigquery. Learn more [here](https://github.com/airbytehq/airbyte/issues/29594).
+
+### Snowflake
+
+#### Explicitly uppercase column names in Final Tables
+Snowflake will implicitly uppercase column names if they are not quoted. Airbyte needs to quote the column names because a variety of sources have column/field names which contain special characters that require quoting in Snowflake.
+However, when you quote a column name in Snowflake, it also preserves lowercase naming. During the Snowflake V2 beta, most customers found this behavior unexpected and expected column selection to be case-insensitive for columns without special characters.
+As a result of this feedback, we decided to explicitly uppercase column names in the final tables, which does mean that columns which previous required quoting, now also require you to convert to the upper case version.
+
+For example:
+
+```sql
+-- Snowflake will implicitly uppercase column names which are not quoted
+-- These three queries are equivalent
+SELECT my_column from my_table;
+SELECT MY_COLUMN from MY_TABLE;
+SELECT "MY_COLUMN" from MY_TABLE;
+
+-- However, this query is different, and requires a lowercase column name
+SELECT "my_column" from my_table;
+
+-- Because we are explicitly upper-casing column names, column names containing special characters (like a space)
+-- should now also be uppercase
+
+-- Before v2
+SELECT "my column" from my_table;
+-- After v2
+SELECT "MY COLUMN" from my_table;
+```
+
 
 ## Updating Downstream Transformations
 

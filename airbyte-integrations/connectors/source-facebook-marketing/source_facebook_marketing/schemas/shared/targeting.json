@@ -94,6 +94,15 @@
   },
   "type": ["null", "object"],
   "properties": {
+    "brand_safety_content_filter_levels": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "targeting_relaxation_types": {
+      "type": ["null", "object"]
+    },
     "messenger_positions": {
       "type": ["null", "array"],
       "items": {
