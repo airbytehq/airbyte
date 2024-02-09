@@ -8,6 +8,10 @@ data:
   icon: k6cloud.svg
   license: MIT
   name: K6 Cloud
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-k6-cloud
   registries:
     cloud:
       enabled: true

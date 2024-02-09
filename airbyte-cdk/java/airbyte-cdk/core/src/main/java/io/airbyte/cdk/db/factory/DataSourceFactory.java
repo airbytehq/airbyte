@@ -4,17 +4,12 @@
 
 package io.airbyte.cdk.db.factory;
 
-import static org.postgresql.PGProperty.CONNECT_TIMEOUT;
-
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.Closeable;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Map;
-import java.util.Optional;
 import javax.sql.DataSource;
 
 /**
@@ -37,11 +32,7 @@ public class DataSourceFactory {
                                   final String password,
                                   final String driverClassName,
                                   final String jdbcConnectionString) {
-    return new DataSourceBuilder()
-        .withDriverClassName(driverClassName)
-        .withJdbcUrl(jdbcConnectionString)
-        .withPassword(password)
-        .withUsername(username)
+    return new DataSourceBuilder(username, password, driverClassName, jdbcConnectionString)
         .build();
   }
 
@@ -59,14 +50,11 @@ public class DataSourceFactory {
                                   final String password,
                                   final String driverClassName,
                                   final String jdbcConnectionString,
-                                  final Map<String, String> connectionProperties) {
-    return new DataSourceBuilder()
+                                  final Map<String, String> connectionProperties,
+                                  final Duration connectionTimeout) {
+    return new DataSourceBuilder(username, password, driverClassName, jdbcConnectionString)
         .withConnectionProperties(connectionProperties)
-        .withDriverClassName(driverClassName)
-        .withJdbcUrl(jdbcConnectionString)
-        .withPassword(password)
-        .withUsername(username)
-        .withConnectionTimeoutMs(DataSourceBuilder.getConnectionTimeoutMs(connectionProperties, driverClassName))
+        .withConnectionTimeout(connectionTimeout)
         .build();
   }
 
@@ -87,13 +75,7 @@ public class DataSourceFactory {
                                   final int port,
                                   final String database,
                                   final String driverClassName) {
-    return new DataSourceBuilder()
-        .withDatabase(database)
-        .withDriverClassName(driverClassName)
-        .withHost(host)
-        .withPort(port)
-        .withPassword(password)
-        .withUsername(username)
+    return new DataSourceBuilder(username, password, driverClassName, host, port, database)
         .build();
   }
 
@@ -116,14 +98,8 @@ public class DataSourceFactory {
                                   final String database,
                                   final String driverClassName,
                                   final Map<String, String> connectionProperties) {
-    return new DataSourceBuilder()
+    return new DataSourceBuilder(username, password, driverClassName, host, port, database)
         .withConnectionProperties(connectionProperties)
-        .withDatabase(database)
-        .withDriverClassName(driverClassName)
-        .withHost(host)
-        .withPort(port)
-        .withPassword(password)
-        .withUsername(username)
         .build();
   }
 
@@ -143,13 +119,7 @@ public class DataSourceFactory {
                                           final String host,
                                           final int port,
                                           final String database) {
-    return new DataSourceBuilder()
-        .withDatabase(database)
-        .withDriverClassName("org.postgresql.Driver")
-        .withHost(host)
-        .withPort(port)
-        .withPassword(password)
-        .withUsername(username)
+    return new DataSourceBuilder(username, password, "org.postgresql.Driver", host, port, database)
         .build();
   }
 
@@ -162,7 +132,7 @@ public class DataSourceFactory {
    */
   public static void close(final DataSource dataSource) throws Exception {
     if (dataSource != null) {
-      if (dataSource instanceof AutoCloseable closeable) {
+      if (dataSource instanceof final AutoCloseable closeable) {
         closeable.close();
       }
     }
@@ -171,7 +141,7 @@ public class DataSourceFactory {
   /**
    * Builder class used to configure and construct {@link DataSource} instances.
    */
-  private static class DataSourceBuilder {
+  public static class DataSourceBuilder {
 
     private Map<String, String> connectionProperties = Map.of();
     private String database;
@@ -180,57 +150,38 @@ public class DataSourceFactory {
     private String jdbcUrl;
     private int maximumPoolSize = 10;
     private int minimumPoolSize = 0;
-    private long connectionTimeoutMs;
+    private Duration connectionTimeout = Duration.ZERO;
     private String password;
     private int port = 5432;
     private String username;
-    private static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
-    private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
+    private String connectionInitSql;
 
-    private DataSourceBuilder() {}
-
-    /**
-     * Retrieves connectionTimeout value from connection properties in millis, default minimum timeout
-     * is 60 seconds since Hikari default of 30 seconds is not enough for acceptance tests. In the case
-     * the value is 0, pass the value along as Hikari and Postgres use default max value for 0 timeout
-     * value.
-     *
-     * NOTE: HikariCP uses milliseconds for all time values:
-     * https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby whereas Postgres is
-     * measured in seconds: https://jdbc.postgresql.org/documentation/head/connect.html
-     *
-     * @param connectionProperties custom jdbc_url_parameters containing information on connection
-     *        properties
-     * @param driverClassName name of the JDBC driver
-     * @return DataSourceBuilder class used to create dynamic fields for DataSource
-     */
-    private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
-      final Optional<Duration> parsedConnectionTimeout = switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
-        case POSTGRESQL -> maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
-            .or(() -> maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS));
-        case MYSQL -> maybeParseDuration(connectionProperties.get("connectTimeout"), ChronoUnit.MILLIS);
-        case MSSQLSERVER -> maybeParseDuration(connectionProperties.get("loginTimeout"), ChronoUnit.SECONDS);
-        default -> maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
-            // Enforce minimum timeout duration for unspecified data sources.
-            .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0);
-      };
-      return parsedConnectionTimeout.orElse(CONNECT_TIMEOUT_DEFAULT).toMillis();
+    private DataSourceBuilder(final String username,
+                              final String password,
+                              final String driverClassName) {
+      this.username = username;
+      this.password = password;
+      this.driverClassName = driverClassName;
     }
 
-    private static Optional<Duration> maybeParseDuration(final String stringValue, TemporalUnit unit) {
-      if (stringValue == null) {
-        return Optional.empty();
-      }
-      final long number;
-      try {
-        number = Long.parseLong(stringValue);
-      } catch (NumberFormatException __) {
-        return Optional.empty();
-      }
-      if (number < 0) {
-        return Optional.empty();
-      }
-      return Optional.of(Duration.of(number, unit));
+    public DataSourceBuilder(final String username,
+                             final String password,
+                             final String driverClassName,
+                             final String jdbcUrl) {
+      this(username, password, driverClassName);
+      this.jdbcUrl = jdbcUrl;
+    }
+
+    public DataSourceBuilder(final String username,
+                             final String password,
+                             final String driverClassName,
+                             final String host,
+                             final int port,
+                             final String database) {
+      this(username, password, driverClassName);
+      this.host = host;
+      this.port = port;
+      this.database = database;
     }
 
     public DataSourceBuilder withConnectionProperties(final Map<String, String> connectionProperties) {
@@ -274,9 +225,9 @@ public class DataSourceFactory {
       return this;
     }
 
-    public DataSourceBuilder withConnectionTimeoutMs(final Long connectionTimeoutMs) {
-      if (connectionTimeoutMs != null) {
-        this.connectionTimeoutMs = connectionTimeoutMs;
+    public DataSourceBuilder withConnectionTimeout(final Duration connectionTimeout) {
+      if (connectionTimeout != null) {
+        this.connectionTimeout = connectionTimeout;
       }
       return this;
     }
@@ -298,6 +249,11 @@ public class DataSourceFactory {
       return this;
     }
 
+    public DataSourceBuilder withConnectionInitSql(final String sql) {
+      this.connectionInitSql = sql;
+      return this;
+    }
+
     public DataSource build() {
       final DatabaseDriver databaseDriver = DatabaseDriver.findByDriverClassName(driverClassName);
 
@@ -309,7 +265,9 @@ public class DataSourceFactory {
       config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(databaseDriver.getUrlFormatString(), host, port, database));
       config.setMaximumPoolSize(maximumPoolSize);
       config.setMinimumIdle(minimumPoolSize);
-      config.setConnectionTimeout(connectionTimeoutMs);
+      // HikariCP uses milliseconds for all time values:
+      // https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby
+      config.setConnectionTimeout(connectionTimeout.toMillis());
       config.setPassword(password);
       config.setUsername(username);
 
@@ -319,6 +277,8 @@ public class DataSourceFactory {
        * will preserve existing behavior that tests for the connection on first use, not on creation.
        */
       config.setInitializationFailTimeout(Integer.MIN_VALUE);
+
+      config.setConnectionInitSql(connectionInitSql);
 
       connectionProperties.forEach(config::addDataSourceProperty);
 

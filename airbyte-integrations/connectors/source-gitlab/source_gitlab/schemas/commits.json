@@ -37,6 +37,17 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "extended_trailers": {
+      "type": ["null", "object"],
+      "properties": {
+        "Cc": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "committer_name": {
       "type": ["null", "string"]
     },

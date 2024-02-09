@@ -41,5 +41,5 @@ COPY destination_qdrant ./destination_qdrant
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.0.9
+LABEL io.airbyte.version=0.0.10
 LABEL io.airbyte.name=airbyte/destination-qdrant

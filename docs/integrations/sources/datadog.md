@@ -24,7 +24,7 @@ An API key is required as well as an API application key. See the [Datadog API a
 10. Enter your `queries` - Optional. Multiple queries resulting in multiple streams.
     1. Enter the `name`- Optional. Query Name.
     2. Select the `data_source` from dropdown - Optional. Supported data sources - metrics, cloud_cost, logs, rum.
-    3. Enter the `query`- Optional. A classic query string. Example - _"kubernetes_state.node.count{*}"_, _"@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)"_
+    3. Enter the `query`- Optional. A classic query string. Example - `"kubernetes_state.node.count{*}"`, `"@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)"`
 11. Click **Set up source**.
 
 ### For Airbyte OSS:
@@ -40,7 +40,7 @@ An API key is required as well as an API application key. See the [Datadog API a
 10. Enter your `queries` - Optional. Multiple queries resulting in multiple streams.
     1. Enter the `name`- Required. Query Name.
     2. Select the `data_source` - Required. Supported data sources - metrics, cloud_cost, logs, rum.
-    3. Enter the `query`- Required. A classic query string. Example - _"kubernetes_state.node.count{*}"_, _"@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)"_
+    3. Enter the `query`- Required. A classic query string. Example - `"kubernetes_state.node.count{*}"`, `"@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)"`
 10. Click **Set up source**.
 
 ## Supported sync modes

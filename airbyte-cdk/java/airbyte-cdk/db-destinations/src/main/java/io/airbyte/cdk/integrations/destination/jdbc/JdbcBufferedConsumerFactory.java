@@ -214,9 +214,9 @@ public class JdbcBufferedConsumerFactory {
    * Tear down functionality
    */
   private static OnCloseFunction onCloseFunction(final TyperDeduper typerDeduper) {
-    return (hasFailed) -> {
+    return (hasFailed, streamSyncSummaries) -> {
       try {
-        typerDeduper.typeAndDedupe();
+        typerDeduper.typeAndDedupe(streamSyncSummaries);
         typerDeduper.commitFinalTables();
         typerDeduper.cleanup();
       } catch (final Exception e) {

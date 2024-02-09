@@ -13,12 +13,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
-import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -28,24 +25,17 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.sql.JDBCType;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<SnowflakeSource, SnowflakeTestDatabase> {
 
   private static JsonNode snConfig;
 
@@ -78,67 +68,73 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(true)";
   }
 
-  @BeforeEach
-  public void setup() throws Exception {
-    super.setup();
-  }
-
-  @AfterEach
-  public void clean() throws Exception {
-    super.tearDown();
-    DataSourceFactory.close(dataSource);
-  }
-
   @Override
   public boolean supportsSchemas() {
     return true;
   }
 
   @Override
-  public JsonNode getConfig() {
+  protected JsonNode config() {
     return Jsons.clone(snConfig);
   }
 
   @Override
-  public String getDriverClass() {
-    return SnowflakeSource.DRIVER_CLASS;
+  protected SnowflakeTestDatabase createTestDatabase() {
+    final SnowflakeTestDatabase snowflakeTestDatabase = new SnowflakeTestDatabase(source().toDatabaseConfig(Jsons.clone(snConfig)));
+    for (final String schemaName : TEST_SCHEMAS) {
+      snowflakeTestDatabase.onClose(DROP_SCHEMA_QUERY, schemaName);
+    }
+    return snowflakeTestDatabase.initialized();
   }
 
   @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
+  protected SnowflakeSource source() {
     return new SnowflakeSource(AIRBYTE_OSS);
   }
 
   @Test
-  void testCheckFailure() throws Exception {
+  @Override
+  protected void testCheckFailure() throws Exception {
+    final JsonNode config = config();
     ((ObjectNode) config).with("credentials").put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
+    try (SnowflakeSource source = source()) {
+      final AirbyteConnectionStatus status = source.check(config);
+      assertEquals(Status.FAILED, status.getStatus());
+      assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
+    }
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
+    final JsonNode config = config();
     ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
+    try (SnowflakeSource source = source()) {
+      final AirbyteConnectionStatus status = source.check(config);
+      assertEquals(Status.FAILED, status.getStatus());
+      assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
+    }
   }
 
   @Test
   public void testCheckEmptyUsernameFailure() throws Exception {
+    final JsonNode config = config();
     ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "");
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 28000; Error code: 200011;"));
+    try (SnowflakeSource source = source()) {
+      final AirbyteConnectionStatus status = source.check(config);
+      assertEquals(Status.FAILED, status.getStatus());
+      assertTrue(status.getMessage().contains("State code: 28000; Error code: 200011;"));
+    }
   }
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
+    final JsonNode config = config();
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("Could not connect with provided configuration"));
+    try (SnowflakeSource source = source()) {
+      final AirbyteConnectionStatus status = source.check(config);
+      assertEquals(Status.FAILED, status.getStatus());
+      assertTrue(status.getMessage().contains("Could not connect with provided configuration"));
+    }
   }
 
   @Override
@@ -172,30 +168,6 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected List<AirbyteMessage> getTestMessages() {
-    return List.of(
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_1,
-                        COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19")))),
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_2,
-                        COL_NAME, "crusher",
-                        COL_UPDATED_AT,
-                        "2005-10-19")))),
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_3,
-                        COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19")))));
-  }
-
-  @Override
   protected void incrementalDateCheck() throws Exception {
     super.incrementalCursorCheck(COL_UPDATED_AT,
         "2005-10-18",
@@ -204,73 +176,33 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             getTestMessages().get(2)));
   }
 
-  @Override
-  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
-    final List<AirbyteMessage> expectedMessages = new ArrayList<>();
-    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_4,
-                    COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19")))));
-    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_5,
-                    COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19")))));
-    final DbStreamState state = new DbStreamState()
-        .withStreamName(streamName)
-        .withStreamNamespace(namespace)
-        .withCursorField(List.of(COL_ID))
-        .withCursor("5")
-        .withCursorRecordCount(1L);
-    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
-    return expectedMessages;
-  }
-
   /* Test that schema config key is making discover pull tables of this schema only */
   @Test
   void testDiscoverSchemaConfig() throws Exception {
-    // add table and data to a separate schema.
-    database.execute(connection -> {
-      connection.createStatement().execute(
-          String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
-              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
-              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
-              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
-              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement().execute(
-          String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
-              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME, Strings.addRandomSuffix(TABLE_NAME, "_", 4))));
-    });
+    // add table to a separate schema.
+    testdb.with(String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
+        RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)))
+        .with(String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
+            RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME, Strings.addRandomSuffix(TABLE_NAME, "_", 4))));
 
+    final JsonNode config = config();
     JsonNode confWithSchema = ((ObjectNode) config).put("schema", SCHEMA_NAME);
-    AirbyteCatalog actual = source.discover(confWithSchema);
+    try (SnowflakeSource source = source()) {
+      AirbyteCatalog actual = source.discover(confWithSchema);
 
-    assertFalse(actual.getStreams().isEmpty());
+      assertFalse(actual.getStreams().isEmpty());
 
-    var streams = actual.getStreams().stream()
-        .filter(s -> !s.getNamespace().equals(SCHEMA_NAME))
-        .collect(Collectors.toList());
+      var streams = actual.getStreams().stream().filter(s -> !s.getNamespace().equals(SCHEMA_NAME)).collect(Collectors.toList());
 
-    assertTrue(streams.isEmpty());
+      assertTrue(streams.isEmpty());
 
-    confWithSchema = ((ObjectNode) config).put("schema", SCHEMA_NAME2);
-    actual = source.discover(confWithSchema);
-    assertFalse(actual.getStreams().isEmpty());
+      confWithSchema = ((ObjectNode) config).put("schema", SCHEMA_NAME2);
+      actual = source.discover(confWithSchema);
+      assertFalse(actual.getStreams().isEmpty());
 
-    streams = actual.getStreams().stream()
-        .filter(s -> !s.getNamespace().equals(SCHEMA_NAME2))
-        .collect(Collectors.toList());
-
-    assertTrue(streams.isEmpty());
+      streams = actual.getStreams().stream().filter(s -> !s.getNamespace().equals(SCHEMA_NAME2)).collect(Collectors.toList());
+      assertTrue(streams.isEmpty());
+    }
   }
 
 }

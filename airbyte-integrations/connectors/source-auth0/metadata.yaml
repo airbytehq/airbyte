@@ -17,6 +17,10 @@ data:
   icon: auth0.svg
   license: MIT
   name: Auth0
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-auth0
   registries:
     cloud:
       enabled: true
@@ -26,5 +30,5 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:lowcode
+    - language:low-code
 metadataSpecVersion: "1.0"

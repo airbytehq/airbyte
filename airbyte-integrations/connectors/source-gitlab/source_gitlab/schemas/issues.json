@@ -235,20 +235,23 @@
       }
     },
     "epic": {
-      "id": {
-        "type": ["null", "integer"]
-      },
-      "iid": {
-        "type": ["null", "integer"]
-      },
-      "title": {
-        "type": ["null", "string"]
-      },
-      "url": {
-        "type": ["null", "string"]
-      },
-      "group_id": {
-        "type": ["null", "integer"]
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "iid": {
+          "type": ["null", "integer"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "group_id": {
+          "type": ["null", "integer"]
+        }
       }
     },
     "epic_iid": {

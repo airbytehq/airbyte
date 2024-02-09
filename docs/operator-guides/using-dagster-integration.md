@@ -1,5 +1,6 @@
 ---
 description: Start triggering Airbyte jobs with Dagster in minutes
+products: oss-*
 ---
 
 # Using the Dagster Integration 
@@ -67,3 +68,7 @@ Don't be fooled by our simple example of only one Dagster Flow. Airbyte is a pow
 
 We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). We're still in alpha, so if you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
 
+## Related articles and guides
+For additional information about using Dagster and Airbyte together, see the following:
+
+- [Build an e-commerce analytics stack with Airbyte, dbt, Dagster and BigQuery](https://github.com/airbytehq/quickstarts/tree/main/ecommerce_analytics_bigquery)

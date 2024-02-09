@@ -5,6 +5,7 @@
 import logging
 from datetime import datetime
 from io import IOBase
+from os import getenv
 from typing import Iterable, List, Optional, Set
 
 import boto3.session
@@ -16,9 +17,13 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
+from botocore.credentials import RefreshableCredentials
 from botocore.exceptions import ClientError
+from botocore.session import get_session
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
+
+AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
@@ -52,13 +57,69 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             raise ValueError("Source config is missing; cannot create the S3 client.")
         if self._s3_client is None:
             client_kv_args = _get_s3_compatible_client_args(self.config) if self.config.endpoint else {}
-            self._s3_client = boto3.client(
-                "s3",
-                aws_access_key_id=self.config.aws_access_key_id,
-                aws_secret_access_key=self.config.aws_secret_access_key,
-                **client_kv_args,
-            )
+
+            # Set the region_name if it's provided in the config
+            if self.config.region_name:
+                client_kv_args["region_name"] = self.config.region_name
+
+            if self.config.role_arn:
+                self._s3_client = self._get_iam_s3_client(client_kv_args)
+            else:
+                self._s3_client = boto3.client(
+                    "s3",
+                    aws_access_key_id=self.config.aws_access_key_id,
+                    aws_secret_access_key=self.config.aws_secret_access_key,
+                    **client_kv_args,
+                )
+
         return self._s3_client
+
+    def _get_iam_s3_client(self, client_kv_args: dict) -> BaseClient:
+        """
+        Creates an S3 client using AWS Security Token Service (STS) with assumed role credentials. This method handles
+        the authentication process by assuming an IAM role, optionally using an external ID for enhanced security.
+        The obtained credentials are set to auto-refresh upon expiration, ensuring uninterrupted access to the S3 service.
+
+        :param client_kv_args: A dictionary of key-value pairs for the boto3 S3 client constructor.
+        :return: An instance of a boto3 S3 client with the assumed role credentials.
+
+        The method assumes a role specified in the `self.config.role_arn` and creates a session with the S3 service.
+        If `AWS_ASSUME_ROLE_EXTERNAL_ID` environment variable is set, it will be used during the role assumption for additional security.
+        """
+
+        def refresh():
+            client = boto3.client("sts")
+            if AWS_EXTERNAL_ID:
+                role = client.assume_role(
+                    RoleArn=self.config.role_arn,
+                    RoleSessionName="airbyte-source-s3",
+                    ExternalId=AWS_EXTERNAL_ID,
+                )
+            else:
+                role = client.assume_role(
+                    RoleArn=self.config.role_arn,
+                    RoleSessionName="airbyte-source-s3",
+                )
+
+            creds = role.get("Credentials", {})
+            return {
+                "access_key": creds["AccessKeyId"],
+                "secret_key": creds["SecretAccessKey"],
+                "token": creds["SessionToken"],
+                "expiry_time": creds["Expiration"].isoformat(),
+            }
+
+        session_credentials = RefreshableCredentials.create_from_metadata(
+            metadata=refresh(),
+            refresh_using=refresh,
+            method="sts-assume-role",
+        )
+
+        session = get_session()
+        session._credentials = session_credentials
+        autorefresh_session = boto3.Session(botocore_session=session)
+
+        return autorefresh_session.client("s3", **client_kv_args)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """

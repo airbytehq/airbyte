@@ -1,5 +1,3 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
 from airbyte_cdk.sources.file_based.schema_validation_policies.abstract_schema_validation_policy import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.schema_validation_policies.default_schema_validation_policies import (
     DEFAULT_SCHEMA_VALIDATION_POLICIES,

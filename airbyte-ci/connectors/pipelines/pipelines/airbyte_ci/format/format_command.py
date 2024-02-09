@@ -3,11 +3,9 @@
 #
 from __future__ import annotations
 
-import io
 import logging
 import sys
-import tempfile
-from typing import Any, Callable, List, Tuple
+from typing import Callable, List, Tuple
 
 import asyncclick as click
 import dagger
@@ -15,6 +13,7 @@ from pipelines import main_logger
 from pipelines.airbyte_ci.format.actions import list_files_in_directory
 from pipelines.airbyte_ci.format.configuration import Formatter
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS
+from pipelines.consts import GIT_IMAGE
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.cli import LogOptions, log_command_results
 from pipelines.helpers.utils import sh_dash_c
@@ -35,10 +34,8 @@ class FormatCommand(click.Command):
         get_format_container_fn: Callable,
         format_commands: List[str],
         export_formatted_code: bool,
-        *args,
         enable_logging: bool = True,
         exit_on_failure: bool = True,
-        **kwargs,
     ) -> None:
         """Initialize a FormatCommand.
 
@@ -51,7 +48,7 @@ class FormatCommand(click.Command):
             enable_logging (bool, optional): Make the command log its output. Defaults to True.
             exit_on_failure (bool, optional): Exit the process with status code 1 if the command fails. Defaults to True.
         """
-        super().__init__(formatter.value, *args, **kwargs)
+        super().__init__(formatter.value)
         self.formatter = formatter
         self.file_filter = file_filter
         self.get_format_container_fn = get_format_container_fn
@@ -76,19 +73,41 @@ class FormatCommand(click.Command):
         return message
 
     def get_dir_to_format(self, dagger_client: dagger.Client) -> dagger.Directory:
-        """Get the directory to format according to the file_filter.
+        """Get a directory with all the source code to format according to the file_filter.
+        We mount the files to format in a git container and remove all gitignored files.
+        It ensures we're not formatting files that are gitignored.
 
         Args:
-            dagger_client (dagger.Client): The dagger client to use to get the directory
+            dagger_client (dagger.Client): The dagger client to use to get the directory.
 
         Returns:
-            dagger.Directory: The directory to format
+            Directory: The directory with the files to format that are not gitignored.
         """
-        return dagger_client.host().directory(self.LOCAL_REPO_PATH, include=self.file_filter, exclude=DEFAULT_FORMAT_IGNORE_LIST)
+        # Load a directory from the host with all the files to format according to the file_filter and the .gitignore files
+        dir_to_format = dagger_client.host().directory(
+            self.LOCAL_REPO_PATH, include=self.file_filter + ["**/.gitignore"], exclude=DEFAULT_FORMAT_IGNORE_LIST
+        )
+
+        return (
+            dagger_client.container()
+            .from_(GIT_IMAGE)
+            .with_workdir(REPO_MOUNT_PATH)
+            .with_mounted_directory(REPO_MOUNT_PATH, dir_to_format)
+            # All with_exec commands below will re-run if the to_format directory changes
+            .with_exec(["init"])
+            # Remove all gitignored files
+            .with_exec(["clean", "-dfqX"])
+            # Delete all .gitignore files
+            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']), skip_entrypoint=True)
+            # Delete .git
+            .with_exec(["rm", "-rf", ".git"], skip_entrypoint=True)
+            .directory(REPO_MOUNT_PATH)
+            .with_timestamps(0)
+        )
 
     @pass_pipeline_context
     @sentry_utils.with_command_context
-    async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> Any:
+    async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> CommandResult:
         """Run the command. If _exit_on_failure is True, exit the process with status code 1 if the command fails.
 
         Args:
@@ -98,17 +117,10 @@ class FormatCommand(click.Command):
         Returns:
             Any: The result of running the command
         """
-        dagger_logs_file_descriptor, dagger_logs_temp_file_path = tempfile.mkstemp(
-            dir="/tmp", prefix=f"format_{self.formatter.value}_dagger_logs_", suffix=".log"
-        )
-        # Create a FileIO object from the file descriptor
-        dagger_logs = io.FileIO(dagger_logs_file_descriptor, "w+")
-        self.logger.info(f"Running {self.formatter.value} formatter. Logging dagger output to {dagger_logs_temp_file_path}")
 
-        dagger_client = await click_pipeline_context.get_dagger_client(
-            pipeline_name=f"Format {self.formatter.value}", log_output=dagger_logs
-        )
+        dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Format {self.formatter.value}")
         dir_to_format = self.get_dir_to_format(dagger_client)
+
         container = self.get_format_container_fn(dagger_client, dir_to_format)
         command_result = await self.get_format_command_result(dagger_client, container, dir_to_format)
 
@@ -191,7 +203,9 @@ class FormatCommand(click.Command):
             if await dir_with_modified_files.entries():
                 modified_files = await list_files_in_directory(dagger_client, dir_with_modified_files)
                 self.logger.debug(f"Modified files: {modified_files}")
-                return CommandResult(self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr, output_artifact=dir_with_modified_files)
-            return CommandResult(self, status=StepStatus.SUCCESS, stdout=stdout, stderr=stderr)
+                return CommandResult(
+                    command=self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr, output_artifact=dir_with_modified_files
+                )
+            return CommandResult(command=self, status=StepStatus.SUCCESS, stdout=stdout, stderr=stderr)
         except dagger.ExecError as e:
-            return CommandResult(self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout, exc_info=e)
+            return CommandResult(command=self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout, exc_info=e)

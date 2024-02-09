@@ -32,13 +32,14 @@ class InsightAsyncJobManager:
     # limit is not reliable indicator of async workload capability we still have to use this parameter.
     MAX_JOBS_IN_QUEUE = 100
 
-    def __init__(self, api: "API", jobs: Iterator[AsyncJob]):
+    def __init__(self, api: "API", jobs: Iterator[AsyncJob], account_id: str):
         """Init
 
         :param api:
         :param jobs:
         """
         self._api = api
+        self._account_id = account_id
         self._jobs = iter(jobs)
         self._running_jobs = []
 
@@ -147,4 +148,4 @@ class InsightAsyncJobManager:
         respond with empty list of data so api use "x-fb-ads-insights-throttle"
         header to update current insights throttle limit.
         """
-        self._api.account.get_insights()
+        self._api.get_account(account_id=self._account_id).get_insights()

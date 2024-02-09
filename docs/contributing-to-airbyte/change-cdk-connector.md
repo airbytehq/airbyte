@@ -55,7 +55,7 @@ When we review, we look at:
 
 ## Breaking Changes to Connectors
 
-Often times, changes to connectors can be made without impacting the user experience.  However, there are some changes that will require users to take action before they can continue to sync data.  These changes are considered **Breaking Changes** and require a
+Often times, changes to connectors can be made without impacting the user experience.  However, there are some changes that will require users to take action before they can continue to sync data.  These changes are considered **Breaking Changes** and require:
 
 1. A **Major Version** increase 
 2. A [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) in the `releases` section of the `metadata.yaml` file
@@ -66,7 +66,12 @@ Often times, changes to connectors can be made without impacting the user experi
 A breaking change is any change that will require users to take action before they can continue to sync data. The following are examples of breaking changes:
 
 - **Spec Change** - The configuration required by users of this connector have been changed and syncs will fail until users reconfigure or re-authenticate.  This change is not possible via a Config Migration 
-- **Schema Change** - The type of a property previously present within a record has changed
+- **Schema Change** - The type of property previously present within a record has changed
 - **Stream or Property Removal** - Data that was previously being synced is no longer going to be synced.
 - **Destination Format / Normalization Change** - The way the destination writes the final data or how normalization cleans that data is changing in a way that requires a full-refresh.
 - **State Changes** - The format of the source’s state has changed, and the full dataset will need to be re-synced
+
+### Limiting the Impact of Breaking Changes
+Some of the changes listed above may not impact all users of the connector. For example, a change to the schema of a specific stream only impacts users who are syncing that stream.
+
+The breaking change metadata allows you to specify narrowed scopes that are specifically affected by a breaking change. See the [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) documentation for supported scopes.
