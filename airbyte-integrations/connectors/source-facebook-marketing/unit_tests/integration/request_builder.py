@@ -22,6 +22,10 @@ class RequestBuilder:
     def get_videos_endpoint(cls, account_id: str, access_token: str) -> RequestBuilder:
         return cls(account_id=account_id, access_token=access_token, resource="advideos")
 
+    @classmethod
+    def get_insights_endpoint(cls, account_id: str, access_token: str) -> RequestBuilder:
+        return cls(account_id=account_id, access_token=access_token, resource="insights")
+
     def __init__(self, account_id: str, access_token: str, resource: Optional[str] = "") -> None:
         self._account_id = account_id
         self._resource = resource

@@ -7,8 +7,7 @@ from http import HTTPStatus
 from typing import List, Optional
 from unittest import TestCase
 
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
@@ -20,13 +19,13 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
-from source_facebook_marketing import SourceFacebookMarketing
+from airbyte_protocol.models import AirbyteStateMessage, SyncMode
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, ConfigBuilder
 from .pagination import FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder
 from .response_builder import build_response
+from .utils import config, read_output
 
 _STREAM_NAME = "videos"
 _CURSOR_FIELD = "updated_time"
@@ -63,30 +62,6 @@ _FIELDS = [
 ]
 
 
-def config() -> ConfigBuilder:
-    return ConfigBuilder()
-
-
-def catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
-    return CatalogBuilder().with_stream(stream_name, sync_mode).build()
-
-
-def source() -> SourceFacebookMarketing:
-    return SourceFacebookMarketing()
-
-
-def read_output(
-    config_builder: ConfigBuilder,
-    stream_name: str,
-    sync_mode: SyncMode,
-    state: Optional[List[AirbyteStateMessage]] = None,
-    expecting_exception: Optional[bool] = False,
-) -> EntrypointOutput:
-    _catalog = catalog(stream_name, sync_mode)
-    _config = config_builder.build()
-    return read(source(), _config, _catalog, state, expecting_exception)
-
-
 def _get_account_request() -> RequestBuilder:
     return RequestBuilder.get_account_endpoint(account_id=ACCOUNT_ID, access_token=ACCESS_TOKEN)
 
@@ -110,7 +85,7 @@ def _get_videos_response() -> HttpResponseBuilder:
     )
 
 
-def _a_video_record() -> RecordBuilder:
+def _video_record() -> RecordBuilder:
     return create_record_builder(
         response_template=find_template(_STREAM_NAME, __file__),
         records_path=FieldPath("data"),
@@ -132,7 +107,7 @@ class TestFullRefresh(TestCase):
         http_mocker.get(_get_account_request().build(), _get_account_response())
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().build(),
-            _get_videos_response().with_record(_a_video_record()).build(),
+            _get_videos_response().with_record(_video_record()).build(),
         )
 
         output = self._read(config())
@@ -143,11 +118,11 @@ class TestFullRefresh(TestCase):
         http_mocker.get(_get_account_request().build(), _get_account_response())
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().build(),
-            _get_videos_response().with_pagination().with_record(_a_video_record()).build(),
+            _get_videos_response().with_pagination().with_record(_video_record()).build(),
         )
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().with_pagination_parameter().build(),
-            _get_videos_response().with_record(_a_video_record()).with_record(_a_video_record()).build(),
+            _get_videos_response().with_record(_video_record()).with_record(_video_record()).build(),
         )
 
         output = self._read(config())
@@ -161,12 +136,12 @@ class TestFullRefresh(TestCase):
         http_mocker.get(_get_account_request().with_account_id(account_id_1).build(), _get_account_response(account_id=account_id_1))
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().with_account_id(account_id_1).build(),
-            _get_videos_response().with_record(_a_video_record()).build(),
+            _get_videos_response().with_record(_video_record()).build(),
         )
         http_mocker.get(_get_account_request().with_account_id(account_id_2).build(), _get_account_response(account_id=account_id_2))
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().with_account_id(account_id_2).build(),
-            _get_videos_response().with_record(_a_video_record()).build(),
+            _get_videos_response().with_record(_video_record()).build(),
         )
 
         output = self._read(config().with_account_ids([account_id_1, account_id_2]))
@@ -179,7 +154,7 @@ class TestFullRefresh(TestCase):
         http_mocker.get(_get_account_request().with_account_id(test_account_id).build(), _get_account_response(account_id=test_account_id))
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().with_account_id(test_account_id).build(),
-            _get_videos_response().with_record(_a_video_record()).build(),
+            _get_videos_response().with_record(_video_record()).build(),
         )
 
         output = self._read(config().with_account_ids([test_account_id]))
@@ -194,7 +169,7 @@ class TestFullRefresh(TestCase):
         http_mocker.get(_get_account_request().build(), _get_account_response())
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().build(),
-            _get_videos_response().with_record(_a_video_record().with_field(FieldPath(created_time_field), input_datetime_value)).build(),
+            _get_videos_response().with_record(_video_record().with_field(FieldPath(created_time_field), input_datetime_value)).build(),
         )
 
         output = self._read(config())
@@ -223,8 +198,8 @@ class TestIncremental(TestCase):
         http_mocker.get(_get_account_request().with_account_id(test_account_id).build(), _get_account_response(account_id=test_account_id))
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().with_account_id(test_account_id).build(),
-            _get_videos_response().with_record(_a_video_record().with_cursor(max_cursor_value)).with_record(
-                _a_video_record().with_cursor(min_cursor_value)
+            _get_videos_response().with_record(_video_record().with_cursor(max_cursor_value)).with_record(
+                _video_record().with_cursor(min_cursor_value)
             ).build(),
         )
 
@@ -246,15 +221,15 @@ class TestIncremental(TestCase):
         http_mocker.get(_get_account_request().with_account_id(account_id_1).build(), _get_account_response(account_id=account_id_1))
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().with_account_id(account_id_1).build(),
-            _get_videos_response().with_record(_a_video_record().with_cursor(max_cursor_value_account_id_1)).with_record(
-                _a_video_record().with_cursor(min_cursor_value_account_id_1)
+            _get_videos_response().with_record(_video_record().with_cursor(max_cursor_value_account_id_1)).with_record(
+                _video_record().with_cursor(min_cursor_value_account_id_1)
             ).build(),
         )
         http_mocker.get(_get_account_request().with_account_id(account_id_2).build(), _get_account_response(account_id=account_id_2))
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().with_account_id(account_id_2).build(),
-            _get_videos_response().with_record(_a_video_record().with_cursor(max_cursor_value_account_id_2)).with_record(
-                _a_video_record().with_cursor(min_cursor_value_account_id_2)
+            _get_videos_response().with_record(_video_record().with_cursor(max_cursor_value_account_id_2)).with_record(
+                _video_record().with_cursor(min_cursor_value_account_id_2)
             ).build(),
         )
 
@@ -274,10 +249,10 @@ class TestIncremental(TestCase):
         http_mocker.get(_get_account_request().with_account_id(test_account_id).build(), _get_account_response(account_id=test_account_id))
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().with_account_id(test_account_id).build(),
-            _get_videos_response().with_record(_a_video_record().with_cursor(cursor_value_3)).with_record(
-                _a_video_record().with_cursor(cursor_value_2)
+            _get_videos_response().with_record(_video_record().with_cursor(cursor_value_3)).with_record(
+                _video_record().with_cursor(cursor_value_2)
             ).with_record(
-                _a_video_record().with_cursor(cursor_value_1)
+                _video_record().with_cursor(cursor_value_1)
             ).build(),
         )
 
@@ -300,19 +275,19 @@ class TestIncremental(TestCase):
         http_mocker.get(_get_account_request().with_account_id(account_id_1).build(), _get_account_response(account_id=account_id_1))
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().with_account_id(account_id_1).build(),
-            _get_videos_response().with_record(_a_video_record().with_cursor(cursor_value_3)).with_record(
-                _a_video_record().with_cursor(cursor_value_2)
+            _get_videos_response().with_record(_video_record().with_cursor(cursor_value_3)).with_record(
+                _video_record().with_cursor(cursor_value_2)
             ).with_record(
-                _a_video_record().with_cursor(cursor_value_1)
+                _video_record().with_cursor(cursor_value_1)
             ).build(),
         )
         http_mocker.get(_get_account_request().with_account_id(account_id_2).build(), _get_account_response(account_id=account_id_2))
         http_mocker.get(
             _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().with_account_id(account_id_2).build(),
-            _get_videos_response().with_record(_a_video_record().with_cursor(cursor_value_3)).with_record(
-                _a_video_record().with_cursor(cursor_value_2)
+            _get_videos_response().with_record(_video_record().with_cursor(cursor_value_3)).with_record(
+                _video_record().with_cursor(cursor_value_2)
             ).with_record(
-                _a_video_record().with_cursor(cursor_value_1)
+                _video_record().with_cursor(cursor_value_1)
             ).build(),
         )
 
