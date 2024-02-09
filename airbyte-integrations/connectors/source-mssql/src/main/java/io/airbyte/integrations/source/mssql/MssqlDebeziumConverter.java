@@ -17,11 +17,11 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import microsoft.sql.DateTimeOffset;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,7 +197,7 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
       }
 
       if (input instanceof byte[]) {
-        return Base64.encodeBase64String((byte[]) input);
+        return Base64.getEncoder().encodeToString((byte[]) input);
       }
 
       LOGGER.warn("Uncovered binary class type '{}'. Use default converter",
