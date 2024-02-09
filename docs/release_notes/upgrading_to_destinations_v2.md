@@ -160,7 +160,7 @@ As a user previously not running Normalization, Upgrading to Destinations V2 wil
 For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) source connector, we recommend the following:
 
 | CDC Source | Recommendation                                               | Notes                                                                                                                                                                                                                                                |
-| ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Postgres   | [Upgrade connection in place](#quick-start-to-upgrading)     | You can optionally dual write, but this requires resyncing historical data from the source. You must create a new Postgres source with a different replication slot than your existing source to preserve the integrity of your existing connection. |
 | MySQL      | [All above upgrade paths supported](#advanced-upgrade-paths) | You can upgrade the connection in place, or dual write. When dual writing, Airbyte can leverage the state of an existing, active connection to ensure historical data is not re-replicated from MySQL.                                               |
 
@@ -169,11 +169,11 @@ For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) sou
 For each destination connector, Destinations V2 is effective as of the following versions:
 
 | Destination Connector | Safe Rollback Version | Destinations V2 Compatible | Upgrade Deadline         |
-| --------------------- | --------------------- | -------------------------- | ------------------------ |
+|-----------------------|-----------------------|----------------------------|--------------------------|
 | BigQuery              | 1.10.2                | 2.0.6+                     | November 7, 2023         |
 | Snowflake             | 2.1.7                 | 3.1.0+                     | November 7, 2023         |
 | Redshift              | 0.8.0                 | 2.0.0+                     | March 15, 2024           |
-| Postgres              | 0.4.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| Postgres              | 0.6.3                 | 2.0.0+                     | May 31, 2024             |
 | MySQL                 | 0.2.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 
 Note that legacy normalization will be deprecated for ClickHouse, DuckDB, MSSQL, TiDB, and Oracle DB in early 2024. If you wish to add Destinations V2 capability to these destinations, please reference our implementation guide (coming soon).
