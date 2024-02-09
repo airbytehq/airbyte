@@ -84,7 +84,15 @@ class SnowflakeSQLCache(SQLCacheBase):
 
     @overrides
     def _quote_identifier(self, identifier: str) -> str:
-        # TODO: Implement quoting for Snowflake - this is omitted for now because it doesn't play well with case-sensitivity.
+        """Apply quoting, currently a no-op for Snowflake.
+
+        TODO: Implement quoting for Snowflake - this is omitted for now because it doesn't play well with case-sensitivity.
+
+        To make this work, we need to set this when creating connection objects.
+
+            # Set QUOTED_IDENTIFIERS_IGNORE_CASE to True
+            connection.execute("ALTER SESSION SET QUOTED_IDENTIFIERS_IGNORE_CASE = TRUE")
+        """
         return identifier
 
     @overrides
