@@ -382,9 +382,9 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
-   * Run the first sync from {@link #incrementalDedup()}, but repeat the messages many times.
-   * Some destinations behave differently with small vs large record count, so this test case tries
-   * to exercise that behavior.
+   * Run the first sync from {@link #incrementalDedup()}, but repeat the messages many times. Some
+   * destinations behave differently with small vs large record count, so this test case tries to
+   * exercise that behavior.
    */
   @Test
   public void largeDedupSync() throws Exception {
