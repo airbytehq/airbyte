@@ -7,7 +7,7 @@ from unittest.mock import patch, sentinel
 
 import pytest
 from airbyte_cdk.utils import AirbyteTracedException
-from pandas import read_csv, read_excel
+from pandas import read_csv, read_excel, testing
 from paramiko import SSHException
 from source_file.client import Client, URLFile
 from urllib3.exceptions import ProtocolError
@@ -80,8 +80,27 @@ def test_load_dataframes_xlsb(config, absolute_path, test_files):
     assert read_file.equals(expected)
 
 
-def test_load_nested_json(client, absolute_path, test_files):
-    f = f"{absolute_path}/{test_files}/formats/json/demo.json"
+@pytest.mark.parametrize("file_name, should_raise_error", [("test.xlsx", False), ("test_one_line.xlsx", True)])
+def test_load_dataframes_xlsx(config, absolute_path, test_files, file_name, should_raise_error):
+    config["format"] = "excel"
+    client = Client(**config)
+    f = f"{absolute_path}/{test_files}/{file_name}"
+    if should_raise_error:
+        with pytest.raises(AirbyteTracedException):
+            next(client.load_dataframes(fp=f))
+    else:
+        read_file = next(client.load_dataframes(fp=f))
+        expected = read_excel(f, engine="openpyxl")
+        assert read_file.equals(expected)
+
+
+@pytest.mark.parametrize("file_format, file_path", [("json", "formats/json/demo.json"),
+                                                     ("jsonl", "formats/jsonl/jsonl_nested.jsonl")])
+def test_load_nested_json(client, config, absolute_path, test_files, file_format, file_path):
+    if file_format == "jsonl":
+        config["format"] = file_format
+        client = Client(**config)
+    f = f"{absolute_path}/{test_files}/{file_path}"
     with open(f, mode="rb") as file:
         assert client.load_nested_json(fp=file)
 

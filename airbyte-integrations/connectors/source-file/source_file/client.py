@@ -484,7 +484,7 @@ class Client:
 
     def openpyxl_chunk_reader(self, file, **kwargs):
         """Use openpyxl lazy loading feature to read excel files (xlsx only) in chunks of 500 lines at a time"""
-        work_book = load_workbook(filename=file, read_only=True)
+        work_book = load_workbook(filename=file)
         user_provided_column_names = kwargs.get("names")
         for sheetname in work_book.sheetnames:
             work_sheet = work_book[sheetname]
