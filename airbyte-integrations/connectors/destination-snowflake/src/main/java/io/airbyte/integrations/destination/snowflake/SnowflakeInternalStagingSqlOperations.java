@@ -12,7 +12,8 @@ import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.time.temporal.ChronoField;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -65,11 +66,12 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
                                final String outputTableName,
                                final Instant writeDatetime) {
     // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
+    final var zonedDateTime = ZonedDateTime.ofInstant(writeDatetime, ZoneOffset.UTC);
     return nameTransformer.applyDefaultCase(String.format("%s/%02d/%02d/%02d/%s/",
-        writeDatetime.get(ChronoField.YEAR),
-        writeDatetime.get(ChronoField.MONTH_OF_YEAR),
-        writeDatetime.get(ChronoField.DAY_OF_MONTH),
-        writeDatetime.get(ChronoField.HOUR_OF_DAY),
+        zonedDateTime.getYear(),
+        zonedDateTime.getMonthValue(),
+        zonedDateTime.getDayOfMonth(),
+        zonedDateTime.getHour(),
         connectionId));
   }
 
