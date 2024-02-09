@@ -64,6 +64,7 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.4.5 | 2024-02-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Manage dependencies with Poetry. |
 | 0.4.4   | 2023-11-29 | [32397](https://github.com/airbytehq/airbyte/pull/32397) | Increase test coverage and migrate to base image                                 |
 | 0.4.3   | 2023-09-20 | [30648](https://github.com/airbytehq/airbyte/pull/30648) | Update candidates.json                                                           |
 | 0.4.2   | 2023-08-02 | [28969](https://github.com/airbytehq/airbyte/pull/28969) | Update CDK version                                                               |
