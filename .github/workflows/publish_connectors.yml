@@ -14,6 +14,9 @@ on:
       publish-options:
         description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
         default: "--pre-release"
+      airbyte_ci_binary_url:
+        description: "URL to the airbyte-ci binary to use for the action. If not provided, the action will use the latest release of airbyte-ci."
+        default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
 jobs:
   publish_connectors:
     name: Publish connectors
@@ -62,6 +65,7 @@ jobs:
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
+          airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure

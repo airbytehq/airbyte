@@ -236,7 +236,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
       typerDeduper =
           new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, defaultThreadCount);
     }
-    return new StagingConsumerFactory().createAsync(
+    return StagingConsumerFactory.builder(
         outputRecordCollector,
         database,
         new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
@@ -248,7 +248,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true);
+        true).build().createAsync();
   }
 
   /**
