@@ -198,6 +198,14 @@ class SQLCacheBase(RecordProcessor):
 
         return self._engine
 
+    def _init_connection_settings(self, connection: Connection) -> None:
+        """This is called automatically whenever a new connection is created.
+
+        By default this is a no-op. Subclasses can use this to set connection settings, such as
+        timezone, case-sensitivity settings, and other session-level variables.
+        """
+        pass
+
     @contextmanager
     def get_sql_connection(self) -> Generator[sqlalchemy.engine.Connection, None, None]:
         """A context manager which returns a new SQL connection for running queries.
@@ -206,10 +214,12 @@ class SQLCacheBase(RecordProcessor):
         """
         if self.use_singleton_connection and self._connection_to_reuse is not None:
             connection = self._connection_to_reuse
+            self._init_connection_settings(connection)
             yield connection
 
         else:
             with self.get_sql_engine().begin() as connection:
+                self._init_connection_settings(connection)
                 yield connection
 
         if not self.use_singleton_connection:
