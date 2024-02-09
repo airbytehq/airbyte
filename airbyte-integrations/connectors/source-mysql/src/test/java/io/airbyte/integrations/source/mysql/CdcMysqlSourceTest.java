@@ -189,10 +189,26 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
       final String idCol,
       final String makeIdCol,
       final String modelCol) {
-    testdb.with("INSERT INTO `%s`.`%s` (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
+    testdb.with("INSERT INTO `%s` .`%s` (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
         idCol, makeIdCol, modelCol,
         recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
         recordJson.get(modelCol).asText());
+  }
+
+  @Override
+  protected void deleteMessageOnIdCol(final String streamName, final String idCol, final int idValue) {
+    testdb.with("DELETE FROM `%s`.`%s` WHERE %s = %s", modelsSchema(), streamName, idCol, idValue);
+  }
+
+  @Override
+  protected void deleteCommand(final String streamName) {
+    testdb.with("DELETE FROM `%s`.`%s`", modelsSchema(), streamName);
+  }
+
+  @Override
+  protected void updateCommand(final String streamName, final String modelCol, final String modelVal, final String idCol, final int idValue) {
+    testdb.with("UPDATE `%s`.`%s` SET %s = '%s' WHERE %s = %s", modelsSchema(), streamName,
+        modelCol, modelVal, COL_ID, 11);
   }
 
   @Test
