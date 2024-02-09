@@ -14,6 +14,13 @@ airbyteJavaConnector {
     useLocalCdk = false
 }
 
+java {
+    // TODO: rewrite code to avoid javac wornings in the first place
+    compileJava {
+        options.compilerArgs += "-Xlint:-this-escape"
+    }
+}
+
 application {
     mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
