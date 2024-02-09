@@ -1,0 +1,7 @@
+{
+"required": [
+    "distinct_id",
+    "time"
+  ],
+  "type": "object"
+}
