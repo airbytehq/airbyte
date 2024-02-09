@@ -81,7 +81,9 @@ public class MongoDbCdcInitializer {
                                                                         final MongoDbSourceConfig config) {
 
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(config.rawConfig());
-    final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(config.rawConfig());
+    // #35059: debezium heartbeats are not sent on the expected interval. this is a worksaround to allow making
+    // subsequent wait time configurable.
+    final Duration subsequentRecordWaitTime = firstRecordWaitTime.dividedBy(2);
     final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.getDatabaseName();
     final boolean isEnforceSchema = config.getEnforceSchema();
