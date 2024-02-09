@@ -11,6 +11,7 @@ from pandas import read_csv, read_excel, testing
 from paramiko import SSHException
 from source_file.client import Client, URLFile
 from urllib3.exceptions import ProtocolError
+from source_file.utils import backoff_handler
 
 
 @pytest.fixture
@@ -34,21 +35,22 @@ def csv_format_client():
 
 
 @pytest.mark.parametrize(
-    "storage, expected_scheme",
+    "storage, expected_scheme, url",
     [
-        ("GCS", "gs://"),
-        ("S3", "s3://"),
-        ("AZBLOB", "azure://"),
-        ("HTTPS", "https://"),
-        ("SSH", "scp://"),
-        ("SCP", "scp://"),
-        ("SFTP", "sftp://"),
-        ("WEBHDFS", "webhdfs://"),
-        ("LOCAL", "file://"),
+        ("GCS", "gs://", "http://localhost"),
+        ("S3", "s3://", "http://localhost"),
+        ("AZBLOB", "azure://", "http://localhost"),
+        ("HTTPS", "https://", "http://localhost"),
+        ("SSH", "scp://", "http://localhost"),
+        ("SCP", "scp://", "http://localhost"),
+        ("SFTP", "sftp://", "http://localhost"),
+        ("WEBHDFS", "webhdfs://", "http://localhost"),
+        ("LOCAL", "file://", "http://localhost"),
+        ("WRONG", "", ""),
     ],
 )
-def test_storage_scheme(storage, expected_scheme):
-    urlfile = URLFile(provider={"storage": storage}, url="http://localhost")
+def test_storage_scheme(storage, expected_scheme, url):
+    urlfile = URLFile(provider={"storage": storage}, url=url)
     assert urlfile.storage_scheme == expected_scheme
 
 
@@ -95,7 +97,7 @@ def test_load_dataframes_xlsx(config, absolute_path, test_files, file_name, shou
 
 
 @pytest.mark.parametrize("file_format, file_path", [("json", "formats/json/demo.json"),
-                                                     ("jsonl", "formats/jsonl/jsonl_nested.jsonl")])
+                                                    ("jsonl", "formats/jsonl/jsonl_nested.jsonl")])
 def test_load_nested_json(client, config, absolute_path, test_files, file_format, file_path):
     if file_format == "jsonl":
         config["format"] = file_format
@@ -208,3 +210,11 @@ def test_urlfile_open_backoff_sftp(monkeypatch, mocker):
     assert call_count == 7
 
     assert sleep_mock.call_count == 5
+
+
+def test_backoff_handler(caplog):
+    details = {"tries": 1, "wait": 1}
+    backoff_handler(details)
+    expected = [('airbyte', 20, 'Caught retryable error after 1 tries. Waiting 1 seconds then retrying...')]
+
+    assert caplog.record_tuples == expected

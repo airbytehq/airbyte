@@ -172,6 +172,7 @@ class URLFile:
         """
         storage_name = self._provider["storage"].upper()
         parse_result = urlparse(self._url)
+
         if storage_name == "GCS":
             return "gs://"
         elif storage_name == "S3":
@@ -191,7 +192,7 @@ class URLFile:
         elif parse_result.scheme:
             return parse_result.scheme
 
-        logger.error(f"Unknown Storage provider in: {self.full_url}")
+        logger.error(f"Unknown Storage provider in: {self._url}")
         return ""
 
     def _open_gcs_url(self) -> object:
@@ -355,9 +356,9 @@ class Client:
                     yield record
                     if read_sample_chunk and bytes_read >= self.CSV_CHUNK_SIZE:
                         return
-            elif self._reader_options == "excel_binary":
+            elif self._reader_format == "excel_binary":
                 reader_options["engine"] = "pyxlsb"
-                yield from reader(fp, **reader_options)
+                yield reader(fp, **reader_options)
             elif self._reader_format == "excel":
                 # Use openpyxl to read new-style Excel (xlsx) file; return to pandas for others
                 try:
