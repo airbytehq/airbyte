@@ -19,10 +19,10 @@
     "ask_size": {
       "type": ["null", "number"]
     },
-    "big_price": {
+    "bid_price": {
       "type": ["null", "number"]
     },
-    "big_size": {
+    "bid_size": {
       "type": ["null", "number"]
     }
   }

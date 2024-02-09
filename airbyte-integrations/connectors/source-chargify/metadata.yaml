@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - ${domain}
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-chargify
   registries:
     oss:
       enabled: true

@@ -7,6 +7,10 @@ data:
   githubIssueLabel: source-gutendex
   license: MIT
   name: Gutendex
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gutendex
   registries:
     cloud:
       enabled: false

@@ -18,6 +18,19 @@ def config_fixture():
         "lookback_window": 0,
     }
 
+
+@pytest.fixture(name="config_without_start_date")
+def config_without_start_date_fixture():
+    """Generates streams settings from a config file"""
+    return {
+        "tenant_id": "common",
+        "developer_token": "fake_developer_token",
+        "refresh_token": "fake_refresh_token",
+        "client_id": "fake_client_id",
+        "lookback_window": 0,
+    }
+
+
 @pytest.fixture(name="config_with_account_names")
 def config_with_account_names_fixture():
     """Generates streams settings from a config file"""

@@ -56,6 +56,14 @@ class Cursor(ABC):
         """
         raise NotImplementedError()
 
+    @abstractmethod
+    def ensure_at_least_one_state_emitted(self) -> None:
+        """
+        State messages are emitted when a partition is closed. However, the platform expects at least one state to be emitted per sync per
+        stream. Hence, if no partitions are generated, this method needs to be called.
+        """
+        raise NotImplementedError()
+
 
 class NoopCursor(Cursor):
     @property
@@ -66,6 +74,9 @@ class NoopCursor(Cursor):
         pass
 
     def close_partition(self, partition: Partition) -> None:
+        pass
+
+    def ensure_at_least_one_state_emitted(self) -> None:
         pass
 
 
@@ -142,9 +153,19 @@ class ConcurrentCursor(Cursor):
             )
         elif self._most_recent_record:
             if self._has_closed_at_least_one_slice:
+                # If we track state value using records cursor field, we can only do that if there is one partition. This is because we save
+                # the state every time we close a partition. We assume that if there are multiple slices, they need to be providing
+                # boundaries. There are cases where partitions could not have boundaries:
+                # * The cursor should be per-partition
+                # * The stream state is actually the parent stream state
+                # There might be other cases not listed above. Those are not supported today hence the stream should not use this cursor for
+                # state management. For the specific user that was affected with this issue, we need to:
+                # * Fix state tracking (which is currently broken)
+                # * Make the new version available
+                # * (Probably) ask the user to reset the stream to avoid data loss
                 raise ValueError(
                     "Given that slice_boundary_fields is not defined and that per-partition state is not supported, only one slice is "
-                    "expected."
+                    "expected. Please contact the Airbyte team."
                 )
 
             self.state["slices"].append(
@@ -179,3 +200,10 @@ class ConcurrentCursor(Cursor):
             return self._connector_state_converter.parse_value(_slice[key])  # type: ignore  # we expect the devs to specify a key that would return a Comparable
         except KeyError as exception:
             raise KeyError(f"Partition is expected to have key `{key}` but could not be found") from exception
+
+    def ensure_at_least_one_state_emitted(self) -> None:
+        """
+        The platform expect to have at least one state message on successful syncs. Hence, whatever happens, we expect this method to be
+        called.
+        """
+        self._emit_state_message()
