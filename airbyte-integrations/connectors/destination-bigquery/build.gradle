@@ -11,7 +11,7 @@ airbyteJavaConnector {
             's3-destinations',
             'typing-deduping',
     ]
-    useLocalCdk = true
+    useLocalCdk = false
 }
 
 application {
