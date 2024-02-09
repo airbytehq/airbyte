@@ -188,6 +188,7 @@ class BasicReadTestConfig(BaseConfig):
     )
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
+    validate_stream_statuses: bool = Field(None, description="Ensure that all streams emit status messages")
     fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
@@ -259,6 +260,11 @@ class ConnectorAttributesConfig(BaseConfig):
     )
 
 
+class TestConnectorDocumentationConfig(BaseConfig):
+    timeout_seconds: int = timeout_seconds
+    config_path: str = config_path
+
+
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
     bypass_reason: Optional[str]
     tests: Optional[List[TestConfigT]]
@@ -278,6 +284,7 @@ class AcceptanceTestConfigurations(BaseConfig):
     full_refresh: Optional[GenericTestConfig[FullRefreshConfig]]
     incremental: Optional[GenericTestConfig[IncrementalConfig]]
     connector_attributes: Optional[GenericTestConfig[ConnectorAttributesConfig]]
+    connector_documentation: Optional[GenericTestConfig[TestConnectorDocumentationConfig]]
 
 
 class Config(BaseConfig):
