@@ -211,7 +211,13 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         (See Restrictions: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-09&tabs=http#restrictions)
         """
         parsed_response = response.json()
-        if len(parsed_response.get("elements")) < self.records_limit:
+        is_elements_less_than_limit = len(parsed_response.get("elements")) < self.records_limit
+
+        # Note: The API might return fewer records than requested within the limits during pagination.
+        # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
+        is_end_of_records = parsed_response.get("paging")["start"] + self.records_limit > parsed_response.get("paging")["total"]
+
+        if is_elements_less_than_limit and is_end_of_records:
             return None
         raise Exception(
             f"Limit {self.records_limit} elements exceeded. "
