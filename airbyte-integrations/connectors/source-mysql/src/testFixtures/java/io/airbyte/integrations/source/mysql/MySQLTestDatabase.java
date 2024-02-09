@@ -17,20 +17,20 @@ import org.testcontainers.containers.MySQLContainer;
 public class MySQLTestDatabase extends
     TestDatabase<MySQLContainer<?>, MySQLTestDatabase, MySQLTestDatabase.MySQLConfigBuilder> {
 
-  public static enum BaseImage {
+  public enum BaseImage {
 
     MYSQL_8("mysql:8.0"),
     ;
 
-    private final String reference;
+    public final String reference;
 
-    private BaseImage(String reference) {
+    BaseImage(String reference) {
       this.reference = reference;
     }
 
   }
 
-  public static enum ContainerModifier {
+  public enum ContainerModifier {
 
     MOSCOW_TIMEZONE("withMoscowTimezone"),
     INVALID_TIMEZONE_CEST("withInvalidTimezoneCEST"),
@@ -39,9 +39,9 @@ public class MySQLTestDatabase extends
     NETWORK("withNetwork"),
     ;
 
-    private final String methodName;
+    public final String methodName;
 
-    private ContainerModifier(String methodName) {
+    ContainerModifier(String methodName) {
       this.methodName = methodName;
     }
 
