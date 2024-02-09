@@ -29,7 +29,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   public enum BaseImage {
 
-    MSSQL_2022("mcr.microsoft.com/mssql/server:2022-latest"),
+    MSSQL_2022("mcr.microsoft.com/mssql/server:2022-preview-ubuntu-22.04"),
     MSSQL_2017("mcr.microsoft.com/mssql/server:2017-latest"),
     ;
 
