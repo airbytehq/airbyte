@@ -6,12 +6,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import sqlalchemy
 from overrides import overrides
-from snowflake.sqlalchemy import URL
+from snowflake.sqlalchemy import URL, VARIANT
 
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import RecordDedupeMode, SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.telemetry import CacheTelemetryInfo
+from airbyte_lib.types import SQLTypeConverter
 
 
 if TYPE_CHECKING:
@@ -58,6 +60,26 @@ class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
         return self.database
 
 
+class SnowflakeTypeConverter(SQLTypeConverter):
+    """A class to convert types for Snowflake."""
+
+    @overrides
+    def to_sql_type(
+        self,
+        json_schema_property_def: dict[str, str | dict | list],
+    ) -> sqlalchemy.types.TypeEngine:
+        """Convert a value to a SQL type.
+
+        We first call the parent class method to get the type. Then if the type JSON, we
+        replace it with VARIANT.
+        """
+        sql_type = super().to_sql_type(json_schema_property_def)
+        if isinstance(sql_type, sqlalchemy.types.JSON):
+            return VARIANT()
+
+        return sql_type
+
+
 class SnowflakeSQLCache(SQLCacheBase):
     """A Snowflake implementation of the cache.
 
@@ -66,6 +88,7 @@ class SnowflakeSQLCache(SQLCacheBase):
 
     config_class = SnowflakeCacheConfig
     file_writer_class = ParquetWriter
+    type_converter_class = SnowflakeTypeConverter
 
     @overrides
     def _write_files_to_new_table(
