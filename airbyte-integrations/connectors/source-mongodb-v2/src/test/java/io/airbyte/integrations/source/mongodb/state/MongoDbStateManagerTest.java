@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.source.mongodb.state;
 
-import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER;
-import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN;
-import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;

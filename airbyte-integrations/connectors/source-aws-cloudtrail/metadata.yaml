@@ -12,6 +12,10 @@ data:
   icon: awscloudtrail.svg
   license: MIT
   name: AWS CloudTrail
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-aws-cloudtrail
   registries:
     cloud:
       enabled: true

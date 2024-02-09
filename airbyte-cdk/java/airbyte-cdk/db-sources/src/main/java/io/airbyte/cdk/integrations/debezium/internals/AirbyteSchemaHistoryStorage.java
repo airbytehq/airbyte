@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
@@ -50,10 +51,6 @@ public class AirbyteSchemaHistoryStorage {
   public AirbyteSchemaHistoryStorage(final Path path, final boolean compressSchemaHistoryForState) {
     this.path = path;
     this.compressSchemaHistoryForState = compressSchemaHistoryForState;
-  }
-
-  public Path getPath() {
-    return path;
   }
 
   public record SchemaHistory<T> (T schema, boolean isCompressed) {}
@@ -222,6 +219,16 @@ public class AirbyteSchemaHistoryStorage {
         new AirbyteSchemaHistoryStorage(dbHistoryFilePath, compressSchemaHistoryForState);
     schemaHistoryManager.persist(schemaHistory);
     return schemaHistoryManager;
+  }
+
+  public void setDebeziumProperties(Properties props) {
+    // https://debezium.io/documentation/reference/2.2/operations/debezium-server.html#debezium-source-database-history-class
+    // https://debezium.io/documentation/reference/development/engine.html#_in_the_code
+    // As mentioned in the documents above, debezium connector for MySQL needs to track the schema
+    // changes. If we don't do this, we can't fetch records for the table.
+    props.setProperty("schema.history.internal", "io.debezium.storage.file.history.FileSchemaHistory");
+    props.setProperty("schema.history.internal.file.filename", path.toString());
+    props.setProperty("schema.history.internal.store.only.captured.databases.ddl", "true");
   }
 
 }

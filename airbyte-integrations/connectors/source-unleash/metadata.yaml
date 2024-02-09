@@ -8,6 +8,11 @@ data:
   icon: unleash.svg
   license: MIT
   name: Unleash
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-unleash
   registries:
     cloud:
       enabled: false

@@ -1,21 +1,24 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import Any
+from typing import Any, Mapping, Optional
 
-from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, OAuthConfigSpecification
+from airbyte_cdk.models import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.source import TState
 from source_microsoft_onedrive.spec import SourceMicrosoftOneDriveSpec
 from source_microsoft_onedrive.stream_reader import SourceMicrosoftOneDriveStreamReader
 
 
 class SourceMicrosoftOneDrive(FileBasedSource):
-    def __init__(self, catalog_path: str):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
             stream_reader=SourceMicrosoftOneDriveStreamReader(),
             spec_class=SourceMicrosoftOneDriveSpec,
-            catalog_path=catalog_path,
+            catalog=catalog,
+            config=config,
+            state=state,
             cursor_cls=DefaultFileBasedCursor,
         )
 
@@ -49,6 +52,11 @@ class SourceMicrosoftOneDrive(FileBasedSource):
                             "client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]},
                             "client_secret": {"type": "string", "path_in_connector_config": ["credentials", "client_secret"]},
                         },
+                    },
+                    oauth_user_input_from_connector_config_specification={
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {"tenant_id": {"type": "string", "path_in_connector_config": ["credentials", "tenant_id"]}},
                     },
                 ),
             ),

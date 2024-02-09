@@ -12,6 +12,10 @@ data:
   icon: sftp.svg
   license: MIT
   name: SFTP Bulk
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sftp-bulk
   registries:
     cloud:
       enabled: true
