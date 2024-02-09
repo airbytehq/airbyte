@@ -25,7 +25,6 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
   protected MSSQLServerContainer<?> createContainer() {
     return new MsSQLContainerFactory().exclusive(
         MsSQLTestDatabase.BaseImage.MSSQL_2022.reference,
-        MsSQLTestDatabase.ContainerModifier.AGENT.methodName,
         MsSQLTestDatabase.ContainerModifier.WITH_SSL_CERTIFICATES.methodName);
   }
 

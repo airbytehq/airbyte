@@ -88,8 +88,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   protected MSSQLServerContainer<?> createContainer() {
     return new MsSQLContainerFactory().exclusive(
-        MsSQLTestDatabase.BaseImage.MSSQL_2022.reference,
-        MsSQLTestDatabase.ContainerModifier.AGENT.methodName);
+        MsSQLTestDatabase.BaseImage.MSSQL_2022.reference);
   }
 
   @AfterAll

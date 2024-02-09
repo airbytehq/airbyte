@@ -57,7 +57,7 @@ public class CdcStateCompressionTest {
 
   @BeforeEach
   public void setup() {
-    testdb = MsSQLTestDatabase.in(MsSQLTestDatabase.BaseImage.MSSQL_2022, MsSQLTestDatabase.ContainerModifier.AGENT)
+    testdb = MsSQLTestDatabase.in(MsSQLTestDatabase.BaseImage.MSSQL_2022)
         .withWaitUntilAgentRunning()
         .withCdc();
 

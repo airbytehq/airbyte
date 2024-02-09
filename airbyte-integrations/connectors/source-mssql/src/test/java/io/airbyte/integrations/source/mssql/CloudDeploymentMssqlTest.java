@@ -104,7 +104,7 @@ public class CloudDeploymentMssqlTest {
 
   @Test
   void testCheckWithSslModeDisabled() throws Exception {
-    try (final var testdb = createTestDatabase("withNetwork")) {
+    try (final var testdb = createTestDatabase()) {
       try (final SshBastionContainer bastion = new SshBastionContainer()) {
         bastion.initAndStartBastion(testdb.getContainer().getNetwork());
         final var config = testdb.integrationTestConfigBuilder()
