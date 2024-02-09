@@ -74,6 +74,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 0.4.1 | 2024-02-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Manage dependencies with Poetry. |
 | 0.4.0   | 2024-01-11 | [33882](https://github.com/airbytehq/airbyte/pull/33882) | Add new stream `Activity Logs`                                                                           |
 | 0.3.2   | 2023-12-07 | [33223](https://github.com/airbytehq/airbyte/pull/33223) | Ignore 404 error for `Conversation Parts`                                                                |
 | 0.3.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                          |
