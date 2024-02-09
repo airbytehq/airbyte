@@ -12,12 +12,12 @@ This page contains the setup guide and reference information for the Klaviyo sou
 ### Step 1: Set up Klaviyo
 
 1. Create a [Klaviyo account](https://www.klaviyo.com)
-2. Create a [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3). Make sure you selected all [scopes](https://help.klaviyo.com/hc/en-us/articles/7423954176283) corresponding to the streams you would like to replicate. You can find which scope is required for a specific stream by navigating to the relevant API documentation for the streams Airbyte supports.
+2. Create a [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3). Make sure you selected all [scopes](https://help.klaviyo.com/hc/en-us/articles/7423954176283) corresponding to the streams you would like to replicate.
 
 ### Step 2: Set up the Klaviyo connector in Airbyte
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. Click **Sources** and then click **+ new source**.
+2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Klaviyo** from the **Source type** dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
@@ -35,14 +35,13 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-- [Campaigns](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
-- [Email Templates](https://developers.klaviyo.com/en/reference/get_templates)
-- [Events](https://developers.klaviyo.com/en/reference/get_events)
+- [Campaigns](https://developers.klaviyo.com/en/v1-2/reference/get-campaigns#get-campaigns)
+- [Events](https://developers.klaviyo.com/en/v1-2/reference/metrics-timeline)
+- [GlobalExclusions](https://developers.klaviyo.com/en/v1-2/reference/get-global-exclusions)
+- [Lists](https://developers.klaviyo.com/en/v1-2/reference/get-lists)
+- [Metrics](https://developers.klaviyo.com/en/v1-2/reference/get-metrics)
 - [Flows](https://developers.klaviyo.com/en/reference/get_flows)
-- [GlobalExclusions](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
-- [Lists](https://developers.klaviyo.com/en/reference/get_lists)
-- [Metrics](https://developers.klaviyo.com/en/reference/get_metrics)
-- [Profiles](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
+- [Profiles](https://developers.klaviyo.com/en/reference/get_profiles)
 
 ## Performance considerations
 
@@ -63,6 +62,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| `2.1.2`  | 2023-09-22 | [32380](https://github.com/airbytehq/airbyte/pull/32380)   | Add not supported for Postgres Generated columns. |
 | `2.1.1`  | 2024-02-07 | [34998](https://github.com/airbytehq/airbyte/pull/34998)   | Add missing fields to stream schemas                                                                                          |
 | `2.1.0`  | 2023-12-07 | [33237](https://github.com/airbytehq/airbyte/pull/33237)   | Continue syncing streams even when one of the stream fails                                                                    |
 | `2.0.2`  | 2023-12-05 | [33099](https://github.com/airbytehq/airbyte/pull/33099)   | Fix filtering for archived records stream                                                                                     |

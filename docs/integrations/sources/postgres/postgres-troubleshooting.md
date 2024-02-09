@@ -11,6 +11,7 @@
       Caveat: In the CDC mode, adding a new table to a connection may become a temporary bottleneck. When a new table is added, the next sync job takes a full snapshot of the new table before it proceeds to handle any changes.
     - Resetting a single table within the connection without resetting the rest of the destination tables in that connection
 - Changing a column data type or removing a column might break connections.
+- Postgres Generated Columns are not supported in CDC mode.
 
 ### Version Requirements
 
