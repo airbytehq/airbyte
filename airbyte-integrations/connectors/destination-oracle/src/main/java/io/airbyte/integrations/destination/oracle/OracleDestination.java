@@ -10,9 +10,10 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
-import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.RawOnlySqlGenerator;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -28,13 +29,6 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleDestination.class);
   public static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
-
-  public static final String COLUMN_NAME_AB_ID =
-      "\"" + JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase() + "\"";
-  public static final String COLUMN_NAME_DATA =
-      "\"" + JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase() + "\"";
-  public static final String COLUMN_NAME_EMITTED_AT =
-      "\"" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT.toUpperCase() + "\"";
 
   protected static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
@@ -132,6 +126,16 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator() {
+    return new RawOnlySqlGenerator(new OracleNameTransformer());
   }
 
   private static void convertAndImportCertificate(final String certificate)
