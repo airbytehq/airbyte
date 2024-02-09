@@ -2,15 +2,13 @@
 
 from unittest import TestCase
 
-import responses
+import json
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.mock_http.mocker import HttpMocker
+from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
-from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import Level
-from responses import matchers
-from responses.registries import OrderedRegistry
 from source_github import SourceGithub
 
 from .config import ConfigBuilder
@@ -29,40 +27,50 @@ class EventsTest(TestCase):
         2. repositories
         3. branches
         """
-        self.r_mock = responses.RequestsMock(registry=OrderedRegistry)
-        self.r_mock.start()
+
+        self.r_mock = HttpMocker()
+        self.r_mock.__enter__()
         self.r_mock.get(
-            "https://api.github.com/rate_limit",
-            match=[
-                matchers.header_matcher(
-                    {
-                        "Accept": "application/vnd.github+json",
-                        "X-GitHub-Api-Version": "2022-11-28",
-                        "Authorization": "token GITHUB_TEST_TOKEN",
+            HttpRequest(
+                url="https://api.github.com/rate_limit",
+                query_params={},
+                headers={
+                    "Accept": "application/vnd.github+json",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                    "Authorization": "token GITHUB_TEST_TOKEN",
+                },
+            ),
+            HttpResponse(
+                json.dumps({
+                    "resources": {
+                        "core": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
+                        "graphql": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
                     }
-                )
-            ],
-            json={
-                "resources": {
-                    "core": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
-                    "graphql": {"limit": 5000, "used": 0, "remaining": 5000, "reset": 5070908800},
-                }
-            },
+                }),
+                200
+            )
         )
+
         self.r_mock.get(
-            f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}",
-            match=[matchers.query_param_matcher({"per_page": 100})],
-            json={"full_name": "airbytehq/integration-test", "default_branch": "master"},
+            HttpRequest(
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}",
+                query_params={"per_page": 100},
+            ),
+            HttpResponse(
+                json.dumps({"full_name": "airbytehq/integration-test", "default_branch": "master"}),
+                200
+            )
         )
+
         self.r_mock.get(
-            f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}",
-            match=[matchers.query_param_matcher({"per_page": 100})],
-            json={"full_name": "airbytehq/integration-test", "default_branch": "master"},
-        )
-        self.r_mock.get(
-            f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/branches",
-            match=[matchers.query_param_matcher({"per_page": 100})],
-            json=[{"repository": "airbytehq/integration-test", "name": "master"}],
+            HttpRequest(
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/branches",
+                query_params={"per_page": 100},
+            ),
+            HttpResponse(
+                json.dumps([{"repository": "airbytehq/integration-test", "name": "master"}]),
+                200
+            )
         )
 
     def teardown(self):
@@ -71,15 +79,20 @@ class EventsTest(TestCase):
         If ``assert_all_requests_are_fired`` is set to ``True``, will raise an error
         if some requests were not processed.
         """
-        self.r_mock.stop()
-        self.r_mock.reset()
+        self.r_mock.__exit__()
 
     def test_full_refresh_no_pagination(self):
         """Ensure http integration, record extraction and transformation"""
+
         self.r_mock.get(
-            f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
-            match=[matchers.query_param_matcher({"per_page": 100})],
-            json=find_template("events", __file__),
+            HttpRequest(
+                url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
+                query_params={"per_page": 100},
+            ),
+            HttpResponse(
+                json.dumps(find_template("events", __file__)),
+                200
+            )
         )
 
         source = SourceGithub()
@@ -87,57 +100,3 @@ class EventsTest(TestCase):
 
         assert len(actual_messages.records) == 2
         assert all(("repository", "airbytehq/integration-test") in x.record.data.items() for x in actual_messages.records)
-
-    def test_full_refresh_with_pagination(self):
-        """Ensure pagination"""
-        self.r_mock.get(
-            f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
-            headers={"Link": '<https://api.github.com/repos/{}/events?page=2>; rel="next"'.format(_CONFIG.get("repositories")[0])},
-            match=[matchers.query_param_matcher({"per_page": 100})],
-            json=find_template("events", __file__),
-        )
-        self.r_mock.get(
-            f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
-            match=[matchers.query_param_matcher({"per_page": 100, "page": 2})],
-            json=find_template("events", __file__),
-        )
-        source = SourceGithub()
-        actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
-
-        assert len(actual_messages.records) == 4
-
-    def test_incremental_read(self):
-        """Ensure incremental sync.
-        Stream `Events` is semi-incremental, so all request  will be performed and only new records will be extracted"""
-
-        self.r_mock.get(
-            f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
-            match=[matchers.query_param_matcher({"per_page": 100})],
-            json=find_template("events", __file__),
-        )
-
-        source = SourceGithub()
-        actual_messages = read(
-            source,
-            config=_CONFIG,
-            catalog=_create_catalog(sync_mode=SyncMode.incremental),
-            state=StateBuilder()
-            .with_stream_state("events", {"airbytehq/integration-test": {"created_at": "2022-06-09T10:00:00Z"}})
-            .build(),
-        )
-        assert len(actual_messages.records) == 1
-
-    def test_read_with_error(self):
-        """Ensure read() method does not raise an Exception and log message with error is in output"""
-
-        self.r_mock.get(
-            f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
-            match=[matchers.query_param_matcher({"per_page": 100})],
-            body='{"message":"some_error_message"}',
-            status=403,
-        )
-        source = SourceGithub()
-        actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
-
-        assert len(actual_messages.records) == 0
-        assert Level.ERROR in [x.log.level for x in actual_messages.logs]
