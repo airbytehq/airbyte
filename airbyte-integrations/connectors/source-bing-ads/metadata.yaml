@@ -25,8 +25,7 @@ data:
   name: Bing Ads
   remoteRegistries:
     pypi:
-      enabled: false
-      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      enabled: true
       packageName: airbyte-source-bing-ads
   registries:
     cloud:
