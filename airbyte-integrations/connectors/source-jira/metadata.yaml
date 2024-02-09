@@ -18,6 +18,10 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 21600
   name: Jira
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-jira
   registries:
     cloud:
       enabled: true

@@ -7,24 +7,35 @@ import abc
 import enum
 from contextlib import contextmanager
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, cast, final
+from typing import TYPE_CHECKING, cast, final
 
 import pandas as pd
 import pyarrow as pa
 import sqlalchemy
 import ulid
 from overrides import overrides
-from sqlalchemy import Column, String, create_engine, text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import (
+    Column,
+    Table,
+    and_,
+    create_engine,
+    insert,
+    null,
+    select,
+    text,
+    update,
+)
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql.elements import TextClause
 
 from airbyte_lib import exceptions as exc
 from airbyte_lib._file_writers.base import FileWriterBase, FileWriterBatchHandle
 from airbyte_lib._processors import BatchHandle, RecordProcessor
+from airbyte_lib._util.text_util import lower_case_set
 from airbyte_lib.caches._catalog_manager import CatalogManager
 from airbyte_lib.config import CacheConfigBase
 from airbyte_lib.datasets._sql import CachedDataset
+from airbyte_lib.strategies import WriteStrategy
 from airbyte_lib.types import SQLTypeConverter
 
 
@@ -38,8 +49,8 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.base import Executable
 
     from airbyte_protocol.models import (
+        AirbyteStateMessage,
         ConfiguredAirbyteCatalog,
-        ConfiguredAirbyteStream,
     )
 
     from airbyte_lib.datasets._base import DatasetBase
@@ -47,20 +58,6 @@ if TYPE_CHECKING:
 
 
 DEBUG_MODE = False  # Set to True to enable additional debug logging.
-
-
-STREAMS_TABLE_NAME = "_airbytelib_streams"
-
-Base = declarative_base()
-
-
-class CachedStream(Base):  # type: ignore[valid-type,misc]
-    __tablename__ = STREAMS_TABLE_NAME
-
-    stream_name = Column(String)
-    source_name = Column(String)
-    table_name = Column(String, primary_key=True)
-    catalog_metadata = Column(String)
 
 
 class RecordDedupeMode(enum.Enum):
@@ -75,7 +72,6 @@ class SQLRuntimeError(Exception):
 class SQLCacheConfigBase(CacheConfigBase):
     """Same as a regular config except it exposes the 'get_sql_alchemy_url()' method."""
 
-    dedupe_mode = RecordDedupeMode.REPLACE
     schema_name: str = "airbyte_raw"
 
     table_prefix: str | None = None
@@ -128,19 +124,21 @@ class SQLCacheBase(RecordProcessor):
         self,
         config: SQLCacheConfigBase | None = None,
         file_writer: FileWriterBase | None = None,
-        **kwargs: dict[str, Any],  # Added for future proofing purposes.
     ) -> None:
         self.config: SQLCacheConfigBase
         self._engine: Engine | None = None
         self._connection_to_reuse: Connection | None = None
-        super().__init__(config, **kwargs)
+        super().__init__(config)
         self._ensure_schema_exists()
-        self._catalog_manager: CatalogManager = CatalogManager(
-            self.get_sql_engine(), lambda stream_name: self.get_sql_table_name(stream_name)
+        self._catalog_manager = CatalogManager(
+            engine=self.get_sql_engine(),
+            table_name_resolver=lambda stream_name: self.get_sql_table_name(stream_name),
         )
-
-        self.file_writer = file_writer or self.file_writer_class(config)
+        self.file_writer = file_writer or self.file_writer_class(
+            config, catalog_manager=self._catalog_manager
+        )
         self.type_converter = self.type_converter_class()
+        self._cached_table_definitions: dict[str, sqlalchemy.Table] = {}
 
     def __getitem__(self, stream: str) -> DatasetBase:
         return self.streams[stream]
@@ -236,13 +234,28 @@ class SQLCacheBase(RecordProcessor):
         self,
         stream_name: str,
     ) -> sqlalchemy.Table:
-        """Return a temporary table name."""
-        table_name = self.get_sql_table_name(stream_name)
-        return sqlalchemy.Table(
-            table_name,
-            sqlalchemy.MetaData(schema=self.config.schema_name),
-            autoload_with=self.get_sql_engine(),
-        )
+        """Return the main table object for the stream."""
+        return self._get_table_by_name(self.get_sql_table_name(stream_name))
+
+    def _get_table_by_name(
+        self,
+        table_name: str,
+        *,
+        force_refresh: bool = False,
+    ) -> sqlalchemy.Table:
+        """Return a table object from a table name.
+
+        To prevent unnecessary round-trips to the database, the table is cached after the first
+        query. To ignore the cache and force a refresh, set 'force_refresh' to True.
+        """
+        if force_refresh or table_name not in self._cached_table_definitions:
+            self._cached_table_definitions[table_name] = sqlalchemy.Table(
+                table_name,
+                sqlalchemy.MetaData(schema=self.config.schema_name),
+                autoload_with=self.get_sql_engine(),
+            )
+
+        return self._cached_table_definitions[table_name]
 
     @final
     @property
@@ -397,12 +410,19 @@ class SQLCacheBase(RecordProcessor):
         stream_column_names: list[str] = json_schema["properties"].keys()
         table_column_names: list[str] = self.get_sql_table(stream_name).columns.keys()
 
-        missing_columns: set[str] = set(stream_column_names) - set(table_column_names)
+        lower_case_table_column_names = lower_case_set(table_column_names)
+        missing_columns = [
+            stream_col
+            for stream_col in stream_column_names
+            if stream_col.lower() not in lower_case_table_column_names
+        ]
         if missing_columns:
             if raise_on_error:
                 raise exc.AirbyteLibCacheTableValidationError(
                     violation="Cache table is missing expected columns.",
                     context={
+                        "stream_column_names": stream_column_names,
+                        "table_column_names": table_column_names,
                         "missing_columns": missing_columns,
                     },
                 )
@@ -415,9 +435,14 @@ class SQLCacheBase(RecordProcessor):
         self,
         table_name: str,
         column_definition_str: str,
+        primary_keys: list[str] | None = None,
     ) -> None:
         if DEBUG_MODE:
             assert table_name not in self._get_tables_list(), f"Table {table_name} already exists."
+
+        if primary_keys:
+            pk_str = ", ".join(primary_keys)
+            column_definition_str += f",\n  PRIMARY KEY ({pk_str})"
 
         cmd = f"""
         CREATE TABLE {self._fully_qualified(table_name)} (
@@ -462,28 +487,12 @@ class SQLCacheBase(RecordProcessor):
         # columns["_airbyte_loaded_at"] = sqlalchemy.TIMESTAMP()
         return columns
 
-    @final
-    def _get_stream_config(
-        self,
-        stream_name: str,
-    ) -> ConfiguredAirbyteStream:
-        """Return the column definitions for the given stream."""
-        return self._catalog_manager.get_stream_config(stream_name)
-
-    @final
-    def _get_stream_json_schema(
-        self,
-        stream_name: str,
-    ) -> dict[str, Any]:
-        """Return the column definitions for the given stream."""
-        return self._get_stream_config(stream_name).stream.json_schema
-
     @overrides
     def _write_batch(
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> FileWriterBatchHandle:
         """Process a record batch.
 
@@ -507,7 +516,11 @@ class SQLCacheBase(RecordProcessor):
 
     @final
     @overrides
-    def _finalize_batches(self, stream_name: str) -> dict[str, BatchHandle]:
+    def _finalize_batches(
+        self,
+        stream_name: str,
+        write_strategy: WriteStrategy,
+    ) -> dict[str, BatchHandle]:
         """Finalize all uncommitted batches.
 
         This is a generic 'final' implementation, which should not be overridden.
@@ -542,21 +555,52 @@ class SQLCacheBase(RecordProcessor):
             )
 
             temp_table_name = self._write_files_to_new_table(
-                files,
-                stream_name,
-                max_batch_id,
+                files=files,
+                stream_name=stream_name,
+                batch_id=max_batch_id,
             )
             try:
                 self._write_temp_table_to_final_table(
-                    stream_name,
-                    temp_table_name,
-                    final_table_name,
+                    stream_name=stream_name,
+                    temp_table_name=temp_table_name,
+                    final_table_name=final_table_name,
+                    write_strategy=write_strategy,
                 )
             finally:
                 self._drop_temp_table(temp_table_name, if_exists=True)
 
             # Return the batch handles as measure of work completed.
             return batches_to_finalize
+
+    @overrides
+    def _finalize_state_messages(
+        self,
+        stream_name: str,
+        state_messages: list[AirbyteStateMessage],
+    ) -> None:
+        """Handle state messages by passing them to the catalog manager."""
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+        if state_messages and self._source_name:
+            self._catalog_manager.save_state(
+                source_name=self._source_name,
+                stream_name=stream_name,
+                state=state_messages[-1],
+            )
+
+    def get_state(self) -> list[dict]:
+        """Return the current state of the source."""
+        if not self._source_name:
+            return []
+        if not self._catalog_manager:
+            raise exc.AirbyteLibInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+        return (
+            self._catalog_manager.get_state(self._source_name, list(self._streams_with_data)) or []
+        )
 
     def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult:
         """Execute the given SQL statement."""
@@ -631,33 +675,66 @@ class SQLCacheBase(RecordProcessor):
         stream_name: str,
         temp_table_name: str,
         final_table_name: str,
+        write_strategy: WriteStrategy,
     ) -> None:
-        """Merge the temp table into the final table."""
-        if self.config.dedupe_mode == RecordDedupeMode.REPLACE:
-            if not self.supports_merge_insert:
-                raise NotImplementedError(
-                    "Deduping was requested but merge-insert is not yet supported.",
-                )
+        """Write the temp table into the final table using the provided write strategy."""
+        has_pks: bool = bool(self._get_primary_keys(stream_name))
+        has_incremental_key: bool = bool(self._get_incremental_key(stream_name))
+        if write_strategy == WriteStrategy.MERGE and not has_pks:
+            raise exc.AirbyteLibInputError(
+                message="Cannot use merge strategy on a stream with no primary keys.",
+                context={
+                    "stream_name": stream_name,
+                },
+            )
 
-            if not self._get_primary_keys(stream_name):
-                self._swap_temp_table_with_final_table(
-                    stream_name,
-                    temp_table_name,
-                    final_table_name,
-                )
+        if write_strategy == WriteStrategy.AUTO:
+            if has_pks:
+                write_strategy = WriteStrategy.MERGE
+            elif has_incremental_key:
+                write_strategy = WriteStrategy.APPEND
             else:
-                self._merge_temp_table_to_final_table(
-                    stream_name,
-                    temp_table_name,
-                    final_table_name,
-                )
+                write_strategy = WriteStrategy.REPLACE
 
-        else:
+        if write_strategy == WriteStrategy.REPLACE:
+            self._swap_temp_table_with_final_table(
+                stream_name=stream_name,
+                temp_table_name=temp_table_name,
+                final_table_name=final_table_name,
+            )
+            return
+
+        if write_strategy == WriteStrategy.APPEND:
             self._append_temp_table_to_final_table(
                 stream_name=stream_name,
                 temp_table_name=temp_table_name,
                 final_table_name=final_table_name,
             )
+            return
+
+        if write_strategy == WriteStrategy.MERGE:
+            if not self.supports_merge_insert:
+                # Fallback to emulated merge if the database does not support merge natively.
+                self._emulated_merge_temp_table_to_final_table(
+                    stream_name=stream_name,
+                    temp_table_name=temp_table_name,
+                    final_table_name=final_table_name,
+                )
+                return
+
+            self._merge_temp_table_to_final_table(
+                stream_name=stream_name,
+                temp_table_name=temp_table_name,
+                final_table_name=final_table_name,
+            )
+            return
+
+        raise exc.AirbyteLibInternalError(
+            message="Write strategy is not supported.",
+            context={
+                "write_strategy": write_strategy,
+            },
+        )
 
     def _append_temp_table_to_final_table(
         self,
@@ -693,6 +770,12 @@ class SQLCacheBase(RecordProcessor):
                 raise NotImplementedError(msg)
 
         return joined_pks
+
+    def _get_incremental_key(
+        self,
+        stream_name: str,
+    ) -> str | None:
+        return self._get_stream_config(stream_name).cursor_field
 
     def _swap_temp_table_with_final_table(
         self,
@@ -758,6 +841,87 @@ class SQLCacheBase(RecordProcessor):
             """,
         )
 
+    def _get_column_by_name(self, table: str | Table, column_name: str) -> Column:
+        """Return the column object for the given column name.
+
+        This method is case-insensitive.
+        """
+        if isinstance(table, str):
+            table = self._get_table_by_name(table)
+        try:
+            # Try to get the column in a case-insensitive manner
+            return next(col for col in table.c if col.name.lower() == column_name.lower())
+        except StopIteration:
+            raise exc.AirbyteLibInternalError(
+                message="Could not find matching column.",
+                context={
+                    "table": table,
+                    "column_name": column_name,
+                },
+            ) from None
+
+    def _emulated_merge_temp_table_to_final_table(
+        self,
+        stream_name: str,
+        temp_table_name: str,
+        final_table_name: str,
+    ) -> None:
+        """Emulate the merge operation using a series of SQL commands.
+
+        This is a fallback implementation for databases that do not support MERGE.
+        """
+        final_table = self._get_table_by_name(final_table_name)
+        temp_table = self._get_table_by_name(temp_table_name)
+        pk_columns = self._get_primary_keys(stream_name)
+
+        columns_to_update: set[str] = self._get_sql_column_definitions(
+            stream_name=stream_name
+        ).keys() - set(pk_columns)
+
+        # Create a dictionary mapping columns in users_final to users_stage for updating
+        update_values = {
+            self._get_column_by_name(final_table, column): (
+                self._get_column_by_name(temp_table, column)
+            )
+            for column in columns_to_update
+        }
+
+        # Craft the WHERE clause for composite primary keys
+        join_conditions = [
+            self._get_column_by_name(final_table, pk_column)
+            == self._get_column_by_name(temp_table, pk_column)
+            for pk_column in pk_columns
+        ]
+        join_clause = and_(*join_conditions)
+
+        # Craft the UPDATE statement
+        update_stmt = update(final_table).values(update_values).where(join_clause)
+
+        # Define a join between temp_table and final_table
+        joined_table = temp_table.outerjoin(final_table, join_clause)
+
+        # Define a condition that checks for records in temp_table that do not have a corresponding
+        # record in final_table
+        where_not_exists_clause = self._get_column_by_name(final_table, pk_columns[0]) == null()
+
+        # Select records from temp_table that are not in final_table
+        select_new_records_stmt = (
+            select([temp_table]).select_from(joined_table).where(where_not_exists_clause)
+        )
+
+        # Craft the INSERT statement using the select statement
+        insert_new_records_stmt = insert(final_table).from_select(
+            names=[column.name for column in temp_table.columns], select=select_new_records_stmt
+        )
+
+        if DEBUG_MODE:
+            print(str(update_stmt))
+            print(str(insert_new_records_stmt))
+
+        with self.get_sql_connection() as conn:
+            conn.execute(update_stmt)
+            conn.execute(insert_new_records_stmt)
+
     @final
     def _table_exists(
         self,
@@ -771,15 +935,28 @@ class SQLCacheBase(RecordProcessor):
         self,
         source_name: str,
         incoming_source_catalog: ConfiguredAirbyteCatalog,
+        stream_names: set[str],
     ) -> None:
+        """Register the source with the cache.
+
+        We use stream_names to determine which streams will receive data, and
+        we only register the stream if is expected to receive data.
+
+        This method is called by the source when it is initialized.
+        """
+        self._source_name = source_name
         self._ensure_schema_exists()
-        self._catalog_manager.register_source(source_name, incoming_source_catalog)
+        super().register_source(
+            source_name,
+            incoming_source_catalog,
+            stream_names=stream_names,
+        )
 
     @property
     @overrides
     def _streams_with_data(self) -> set[str]:
         """Return a list of known streams."""
-        if not self._catalog_manager.source_catalog:
+        if not self._catalog_manager:
             raise exc.AirbyteLibInternalError(
                 message="Cannot get streams with data without a catalog.",
             )

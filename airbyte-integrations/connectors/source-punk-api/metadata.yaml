@@ -8,6 +8,10 @@ data:
   icon: punkapi.svg
   license: MIT
   name: Punk API
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-punk-api
   registries:
     cloud:
       enabled: true

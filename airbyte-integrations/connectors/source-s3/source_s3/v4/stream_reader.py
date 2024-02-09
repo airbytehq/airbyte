@@ -58,6 +58,10 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         if self._s3_client is None:
             client_kv_args = _get_s3_compatible_client_args(self.config) if self.config.endpoint else {}
 
+            # Set the region_name if it's provided in the config
+            if self.config.region_name:
+                client_kv_args["region_name"] = self.config.region_name
+
             if self.config.role_arn:
                 self._s3_client = self._get_iam_s3_client(client_kv_args)
             else:

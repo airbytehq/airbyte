@@ -8,4 +8,9 @@ const fetchCatalog = async () => {
   return json;
 };
 
-module.exports = fetchCatalog();
+module.exports = {
+  catalog: fetchCatalog(),
+  isPypiConnector: (connector) => {
+    return Boolean(connector.remoteRegistries_oss?.pypi?.enabled);
+  }
+}

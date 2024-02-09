@@ -9,7 +9,7 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'org.apache.commons:commons-lang3:3.11'

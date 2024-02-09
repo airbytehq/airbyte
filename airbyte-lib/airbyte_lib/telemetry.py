@@ -13,9 +13,7 @@ import requests
 from airbyte_lib.version import get_version
 
 
-# TODO: Use production tracking key
-# TODO: This 'or' is a no-op. Intentional? Should we switch order to prefer env var if available?
-TRACKING_KEY = "jxT1qP9WEKwR3vtKMwP9qKhfQEGFtIM1" or str(os.environ.get("AIRBYTE_TRACKING_KEY"))  # noqa: SIM222
+TRACKING_KEY = os.environ.get("AIRBYTE_TRACKING_KEY", "") or "cukeSffc0G6gFQehKDhhzSurDzVSZ2OP"
 
 
 class SourceType(str, Enum):
