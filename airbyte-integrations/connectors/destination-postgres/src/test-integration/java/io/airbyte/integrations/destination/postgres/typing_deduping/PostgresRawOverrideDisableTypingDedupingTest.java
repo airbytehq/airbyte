@@ -35,7 +35,6 @@ public class PostgresRawOverrideDisableTypingDedupingTest extends PostgresTyping
   @Disabled
   @Test
   @Override
-  public void testVarcharLimitOver64K() {
-  }
+  public void testVarcharLimitOver64K() {}
 
 }
