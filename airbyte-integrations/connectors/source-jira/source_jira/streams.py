@@ -48,12 +48,14 @@ class JiraStream(HttpStream, ABC):
     extract_field: Optional[str] = None
     api_v1 = False
     # Defines the HTTP status codes for which the slice should be skipped.
-    # Refernce issue: https://github.com/airbytehq/oncall/issues/2133
+    # Reference issue: https://github.com/airbytehq/oncall/issues/2133
     # we should skip the slice with `board id` which doesn't support `sprints`
     # it's generally applied to all streams that might have the same error hit in the future.
     skip_http_status_codes = [requests.codes.BAD_REQUEST]
     raise_on_http_errors = True
     transformer: TypeTransformer = DateTimeTransformer(TransformConfig.DefaultSchemaNormalization)
+    # emitting state message after every page read
+    state_checkpoint_interval = page_size
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -254,7 +256,6 @@ class BoardIssues(StartDateJiraStream):
     cursor_field = "updated"
     extract_field = "issues"
     api_v1 = True
-    state_checkpoint_interval = 50  # default page size is 50
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -416,7 +417,6 @@ class Issues(IncrementalJiraStream):
     # Issue: https://github.com/airbytehq/airbyte/issues/26712
     # we should skip the slice with wrong permissions on project level
     skip_http_status_codes = [requests.codes.FORBIDDEN, requests.codes.BAD_REQUEST]
-    state_checkpoint_interval = 50  # default page size is 50
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

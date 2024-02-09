@@ -8,11 +8,16 @@ data:
   icon: appstore.svg
   license: MIT
   name: Appstore
-  registries:
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-appstore-singer
+  registries: # Removed from registries due to LEGACY STATE
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/appstore
   tags:

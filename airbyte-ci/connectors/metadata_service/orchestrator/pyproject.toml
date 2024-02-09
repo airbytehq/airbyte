@@ -34,13 +34,9 @@ pendulum = "<3.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
+pytest = "^7.2.2"
 ptpython = "^3.0.23"
 pdbpp = "^0.10.3"
-
-
-[tool.poetry.group.test.dependencies]
-pytest = "^7.2.2"
-
 
 [build-system]
 requires = ["poetry-core"]
@@ -48,3 +44,10 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.dagster]
 module_name = "orchestrator"
+
+[tool.poe.tasks]
+test = "pytest tests"
+
+[tool.airbyte_ci]
+extra_poetry_groups = ["dev"]
+poe_tasks = ["test"]

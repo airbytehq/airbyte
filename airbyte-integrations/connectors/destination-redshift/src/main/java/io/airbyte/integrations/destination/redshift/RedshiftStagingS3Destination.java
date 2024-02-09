@@ -42,7 +42,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
-import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopV2TableMigrator;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
@@ -206,25 +205,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                   of streams {} this will create more buffers than necessary, leading to nonexistent gains
                   """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
     }
-    // Short circuit old way of running things during transition.
-    if (!TypingAndDedupingFlag.isDestinationV2()) {
-      return new StagingConsumerFactory().createAsync(
-          outputRecordCollector,
-          getDatabase(getDataSource(config)),
-          new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
-          getNamingResolver(),
-          config,
-          catalog,
-          isPurgeStagingData(s3Options),
-          new TypeAndDedupeOperationValve(),
-          new NoopTyperDeduper(),
-          // The parsedcatalog is only used in v2 mode, so just pass null for now
-          null,
-          // Overwriting null namespace with null is perfectly safe
-          null,
-          // still using v1 table format
-          false);
-    }
 
     final String defaultNamespace = config.get("schema").asText();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
@@ -256,7 +236,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
       typerDeduper =
           new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, defaultThreadCount);
     }
-    return new StagingConsumerFactory().createAsync(
+    return StagingConsumerFactory.builder(
         outputRecordCollector,
         database,
         new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
@@ -268,7 +248,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true);
+        true).build().createAsync();
   }
 
   /**

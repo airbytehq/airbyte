@@ -23,7 +23,7 @@ ci-credentials = {path = "../ci_credentials"}
 pandas = "^2.0.3"
 simpleeval = "^0.9.13"
 
-[tool.poetry.group.test.dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
 pytest-mock = "^3.10.0"
 freezegun = "^1.1.0"
@@ -34,3 +34,10 @@ write-review-requirements-file = "connector_ops.required_reviewer_checks:write_r
 print-mandatory-reviewers = "connector_ops.required_reviewer_checks:print_mandatory_reviewers"
 allowed-hosts-checks = "connector_ops.allowed_hosts_checks:check_allowed_hosts"
 run-qa-checks = "connector_ops.qa_checks:run_qa_checks"
+
+[tool.poe.tasks]
+test = "pytest tests"
+
+[tool.airbyte_ci]
+extra_poetry_groups = ["dev"]
+poe_tasks = ["test"]

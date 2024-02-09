@@ -43,16 +43,6 @@ class AsyncFlush implements DestinationFlushFunction {
                     final ConfiguredAirbyteCatalog catalog,
                     final TypeAndDedupeOperationValve typerDeduperValve,
                     final TyperDeduper typerDeduper,
-                    final boolean useDestinationsV2Columns) {
-    this(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, 50 * 1024 * 1024, useDestinationsV2Columns);
-  }
-
-  public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
-                    final StagingOperations stagingOperations,
-                    final JdbcDatabase database,
-                    final ConfiguredAirbyteCatalog catalog,
-                    final TypeAndDedupeOperationValve typerDeduperValve,
-                    final TyperDeduper typerDeduper,
                     // In general, this size is chosen to improve the performance of lower memory connectors. With 1 Gi
                     // of
                     // resource the connector will usually at most fill up around 150 MB in a single queue. By lowering
@@ -103,6 +93,7 @@ class AsyncFlush implements DestinationFlushFunction {
 
     final WriteConfig writeConfig = streamDescToWriteConfig.get(decs);
     final String schemaName = writeConfig.getOutputSchemaName();
+    final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
     final String stagingPath =
         stagingOperations.getStagingPath(
             GeneralStagingFunctions.RANDOM_CONNECTION_ID,
@@ -111,9 +102,10 @@ class AsyncFlush implements DestinationFlushFunction {
             writeConfig.getOutputTableName(),
             writeConfig.getWriteDatetime());
     try {
-      final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stagingPath);
+      final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
       GeneralStagingFunctions.copyIntoTableFromStage(
           database,
+          stageName,
           stagingPath,
           List.of(stagedFile),
           writeConfig.getOutputTableName(),
