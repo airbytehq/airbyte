@@ -181,7 +181,6 @@ subprojects { subproj ->
 
     apply plugin: 'java'
     apply plugin: 'java-test-fixtures'
-    apply plugin: 'jacoco'
     apply plugin: 'com.github.spotbugs'
 
     java {
@@ -214,40 +213,6 @@ subprojects { subproj ->
             afterEvaluate {
                 def cdkVersionNeeded = getCDKSnapshotRequirement(configurations.compileClasspath.incoming.resolutionResult.allDependencies)
                 checkCDKJarExists(cdkVersionNeeded)
-            }
-        }
-    }
-
-    jacoco {
-        toolVersion = "0.8.8"
-    }
-
-    jacocoTestReport {
-        reports {
-            html.required = true
-            xml.required = true
-            csv.required = false
-        }
-    }
-    def jacocoTestReportTask = tasks.named('jacocoTestReport')
-    jacocoTestReportTask.configure {
-        dependsOn tasks.named('test')
-    }
-
-    jacocoTestCoverageVerification {
-        violationRules {
-            failOnViolation = false
-            rule {
-                element = 'CLASS'
-                excludes = ['**/*Test*', '**/generated*']
-                limit {
-                    counter = 'BRANCH'
-                    minimum = 0.8
-                }
-                limit {
-                    counter = 'INSTRUCTION'
-                    minimum = 0.8
-                }
             }
         }
     }
@@ -321,12 +286,6 @@ subprojects { subproj ->
             exclude '**/io/airbyte/integrations/source/**'
             exclude '**/io/airbyte/integrations/destination/**'
         }
-
-        jacoco {
-            enabled = !rootProject.ext.skipSlowTests
-            excludes = ['**/*Test*', '**/generated*']
-        }
-        finalizedBy jacocoTestReportTask
     }
 
     dependencies {
