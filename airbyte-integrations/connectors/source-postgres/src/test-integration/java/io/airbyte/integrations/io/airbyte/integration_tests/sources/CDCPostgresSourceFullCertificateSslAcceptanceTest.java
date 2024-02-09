@@ -14,7 +14,7 @@ public class CDCPostgresSourceFullCertificateSslAcceptanceTest extends AbstractC
   public Map<Object, Object> getCertificateConfiguration() {
     final var certs = testdb.getCertificates();
     return ImmutableMap.builder()
-        .put("mode", "verify-ca")
+        .put("mode", "verify-full")
         .put("ca_certificate", certs.caCertificate())
         .put("client_certificate", certs.clientCertificate())
         .put("client_key", certs.clientKey())

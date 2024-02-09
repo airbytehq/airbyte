@@ -113,19 +113,29 @@ public class PostgresTestDatabase extends
 
   private Certificates cachedCerts;
 
-  public synchronized Certificates getCertificates() {
+  public Certificates getCertificates() {
     if (cachedCerts == null) {
-      final String caCert, clientKey, clientCert;
-      try {
-        caCert = getContainer().execInContainer("su", "-c", "cat ca.crt").getStdout().trim();
-        clientKey = getContainer().execInContainer("su", "-c", "cat client.key").getStdout().trim();
-        clientCert = getContainer().execInContainer("su", "-c", "cat client.crt").getStdout().trim();
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
+      synchronized(this) {
+        if (cachedCerts == null) {
+          final String caCert, clientKey, clientCert;
+          try {
+            caCert = getContainer().execInContainer("su", "-c", "cat ca.crt").getStdout().trim();
+            getContainer().execInContainer("su", "-c", "openssl ecparam -name prime256v1 -genkey -noout -out client_"+getUserName()+".key");
+            getContainer().execInContainer("su", "-c","openssl req -new -sha256 -key client_"+getUserName()+".key -out client_"+getUserName()+".csr -subj \"/CN=" + getUserName() + "\"");
+            getContainer().execInContainer("su", "-c","openssl x509 -req -in client_"+getUserName()+".csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client_" + getUserName() + ".crt -days 365 -sha256");
+            clientCert = getContainer().execInContainer("su", "-c", "cat client_" + getUserName() + ".crt").getStdout()
+                .trim();
+            clientKey = getContainer().execInContainer("su", "-c", "cat client_" + getUserName() + ".key").getStdout()
+                .trim();
+
+          } catch (IOException e) {
+            throw new UncheckedIOException(e);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+          cachedCerts = new Certificates(caCert, clientCert, clientKey);
+        }
       }
-      cachedCerts = new Certificates(caCert, clientCert, clientKey);
     }
     return cachedCerts;
   }

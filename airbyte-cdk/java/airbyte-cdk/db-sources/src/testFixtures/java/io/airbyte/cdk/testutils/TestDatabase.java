@@ -99,8 +99,8 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
   final public T initialized() {
     inContainerBootstrapCmd().forEach(this::execInContainer);
     this.dataSource = DataSourceFactory.create(
-        getUserName(),
-        getPassword(),
+        getContainer().getUsername(),
+        getContainer().getPassword(),
         getDatabaseDriver().getDriverClassName(),
         getJdbcUrl(),
         connectionProperties,
@@ -192,7 +192,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
       if (exec.getExitCode() == 0) {
         LOGGER.debug("execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr());
       } else {
-        LOGGER.error("execution failure, code {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
+        throw new RuntimeException("execution failure, code " + exec.getExitCode() + "\nstdout:\n" + exec.getStdout() + "\nstderr:\n{}" + exec.getStderr());
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
