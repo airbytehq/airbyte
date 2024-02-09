@@ -8,5 +8,13 @@
               "array"
             ]
           }
+        }, 
+        "Companies": {
+          "items": {},
+          "required": null,
+          "type": [
+            "null",
+            "array"
+          ]
         }
 }
