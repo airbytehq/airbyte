@@ -6,6 +6,7 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
+import io.airbyte.integrations.source.mysql.MySQLContainerFactory;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
 
@@ -22,9 +23,12 @@ public class CDCMySqlDatatypeAccuracyTest extends MySqlDatatypeAccuracyTest {
 
   @Override
   protected Database setupDatabase() {
-    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8)
+    final var sharedContainer = new MySQLContainerFactory().shared("mysql:8.0");
+    testdb = new MySQLTestDatabase(sharedContainer)
         .withConnectionProperty("zeroDateTimeBehavior", "convertToNull")
-        .withoutStrictMode().withCdcPermissions();
+        .initialized()
+        .withoutStrictMode()
+        .withCdcPermissions();
     return testdb.getDatabase();
   }
 
