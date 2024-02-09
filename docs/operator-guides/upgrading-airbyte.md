@@ -99,7 +99,7 @@ The instructions below are for users using custom deployment and have a `values.
    After 2-5 minutes, Helm will print a message showing how to port-forward Airbyte. This may take longer on Kubernetes clusters with slow internet connections. In general the message is the following:
    ```bash
    export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=webapp" -o jsonpath="{.items[0].metadata.name}")          
-  export CONTAINER_PORT=$(kubectl get pod  $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")          
-  echo "Visit http://127.0.0.1:8080 to use your application"
-  kubectl  port-forward $POD_NAME 8080:$CONTAINER_PORT
+   export CONTAINER_PORT=$(kubectl get pod  $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")          
+   echo "Visit http://127.0.0.1:8080 to use your application"
+   kubectl  port-forward $POD_NAME 8080:$CONTAINER_PORT
   ```
