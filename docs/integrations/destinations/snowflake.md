@@ -246,6 +246,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.7 | 2024-02-08 | [34747](https://github.com/airbytehq/airbyte/pull/34747) | Adopt CDK 0.19.0 |
 | 3.5.6           | 2024-02-08 | [\#35027](https://github.com/airbytehq/airbyte/pull/35027) | Upgrade CDK to version 0.17.1                                                                                                                                   |
 | 3.5.5           | 2024-02-08 | [\#34502](https://github.com/airbytehq/airbyte/pull/34502) | Reduce COPY frequency                                                                                                                                           |
 | 3.5.4           | 2024-01-24 | [\#34451](https://github.com/airbytehq/airbyte/pull/34451) | Improve logging for unparseable input                                                                                                                           |
