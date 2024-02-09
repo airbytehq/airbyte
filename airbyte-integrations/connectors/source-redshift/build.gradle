@@ -35,7 +35,4 @@ dependencies {
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
     integrationTestJavaImplementation libs.testcontainers.jdbc
-    testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
-
-
 }

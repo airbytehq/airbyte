@@ -10,8 +10,10 @@ import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,8 @@ import org.slf4j.LoggerFactory;
 public class RelationalDbQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RelationalDbQueryUtils.class);
+
+  public record TableSizeInfo(Long tableSize, Long avgRowLength) {}
 
   public static String getIdentifierWithQuoting(final String identifier, final String quoteString) {
     // double-quoted values within a database name or column name should be wrapped with extra
@@ -77,6 +81,19 @@ public class RelationalDbQueryUtils {
         throw new RuntimeException(e);
       }
     }, airbyteStreamNameNamespacePair);
+  }
+
+  public static void logStreamSyncStatus(final List<ConfiguredAirbyteStream> streams, final String syncType) {
+    if (streams.isEmpty()) {
+      LOGGER.info("No Streams will be synced via {}.", syncType);
+    } else {
+      LOGGER.info("Streams to be synced via {} : {}", syncType, streams.size());
+      LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(streams));
+    }
+  }
+
+  public static String prettyPrintConfiguredAirbyteStreamList(final List<ConfiguredAirbyteStream> streamList) {
+    return streamList.stream().map(s -> "%s.%s".formatted(s.getStream().getNamespace(), s.getStream().getName())).collect(Collectors.joining(", "));
   }
 
 }
