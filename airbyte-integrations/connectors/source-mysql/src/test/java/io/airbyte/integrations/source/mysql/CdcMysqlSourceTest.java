@@ -181,6 +181,20 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     }
   }
 
+  @Override
+  protected void writeRecords(
+      final JsonNode recordJson,
+      final String dbName,
+      final String streamName,
+      final String idCol,
+      final String makeIdCol,
+      final String modelCol) {
+    testdb.with("INSERT INTO `%s`.`%s` (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
+        idCol, makeIdCol, modelCol,
+        recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
+        recordJson.get(modelCol).asText());
+  }
+
   @Test
   protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
     testdb.with("REVOKE REPLICATION CLIENT ON *.* FROM %s@'%%';", testdb.getUserName());

@@ -379,6 +379,12 @@
         "order": 4,
         "type": "string"
       },
+      "region_name": {
+        "title": "AWS Region",
+        "description": "AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
+        "order": 5,
+        "type": "string"
+      },
       "dataset": {
         "title": "Output Stream Name",
         "description": "Deprecated and will be removed soon. Please do not use this field anymore and use streams.name instead. The name of the stream you would like this source to output. Can contain letters, numbers, or underscores.",
@@ -619,7 +625,7 @@
             "title": "AWS Role ARN",
             "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
             "always_show": true,
-            "order": 6,
+            "order": 7,
             "type": "string"
           },
           "path_prefix": {
@@ -636,13 +642,19 @@
             "order": 4,
             "type": "string"
           },
+          "region_name": {
+            "title": "AWS Region",
+            "description": "AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
+            "order": 5,
+            "type": "string"
+          },
           "start_date": {
             "title": "Start Date",
             "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
             "examples": ["2021-01-01T00:00:00Z"],
             "format": "date-time",
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-            "order": 5,
+            "order": 6,
             "type": "string"
           }
         },
