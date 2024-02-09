@@ -14,6 +14,7 @@ import tempfile
 from pathlib import Path
 
 import yaml
+from rich import print
 
 import airbyte_lib as ab
 from airbyte_lib import exceptions as exc
@@ -42,20 +43,26 @@ def _parse_args() -> argparse.Namespace:
 
 
 def _run_subprocess_and_raise_on_failure(args: list[str]) -> None:
-    result = subprocess.run(args, check=False)
+    result = subprocess.run(
+        args,
+        check=False,
+        stderr=subprocess.PIPE,
+    )
     if result.returncode != 0:
         raise exc.AirbyteSubprocessFailedError(
             run_args=args,
             exit_code=result.returncode,
+            log_text=result.stderr.decode("utf-8"),
         )
 
 
 def full_tests(connector_name: str, sample_config: str) -> None:
     print("Creating source and validating spec and version...")
-    source = ab.get_connector(
+    source = ab.get_source(
         # TODO: FIXME: noqa: SIM115, PTH123
         connector_name,
-        config=json.load(open(sample_config)),  # noqa: SIM115, PTH123
+        config=json.load(open(sample_config)),  # noqa: SIM115, PTH123,
+        install_if_missing=False,
     )
 
     print("Running check...")
@@ -83,7 +90,7 @@ def full_tests(connector_name: str, sample_config: str) -> None:
 
 def install_only_test(connector_name: str) -> None:
     print("Creating source and validating spec is returned successfully...")
-    source = ab.get_connector(connector_name)
+    source = ab.get_source(connector_name)
     source._get_spec(force_refresh=True)  # noqa: SLF001
 
 
@@ -123,7 +130,7 @@ def validate(connector_dir: str, sample_config: str, *, validate_install_only: b
 
     pip_path = str(venv_path / "bin" / "pip")
 
-    _run_subprocess_and_raise_on_failure([pip_path, "install", "-e", connector_dir])
+    _run_subprocess_and_raise_on_failure([pip_path, "install", connector_dir])
 
     # write basic registry to temp json file
     registry = {
@@ -131,6 +138,9 @@ def validate(connector_dir: str, sample_config: str, *, validate_install_only: b
             {
                 "dockerRepository": f"airbyte/{connector_name}",
                 "dockerImageTag": "0.0.1",
+                "remoteRegistries": {
+                    "pypi": {"packageName": "airbyte-{connector_name}", "enabled": True}
+                },
             },
         ],
     }

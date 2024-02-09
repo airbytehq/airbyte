@@ -31,7 +31,6 @@ import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep4;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
-import org.jooq.conf.ParamType;
 import org.jooq.conf.Settings;
 import org.jooq.conf.StatementType;
 import org.jooq.impl.DefaultDataType;

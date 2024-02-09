@@ -13,6 +13,7 @@ from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -72,9 +73,23 @@ def assert_exception(expected_exception: type[BaseException], output: Entrypoint
 def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[AbstractSource]) -> None:
     records, log_messages = output.records_and_state_messages, output.logs
     logs = [message.log for message in log_messages if message.log.level.value in scenario.log_levels]
-    expected_records = scenario.expected_records
-    assert len(records) == len(expected_records)
-    for actual, expected in zip(records, expected_records):
+    if scenario.expected_records is None:
+        return
+
+    expected_records = [r for r in scenario.expected_records] if scenario.expected_records else []
+
+    sorted_expected_records = sorted(
+        filter(lambda e: "data" in e, expected_records),
+        key=lambda record: ",".join(f"{k}={v}" for k, v in sorted(record["data"].items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"),
+    )
+    sorted_records = sorted(
+        filter(lambda r: r.record, records),
+        key=lambda record: ",".join(f"{k}={v}" for k, v in sorted(record.record.data.items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"),
+    )
+
+    assert len(sorted_records) == len(sorted_expected_records)
+
+    for actual, expected in zip(sorted_records, sorted_expected_records):
         if actual.record:
             assert len(actual.record.data) == len(expected["data"])
             for key, value in actual.record.data.items():
@@ -83,7 +98,16 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
                 else:
                     assert value == expected["data"][key]
             assert actual.record.stream == expected["stream"]
-        elif actual.state:
+
+    expected_states = list(filter(lambda e: "data" not in e, expected_records))
+    states = list(filter(lambda r: r.state, records))
+
+    if hasattr(scenario.source, "cursor_cls") and issubclass(scenario.source.cursor_cls, AbstractConcurrentFileBasedCursor):
+        # Only check the last state emitted because we don't know the order the others will be in.
+        # This may be needed for non-file-based concurrent scenarios too.
+        assert states[-1].state.data == expected_states[-1]
+    else:
+        for actual, expected in zip(states, expected_states):  # states should be emitted in sorted order
             assert actual.state.data == expected
 
     if scenario.expected_logs:
@@ -129,7 +153,7 @@ def verify_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Tes
             output = check(capsys, tmp_path, scenario)
             if expected_msg:
                 # expected_msg is a string. what's the expected value field?
-                assert expected_msg.value in output["message"]  # type: ignore
+                assert expected_msg in output["message"]  # type: ignore
                 assert output["status"] == scenario.expected_check_status
 
     else:
