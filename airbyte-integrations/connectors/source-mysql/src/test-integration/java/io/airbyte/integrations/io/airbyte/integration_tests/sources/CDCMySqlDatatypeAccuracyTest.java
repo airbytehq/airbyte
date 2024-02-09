@@ -22,7 +22,9 @@ public class CDCMySqlDatatypeAccuracyTest extends MySqlDatatypeAccuracyTest {
 
   @Override
   protected Database setupDatabase() {
-    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8).withoutStrictMode().withCdcPermissions();
+    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8)
+        .withConnectionProperty("zeroDateTimeBehavior", "convertToNull")
+        .withoutStrictMode().withCdcPermissions();
     return testdb.getDatabase();
   }
 
