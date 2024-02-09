@@ -182,11 +182,7 @@ class SourceFile(Source):
         record_counter = 0
         try:
             for row in client.read(fields=fields):
-                record = AirbyteRecordMessage(
-                    stream=name,
-                    data=row,
-                    emitted_at=int(datetime.now().timestamp()) * 1000
-                )
+                record = AirbyteRecordMessage(stream=name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000)
 
                 record_counter += 1
                 if record_counter == 1:
