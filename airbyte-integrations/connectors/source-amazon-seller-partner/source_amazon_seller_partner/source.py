@@ -110,19 +110,18 @@ class SourceAmazonSellerPartner(AbstractSource):
             self.validate_replication_dates(config)
             self.validate_stream_report_options(config)
             stream_kwargs = self._get_stream_kwargs(config)
-            orders_stream = Orders(**stream_kwargs)
-            next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
+
+            if config.get("account_type", "Seller") == "Seller":
+                stream_to_check = Orders(**stream_kwargs)
+            else:
+                stream_to_check = VendorSalesReports(**stream_kwargs)
+
+            next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
 
             return True, None
         except Exception as e:
-            # Validate Orders stream without data
+            # Validate stream without data
             if isinstance(e, StopIteration):
-                return True, None
-
-            # Additional check, since Vendor-only accounts within Amazon Seller API will not pass the test without this exception
-            if "403 Client Error" in str(e):
-                stream_to_check = VendorSalesReports(**stream_kwargs)
-                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
                 return True, None
 
             error_message = e.response.json().get("error_description") if isinstance(e, HTTPError) else e

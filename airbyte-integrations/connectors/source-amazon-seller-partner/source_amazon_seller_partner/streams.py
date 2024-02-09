@@ -750,7 +750,6 @@ class IncrementalAnalyticsStream(AnalyticsStream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         start_date = pendulum.parse(self._replication_start_date)
         end_date = pendulum.now("utc").subtract(days=self.availability_sla_days)
 
@@ -1260,7 +1259,6 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-
         # For backwards
         return {"reportId": stream_slice.get("report_id")}
 
