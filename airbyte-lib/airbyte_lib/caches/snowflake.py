@@ -1,9 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-"""A Snowflake implementation of the cache.
-
-TODO: FIXME: Snowflake Cache doesn't work yet. It's a work in progress.
-"""
+"""A Snowflake implementation of the cache."""
 
 from __future__ import annotations
 
@@ -19,6 +16,8 @@ from airbyte_lib.telemetry import CacheTelemetryInfo
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from sqlalchemy.engine import Connection
 
 
 class SnowflakeCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -81,6 +80,17 @@ class SnowflakeSQLCache(SQLCacheBase):
         TODO: Make sure this works for all data types.
         """
         return super()._write_files_to_new_table(files, stream_name, batch_id)
+
+    @overrides
+    def _init_connection_settings(self, connection: Connection) -> None:
+        """We override this method to set the QUOTED_IDENTIFIERS_IGNORE_CASE setting to True.
+
+        This is necessary because Snowflake otherwise will treat quoted table and column references
+        as case-sensitive.
+
+        More info: https://docs.snowflake.com/en/sql-reference/identifiers-syntax
+        """
+        connection.execute("ALTER SESSION SET QUOTED_IDENTIFIERS_IGNORE_CASE = TRUE")
 
     @overrides
     def get_telemetry_info(self) -> CacheTelemetryInfo:

@@ -172,7 +172,10 @@ class DuckDBCache(DuckDBCacheBase):
             stream_name=stream_name,
             batch_id=batch_id,
         )
-        columns_list = list(self._get_sql_column_definitions(stream_name).keys())
+        columns_list = [
+            self._quote_identifier(c)
+            for c in list(self._get_sql_column_definitions(stream_name).keys())
+        ]
         columns_list_str = indent("\n, ".join(columns_list), "    ")
         files_list = ", ".join([f"'{f!s}'" for f in files])
         insert_statement = dedent(
