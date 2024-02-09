@@ -70,7 +70,13 @@ class LinkedinAdsStream(HttpStream, ABC):
         https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
         """
         parsed_response = response.json()
-        if len(parsed_response.get("elements")) < self.records_limit and (parsed_response.get("paging")["start"] + self.records_limit > parsed_response.get("paging")["total"]):
+        is_elements_less_than_limit = len(parsed_response.get("elements")) < self.records_limit
+
+        # Note: The API might return fewer records than requested within the limits during pagination.
+        # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
+        is_end_of_records = parsed_response.get("paging")["start"] + self.records_limit > parsed_response.get("paging")["total"]
+
+        if is_elements_less_than_limit and is_end_of_records:
             return None
         return {"start": parsed_response.get("paging").get("start") + self.records_limit}
 
