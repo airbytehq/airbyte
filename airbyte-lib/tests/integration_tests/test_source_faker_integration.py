@@ -66,6 +66,7 @@ def source_faker_seed_a() -> ab.Source:
     source.check()
     # TODO: We can optionally add back 'users' once Postgres can handle complex object types.
     source.set_streams([
+        "users",
         "products",
         "purchases",
     ])
@@ -143,13 +144,29 @@ def test_faker_pks(
 
     catalog: ConfiguredAirbyteCatalog = source_faker_seed_a.configured_catalog
 
-    assert len(catalog.streams) == 2
     assert catalog.streams[0].primary_key
     assert catalog.streams[1].primary_key
 
     read_result = source_faker_seed_a.read(duckdb_cache, write_strategy="append")
     assert read_result.cache._get_primary_keys("products") == ["id"]
     assert read_result.cache._get_primary_keys("purchases") == ["id"]
+
+
+def test_faker_read_to_all(
+    source_faker_seed_a: ab.Source,
+    snowflake_cache: ab.SnowflakeCache,
+    postgres_cache: ab.PostgresCache,
+    duckdb_cache: ab.DuckDBCache,
+) -> None:
+    """Test that the append strategy works as expected."""
+    # Function-scoped fixtures can't be used in parametrized().
+    for cache in [snowflake_cache, postgres_cache, duckdb_cache]:
+        result = source_faker_seed_a.read(
+            cache, write_strategy="replace", force_full_refresh=True
+        )
+        assert len(result.cache.streams) == 3
+        assert len(list(result.cache.streams["products"])) == NUM_PRODUCTS
+        assert len(list(result.cache.streams["purchases"])) == FAKER_SCALE_A
 
 
 def test_replace_strategy(
@@ -162,7 +179,6 @@ def test_replace_strategy(
             result = source_faker_seed_a.read(
                 cache, write_strategy="replace", force_full_refresh=True
             )
-            assert len(result.cache.streams) == 2
             assert len(list(result.cache.streams["products"])) == NUM_PRODUCTS
             assert len(list(result.cache.streams["purchases"])) == FAKER_SCALE_A
 
@@ -175,7 +191,6 @@ def test_append_strategy(
     for cache in all_cache_types: # Function-scoped fixtures can't be used in parametrized().
         for iteration in range(1, 3):
             result = source_faker_seed_a.read(cache, write_strategy="append")
-            assert len(result.cache.streams) == 2
             assert len(list(result.cache.streams["products"])) == NUM_PRODUCTS * iteration
             assert len(list(result.cache.streams["purchases"])) == FAKER_SCALE_A * iteration
 
@@ -195,7 +210,6 @@ def test_merge_strategy(
     for cache in all_cache_types: # Function-scoped fixtures can't be used in parametrized().
         # First run, seed A (counts should match the scale or the product count)
         result = source_faker_seed_a.read(cache, write_strategy=strategy)
-        assert len(result.cache.streams) == 2
         assert len(list(result.cache.streams["products"])) == NUM_PRODUCTS
         assert len(list(result.cache.streams["purchases"])) == FAKER_SCALE_A
 
@@ -234,7 +248,7 @@ def test_incremental_sync(
     assert len(list(result1.cache.streams["purchases"])) == FAKER_SCALE_A
     assert result1.processed_records == NUM_PRODUCTS + FAKER_SCALE_A
 
-    assert not duckdb_cache.get_state() == [] 
+    assert not duckdb_cache.get_state() == []
 
     # Second run should not return records as it picks up the state and knows it's up to date.
     result2 = source_faker_seed_b.read(duckdb_cache)
@@ -263,7 +277,7 @@ def test_incremental_state_cache_persistence(
     result2 = source_faker_seed_b.read(second_cache)
     assert result2.processed_records == 0
 
-    assert not second_cache.get_state() == [] 
+    assert not second_cache.get_state() == []
     assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result2.cache.streams["purchases"])) == FAKER_SCALE_A
 
