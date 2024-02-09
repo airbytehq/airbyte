@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.17.0'
+    cdkVersionRequired = '0.20.0'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
@@ -38,10 +38,4 @@ dependencies {
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
     testImplementation "org.mockito:mockito-inline:4.1.0"
 
-}
-
-configurations.all {
-    resolutionStrategy {
-        force libs.jooq
-    }
 }
