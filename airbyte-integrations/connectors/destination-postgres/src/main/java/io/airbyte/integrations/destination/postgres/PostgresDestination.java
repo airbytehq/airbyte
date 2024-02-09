@@ -123,6 +123,11 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
   }
 
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
   public static void main(final String[] args) throws Exception {
     final Destination destination = PostgresDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", PostgresDestination.class);

@@ -63,14 +63,13 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
 
   @Override
   protected ObjectNode getBaseConfig() {
-    final ObjectNode config = (ObjectNode) testContainer.configBuilder()
+    return (ObjectNode) testContainer.configBuilder()
         .with("schema", "public")
         .withDatabase()
         .withResolvedHostAndPort()
         .withCredentials()
         .withoutSsl()
         .build();
-    return config.put("use_1s1t_format", true);
   }
 
   @Override

@@ -160,9 +160,9 @@ export const PostgresMigrationGenerator = () => {
   }
   function generateSql(og_namespace, new_namespace, name, raw_schema) {
     let v2RawTableName =
-        '"' + concatenateRawTableName(new_namespace, name) + '"';
+        concatenateRawTableName(new_namespace, name).toLowerCase();
     let v1namespace = postgresConvertStreamName(og_namespace);
-    let v1name = postgresConvertStreamName("_airbyte_raw_" + name);
+    let v1name = postgresConvertStreamName("_airbyte_raw_" + name).toLowerCase();
     return `CREATE SCHEMA IF NOT EXISTS "${raw_schema}";
 DROP TABLE IF EXISTS "${raw_schema}".${v2RawTableName};
 CREATE TABLE "${raw_schema}".${v2RawTableName} (
