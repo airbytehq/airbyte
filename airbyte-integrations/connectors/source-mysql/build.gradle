@@ -12,12 +12,6 @@ airbyteJavaConnector {
     useLocalCdk = true
 }
 
-configurations.all {
-    resolutionStrategy {
-        force libs.jooq
-    }
-}
-
 java {
     compileJava {
         options.compilerArgs += "-Xlint:-try,-rawtypes"
