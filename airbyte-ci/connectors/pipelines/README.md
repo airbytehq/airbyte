@@ -640,8 +640,8 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 4.1.3   | [#TBD](https://github.com/airbytehq/airbyte/pull/TBD)  | Use `poetry install --no-root` in the builder container.                                                                |
-
+| 4.1.4   | [#35039](https://github.com/airbytehq/airbyte/pull/35039)  | Fix bug which prevented gradle test reports from being added.                                                              |
+| 4.1.3   | [#35010](https://github.com/airbytehq/airbyte/pull/35010)  | Use `poetry install --no-root` in the builder container.                                                                   |
 | 4.1.2   | [#34945](https://github.com/airbytehq/airbyte/pull/34945)  | Only install main dependencies when running poetry install.                                                                |
 | 4.1.1   | [#34430](https://github.com/airbytehq/airbyte/pull/34430)  | Speed up airbyte-ci startup (and airbyte-ci format).                                                                       |
 | 4.1.0   | [#34923](https://github.com/airbytehq/airbyte/pull/34923)  | Include gradle test reports in HTML connector test report.                                                                 |
