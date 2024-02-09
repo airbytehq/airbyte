@@ -171,6 +171,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.6.8 | 2024-02-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Manage dependencies with Poetry. |
 | 0.6.7   | 2024-01-11 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | prepare for airbyte-lib                                                        |
 | 0.6.6   | 2024-01-15 | [34222](https://github.com/airbytehq/airbyte/pull/34222) | Use stream slices for Analytics streams                                                                         |
 | 0.6.5   | 2023-12-15 | [33530](https://github.com/airbytehq/airbyte/pull/33530) | Fix typo in `Pivot Category` list                                                                               |
