@@ -1,10 +1,10 @@
+import com.github.spotbugs.snom.Confidence
+import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsTask
-
 
 plugins {
     id 'base'
-    id 'com.github.node-gradle.node' version '3.5.1'
-    id 'com.github.spotbugs' version '5.0.13'
+    id 'com.github.spotbugs' version '6.0.7'
     id 'version-catalog'
     id 'ru.vyarus.use-python'
 }
@@ -219,14 +219,11 @@ subprojects { subproj ->
 
     spotbugs {
         ignoreFailures = false
-        effort = 'max'
+        effort = Effort.valueOf(rootProject.ext.skipSlowTests ? 'MIN' : 'MAX')
         excludeFilter.set rootProject.file('spotbugs-exclude-filter-file.xml')
-        reportLevel = 'high'
+        reportLevel = Confidence.valueOf('HIGH')
         showProgress = false
-        toolVersion = '4.7.3'
-        if (rootProject.ext.skipSlowTests && isConnectorProject(subproj)) {
-            effort = 'min'
-        }
+        toolVersion = '4.8.3'
     }
 
     test {
@@ -313,8 +310,7 @@ subprojects { subproj ->
         testFixturesImplementation libs.junit.pioneer
 
         // adds owasp plugin
-        spotbugsPlugins libs.findsecbugs.plugin
-        implementation libs.spotbugs.annotations
+        implementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
     }
 
     tasks.withType(SpotBugsTask).configureEach {
