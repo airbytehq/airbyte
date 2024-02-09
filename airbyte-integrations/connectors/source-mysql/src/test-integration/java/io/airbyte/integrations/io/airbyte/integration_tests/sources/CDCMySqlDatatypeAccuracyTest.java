@@ -6,7 +6,6 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
-import io.airbyte.integrations.source.mysql.MySQLContainerFactory;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
 import org.junit.jupiter.api.Test;
@@ -24,18 +23,14 @@ public class CDCMySqlDatatypeAccuracyTest extends MySqlDatatypeAccuracyTest {
 
   @Override
   protected Database setupDatabase() {
-    final var sharedContainer = new MySQLContainerFactory().shared("mysql:8.0");
-    testdb = new MySQLTestDatabase(sharedContainer)
-        .withConnectionProperty("zeroDateTimeBehavior", "convertToNull")
-        .initialized()
-        .withoutStrictMode()
-        .withCdcPermissions();
+    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8).withoutStrictMode().withCdcPermissions();
     return testdb.getDatabase();
   }
 
+  // Temporarily disable this test since it's causing trouble on GHA.
   @Override
   @Test
-  public void testDataContent() throws Exception {
+  public void testDataContent() {
     // Do Nothing
   }
 
