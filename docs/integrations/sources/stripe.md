@@ -223,6 +223,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:--------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.3 | 2024-02-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Manage dependencies with Poetry. |
 | 5.2.2   | 2024-01-31 | [34619](https://github.com/airbytehq/airbyte/pull/34619)    | Events stream concurrent on incremental syncs                                                                                                                                                                                  |
 | 5.2.1   | 2024-01-18 | [34495](https://github.com/airbytehq/airbyte/pull/34495)    | Fix deadlock issue
 | 5.2.0   | 2024-01-18 | [34347](https://github.com/airbytehq/airbyte/pull//34347) | Add new fields invoices and subscription streams. Upgrade the CDK for better memory usage.                                                                                                                                    |
