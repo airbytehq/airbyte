@@ -680,9 +680,6 @@ def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test
 
     cache = SnowflakeSQLCache(config=snowflake_config)
 
-    with cache.get_sql_connection() as con:
-        con.execute("DROP SCHEMA IF EXISTS AIRBYTE_RAW")
-
     result: ReadResult = source.read(cache)
 
     assert result.processed_records == 3
@@ -692,6 +689,7 @@ def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test
             pd.DataFrame(expected_data),
             check_dtype=False,
         )
+
 
 def test_sync_limited_streams(expected_test_stream_data):
     source = ab.get_source("source-test", config={"apiKey": "test"})
