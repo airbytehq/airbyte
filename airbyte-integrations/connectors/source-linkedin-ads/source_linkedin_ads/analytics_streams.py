@@ -215,7 +215,12 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
 
         # Note: The API might return fewer records than requested within the limits during pagination.
         # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
-        is_end_of_records = parsed_response.get("paging")["start"] + self.records_limit > parsed_response.get("paging")["total"]
+        paging_params = parsed_response.get("paging", {})
+        is_end_of_records = (
+            paging_params["total"] - paging_params["start"] <= self.records_limit
+            if all(param in paging_params for param in ("total", "start"))
+            else True
+        )
 
         if is_elements_less_than_limit and is_end_of_records:
             return None
