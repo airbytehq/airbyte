@@ -3,6 +3,7 @@
 #
 
 
+import traceback
 from os import getenv
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -124,7 +125,10 @@ class SourceAmazonSellerPartner(AbstractSource):
             if isinstance(e, StopIteration):
                 return True, None
 
-            error_message = e.response.json().get("error_description") if isinstance(e, HTTPError) else e
+            if isinstance(e, HTTPError):
+                error_message = e.response.json().get("error_description")
+            else:
+                error_message = f"An exception occurred: {e}. \nStacktrace: \n{traceback.format_exc()}"
             return False, error_message
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
