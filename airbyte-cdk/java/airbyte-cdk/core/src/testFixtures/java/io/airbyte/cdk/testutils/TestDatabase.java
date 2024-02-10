@@ -19,11 +19,19 @@ import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -54,10 +62,35 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
   private DataSource dataSource;
   private DSLContext dslContext;
 
+  protected final int databaseId;
+  private static final AtomicInteger nextDatabaseId= new AtomicInteger(0);
+
+  protected static final Map<String, Map<Integer, Queue<String>>> logs = new ConcurrentHashMap<>();
+
   protected TestDatabase(C container) {
     this.container = container;
     this.suffix = Strings.addRandomSuffix("", "_", 10);
+    this.databaseId = nextDatabaseId.getAndIncrement();
+    log ("SGX creating database " + databaseId + " on container " + container.getContainerId());
   }
+
+  private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+  private void log(String logLine) {
+    LOGGER.info(logLine);
+    logs.putIfAbsent(getContainer().getContainerId(), new ConcurrentHashMap<>());
+    logs.get(getContainer().getContainerId()).putIfAbsent(databaseId, new ConcurrentLinkedDeque<>());
+    logs.get(getContainer().getContainerId()).get(databaseId).add(dateFormat.format(new Date()) + " " + logLine);
+  }
+
+  protected enum Status {
+    STARTING,
+    INITIALIZING,
+    RUNNING,
+    STOPPING,
+    STOPPED
+  }
+
+  protected Status status = Status.STARTING;
 
   @SuppressWarnings("unchecked")
   protected T self() {
@@ -97,6 +130,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
    * {@link DataSource} and {@link DSLContext} owned by this object.
    */
   final public T initialized() {
+    status = Status.INITIALIZING;
     inContainerBootstrapCmd().forEach(this::execInContainer);
     this.dataSource = DataSourceFactory.create(
         getUserName(),
@@ -106,6 +140,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         connectionProperties,
         JdbcConnector.getConnectionTimeout(connectionProperties, getDatabaseDriver().getDriverClassName()));
     this.dslContext = DSLContextFactory.create(dataSource, getSqlDialect());
+    status = Status.RUNNING;
     return self();
   }
 
@@ -170,7 +205,9 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
   protected void execSQL(final List<String> sqls) {
     try {
       for (String sql : sqls) {
+        log("SGX databaseId " + databaseId + " executing SQL: " + sql);
         getDslContext().execute(sql);
+        log("SGX databaseId " + databaseId + " completed SQL: " + sql);
       }
     } catch (DataAccessException e) {
       throw new RuntimeException(e);
@@ -182,12 +219,12 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
       return;
     }
     try {
-      LOGGER.debug("executing {}", Strings.join(cmd, " "));
+      log(String.format("SGX databaseId " + databaseId + " executing {}", Strings.join(cmd, " ")));
       final var exec = getContainer().execInContainer(cmd.toArray(new String[0]));
       if (exec.getExitCode() == 0) {
-        LOGGER.debug("execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr());
+        log(String.format("SGX databaseId " + databaseId + " execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr()));
       } else {
-        LOGGER.error("execution failure, code {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
+        LOGGER.error(String.format("SGX databaseId " + databaseId + " execution failure, code {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr()));
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
@@ -227,8 +264,11 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
 
   @Override
   public void close() {
+    status = Status.STOPPING;
     execSQL(this.cleanupSQL);
     execInContainer(inContainerUndoBootstrapCmd());
+    LOGGER.info ("closing database " + databaseId);
+    status = Status.STOPPED;
   }
 
   static public class ConfigBuilder<T extends TestDatabase<?, ?, ?>, B extends ConfigBuilder<T, B>> {

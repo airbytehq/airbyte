@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
  * Source operation skeleton for JDBC compatible databases.
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcCompatibleSourceOperations.class);
   /**
    * A Date representing the earliest date in CE. Any date before this is in BCE.

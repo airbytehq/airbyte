@@ -213,6 +213,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
     assertEquals(expected, actual);
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -220,6 +221,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     final AirbyteConnectionStatus actual = source().check(config());
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -229,6 +231,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source().check(config);
     assertEquals(Status.FAILED, actual.getStatus());
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -244,6 +247,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
       assertTrue(expectedStream.isPresent(), String.format("Unexpected stream %s", actualStream.getName()));
       assertEquals(expectedStream.get(), actualStream);
     });
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -257,6 +261,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     assertEquals(TABLE_NAME_WITHOUT_CURSOR_TYPE.toLowerCase(), stream.getName().toLowerCase());
     assertEquals(1, stream.getSupportedSyncModes().size());
     assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -271,6 +276,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     assertEquals(2, stream.getSupportedSyncModes().size());
     assertTrue(stream.getSupportedSyncModes().contains(SyncMode.FULL_REFRESH));
     assertTrue(stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL));
+    throw new RuntimeException("SGX passed");
   }
 
   protected AirbyteCatalog filterOutOtherSchemas(final AirbyteCatalog catalog) {
@@ -322,6 +328,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     expected.getStreams().sort(schemaTableCompare);
     actual.getStreams().sort(schemaTableCompare);
     assertEquals(expected, filterOutOtherSchemas(actual));
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -334,6 +341,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     final List<AirbyteMessage> expectedMessages = getTestMessages();
     assertThat(expectedMessages, Matchers.containsInAnyOrder(actualMessages.toArray()));
     assertThat(actualMessages, Matchers.containsInAnyOrder(expectedMessages.toArray()));
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -349,6 +357,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     assertEquals(expectedMessages.size(), actualMessages.size());
     assertTrue(expectedMessages.containsAll(actualMessages));
     assertTrue(actualMessages.containsAll(expectedMessages));
+    throw new RuntimeException("SGX passed");
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesReadOneColumn() {
@@ -394,6 +403,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     assertEquals(expectedMessages.size(), actualMessages.size());
     assertTrue(expectedMessages.containsAll(actualMessages));
     assertTrue(actualMessages.containsAll(expectedMessages));
+    throw new RuntimeException("SGX passed");
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName) {
@@ -430,6 +440,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     assertEquals(expectedMessages.size(), actualMessages.size());
     assertTrue(expectedMessages.containsAll(actualMessages));
     assertTrue(actualMessages.containsAll(expectedMessages));
+    throw new RuntimeException("SGX passed");
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(final ConfiguredAirbyteStream streamForTableWithSpaces) {
@@ -457,6 +468,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getStream();
 
     assertThrows(RuntimeException.class, () -> source().read(config(), catalog, null));
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -466,6 +478,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         null,
         "3",
         getTestMessages());
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -475,6 +488,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         "2",
         "3",
         List.of(getTestMessages().get(2)));
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -484,6 +498,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         "patent",
         "vash",
         List.of(getTestMessages().get(0), getTestMessages().get(2)));
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -498,6 +513,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         "vash",
         expectedRecordMessages,
         streamWithSpaces);
+    throw new RuntimeException("SGX passed");
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesCheckCursorSpaceInColumnName(final ConfiguredAirbyteStream streamWithSpaces) {
@@ -519,6 +535,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   @Test
   void testIncrementalDateCheckCursor() throws Exception {
     incrementalDateCheck();
+    throw new RuntimeException("SGX passed");
   }
 
   protected void incrementalDateCheck() throws Exception {
@@ -540,6 +557,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         "data",
         "vash",
         getTestMessages());
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -574,6 +592,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     assertEquals(expectedMessages.size(), actualMessagesSecondSync.size());
     assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
     assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
+    throw new RuntimeException("SGX passed");
   }
 
   protected void executeStatementReadIncrementallyTwice() {
@@ -681,6 +700,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     assertEquals(expectedMessagesFirstSync.size(), actualMessagesFirstSync.size());
     assertTrue(expectedMessagesFirstSync.containsAll(actualMessagesFirstSync));
     assertTrue(actualMessagesFirstSync.containsAll(expectedMessagesFirstSync));
+    throw new RuntimeException("SGX passed");
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(final String streamName2) {
@@ -807,6 +827,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     } else {
       assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
     }
+    throw new RuntimeException("SGX passed");
   }
 
   protected JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {

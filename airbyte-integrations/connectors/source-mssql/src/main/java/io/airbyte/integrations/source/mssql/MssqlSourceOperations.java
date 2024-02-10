@@ -91,7 +91,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
 
   @Override
   public JDBCType getDatabaseFieldType(final JsonNode field) {
-    //throw new RuntimeException("SGX");
+    // throw new RuntimeException("SGX");
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
       if (typeName.equalsIgnoreCase("geography")

@@ -97,6 +97,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: S0001; Error code: 18456;"), status.getMessage());
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -107,6 +108,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: S0001; Error code: 18456;"), status.getMessage());
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -117,6 +119,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 08S01;"), status.getMessage());
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -127,6 +130,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 08S01;"), status.getMessage());
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -137,6 +141,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: S0001; Error code: 4060;"), status.getMessage());
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -149,6 +154,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     final AirbyteConnectionStatus status = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: S0001; Error code: 4060;"), status.getMessage());
+    throw new RuntimeException("SGX passed");
   }
 
   @Test
@@ -361,6 +367,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     assertEquals(1, streamTwoStateMessagesFromThirdSync.size());
     assertEquals(List.of("cursor_based"), stateTypeOfStreamTwoStatesFromThirdSync);
     assertEquals(List.of("43"), cursorOfStreamTwoStatesFromThirdSync);
+    throw new RuntimeException("SGX passed");
   }
 
   private AirbyteStream getAirbyteStream(final String tableName, final String namespace) {

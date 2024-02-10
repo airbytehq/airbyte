@@ -197,10 +197,10 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
         "The stream '" + entry.streamName + "' checking type '" + testByName.get(entry.streamName).getSourceType() + "' initialized at "
             + testByName.get(entry.streamName).getDeclarationLocation() + " is missing values: " + entry.missedValues)
             .collect(Collectors.joining("\n")) +
-          unexpectedValues.stream().map((entry) -> // stream each entry, map it to string value
-                  "The stream '" + entry.streamName + "' checking type '" + testByName.get(entry.streamName).getSourceType() + "' initialized at "
-                  + testByName.get(entry.streamName).getDeclarationLocation() + " got unexpected values: " + entry.unexpectedValue)
-              .collect(Collectors.joining("\n"))); // and join them
+            unexpectedValues.stream().map((entry) -> // stream each entry, map it to string value
+            "The stream '" + entry.streamName + "' checking type '" + testByName.get(entry.streamName).getSourceType() + "' initialized at "
+                + testByName.get(entry.streamName).getDeclarationLocation() + " got unexpected values: " + entry.unexpectedValue)
+                .collect(Collectors.joining("\n"))); // and join them
   }
 
   protected String getValueFromJsonNode(final JsonNode jsonNode) throws IOException {

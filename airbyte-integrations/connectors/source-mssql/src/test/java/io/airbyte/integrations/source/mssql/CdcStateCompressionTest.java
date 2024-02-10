@@ -201,7 +201,7 @@ public class CdcStateCompressionTest {
     final var lastSharedStateFromSecondBatch = lastStateMessageFromSecondBatch.getGlobal().getSharedState().get("state");
     assertNotNull(lastSharedStateFromSecondBatch);
     assertNotNull(lastSharedStateFromSecondBatch.get(MSSQL_DB_HISTORY));
-    assertEquals(lastSharedStateFromFirstBatch.get(MSSQL_DB_HISTORY), lastSharedStateFromSecondBatch.get(MSSQL_DB_HISTORY));
+    assertTrue(lastSharedStateFromFirstBatch.get(MSSQL_DB_HISTORY).equals(lastSharedStateFromSecondBatch.get(MSSQL_DB_HISTORY)));
     assertNotNull(lastSharedStateFromSecondBatch.get(MSSQL_CDC_OFFSET));
     assertNotNull(lastSharedStateFromSecondBatch.get(IS_COMPRESSED));
     assertTrue(lastSharedStateFromSecondBatch.get(IS_COMPRESSED).asBoolean());
