@@ -185,12 +185,6 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
       }
     }
 
-    assertTrue(unexpectedValues.isEmpty(),
-        unexpectedValues.stream().map((entry) -> // stream each entry, map it to string value
-        "The stream '" + entry.streamName + "' checking type '" + testByName.get(entry.streamName).getSourceType() + "' initialized at "
-            + testByName.get(entry.streamName).getDeclarationLocation() + " got unexpected values: " + entry.unexpectedValue)
-            .collect(Collectors.joining("\n"))); // and join them
-
     // Gather all the missing values, so we don't stop the test in the first missed one
     expectedValues.forEach((streamName, values) -> {
       if (!values.isEmpty()) {
@@ -198,11 +192,15 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
       }
     });
 
-    assertTrue(missedValues.isEmpty(),
+    assertTrue(missedValues.isEmpty() && unexpectedValues.isEmpty(),
         missedValues.stream().map((entry) -> // stream each entry, map it to string value
         "The stream '" + entry.streamName + "' checking type '" + testByName.get(entry.streamName).getSourceType() + "' initialized at "
             + testByName.get(entry.streamName).getDeclarationLocation() + " is missing values: " + entry.missedValues)
-            .collect(Collectors.joining("\n"))); // and join them
+            .collect(Collectors.joining("\n")) +
+          unexpectedValues.stream().map((entry) -> // stream each entry, map it to string value
+                  "The stream '" + entry.streamName + "' checking type '" + testByName.get(entry.streamName).getSourceType() + "' initialized at "
+                  + testByName.get(entry.streamName).getDeclarationLocation() + " got unexpected values: " + entry.unexpectedValue)
+              .collect(Collectors.joining("\n"))); // and join them
   }
 
   protected String getValueFromJsonNode(final JsonNode jsonNode) throws IOException {
