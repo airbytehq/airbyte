@@ -13,7 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import Collectors, SurveyCollectors, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
+from .streams import Collectors, ContactLists, Questions, SurveyCategories, SurveyCollectors, SurveyFolders, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 
 
 class SourceSurveymonkey(AbstractSource):
@@ -75,6 +75,10 @@ class SourceSurveymonkey(AbstractSource):
         survey_ids = config.get("survey_ids", [])
         args = {"authenticator": authenticator, "start_date": start_date, "survey_ids": survey_ids}
         return [
+            ContactLists(**args),
+            SurveyCategories(**args),
+            SurveyFolders(**args),
+            Questions(**args),
             Collectors(**args),
             Surveys(**args),
             SurveyCollectors(**args),

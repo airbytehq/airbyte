@@ -2,6 +2,54 @@
   "streams": [
     {
       "stream": {
+        "name": "contact_lists",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "survey_folders",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "survey_categories",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "questions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "surveys",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],

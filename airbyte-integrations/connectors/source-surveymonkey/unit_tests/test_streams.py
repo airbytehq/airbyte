@@ -8,7 +8,7 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_surveymonkey.streams import SurveyCollectors, SurveyIds, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
+from source_surveymonkey.streams import ContactLists, Questions, SurveyCategories, SurveyCollectors, SurveyFolders, SurveyIds, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 
 args_mock = {"authenticator": NoAuth(), "start_date": pendulum.parse("2000-01-01"), "survey_ids": []}
 
@@ -343,6 +343,75 @@ def test_survey_collectors(requests_mock):
         {"name": "Teams Poll", "id": "1", "href": "https://api.surveymonkey.com/v3/collectors/1", "survey_id": "307785415"}
     ]
 
+def test_contact_lists(requests_mock):
+    requests_mock.get(
+        "https://api.surveymonkey.com/v3/contact_lists",
+        json={
+            "data": [{"id": "1234", "name": "contact list name", "href": "https://api.surveymonkey.com/v3/contact_lists/1234" }],
+            "per_page": 50,
+            "page": 1,
+            "total": 1,
+            "links": {"self": "https://api.surveymonkey.com/v3/contact_lists?page=1&per_page=50"},
+        },
+    )
+    args = {**args_mock}
+    records = ContactLists(**args).read_records(sync_mode=SyncMode.full_refresh)
+    assert list(records) == [
+        {"id": "1234", "name": "contact list name", "href": "https://api.surveymonkey.com/v3/contact_lists/1234" }
+    ]
+
+def test_survey_folders(requests_mock):
+    requests_mock.get(
+        "https://api.surveymonkey.com/v3/survey_folders",
+        json={
+            "data": [{"title": "SomeApp Polls", "id": "1845492", "num_surveys": 19, "href": "https://api.surveymonkey.com/v3/survey_folders/1845492" }],
+            "per_page": 50,
+            "page": 1,
+            "total": 1,
+            "links": {"self": "https://api.surveymonkey.com/v3/survey_folders?page=1&per_page=50"},
+        },
+    )
+    args = {**args_mock}
+    records = SurveyFolders(**args).read_records(sync_mode=SyncMode.full_refresh)
+    assert list(records) == [
+        {"title": "SomeApp Polls", "id": "1845492", "num_surveys": 19, "href": "https://api.surveymonkey.com/v3/survey_folders/1845492" }
+    ]
+
+def test_survey_categories(requests_mock):
+    requests_mock.get(
+        "https://api.surveymonkey.com/v3/survey_categories",
+        json={
+            "data": [{ "name": "Category Name", "id": "community" }],
+            "per_page": 50,
+            "page": 1,
+            "total": 1,
+            "links": {"self": "https://api.surveymonkey.com/v3/survey_categories?page=1&per_page=1"},
+        },
+    )
+    args = {**args_mock}
+    records = SurveyCategories(**args).read_records(sync_mode=SyncMode.full_refresh)
+    assert list(records) == [
+        { "name": "Category Name", "id": "community" }
+    ]
+
+def test_questions(requests_mock):
+    requests_mock.get(
+        "https://api.surveymonkey.com/v3/question_bank/questions",
+        json={
+            "data": [{ "modifiers": [ { "modifier_type": "open_ended", "options": [ { "modifier_options_id": "34658", "value": "this neighborhood" }, { "modifier_options_id": "34659", "value": "Specify neighborhood" } ], "modifier_id": "13196" } ], "text": "Overall, how clean is ()?", "locales": [ "en_AU", "en_CA", "en_US" ], "question_id": "26073" }],
+            "per_page": 50,
+            "page": 1,
+            "total": 2598,
+            "links": {"self": "https://api.surveymonkey.com/v3/question_bank/questions?page=1&per_page=1", 
+                      "next": "https://api.surveymonkey.com/v3/question_bank/questions?page=2&per_page=1",
+                      "last": "https://api.surveymonkey.com/v3/question_bank/questions?page=2598&per_page=1"},
+        },
+    )
+    args = {**args_mock}
+    records = Questions(**args).read_records(sync_mode=SyncMode.full_refresh)
+    assert list(records) == [
+        { "modifiers": [ { "modifier_type": "open_ended", "options": [ { "modifier_options_id": "34658", "value": "this neighborhood" }, { "modifier_options_id": "34659", "value": "Specify neighborhood" } ], "modifier_id": "13196" } ], "text": "Overall, how clean is ()?", "locales": [ "en_AU", "en_CA", "en_US" ], "question_id": "26073" }
+    ]
 
 def test_surveys_next_page_token():
     args = {**args_mock, **{"survey_ids": ["307785415"]}}
