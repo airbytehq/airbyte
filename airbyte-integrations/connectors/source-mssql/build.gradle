@@ -35,3 +35,9 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testImplementation 'org.testcontainers:mssqlserver:1.19.0'
 }
+
+configurations.all {
+    resolutionStrategy {
+        force 'org.jooq:jooq:3.19.3'
+    }
+}
