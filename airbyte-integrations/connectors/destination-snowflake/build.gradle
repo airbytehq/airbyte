@@ -8,6 +8,13 @@ airbyteJavaConnector {
     useLocalCdk = false
 }
 
+java {
+    // TODO: rewrite code to avoid javac wornings in the first place
+    compileJava {
+        options.compilerArgs += "-Xlint:-this-escape"
+    }
+}
+
 application {
     mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestinationRunner'
 // enable when profiling
