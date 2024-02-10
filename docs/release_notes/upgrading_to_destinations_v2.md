@@ -53,7 +53,7 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 
 ![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
 
-:::caution Pay attention to the following before upgrade
+:::caution Upgrade Warning
 
 * The upgrading process entails hydrating the v2 format raw table by querying the v1 raw table through a standard query, such as "INSERT INTO v2_raw_table SELECT * FROM v1_raw_table." 
 The duration of this process can vary significantly based on the data size and may encounter failures contingent on the Destination's capacity to execute the query. 
