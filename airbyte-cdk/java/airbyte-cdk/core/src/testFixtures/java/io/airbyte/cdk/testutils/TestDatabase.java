@@ -128,7 +128,12 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
         connectionProperties,
         JdbcConnector.getConnectionTimeout(connectionProperties, getDatabaseDriver().getDriverClassName()));
     this.dslContext = DSLContextFactory.create(dataSource, getSqlDialect());
+    initializedPostHook();
     return self();
+  }
+
+  public void initializedPostHook() {
+
   }
 
   final public boolean isInitialized() {

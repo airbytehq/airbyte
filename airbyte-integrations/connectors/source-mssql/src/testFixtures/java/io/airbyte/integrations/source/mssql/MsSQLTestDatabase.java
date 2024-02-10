@@ -68,9 +68,49 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
         .initialized();
   }
 
+  private class MssqlTestDatabaseBackgroundThread extends Thread {
+
+    private volatile boolean stop = false;
+
+    public void run() {
+      LOGGER.info(formatLogLine("Started new database " + getDatabaseName()));
+      boolean wasRunning = false;
+      while (!stop) {
+        try {
+          final var r = query(ctx -> ctx.fetch(
+              "EXEC master.dbo.xp_servicecontrol 'QueryState', N'SQLServerAGENT';").get(0));
+          String agentState = r.getValue(0).toString();
+          LOGGER.info(formatLogLine("agentState=" + agentState));
+          if ("Running.".equals(agentState)) {
+            wasRunning = true;
+          } else if (wasRunning && !"Running.".equals(agentState)) {
+            LOGGER.info(formatLogLine("agent was running. agentState=" + agentState));
+          }
+        } catch (final Throwable t) {
+          String exceptionAsString = StringUtils.join(ExceptionUtils.getStackFrames(t), "\n  ");
+          LOGGER.info(formatLogLine("got exception " + exceptionAsString));
+        }
+        try {
+          Thread.sleep(5l);
+        } catch (InterruptedException e) {
+          LOGGER.info(formatLogLine("interrupted"));
+        }
+      }
+    }
+
+  }
+
+  private final MssqlTestDatabaseBackgroundThread bgThread;
+
   public MsSQLTestDatabase(final MSSQLServerContainer<?> container) {
     super(container);
+    bgThread = new MssqlTestDatabaseBackgroundThread();
     LOGGER.info("SGX creating new database. databaseId=" + this.databaseId + ", databaseName=" + getDatabaseName());
+  }
+
+  @Override
+  public void initializedPostHook() {
+    bgThread.start();
   }
 
   public MsSQLTestDatabase withCdc() {
@@ -242,6 +282,11 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       this.cachedCerts = cachedCerts;
     }
     return cachedCerts.get(certificateKey);
+  }
+
+  public void close() {
+    bgThread.stop = true;
+    super.close();
   }
 
   @Override
