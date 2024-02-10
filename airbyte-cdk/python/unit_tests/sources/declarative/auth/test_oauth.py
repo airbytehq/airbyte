@@ -170,6 +170,30 @@ class TestOauth2Authenticator:
         filtered = filter_secrets("access_token")
         assert filtered == "****"
 
+
+    def test_refresh_access_token_missing_access_token(self, mocker):
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] }}",
+            client_secret="{{ config['client_secret'] }}",
+            refresh_token="{{ config['refresh_token'] }}",
+            config=config,
+            scopes=["scope1", "scope2"],
+            token_expiry_date="{{ config['token_expiry_date'] }}",
+            refresh_request_body={
+                "custom_field": "{{ config['custom_field'] }}",
+                "another_field": "{{ config['another_field'] }}",
+                "scopes": ["no_override"],
+            },
+            parameters={},
+        )
+
+        resp.status_code = 200
+        mocker.patch.object(resp, "json", return_value={"expires_in": 1000})
+        mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
+        with pytest.raises(Exception):
+            token = oauth.refresh_access_token()
+
     @pytest.mark.parametrize(
         "timestamp, expected_date",
         [

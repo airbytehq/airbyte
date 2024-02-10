@@ -120,7 +120,9 @@ class AbstractOauth2Authenticator(AuthBase):
                 response_json = response.json()
                 # Add the access token to the list of secrets so it is replaced before logging the response
                 # An argument could be made to remove the prevous access key from the list of secrets, but unmasking values seems like a security incident waiting to happen...
-                access_key = response_json[self.get_access_token_name()]
+                access_key = response_json.get(self.get_access_token_name())
+                if not access_key:
+                    raise Exception("Token refresh API response was missing access token {self.get_access_token_name()}")
                 add_to_secrets(access_key)
                 self._log_response(response)
                 return response_json
