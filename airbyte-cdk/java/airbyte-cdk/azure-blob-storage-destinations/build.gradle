@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+
+    implementation 'com.azure:azure-storage-blob:12.12.0'
+}
