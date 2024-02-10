@@ -28,8 +28,8 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.chrono.IsoEra;
 import java.time.format.DateTimeParseException;
+import java.util.Base64;
 import java.util.Collections;
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * Source operation skeleton for JDBC compatible databases.
@@ -222,7 +222,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void setBinary(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    preparedStatement.setBytes(parameterIndex, DatatypeConverter.parseBase64Binary(value));
+    preparedStatement.setBytes(parameterIndex, Base64.getDecoder().decode(value));
   }
 
   protected <ObjectType> ObjectType getObject(final ResultSet resultSet, final int index, final Class<ObjectType> clazz) throws SQLException {

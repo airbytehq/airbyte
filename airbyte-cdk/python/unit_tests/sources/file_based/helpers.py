@@ -15,6 +15,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.file_types.jsonl_parser import JsonlParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesStreamReader
 
@@ -58,6 +59,10 @@ class FailingSchemaValidationPolicy(AbstractSchemaValidationPolicy):
 
 
 class LowHistoryLimitCursor(DefaultFileBasedCursor):
+    DEFAULT_MAX_HISTORY_SIZE = 3
+
+
+class LowHistoryLimitConcurrentCursor(FileBasedConcurrentCursor):
     DEFAULT_MAX_HISTORY_SIZE = 3
 
 
