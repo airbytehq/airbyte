@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
+import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.JDBCType;
@@ -69,13 +70,13 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
                         final int colIndex,
                         final ObjectNode json)
       throws SQLException {
+    LOGGER.info("SGX columnType= " + columnType);
     switch (columnType) {
       case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
       case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
       case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
       case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
-      case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-      case REAL -> putFloat(json, columnName, resultSet, colIndex);
+      case FLOAT, DOUBLE, REAL -> putDouble(json, columnName, resultSet, colIndex);
       case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
       case CHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
       case DATE -> putDate(json, columnName, resultSet, colIndex);
@@ -90,6 +91,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
 
   @Override
   public JDBCType getDatabaseFieldType(final JsonNode field) {
+    //throw new RuntimeException("SGX");
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
       if (typeName.equalsIgnoreCase("geography")
@@ -185,6 +187,16 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     } catch (final DateTimeParseException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  protected void setReal(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    preparedStatement.setFloat(parameterIndex, Float.parseFloat(value));
+    throw new RuntimeException("SGX");
+  }
+
+  protected void putFloat(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getFloat(index), Float::isFinite));
+    throw new RuntimeException("SGX");
   }
 
 }

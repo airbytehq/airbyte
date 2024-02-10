@@ -25,7 +25,7 @@ runs:
       shell: bash
       id: determine-install-mode
       run: |
-        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
+        if [[ "${{ github.ref }}" != "refs/heads/master" ]]; then
           echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
           echo "install-mode=source" >> $GITHUB_OUTPUT
         else
