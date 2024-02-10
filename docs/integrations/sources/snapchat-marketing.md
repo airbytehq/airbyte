@@ -17,6 +17,10 @@ This page guides you through the process of setting up the Snapchat Marketing so
 * client_secret
 * refresh_token
 * start_date
+* end_date
+* action_report_time (Optional, Default value is conversion) It specifies the principle for conversion reporting.
+* swipe_up_attribution_window (Optional, Default value is 1_DAY) This is the attribution window for swipe up.
+* view_attribution_window (Optional, Default value is 28_DAY) This is the attribution window for views.
 <!-- /env:oss -->
 
 ## Setup guide

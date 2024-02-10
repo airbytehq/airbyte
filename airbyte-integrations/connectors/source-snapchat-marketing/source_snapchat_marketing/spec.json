@@ -45,6 +45,30 @@
         "examples": ["2022-01-30"],
         "order": 4,
         "format": "date"
+      },
+      "action_report_time": {
+        "type": "string",
+        "enum": ["conversion", "impression"],
+        "title": "Action Report Time",
+        "description": "Specifies the principle for conversion reporting.",
+        "default": "conversion",
+        "order": 5
+      },
+      "swipe_up_attribution_window": {
+        "type": "string",
+        "title": "Swipe Up Attribution Window",
+        "description": "Attribution window for swipe ups.",
+        "enum": ["1_DAY", "7_DAY", "28_DAY"],
+        "default": "28_DAY",
+        "order": 6
+      },
+      "view_attribution_window": {
+        "type": "string",
+        "title": "View Attribution Window",
+        "description": "Attribution window for views.",
+        "enum": ["1_HOUR", "3_HOUR", "6_HOUR", "1_DAY", "7_DAY"],
+        "default": "1_DAY",
+        "order": 7
       }
     }
   },
