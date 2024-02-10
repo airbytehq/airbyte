@@ -25,6 +25,17 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
+        "DATE": "3021-06-09"
+      },
+      "stream_descriptor": {
+        "name": "ad_account_targeting_analytics"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
         "updated_time": 9628867244
       },
       "stream_descriptor": {

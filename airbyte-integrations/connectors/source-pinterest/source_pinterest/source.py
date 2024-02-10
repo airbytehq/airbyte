@@ -32,6 +32,7 @@ from .reports.reports import (
 )
 from .streams import (
     AdAccountAnalytics,
+    AdAccountTargetingAnalytics,
     AdAccounts,
     AdAnalytics,
     AdGroupAnalytics,
@@ -133,6 +134,7 @@ class SourcePinterest(AbstractSource):
         return [
             ad_accounts,
             AdAccountAnalytics(ad_accounts, config=config),
+            AdAccountTargetingAnalytics(ad_accounts, config=config),
             ads,
             AdAnalytics(ads, config=config),
             ad_groups,
