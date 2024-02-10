@@ -32,8 +32,10 @@ sync means that Airbyte could not _move_ all of your data. You can query the `_a
 to see which rows failed for _content_ reasons, and why. This is a more flexible approach, as you
 can now decide how to handle rows with errors on a case-by-case basis.
 
-:::tip When using data downstream from Airbyte, we generally recommend you only include rows which
-do not have an error, e.g:
+:::tip
+
+When using data downstream from Airbyte, we generally recommend you only include rows which do not
+have an error, e.g:
 
 ```sql
 -- postgres syntax
