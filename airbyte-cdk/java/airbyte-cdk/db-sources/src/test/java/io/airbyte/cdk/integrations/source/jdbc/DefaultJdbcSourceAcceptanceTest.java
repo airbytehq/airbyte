@@ -20,10 +20,11 @@ import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import java.sql.JDBCType;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -140,24 +141,27 @@ class DefaultJdbcSourceAcceptanceTest
     }
 
     @Override
-    protected Stream<Stream<String>> inContainerBootstrapCmd() {
-      final var sql = Stream.of(
+    protected List<List<String>> inContainerBootstrapCmd() {
+      final var sqls = List.of(
           String.format("CREATE DATABASE %s", getDatabaseName()),
           String.format("CREATE USER %s PASSWORD '%s'", getUserName(), getPassword()),
           String.format("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", getDatabaseName(), getUserName()),
           String.format("ALTER USER %s WITH SUPERUSER", getUserName()));
-      return Stream.of(Stream.concat(
-          Stream.of("psql",
-              "-d", getContainer().getDatabaseName(),
-              "-U", getContainer().getUsername(),
-              "-v", "ON_ERROR_STOP=1",
-              "-a"),
-          sql.flatMap(stmt -> Stream.of("-c", stmt))));
+      List<String> cmd = Arrays.asList("psql",
+          "-d", getContainer().getDatabaseName(),
+          "-U", getContainer().getUsername(),
+          "-v", "ON_ERROR_STOP=1",
+          "-a");
+      for (String sql : sqls) {
+        cmd.add("-c");
+        cmd.add(sql);
+      }
+      return List.of(cmd);
     }
 
     @Override
-    protected Stream<String> inContainerUndoBootstrapCmd() {
-      return Stream.empty();
+    protected List<String> inContainerUndoBootstrapCmd() {
+      return Collections.emptyList();
     }
 
     @Override
