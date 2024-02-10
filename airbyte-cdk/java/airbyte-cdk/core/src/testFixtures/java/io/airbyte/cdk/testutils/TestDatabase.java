@@ -24,10 +24,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -87,7 +87,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
    * Executes a SQL statement after calling String.format on the arguments.
    */
   public T with(String fmtSql, Object... fmtArgs) {
-    execSQL(Stream.of(String.format(fmtSql, fmtArgs)));
+    execSQL(List.of(String.format(fmtSql, fmtArgs)));
     return self();
   }
 
@@ -113,9 +113,9 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     return dslContext != null;
   }
 
-  abstract protected Stream<Stream<String>> inContainerBootstrapCmd();
+  abstract protected List<List<String>> inContainerBootstrapCmd();
 
-  abstract protected Stream<String> inContainerUndoBootstrapCmd();
+  abstract protected List<String> inContainerUndoBootstrapCmd();
 
   abstract public DatabaseDriver getDatabaseDriver();
 
@@ -167,22 +167,17 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     return new Database(getDslContext());
   }
 
-  protected void execSQL(final Stream<String> sql) {
+  protected void execSQL(final List<String> sqls) {
     try {
-      getDatabase().query(ctx -> {
-        sql.forEach(statement -> {
-          LOGGER.debug("{}", statement);
-          ctx.execute(statement);
-        });
-        return null;
-      });
-    } catch (SQLException e) {
+      for (String sql : sqls) {
+        getDslContext().execute(sql);
+      }
+    } catch (DataAccessException e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected void execInContainer(Stream<String> cmds) {
-    final List<String> cmd = cmds.toList();
+  protected void execInContainer(List<String> cmd) {
     if (cmd.isEmpty()) {
       return;
     }
@@ -232,7 +227,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
 
   @Override
   public void close() {
-    execSQL(this.cleanupSQL.stream());
+    execSQL(this.cleanupSQL);
     execInContainer(inContainerUndoBootstrapCmd());
   }
 

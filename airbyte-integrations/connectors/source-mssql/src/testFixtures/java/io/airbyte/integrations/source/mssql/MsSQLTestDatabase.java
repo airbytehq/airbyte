@@ -11,11 +11,13 @@ import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,10 +159,10 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   @Override
-  protected Stream<Stream<String>> inContainerBootstrapCmd() {
-    return Stream.of(
-        mssqlCmd(Stream.of(String.format("CREATE DATABASE %s", getDatabaseName()))),
-        mssqlCmd(Stream.of(
+  protected List<List<String>> inContainerBootstrapCmd() {
+    return List.of(
+        mssqlCmd(List.of(String.format("CREATE DATABASE %s", getDatabaseName()))),
+        mssqlCmd(List.of(
             String.format("USE %s", getDatabaseName()),
             String.format("CREATE LOGIN %s WITH PASSWORD = '%s', DEFAULT_DATABASE = %s", getUserName(), getPassword(), getDatabaseName()),
             String.format("ALTER SERVER ROLE [sysadmin] ADD MEMBER %s", getUserName()),
@@ -174,22 +176,22 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
    * aren't really worth it.
    */
   @Override
-  protected Stream<String> inContainerUndoBootstrapCmd() {
-    return Stream.empty();
+  protected List<String> inContainerUndoBootstrapCmd() {
+    return Collections.emptyList();
   }
 
   public void dropDatabaseAndUser() {
-    execInContainer(mssqlCmd(Stream.of(
+    execInContainer(mssqlCmd(List.of(
         String.format("USE master"),
         String.format("ALTER DATABASE %s SET single_user WITH ROLLBACK IMMEDIATE", getDatabaseName()),
         String.format("DROP DATABASE %s", getDatabaseName()))));
   }
 
-  public Stream<String> mssqlCmd(final Stream<String> sql) {
-    return Stream.of("/opt/mssql-tools/bin/sqlcmd",
+  public List<String> mssqlCmd(final List<String> sql) {
+    return Arrays.asList("/opt/mssql-tools/bin/sqlcmd",
         "-U", getContainer().getUsername(),
         "-P", getContainer().getPassword(),
-        "-Q", sql.collect(Collectors.joining("; ")),
+        "-Q", StringUtils.join(sql, "; "),
         "-b", "-e");
   }
 
