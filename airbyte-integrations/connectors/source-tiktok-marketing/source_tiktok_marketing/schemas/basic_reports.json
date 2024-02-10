@@ -228,6 +228,9 @@
         "app_install": {
           "type": ["null", "number"]
         },
+        "skan_app_install": {
+          "type": ["null", "number"]
+        },
         "profile_visits_rate": {
           "type": ["null", "number"]
         },
@@ -268,6 +271,27 @@
           "type": ["null", "number"]
         },
         "total_app_event_add_to_cart": {
+          "type": ["null", "number"]
+        },
+        "total_registration": {
+          "type": ["null", "number"]
+        },
+        "user_registration": {
+          "type": ["null", "number"]
+        },
+        "skan_registration": {
+          "type": ["null", "number"]
+        },
+        "skan_total_registration": {
+          "type": ["null", "number"]
+        },
+        "total_purchase": {
+          "type": ["null", "number"]
+        },
+        "skan_purchase": {
+          "type": ["null", "number"]
+        },
+        "skan_total_purchase": {
           "type": ["null", "number"]
         }
       }

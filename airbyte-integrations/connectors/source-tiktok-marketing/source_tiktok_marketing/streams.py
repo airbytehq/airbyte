@@ -51,6 +51,7 @@ NOT_AUDIENCE_METRICS = [
     "real_time_app_install",
     "real_time_app_install_cost",
     "app_install",
+    "skan_app_install",
     "total_purchase_value",
     "total_onsite_shopping_value",
     "onsite_shopping",
@@ -695,6 +696,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
             "real_time_app_install",
             "real_time_app_install_cost",
             "app_install",
+            "skan_app_install",
         ]
 
         if self.report_level == ReportLevel.ADVERTISER and self.report_granularity == ReportGranularity.DAY:
@@ -755,6 +757,15 @@ class BasicReports(IncrementalTiktokStream, ABC):
                     "complete_payment",
                     "value_per_complete_payment",
                     "total_complete_payment_rate",
+                    "registration",
+                    "total_registration",
+                    "user_registration",
+                    "skan_registration",
+                    "skan_total_registration",
+                    "purchase",
+                    "total_purchase",
+                    "skan_purchase",
+                    "skan_total_purchase",
                 ]
             )
 
