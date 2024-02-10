@@ -176,6 +176,7 @@ class SourceFile(Source):
         configured_stream = catalog.streams[0]
 
         logger.info(f"Syncing stream: {name} ({client.reader.full_url})...")
+
         yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.STARTED)
 
         record_counter = 0
