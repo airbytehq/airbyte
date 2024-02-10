@@ -30,12 +30,14 @@ import java.time.chrono.IsoEra;
 import java.time.format.DateTimeParseException;
 import java.util.Base64;
 import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Source operation skeleton for JDBC compatible databases.
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcCompatibleSourceOperations.class);
   /**
    * A Date representing the earliest date in CE. Any date before this is in BCE.
    */
@@ -107,7 +109,9 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void putDouble(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getDouble(index), Double::isFinite));
+    double val = DataTypeUtils.returnNullIfInvalid(() -> resultSet.getDouble(index), Double::isFinite);
+    LOGGER.info("SGXputDouble " + columnName + " = " + val);
+    node.put(columnName, val);
   }
 
   protected void putFloat(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
