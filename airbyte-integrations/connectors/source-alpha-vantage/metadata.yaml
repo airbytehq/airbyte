@@ -8,6 +8,10 @@ data:
   icon: alpha-vantage.svg
   license: MIT
   name: Alpha Vantage
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-alpha-vantage
   registries:
     cloud:
       enabled: false

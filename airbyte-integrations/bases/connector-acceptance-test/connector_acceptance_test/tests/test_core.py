@@ -9,15 +9,22 @@ import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
+from os.path import splitext
+from pathlib import Path
+from threading import Thread
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple
 from xmlrpc.client import Boolean
 
+import connector_acceptance_test.utils.docs as docs_utils
 import dpath.util
 import jsonschema
 import pytest
+import requests
 from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
@@ -29,6 +36,7 @@ from airbyte_protocol.models import (
 )
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (
+    AllowedHostsConfiguration,
     BasicReadTestConfig,
     Config,
     ConnectionTestConfig,
@@ -39,6 +47,7 @@ from connector_acceptance_test.config import (
     IgnoredFieldsConfiguration,
     NoPrimaryKeyConfiguration,
     SpecTestConfig,
+    UnsupportedFileTypeConfig,
 )
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
 from connector_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
@@ -118,6 +127,12 @@ class TestSpec(BaseTest):
 
         if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
+        return False
+
+    @pytest.fixture(name="skip_oauth_default_method_test")
+    def skip_oauth_default_method_test_fixture(self, inputs: SpecTestConfig):
+        if inputs.auth_default_method and not inputs.auth_default_method.oauth:
+            pytest.skip(f"Skipping OAuth is default method test: {inputs.auth_default_method.bypass_reason}")
         return False
 
     def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
@@ -520,6 +535,31 @@ class TestSpec(BaseTest):
 
         diff = paths_to_validate - set(get_expected_schema_structure(spec_schema))
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
+
+    def test_oauth_is_default_method(self, skip_oauth_default_method_test: bool, actual_connector_spec: ConnectorSpecification):
+        """
+        OAuth is default check.
+        If credentials do have oneOf: we check that the OAuth is listed at first.
+        If there is no oneOf and Oauth: OAuth is only option to authenticate the source and no check is needed.
+        """
+        advanced_auth = actual_connector_spec.advanced_auth
+        if not advanced_auth:
+            pytest.skip("Source does not have OAuth method.")
+        if not advanced_auth.predicate_key:
+            pytest.skip("Advanced Auth object does not have predicate_key, only one option to authenticate.")
+
+        spec_schema = actual_connector_spec.connectionSpecification
+        credentials = advanced_auth.predicate_key[0]
+        try:
+            one_of_default_method = dpath.util.get(spec_schema, f"/**/{credentials}/oneOf/0")
+        except KeyError as e:  # Key Error when oneOf is not in credentials object
+            pytest.skip("Credentials object does not have oneOf option.")
+
+        path_in_credentials = "/".join(advanced_auth.predicate_key[1:])
+        auth_method_predicate_const = dpath.util.get(one_of_default_method, f"/**/{path_in_credentials}/const")
+        assert (
+            auth_method_predicate_const == advanced_auth.predicate_value
+        ), f"Oauth method should be a default option. Current default method is {auth_method_predicate_const}."
 
     @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
@@ -941,6 +981,14 @@ class TestBasicRead(BaseTest):
         else:
             return inputs.validate_schema
 
+    @pytest.fixture(name="should_validate_stream_statuses")
+    def should_validate_stream_statuses_fixture(self, inputs: BasicReadTestConfig, is_connector_certified: bool):
+        if inputs.validate_stream_statuses is None and is_connector_certified:
+            return True
+        if not inputs.validate_stream_statuses and is_connector_certified:
+            pytest.fail("High strictness level error: validate_stream_statuses must be set to true in the basic read test configuration.")
+        return inputs.validate_stream_statuses
+
     @pytest.fixture(name="should_fail_on_extra_columns")
     def should_fail_on_extra_columns_fixture(self, inputs: BasicReadTestConfig):
         # TODO (Ella): enforce this param once all connectors are passing
@@ -983,22 +1031,30 @@ class TestBasicRead(BaseTest):
         else:
             return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
 
+    _file_types: Set[str] = set()
+
     async def test_read(
         self,
-        connector_config,
-        configured_catalog,
+        connector_config: SecretDict,
+        configured_catalog: ConfiguredAirbyteCatalog,
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
+        should_validate_stream_statuses: Boolean,
         should_fail_on_extra_columns: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
-        detailed_logger,
+        detailed_logger: Logger,
+        certified_file_based_connector: bool,
     ):
         output = await docker_runner.call_read(connector_config, configured_catalog)
+
         records = [message.record for message in filter_output(output, Type.RECORD)]
+
+        if certified_file_based_connector:
+            self._file_types.update(self._get_actual_file_types(records))
 
         assert records, "At least one record should be read using provided catalog"
 
@@ -1026,6 +1082,14 @@ class TestBasicRead(BaseTest):
                 ignored_fields=ignored_fields,
                 detailed_logger=detailed_logger,
             )
+
+        if should_validate_stream_statuses:
+            all_statuses = [
+                message.trace.stream_status
+                for message in filter_output(output, Type.TRACE)
+                if message.trace.type == TraceType.STREAM_STATUS
+            ]
+            self._validate_stream_statuses(configured_catalog=configured_catalog, statuses=all_statuses)
 
     async def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
         if not inputs.expect_trace_message_on_failure:
@@ -1144,19 +1208,91 @@ class TestBasicRead(BaseTest):
 
         return result
 
+    @pytest.fixture(name="certified_file_based_connector")
+    def is_certified_file_based_connector(self, connector_metadata: Dict[str, Any], is_connector_certified: bool) -> bool:
+        metadata = connector_metadata.get("data", {})
+
+        # connector subtype is specified in data.connectorSubtype field
+        file_based_connector = metadata.get("connectorSubtype") == "file"
+
+        return file_based_connector and is_connector_certified
+
+    @staticmethod
+    def _get_file_extension(file_name: str) -> str:
+        _, file_extension = splitext(file_name)
+        return file_extension.casefold()
+
+    def _get_actual_file_types(self, records: List[AirbyteRecordMessage]) -> Set[str]:
+        return {self._get_file_extension(record.data.get("_ab_source_file_url", "")) for record in records}
+
+    @staticmethod
+    def _get_unsupported_file_types(config: List[UnsupportedFileTypeConfig]) -> Set[str]:
+        return {t.extension.casefold() for t in config}
+
+    async def test_all_supported_file_types_present(self, certified_file_based_connector: bool, inputs: BasicReadTestConfig):
+        if not certified_file_based_connector or inputs.file_types.skip_test:
+            reason = (
+                "Skipping the test for supported file types"
+                f"{' as it is only applicable for certified file-based connectors' if not certified_file_based_connector else ''}."
+            )
+            pytest.skip(reason)
+
+        structured_types = {".avro", ".csv", ".jsonl", ".parquet"}
+        unstructured_types = {".pdf", ".doc", ".docx", ".ppt", ".pptx", ".md"}
+
+        if inputs.file_types.unsupported_types:
+            unsupported_file_types = self._get_unsupported_file_types(inputs.file_types.unsupported_types)
+            structured_types.difference_update(unsupported_file_types)
+            unstructured_types.difference_update(unsupported_file_types)
+
+        missing_structured_types = structured_types - self._file_types
+        missing_unstructured_types = unstructured_types - self._file_types
+
+        # all structured and at least one of unstructured supported file types should be present
+        assert not missing_structured_types and len(missing_unstructured_types) != len(unstructured_types), (
+            f"Please make sure you added files with the following supported structured types {missing_structured_types} "
+            f"and at least one with unstructured type {unstructured_types} to the test account "
+            "or add them to the `file_types -> unsupported_types` list in config."
+        )
+
+    @staticmethod
+    def _validate_stream_statuses(configured_catalog: ConfiguredAirbyteCatalog, statuses: List[AirbyteStreamStatusTraceMessage]):
+        """Validate all statuses for all streams in the catalogs were emitted in correct order:
+        1. STARTED
+        2. RUNNING (can be >1)
+        3. COMPLETE
+        """
+        stream_statuses = defaultdict(list)
+        for status in statuses:
+            stream_statuses[f"{status.stream_descriptor.namespace}-{status.stream_descriptor.name}"].append(status.status)
+
+        assert set(f"{x.stream.namespace}-{x.stream.name}" for x in configured_catalog.streams) == set(
+            stream_statuses
+        ), "All stream must emit status"
+
+        for stream_name, status_list in stream_statuses.items():
+            assert (
+                len(status_list) >= 3
+            ), f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`,... `COMPLETE`"
+            assert status_list[0] == AirbyteStreamStatus.STARTED
+            assert status_list[-1] == AirbyteStreamStatus.COMPLETE
+            assert all(x == AirbyteStreamStatus.RUNNING for x in status_list[1:-1])
+
 
 @pytest.mark.default_timeout(TEN_MINUTES)
 class TestConnectorAttributes(BaseTest):
-    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []  # Used so that this is not part of the mandatory high strictness test suite yet
+    # Overide from BaseTest!
+    # Used so that this is not part of the mandatory high strictness test suite yet
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []
 
     @pytest.fixture(name="operational_certification_test")
-    async def operational_certification_test_fixture(self, connector_metadata: dict) -> bool:
+    async def operational_certification_test_fixture(self, is_connector_certified: bool) -> bool:
         """
         Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
         against operational certification criteria
         """
 
-        if connector_metadata.get("data", {}).get("ab_internal", {}).get("ql") < 400:
+        if not is_connector_certified:
             pytest.skip("Skipping operational connector certification test for uncertified connector")
         return True
 
@@ -1166,7 +1302,7 @@ class TestConnectorAttributes(BaseTest):
 
     async def test_streams_define_primary_key(
         self, operational_certification_test, streams_without_primary_key, connector_config, docker_runner: ConnectorRunner
-    ):
+    ) -> None:
         output = await docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
         streams = catalog_messages[0].catalog.streams
@@ -1175,3 +1311,261 @@ class TestConnectorAttributes(BaseTest):
 
         quoted_missing_primary_keys = {f"'{primary_key}'" for primary_key in missing_primary_keys}
         assert not missing_primary_keys, f"The following streams {', '.join(quoted_missing_primary_keys)} do not define a primary_key"
+
+    @pytest.fixture(name="allowed_hosts_test")
+    def allowed_hosts_fixture_test(self, inputs: ConnectorAttributesConfig) -> bool:
+        allowed_hosts = inputs.allowed_hosts
+        bypass_reason = allowed_hosts.bypass_reason if allowed_hosts else None
+        if bypass_reason:
+            pytest.skip(f"Skipping `metadata.allowedHosts` checks. Reason: {bypass_reason}")
+        return True
+
+    async def test_certified_connector_has_allowed_hosts(
+        self, operational_certification_test, allowed_hosts_test, connector_metadata: dict
+    ) -> None:
+        """
+        Checks whether or not the connector has `allowedHosts` and it's components defined in `metadata.yaml`.
+        Suitable for certified connectors starting `ql` >= 400.
+
+        Arguments:
+            :: operational_certification_test -- pytest.fixure defines the connector is suitable for this test or not.
+            :: connector_metadata -- `metadata.yaml` file content
+        """
+        metadata = connector_metadata.get("data", {})
+
+        has_allowed_hosts_property = "allowedHosts" in metadata.keys()
+        assert has_allowed_hosts_property, f"The `allowedHosts` property is missing in `metadata.data` for `metadata.yaml`."
+
+        allowed_hosts = metadata.get("allowedHosts", {})
+        has_hosts_property = "hosts" in allowed_hosts.keys() if allowed_hosts else False
+        assert has_hosts_property, f"The `hosts` property is missing in `metadata.data.allowedHosts` for `metadata.yaml`."
+
+        hosts = allowed_hosts.get("hosts", [])
+        has_assigned_hosts = len(hosts) > 0 if hosts else False
+        assert (
+            has_assigned_hosts
+        ), f"The `hosts` empty list is not allowed for `metadata.data.allowedHosts` for certified connectors. Please add `hosts` or define the `allowed_hosts.bypass_reason` in `acceptance-test-config.yaml`."
+
+    @pytest.fixture(name="suggested_streams_test")
+    def suggested_streams_fixture_test(self, inputs: ConnectorAttributesConfig) -> bool:
+        suggested_streams = inputs.suggested_streams
+        bypass_reason = suggested_streams.bypass_reason if suggested_streams else None
+        if bypass_reason:
+            pytest.skip(f"Skipping `metadata.suggestedStreams` checks. Reason: {bypass_reason}")
+        return True
+
+    async def test_certified_connector_has_suggested_streams(
+        self, operational_certification_test, suggested_streams_test, connector_metadata: dict
+    ) -> None:
+        """
+        Checks whether or not the connector has `suggestedStreams` and it's components defined in `metadata.yaml`.
+        Suitable for certified connectors starting `ql` >= 400.
+
+        Arguments:
+            :: operational_certification_test -- pytest.fixure defines the connector is suitable for this test or not.
+            :: connector_metadata -- `metadata.yaml` file content
+        """
+
+        metadata = connector_metadata.get("data", {})
+
+        has_suggested_streams_property = "suggestedStreams" in metadata.keys()
+        assert has_suggested_streams_property, f"The `suggestedStreams` property is missing in `metadata.data` for `metadata.yaml`."
+
+        suggested_streams = metadata.get("suggestedStreams", {})
+        has_streams_property = "streams" in suggested_streams.keys() if suggested_streams else False
+        assert has_streams_property, f"The `streams` property is missing in `metadata.data.suggestedStreams` for `metadata.yaml`."
+
+        streams = suggested_streams.get("streams", [])
+        has_assigned_suggested_streams = len(streams) > 0 if streams else False
+        assert (
+            has_assigned_suggested_streams
+        ), f"The `streams` empty list is not allowed for `metadata.data.suggestedStreams` for certified connectors."
+
+
+class TestConnectorDocumentation(BaseTest):
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []  # Used so that this is not part of the mandatory high strictness test suite yet
+
+    PREREQUISITES = "Prerequisites"
+    HEADING = "heading"
+    CREDENTIALS_KEYWORDS = ["account", "auth", "credentials", "access"]
+    CONNECTOR_SPECIFIC_HEADINGS = "<Connector-specific features>"
+
+    @pytest.fixture(name="operational_certification_test")
+    async def operational_certification_test_fixture(self, is_connector_certified: bool) -> bool:
+        """
+        Fixture that is used to skip a test that is reserved only for connectors that are supposed to be tested
+        against operational certification criteria
+        """
+        if not is_connector_certified:
+            pytest.skip("Skipping testing source connector documentation due to low ql.")
+        return True
+
+    def _get_template_headings(self, connector_name: str) -> tuple[tuple[str], tuple[str]]:
+        """
+        https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw - standard template
+        Headings in order to docs structure.
+        """
+        all_headings = (
+            connector_name,
+            "Prerequisites",
+            "Setup guide",
+            f"Set up {connector_name}",
+            "For Airbyte Cloud:",
+            "For Airbyte Open Source:",
+            f"Set up the {connector_name} connector in Airbyte",
+            "For Airbyte Cloud:",
+            "For Airbyte Open Source:",
+            "Supported sync modes",
+            "Supported Streams",
+            self.CONNECTOR_SPECIFIC_HEADINGS,
+            "Performance considerations",
+            "Data type map",
+            "Troubleshooting",
+            "Tutorials",
+            "Changelog",
+        )
+        not_required_heading = (
+            f"Set up the {connector_name} connector in Airbyte",
+            "For Airbyte Cloud:",
+            "For Airbyte Open Source:",
+            self.CONNECTOR_SPECIFIC_HEADINGS,
+            "Performance considerations",
+            "Data type map",
+            "Troubleshooting",
+            "Tutorials",
+        )
+        return all_headings, not_required_heading
+
+    def _headings_description(self, connector_name: str) -> dict[str:Path]:
+        """
+        Headings with path to file with template description
+        """
+        descriptions_paths = {
+            connector_name: Path(__file__).parent / "doc_templates/source.txt",
+            "For Airbyte Cloud:": Path(__file__).parent / "doc_templates/for_airbyte_cloud.txt",
+            "For Airbyte Open Source:": Path(__file__).parent / "doc_templates/for_airbyte_open_source.txt",
+            "Supported sync modes": Path(__file__).parent / "doc_templates/supported_sync_modes.txt",
+            "Tutorials": Path(__file__).parent / "doc_templates/tutorials.txt",
+        }
+        return descriptions_paths
+
+    def test_prerequisites_content(
+        self, operational_certification_test, actual_connector_spec: ConnectorSpecification, connector_documentation: str, docs_path: str
+    ):
+        node = docs_utils.documentation_node(connector_documentation)
+        header_line_map = {docs_utils.header_name(n): n.map[1] for n in node if n.type == self.HEADING}
+        headings = tuple(header_line_map.keys())
+
+        if not header_line_map.get(self.PREREQUISITES):
+            pytest.fail(f"Documentation does not have {self.PREREQUISITES} section.")
+
+        prereq_start_line = header_line_map[self.PREREQUISITES]
+        prereq_end_line = docs_utils.description_end_line_index(self.PREREQUISITES, headings, header_line_map)
+
+        with open(docs_path, "r") as docs_file:
+            prereq_content_lines = docs_file.readlines()[prereq_start_line:prereq_end_line]
+            # adding real character to avoid accidentally joining lines into a wanted title.
+            prereq_content = "|".join(prereq_content_lines).lower()
+            required_titles, has_credentials = docs_utils.required_titles_from_spec(actual_connector_spec.connectionSpecification)
+
+            for title in required_titles:
+                assert title in prereq_content, (
+                    f"Required '{title}' field is not in {self.PREREQUISITES} section " f"or title in spec doesn't match name in the docs."
+                )
+
+            if has_credentials:
+                # credentials has specific check for keywords as we have a lot of way how to describe this step
+                credentials_validation = [k in prereq_content for k in self.CREDENTIALS_KEYWORDS]
+                assert True in credentials_validation, f"Required 'credentials' field is not in {self.PREREQUISITES} section."
+
+    def test_docs_structure(self, operational_certification_test, connector_documentation: str, connector_metadata: dict):
+        """
+        test_docs_structure gets all top-level headers from source documentation file and check that the order is correct.
+        The order of the headers should follow our standard template https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw.
+        _get_template_headings returns tuple of headers as in standard template and non-required headers that might nor be in the source docs.
+        CONNECTOR_SPECIFIC_HEADINGS value in list of required headers that shows a place where should be a connector specific headers,
+        which can be skipped as out of standard template and depend of connector.
+        """
+
+        heading_names = docs_utils.prepare_headers(connector_documentation)
+        template_headings, non_required_heading = self._get_template_headings(connector_metadata["data"]["name"])
+
+        heading_names_len, template_headings_len = len(heading_names), len(template_headings)
+        heading_names_index, template_headings_index = 0, 0
+
+        while heading_names_index < heading_names_len and template_headings_index < template_headings_len:
+            heading_names_value = heading_names[heading_names_index]
+            template_headings_value = template_headings[template_headings_index]
+            # check that template header is specific for connector and actual header should not be validated
+            if template_headings_value == self.CONNECTOR_SPECIFIC_HEADINGS:
+                # check that actual header is not in required headers, as required headers should be on a right place and order
+                if heading_names_value not in template_headings:
+                    heading_names_index += 1  # go to the next actual header as CONNECTOR_SPECIFIC_HEADINGS can be more than one
+                    continue
+                else:
+                    # if actual header is required go to the next template header to validate actual header order
+                    template_headings_index += 1
+                    continue
+            # strict check that actual header equals template header
+            if heading_names_value == template_headings_value:
+                # found expected header, go to the next header in template and actual headers
+                heading_names_index += 1
+                template_headings_index += 1
+                continue
+            # actual header != template header means that template value is not required and can be skipped
+            if template_headings_value in non_required_heading:
+                # found non-required header, go to the next template header to validate actual header
+                template_headings_index += 1
+                continue
+            # any check is True, indexes didn't move to the next step
+            pytest.fail(docs_utils.reason_titles_not_match(heading_names_value, template_headings_value, template_headings))
+        # indexes didn't move to the last required one, so some headers are missed
+        if template_headings_index != template_headings_len:
+            pytest.fail(docs_utils.reason_missing_titles(template_headings_index, template_headings))
+
+    def test_docs_descriptions(
+        self, operational_certification_test, docs_path: str, connector_documentation: str, connector_metadata: dict
+    ):
+        connector_name = connector_metadata["data"]["name"]
+        template_descriptions = self._headings_description(connector_name)
+
+        node = docs_utils.documentation_node(connector_documentation)
+        header_line_map = {docs_utils.header_name(n): n.map[1] for n in node if n.type == self.HEADING}
+        actual_headings = tuple(header_line_map.keys())
+
+        for heading, description in template_descriptions.items():
+            if heading in actual_headings:
+
+                description_start_line = header_line_map[heading]
+                description_end_line = docs_utils.description_end_line_index(heading, actual_headings, header_line_map)
+
+                with open(docs_path, "r") as docs_file, open(description, "r") as template_file:
+
+                    docs_description_content = docs_file.readlines()[description_start_line:description_end_line]
+                    template_description_content = template_file.readlines()
+
+                    for d, t in zip(docs_description_content, template_description_content):
+                        d, t = docs_utils.prepare_lines_to_compare(connector_name, d, t)
+                        assert d == t, f"Description for '{heading}' does not follow structure.\nExpected: {t} Actual: {d}"
+
+    def test_validate_links(self, operational_certification_test, connector_documentation: str):
+        valid_status_codes = [200, 403, 401, 405]  # we skip 4xx due to needed access
+        links = re.findall("(https?://[^\s)]+)", connector_documentation)
+        invalid_links = []
+        threads = []
+
+        def validate_docs_links(docs_link):
+            response = requests.get(docs_link)
+            if response.status_code not in valid_status_codes:
+                invalid_links.append(docs_link)
+
+        for link in links:
+            process = Thread(target=validate_docs_links, args=[link])
+            process.start()
+            threads.append(process)
+
+        for process in threads:
+            process.join(timeout=30)  # 30s timeout for process else link will be skipped
+            process.is_alive()
+
+        assert not invalid_links, f"{len(invalid_links)} invalid links were found in the connector documentation: {invalid_links}."

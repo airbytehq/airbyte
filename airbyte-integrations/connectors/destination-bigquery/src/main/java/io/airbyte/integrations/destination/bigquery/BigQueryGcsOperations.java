@@ -14,11 +14,11 @@ import com.google.cloud.bigquery.LoadJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -114,7 +114,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   public String uploadRecordsToStage(final String datasetId, final String stream, final SerializableBuffer writer) {
     final String objectPath = getStagingFullPath(datasetId, stream);
     LOGGER.info("Uploading records to staging for stream {} (dataset {}): {}", stream, datasetId, objectPath);
-    return gcsStorageOperations.uploadRecordsToBucket(writer, datasetId, getStagingRootPath(datasetId, stream), objectPath);
+    return gcsStorageOperations.uploadRecordsToBucket(writer, datasetId, objectPath);
   }
 
   /**

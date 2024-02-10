@@ -272,7 +272,8 @@ const connectorCatalog = {
       type: "category",
       label: "Sources",
       link: {
-        type: "generated-index",
+        type: "doc",
+        id: "integrations/sources/README",
       },
       items: [sourcePostgres, sourceMysql, ...getSourceConnectors()].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
@@ -280,7 +281,8 @@ const connectorCatalog = {
       type: "category",
       label: "Destinations",
       link: {
-        type: "generated-index",
+        type: "doc",
+        id: "integrations/destinations/README",
       },
       items: getDestinationConnectors(),
     },
@@ -381,18 +383,18 @@ const understandingAirbyte = {
   type: "category",
   label: "Understand Airbyte",
   items: [
-    "understanding-airbyte/beginners-guide-to-catalog",
+    "understanding-airbyte/high-level-view",
     "understanding-airbyte/airbyte-protocol",
     "understanding-airbyte/airbyte-protocol-docker",
-    "understanding-airbyte/operations",
-    "understanding-airbyte/high-level-view",
     "understanding-airbyte/jobs",
-    "understanding-airbyte/tech-stack",
-    "understanding-airbyte/cdc",
-    "understanding-airbyte/supported-data-types",
-    "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/database-data-catalog",
+    "understanding-airbyte/beginners-guide-to-catalog",
+    "understanding-airbyte/supported-data-types",
+    "understanding-airbyte/operations",
+    "understanding-airbyte/cdc",
+    "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
+    "understanding-airbyte/tech-stack",
   ],
 };
 
@@ -441,11 +443,18 @@ module.exports = {
             "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
           ],
         },
-        "using-airbyte/core-concepts/typing-deduping",
-        "using-airbyte/core-concepts/basic-normalization",
+        {
+          type: "category",
+          label: "Typing and Deduping",
+          link: {
+            type: "doc",
+            id: "using-airbyte/core-concepts/typing-deduping"
+          },
+          items: [
+            "using-airbyte/core-concepts/basic-normalization"
+          ],
+        },
         "cloud/managing-airbyte-cloud/manage-schema-changes",
-        "cloud/managing-airbyte-cloud/manage-data-residency",
-        "cloud/managing-airbyte-cloud/manage-connection-state",
         {
           type: "category",
           label: "Transformations",
@@ -466,16 +475,19 @@ module.exports = {
         "cloud/managing-airbyte-cloud/review-sync-history",
         "operator-guides/browsing-output-logs",
         "operator-guides/reset",
+        "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
     {
       type: "category",
       label: "Workspace Management",
       items: [
+        "cloud/managing-airbyte-cloud/manage-data-residency",
         "using-airbyte/workspaces",
         "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
         "cloud/managing-airbyte-cloud/manage-credits",
         "operator-guides/using-custom-connectors",
+        
       ]
     },
     sectionHeader("Managing Airbyte"),
@@ -588,6 +600,8 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/january_2024",
+        "release_notes/december_2023",
         "release_notes/november_2023",
         "release_notes/october_2023",
         "release_notes/upgrading_to_destinations_v2",

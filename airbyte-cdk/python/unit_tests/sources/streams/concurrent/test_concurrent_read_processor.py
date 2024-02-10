@@ -3,7 +3,7 @@
 #
 import logging
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import freezegun
 from airbyte_cdk.models import (
@@ -32,6 +32,7 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 _STREAM_NAME = "stream"
 _ANOTHER_STREAM_NAME = "stream2"
+_ANY_AIRBYTE_MESSAGE = Mock(spec=AirbyteMessage)
 
 
 class TestConcurrentReadProcessor(unittest.TestCase):
@@ -40,13 +41,11 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         self._thread_pool_manager = Mock(spec=ThreadPoolManager)
 
         self._an_open_partition = Mock(spec=Partition)
-        self._an_open_partition.is_closed.return_value = False
         self._log_message = Mock(spec=LogMessage)
         self._an_open_partition.to_slice.return_value = self._log_message
         self._an_open_partition.stream_name.return_value = _STREAM_NAME
 
         self._a_closed_partition = Mock(spec=Partition)
-        self._a_closed_partition.is_closed.return_value = True
         self._a_closed_partition.stream_name.return_value = _ANOTHER_STREAM_NAME
 
         self._logger = Mock(spec=logging.Logger)
@@ -76,6 +75,19 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         self._record.stream_name = _STREAM_NAME
         self._record.data = self._record_data
 
+    def test_stream_is_not_done_initially(self):
+        stream_instances_to_read_from = [self._stream]
+        handler = ConcurrentReadProcessor(
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+        assert not handler._is_stream_done(self._stream.name)
+
     def test_handle_partition_done_no_other_streams_to_generate_partitions_for(self):
         stream_instances_to_read_from = [self._stream]
 
@@ -99,6 +111,10 @@ class TestConcurrentReadProcessor(unittest.TestCase):
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_last_stream_partition_done(self):
+        in_order_validation_mock = Mock()
+        in_order_validation_mock.attach_mock(self._another_stream, "_another_stream")
+        in_order_validation_mock.attach_mock(self._message_repository, '_message_repository')
+        self._message_repository.consume_queue.return_value = iter([_ANY_AIRBYTE_MESSAGE])
         stream_instances_to_read_from = [self._another_stream]
 
         handler = ConcurrentReadProcessor(
@@ -111,12 +127,12 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             self._partition_reader,
         )
         handler.start_next_partition_generator()
-        handler.on_partition(self._a_closed_partition)
 
         sentinel = PartitionGenerationCompletedSentinel(self._another_stream)
-        messages = handler.on_partition_generation_completed(sentinel)
+        messages = list(handler.on_partition_generation_completed(sentinel))
 
         expected_messages = [
+            _ANY_AIRBYTE_MESSAGE,
             AirbyteMessage(
                 type=MessageType.TRACE,
                 trace=AirbyteTraceMessage(
@@ -130,6 +146,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             )
         ]
         assert expected_messages == messages
+        assert in_order_validation_mock.mock_calls.index(call._another_stream.cursor.ensure_at_least_one_state_emitted) < in_order_validation_mock.mock_calls.index(call._message_repository.consume_queue)
 
     def test_handle_partition(self):
         stream_instances_to_read_from = [self._another_stream]
@@ -147,7 +164,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         handler.on_partition(self._a_closed_partition)
 
         self._thread_pool_manager.submit.assert_called_with(self._partition_reader.process_partition, self._a_closed_partition)
-        assert self._a_closed_partition in handler._streams_to_partitions[_ANOTHER_STREAM_NAME]
+        assert self._a_closed_partition in handler._streams_to_running_partitions[_ANOTHER_STREAM_NAME]
 
     def test_handle_partition_emits_log_message_if_it_should_be_logged(self):
         stream_instances_to_read_from = [self._stream]
@@ -169,15 +186,16 @@ class TestConcurrentReadProcessor(unittest.TestCase):
 
         self._thread_pool_manager.submit.assert_called_with(self._partition_reader.process_partition, self._an_open_partition)
         self._message_repository.emit_message.assert_called_with(self._log_message)
-        assert self._an_open_partition in handler._streams_to_partitions[_STREAM_NAME]
 
+        assert self._an_open_partition in handler._streams_to_running_partitions[_STREAM_NAME]
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_on_partition_complete_sentinel_with_messages_from_repository(self):
         stream_instances_to_read_from = [self._stream]
         partition = Mock(spec=Partition)
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
 
         handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
@@ -189,6 +207,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             self._partition_reader,
         )
         handler.start_next_partition_generator()
+        handler.on_partition(partition)
 
         sentinel = PartitionCompleteSentinel(partition)
 
@@ -223,7 +242,8 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             self._partition_reader,
         )
         handler.start_next_partition_generator()
-        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream))
+        handler.on_partition(self._a_closed_partition)
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream)))
 
         sentinel = PartitionCompleteSentinel(self._a_closed_partition)
 
@@ -254,7 +274,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
 
         handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
@@ -282,7 +301,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
         self._message_repository.consume_queue.return_value = []
 
         handler = ConcurrentReadProcessor(
@@ -319,7 +337,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
         slice_logger = Mock(spec=SliceLogger)
         slice_logger.should_log_slice_message.return_value = True
         slice_logger.create_slice_log_message.return_value = log_message
@@ -370,7 +387,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         stream_instances_to_read_from = [self._stream]
         partition = Mock(spec=Partition)
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
 
         handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
@@ -413,7 +429,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
         partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
         self._message_repository.consume_queue.return_value = [
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
         ]
@@ -474,7 +489,69 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler._streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}, _ANOTHER_STREAM_NAME: {self._a_closed_partition}}
+
+        handler.start_next_partition_generator()
+
+        another_stream = Mock(spec=AbstractStream)
+        another_stream.name = _STREAM_NAME
+        another_stream.as_airbyte_stream.return_value = AirbyteStream(
+            name=_ANOTHER_STREAM_NAME,
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
+
+        exception = RuntimeError("Something went wrong")
+
+        messages = []
+
+        with self.assertRaises(RuntimeError):
+            for m in handler.on_exception(exception):
+                messages.append(m)
+
+        expected_message = [
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
+                    ),
+                ),
+            ),
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_ANOTHER_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
+                    ),
+                ),
+            )
+        ]
+
+        assert messages == expected_message
+        self._thread_pool_manager.shutdown.assert_called_once()
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_on_exception_does_not_stop_streams_that_are_already_done(self):
+        stream_instances_to_read_from = [self._stream, self._another_stream]
+
+        handler = ConcurrentReadProcessor(
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        handler.start_next_partition_generator()
+        handler.on_partition(self._an_open_partition)
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream)))
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream)))
 
         another_stream = Mock(spec=AbstractStream)
         another_stream.name = _STREAM_NAME

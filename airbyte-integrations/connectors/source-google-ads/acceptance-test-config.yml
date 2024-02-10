@@ -57,6 +57,20 @@ acceptance_tests:
           - name: "keyword_view"
             bypass_reason: "No data for this date range, tested in previous config"
         ignored_fields:
+          account_performance_report:
+            - name: metrics.cross_device_conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.all_conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.all_conversions_from_interactions_rate
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.all_conversions_value
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.cost_per_all_conversions
+              bypass_reason: "Value can be updated by Google Ads"
+          ad_group:
+            - name: ad_group.url_custom_parameters
+              bypass_reason: "Value can be updated by Google Ads"
           customer:
             - name: customer.optimization_score_weight
               bypass_reason: "Value can be updated by Google Ads"
@@ -67,13 +81,67 @@ acceptance_tests:
           campaign_budget:
             - name: campaign_budget.recommended_budget_estimated_change_weekly_interactions
               bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.all_conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.all_conversions_from_interactions_rate
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.all_conversions_value
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.conversions_from_interactions_rate
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.conversions_value
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.cost_per_all_conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.cost_per_conversion
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.value_per_all_conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.value_per_conversion
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.cross_device_conversions
+              bypass_reason: "Value can be updated by Google Ads"
           campaign:
             - name: campaign.optimization_score
+              bypass_reason: "Value can be updated by Google Ads"
+          ad_group_ad_legacy:
+            - name: metrics.all_conversions_from_interactions_rate
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.all_conversions_value
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.all_conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.conversions_from_interactions_rate
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.conversions_value
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.cost_per_all_conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.cost_per_conversion
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.cost_per_current_model_attributed_conversion
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.current_model_attributed_conversions_value
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.current_model_attributed_conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.value_per_all_conversions
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.value_per_conversion
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.value_per_current_model_attributed_conversion
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: metrics.cross_device_conversions
               bypass_reason: "Value can be updated by Google Ads"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config_manager_account.json"
   incremental:
     tests:
       - config_path: "secrets/incremental_config.json"

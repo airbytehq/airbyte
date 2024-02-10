@@ -13,33 +13,50 @@ Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to en
 
 ## Prerequisites
 
-There are three prerequisites to deploying: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
+For a production-ready deployment of Self-Managed Enterprise, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
-For production, we recommend deploying to EKS, GKE or AKS. If you are doing some local testing, follow the cluster setup instructions outlined [here](/deploying-airbyte/on-kubernetes-via-helm.md#cluster-setup).
+![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
 
-To install `kubectl`, please follow [these instructions](https://kubernetes.io/docs/tasks/tools/). To configure `kubectl` to connect to your cluster by using `kubectl use-context my-cluster-name`, see the following:
+Prior to deploying Self-Managed Enterprise, we recommend having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
+
+| Component                | Recommendation                                                            |
+|--------------------------|-----------------------------------------------------------------------------|
+| Kubernetes Cluster       | Amazon EKS cluster running in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) on a minimum of 6 nodes. |
+| Ingress                  | [Amazon ALB](#configuring-ingress) and a URL for users to access the Airbyte UI or make API requests.                                                  |
+| Object Storage           | [Amazon S3 bucket](#configuring-external-logging) with two directories for log and state storage.         |
+| Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                               |
+| External Secrets Manager | [Amazon Secrets Manager](/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                               |
+
+
+We also require you to install and configure the following Kubernetes tooling:
+1. Install `helm` by following [these instructions](https://helm.sh/docs/intro/install/)
+2. Install `kubectl` by following [these instructions](https://kubernetes.io/docs/tasks/tools/).
+3. Configure `kubectl` to connect to your cluster by using `kubectl use-context my-cluster-name`:
 
 <details>
-    <summary>Configure kubectl to connect to your cluster</summary>
-    <Tabs>
-        <TabItem value="GKE" label="GKE" default> 
-            <ol>
-                <li>Configure <code>gcloud</code> with <code>gcloud auth login</code>.</li>
-                <li>On the Google Cloud Console, the cluster page will have a "Connect" button, with a command to run locally: <code>gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME</code></li>
-                <li>Use <code>kubectl config get-contexts</code> to show the contexts available.</li>
-                <li>Run <code>kubectl config use-context $GKE_CONTEXT</code> to access the cluster from kubectl.</li>
-            </ol>
-        </TabItem>
-        <TabItem value="EKS" label="EKS">
-            <ol>
-                <li><a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html">Configure your AWS CLI</a> to connect to your project.</li>
-                <li>Install <a href="https://eksctl.io/introduction/">eksctl</a>.</li>
-                <li>Run <code>eksctl utils write-kubeconfig --cluster=$CLUSTER_NAME</code> to make the context available to kubectl.</li>
-                <li>Use <code>kubectl config get-contexts</code> to show the contexts available.</li>
-                <li>Run <code>kubectl config use-context $EKS_CONTEXT</code> to access the cluster with kubectl.</li>
-            </ol>
-        </TabItem>
-    </Tabs>
+<summary>Configure kubectl to connect to your cluster</summary>
+
+<Tabs>
+<TabItem value="Amazon EKS" label="Amazon EKS" default>
+
+1. Configure your [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
+2. Install [eksctl](https://eksctl.io/introduction/).
+3. Run `eksctl utils write-kubeconfig --cluster=$CLUSTER_NAME` to make the context available to kubectl.
+4. Use `kubectl config get-contexts` to show the available contexts.
+5. Run `kubectl config use-context $EKS_CONTEXT` to access the cluster with kubectl.
+
+</TabItem>
+
+<TabItem value="GKE" label="GKE"> 
+
+1. Configure `gcloud` with `gcloud auth login`.
+2. On the Google Cloud Console, the cluster page will have a "Connect" button, with a command to run locally: `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
+3. Use `kubectl config get-contexts` to show the available contexts.
+4. Run `kubectl config use-context $EKS_CONTEXT` to access the cluster with kubectl.
+
+</TabItem>
+</Tabs>
+
 </details>
 
 ## Deploy Airbyte Enterprise
@@ -87,6 +104,10 @@ To configure basic auth (deploy without SSO), remove the entire `auth:` section 
 #### Configuring the Airbyte Database
 
 For Self-Managed Enterprise deployments, we recommend using a dedicated database instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL) instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
+
+:::info
+Currently, Airbyte requires connection to a Postgres 13 instance.
+:::
 
 We assume in the following that you've already configured a Postgres instance:
 
@@ -143,11 +164,13 @@ minio:
 
 
 <Tabs>
-<TabItem value="S3" label="S3">
+<TabItem value="S3" label="S3" default>
 
 ```yaml
 global:
     ...
+    log4jConfig: "log4j2-no-minio.xml"
+
     logs:
         storage:
             type: "S3"
@@ -173,6 +196,37 @@ global:
 
 For each of `accessKey` and `secretKey`, the `password` and `existingSecret` fields are mutually exclusive.
 
+3. Ensure your access key is tied to an IAM user with the [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-policies-s3.html#iam-policy-ex0), allowing the user access to S3 storage:
+
+```yaml
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Effect":"Allow",
+         "Action": "s3:ListAllMyBuckets",
+         "Resource":"*"
+      },
+      {
+         "Effect":"Allow",
+         "Action":["s3:ListBucket","s3:GetBucketLocation"],
+         "Resource":"arn:aws:s3:::YOUR-S3-BUCKET-NAME"
+      },
+      {
+         "Effect":"Allow",
+         "Action":[
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:GetObject",
+            "s3:GetObjectAcl",
+            "s3:DeleteObject"
+         ],
+         "Resource":"arn:aws:s3:::YOUR-S3-BUCKET-NAME/*"
+      }
+   ]
+}
+```
+
 </TabItem>
 <TabItem value="GKE" label="GKE" default> 
 
@@ -180,6 +234,8 @@ For each of `accessKey` and `secretKey`, the `password` and `existingSecret` fie
 ```yaml
 global:
     ...
+    log4jConfig: "log4j2-no-minio.xml"
+
     logs:
         storage:
             type: "GCS"
@@ -203,6 +259,11 @@ Note that the `credentials` and `credentialsJson` fields are mutually exclusive.
 #### Configuring Ingress
 
 To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
+
+<details>
+<summary>Ingress configuration setup steps</summary>
+<Tabs>
+<TabItem value="Generic" label="Generic">
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -233,6 +294,59 @@ spec:
         path: /auth
         pathType: Prefix
 ```
+
+</TabItem>
+<TabItem value="Amazon ALB" label="Amazon ALB">
+
+If you are intending on using Amazon Application Load Balancer (ALB) for ingress, this ingress definition will be close to what's needed to get up and running:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: <INGRESS_NAME>
+  annotations:
+    # Specifies that the Ingress should use an AWS ALB.
+    kubernetes.io/ingress.class: "alb"
+    # Redirects HTTP traffic to HTTPS.
+    ingress.kubernetes.io/ssl-redirect: "true"
+    # Creates an internal ALB, which is only accessible within your VPC or through a VPN.
+    alb.ingress.kubernetes.io/scheme: internal
+    # Specifies the ARN of the SSL certificate managed by AWS ACM, essential for HTTPS.
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-x:xxxxxxxxx:certificate/xxxxxxxxx-xxxxx-xxxx-xxxx-xxxxxxxxxxx
+    # Sets the idle timeout value for the ALB.
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=30
+    # [If Applicable] Specifies the VPC subnets and security groups for the ALB
+    # alb.ingress.kubernetes.io/subnets: '' e.g. 'subnet-12345, subnet-67890'
+    # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
+spec:
+  rules:
+  - host: <WEBAPP_URL> e.g. enterprise-demo.airbyte.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: airbyte-pro-airbyte-webapp-svc 
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+      - backend:
+          service:
+            name: airbyte-pro-airbyte-keycloak-svc
+            port:
+              number: 8180
+        path: /auth
+        pathType: Prefix
+```
+
+The ALB controller will use a `ServiceAccount` that requires the [following IAM policy](https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json) to be attached.
+
+</TabItem>
+</Tabs>
+</details>
+
+Once this is complete, ensure that the value of the `webapp-url` field in your `airbyte.yml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 

@@ -32,11 +32,7 @@ public class DataSourceFactory {
                                   final String password,
                                   final String driverClassName,
                                   final String jdbcConnectionString) {
-    return new DataSourceBuilder()
-        .withDriverClassName(driverClassName)
-        .withJdbcUrl(jdbcConnectionString)
-        .withPassword(password)
-        .withUsername(username)
+    return new DataSourceBuilder(username, password, driverClassName, jdbcConnectionString)
         .build();
   }
 
@@ -56,12 +52,8 @@ public class DataSourceFactory {
                                   final String jdbcConnectionString,
                                   final Map<String, String> connectionProperties,
                                   final Duration connectionTimeout) {
-    return new DataSourceBuilder()
+    return new DataSourceBuilder(username, password, driverClassName, jdbcConnectionString)
         .withConnectionProperties(connectionProperties)
-        .withDriverClassName(driverClassName)
-        .withJdbcUrl(jdbcConnectionString)
-        .withPassword(password)
-        .withUsername(username)
         .withConnectionTimeout(connectionTimeout)
         .build();
   }
@@ -83,13 +75,7 @@ public class DataSourceFactory {
                                   final int port,
                                   final String database,
                                   final String driverClassName) {
-    return new DataSourceBuilder()
-        .withDatabase(database)
-        .withDriverClassName(driverClassName)
-        .withHost(host)
-        .withPort(port)
-        .withPassword(password)
-        .withUsername(username)
+    return new DataSourceBuilder(username, password, driverClassName, host, port, database)
         .build();
   }
 
@@ -112,14 +98,8 @@ public class DataSourceFactory {
                                   final String database,
                                   final String driverClassName,
                                   final Map<String, String> connectionProperties) {
-    return new DataSourceBuilder()
+    return new DataSourceBuilder(username, password, driverClassName, host, port, database)
         .withConnectionProperties(connectionProperties)
-        .withDatabase(database)
-        .withDriverClassName(driverClassName)
-        .withHost(host)
-        .withPort(port)
-        .withPassword(password)
-        .withUsername(username)
         .build();
   }
 
@@ -139,13 +119,7 @@ public class DataSourceFactory {
                                           final String host,
                                           final int port,
                                           final String database) {
-    return new DataSourceBuilder()
-        .withDatabase(database)
-        .withDriverClassName("org.postgresql.Driver")
-        .withHost(host)
-        .withPort(port)
-        .withPassword(password)
-        .withUsername(username)
+    return new DataSourceBuilder(username, password, "org.postgresql.Driver", host, port, database)
         .build();
   }
 
@@ -158,7 +132,7 @@ public class DataSourceFactory {
    */
   public static void close(final DataSource dataSource) throws Exception {
     if (dataSource != null) {
-      if (dataSource instanceof AutoCloseable closeable) {
+      if (dataSource instanceof final AutoCloseable closeable) {
         closeable.close();
       }
     }
@@ -167,7 +141,7 @@ public class DataSourceFactory {
   /**
    * Builder class used to configure and construct {@link DataSource} instances.
    */
-  private static class DataSourceBuilder {
+  public static class DataSourceBuilder {
 
     private Map<String, String> connectionProperties = Map.of();
     private String database;
@@ -180,8 +154,35 @@ public class DataSourceFactory {
     private String password;
     private int port = 5432;
     private String username;
+    private String connectionInitSql;
 
-    private DataSourceBuilder() {}
+    private DataSourceBuilder(final String username,
+                              final String password,
+                              final String driverClassName) {
+      this.username = username;
+      this.password = password;
+      this.driverClassName = driverClassName;
+    }
+
+    public DataSourceBuilder(final String username,
+                             final String password,
+                             final String driverClassName,
+                             final String jdbcUrl) {
+      this(username, password, driverClassName);
+      this.jdbcUrl = jdbcUrl;
+    }
+
+    public DataSourceBuilder(final String username,
+                             final String password,
+                             final String driverClassName,
+                             final String host,
+                             final int port,
+                             final String database) {
+      this(username, password, driverClassName);
+      this.host = host;
+      this.port = port;
+      this.database = database;
+    }
 
     public DataSourceBuilder withConnectionProperties(final Map<String, String> connectionProperties) {
       if (connectionProperties != null) {
@@ -248,6 +249,11 @@ public class DataSourceFactory {
       return this;
     }
 
+    public DataSourceBuilder withConnectionInitSql(final String sql) {
+      this.connectionInitSql = sql;
+      return this;
+    }
+
     public DataSource build() {
       final DatabaseDriver databaseDriver = DatabaseDriver.findByDriverClassName(driverClassName);
 
@@ -271,6 +277,8 @@ public class DataSourceFactory {
        * will preserve existing behavior that tests for the connection on first use, not on creation.
        */
       config.setInitializationFailTimeout(Integer.MIN_VALUE);
+
+      config.setConnectionInitSql(connectionInitSql);
 
       connectionProperties.forEach(config::addDataSourceProperty);
 

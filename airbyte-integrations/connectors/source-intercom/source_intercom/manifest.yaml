@@ -297,7 +297,46 @@ definitions:
       data_field: "conversations"
       page_size: 150
 
+  # activity logs stream is incremental based on created_at field
+  activity_logs:
+    $ref: "#/definitions/stream_full_refresh"
+    primary_key: id
+    $parameters:
+      name: "activity_logs"
+      path: "admins/activity_logs"
+      data_field: "activity_logs"
+    retriever:
+      $ref: "#/definitions/retriever"
+      description: "The Retriever without passing page size option"
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "#/definitions/requester/url_base"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response.get('pages', {}).get('next') }}"
+          stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+        page_token_option:
+          type: RequestPath
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      cursor_granularity: "PT1S"
+      step: "P30D"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        field_name: "created_at_before"
+        inject_into: "request_parameter"
+      start_time_option:
+        field_name: "created_at_after"
+        inject_into: "request_parameter"
+
 streams:
+  - "#/definitions/activity_logs"
   - "#/definitions/admins"
   - "#/definitions/tags"
   - "#/definitions/teams"

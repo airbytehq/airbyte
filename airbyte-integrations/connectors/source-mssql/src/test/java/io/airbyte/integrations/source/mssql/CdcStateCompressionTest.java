@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcStateCompressionTest {
 
@@ -54,21 +53,13 @@ public class CdcStateCompressionTest {
 
   static private final int ADDED_COLUMNS = 1000;
 
-  static private final MSSQLServerContainer<?> CONTAINER = new MsSQLContainerFactory().shared(
-      "mcr.microsoft.com/mssql/server:2022-latest", "withAgent");
-
   private MsSQLTestDatabase testdb;
 
   @BeforeEach
   public void setup() {
-    testdb = new MsSQLTestDatabase(CONTAINER);
-    testdb = testdb
-        .withConnectionProperty("encrypt", "false")
-        .withConnectionProperty("databaseName", testdb.getDatabaseName())
-        .initialized()
-        .withSnapshotIsolation()
-        .withCdc()
-        .withWaitUntilAgentRunning();
+    testdb = MsSQLTestDatabase.in(MsSQLTestDatabase.BaseImage.MSSQL_2022, MsSQLTestDatabase.ContainerModifier.AGENT)
+        .withWaitUntilAgentRunning()
+        .withCdc();
 
     // Create a test schema and a bunch of test tables with CDC enabled.
     // Insert one row in each table so that they're not empty.
@@ -129,7 +120,7 @@ public class CdcStateCompressionTest {
   }
 
   private AirbyteCatalog getCatalog() {
-    var streams = new ArrayList<AirbyteStream>();
+    final var streams = new ArrayList<AirbyteStream>();
     for (int i = 0; i < TEST_TABLES; i++) {
       streams.add(CatalogHelpers.createAirbyteStream(
           "test_table_%d".formatted(i),
@@ -164,10 +155,7 @@ public class CdcStateCompressionTest {
         .with("is_test", true)
         .with("replication_method", Map.of(
             "method", "CDC",
-            "data_to_sync", "Existing and New",
-            "initial_waiting_seconds", 60,
-            "snapshot_isolation", "Snapshot"))
-
+            "initial_waiting_seconds", 60))
         .build();
   }
 
@@ -194,7 +182,7 @@ public class CdcStateCompressionTest {
     assertTrue(lastSharedStateFromFirstBatch.get(IS_COMPRESSED).asBoolean());
     final var recordsFromFirstBatch = extractRecordMessages(dataFromFirstBatch);
     assertEquals(TEST_TABLES, recordsFromFirstBatch.size());
-    for (var record : recordsFromFirstBatch) {
+    for (final var record : recordsFromFirstBatch) {
       assertEquals("1", record.getData().get("id").toString());
     }
 
@@ -219,7 +207,7 @@ public class CdcStateCompressionTest {
     assertTrue(lastSharedStateFromSecondBatch.get(IS_COMPRESSED).asBoolean());
     final var recordsFromSecondBatch = extractRecordMessages(dataFromSecondBatch);
     assertEquals(TEST_TABLES, recordsFromSecondBatch.size());
-    for (var record : recordsFromSecondBatch) {
+    for (final var record : recordsFromSecondBatch) {
       assertEquals("2", record.getData().get("id").toString());
     }
   }
@@ -241,7 +229,7 @@ public class CdcStateCompressionTest {
         .collect(Collectors.groupingBy(AirbyteRecordMessage::getStream));
 
     final Map<String, Set<AirbyteRecordMessage>> recordsPerStreamWithNoDuplicates = new HashMap<>();
-    for (var entry : recordsPerStream.entrySet()) {
+    for (final var entry : recordsPerStream.entrySet()) {
       final var set = new HashSet<>(entry.getValue());
       recordsPerStreamWithNoDuplicates.put(entry.getKey(), set);
       assertEquals(entry.getValue().size(), set.size(), "duplicate records in sync for " + entry.getKey());

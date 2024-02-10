@@ -6,25 +6,17 @@ on:
     - cron: "0 0 * * *"
   workflow_dispatch:
     inputs:
-      runs-on:
-        type: string
-        default: ci-runner-connector-nightly-xlarge-dagger-0-9-5
-        required: true
       test-connectors-options:
         default: --concurrency=5 --support-level=certified
         required: true
-      airbyte-ci-binary-url:
-        description: "URL to airbyte-ci binary"
-        required: false
-        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
 
-run-name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }} - on ${{ inputs.runs-on || 'ci-runner-connector-nightly-xlarge-dagger-0-9-5' }}"
+run-name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }}"
 
 jobs:
   test_connectors:
-    name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }} - on ${{ inputs.runs-on || 'ci-runner-connector-nightly-xlarge-dagger-0-9-5' }}"
+    name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }}"
     timeout-minutes: 720 # 12 hours
-    runs-on: ${{ inputs.runs-on || 'ci-runner-connector-nightly-xlarge-dagger-0-9-5' }}
+    runs-on: connector-nightly-xlarge
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -36,11 +28,11 @@ jobs:
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: Test connectors
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "master"
           ci_job_key: "nightly_builds"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -50,4 +42,3 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ inputs.test-connectors-options || '--concurrency=8 --support-level=certified' }} test"
-          airbyte_ci_binary_url: ${{ github.event.inputs.airbyte-ci-binary-url }}

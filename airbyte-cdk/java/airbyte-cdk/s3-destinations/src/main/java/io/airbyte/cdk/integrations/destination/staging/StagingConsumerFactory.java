@@ -27,17 +27,15 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,61 +47,151 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StagingConsumerFactory.class);
 
-  // using a random string here as a placeholder for the moment.
-  // This would avoid mixing data in the staging area between different syncs (especially if they
-  // manipulate streams with similar names)
-  // if we replaced the random connection id by the actual connection_id, we'd gain the opportunity to
-  // leverage data that was uploaded to stage
-  // in a previous attempt but failed to load to the warehouse for some reason (interrupted?) instead.
-  // This would also allow other programs/scripts
-  // to load (or reload backups?) in the connection's staging area to be loaded at the next sync.
-  private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
-  public static final UUID RANDOM_CONNECTION_ID = UUID.randomUUID();
+  private static final Instant SYNC_DATETIME = Instant.now();
 
-  public SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
-                                                      final JdbcDatabase database,
-                                                      final StagingOperations stagingOperations,
-                                                      final NamingConventionTransformer namingResolver,
-                                                      final JsonNode config,
-                                                      final ConfiguredAirbyteCatalog catalog,
-                                                      final boolean purgeStagingData,
-                                                      final TypeAndDedupeOperationValve typerDeduperValve,
-                                                      final TyperDeduper typerDeduper,
-                                                      final ParsedCatalog parsedCatalog,
-                                                      final String defaultNamespace,
-                                                      final boolean useDestinationsV2Columns) {
-    return createAsync(outputRecordCollector,
-        database,
-        stagingOperations,
-        namingResolver,
-        config,
-        catalog,
-        purgeStagingData,
-        typerDeduperValve,
-        typerDeduper,
-        parsedCatalog,
-        defaultNamespace,
-        useDestinationsV2Columns,
-        Optional.empty());
+  private final Consumer<AirbyteMessage> outputRecordCollector;
+  private final JdbcDatabase database;
+  private final StagingOperations stagingOperations;
+  private final NamingConventionTransformer namingResolver;
+  private final JsonNode config;
+  private final ConfiguredAirbyteCatalog catalog;
+  private final boolean purgeStagingData;
+  private final TypeAndDedupeOperationValve typerDeduperValve;
+  private final TyperDeduper typerDeduper;
+  private final ParsedCatalog parsedCatalog;
+  private final String defaultNamespace;
+  private final boolean useDestinationsV2Columns;
+
+  // Optional fields
+  private final Optional<Long> bufferMemoryLimit;
+  private final long optimalBatchSizeBytes;
+
+  private StagingConsumerFactory(
+                                 final Consumer<AirbyteMessage> outputRecordCollector,
+                                 final JdbcDatabase database,
+                                 final StagingOperations stagingOperations,
+                                 final NamingConventionTransformer namingResolver,
+                                 final JsonNode config,
+                                 final ConfiguredAirbyteCatalog catalog,
+                                 final boolean purgeStagingData,
+                                 final TypeAndDedupeOperationValve typerDeduperValve,
+                                 final TyperDeduper typerDeduper,
+                                 final ParsedCatalog parsedCatalog,
+                                 final String defaultNamespace,
+                                 final boolean useDestinationsV2Columns,
+                                 final Optional<Long> bufferMemoryLimit,
+                                 final long optimalBatchSizeBytes) {
+    this.outputRecordCollector = outputRecordCollector;
+    this.database = database;
+    this.stagingOperations = stagingOperations;
+    this.namingResolver = namingResolver;
+    this.config = config;
+    this.catalog = catalog;
+    this.purgeStagingData = purgeStagingData;
+    this.typerDeduperValve = typerDeduperValve;
+    this.typerDeduper = typerDeduper;
+    this.parsedCatalog = parsedCatalog;
+    this.defaultNamespace = defaultNamespace;
+    this.useDestinationsV2Columns = useDestinationsV2Columns;
+    this.bufferMemoryLimit = bufferMemoryLimit;
+    this.optimalBatchSizeBytes = optimalBatchSizeBytes;
   }
 
-  public SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
-                                                      final JdbcDatabase database,
-                                                      final StagingOperations stagingOperations,
-                                                      final NamingConventionTransformer namingResolver,
-                                                      final JsonNode config,
-                                                      final ConfiguredAirbyteCatalog catalog,
-                                                      final boolean purgeStagingData,
-                                                      final TypeAndDedupeOperationValve typerDeduperValve,
-                                                      final TyperDeduper typerDeduper,
-                                                      final ParsedCatalog parsedCatalog,
-                                                      final String defaultNamespace,
-                                                      final boolean useDestinationsV2Columns,
-                                                      final Optional<Long> bufferMemoryLimit) {
+  public static class Builder {
+
+    // Required (?) fields
+    // (TODO which of these are _actually_ required, and which have we just coincidentally always
+    // provided?)
+    private Consumer<AirbyteMessage> outputRecordCollector;
+    private JdbcDatabase database;
+    private StagingOperations stagingOperations;
+    private NamingConventionTransformer namingResolver;
+    private JsonNode config;
+    private ConfiguredAirbyteCatalog catalog;
+    private boolean purgeStagingData;
+    private TypeAndDedupeOperationValve typerDeduperValve;
+    private TyperDeduper typerDeduper;
+    private ParsedCatalog parsedCatalog;
+    private String defaultNamespace;
+    private boolean useDestinationsV2Columns;
+
+    // Optional fields
+    private Optional<Long> bufferMemoryLimit = Optional.empty();
+    private long optimalBatchSizeBytes = 50 * 1024 * 1024;
+
+    private Builder() {}
+
+    public Builder setBufferMemoryLimit(final Optional<Long> bufferMemoryLimit) {
+      this.bufferMemoryLimit = bufferMemoryLimit;
+      return this;
+    }
+
+    public Builder setOptimalBatchSizeBytes(final long optimalBatchSizeBytes) {
+      this.optimalBatchSizeBytes = optimalBatchSizeBytes;
+      return this;
+    }
+
+    public StagingConsumerFactory build() {
+      return new StagingConsumerFactory(
+          outputRecordCollector,
+          database,
+          stagingOperations,
+          namingResolver,
+          config,
+          catalog,
+          purgeStagingData,
+          typerDeduperValve,
+          typerDeduper,
+          parsedCatalog,
+          defaultNamespace,
+          useDestinationsV2Columns,
+          bufferMemoryLimit,
+          optimalBatchSizeBytes);
+    }
+
+  }
+
+  public static Builder builder(
+                                final Consumer<AirbyteMessage> outputRecordCollector,
+                                final JdbcDatabase database,
+                                final StagingOperations stagingOperations,
+                                final NamingConventionTransformer namingResolver,
+                                final JsonNode config,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final boolean purgeStagingData,
+                                final TypeAndDedupeOperationValve typerDeduperValve,
+                                final TyperDeduper typerDeduper,
+                                final ParsedCatalog parsedCatalog,
+                                final String defaultNamespace,
+                                final boolean useDestinationsV2Columns) {
+    final Builder builder = new Builder();
+    builder.outputRecordCollector = outputRecordCollector;
+    builder.database = database;
+    builder.stagingOperations = stagingOperations;
+    builder.namingResolver = namingResolver;
+    builder.config = config;
+    builder.catalog = catalog;
+    builder.purgeStagingData = purgeStagingData;
+    builder.typerDeduperValve = typerDeduperValve;
+    builder.typerDeduper = typerDeduper;
+    builder.parsedCatalog = parsedCatalog;
+    builder.defaultNamespace = defaultNamespace;
+    builder.useDestinationsV2Columns = useDestinationsV2Columns;
+    return builder;
+  }
+
+  public SerializedAirbyteMessageConsumer createAsync() {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog, useDestinationsV2Columns);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
-    final var flusher =
-        new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, useDestinationsV2Columns);
+    final var flusher = new AsyncFlush(
+        streamDescToWriteConfig,
+        stagingOperations,
+        database,
+        catalog,
+        typerDeduperValve,
+        typerDeduper,
+        optimalBatchSizeBytes,
+        useDestinationsV2Columns);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),

@@ -48,12 +48,14 @@ class JiraStream(HttpStream, ABC):
     extract_field: Optional[str] = None
     api_v1 = False
     # Defines the HTTP status codes for which the slice should be skipped.
-    # Refernce issue: https://github.com/airbytehq/oncall/issues/2133
+    # Reference issue: https://github.com/airbytehq/oncall/issues/2133
     # we should skip the slice with `board id` which doesn't support `sprints`
     # it's generally applied to all streams that might have the same error hit in the future.
     skip_http_status_codes = [requests.codes.BAD_REQUEST]
     raise_on_http_errors = True
     transformer: TypeTransformer = DateTimeTransformer(TransformConfig.DefaultSchemaNormalization)
+    # emitting state message after every page read
+    state_checkpoint_interval = page_size
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -246,7 +248,7 @@ class Boards(JiraStream):
         return record
 
 
-class BoardIssues(IncrementalJiraStream):
+class BoardIssues(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
     """
@@ -257,6 +259,7 @@ class BoardIssues(IncrementalJiraStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self._starting_point_cache = {}
         self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -270,10 +273,16 @@ class BoardIssues(IncrementalJiraStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = ["key", "created", "updated"]
-        jql = self.jql_compare_date(stream_state)
+        jql = self.jql_compare_date(stream_state, stream_slice)
         if jql:
             params["jql"] = jql
         return params
+
+    def jql_compare_date(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[str]:
+        compare_date = self.get_starting_point(stream_state, stream_slice)
+        if compare_date:
+            compare_date = compare_date.strftime("%Y/%m/%d %H:%M")
+            return f"{self.cursor_field} >= '{compare_date}'"
 
     def _is_board_error(self, response):
         """Check if board has error and should be skipped"""
@@ -288,17 +297,44 @@ class BoardIssues(IncrementalJiraStream):
         # for all other HTTP errors the default handling is applied
         return super().should_retry(response)
 
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from read_full_refresh(self.boards_stream)
+
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for board in read_full_refresh(self.boards_stream):
-            try:
-                yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
-            except HTTPError as e:
-                if self._is_board_error(e.response):
-                    # Wrong board is skipped
-                    self.logger.warning(f"Board {board['id']} has no columns with a mapped status. Skipping.")
-                    continue
-                else:
-                    raise
+        try:
+            yield from super().read_records(stream_slice={"board_id": stream_slice["id"]}, **kwargs)
+        except HTTPError as e:
+            if self._is_board_error(e.response):
+                # Wrong board is skipped
+                self.logger.warning(f"Board {stream_slice['id']} has no columns with a mapped status. Skipping.")
+            else:
+                raise
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        updated_state = latest_record[self.cursor_field]
+        board_id = str(latest_record["boardId"])
+        stream_state_value = current_stream_state.get(board_id, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(board_id, {})[self.cursor_field] = updated_state
+        return current_stream_state
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
+        board_id = str(stream_slice["board_id"])
+        if self.cursor_field not in self._starting_point_cache:
+            self._starting_point_cache.setdefault(board_id, {})[self.cursor_field] = self._get_starting_point(
+                stream_state=stream_state, stream_slice=stream_slice
+            )
+        return self._starting_point_cache[board_id][self.cursor_field]
+
+    def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
+        if stream_state:
+            board_id = str(stream_slice["board_id"])
+            stream_state_value = stream_state.get(board_id, {}).get(self.cursor_field)
+            if stream_state_value:
+                stream_state_value = pendulum.parse(stream_state_value) - self._lookback_window_minutes
+                return safe_max(stream_state_value, self._start_date)
+        return self._start_date
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["boardId"] = stream_slice["board_id"]
@@ -381,7 +417,6 @@ class Issues(IncrementalJiraStream):
     # Issue: https://github.com/airbytehq/airbyte/issues/26712
     # we should skip the slice with wrong permissions on project level
     skip_http_status_codes = [requests.codes.FORBIDDEN, requests.codes.BAD_REQUEST]
-    state_checkpoint_interval = 50  # default page size is 50
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

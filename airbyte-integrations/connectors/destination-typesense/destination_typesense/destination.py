@@ -5,6 +5,7 @@
 
 from typing import Any, Iterable, Mapping
 
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_typesense.writer import TypesenseWriter
@@ -49,7 +50,8 @@ class DestinationTypesense(Destination):
                 continue
         writer.flush()
 
-    def check(self, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        logger.debug("TypeSense Destination Config Check")
         try:
             client = get_client(config=config)
             client.collections.create({"name": "_airbyte", "fields": [{"name": "title", "type": "string"}]})

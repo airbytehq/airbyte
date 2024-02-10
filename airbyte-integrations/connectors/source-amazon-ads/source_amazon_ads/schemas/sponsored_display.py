@@ -62,9 +62,15 @@ class DisplayBudgetRuleDetailsPerformanceMeasureCondition(CatalogModel):
     threshold: Decimal
 
 
+class DisplayBudgetRuleDetailsRecurrenceIntraDaySchedule(CatalogModel):
+    startTime: str
+    endTime: str
+
+
 class DisplayBudgetRuleDetailsRecurrence(CatalogModel):
     type: str
     daysOfWeek: List[str] = None
+    intraDaySchedule: List[DisplayBudgetRuleDetailsRecurrenceIntraDaySchedule] = None
     threshold: Decimal
 
 

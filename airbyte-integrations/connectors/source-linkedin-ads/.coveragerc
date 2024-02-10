@@ -1,0 +1,3 @@
+[run]
+omit =
+    source_linkedin_ads/run.py

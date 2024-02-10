@@ -7,7 +7,7 @@ import logging
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import Generic, List, Mapping, Optional, Set, TypeVar
+from typing import Any, Dict, Generic, List, Mapping, Optional, Set, TypeVar
 
 from pydantic import BaseModel, Field, root_validator, validator
 from pydantic.generics import GenericModel
@@ -42,6 +42,17 @@ class BackwardCompatibilityTestsConfig(BaseConfig):
     )
 
 
+class OAuthTestConfig(BaseConfig):
+    oauth = Field(True, description="Allow source to have another default method that OAuth.")
+    bypass_reason: Optional[str] = Field(description="Reason why OAuth is not default method.")
+
+    @validator("oauth", always=True)
+    def validate_oauth(cls, oauth, values):
+        if oauth is False and not values.get("bypass_reason"):
+            raise ValueError("Please provide a bypass reason for Auth default method")
+        return oauth
+
+
 class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
     config_path: str = config_path
@@ -50,6 +61,7 @@ class SpecTestConfig(BaseConfig):
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
+    auth_default_method: Optional[OAuthTestConfig] = Field(description="Auth default method details.")
 
 
 class ConnectionTestConfig(BaseConfig):
@@ -82,7 +94,8 @@ class ExpectedRecordsConfig(BaseModel):
     extra_fields: bool = Field(False, description="Allow records to have other fields")
     exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
     extra_records: bool = Field(
-        True, description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced"
+        True,
+        description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced",
     )
 
     @validator("exact_order", always=True)
@@ -129,6 +142,43 @@ class NoPrimaryKeyConfiguration(BaseConfig):
     bypass_reason: Optional[str] = Field(default=None, description="Reason why this stream does not support a primary key")
 
 
+class AllowedHostsConfiguration(BaseConfig):
+    bypass_reason: Optional[str] = Field(
+        default=None, description="Reason why the Metadata `AllowedHosts` check should be skipped for this certified connector."
+    )
+
+
+class SuggestedStreamsConfiguration(BaseConfig):
+    bypass_reason: Optional[str] = Field(
+        default=None, description="Reason why the Metadata `SuggestedStreams` check should be skipped for this certified connector."
+    )
+
+
+class UnsupportedFileTypeConfig(BaseConfig):
+    extension: str
+    bypass_reason: Optional[str] = Field(description="Reason why this type is considered unsupported.")
+
+    @validator("extension", always=True)
+    def extension_properly_formatted(cls, extension: str) -> str:
+        if not extension.startswith(".") or len(extension) < 2:
+            raise ValueError("Please provide a valid file extension (e.g. '.csv').")
+        return extension
+
+
+class FileTypesConfig(BaseConfig):
+    bypass_reason: Optional[str] = Field(description="Reason why this test is bypassed.")
+    unsupported_types: Optional[List[UnsupportedFileTypeConfig]] = Field(description="A list of unsupported file types for the source.")
+    skip_test: Optional[bool] = Field(False, description="Skip file-based connector specific test.")
+
+    @validator("skip_test", always=True)
+    def no_unsupported_types_when_skip_test(cls, skip_test: bool, values: Dict[str, Any]) -> bool:
+        if skip_test and values.get("unsupported_types"):
+            raise ValueError("You can't set 'unsupported_types' if the test is skipped.")
+        if not skip_test and values.get("bypass_reason") is not None:
+            raise ValueError("You can't set 'bypass_reason' if the test is not skipped.")
+        return skip_test
+
+
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     deployment_mode: Optional[str] = deployment_mode
@@ -138,6 +188,7 @@ class BasicReadTestConfig(BaseConfig):
     )
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
+    validate_stream_statuses: bool = Field(None, description="Ensure that all streams emit status messages")
     fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
@@ -146,6 +197,10 @@ class BasicReadTestConfig(BaseConfig):
     expect_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
     ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
+    file_types: Optional[FileTypesConfig] = Field(
+        default_factory=FileTypesConfig,
+        description="For file-based connectors, unsupported by source file types can be configured or a test can be skipped at all",
+    )
 
 
 class FullRefreshConfig(BaseConfig):
@@ -164,7 +219,7 @@ class FullRefreshConfig(BaseConfig):
 
 class FutureStateConfig(BaseConfig):
     future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
-    missing_streams: List[EmptyStreamConfiguration] = Field(default=[], description="List of missings streams with valid bypass reasons.")
+    missing_streams: List[EmptyStreamConfiguration] = Field(default=[], description="List of missing streams with valid bypass reasons.")
     bypass_reason: Optional[str]
 
 
@@ -197,6 +252,17 @@ class ConnectorAttributesConfig(BaseConfig):
     streams_without_primary_key: Optional[List[NoPrimaryKeyConfiguration]] = Field(
         description="Streams that do not support a primary key such as reports streams"
     )
+    allowed_hosts: Optional[AllowedHostsConfiguration] = Field(
+        description="Used to bypass checking the `allowedHosts` field in a source's `metadata.yaml` when all external hosts should be reachable."
+    )
+    suggested_streams: Optional[SuggestedStreamsConfiguration] = Field(
+        description="Used to bypass checking the `suggestedStreams` field in a source's `metadata.yaml` when certified source doesn't have any."
+    )
+
+
+class TestConnectorDocumentationConfig(BaseConfig):
+    timeout_seconds: int = timeout_seconds
+    config_path: str = config_path
 
 
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
@@ -218,6 +284,7 @@ class AcceptanceTestConfigurations(BaseConfig):
     full_refresh: Optional[GenericTestConfig[FullRefreshConfig]]
     incremental: Optional[GenericTestConfig[IncrementalConfig]]
     connector_attributes: Optional[GenericTestConfig[ConnectorAttributesConfig]]
+    connector_documentation: Optional[GenericTestConfig[TestConnectorDocumentationConfig]]
 
 
 class Config(BaseConfig):
@@ -254,9 +321,9 @@ class Config(BaseConfig):
         """Convert configuration structure created prior to v0.2.12 into the current structure.
         e.g.
         This structure:
-            {"connector_image": "my-connector-image", "tests": {"spec": [{"spec_path": "my/spec/path.json"}]}
+            {"connector_image": "my-connector-image", "tests": {"spec": [{"spec_path": "my/spec/path.json"}]}}
         Gets converted to:
-            {"connector_image": "my-connector-image", "acceptance_tests": {"spec": {"tests": [{"spec_path": "my/spec/path.json"}]}}
+            {"connector_image": "my-connector-image", "acceptance_tests": {"spec": {"tests": [{"spec_path": "my/spec/path.json"}]}}}
 
         Args:
             legacy_config (dict): A legacy configuration
@@ -301,7 +368,7 @@ class Config(BaseConfig):
             dict: The migrated configuration if needed.
         """
         if ALLOW_LEGACY_CONFIG and cls.is_legacy(values):
-            logging.warn("The acceptance-test-config.yml file is in a legacy format. Please migrate to the latest format.")
+            logging.warning("The acceptance-test-config.yml file is in a legacy format. Please migrate to the latest format.")
             return cls.migrate_legacy_to_current_config(values)
         else:
             return values

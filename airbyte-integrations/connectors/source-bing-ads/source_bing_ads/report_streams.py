@@ -6,7 +6,7 @@ import re
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 from urllib.parse import urlparse
 
 import _csv
@@ -19,6 +19,7 @@ from bingads import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting import ReportingDownloadParameters
+from cached_property import cached_property
 from source_bing_ads.base_streams import Accounts, BingAdsStream
 from source_bing_ads.utils import transform_date_format_to_rfc_3339, transform_report_hourly_datetime_format_to_rfc_3339
 from suds import WebFault, sudsobject
@@ -103,9 +104,13 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
             return None
         if "%" in value:
             value = value.replace("%", "")
-        if value and set(self.get_json_schema()["properties"].get(column, {}).get("type")) & {"integer", "number"}:
+        if value and column in self._get_schema_numeric_properties:
             value = value.replace(",", "")
         return value
+
+    @cached_property
+    def _get_schema_numeric_properties(self) -> Set[str]:
+        return set(k for k, v in self.get_json_schema()["properties"].items() if set(v.get("type")) & {"integer", "number"})
 
     def get_request_date(self, reporting_service: ServiceClient, date: datetime) -> sudsobject.Object:
         """
@@ -226,14 +231,16 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         )
 
     def stream_slices(
-        self,
-        **kwargs: Mapping[str, Any],
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         accounts = Accounts(self.client, self.config)
         for _slice in accounts.stream_slices():
             for account in accounts.read_records(SyncMode.full_refresh, _slice):
-                for period in self.default_time_periods:
-                    yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
+                if self.get_start_date(stream_state, account["Id"]):  # if start date is not provided default time periods will be used
+                    yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+                else:
+                    for period in self.default_time_periods:
+                        yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
 
 
 class BingAdsReportingServicePerformanceStream(BingAdsReportingServiceStream, ABC):
