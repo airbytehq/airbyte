@@ -52,6 +52,8 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 * [SurveyQuestions](https://developer.surveymonkey.com/api/v3/#surveys-id-pages-id-questions)
 * [SurveyResponses](https://developer.surveymonkey.com/api/v3/#survey-responses) \(Incremental\)
 * [SurveyCollectors](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys-id-collectors)
+* [Collectors](https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-collectors-id-)
+* [Contacts](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-contacts)
 
 ### Performance considerations
 
@@ -66,7 +68,8 @@ To cover more data from this source we use caching.
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------|
-| 0.2.3 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.3.0   | 2023-11-19 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add new stream `Contacts`                                                        |
+| 0.2.3   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image  |
 | 0.2.2   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Fix dependencies conflict                                                        |
 | 0.2.1   | 2023-04-27 | [25109](https://github.com/airbytehq/airbyte/pull/25109) | Fix add missing params to stream `SurveyResponses`                               |
 | 0.2.0   | 2023-04-18 | [23721](https://github.com/airbytehq/airbyte/pull/23721) | Add `SurveyCollectors` and `Collectors` stream                                   |
