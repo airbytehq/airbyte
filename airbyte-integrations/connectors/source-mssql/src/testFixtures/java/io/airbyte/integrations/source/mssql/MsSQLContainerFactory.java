@@ -19,10 +19,11 @@ public class MsSQLContainerFactory extends ContainerFactory<MSSQLServerContainer
     container.addEnv("MSSQL_MEMORY_LIMIT_MB", "384");
     container.addEnv("MSSQL_AGENT_ENABLED", "True");
     container.withNetwork(Network.newNetwork());
+    withSslCertificates(container);
     return container;
   }
 
-  public void withSslCertificates(MSSQLServerContainer<?> container) {
+  private void withSslCertificates(MSSQLServerContainer<?> container) {
     // yes, this is uglier than sin. The reason why I'm doing this is because there's no command to
     // reload a SqlServer config. So I need to create all the necessary files before I start the
     // SQL server. Hence this horror
