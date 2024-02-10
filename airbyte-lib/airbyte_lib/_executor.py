@@ -10,6 +10,8 @@ from pathlib import Path
 from shutil import rmtree
 from typing import IO, TYPE_CHECKING, Any, NoReturn, cast
 
+from rich import print
+
 from airbyte_lib import exceptions as exc
 from airbyte_lib.registry import ConnectorMetadata
 from airbyte_lib.telemetry import SourceTelemetryInfo, SourceType
@@ -145,9 +147,19 @@ class VenvExecutor(Executor):
         """
         super().__init__(name=name, metadata=metadata, target_version=target_version)
 
-        # This is a temporary install path that will be replaced with a proper package
-        # name once they are published.
-        self.pip_url = pip_url or f"airbyte-{self.name}"
+        if not pip_url and metadata and not metadata.pypi_package_name:
+            raise exc.AirbyteConnectorNotPyPiPublishedError(
+                connector_name=self.name,
+                context={
+                    "metadata": metadata,
+                },
+            )
+
+        self.pip_url = pip_url or (
+            metadata.pypi_package_name
+            if metadata and metadata.pypi_package_name
+            else f"airbyte-{self.name}"
+        )
         self.install_root = install_root or Path.cwd()
 
     def _get_venv_name(self) -> str:
@@ -178,6 +190,14 @@ class VenvExecutor(Executor):
 
         self.reported_version = None  # Reset the reported version from the previous installation
 
+    @property
+    def docs_url(self) -> str:
+        """Get the URL to the connector's documentation."""
+        # TODO: Refactor installation so that this can just live in the Source class.
+        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace(
+            "source-", ""
+        )
+
     def install(self) -> None:
         """Install the connector in a virtual environment.
 
@@ -188,7 +208,10 @@ class VenvExecutor(Executor):
         )
 
         pip_path = str(self._get_venv_path() / "bin" / "pip")
-
+        print(
+            f"Installing '{self.name}' into virtual environment '{self._get_venv_path()!s}'.\n"
+            f"Running 'pip install {self.pip_url}'...\n"
+        )
         try:
             self._run_subprocess_and_raise_on_failure(
                 args=[pip_path, "install", *shlex.split(self.pip_url)]
@@ -204,6 +227,11 @@ class VenvExecutor(Executor):
 
         # Assuming the installation succeeded, store the installed version
         self.reported_version = self._get_installed_version(raise_on_error=False, recheck=True)
+        print(
+            f"Connector '{self.name}' installed successfully!\n"
+            f"For more information, see the {self.name} documentation:\n"
+            f"{self.docs_url}#reference\n"
+        )
 
     def _get_installed_version(
         self,
@@ -238,7 +266,11 @@ class VenvExecutor(Executor):
             return None
 
         try:
-            package_name = f"airbyte-{connector_name}"
+            package_name = (
+                self.metadata.pypi_package_name
+                if self.metadata and self.metadata.pypi_package_name
+                else f"airbyte-{connector_name}"
+            )
             return subprocess.check_output(
                 [
                     self.interpreter_path,
@@ -246,6 +278,7 @@ class VenvExecutor(Executor):
                     f"from importlib.metadata import version; print(version('{package_name}'))",
                 ],
                 universal_newlines=True,
+                stderr=subprocess.PIPE,  # Don't print to stderr
             ).strip()
         except Exception:
             if raise_on_error:
@@ -305,6 +338,10 @@ class VenvExecutor(Executor):
 
             # If the connector path does not exist, uninstall and re-install.
             # This is sometimes caused by a failed or partial installation.
+            print(
+                "Connector executable not found within the virtual environment "
+                f"at {self._get_connector_path()!s}.\nReinstalling..."
+            )
             self.uninstall()
             self.install()
             reinstalled = True

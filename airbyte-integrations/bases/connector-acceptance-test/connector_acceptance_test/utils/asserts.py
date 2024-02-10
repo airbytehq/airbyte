@@ -48,7 +48,7 @@ class NoAdditionalPropertiesValidator(Draft7Validator):
                 elif "type" in prop_value and "array" in prop_value["type"]:
                     if (
                         prop_value.get("items")
-                        and "object" in prop_value.get("items", {}).get("type")
+                        and "object" in prop_value.get("items", {}).get("type", [])
                         and len(prop_value.get("items", {}).get("properties", []))
                     ):
                         prop_value["items"]["additionalProperties"] = False

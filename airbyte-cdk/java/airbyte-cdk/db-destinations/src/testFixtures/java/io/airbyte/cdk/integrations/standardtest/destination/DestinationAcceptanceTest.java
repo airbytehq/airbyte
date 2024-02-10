@@ -82,7 +82,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Getter;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -1549,7 +1548,7 @@ public abstract class DestinationAcceptanceTest {
       while (true) {
         System.out.println(
             "currentStreamNumber=" + currentStreamNumber + ", currentRecordNumberForStream="
-                + currentRecordNumberForStream + ", " + DateTime.now());
+                + currentRecordNumberForStream + ", " + Instant.now());
         try {
           Thread.sleep(10000);
         } catch (final InterruptedException e) {
