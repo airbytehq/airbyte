@@ -10,7 +10,7 @@ plugins {
 java {
     // TODO: rewrite code to avoid javac wornings in the first place
     compileJava {
-        options.compilerArgs += "-Xlint:-varargs,-try,-deprecation,-unchecked"
+        options.compilerArgs += "-Xlint:-varargs,-try,-deprecation,-unchecked,-this-escape"
     }
     compileTestJava {
         options.compilerArgs += "-Xlint:-try"

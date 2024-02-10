@@ -83,7 +83,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "17"
+          java-version: "21"
       - name: Install Pip
         if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3

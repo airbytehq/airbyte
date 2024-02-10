@@ -36,6 +36,7 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
             }
 
+            jvmArgs = project.test.jvmArgs
             systemProperties = project.test.systemProperties
             maxParallelForks = project.test.maxParallelForks
             maxHeapSize = project.test.maxHeapSize

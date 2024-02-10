@@ -1,7 +1,7 @@
 java {
     // TODO: rewrite code to avoid javac wornings in the first place
     compileJava {
-        options.compilerArgs += "-Xlint:-deprecation,-try,-rawtypes,-overloads"
+        options.compilerArgs += "-Xlint:-deprecation,-try,-rawtypes,-overloads,-this-escape"
     }
     compileTestJava {
         options.compilerArgs += "-Xlint:-try,-divzero,-cast"
