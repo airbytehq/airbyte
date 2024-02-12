@@ -55,7 +55,7 @@ public interface DestinationFlushFunction {
    * vague because I don't understand the specifics.
    */
   default long getQueueFlushThresholdBytes() {
-    return 10 * 1024 * 1024; // 10MB
+    return Math.max(10 * 1024 * 1024, getOptimalBatchSizeBytes());
   }
 
 }

@@ -99,8 +99,9 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
-| 0.4.0   | 2024-01-22 | [34053](https://github.com/airbytehq/airbyte/pull/34053) | Add missing fields to schemas, ignore 404 errors for `Attached Items`                                                                           |
-| 0.3.0   | 2024-01-03 | [33696](https://github.com/airbytehq/airbyte/pull/33696) | Add new stream, add fields to existing streams                                                                           |
+| 0.4.0   | 2024-02-12 | [34053](https://github.com/airbytehq/airbyte/pull/34053) | Add missing fields to and cleans up schemas, adds incremental support for `gift`, `site_migration_detail`, and `unbilled_charge` streams.` |
+| 0.3.1   | 2024-02-12 | [35169](https://github.com/airbytehq/airbyte/pull/35169) | Manage dependencies with Poetry.                                                                    |
+| 0.3.0   | 2023-12-26 | [33696](https://github.com/airbytehq/airbyte/pull/33696) | Add new stream, add fields to existing streams                                                      |
 | 0.2.6   | 2023-12-19 | [32100](https://github.com/airbytehq/airbyte/pull/32100) | Add new fields in streams                                                                           |
 | 0.2.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                     |
 | 0.2.4   | 2023-08-01 | [28905](https://github.com/airbytehq/airbyte/pull/28905) | Updated the connector to use latest CDK version                                                     |

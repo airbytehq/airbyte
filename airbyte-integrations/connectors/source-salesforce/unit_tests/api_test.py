@@ -7,9 +7,9 @@ import csv
 import io
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import freezegun
 import pendulum
@@ -37,6 +37,7 @@ from source_salesforce.streams import (
 
 _ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
 _ANY_CONFIG = {}
+_ANY_STATE = None
 
 
 @pytest.mark.parametrize(
@@ -65,7 +66,7 @@ _ANY_CONFIG = {}
 def test_login_authentication_error_handler(
     stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error
 ):
-    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     logger = logging.getLogger("airbyte")
     requests_mock.register_uri(
         "POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code
@@ -345,7 +346,7 @@ def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_he
 def test_check_connection_rate_limit(
     stream_config, login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg
 ):
-    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     logger = logging.getLogger("airbyte")
 
     with requests_mock.Mocker() as m:
@@ -382,7 +383,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
     stream_1.page_size = 6
     stream_1.state_checkpoint_interval = 5
 
-    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     source.streams = Mock()
     source.streams.return_value = streams
     logger = logging.getLogger("airbyte")
@@ -438,7 +439,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     stream_1.state_checkpoint_interval = 3
     configure_request_params_mock(stream_1, stream_2)
 
-    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     source.streams = Mock()
     source.streams.return_value = [stream_1, stream_2]
 
@@ -623,7 +624,7 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                 ],
             },
         )
-        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
         source.catalog = catalog
         streams = source.streams(config=stream_config)
     expected_names = catalog_stream_names if catalog else stream_names
@@ -636,28 +637,6 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
             else:
                 assert stream.sobject_options == {"flag1": True, "queryable": True}
     return
-
-
-@pytest.mark.parametrize(
-    "stream_names,catalog_stream_names,",
-    (
-        (
-            ["stream_1", "stream_2", "Describe"],
-            None,
-        ),
-        (
-            ["stream_1", "stream_2"],
-            ["stream_1", "stream_2", "Describe"],
-        ),
-        (
-            ["stream_1", "stream_2", "stream_3", "Describe"],
-            ["stream_1", "Describe"],
-        ),
-    ),
-)
-def test_unspecified_and_incremental_streams_are_not_concurrent(stream_config, stream_names, catalog_stream_names) -> None:
-    for stream in _get_streams(stream_config, stream_names, catalog_stream_names, SyncMode.incremental):
-        assert isinstance(stream, (SalesforceStream, Describe))
 
 
 @pytest.mark.parametrize(
@@ -723,7 +702,7 @@ def _get_streams(stream_config, stream_names, catalog_stream_names, sync_type) -
                 ],
             },
         )
-        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
         source.catalog = catalog
         return source.streams(config=stream_config)
 
@@ -886,21 +865,33 @@ def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_
 
 
 @freezegun.freeze_time("2023-01-01")
-def test_bulk_stream_slices(stream_config_date_format, stream_api):
+@pytest.mark.parametrize(
+    "lookback, expect_error",
+    [(None, True), (0, False), (10, False), (-1, True)],
+    ids=["lookback-is-none", "lookback-is-0", "lookback-is-valid", "lookback-is-negative"],
+)
+def test_bulk_stream_slices(stream_config_date_format, stream_api, lookback, expect_error):
     stream: BulkIncrementalSalesforceStream = generate_stream("FakeBulkStream", stream_config_date_format, stream_api)
-    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
-    expected_slices = []
-    today = pendulum.today(tz="UTC")
-    start_date = pendulum.parse(stream.start_date, tz="UTC")
-    while start_date < today:
-        expected_slices.append(
-            {
-                "start_date": start_date.isoformat(timespec="milliseconds"),
-                "end_date": min(today, start_date.add(days=stream.STREAM_SLICE_STEP)).isoformat(timespec="milliseconds"),
-            }
-        )
-        start_date = start_date.add(days=stream.STREAM_SLICE_STEP)
-    assert expected_slices == stream_slices
+    with patch("source_salesforce.streams.LOOKBACK_SECONDS", lookback):
+        if expect_error:
+            with pytest.raises(AssertionError):
+                list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+        else:
+            stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+
+            expected_slices = []
+            today = pendulum.today(tz="UTC")
+            start_date = pendulum.parse(stream.start_date, tz="UTC") - timedelta(seconds=lookback)
+            while start_date < today:
+                expected_slices.append(
+                    {
+                        "start_date": start_date.isoformat(timespec="milliseconds"),
+                        "end_date": min(today, start_date.add(days=stream.STREAM_SLICE_STEP)).isoformat(timespec="milliseconds"),
+                    }
+                )
+                start_date = start_date.add(days=stream.STREAM_SLICE_STEP)
+            assert expected_slices == stream_slices
+
 
 @freezegun.freeze_time("2023-04-01")
 def test_bulk_stream_request_params_states(stream_config_date_format, stream_api, bulk_catalog, requests_mock):
@@ -908,7 +899,7 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     stream_config_date_format.update({"start_date": "2023-01-01"})
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api)
 
-    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     source.streams = Mock()
     source.streams.return_value = [stream]
 
@@ -938,7 +929,8 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     logger = logging.getLogger("airbyte")
     state = {"Account": {"LastModifiedDate": "2023-01-01T10:10:10.000Z"}}
     bulk_catalog.streams.pop(1)
-    result = [i for i in source.read(logger=logger, config=stream_config_date_format, catalog=bulk_catalog, state=state)]
+    with patch("source_salesforce.streams.LOOKBACK_SECONDS", 0):
+        result = [i for i in source.read(logger=logger, config=stream_config_date_format, catalog=bulk_catalog, state=state)]
 
     actual_state_values = [item.state.data.get("Account").get(stream.cursor_field) for item in result if item.type == Type.STATE]
     # assert request params
