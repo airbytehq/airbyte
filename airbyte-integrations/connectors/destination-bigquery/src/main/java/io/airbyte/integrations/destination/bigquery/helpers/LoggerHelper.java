@@ -10,17 +10,18 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import jakarta.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class LoggerHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggerHelper.class);
 
-  private LoggerHelper() {}
-
-  public static void printHeapMemoryConsumption() {
+  public void printHeapMemoryConsumption() {
     final int mb = 1024 * 1024;
     final MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
     final long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
@@ -29,7 +30,7 @@ public class LoggerHelper {
     LOGGER.info("Max Memory (xmx) : mb =  {}", xmx);
   }
 
-  public static String getJobErrorMessage(List<BigQueryError> errors, Job job) {
+  public String getJobErrorMessage(List<BigQueryError> errors, Job job) {
     if (errors == null || errors.isEmpty()) {
       return StringUtils.EMPTY;
 

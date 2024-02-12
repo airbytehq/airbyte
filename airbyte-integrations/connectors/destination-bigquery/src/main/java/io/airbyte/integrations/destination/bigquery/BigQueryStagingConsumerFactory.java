@@ -18,6 +18,7 @@ import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.integrations.destination.bigquery.config.properties.BigQueryConnectorConfiguration;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -41,10 +42,11 @@ public class BigQueryStagingConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStagingConsumerFactory.class);
 
   public SerializedAirbyteMessageConsumer createAsync(
-                                                      final JsonNode config,
+                                                      final BigQueryConnectorConfiguration config,
                                                       final ConfiguredAirbyteCatalog catalog,
                                                       final Consumer<AirbyteMessage> outputRecordCollector,
                                                       final BigQueryStagingOperations bigQueryGcsOperations,
+                                                      final BigQueryUtils bigQueryUtils,
                                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
                                                       final Function<String, String> tmpTableNameTransformer,
                                                       final TyperDeduper typerDeduper,
@@ -54,6 +56,7 @@ public class BigQueryStagingConsumerFactory {
         config,
         catalog,
         parsedCatalog,
+        bigQueryUtils,
         recordFormatterCreator,
         tmpTableNameTransformer);
 
@@ -84,9 +87,10 @@ public class BigQueryStagingConsumerFactory {
     return (long) (Runtime.getRuntime().maxMemory() * 0.4);
   }
 
-  private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
+  private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final BigQueryConnectorConfiguration config,
                                                                         final ConfiguredAirbyteCatalog catalog,
                                                                         final ParsedCatalog parsedCatalog,
+                                                                        final BigQueryUtils bigQueryUtils,
                                                                         final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
                                                                         final Function<String, String> tmpTableNameTransformer) {
     return catalog.getStreams().stream()
@@ -105,7 +109,7 @@ public class BigQueryStagingConsumerFactory {
               streamName,
               stream.getNamespace(),
               internalTableNamespace,
-              BigQueryUtils.getDatasetLocation(config),
+              bigQueryUtils.getDatasetLocation(config),
               tmpTableNameTransformer.apply(streamName),
               targetTableName,
               recordFormatter.getBigQuerySchema(),

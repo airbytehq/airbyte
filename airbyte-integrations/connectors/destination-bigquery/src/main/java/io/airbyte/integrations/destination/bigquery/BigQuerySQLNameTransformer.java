@@ -5,7 +5,9 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import jakarta.inject.Singleton;
 
+@Singleton
 public class BigQuerySQLNameTransformer extends StandardNameTransformer {
 
   @Override

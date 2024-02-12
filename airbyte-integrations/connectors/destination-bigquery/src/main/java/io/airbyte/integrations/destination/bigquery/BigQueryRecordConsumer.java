@@ -36,6 +36,7 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
 
   private final BigQuery bigquery;
+  private final BigQueryUtils bigQueryUtils;
   private final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final String defaultDatasetId;
@@ -46,12 +47,14 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
   private final TyperDeduper typerDeduper;
 
   public BigQueryRecordConsumer(final BigQuery bigquery,
+                                final BigQueryUtils bigQueryUtils,
                                 final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
                                 final Consumer<AirbyteMessage> outputRecordCollector,
                                 final String defaultDatasetId,
                                 final TyperDeduper typerDeduper,
                                 final ParsedCatalog catalog) {
     this.bigquery = bigquery;
+    this.bigQueryUtils = bigQueryUtils;
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
     this.defaultDatasetId = defaultDatasetId;
@@ -74,7 +77,7 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
         // 1s1t mode.
         final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
         bigquery.delete(rawTableId);
-        BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
+        bigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
       } else {
         uploader.createRawTable();
       }

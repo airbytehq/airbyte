@@ -54,7 +54,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   protected Dataset dataset;
 
   protected JsonNode config;
-  protected final StandardNameTransformer namingResolver = new StandardNameTransformer();
+  protected final BigQueryUtils bigQueryUtils = new BigQueryUtils();
 
   @Override
   protected String getImageName() {
@@ -137,7 +137,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    return BigQueryUtils.getDatasetId(config);
+    return ""; //bigQueryUtils.getDatasetId(config);
   }
 
   @Override
@@ -167,7 +167,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
             .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
             .build();
 
-    final TableResult queryResults = BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
+    final TableResult queryResults = bigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
     final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
@@ -183,7 +183,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
     config = BigQueryDestinationTestUtils.createConfig(secretsFile, datasetId, stagingPathSuffix);
 
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-    bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
+//    bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
     dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
   }
 

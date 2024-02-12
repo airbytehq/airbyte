@@ -1,18 +1,13 @@
 package io.airbyte.cdk.integrations.base;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.cdk.integrations.base.consumers.WriteStreamConsumer;
+import io.airbyte.cdk.integrations.base.operation.Operation;
+import io.airbyte.cdk.integrations.base.operation.OperationType;
 import io.airbyte.cdk.integrations.base.util.ShutdownUtils;
 import io.airbyte.cdk.integrations.util.ApmTraceUtils;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
-import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.validation.json.JsonSchemaValidator;
-import io.micronaut.context.env.Environment;
+import io.micronaut.context.annotation.Value;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.slf4j.Logger;
@@ -20,9 +15,9 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -39,24 +34,15 @@ public class IntegrationCommand implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationCommand.class);
 
+    @Value("${micronaut.application.name}")
+    private String connectorName;
+
     @Inject
-    private Integration integration;
+    private List<Operation> operations;
 
     @Inject
     @Named("outputRecordCollector")
-    private Consumer<AirbyteMessage> outputRecordCollector;
-
-    @Inject
-    private JsonSchemaValidator validator;
-
-    @Inject
-    private Environment environment;
-
-    @Inject
-    private ShutdownUtils shutdownUtils;
-
-    @Inject
-    private WriteStreamConsumer writeStreamConsumer;
+    private  Consumer<AirbyteMessage> outputRecordCollector;
 
     @CommandLine.Parameters(index = "0", description = {
             "The command to execute (check|discover|read|spec|write)",
@@ -69,50 +55,27 @@ public class IntegrationCommand implements Runnable {
     private String command;
 
     @CommandLine.Option(names = { "--" + JavaBaseConstants.ARGS_CONFIG_KEY }, description = {
-            "Required by the following commands: check, discover, read, write",
-            JavaBaseConstants.ARGS_CONFIG_DESC
+            JavaBaseConstants.ARGS_CONFIG_DESC,
+            "Required by the following commands: check, discover, read, write"
     })
     private Path configFile;
 
     @CommandLine.Option(names = {  "--" + JavaBaseConstants.ARGS_CATALOG_KEY }, description = {
-            "Required by the following commands: read, write",
-            JavaBaseConstants.ARGS_CATALOG_DESC
+            JavaBaseConstants.ARGS_CATALOG_DESC,
+            "Required by the following commands: read, write"
     })
     private Path catalogFile;
 
     @CommandLine.Option(names = {  "--" + JavaBaseConstants.ARGS_STATE_KEY }, description = {
+            JavaBaseConstants.ARGS_PATH_DESC,
             "Required by the following commands: read",
-            JavaBaseConstants.ARGS_PATH_DESC
     })
     private Optional<Path> stateFile;
 
     @Override
     public void run() {
         try {
-            switch (Command.valueOf(command.toUpperCase(Locale.ROOT))) {
-                case SPEC:
-                    LOGGER.info("Spec command");
-                    spec();
-                    break;
-                case CHECK:
-                    LOGGER.info("Check command");
-                    check();
-                    break;
-                case DISCOVER:
-                    LOGGER.info("Discover command");
-                    discover();
-                    break;
-                case READ:
-                    LOGGER.info("Read command");
-                    read();
-                    break;
-                case WRITE:
-                    LOGGER.info("Write command");
-                    write();
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unexpected value: " + command);
-            }
+            execute(OperationType.valueOf(command.toUpperCase(Locale.ROOT)));
         } catch (final Exception e) {
             LOGGER.error("Unable to perform operation {}.", command, e);
             // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made
@@ -143,101 +106,16 @@ public class IntegrationCommand implements Runnable {
             }
         }
 
-        LOGGER.info("Completed integration: {}", this.integration.getClass().getName());
+        LOGGER.info("Completed integration: {}", connectorName);
     }
 
-    private JsonNode validateConfig(JsonNode schemaJson, Path configFile, String operationType) throws Exception {
-        if(configFile != null) {
-            final JsonNode configJson = Jsons.deserialize(IOs.readFile(configFile));
-            final Set<String> validationResult = validator.validate(schemaJson, configJson);
-            if (!validationResult.isEmpty()) {
-                throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ", operationType, validationResult));
-            }
-            return configJson;
+    private void execute(final OperationType operationType) throws Exception {
+        final Optional<Operation> operation = operations.stream().filter(o -> operationType.equals(o.type())).findFirst();
+        if(operation.isPresent()) {
+            operation.get().execute();
         } else {
-            throw new IllegalArgumentException("Missing required command line argument '--" + JavaBaseConstants.ARGS_CONFIG_KEY + "'.");
-        }
-    }
-
-    private ConfiguredAirbyteCatalog validateCatalog(final Path catalogFile) {
-        if(catalogFile != null) {
-            return Jsons.deserialize(IOs.readFile(catalogFile), ConfiguredAirbyteCatalog.class);
-        } else {
-            throw new IllegalArgumentException("Missing required command line argument '--" + JavaBaseConstants.ARGS_CATALOG_KEY + "'.");
-        }
-    }
-
-    private void initialize(final JsonNode config) {
-        if(environment.getActiveNames().contains("destination")) {
-            DestinationConfig.initialize(config, ((Destination) integration).isV2Destination());
-        }
-    }
-
-    private void check() {
-        try {
-            final JsonNode configJson = validateConfig(this.integration.spec().getConnectionSpecification(), configFile, Command.CHECK.name());
-            initialize(configJson);
-            this.outputRecordCollector.accept((new AirbyteMessage()).withType(AirbyteMessage.Type.CONNECTION_STATUS).withConnectionStatus(this.integration.check(configJson)));
-        } catch (final Exception e) {
-            this.outputRecordCollector.accept((new AirbyteMessage()).withType(AirbyteMessage.Type.CONNECTION_STATUS).withConnectionStatus((new AirbyteConnectionStatus()).withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
-        }
-    }
-
-    private void discover() throws Exception {
-        final JsonNode configJson = validateConfig(this.integration.spec().getConnectionSpecification(), configFile, Command.DISCOVER.name());
-        this.outputRecordCollector.accept((new AirbyteMessage()).withType(AirbyteMessage.Type.CATALOG).withCatalog(((Source)integration).discover(configJson)));
-    }
-
-    private void read() throws Exception {
-        final JsonNode configJson = validateConfig(integration.spec().getConnectionSpecification(), configFile, Command.READ.name());
-        final ConfiguredAirbyteCatalog configuredCatalog = validateCatalog(catalogFile);
-        final Optional<JsonNode> stateOptional = stateFile.isPresent() ? stateFile.map(p -> Jsons.deserialize(IOs.readFile(p))) : Optional.empty();
-        AutoCloseableIterator<AirbyteMessage> messageIterator = null;
-        try {
-            // TODO make the message iterator injectable
-            messageIterator = ((Source)integration).read(configJson, configuredCatalog, stateOptional.orElse(null));
-            messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
-            messageIterator.forEachRemaining(outputRecordCollector);
-            messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
-        } finally {
-            if (messageIterator != null) {
-                messageIterator.close();
-            }
-            if (integration instanceof AutoCloseable) {
-                ((AutoCloseable) integration).close();
-            }
-            shutdownUtils.stopOrphanedThreads(ShutdownUtils.EXIT_HOOK,
-                    ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
-                    TimeUnit.MINUTES,
-                    ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
-                    TimeUnit.MINUTES);
-        }
-    }
-
-    private void spec() throws Exception {
-        this.outputRecordCollector.accept((new AirbyteMessage()).withType(AirbyteMessage.Type.SPEC).withSpec(this.integration.spec()));
-    }
-
-    private void write() throws Exception {
-        final JsonNode configJson = validateConfig(integration.spec().getConnectionSpecification(), configFile, Command.WRITE.name());
-        // save config to singleton
-        initialize(configJson);
-        final ConfiguredAirbyteCatalog configuredCatalog = validateCatalog(catalogFile);
-
-        SerializedAirbyteMessageConsumer consumer = null;
-        try {
-            // TODO make the message consumer injectable
-            consumer = ((Destination)integration).getSerializedMessageConsumer(configJson, configuredCatalog, outputRecordCollector);
-            writeStreamConsumer.consumeWriteStream(consumer);
-        } finally {
-            if (consumer != null) {
-                consumer.close();
-            }
-            shutdownUtils.stopOrphanedThreads(ShutdownUtils.EXIT_HOOK,
-                    ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
-                    TimeUnit.MINUTES,
-                    ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
-                    TimeUnit.MINUTES);
+            throw new IllegalArgumentException("Connector does not support the '" +
+                    operationType.name().toLowerCase(Locale.ROOT) + "' operation.");
         }
     }
 }

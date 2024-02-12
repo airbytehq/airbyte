@@ -16,10 +16,13 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
 import java.util.Map;
+
+import jakarta.inject.Singleton;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class BigQueryV2TableMigrator implements V2TableMigrator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryV2TableMigrator.class);

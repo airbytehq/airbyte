@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.FormatOptions;
@@ -17,6 +16,7 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
+import io.airbyte.integrations.destination.bigquery.config.properties.BigQueryConnectorConfiguration;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
@@ -47,10 +47,11 @@ public class BigQueryUploaderFactory {
                                                  More details:
                                                  """;
 
-  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
+
+  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig, final BigQueryUtils bigQueryUtils)
       throws IOException {
     final String dataset = uploaderConfig.getParsedStream().id().rawNamespace();
-    final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
+    final String datasetLocation = bigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
     final Set<String> existingDatasets = new HashSet<>();
 
     final BigQueryRecordFormatter recordFormatter = uploaderConfig.getFormatter();
@@ -58,7 +59,7 @@ public class BigQueryUploaderFactory {
 
     final TableId targetTable = TableId.of(dataset, uploaderConfig.getTargetTableName());
 
-    BigQueryUtils.createSchemaAndTableIfNeeded(
+    bigQueryUtils.createSchemaAndTableIfNeeded(
         uploaderConfig.getBigQuery(),
         existingDatasets,
         dataset,
@@ -74,16 +75,18 @@ public class BigQueryUploaderFactory {
         uploaderConfig.getBigQuery(),
         syncMode,
         datasetLocation,
-        recordFormatter);
+        recordFormatter,
+            bigQueryUtils);
   }
 
   private static BigQueryDirectUploader getBigQueryDirectUploader(
-                                                                  final JsonNode config,
+                                                                  final BigQueryConnectorConfiguration config,
                                                                   final TableId targetTable,
                                                                   final BigQuery bigQuery,
                                                                   final WriteDisposition syncMode,
                                                                   final String datasetLocation,
-                                                                  final BigQueryRecordFormatter formatter) {
+                                                                  final BigQueryRecordFormatter formatter,
+                                                                  final BigQueryUtils bigQueryUtils) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
     LOGGER.info("Will write raw data to {} with schema {}", targetTable, formatter.getBigQuerySchema());
     final WriteChannelConfiguration writeChannelConfiguration =
@@ -113,7 +116,7 @@ public class BigQueryUploaderFactory {
 
     // this this optional value. If not set - use default client's value (15MiG)
     final Integer bigQueryClientChunkSizeFomConfig =
-        BigQueryUtils.getBigQueryClientChunkSize(config);
+        bigQueryUtils.getBigQueryClientChunkSize(config);
     if (bigQueryClientChunkSizeFomConfig != null) {
       writer.setChunkSize(bigQueryClientChunkSizeFomConfig);
     }
@@ -123,7 +126,8 @@ public class BigQueryUploaderFactory {
         new BigQueryTableWriter(writer),
         syncMode,
         bigQuery,
-        formatter);
+        formatter,
+            bigQueryUtils);
   }
 
 }

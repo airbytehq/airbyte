@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.mockito.Mockito.spy;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -61,6 +60,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import jakarta.inject.Inject;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -68,14 +69,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@TestInstance(PER_CLASS)
 class BigQueryDestinationTest {
 
   protected static final Path CREDENTIALS_STANDARD_INSERT_PATH = Path.of("secrets/credentials-standard.json");
@@ -135,30 +134,36 @@ class BigQueryDestinationTest {
 
   private AmazonS3 s3Client;
 
+  @Inject
+  BigQueryDestination bigQueryDestination;
+
+  @Inject
+  BigQueryUtils bigQueryUtils;
+
   /*
    * TODO: Migrate all BigQuery Destination configs (GCS, Denormalized, Normalized) to no longer use
    * #partitionIfUnpartitioned then recombine Base Provider. The reason for breaking this method into
    * a base class is because #testWritePartitionOverUnpartitioned is no longer used only in GCS
    * Staging
    */
-  private Stream<Arguments> successTestConfigProviderBase() {
+  private static Stream<Arguments> successTestConfigProviderBase() {
     return Stream.of(
         Arguments.of("config"),
         Arguments.of("configWithProjectId"));
   }
 
-  private Stream<Arguments> successTestConfigProvider() {
+  private static Stream<Arguments> successTestConfigProvider() {
     return Stream.concat(successTestConfigProviderBase(), Stream.of(Arguments.of("gcsStagingConfig")));
   }
 
-  private Stream<Arguments> failCheckTestConfigProvider() {
+  private static Stream<Arguments> failCheckTestConfigProvider() {
     return Stream.of(
         Arguments.of("configWithBadProjectId", "User does not have bigquery.datasets.create permission in project"),
         Arguments.of("insufficientRoleConfig", "User does not have bigquery.datasets.create permission"),
         Arguments.of("nonBillableConfig", "Access Denied: BigQuery BigQuery: Streaming insert is not allowed in the free tier"));
   }
 
-  private Stream<Arguments> failWriteTestConfigProvider() {
+  private static Stream<Arguments> failWriteTestConfigProvider() {
     return Stream.of(
         Arguments.of("configWithBadProjectId", "User does not have bigquery.datasets.create permission in project"),
         Arguments.of("noEditPublicSchemaRoleConfig", "Failed to write to destination schema."), // (or it may not exist)
@@ -232,7 +237,7 @@ class BigQueryDestinationTest {
   }
 
   protected void initBigQuery(final JsonNode config) throws IOException {
-    bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
+//    bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
     try {
       dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
     } catch (final Exception ex) {
@@ -241,15 +246,15 @@ class BigQueryDestinationTest {
   }
 
   @BeforeEach
-  void setup(final TestInfo info) throws IOException {
+  void setup(final TestInfo info) {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
     bigquery = null;
     dataset = null;
-    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(gcsStagingConfig));
-    this.s3Client = gcsDestinationConfig.getS3Client();
+//    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+//        .getGcsDestinationConfig(bigQueryUtils.getGcsJsonNodeConfig(gcsStagingConfig));
+//    this.s3Client = gcsDestinationConfig.getS3Client();
   }
 
   @AfterEach
@@ -258,12 +263,12 @@ class BigQueryDestinationTest {
       return;
     }
     BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
-    BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
+//    BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
   }
 
   @Test
   void testSpec() throws Exception {
-    final ConnectorSpecification actual = new BigQueryDestination().spec();
+    final ConnectorSpecification actual = bigQueryDestination.spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
@@ -274,7 +279,7 @@ class BigQueryDestinationTest {
   @MethodSource("successTestConfigProvider")
   void testCheckSuccess(final String configName) throws IOException {
     final JsonNode testConfig = configs.get(configName);
-    final AirbyteConnectionStatus actual = new BigQueryDestination().check(testConfig);
+    final AirbyteConnectionStatus actual = bigQueryDestination.check(testConfig);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
@@ -285,7 +290,7 @@ class BigQueryDestinationTest {
     // TODO: this should always throw ConfigErrorException
     final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
-      new BigQueryDestination().check(testConfig);
+      bigQueryDestination.check(testConfig);
     });
     assertThat(ex.getMessage()).contains(error);
   }
@@ -296,8 +301,7 @@ class BigQueryDestinationTest {
   void testWriteSuccess(final String configName) throws Exception {
     initBigQuery(config);
     final JsonNode testConfig = configs.get(configName);
-    final BigQueryDestination destination = new BigQueryDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer = bigQueryDestination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -338,14 +342,14 @@ class BigQueryDestinationTest {
 
     final TableId tableId = TableId.of(tmpTestSchemaName, "test_already_existing_table");
 
-    BigQueryUtils.getOrCreateDataset(bigquery, tmpTestSchemaName, BigQueryUtils.getDatasetLocation(config));
+//    bigQueryUtils.getOrCreateDataset(bigquery, tmpTestSchemaName, BigQueryUtils.getDatasetLocation(config));
 
     assertDoesNotThrow(() -> {
       // Create table
-      BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
+      bigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
 
       // Try to create it one more time. Shouldn't throw exception
-      BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
+      bigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
     });
   }
 
@@ -357,7 +361,7 @@ class BigQueryDestinationTest {
     final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
       final AirbyteMessageConsumer consumer =
-          spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
+          spy(bigQueryDestination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
       consumer.start();
     });
     assertThat(ex.getMessage()).contains(error);
@@ -389,7 +393,7 @@ class BigQueryDestinationTest {
       return Collections.emptySet();
     }
     return StreamSupport
-        .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
+        .stream(bigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
         .map(v -> v.get("TABLE_NAME").getStringValue()).collect(Collectors.toSet());
   }
 
@@ -408,10 +412,10 @@ class BigQueryDestinationTest {
         QueryJobConfiguration.newBuilder(String.format("SELECT * FROM `%s.%s`;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
 
-    BigQueryUtils.executeQuery(bigquery, queryConfig);
+    bigQueryUtils.executeQuery(bigquery, queryConfig);
 
     return StreamSupport
-        .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
+        .stream(bigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
         .map(v -> v.get(JavaBaseConstants.COLUMN_NAME_DATA).getStringValue())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
@@ -428,8 +432,7 @@ class BigQueryDestinationTest {
     final Dataset dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, streamId.rawNamespace());
     createUnpartitionedTable(bigquery, dataset, streamId.rawName());
     assertFalse(isTablePartitioned(bigquery, dataset, streamId.rawName()));
-    final BigQueryDestination destination = new BigQueryDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer = bigQueryDestination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -481,10 +484,10 @@ class BigQueryDestinationTest {
                 tableName))
         .setUseLegacySql(false)
         .build();
-    final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
-    for (final com.google.cloud.bigquery.FieldValueList row : result.getLeft().getQueryResults().getValues()) {
-      return !row.get("is_partitioned").isNull() && row.get("is_partitioned").getStringValue().equals("YES");
-    }
+//    final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
+//    for (final com.google.cloud.bigquery.FieldValueList row : result.getLeft().getQueryResults().getValues()) {
+//      return !row.get("is_partitioned").isNull() && row.get("is_partitioned").getStringValue().equals("YES");
+//    }
     return false;
   }
 

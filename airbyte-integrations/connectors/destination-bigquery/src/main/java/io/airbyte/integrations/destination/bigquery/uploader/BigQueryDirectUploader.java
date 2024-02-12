@@ -19,13 +19,14 @@ public class BigQueryDirectUploader extends AbstractBigQueryUploader<BigQueryTab
                                 final BigQueryTableWriter writer,
                                 final WriteDisposition syncMode,
                                 final BigQuery bigQuery,
-                                final BigQueryRecordFormatter recordFormatter) {
-    super(table, writer, syncMode, bigQuery, recordFormatter);
+                                final BigQueryRecordFormatter recordFormatter,
+                                final BigQueryUtils bigQueryUtils) {
+    super(table, writer, syncMode, bigQuery, recordFormatter, bigQueryUtils);
   }
 
   @Override
   protected void uploadData(final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) throws Exception {
-    BigQueryUtils.waitForJobFinish(writer.getWriteChannel().getJob());
+    bigQueryUtils.waitForJobFinish(writer.getWriteChannel().getJob());
     super.uploadData(outputRecordCollector, lastStateMessage);
   }
 

@@ -34,6 +34,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigrated
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
+import io.airbyte.integrations.destination.bigquery.config.properties.BigQueryConnectorConfiguration;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -46,32 +47,41 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import jakarta.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
+
+@Singleton
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   public static final String QUOTE = "`";
-  private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();
-
-  private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
   private final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGenerator.class);
 
+  private ColumnId cdcDeletedAtColumn;
   private final String projectId;
   private final String datasetLocation;
 
+  private final BigQuerySQLNameTransformer nameTransformer;
+
   /**
-   * @param projectId
-   * @param datasetLocation This is technically redundant with {@link BigQueryDestinationHandler}
-   *        setting the query execution location, but let's be explicit since this is typically a
-   *        compliance requirement.
+   * @param configuration
    */
-  public BigQuerySqlGenerator(final String projectId, final String datasetLocation) {
-    this.projectId = projectId;
-    this.datasetLocation = datasetLocation;
+  public BigQuerySqlGenerator(final BigQueryConnectorConfiguration configuration,
+                              final BigQuerySQLNameTransformer nameTransformer) {
+    this.projectId = configuration.getProjectId();
+    this.datasetLocation = configuration.getDatasetLocation();
+    this.nameTransformer = nameTransformer;
+  }
+
+  @PostConstruct
+  public void initialize() {
+    cdcDeletedAtColumn = buildColumnId("_ab_cdc_deleted_at");
   }
 
   @Override
@@ -356,7 +366,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
    * @return whether all the {@link JavaBaseConstants#V2_FINAL_TABLE_METADATA_COLUMNS} are present
    */
   @VisibleForTesting
-  public static boolean schemaContainAllFinalTableV2AirbyteColumns(final Collection<String> columnNames) {
+  public boolean schemaContainAllFinalTableV2AirbyteColumns(final Collection<String> columnNames) {
     return JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
         .allMatch(column -> containsIgnoreCase(columnNames, column));
   }
@@ -477,7 +487,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     final String cdcDeleteClause;
     final String cdcSkipInsertClause;
-    if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+    if (stream.columns().containsKey(cdcDeletedAtColumn)) {
       // Execute CDC deletions if there's already a record
       cdcDeleteClause = "WHEN MATCHED AND new_record._ab_cdc_deleted_at IS NOT NULL AND " + cursorComparison + " THEN DELETE";
       // And skip insertion entirely if there's no matching record.
@@ -577,7 +587,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // We also explicitly include old CDC deletion records, which act as tombstones to correctly delete
       // out-of-order records.
       String cdcConditionalOrIncludeStatement = "";
-      if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+      if (stream.columns().containsKey(cdcDeletedAtColumn)) {
         cdcConditionalOrIncludeStatement = """
                                            OR (
                                              _airbyte_loaded_at IS NOT NULL
@@ -661,7 +671,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
   }
 
-  private static String buildExtractedAtCondition(final Optional<Instant> minRawTimestamp) {
+  private String buildExtractedAtCondition(final Optional<Instant> minRawTimestamp) {
     return minRawTimestamp
         .map(ts -> " AND _airbyte_extracted_at > '" + ts + "'")
         .orElse("");
@@ -760,16 +770,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .replace("'", "\\'");
   }
 
-  private static String cast(final String content, final String asType, final boolean useSafeCast) {
+  private String cast(final String content, final String asType, final boolean useSafeCast) {
     final var open = useSafeCast ? "SAFE_CAST(" : "CAST(";
     return wrap(open, content + " as " + asType, ")");
   }
 
-  private static Set<String> getPks(final StreamConfig stream) {
+  private Set<String> getPks(final StreamConfig stream) {
     return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
-  private static String wrap(final String open, final String content, final String close) {
+  private String wrap(final String open, final String content, final String close) {
     return open + content + close;
   }
 

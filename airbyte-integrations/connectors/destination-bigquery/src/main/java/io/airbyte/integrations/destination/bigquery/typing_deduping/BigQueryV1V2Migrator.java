@@ -14,12 +14,15 @@ import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
+import jakarta.inject.Singleton;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Singleton
 public class BigQueryV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinition> {
 
   private final BigQuery bq;

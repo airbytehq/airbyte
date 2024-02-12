@@ -39,8 +39,10 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   private final DateTime syncDatetime;
   private final boolean keepStagingFiles;
   private final Set<String> existingSchemas = new HashSet<>();
+  private final BigQueryUtils bigQueryUtils;
 
   public BigQueryGcsOperations(final BigQuery bigQuery,
+                               final BigQueryUtils bigQueryUtils,
                                final StandardNameTransformer gcsNameTransformer,
                                final GcsDestinationConfig gcsConfig,
                                final GcsStorageOperations gcsStorageOperations,
@@ -48,6 +50,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
                                final DateTime syncDatetime,
                                final boolean keepStagingFiles) {
     this.bigQuery = bigQuery;
+    this.bigQueryUtils = bigQueryUtils;
     this.gcsNameTransformer = gcsNameTransformer;
     this.gcsConfig = gcsConfig;
     this.gcsStorageOperations = gcsStorageOperations;
@@ -85,7 +88,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
     if (!existingSchemas.contains(datasetId)) {
       LOGGER.info("Creating dataset {}", datasetId);
       try {
-        BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
+        bigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
       } catch (final BigQueryException e) {
         if (ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.getCode())) {
           throw new ConfigErrorException(e.getMessage(), e);
@@ -100,7 +103,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   @Override
   public void createTableIfNotExists(final TableId tableId, final Schema tableSchema) {
     LOGGER.info("Creating target table {}", tableId);
-    BigQueryUtils.createPartitionedTableIfNotExists(bigQuery, tableId, tableSchema);
+    bigQueryUtils.createPartitionedTableIfNotExists(bigQuery, tableId, tableSchema);
   }
 
   @Override
@@ -148,7 +151,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
         tableId, datasetId, loadJob);
 
     try {
-      BigQueryUtils.waitForJobFinish(loadJob);
+      bigQueryUtils.waitForJobFinish(loadJob);
       LOGGER.info("[{}] Target table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(),
           tableId, datasetId);
     } catch (final BigQueryException | InterruptedException e) {

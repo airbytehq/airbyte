@@ -30,11 +30,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
+
+import io.airbyte.integrations.destination.bigquery.config.properties.BigQueryConnectorConfiguration;
+import jakarta.inject.Singleton;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO this stuff almost definitely exists somewhere else in our codebase.
+@Singleton
 public class BigQueryDestinationHandler implements DestinationHandler<TableDefinition> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationHandler.class);
@@ -42,9 +46,9 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   private final BigQuery bq;
   private final String datasetLocation;
 
-  public BigQueryDestinationHandler(final BigQuery bq, final String datasetLocation) {
+  public BigQueryDestinationHandler(final BigQuery bq, final BigQueryConnectorConfiguration configuration) {
     this.bq = bq;
-    this.datasetLocation = datasetLocation;
+    this.datasetLocation = configuration.getDatasetLocation();
   }
 
   @Override

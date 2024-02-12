@@ -12,9 +12,12 @@ import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class GcsStorageOperations extends S3StorageOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsStorageOperations.class);

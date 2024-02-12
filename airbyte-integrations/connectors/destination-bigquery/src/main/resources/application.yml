@@ -1,0 +1,12 @@
+micronaut:
+  application:
+    name: destination-bigquery
+#  executors:
+#    typing-de-duper:
+#      type: scheduled
+#      core-pool-size: ${TD_THREADS:8}
+#      n-threads: ${TD_THREADS:8}
+#      thread-factory-class: io.airbyte.cdk.integrations.base.destination.typing_deduping.TyperDeduperThreadFactory
+
+airbyte:
+    version: 2

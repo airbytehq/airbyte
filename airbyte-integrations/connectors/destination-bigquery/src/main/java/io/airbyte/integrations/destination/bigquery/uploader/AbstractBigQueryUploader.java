@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
-import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.printHeapMemoryConsumption;
-
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.CopyJobConfiguration;
 import com.google.cloud.bigquery.Field;
@@ -42,17 +40,20 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
   protected final T writer;
   protected final BigQuery bigQuery;
   protected final BigQueryRecordFormatter recordFormatter;
+  protected final BigQueryUtils bigQueryUtils;
 
   AbstractBigQueryUploader(final TableId table,
                            final T writer,
                            final WriteDisposition syncMode,
                            final BigQuery bigQuery,
-                           final BigQueryRecordFormatter recordFormatter) {
+                           final BigQueryRecordFormatter recordFormatter,
+                           final BigQueryUtils bigQueryUtils) {
     this.table = table;
     this.writer = writer;
     this.syncMode = syncMode;
     this.bigQuery = bigQuery;
     this.recordFormatter = recordFormatter;
+    this.bigQueryUtils = bigQueryUtils;
   }
 
   protected void postProcessAction(final boolean hasFailed) throws Exception {
@@ -67,7 +68,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       LOGGER.error(String.format(
           "Failed to process a message for job: %s",
           writer.toString()));
-      printHeapMemoryConsumption();
+      bigQueryUtils.printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
   }
@@ -80,7 +81,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       LOGGER.error(String.format(
           "Failed to process a message for job: %s",
           writer.toString()));
-      printHeapMemoryConsumption();
+      bigQueryUtils.printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
   }
@@ -97,7 +98,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       this.postProcessAction(hasFailed);
     } catch (final Exception e) {
       LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
-      printHeapMemoryConsumption();
+      bigQueryUtils.printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
   }
@@ -147,7 +148,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
    * @param destinationTableId identifier for a table
    */
   @Deprecated
-  public static void partitionIfUnpartitioned(final BigQuery bigQuery, final Schema schema, final TableId destinationTableId) {
+  public void partitionIfUnpartitioned(final BigQuery bigQuery, final Schema schema, final TableId destinationTableId) {
     try {
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(
@@ -157,7 +158,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
                   destinationTableId.getTable()))
           .setUseLegacySql(false)
           .build();
-      final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigQuery, queryConfig);
+      final ImmutablePair<Job, String> result = bigQueryUtils.executeQuery(bigQuery, queryConfig);
       result.getLeft().getQueryResults().getValues().forEach(row -> {
         if (!row.get("is_partitioned").isNull() && row.get("is_partitioned").getStringValue().equals("NO")) {
           LOGGER.info("Partitioning existing destination table {}", destinationTableId);
@@ -175,7 +176,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
                       tmpPartitionTable))
               .setUseLegacySql(false)
               .build();
-          BigQueryUtils.executeQuery(bigQuery, partitionQuery);
+          bigQueryUtils.executeQuery(bigQuery, partitionQuery);
           // Copying data from a partitioned tmp table into an existing non-partitioned table does not make it
           // partitioned... thus, we force re-create from scratch by completely deleting and creating new
           // table.
@@ -201,7 +202,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
    * @param destinationTableId destination table
    * @param syncMode mapping of Airbyte's sync mode to BigQuery's write mode
    */
-  public static void copyTable(final BigQuery bigQuery,
+  public void copyTable(final BigQuery bigQuery,
                                final TableId sourceTableId,
                                final TableId destinationTableId,
                                final JobInfo.WriteDisposition syncMode) {
@@ -212,7 +213,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
 
     final Job job = bigQuery.create(JobInfo.of(configuration));
     AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
-    final ImmutablePair<Job, String> jobStringImmutablePair = BigQueryUtils.executeQuery(job);
+    final ImmutablePair<Job, String> jobStringImmutablePair = bigQueryUtils.executeQuery(job);
     if (jobStringImmutablePair.getRight() != null) {
       LOGGER.error("Failed on copy tables with error:" + job.getStatus());
       throw new RuntimeException("BigQuery was unable to copy table due to an error: \n" + job.getStatus().getError());

@@ -11,12 +11,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import java.util.stream.Stream;
+
+import io.airbyte.integrations.destination.bigquery.config.properties.BigQueryConnectorConfiguration;
+import io.micronaut.context.env.Environment;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@MicronautTest(environments = { Environment.TEST })
 public class BigQueryUtilsTest {
+
+  @Inject
+  private BigQueryUtils bigQueryUtils;
 
   private ImmutableMap.Builder<Object, Object> configMapBuilder;
 
@@ -35,7 +44,7 @@ public class BigQueryUtilsTest {
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
         .build());
 
-    final String actual = BigQueryUtils.getDatasetId(config);
+    final String actual = bigQueryUtils.getDatasetId(convertToConfiguration(config));
 
     assertEquals(expected, actual);
   }
@@ -48,7 +57,7 @@ public class BigQueryUtilsTest {
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
         .build());
 
-    final Exception exception = assertThrows(IllegalArgumentException.class, () -> BigQueryUtils.getDatasetId(config));
+    final Exception exception = assertThrows(IllegalArgumentException.class, () -> bigQueryUtils.getDatasetId(convertToConfiguration(config)));
 
     assertEquals(expected, exception.getMessage());
   }
@@ -65,6 +74,10 @@ public class BigQueryUtilsTest {
             "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `` in Dataset ID"),
         Arguments.arguments("my-project", "your-project:my_dataset",
             "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `your-project` in Dataset ID"));
+  }
+
+  private BigQueryConnectorConfiguration convertToConfiguration(final JsonNode config) {
+    return Jsons.convertValue(config, BigQueryConnectorConfiguration.class);
   }
 
 }

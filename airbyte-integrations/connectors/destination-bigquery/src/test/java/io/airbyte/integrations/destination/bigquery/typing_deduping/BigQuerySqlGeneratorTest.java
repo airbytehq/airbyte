@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -23,6 +24,8 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
+import io.airbyte.integrations.destination.bigquery.config.properties.BigQueryConnectorConfiguration;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -35,12 +38,20 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class BigQuerySqlGeneratorTest {
 
-  private final BigQuerySqlGenerator generator = new BigQuerySqlGenerator("foo", "US");
+  private BigQuerySqlGenerator generator;
+
+  @BeforeEach
+  void setup() {
+    final BigQueryConnectorConfiguration configuration = mock(BigQueryConnectorConfiguration.class);
+    final BigQuerySQLNameTransformer nameTransformer = mock(BigQuerySQLNameTransformer.class);
+    generator = new BigQuerySqlGenerator(configuration, nameTransformer);
+  }
 
   @Test
   public void testToDialectType() {
@@ -78,7 +89,7 @@ public class BigQuerySqlGeneratorTest {
         null);
 
     // Clustering is null
-    final StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
+    final StandardTableDefinition existingTable = mock(StandardTableDefinition.class);
     Mockito.when(existingTable.getClustering()).thenReturn(null);
     Assertions.assertFalse(generator.clusteringMatches(stream, existingTable));
 
@@ -116,7 +127,7 @@ public class BigQuerySqlGeneratorTest {
 
   @Test
   public void testPartitioningMatches() {
-    final StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
+    final StandardTableDefinition existingTable = mock(StandardTableDefinition.class);
     // Partitioning is null
     Mockito.when(existingTable.getTimePartitioning()).thenReturn(null);
     Assertions.assertFalse(generator.partitioningMatches(existingTable));
@@ -138,13 +149,13 @@ public class BigQuerySqlGeneratorTest {
   @Test
   public void testSchemaContainAllFinalTableV2AirbyteColumns() {
     Assertions.assertTrue(
-        BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at", "_airbyte_raw_id")));
-    Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_extracted_at", "_airbyte_raw_id")));
-    Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_raw_id")));
-    Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at")));
-    Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of()));
+        generator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at", "_airbyte_raw_id")));
+    Assertions.assertFalse(generator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_extracted_at", "_airbyte_raw_id")));
+    Assertions.assertFalse(generator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_raw_id")));
+    Assertions.assertFalse(generator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at")));
+    Assertions.assertFalse(generator.schemaContainAllFinalTableV2AirbyteColumns(Set.of()));
     Assertions.assertTrue(
-        BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_AIRBYTE_META", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_RAW_ID")));
+            generator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_AIRBYTE_META", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_RAW_ID")));
   }
 
   @Test

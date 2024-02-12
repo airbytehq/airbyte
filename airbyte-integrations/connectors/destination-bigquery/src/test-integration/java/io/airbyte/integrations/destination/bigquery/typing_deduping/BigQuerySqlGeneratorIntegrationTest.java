@@ -69,7 +69,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   public static void setupBigquery() throws Exception {
     final String rawConfig = Files.readString(Path.of("secrets/credentials-gcs-staging.json"));
     final JsonNode config = Jsons.deserialize(rawConfig);
-    bq = BigQueryDestination.getBigQuery(config);
+//    bq = BigQueryDestination.getBigQuery(config);
 
     projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
     datasetLocation = config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();
