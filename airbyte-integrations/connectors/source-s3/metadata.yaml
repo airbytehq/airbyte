@@ -23,7 +23,6 @@ data:
       packageName: airbyte-source-s3
   registries:
     cloud:
-      dockerImageTag: 4.5.2
       enabled: true
     oss:
       enabled: true
