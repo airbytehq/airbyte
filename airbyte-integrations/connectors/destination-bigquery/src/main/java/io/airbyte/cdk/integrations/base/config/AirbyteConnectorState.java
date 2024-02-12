@@ -7,9 +7,9 @@ import io.micronaut.context.annotation.ConfigurationProperties;
 @ConfigurationProperties("airbyte.connector.state")
 public class AirbyteConnectorState {
 
-    String state;
+    String json;
 
     public JsonNode toJson() {
-        return Jsons.deserialize(state);
+        return Jsons.deserialize(json);
     }
 }

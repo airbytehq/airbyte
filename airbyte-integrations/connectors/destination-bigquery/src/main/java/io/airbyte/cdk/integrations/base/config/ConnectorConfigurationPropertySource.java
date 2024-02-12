@@ -40,7 +40,7 @@ public class ConnectorConfigurationPropertySource extends MapPropertySource {
         values.put(CONNECTOR_OPERATION, commandLine.getRawArguments()[0]);
         values.putAll(loadFile((String)commandLine.optionValue(ARGS_CONFIG_KEY), CONNECTOR_CONFIG_PREFIX));
         values.putAll(loadFileContents((String)commandLine.optionValue(ARGS_CATALOG_KEY), String.format(PREFIX_FORMAT, CONNECTOR_CATALOG_PREFIX, "configured")));
-        values.putAll(loadFileContents((String)commandLine.optionValue(ARGS_STATE_KEY), String.format(PREFIX_FORMAT, CONNECTOR_STATE_PREFIX, "state")));
+        values.putAll(loadFileContents((String)commandLine.optionValue(ARGS_STATE_KEY), String.format(PREFIX_FORMAT, CONNECTOR_STATE_PREFIX, "json")));
         LOGGER.debug("Resolved values: {}", values);
         return values;
     }
