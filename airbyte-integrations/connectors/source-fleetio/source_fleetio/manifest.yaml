@@ -24,6 +24,8 @@ streams:
         type: HttpRequester
         url_base: https://secure.fleetio.com/api/
         http_method: GET
+        request_parameters:
+          per_page: '100'
         authenticator:
           type: NoAuth
         request_headers:
@@ -33,7 +35,6 @@ streams:
           X-Client-Name: data_connector
           X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -65,6 +66,8 @@ streams:
         type: HttpRequester
         url_base: https://secure.fleetio.com/api/
         http_method: GET
+        request_parameters:
+          per_page: '100'
         authenticator:
           type: NoAuth
         request_headers:
@@ -74,7 +77,6 @@ streams:
           X-Client-Name: data_connector
           X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -106,6 +108,8 @@ streams:
         type: HttpRequester
         url_base: https://secure.fleetio.com/api/
         http_method: GET
+        request_parameters:
+          per_page: '100'
         authenticator:
           type: NoAuth
         request_headers:
@@ -115,7 +119,6 @@ streams:
           X-Client-Name: data_connector
           X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -147,6 +150,8 @@ streams:
         type: HttpRequester
         url_base: https://secure.fleetio.com/api/
         http_method: GET
+        request_parameters:
+          per_page: '100'
         authenticator:
           type: NoAuth
         request_headers:
@@ -156,7 +161,6 @@ streams:
           X-Client-Name: data_connector
           X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -188,6 +192,8 @@ streams:
         type: HttpRequester
         url_base: https://secure.fleetio.com/api/
         http_method: GET
+        request_parameters:
+          per_page: '100'
         authenticator:
           type: NoAuth
         request_headers:
@@ -197,7 +203,6 @@ streams:
           X-Client-Name: data_connector
           X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -229,6 +234,8 @@ streams:
         type: HttpRequester
         url_base: https://secure.fleetio.com/api/
         http_method: GET
+        request_parameters:
+          per_page: '100'
         authenticator:
           type: NoAuth
         request_headers:
@@ -238,7 +245,6 @@ streams:
           X-Client-Name: data_connector
           X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -270,6 +276,8 @@ streams:
         type: HttpRequester
         url_base: https://secure.fleetio.com/api/
         http_method: GET
+        request_parameters:
+          per_page: '100'
         authenticator:
           type: NoAuth
         request_headers:
@@ -279,7 +287,6 @@ streams:
           X-Client-Name: data_connector
           X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -311,6 +318,8 @@ streams:
         type: HttpRequester
         url_base: https://secure.fleetio.com/api/
         http_method: GET
+        request_parameters:
+          per_page: '100'
         authenticator:
           type: NoAuth
         request_headers:
@@ -320,7 +329,6 @@ streams:
           X-Client-Name: data_connector
           X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -352,6 +360,8 @@ streams:
         type: HttpRequester
         url_base: https://secure.fleetio.com/api/
         http_method: GET
+        request_parameters:
+          per_page: '100'
         authenticator:
           type: NoAuth
         request_headers:
@@ -361,7 +371,6 @@ streams:
           X-Client-Name: data_connector
           X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -393,6 +402,8 @@ streams:
         type: HttpRequester
         url_base: https://secure.fleetio.com/api/
         http_method: GET
+        request_parameters:
+          per_page: '100'
         authenticator:
           type: NoAuth
         request_headers:
@@ -402,7 +413,6 @@ streams:
           X-Client-Name: data_connector
           X-Client-Platform: fleetio_airbyte
         request_body_json: {}
-        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
