@@ -145,6 +145,7 @@ At this point you can run `airbyte-ci` commands.
 - [`connectors upgrade_cdk` command](#connectors-upgrade_cdk)
 - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
 - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
+- [`connectors migrate-to-poetry` command](#connectors-migrate-to-poetry)
 - [`format` command subgroup](#format-subgroup)
   - [`format check` command](#format-check-command)
   - [`format fix` command](#format-fix-command)
@@ -512,16 +513,20 @@ Make a connector using a Dockerfile migrate to the base image by:
 - Updating its documentation to explain the build process
 - Bumping by a patch version
 
-### Examples
+#### Examples
 
 Migrate source-openweather to use the base image:
 `airbyte-ci connectors --name=source-openweather migrate_to_base_image`
 
-### Arguments
 
-| Argument              | Description                                                 |
-| --------------------- | ----------------------------------------------------------- |
-| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry |
+### <a id="connectors-migrate-to-poetry"></a>`connectors migrate-to-poetry` command
+
+Migrate connectors the poetry package manager.
+
+#### Examples
+
+Migrate source-openweather to use the base image:
+`airbyte-ci connectors --name=source-openweather migrate-to-poetry`
 
 ### <a id="format-subgroup"></a>`format` command subgroup
 
@@ -644,8 +649,9 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 4.5.4   | [#36206](https://github.com/airbytehq/airbyte/pull/36206) | Revert poetry cache removal during nightly builds                                                                          |
-| 4.5.3   | [#34586](https://github.com/airbytehq/airbyte/pull/34586)  | Extract connector changelog modification logic into its own class                                                       |
+| 4.6.0   | [#35583](https://github.com/airbytehq/airbyte/pull/35583)  | Implement the `airbyte-ci connectors migrate-to-poetry` command.                                                           |
+| 4.5.4   | [#36206](https://github.com/airbytehq/airbyte/pull/36206)  | Revert poetry cache removal during nightly builds                                                                          |
+| 4.5.3   | [#34586](https://github.com/airbytehq/airbyte/pull/34586)  | Extract connector changelog modification logic into its own class                                                          |
 | 4.5.2   | [#35802](https://github.com/airbytehq/airbyte/pull/35802)  | Fix bug with connectors bump_version command                                                                               |
 | 4.5.1   | [#35786](https://github.com/airbytehq/airbyte/pull/35786)  | Declare `live_tests` as an internal poetry package.                                                                        |
 | 4.5.0   | [#35784](https://github.com/airbytehq/airbyte/pull/35784)  | Format command supports kotlin                                                                                             |
