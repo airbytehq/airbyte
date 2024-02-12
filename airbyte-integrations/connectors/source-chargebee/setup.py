@@ -11,8 +11,10 @@ MAIN_REQUIREMENTS = [
 
 TEST_REQUIREMENTS = [
     "requests-mock~=1.9.3",
+    "requests_mock~=1.8",
     "pytest~=6.2",
     "pytest-mock~=3.6.1",
+    "freezegun==1.2.2"
 ]
 
 setup(

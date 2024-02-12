@@ -10,7 +10,6 @@ class ConfigBuilder:
             "site": "ConfigBuilder default site",
             "site_api_key": "ConfigBuilder default site api key",
             "start_date": "2023-01-01T06:57:44Z",
-            "end_date": "2023-11-30T06:57:44Z",
             "product_catalog": "2.0"
         }
 
@@ -24,10 +23,6 @@ class ConfigBuilder:
 
     def with_start_date(self, start_datetime: datetime) -> "ConfigBuilder":
         self._config["start_date"] = start_datetime.isoformat()[:-13]+"Z"
-        return self
-
-    def with_end_date(self, end_datetime: datetime) -> "ConfigBuilder":
-        self._config["end_date"] = end_datetime.isoformat()[:-13]+"Z"
         return self
 
     def with_product_catalog(self, product_catalog: str) -> "ConfigBuilder":

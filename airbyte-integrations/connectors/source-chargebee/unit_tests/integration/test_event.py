@@ -11,6 +11,7 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
+    NestedPath,
     HttpResponseBuilder,
     RecordBuilder,
     create_record_builder,
@@ -23,20 +24,18 @@ from integration.config import ConfigBuilder
 from integration.pagination import ChargebeePaginationStrategy
 from integration.request_builder import ChargebeeRequestBuilder
 from integration.response_builder import a_response_with_status
-from source_chargebee.source import SourceChargebee
+from source_chargebee import SourceChargebee
 
 _STREAM_NAME = "event"
 _NOW = datetime.now(timezone.utc)
 _A_START_DATE = _NOW - timedelta(days=60)
 _SITE = "test-site"
-_API_KEY = "test-api-key"
+_SITE_API_KEY = "test-api-key"
 _PRODUCT_CATALOG = "2.0"
 _NO_STATE = {}
 _AVOIDING_INCLUSIVE_BOUNDARIES = timedelta(seconds=1)
 _SECOND_REQUEST = timedelta(seconds=1)
 _THIRD_REQUEST = timedelta(seconds=2)
-_PRIMARY_KEY = "id"
-_CURSOR_FIELD = "updated_at"
 
 '''
   Add tests for the following:
@@ -61,23 +60,23 @@ _CURSOR_FIELD = "updated_at"
 '''
 
 def _a_request() -> ChargebeeRequestBuilder:
-    return ChargebeeRequestBuilder.event_endpoint(_SITE, _API_KEY)
+    return ChargebeeRequestBuilder.event_endpoint(_SITE, _SITE_API_KEY)
 
 def _config() -> ConfigBuilder:
-    return ConfigBuilder().site(_SITE).api_key(_API_KEY).with_start_date(_A_START_DATE).with_product_catalog(_PRODUCT_CATALOG)
+    return ConfigBuilder().with_site(_SITE).with_site_api_key(_SITE_API_KEY).with_start_date(_A_START_DATE).with_product_catalog(_PRODUCT_CATALOG)
 
-def _catalog() -> ConfiguredAirbyteCatalog:
-    return CatalogBuilder().add_stream(_STREAM_NAME).build()
+def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
+    return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
 
-def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any]) -> SourceChargebee:
-    return SourceChargebee(catalog, config)
+def _source() -> SourceChargebee:
+    return SourceChargebee()
 
 def _a_record() -> RecordBuilder:
     return create_record_builder(
         find_template(_STREAM_NAME, __file__),
         FieldPath("list"),
-        record_id_path=FieldPath(_PRIMARY_KEY),
-        record_cursor_path=FieldPath(_CURSOR_FIELD)
+        record_id_path=NestedPath(["event", "id"]),
+        record_cursor_path=NestedPath(["event", "occurred_at"])
     )
 
 def _a_response() -> HttpResponseBuilder:
@@ -91,14 +90,21 @@ def _read(
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(_source(catalog, config), config, state, expecting_exception)
+    return read(_source(), config, catalog, state, expecting_exception)
 
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        print("todo")
+        http_mocker.get(
+            _a_request().with_occurred_at_btw([{int(_A_START_DATE.timestamp())},{int(_NOW.timestamp())}]).with_sort_by_asc('occurred_at').with_limit(100).build(),
+            _a_response().with_record(_a_record()).with_record(_a_record()).build(),
+        )
+        config = _config().with_start_date(_A_START_DATE).with_site('test-site').with_site_api_key('test-site-api-key')
+        output = self._read(config)
+        assert len(output.records) == 2
+
 
     @HttpMocker()
     def test_given_many_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
@@ -120,7 +126,7 @@ class FullRefreshTest(TestCase):
     def test_given_http_status_500_once_before_200_when_read_then_retry_and_fail(self, http_mocker: HttpMocker) -> None:
         print("todo")
 
-    HttpMocker()
+    @HttpMocker()
     def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
         print("todo")
 
@@ -137,7 +143,7 @@ class FullRefreshTest(TestCase):
         print("todo")
 
     def _read(self, config: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
-        return _read(config, SyncMode.full_refresh, expecting_exception)
+        return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -154,6 +160,7 @@ class IncrementalTest(TestCase):
     @HttpMocker()
     def test_given_state_more_recent_than_cursor_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
         print("todo")
+        assert True
 
     def _read(self, config: ConfigBuilder, state: Dict[str, Any], expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.incremental, state, expecting_exception)

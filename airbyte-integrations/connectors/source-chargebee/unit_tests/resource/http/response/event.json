@@ -3,7 +3,7 @@
     {
       "event": {
         "id": "ev_16BPgETyVrQbiGhA",
-        "occurred_at": 1702645601,
+        "occurred_at": 1706822167,
         "source": "admin_console",
         "user": "sarah@sarah.com",
         "object": "event",
@@ -200,6 +200,5 @@
         ]
       }
     }
-  ],
-  "next_offset": "[\"1707076198000\",\"57873868\"]"
+  ]
 }
