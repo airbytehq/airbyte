@@ -3,24 +3,22 @@
 #
 
 
-from datetime import datetime, timedelta
 import json
 import logging
+from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Tuple
 
 import requests
+from airbyte_cdk import logger as airbyte_logger
+from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.models import ConnectorSpecification
-
 from source_yandex_direct.ads_streams import AdImages, Ads, Campaigns, YandexDirectAdsStream
 from source_yandex_direct.report_streams import CustomReport
 
 from .auth import CredentialsCraftAuthenticator
 from .schema_fields import CUSTOM_SCHEMA_FIELDS
 from .utils import HttpAvailabilityStrategy, random_name
-
-from airbyte_cdk import logger as airbyte_logger
 
 logger = airbyte_logger.AirbyteLogger()
 
@@ -37,7 +35,9 @@ class SourceYandexDirect(AbstractSource):
     availability_strategy = HttpAvailabilityStrategy
 
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
-        spec_fields_names_for_streams = self.get_spec_fields_names_for_streams(self.ads_streams_classes)
+        spec_fields_names_for_streams = self.get_spec_fields_names_for_streams(
+            self.ads_streams_classes
+        )
         for stream_class, spec_field_name in spec_fields_names_for_streams:
             try:
                 json.loads(config.get(spec_field_name, "{}"))
@@ -48,15 +48,24 @@ class SourceYandexDirect(AbstractSource):
             stream_class_default_fields = stream_class.default_fields_names
             stream_fields_params_from_config = json.loads(config[spec_field_name])
             if not isinstance(stream_class_default_fields, dict):
-                return False, f"{spec_field_name} is not of valid structire. It must be object of field names. See example."
+                return (
+                    False,
+                    f"{spec_field_name} is not of valid structire. It must be object of field names. See example.",
+                )
             for key in stream_fields_params_from_config:
                 if key not in stream_class_default_fields:
-                    return False, f"{spec_field_name}: Key {key} is not available for this stream params customization. See example."
+                    return (
+                        False,
+                        f"{spec_field_name}: Key {key} is not available for this stream params customization. See example.",
+                    )
                 key_default_fields_list = stream_class_default_fields[key]
                 config_key_fields_list = stream_fields_params_from_config[key]
                 for field_name in config_key_fields_list:
                     if field_name not in key_default_fields_list:
-                        return False, f'{spec_field_name} (key {key}): field "field_name" is not available. See example.'
+                        return (
+                            False,
+                            f'{spec_field_name} (key {key}): field "field_name" is not available. See example.',
+                        )
 
         for report_config in config.get("reports"):
             report_name = report_config["name"]
@@ -139,9 +148,9 @@ class SourceYandexDirect(AbstractSource):
                     "CriterionId",
                     "CriterionType",
                 ]
-            ) and set(
-                report_config["fields"]
-            ).intersection(["Criteria", "CriteriaId", "CriteriaType"]):
+            ) and set(report_config["fields"]).intersection(
+                ["Criteria", "CriteriaId", "CriteriaType"]
+            ):
                 return (
                     False,
                     f"Отчёт {report_name}: Поля Criterion, CriterionId, CriterionType "
@@ -237,7 +246,9 @@ class SourceYandexDirect(AbstractSource):
                 credentials_craft_token_id=config["credentials"]["credentials_craft_token_id"],
             )
         else:
-            raise Exception("Неверный тип авторизации. Доступные: access_token_auth and credentials_craft_auth")
+            raise Exception(
+                "Неверный тип авторизации. Доступные: access_token_auth and credentials_craft_auth"
+            )
 
     @staticmethod
     def prepare_config_datetime(config: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -264,10 +275,14 @@ class SourceYandexDirect(AbstractSource):
             raise ValueError("Invalid date_range_type")
 
         if isinstance(prepared_range["date_from"], str):
-            prepared_range["date_from"] = datetime.strptime(prepared_range["date_from"], CONFIG_DATE_FORMAT)
+            prepared_range["date_from"] = datetime.strptime(
+                prepared_range["date_from"], CONFIG_DATE_FORMAT
+            )
 
         if isinstance(prepared_range["date_to"], str):
-            prepared_range["date_to"] = datetime.strptime(prepared_range["date_to"], CONFIG_DATE_FORMAT)
+            prepared_range["date_to"] = datetime.strptime(
+                prepared_range["date_to"], CONFIG_DATE_FORMAT
+            )
         config["prepared_date_range"] = prepared_range
         return config
 
@@ -293,14 +308,18 @@ class SourceYandexDirect(AbstractSource):
 
         return spec
 
-    def generate_spec_fields_for_streams(self, ads_streams_classes: List[YandexDirectAdsStream]) -> List[Mapping[str, Any]]:
+    def generate_spec_fields_for_streams(
+        self, ads_streams_classes: List[YandexDirectAdsStream]
+    ) -> List[Mapping[str, Any]]:
         streams_spec_fields = {}
         for stream_class in ads_streams_classes:
             spec_field = {
                 "description": f"Поля для стрима {stream_class.__name__}. Для полей по умолчанию - оставьте пустыми.",
                 "title": f"Поля стрима {stream_class.__name__} (JSON, необязательно)",
                 "type": "string",
-                "examples": ['{"FieldNames": ["CampaignId", "Id"], "MobileAppAdFieldNames": ["Text", "Title"]}'],
+                "examples": [
+                    '{"FieldNames": ["CampaignId", "Id"], "MobileAppAdFieldNames": ["Text", "Title"]}'
+                ],
                 "order": 4,
             }
             streams_spec_fields[stream_class.__name__.lower() + "_fields_params"] = spec_field
@@ -314,7 +333,9 @@ class SourceYandexDirect(AbstractSource):
             yield (stream, stream.__name__.lower() + "_fields_params")
 
     def get_spec_property_name_for_stream(self, stream: YandexDirectAdsStream) -> Mapping[str, Any]:
-        for stream_class, spec_field_name in self.get_spec_fields_names_for_streams(self.ads_streams_classes):
+        for stream_class, spec_field_name in self.get_spec_fields_names_for_streams(
+            self.ads_streams_classes
+        ):
             if stream.__name__ == stream_class.__name__:
                 return spec_field_name
 
@@ -329,9 +350,15 @@ class SourceYandexDirect(AbstractSource):
                     client_login=config["client_login"],
                     report_name=report_config["name"],
                     fields=report_config.get("fields"),
-                    parsed_filters=json.loads(report_config["filters_json"]) if report_config.get("filters_json") else None,
+                    additional_fields=report_config.get("additional_fields", []),
+                    goal_ids=report_config.get("goal_ids", []),
+                    attribution_models=report_config.get("attribution_models", []),
+                    parsed_filters=json.loads(report_config["filters_json"])
+                    if report_config.get("filters_json")
+                    else None,
                     date_range=config["prepared_date_range"],
                     split_range_days_count=report_config.get("split_range_days_count"),
+                    replace_keys_config=report_config.get("replace_keys_config", []),
                 )
             )
         ads_streams = []
@@ -342,7 +369,9 @@ class SourceYandexDirect(AbstractSource):
             }
             if stream_class == AdImages:
                 stream_kwargs["use_simple_loader"] = config.get("adimages_use_simple_loader", False)
-            for _, spec_fields_name in self.get_spec_fields_names_for_streams(self.ads_streams_classes):
+            for _, spec_fields_name in self.get_spec_fields_names_for_streams(
+                self.ads_streams_classes
+            ):
                 stream_kwargs[spec_fields_name] = json.loads(config.get(spec_fields_name, "{}"))
             ads_streams.append(stream_class(**stream_kwargs))
         return [*report_streams, *ads_streams]

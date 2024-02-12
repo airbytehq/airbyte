@@ -129,13 +129,33 @@ ADS_DEFAULT_FIELDS = {
     "MobileAppAdBuilderAdFieldNames": ["Creative", "TrackingUrl"],
     "MobileAppCpcVideoAdBuilderAdFieldNames": ["Creative", "TrackingUrl"],
     "CpcVideoAdBuilderAdFieldNames": ["Creative", "Href", "TurboPageId", "TurboPageModeration"],
-    "CpmBannerAdBuilderAdFieldNames": ["Creative", "Href", "TrackingPixels", "TurboPageId", "TurboPageModeration"],
-    "CpmVideoAdBuilderAdFieldNames": ["Creative", "Href", "TrackingPixels", "TurboPageId", "TurboPageModeration"],
+    "CpmBannerAdBuilderAdFieldNames": [
+        "Creative",
+        "Href",
+        "TrackingPixels",
+        "TurboPageId",
+        "TurboPageModeration",
+    ],
+    "CpmVideoAdBuilderAdFieldNames": [
+        "Creative",
+        "Href",
+        "TrackingPixels",
+        "TurboPageId",
+        "TurboPageModeration",
+    ],
     "SmartAdBuilderAdFieldNames": ["Creative"],
 }
 
 AD_IMAGES_DEFAULT_FIELDS = {
-    "FieldNames": ["AdImageHash", "OriginalUrl", "PreviewUrl", "Name", "Type", "Subtype", "Associated"],
+    "FieldNames": [
+        "AdImageHash",
+        "OriginalUrl",
+        "PreviewUrl",
+        "Name",
+        "Type",
+        "Subtype",
+        "Associated",
+    ],
 }
 
 CAMPAIGNS_DEFAULT_FIELDS = {
@@ -152,3 +172,21 @@ CAMPAIGNS_DEFAULT_FIELDS = {
         "Currency",
     ],
 }
+
+
+def build_goal_fields(
+    field_name: str, goal_ids: list[str], attribution_models: list[str]
+) -> list[str]:
+    # ConversionRate_<id_цели>_<модель>
+    # Conversions_<id_цели>_<модель>
+    # CostPerConversion_<id_цели>_<модель>
+    # GoalsRoi_<id_цели>_<модель>
+    # Revenue_<id_цели>_<модель>
+    if not attribution_models:
+        attribution_models = ["LSC"]
+
+    goal_fields = []
+    for goal_id in goal_ids:
+        for attribution_model in attribution_models:
+            goal_fields.append(f"{field_name}_{goal_id}_{attribution_model}")
+    return goal_fields
