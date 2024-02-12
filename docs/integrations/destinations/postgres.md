@@ -82,9 +82,13 @@ From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-s
   lower case.
 - In order to make your applications portable and less error-prone, use consistent quoting with each name (either always quote it or never quote it).
 
-Note, that Airbyte Postgres destination will create tables and schemas using the Unquoted
-identifiers when possible or fallback to Quoted Identifiers if the names are containing special
-characters.
+:::info
+
+Airbyte Postgres destination will create raw tables and schemas using the Unquoted
+identifiers by replacing any special characters with an underscore. All final tables and their corresponding
+columns are created using Quoted identifiers preserving the case sensitivity.
+
+:::
 
 **For Airbyte Cloud:**
 
@@ -148,16 +152,35 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 
 ## Schema map
 
-#### Output Schema
+### Output Schema (Raw Tables)
 
-Each stream will be mapped to a separate table in Postgres. Each table will contain 3 columns:
+Each stream will be mapped to a separate raw table in Postgres. The default schema in which the raw tables are 
+created is `airbyte_internal`. This can be overridden in the configuration. 
+Each table will contain 3 columns:
 
-- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
+- `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
   Postgres is `VARCHAR`.
-- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
+- `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source.
   The column type in Postgres is `TIMESTAMP WITH TIME ZONE`.
+- `_airbyte_loaded_at`: a timestamp representing when the row was processed into final table.
+    The column type in Postgres is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Postgres
   is `JSONB`.
+
+### Final Tables Data type mapping
+| Airbyte Type               | Postgres Type            |
+|:---------------------------|:-------------------------|
+| string                     | VARCHAR                  |
+| number                     | DECIMAL                  |
+| integer                    | BIGINT                   |
+| boolean                    | BOOLEAN                  |
+| object                     | JSONB                    |
+| array                      | JSONB                    |
+| timestamp_with_timezone    | TIMESTAMP WITH TIME ZONE |
+| timestamp_without_timezone | TIMESTAMP                |
+| time_with_timezone         | TIME WITH TIME ZONE      |
+| time_without_timezone      | TIME                     |
+| date                       | DATE                     |
 
 ## Tutorials
 
@@ -170,6 +193,7 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.0.0   | 2024-02-09 | [35042](https://github.com/airbytehq/airbyte/pull/35042)   | GA release V2 destinations format.                                                                  |
 | 0.6.3   | 2024-02-06 | [34891](https://github.com/airbytehq/airbyte/pull/34891)   | Remove varchar limit, use system defaults                                                           |
 | 0.6.2   | 2024-01-30 | [34683](https://github.com/airbytehq/airbyte/pull/34683)   | CDK Upgrade 0.16.3; Fix dependency mismatches in slf4j lib                                          |
 | 0.6.1   | 2024-01-29 | [34630](https://github.com/airbytehq/airbyte/pull/34630)   | CDK Upgrade; Use lowercase raw table in T+D queries.                                                |

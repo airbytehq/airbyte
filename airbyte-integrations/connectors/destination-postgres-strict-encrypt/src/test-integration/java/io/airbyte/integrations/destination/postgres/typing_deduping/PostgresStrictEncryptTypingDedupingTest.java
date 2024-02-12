@@ -6,19 +6,24 @@ package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.destination.postgres.PostgresDestination;
 import io.airbyte.integrations.destination.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.destination.postgres.PostgresTestDatabase.BaseImage;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
-public class PostgresTypingDedupingTest extends AbstractPostgresTypingDedupingTest {
+// TODO: This test is added to ensure coverage missed by disabling DATs. Redundant when DATs
+// enabled.
+public class PostgresStrictEncryptTypingDedupingTest extends AbstractPostgresTypingDedupingTest {
 
   protected static PostgresTestDatabase testContainer;
 
   @BeforeAll
   public static void setupPostgres() {
-    testContainer = PostgresTestDatabase.in(PostgresTestDatabase.BaseImage.POSTGRES_13);
+    // Postgres-13 is alpine image and SSL conf is failing to load, intentionally using 12:bullseye
+    testContainer = PostgresTestDatabase.in(BaseImage.POSTGRES_12, PostgresTestDatabase.ContainerModifier.CERT);
   }
 
   @AfterAll
@@ -33,7 +38,10 @@ public class PostgresTypingDedupingTest extends AbstractPostgresTypingDedupingTe
         .withDatabase()
         .withResolvedHostAndPort()
         .withCredentials()
-        .withoutSsl()
+        .withSsl(ImmutableMap.builder()
+            .put("mode", "verify-ca") // verify-full will not work since the spawned container is only allowed for 127.0.0.1/32 CIDRs
+            .put("ca_certificate", testContainer.getCertificates().caCertificate())
+            .build())
         .build();
   }
 
@@ -54,7 +62,7 @@ public class PostgresTypingDedupingTest extends AbstractPostgresTypingDedupingTe
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-postgres:dev";
+    return "airbyte/destination-postgres-strict-encrypt:dev";
   }
 
 }

@@ -129,4 +129,9 @@ public class SshWrappedDestination implements Destination {
         : getInstance(config, hostKey, portKey);
   }
 
+  @Override
+  public boolean isV2Destination() {
+    return delegate.isV2Destination();
+  }
+
 }
