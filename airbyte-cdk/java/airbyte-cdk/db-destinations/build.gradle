@@ -1,10 +1,10 @@
 java {
     // TODO: rewrite code to avoid javac wornings in the first place
     compileJava {
-        options.compilerArgs += "-Xlint:-deprecation,-removal"
+        options.compilerArgs += "-Xlint:-deprecation,-removal,-this-escape"
     }
     compileTestFixturesJava {
-        options.compilerArgs += "-Xlint:-try"
+        options.compilerArgs += "-Xlint:-try,-this-escape"
     }
 }
 

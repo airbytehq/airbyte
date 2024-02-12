@@ -539,7 +539,7 @@ These principles are intended to produce simple overall system behavior, and mov
 
 6. **Destinations return state in the order it was received.**
 
-   Order is used by the Platform to determine if a State message was dropped. Out-of-order State messages throw errors.
+   Order is used by the Platform to determine if a State message was dropped. Out-of-order State messages throw errors, as do skipped state messages. Every state message the destination recieved must be returned back to the platform, in order. 
 
    Order-ness is determined by the type of State message. Per-stream state messages require order per-stream. Global state messages require global ordering.
 
