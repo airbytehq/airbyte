@@ -1,0 +1,257 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "city": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "metro": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lattitude": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "longtitude": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_archive": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "dadata_city_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "request_list": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "status": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsible": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "priority_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "vacancy_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "cost": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "reward": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "is_current_request": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "store_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "datetime_starting": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "datetime_closed": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "department": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "reward_average_day": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "reward_average_month": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "is_student": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "education_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "is_patent": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "is_internship": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "address_internship": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsible_internship": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsible_number_internship": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "candidate_characteristic_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "candidate_age": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "count_accepted": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "count_still": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

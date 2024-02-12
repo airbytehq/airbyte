@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "research": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "recruiter": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "result": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "canceling_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "note": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "labels": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "research": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "recruiter": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "result": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,487 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "cache": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "responsible": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "priority_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vacancy_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "cost": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reward": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_current_request": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "store_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "datetime_starting": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "datetime_closed": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "department": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reward_average_day": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reward_average_month": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "is_student": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "education_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_patent": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_internship": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "address_internship": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "responsible_internship": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "responsible_number_internship": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "candidate_characteristic_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "candidate_age": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "count_accepted": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "count_still": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "cost_process": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "cost_finalists": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "count_opened_position": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "vacancy_label": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schedule_list": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "value": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "candidate_list": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "candidate_reserve_list": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "customer_list": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "surname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "patronymic": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "responsible_list": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "surname": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "patronymic": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "customer": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "label": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "phone": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "responsible": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "label": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "closed": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "working_period": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "store": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "city": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "metro": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "lattitude": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "longtitude": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updated_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "is_archive": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "dadata_city_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "curator_list": {
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  }
+}

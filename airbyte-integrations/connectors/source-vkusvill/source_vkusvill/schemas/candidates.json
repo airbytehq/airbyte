@@ -1,0 +1,701 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "cache": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "second_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "phone": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "photo": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gender": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "birthday": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "citizenship": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "city": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "address": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "leadgen_source_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "type": {
+      "type": "integer"
+    },
+    "reject_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "responsible": {
+      "type": [
+        "integer",
+        "null",
+        "string"
+      ]
+    },
+    "researcher": {
+      "type": [
+        "integer",
+        "null",
+        "string"
+      ]
+    },
+    "date_begin_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_interview": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "wages": {
+      "type": [
+        "integer",
+        "null",
+        "string"
+      ]
+    },
+    "currency": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "date_registration": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_teach": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recommend_fio": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recommend_contact": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schedule": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "date_internship": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "questionnare_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "type_registration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "stage_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "vacancy_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "metro": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "city_kladr_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "stage_state": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "note": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "characteristic": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "stage_state_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email_copy": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_duplicates": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "merge_status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_merge": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "author_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "utm_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reject_comment": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "full_search_details": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_internship": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "office": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hh_resume_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vacancy_list": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "tag_list": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "comment_list": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "request_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "request_list": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "age": {
+      "type": [
+        "integer",
+        "string",
+        "null"
+      ]
+    },
+    "experience": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resume_list": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "position": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "wages": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "citizenship": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "info": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "specialization": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "transfer_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "work_permit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "candidate_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "can_relocate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "can_business_trip": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hh_resume_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "skill_list": {
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "experience_list": {
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "education_list": {
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "recommendation_list": {
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "certificate_list": {
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "course_list": {
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "schedule_list": {
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "employment_list": {
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "currency": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "language": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "schedule_list": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "employment_list": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "documents": {
+                "type": "object",
+                "properties": {
+                  "100": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "questionnare": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "document_list": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "note_list": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "labels": {
+      "type": "object",
+      "properties": {
+        "leadgen_source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reject": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "researcher": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "responsible": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "citizenship": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "characteristic": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stage_state": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "result_interview": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id_interview": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "customer_list": {
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  }
+}

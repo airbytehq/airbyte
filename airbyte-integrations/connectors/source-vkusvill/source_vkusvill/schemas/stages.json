@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "priority": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "vertex_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_finalist": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_process": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_accepted": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "is_blocked": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "type": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "table_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "action": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "candidate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "user_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "before": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "after": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

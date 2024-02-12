@@ -1,0 +1,293 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "second_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "phone": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "photo": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "gender": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "birthday": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "citizenship": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "city": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "stage_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "leadgen_source_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "type": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reject_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "responsible": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "researcher": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "date_begin_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_interview": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "wages": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "currency": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "date_registration": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_teach": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_internship": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "type_registration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "duration_internship": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "schedule": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "recommend_fio": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recommend_contact": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "age": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "questionnare_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "experience": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "merge_status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "date_merge": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "note": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "author_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "author_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updated_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "city_kladr_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reject_comment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_internship": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

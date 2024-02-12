@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "dictionary_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "options": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "params": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_hidden": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "type": {
+            "type": "null"
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

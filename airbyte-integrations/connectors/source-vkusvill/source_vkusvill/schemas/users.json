@@ -1,0 +1,216 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "phone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "surname": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "patronymic": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "avatar": {
+      "type": [
+        "boolean",
+        "string",
+        "null"
+      ]
+    },
+    "department_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "theme": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "seat": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "isColdSearch": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "isCanAppointRecruiter": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "token_plugin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "telegram_chat_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "color_system": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "can_assign_calendar_future_days": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_can_conduct_interview": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "can_make_report": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "telegram_channel_chat_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "telegram_tag": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_tester": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_mass_stage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "role": {
+      "type": "object",
+      "properties": {
+        "role_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "access_list": {
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      }
+    },
+    "calendar_settings": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "has_active_interview": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "department": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "group_list": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "integer",
+          "null"
+        ]
+      }
+    },
+    "mail_settings": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "candidate_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "stage_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "stage_state_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vacancy_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "request_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "responsible_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "recruiter_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "researcher_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "source_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "department_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "class_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "class_table": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "group": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
