@@ -210,8 +210,9 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.4.6 | 2024-02-09 | [34575](https://github.com/airbytehq/airbyte/pull/34575) | Adopt CDK 0.20.0 |
-| 2.4.5 | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745) | Adopt CDK 0.19.0 |
+| 2.4.7   | 2024-02-23 | [35111](https://github.com/airbytehq/airbyte/pull/35111) | Adopt CDK 0.20.1                                                                                                                                                |
+| 2.4.6   | 2024-02-09 | [34575](https://github.com/airbytehq/airbyte/pull/34575) | Adopt CDK 0.20.0                                                                                                                                                |
+| 2.4.5   | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745) | Adopt CDK 0.19.0                                                                                                                                                |
 | 2.4.4   | 2024-02-08 | [35027](https://github.com/airbytehq/airbyte/pull/35027)   | Upgrade CDK to 0.17.1                                                                                                                                           |
 | 2.4.3   | 2024-02-01 | [34728](https://github.com/airbytehq/airbyte/pull/34728)   | Upgrade CDK to 0.16.4; Notable changes from 0.14.2, 0.15.1 and 0.16.3                                                                                           |
 | 2.4.2   | 2024-01-24 | [34451](https://github.com/airbytehq/airbyte/pull/34451)   | Improve logging for unparseable input                                                                                                                           |
