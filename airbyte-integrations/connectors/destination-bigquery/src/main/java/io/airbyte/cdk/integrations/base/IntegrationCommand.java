@@ -2,7 +2,6 @@ package io.airbyte.cdk.integrations.base;
 
 import io.airbyte.cdk.integrations.base.operation.Operation;
 import io.airbyte.cdk.integrations.base.operation.OperationType;
-import io.airbyte.cdk.integrations.base.util.ShutdownUtils;
 import io.airbyte.cdk.integrations.util.ApmTraceUtils;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -18,7 +17,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @CommandLine.Command(name = "", description = "", mixinStandardHelpOptions = true,
