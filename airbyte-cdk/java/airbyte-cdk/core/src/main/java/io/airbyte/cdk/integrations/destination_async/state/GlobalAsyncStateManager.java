@@ -195,9 +195,8 @@ public class GlobalAsyncStateManager {
           if (allRecordsCommitted) {
             final StateMessageWithArrivalNumber stateMessage = oldestState.getLeft();
             final double flushedRecordsAssociatedWithState = stateIdToCounterForPopulatingDestinationStats.get(oldestStateId).doubleValue();
-            LOGGER.info("State with arrival number {} emitted", stateMessage.arrivalNumber);
             output.add(new PartialStateWithDestinationStats(stateMessage.partialAirbyteStateMessage(),
-                new AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState)));
+                new AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState), stateMessage.arrivalNumber()));
             bytesFlushed += oldestState.getRight();
 
             // cleanup
