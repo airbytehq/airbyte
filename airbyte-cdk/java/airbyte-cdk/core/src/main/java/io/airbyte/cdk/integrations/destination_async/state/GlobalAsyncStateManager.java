@@ -287,8 +287,12 @@ public class GlobalAsyncStateManager {
         stateIdToCounter.clear();
         stateIdToCounter.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
 
+        final long statsCounter = stateIdToCounterForPopulatingDestinationStats.values()
+            .stream()
+            .mapToLong(AtomicLong::get)
+            .sum();
         stateIdToCounterForPopulatingDestinationStats.clear();
-        stateIdToCounterForPopulatingDestinationStats.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
+        stateIdToCounterForPopulatingDestinationStats.put(retroactiveGlobalStateId, new AtomicLong(statsCounter));
       }
     }
   }
