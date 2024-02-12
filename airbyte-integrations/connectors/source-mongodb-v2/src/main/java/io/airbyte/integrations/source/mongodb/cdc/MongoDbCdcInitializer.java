@@ -80,10 +80,12 @@ public class MongoDbCdcInitializer {
                                                                         final Instant emittedAt,
                                                                         final MongoDbSourceConfig config) {
 
+    LOGGER.info("*** config {}", config.rawConfig());
     final Duration firstRecordWaitTime = Duration.ofSeconds(config.getInitialWaitingTimeSeconds());
     // #35059: debezium heartbeats are not sent on the expected interval. this is a worksaround to allow making
     // subsequent wait time configurable.
-    final Duration subsequentRecordWaitTime = firstRecordWaitTime.dividedBy(2);
+//    final Duration subsequentRecordWaitTime = firstRecordWaitTime.dividedBy(2);
+    final Duration subsequentRecordWaitTime = firstRecordWaitTime;
     LOGGER.info("*** subs {} init {}", subsequentRecordWaitTime, firstRecordWaitTime);
     final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.getDatabaseName();
