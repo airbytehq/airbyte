@@ -91,6 +91,11 @@ acceptance_tests:
           - name: campaign_labels
             bypass_reason: "This stream is tested without start date"
         ignored_fields:
+          ads:
+            - name: Descriptions/AssetLink/*/AssetPerformanceLabel
+              bypass_reason: "This field indicates the asset's performance and is dynamically updated by the API."
+            - name: Headlines/AssetLink/*/AssetPerformanceLabel
+              bypass_reason: "This field indicates the asset's performance and is dynamically updated by the API."
           account_impression_performance_report_weekly:
             - name: Ctr
               bypass_reason: "dynamic field"

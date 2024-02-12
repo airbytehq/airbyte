@@ -56,10 +56,12 @@ You'll need the following information to configure the Vectara destination:
 
 In addition, in the connector UI you define two set of fields for this connector:
 * `text_fields` define the source fields which are turned into text in the Vectara side and are used for query or summarization.
+* `title_field` define the source field which will be used as a title of the document on the Vectara side
 * `metadata_fields` define the source fields which will be added to each document as meta-data.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.0   | 2024-01-29 | [34579](https://github.com/airbytehq/airbyte/pull/34579) | Add document title file configuration                             |
 | 0.1.0   | 2023-11-10 | [31958](https://github.com/airbytehq/airbyte/pull/31958) | 🎉 New Destination: Vectara (Vector Database)                     |
