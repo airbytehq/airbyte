@@ -62,7 +62,9 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 ## Changelog
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
-|:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
+| 2.1.2    | 2024-02-09 | [35088](https://github.com/airbytehq/airbyte/pull/35088)   | Manage dependencies with Poetry.                                                                                              |
+| `2.1.1`  | 2024-02-07 | [34998](https://github.com/airbytehq/airbyte/pull/34998)   | Add missing fields to stream schemas                                                                                          |
 | `2.1.0`  | 2023-12-07 | [33237](https://github.com/airbytehq/airbyte/pull/33237)   | Continue syncing streams even when one of the stream fails                                                                    |
 | `2.0.2`  | 2023-12-05 | [33099](https://github.com/airbytehq/airbyte/pull/33099)   | Fix filtering for archived records stream                                                                                     |
 | `2.0.1`  | 2023-11-08 | [32291](https://github.com/airbytehq/airbyte/pull/32291)   | Add logic to have regular checkpointing schedule                                                                              |

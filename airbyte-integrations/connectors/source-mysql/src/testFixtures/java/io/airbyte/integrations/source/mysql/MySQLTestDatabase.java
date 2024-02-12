@@ -17,20 +17,20 @@ import org.testcontainers.containers.MySQLContainer;
 public class MySQLTestDatabase extends
     TestDatabase<MySQLContainer<?>, MySQLTestDatabase, MySQLTestDatabase.MySQLConfigBuilder> {
 
-  public static enum BaseImage {
+  public enum BaseImage {
 
     MYSQL_8("mysql:8.0"),
     ;
 
-    private final String reference;
+    public final String reference;
 
-    private BaseImage(String reference) {
+    BaseImage(String reference) {
       this.reference = reference;
     }
 
   }
 
-  public static enum ContainerModifier {
+  public enum ContainerModifier {
 
     MOSCOW_TIMEZONE("withMoscowTimezone"),
     INVALID_TIMEZONE_CEST("withInvalidTimezoneCEST"),
@@ -39,9 +39,9 @@ public class MySQLTestDatabase extends
     NETWORK("withNetwork"),
     ;
 
-    private final String methodName;
+    public final String methodName;
 
-    private ContainerModifier(String methodName) {
+    ContainerModifier(String methodName) {
       this.methodName = methodName;
     }
 
@@ -73,13 +73,18 @@ public class MySQLTestDatabase extends
 
   @Override
   protected Stream<Stream<String>> inContainerBootstrapCmd() {
-    return Stream.of(mysqlCmd(Stream.of(
-        String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
-        String.format("CREATE DATABASE %s", getDatabaseName()),
-        String.format("CREATE USER '%s' IDENTIFIED BY '%s'", getUserName(), getPassword()),
-        // Grant privileges also to the container's user, which is not root.
-        String.format("GRANT ALL PRIVILEGES ON *.* TO '%s', '%s' WITH GRANT OPTION", getUserName(),
-            getContainer().getUsername()))));
+    // Besides setting up user and privileges, we also need to create a soft link otherwise
+    // airbyte-ci on github runner would not be able to connect to DB, because the sock file does not
+    // exist.
+    return Stream.of(Stream.of(
+        "sh", "-c", "ln -s -f /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock"),
+        mysqlCmd(Stream.of(
+            String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
+            String.format("CREATE DATABASE %s", getDatabaseName()),
+            String.format("CREATE USER '%s' IDENTIFIED BY '%s'", getUserName(), getPassword()),
+            // Grant privileges also to the container's user, which is not root.
+            String.format("GRANT ALL PRIVILEGES ON *.* TO '%s', '%s' WITH GRANT OPTION", getUserName(),
+                getContainer().getUsername()))));
   }
 
   @Override

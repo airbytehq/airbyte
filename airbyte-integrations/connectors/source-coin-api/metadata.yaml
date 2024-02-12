@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 919984ef-53a2-479b-8ffe-9c1ddb9fc3f3
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-coin-api
   githubIssueLabel: source-coin-api
   icon: coinapi.svg

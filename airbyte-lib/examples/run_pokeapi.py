@@ -12,11 +12,12 @@ from __future__ import annotations
 import airbyte_lib as ab
 
 
-source = ab.get_connector(
+source = ab.get_source(
     "source-pokeapi",
     config={"pokemon_name": "bulbasaur"},
     install_if_missing=True,
 )
 source.check()
 
-print(list(source.get_records("pokemon")))
+# print(list(source.get_records("pokemon")))
+source.read(cache=ab.new_local_cache("poke"))

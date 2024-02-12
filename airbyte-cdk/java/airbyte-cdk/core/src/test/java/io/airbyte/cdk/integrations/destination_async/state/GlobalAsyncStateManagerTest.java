@@ -8,10 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteStateMessage;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteStreamState;
+import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStateStats;
@@ -312,6 +314,25 @@ class GlobalAsyncStateManagerTest {
       stateId = manager.getStateIdAndIncrementCounter(desc);
     }
     return stateId;
+  }
+
+  @Test
+  void flushingRecordsShouldNotReduceStatsCounterForGlobalState() {
+    final PartialAirbyteMessage globalState = new PartialAirbyteMessage()
+        .withState(new PartialAirbyteStateMessage().withType(AirbyteStateType.GLOBAL))
+        .withSerialized(Jsons.serialize(ImmutableMap.of("cursor", "1")))
+        .withType(Type.STATE);
+    final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
+
+    final long stateId = simulateIncomingRecords(STREAM1_DESC, 6, stateManager);
+    stateManager.decrement(stateId, 4);
+    stateManager.trackState(globalState, 1, STREAM1_DESC.getNamespace());
+    final List<PartialStateWithDestinationStats> stateBeforeAllRecordsAreFlushed = stateManager.flushStates();
+    assertEquals(0, stateBeforeAllRecordsAreFlushed.size());
+    stateManager.decrement(stateId, 2);
+    List<PartialStateWithDestinationStats> stateAfterAllRecordsAreFlushed = stateManager.flushStates();
+    assertEquals(1, stateAfterAllRecordsAreFlushed.size());
+    assertEquals(6.0, stateAfterAllRecordsAreFlushed.get(0).stats().getRecordCount());
   }
 
 }
