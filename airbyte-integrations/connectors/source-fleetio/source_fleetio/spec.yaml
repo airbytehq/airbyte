@@ -22,7 +22,13 @@ connection_specification:
   type: Spec
 metadata:
   autoImportSchema:
-    submitted_inspection_forms: true
-    issues: true
-    service_entries: true
-    vehicles: true
+    submitted_inspection_forms: false
+    issues: false
+    service_entries: false
+    vehicles: false
+    contacts: false
+    expense_entries: false
+    fuel_entries: false
+    parts: false
+    purchase_orders: false
+    vehicle_assignments: false
