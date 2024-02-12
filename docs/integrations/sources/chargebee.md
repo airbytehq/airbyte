@@ -99,13 +99,8 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
-<<<<<<< HEAD
 | 0.4.0   | 2024-01-22 | [34053](https://github.com/airbytehq/airbyte/pull/34053) | Add missing fields to schemas, ignore 404 errors for `Attached Items`                                                                           |
 | 0.3.0   | 2024-01-03 | [33696](https://github.com/airbytehq/airbyte/pull/33696) | Add new stream, add fields to existing streams                                                                           |
-=======
-| 0.3.1 | 2024-02-12 | [35169](https://github.com/airbytehq/airbyte/pull/35169) | Manage dependencies with Poetry. |
-| 0.3.0   | 2023-12-26 | [33696](https://github.com/airbytehq/airbyte/pull/33696) | Add new stream, add fields to existing streams                                                                           |
->>>>>>> master
 | 0.2.6   | 2023-12-19 | [32100](https://github.com/airbytehq/airbyte/pull/32100) | Add new fields in streams                                                                           |
 | 0.2.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                     |
 | 0.2.4   | 2023-08-01 | [28905](https://github.com/airbytehq/airbyte/pull/28905) | Updated the connector to use latest CDK version                                                     |
@@ -130,8 +125,5 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 | 0.1.2   | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067)   | Prepare connector for publishing                                                                    |
 | 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add entrypoint and bump version for connector                                                       |
 | 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410)   | New Source: Chargebee                                                                               |
-<<<<<<< HEAD
 
 </HideInUI>
-=======
->>>>>>> master
