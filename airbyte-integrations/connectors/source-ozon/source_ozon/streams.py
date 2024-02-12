@@ -6,7 +6,7 @@ import time
 import zipfile
 from datetime import date
 from pathlib import Path
-from typing import List, Literal, Type, Mapping, Any, Iterable, Dict, TextIO, Optional
+from typing import List, Type, Mapping, Any, Iterable, Dict, TextIO, Optional, Union
 from urllib.parse import urljoin
 
 import requests
@@ -21,7 +21,9 @@ from source_ozon.schemas.report import ReportStatusResponse
 from source_ozon.schemas.search_promo_report_data import SearchPromoReport
 from source_ozon.schemas.sku_report_data import SkuReport
 from source_ozon.types import IsSuccess, Message
-from source_ozon.utils import chunks, pairwise
+from source_ozon.utils import chunks, pairwise, get_dates_between
+
+_CAMPAIGN_TYPES_WITHOUT_DATE: set[str] = {"BANNER", "BRAND_SHELF", "SKU"}
 
 
 def check_ozon_api_connection(credentials: OzonToken) -> tuple[IsSuccess, Optional[Message]]:
@@ -51,18 +53,14 @@ class CampaignsReportStream(Stream):
     def campaigns_url(self) -> str:
         return urljoin(self.HOST, self.CAMPAIGNS_PATH)
 
-    def __init__(
-        self,
-        credentials: OzonToken,
-        date_from: date,
-        date_to: date,
-        group_by: Literal["NO_GROUP_BY", "DATE", "START_OF_WEEK", "START_OF_MONTH"] | None = None,
-    ):
+    def __init__(self, credentials: OzonToken, date_from: date, date_to: date):
         self.credentials = credentials
         self.date_from = date_from
         self.date_to = date_to
-        self.group_by = group_by
-        self._campaigns: Dict[str, OzonCampaign] = {}
+
+        self._campaigns_by_ids: Dict[str, OzonCampaign] = {}
+        self._campaigns_by_report_ids: Dict[str, OzonCampaign] = {}
+        self._request_bodies: List[Dict[str, Union[List[str], str]]] = []
 
     @property
     def primary_key(self) -> None:
@@ -79,21 +77,12 @@ class CampaignsReportStream(Stream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         self._set_campaigns()
-        for chunk in chunks(list(self._campaigns.values()), 10):
-            yield from self._run_report(campaign_ids=[campaign.id for campaign in chunk])
+        self._set_request_bodies()
+        for request_body in self._request_bodies:
+            yield from self._run_report(request_body)
 
     def _get_headers(self) -> dict:
         return {"Authorization": f"Bearer {self.credentials.access_token.get_secret_value()}"}
-
-    def _get_request_body(self, campaign_ids: List[str]) -> dict:
-        data = {
-            "campaigns": campaign_ids,
-            "dateFrom": self.date_from.strftime("%Y-%m-%d"),
-            "dateTo": self.date_to.strftime("%Y-%m-%d"),
-        }
-        if self.group_by:
-            data["groupBy"] = self.group_by
-        return data
 
     def _set_campaigns(self) -> None:
         try:
@@ -111,27 +100,77 @@ class CampaignsReportStream(Stream):
         for campaign in campaigns:
             try:
                 campaign_ = OzonCampaign(**campaign)
-                self._campaigns[campaign_.id] = campaign_
+                self._campaigns_by_ids[campaign_.id] = campaign_
             except Exception as e:
                 print(f"Fail to parse Ozon campaigns: {str(e)}")
                 raise
 
         print(f"Got {len(campaigns)} Ozon campaigns")
 
-    def _run_report(self, campaign_ids: List[str]) -> Iterable[Mapping[str, Any]]:
-        report_id = self._create_report(campaign_ids)
+    def _set_request_bodies(self) -> None:
+        if not self._campaigns_by_ids:
+            return
+
+        campaigns: List[OzonCampaign] = list(self._campaigns_by_ids.values())
+        campaigns_with_date: List[OzonCampaign] = []
+        campaigns_without_date: List[OzonCampaign] = []
+        for campaign in campaigns:
+            if campaign.advObjectType in _CAMPAIGN_TYPES_WITHOUT_DATE:
+                campaigns_without_date.append(campaign)
+            else:
+                campaigns_with_date.append(campaign)
+
+        for chunk in chunks(campaigns_with_date, 10):
+            self._request_bodies.append(
+                {
+                    "campaigns": [campaign.id for campaign in chunk],
+                    "dateFrom": self.date_from.strftime("%Y-%m-%d"),
+                    "dateTo": self.date_to.strftime("%Y-%m-%d"),
+                }
+            )
+
+        for date_str in get_dates_between(date_from=self.date_from, date_to=self.date_to):
+            for chunk in chunks(campaigns_without_date, 10):
+                self._request_bodies.append(
+                    {
+                        "campaigns": [campaign.id for campaign in chunk],
+                        "dateFrom": date_str,
+                        "dateTo": date_str,
+                    }
+                )
+
+        print(f"{len(self._request_bodies)} Ozon reports will be created")
+
+    def _run_report(self, request_body: Dict[str, Union[List[str], str]]) -> Iterable[Mapping[str, Any]]:
+        request_campaign_ids = request_body["campaigns"]
+        request_date_from = request_body["dateFrom"]
+        request_date_to = request_body["dateTo"]
+        campaigns_len = len(request_campaign_ids)
+
+        if request_date_from == request_date_to:
+            for campaign_id in request_campaign_ids:
+                campaign = self._campaigns_by_ids[campaign_id]
+                campaign.date = request_date_from
+
+        report_id = self._create_report(request_body)
+
+        if campaigns_len == 1:
+            campaign = self._campaigns_by_ids[request_campaign_ids[0]]
+            self._campaigns_by_report_ids[report_id] = campaign
+
         report_download_link = self._wait_for_report_processing(report_id)
         report_file = self._download_report(
-            download_link=report_download_link, filepath=self._get_report_file_path(report_id, campaigns_len=len(campaign_ids))
+            download_link=report_download_link,
+            filepath=self._get_report_file_path(report_id, campaigns_len=campaigns_len),
         )
         try:
             yield from self._parse_report(report_filepath=report_file)
         finally:
             report_file.unlink(missing_ok=True)
 
-    def _create_report(self, campaign_ids: List[str]) -> str:
+    def _create_report(self, request_body: Dict[str, Union[List[str], str]]) -> str:
         try:
-            response = requests.post(self.full_url, headers=self._get_headers(), json=self._get_request_body(campaign_ids))
+            response = requests.post(self.full_url, headers=self._get_headers(), json=request_body)
             response.raise_for_status()
             response_data = response.json()
         except Exception as e:
@@ -224,10 +263,14 @@ class CampaignsReportStream(Stream):
     def _get_campaign_by_campaign_report_name(self, filename: str) -> OzonCampaign:
         campaign_id = filename.split("_")[0]
         try:
-            return self._campaigns[campaign_id]
-        except KeyError as e:
-            print(f"Unknown Ozon campaign: '{campaign_id}'")
-            raise ValueError(f"Unknown Ozon campaign: '{campaign_id}'") from e
+            return self._campaigns_by_ids[campaign_id]
+        except KeyError:
+            report_id = filename.split(".")[0]
+            try:
+                return self._campaigns_by_report_ids[report_id]
+            except KeyError as e:
+                print(f"Unknown Ozon campaign: '{campaign_id}'")
+                raise ValueError(f"Unknown Ozon campaign: '{campaign_id}'") from e
 
     def _read_csv(self, csv_file: TextIO, campaign: OzonCampaign) -> Iterable[Mapping[str, Any]]:
         csvreader = csv.reader(csv_file, delimiter=";")
@@ -244,6 +287,9 @@ class CampaignsReportStream(Stream):
                     campaign_type=campaign.advObjectType,
                 )
                 row.report_data = report_schema.parse_obj(dict(zip(columns_headers, current_row)))
+                if campaign.date:
+                    row.report_data.date = campaign.date
+                assert row.report_data.date
                 yield row.dict()
             except Exception as e:
                 print(f"Failed to parse Ozon report for campaign '{campaign.id}': {str(e)}")

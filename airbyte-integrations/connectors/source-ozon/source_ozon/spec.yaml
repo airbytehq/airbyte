@@ -42,9 +42,14 @@ connectionSpecification:
         - title: Token Auth
           type: object
           required:
+            - auth_type
             - client_id
             - client_secret
           properties:
+            auth_type:
+              title: Auth Type
+              type: string
+              const: token_auth
             client_id:
               title: Client ID
               type: string
@@ -74,12 +79,3 @@ connectionSpecification:
       maximum: 62
       examples:
         - 7
-    group_by:
-      title: Group by
-      description: "The type of grouping by time"
-      type: string
-      enum:
-        - NO_GROUP_BY
-        - DATE
-        - START_OF_WEEK
-        - START_OF_MONTH
