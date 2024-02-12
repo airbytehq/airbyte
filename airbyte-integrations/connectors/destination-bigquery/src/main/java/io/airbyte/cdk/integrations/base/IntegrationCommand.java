@@ -78,6 +78,7 @@ public class IntegrationCommand implements Runnable {
             execute(OperationType.valueOf(command.toUpperCase(Locale.ROOT)));
         } catch (final Exception e) {
             LOGGER.error("Unable to perform operation {}.", command, e);
+            CommandLine.usage(command, System.out);
             // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made
             // to
             // find the root exception that corresponds to a configuration error. If that does not exist, we
