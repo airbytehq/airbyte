@@ -393,6 +393,18 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                     record["dataEndTime"] = report_end_date.strftime(DATE_FORMAT)
                 yield record
         elif processing_status == ReportProcessingStatus.FATAL:
+            # retrieve and decrypt the report document
+            document_id = report_payload["reportDocumentId"]
+            request_headers = self.request_headers()
+            request = self._create_prepared_request(
+                path=self.path(document_id=document_id),
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=self.request_params(),
+            )
+            response = self._send_request(request, {})
+
+            document = self.download_and_decompress_report_document(response.json())
+            print(document)
             raise AirbyteTracedException(
                 internal_message=(
                     f"Failed to retrieve the report '{self.name}' for period "
