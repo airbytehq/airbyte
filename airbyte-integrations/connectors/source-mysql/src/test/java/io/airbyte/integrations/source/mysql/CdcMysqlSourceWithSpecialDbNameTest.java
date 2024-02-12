@@ -13,7 +13,8 @@ public class CdcMysqlSourceWithSpecialDbNameTest extends CdcMysqlSourceTest {
 
   @Override
   protected MySQLTestDatabase createTestDatabase() {
-    return MySQLTestDatabase.inWithDbName(BaseImage.MYSQL_8, INVALID_DB_NAME, ContainerModifier.INVALID_TIMEZONE_CEST, ContainerModifier.CUSTOM_NAME).withCdcPermissions();
+    return MySQLTestDatabase.inWithDbName(BaseImage.MYSQL_8, INVALID_DB_NAME, ContainerModifier.INVALID_TIMEZONE_CEST, ContainerModifier.CUSTOM_NAME)
+        .withCdcPermissions();
   }
 
 }

@@ -9,7 +9,6 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.testutils.TestDatabase;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
@@ -39,8 +38,7 @@ public class MySQLTestDatabase extends
     CLIENT_CERTITICATE("withClientCertificate"),
     NETWORK("withNetwork"),
 
-    CUSTOM_NAME("withCustomName")
-    ;
+    CUSTOM_NAME("withCustomName");
 
     public final String methodName;
 
