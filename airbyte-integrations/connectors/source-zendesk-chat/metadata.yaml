@@ -17,6 +17,10 @@ data:
   icon: zendesk-chat.svg
   license: MIT
   name: Zendesk Chat
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zendesk-chat
   registries:
     cloud:
       enabled: true
