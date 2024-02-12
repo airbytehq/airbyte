@@ -79,7 +79,7 @@ public class MongoDbCdcInitializer {
                                                                         final Instant emittedAt,
                                                                         final MongoDbSourceConfig config) {
 
-    LOGGER.info("*** config {}", config.rawConfig());
+//    LOGGER.info("*** config {}", config.rawConfig());
     final Duration firstRecordWaitTime = Duration.ofSeconds(config.getInitialWaitingTimeSeconds());
     // #35059: debezium heartbeats are not sent on the expected interval. this is a worksaround to allow
     // making
