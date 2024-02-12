@@ -92,7 +92,7 @@ public class MysqlDebeziumStateUtilTest {
   public void formatTestWithGtid() {
     final MySqlDebeziumStateUtil mySqlDebeziumStateUtil = new MySqlDebeziumStateUtil();
     final JsonNode debeziumState = mySqlDebeziumStateUtil.format(new MysqlDebeziumStateAttributes("binlog.000002", 633,
-        Optional.of("3E11FA47-71CA-11E1-9E33-C80AA9429562:1-5")), "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
+        Optional.of("3E11FA47-71CA-11E1-9E33-C80AA9429562:1-5")), "db_fgnfxvllud", "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
     final Map<String, String> stateAsMap = Jsons.object(debeziumState, Map.class);
     Assertions.assertEquals(1, stateAsMap.size());
     Assertions.assertTrue(stateAsMap.containsKey("[\"db_fgnfxvllud\",{\"server\":\"db_fgnfxvllud\"}]"));
@@ -113,7 +113,7 @@ public class MysqlDebeziumStateUtilTest {
         debeziumState, config);
     Assertions.assertTrue(parsedOffset.isPresent());
     final JsonNode stateGeneratedUsingParsedOffset =
-        mySqlDebeziumStateUtil.format(parsedOffset.get(), "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
+        mySqlDebeziumStateUtil.format(parsedOffset.get(), "db_fgnfxvllud", "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
     Assertions.assertEquals(debeziumState, stateGeneratedUsingParsedOffset);
   }
 
@@ -121,7 +121,7 @@ public class MysqlDebeziumStateUtilTest {
   public void formatTestWithoutGtid() {
     final MySqlDebeziumStateUtil mySqlDebeziumStateUtil = new MySqlDebeziumStateUtil();
     final JsonNode debeziumState = mySqlDebeziumStateUtil.format(new MysqlDebeziumStateAttributes("binlog.000002", 633,
-        Optional.empty()), "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
+        Optional.empty()), "db_fgnfxvllud", "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
     final Map<String, String> stateAsMap = Jsons.object(debeziumState, Map.class);
     Assertions.assertEquals(1, stateAsMap.size());
     Assertions.assertTrue(stateAsMap.containsKey("[\"db_fgnfxvllud\",{\"server\":\"db_fgnfxvllud\"}]"));
@@ -141,7 +141,7 @@ public class MysqlDebeziumStateUtilTest {
         debeziumState, config);
     Assertions.assertTrue(parsedOffset.isPresent());
     final JsonNode stateGeneratedUsingParsedOffset =
-        mySqlDebeziumStateUtil.format(parsedOffset.get(), "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
+        mySqlDebeziumStateUtil.format(parsedOffset.get(), "db_fgnfxvllud", "db_fgnfxvllud", Instant.parse("2023-06-06T08:36:10.341842Z"));
     Assertions.assertEquals(debeziumState, stateGeneratedUsingParsedOffset);
   }
 

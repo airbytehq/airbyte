@@ -35,6 +35,8 @@ public class MySQLContainerFactory extends ContainerFactory<MySQLContainer<?>> {
     container.withEnv("TZ", "Europe/Moscow");
   }
 
+  public void withCustomName(MySQLContainer<?> container) {} // do nothing
+
   public void withRootAndServerCertificates(MySQLContainer<?> container) {
     execInContainer(container,
         "sed -i '31 a ssl' /etc/my.cnf",
