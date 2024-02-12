@@ -11,7 +11,7 @@ ACCESS_TOKEN = "test_access_token"
 ACCOUNT_ID = "111111111111111"
 CLIENT_ID = "test_client_id"
 CLIENT_SECRET = "test_client_secret"
-END_DATE = "2023-01-31T00:00:00Z"
+END_DATE = "2023-01-01T00:00:00Z"
 START_DATE = "2023-01-01T00:00:00Z"
 
 

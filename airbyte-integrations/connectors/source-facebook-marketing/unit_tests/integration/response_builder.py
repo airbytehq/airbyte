@@ -5,10 +5,15 @@
 
 import json
 from http import HTTPStatus
-from typing import Any, Mapping
+from typing import Any, List, Mapping, Optional, Union
 
 from airbyte_cdk.test.mock_http import HttpResponse
 
 
-def build_response(body: Mapping[str, Any], status_code: HTTPStatus) -> HttpResponse:
-    return HttpResponse(body=json.dumps(body), status_code=status_code)
+def build_response(
+    body: Union[Mapping[str, Any], List[Mapping[str, Any]]],
+    status_code: HTTPStatus,
+    headers: Optional[Mapping[str, str]] = None,
+) -> HttpResponse:
+    headers = headers or {}
+    return HttpResponse(body=json.dumps(body), status_code=status_code, headers=headers)
