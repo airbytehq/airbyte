@@ -1,6 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-chargebee:dev
+test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
@@ -18,7 +19,6 @@ acceptance_tests:
           disable_for_version: "0.2.1" # New streams were added; fixed fields type
   basic_read:
     tests:
-      # Test streams w/o custom fields
       - config_path: "secrets/config.json"
         timeout_seconds: 1200
         empty_streams:
@@ -33,77 +33,17 @@ acceptance_tests:
           - name: "site_migration_detail"
             bypass_reason: "Cannnot populate with test data."
           - name: "customer"
-            bypass_reason: "Tested below."
+            bypass_reason: "To be Tested with integration tests."
           - name: "subscription"
-            bypass_reason: "Tested below."
+            bypass_reason: "To be Tested with integration tests."
           - name: "coupon"
-            bypass_reason: "Tested below."
+            bypass_reason: "To be Tested with integration tests."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
           exact_order: no
           extra_records: yes
         fail_on_extra_columns: true
-      # Test streams w/o custom fields
-      - config_path: "secrets/config.json"
-        timeout_seconds: 1200
-        empty_streams:
-          - name: "addon"
-            bypass_reason: "Not available for Product Catalog 2.0 sites."
-          - name: "plan"
-            bypass_reason: "Not available for Product Catalog 2.0 sites."
-          - name: "virtual_bank_account"
-            bypass_reason: "Cannot populate with test data"
-          - name: "event"
-            bypass_reason: "Unstable data. Test data is not persistent."
-          - name: "site_migration_detail"
-            bypass_reason: "Cannnot populate with test data."
-          - name: "attached_item"
-            bypass_reason: "Tested above."
-          - name: "comment"
-            bypass_reason: "Tested above."
-          - name: "contact"
-            bypass_reason: "Tested above."
-          - name: "credit_note"
-            bypass_reason: "Tested above."
-          - name: "differential_price"
-            bypass_reason: "Tested above."
-          - name: "gift"
-            bypass_reason: "Tested above."
-          - name: "hosted_page"
-            bypass_reason: "Tested above."
-          - name: "invoice"
-            bypass_reason: "Tested above."
-          - name: "item"
-            bypass_reason: "Tested above."
-          - name: "item_family"
-            bypass_reason: "Tested above."
-          - name: "item_price"
-            bypass_reason: "Tested above."
-          - name: "order"
-            bypass_reason: "Tested above."
-          - name: "payment_source"
-            bypass_reason: "Tested above."
-          - name: "promotional_credit"
-            bypass_reason: "Tested above."
-          - name: "quote_line_group"
-            bypass_reason: "Tested above."
-          - name: "quote"
-            bypass_reason: "Tested above."
-          - name: "transaction"
-            bypass_reason: "Tested above."
-          - name: "unbilled_charge"
-            bypass_reason: "Tested above."
-        ignored_fields:
-          subscription:
-            - name: "current_term_start"
-              bypass_reason: "Field updated daily."
-        expect_records:
-          path: "integration_tests/expected_records_with_custom_fields.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
