@@ -116,7 +116,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "17"
+          java-version: "21"
       - name: Check for already-published version (${{ env.CDK_VERSION }}, FORCE=${{ env.FORCE }})
         if: ${{ !(env.FORCE == 'true') }}
         run: ./gradlew :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
