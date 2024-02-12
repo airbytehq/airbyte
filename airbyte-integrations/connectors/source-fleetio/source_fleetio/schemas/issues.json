@@ -122,6 +122,12 @@
           "null"
         ]
       },
+      "fault_rule": {
+        "type": [
+          "null",
+          "object"
+        ]
+      },
       "id": {
         "type": "number"
       },
