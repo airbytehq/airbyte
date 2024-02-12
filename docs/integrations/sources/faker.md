@@ -101,6 +101,7 @@ None!
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.0.1 | 2024-02-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 6.0.0   | 2024-01-30 | [34644](https://github.com/airbytehq/airbyte/pull/34644)                                                              | Declare 'id' columns as primary keys.                                                                                    |
 | 5.0.2   | 2024-01-17 | [34344](https://github.com/airbytehq/airbyte/pull/34344)                                                              | Ensure unique state messages                                                                                    |
 | 5.0.1   | 2023-01-08 | [34033](https://github.com/airbytehq/airbyte/pull/34033)                                                              | Add standard entrypoints for usage with AirbyteLib                                                              |
