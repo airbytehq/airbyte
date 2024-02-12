@@ -322,6 +322,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.1 | 2024-02-12 | [35165](https://github.com/airbytehq/airbyte/pull/35165) | Manage dependencies with Poetry. |
 | 3.1.0   | 2024-02-05 | [34829](https://github.com/airbytehq/airbyte/pull/34829) | Add `Contacts Form Submissions` stream                                                                                                                                           |
 | 3.0.1   | 2024-01-29 | [34635](https://github.com/airbytehq/airbyte/pull/34635) | Fix pagination for `CompaniesPropertyHistory` stream                                                                                                                             |
 | 3.0.0   | 2024-01-25 | [34492](https://github.com/airbytehq/airbyte/pull/34492) | Update `marketing_emails` stream schema                                                                                                                                          |
