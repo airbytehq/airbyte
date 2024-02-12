@@ -113,6 +113,7 @@ Snapchat Marketing API has limitations to 1000 items per page.
 
 | Version | Date       | Pull Request                                             | Subject                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------|
+| 0.3.2 | 2024-02-12 | [35171](https://github.com/airbytehq/airbyte/pull/35171) | Manage dependencies with Poetry. |
 | 0.3.0   | 2023-05-22 | [26358](https://github.com/airbytehq/airbyte/pull/26358) | Remove deprecated authSpecification in favour of advancedAuth |
 | 0.2.0   | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce new field in the `Campaigns` stream schema          |
 | 0.1.16  | 2023-04-20 | [20897](https://github.com/airbytehq/airbyte/pull/20897) | Add missing fields to Basic Stats schema                      |    
