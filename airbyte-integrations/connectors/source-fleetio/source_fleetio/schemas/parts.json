@@ -4,89 +4,6 @@
       "attachment_permissions": {
         "type": "object"
       },
-      "comments": {
-        "items": {
-          "properties": {
-            "comment": {
-              "type": "string"
-            },
-            "commentable_id": {
-              "type": "number"
-            },
-            "commentable_type": {
-              "type": "string"
-            },
-            "created_at": {
-              "type": "string"
-            },
-            "html_content": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "id": {
-              "type": "number"
-            },
-            "rich_content": {
-              "properties": {
-                "state": {
-                  "items": {
-                    "properties": {
-                      "children": {
-                        "items": {
-                          "properties": {
-                            "text": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
-                        },
-                        "type": "array"
-                      },
-                      "type": {
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "type": "array"
-                }
-              },
-              "type": [
-                "object",
-                "null"
-              ]
-            },
-            "title": {
-              "type": ["string", "null"]
-            },
-            "updated_at": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "user_full_name": {
-              "type": "string"
-            },
-            "user_id": {
-              "type": "number"
-            },
-            "user_image_url": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "with_mentions": {
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        },
-        "type": "array"
-      },
       "comments_count": {
         "type": "number"
       },
@@ -94,21 +11,10 @@
         "type": "string"
       },
       "custom_fields": {
-        "properties": {
-          "dropdown_type_test": {
-            "type": "string"
-          },
-          "free_text_test": {
-            "type": "string"
-          },
-          "test": {
-            "type": "string"
-          },
-          "test_restricted_custom_fields": {
-            "type": "string"
-          }
-        },
-        "type": "object"
+        "type": [
+          "object",
+          "null"
+        ]
       },
       "default_image_url": {
         "type": [
@@ -140,50 +46,6 @@
           "null"
         ]
       },
-      "documents": {
-        "items": {
-          "properties": {
-            "created_at": {
-              "type": "string"
-            },
-            "documentable_id": {
-              "type": "number"
-            },
-            "documentable_type": {
-              "type": "string"
-            },
-            "file_mime_type": {
-              "type": "string"
-            },
-            "file_name": {
-              "type": ["string", "null"]
-            },
-            "file_size": {
-              "type": ["number", "null"]
-            },
-            "file_url": {
-              "type": "string"
-            },
-            "full_file_url": {
-              "type": "string"
-            },
-            "id": {
-              "type": "number"
-            },
-            "name": {
-              "type": ["string", "null"]
-            },
-            "updated_at": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          },
-          "type": "object"
-        },
-        "type": "array"
-      },
       "documents_count": {
         "type": [
           "number",
@@ -193,60 +55,11 @@
       "id": {
         "type": "number"
       },
-      "images": {
-        "items": {
-          "properties": {
-            "created_at": {
-              "type": "string"
-            },
-            "file_mime_type": {
-              "type": [
-                "string"
-              ]
-            },
-            "file_name": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "file_size": {
-              "type": ["number", "null"]
-            },
-            "file_url": {
-              "type": "string"
-            },
-            "full_url": {
-              "type": "string"
-            },
-            "id": {
-              "type": "number"
-            },
-            "imageable_id": {
-              "type": "number"
-            },
-            "imageable_type": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          },
-          "type": "object"
-        },
-        "type": "array"
-      },
       "images_count": {
         "type": [
           "number",
           "null"
         ]
-      },
-      "inventory_item": {
-        "type": "boolean"
       },
       "manufacturer_part_number": {
         "type": [
@@ -341,104 +154,6 @@
           "null"
         ]
       },
-      "part_locations": {
-        "items": {
-          "properties": {
-            "active": {
-              "type": ["boolean", "null"]
-            },
-            "aisle": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "available_quantity": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "available_quantity_updated_at": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "bin": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "created_at": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "id": {
-              "type": "number"
-            },
-            "name": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "part_location_id": {
-              "type": [
-                "number",
-                "null"
-              ]
-            },
-            "part_location_name": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "quantity_allocated_to_work_orders": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "quantity_on_order": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "reorder_point": {
-              "type": [
-                "null",
-                "number"
-              ]
-            },
-            "reorder_point_enabled": {
-              "type": ["boolean", "null"]
-            },
-            "row": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "track_inventory": {
-              "type": ["boolean", "null"]
-            },
-            "updated_at": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          },
-          "type": "object"
-        },
-        "type": "array"
-      },
       "part_manufacturer_id": {
         "type": [
           "null",
@@ -450,9 +165,6 @@
           "null",
           "string"
         ]
-      },
-      "total_quantity": {
-        "type": "number"
       },
       "unit_cost": {
         "type": [

@@ -4,9 +4,6 @@
       "attachment_permissions": {
         "type": "object"
       },
-      "comments": {
-        "type": "array"
-      },
       "comments_count": {
         "type": [
           "number",
@@ -20,63 +17,10 @@
         ]
       },
       "custom_fields": {
-        "properties": {
-          "card_number": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "custom_fuel_date": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "expense_type": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "fuel-up_state": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "fuel_unit_number": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "juan_type_of_fuel": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "second_tank_gallons": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "test_restricted_custom_fields": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "used_card": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "type": "object"
+        "type": [
+          "object",
+          "null"
+        ]
       },
       "date": {
         "type": [
@@ -108,9 +52,6 @@
           "null"
         ]
       },
-      "documents": {
-        "type": "array"
-      },
       "documents_count": {
         "type": [
           "number",
@@ -123,14 +64,8 @@
           "null"
         ]
       },
-      "geolocation": {
-        "type": "object"
-      },
       "id": {
         "type": "number"
-      },
-      "images": {
-        "type": "array"
       },
       "images_count": {
         "type": [
@@ -146,10 +81,6 @@
           "string",
           "null"
         ]
-      },
-      "map_previews": {
-        "properties": {},
-        "type": "object"
       },
       "meter_entry": {
         "properties": {

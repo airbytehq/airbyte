@@ -26,21 +26,10 @@
         "type": ["string", "null"]
       },
       "custom_fields": {
-        "properties": {
-          "fet": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "po_custom_field_date": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "type": "object"
+        "type": [
+          "object",
+          "null"
+        ]
       },
       "description": {
         "type": [
@@ -75,15 +64,6 @@
       "id": {
         "type": "number"
       },
-      "label_list": {
-        "items": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "type": "array"
-      },
       "number": {
         "type": [
           "number",
@@ -101,41 +81,6 @@
           "string",
           "null"
         ]
-      },
-      "purchase_order_line_items": {
-        "items": {
-          "properties": {
-            "created_at": {
-              "type": "string"
-            },
-            "id": {
-              "type": "number"
-            },
-            "part_id": {
-              "type": "number"
-            },
-            "part_number": {
-              "type": "string"
-            },
-            "quantity": {
-              "type": "string"
-            },
-            "subtotal": {
-              "type": "number"
-            },
-            "total_quantity_received": {
-              "type": "string"
-            },
-            "unit_cost": {
-              "type": "number"
-            },
-            "updated_at": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "type": "array"
       },
       "shipping": {
         "type": [
@@ -163,7 +108,6 @@
       },
       "tax_1_percentage": {
         "type": [
-          "number",
           "string",
           "null"
         ]
@@ -182,7 +126,6 @@
       },
       "tax_2_percentage": {
         "type": [
-          "number",
           "string",
           "null"
         ]

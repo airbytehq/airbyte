@@ -5,57 +5,10 @@
         "type": "string"
       },
       "custom_fields": {
-        "properties": {
-          "expense_status": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "juan_reason_for_entry_field": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "otr_expenses": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "test_checkbox": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "test_date": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "test_dropdown": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "test_text": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "xylophone": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "type": "object"
+        "type": [
+          "object",
+          "null"
+        ]
       },
       "expense_entry_type_id": {
         "type": [

@@ -2,16 +2,11 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-      "asset": {
-        "properties": {
-          "id": {
-            "type": "number"
-          }
-        },
-        "type": "object"
-      },
       "asset_type": {
-        "type": "string"
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "name": {
         "type": [
@@ -134,15 +129,8 @@
       "images_count": {
         "type": "number"
       },
-      "is_overdue": {
-        "type": "boolean"
-      },
-      "is_watched": {
-        "type": "boolean"
-      },
       "number": {
         "type": [
-          "number",
           "null",
           "string"
         ]
@@ -213,9 +201,6 @@
           "null",
           "string"
         ]
-      },
-      "resolved_note": {
-        "type": "string"
       },
       "state": {
         "type": "string"

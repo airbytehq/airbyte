@@ -14,57 +14,10 @@
         ]
       },
       "custom_fields": {
-        "properties": {
-          "birthday": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "certification": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "checkbox": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "dropdown": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "out_of_network_mechanic": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "pronouns": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "t-shirt_size": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "test_restricted_custom_fields": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "type": "object"
+        "type": [
+          "object",
+          "null"
+        ]
       },
       "documents_count": {
         "type": [

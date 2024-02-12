@@ -16,86 +16,6 @@
           "null"
         ]
       },
-      "comments": {
-        "items": {
-          "properties": {
-            "comment": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "commentable_id": {
-              "type": [
-                "number",
-                "null"
-              ]
-            },
-            "commentable_type": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "created_at": {
-              "type": "string"
-            },
-            "id": {
-              "type": "number"
-            },
-            "rich_content": {
-              "properties": {
-                "state": {
-                  "items": {
-                    "properties": {
-                      "children": {
-                        "items": {
-                          "properties": {
-                            "text": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
-                        },
-                        "type": "array"
-                      },
-                      "type": {
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "type": "array"
-                }
-              },
-              "type": "object"
-            },
-            "title": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "updated_at": {
-              "type": "string"
-            },
-            "user_full_name": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "user_id": {
-              "type": "number"
-            },
-            "with_mentions": {
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        },
-        "type": "array"
-      },
       "comments_count": {
         "type": [
           "number",
@@ -178,14 +98,12 @@
       },
       "starting_meter_entry_value": {
         "type": [
-          "number",
           "string",
            "null"
         ]
       },
       "ending_meter_entry_value": {
         "type": [
-          "number",
           "string",
           "null"
         ]
