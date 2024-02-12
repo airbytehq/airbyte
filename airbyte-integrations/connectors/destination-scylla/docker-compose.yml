@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   scylla1:
@@ -7,7 +7,6 @@ services:
       - "9042:9042"
     container_name: scylla1
     command: --smp 1
-
 #  uncomment if you want to run a cluster of scylladb nodes
 #  scylla2:
 #    image: scylladb/scylla

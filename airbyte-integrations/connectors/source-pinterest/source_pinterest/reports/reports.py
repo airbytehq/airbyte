@@ -4,12 +4,16 @@
 
 import json
 from abc import abstractmethod
+from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import urljoin
 
+import airbyte_cdk.sources.utils.casing as casing
 import backoff
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from source_pinterest.streams import PinterestAnalyticsStream
 from source_pinterest.utils import get_analytics_columns
 
@@ -22,7 +26,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     Details - https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report"""
 
     http_method = "POST"
-    report_wait_timeout = 180
+    report_wait_timeout = 60 * 10
     report_generation_maximum_retries = 5
 
     @property
@@ -65,7 +69,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
 
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
-            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout * 60, interval=10)(func)(
+            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout, interval=10)(func)(
                 self, *args, **kwargs
             )
 
@@ -73,9 +77,9 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
 
     def backoff_max_tries(func):
         def wrapped(self, *args, **kwargs):
-            return backoff.on_exception(backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries)(func)(
-                self, *args, **kwargs
-            )
+            return backoff.on_exception(
+                backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries, max_time=self.report_wait_timeout
+            )(func)(self, *args, **kwargs)
 
         return wrapped
 
@@ -164,8 +168,146 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         """Fetch the report data from the given URL."""
         return self._http_get(url)
 
+    @lru_cache(maxsize=None)
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        :return: A dict of the JSON schema representing this stream.
+
+        Schema is the same for all *Report and *TargetingReport streams
+        """
+
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("reports")
+
+
+class PinterestAnalyticsTargetingReportStream(PinterestAnalyticsReportStream):
+    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+        """Return the body of the API request in JSON format."""
+        columns = get_analytics_columns().split(",")
+        # remove keys which are lot suitable for targeting report
+        for odd_value in ["TOTAL_IMPRESSION_FREQUENCY", "TOTAL_IMPRESSION_USER"]:
+            if odd_value in columns:
+                columns.remove(odd_value)
+        columns = ",".join(columns)
+        return self._construct_request_body(stream_slice["start_date"], stream_slice["end_date"], self.granularity, columns)
+
 
 class CampaignAnalyticsReport(PinterestAnalyticsReportStream):
     @property
     def level(self):
         return "CAMPAIGN"
+
+
+class CampaignTargetingReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "CAMPAIGN_TARGETING"
+
+
+class AdvertiserReport(PinterestAnalyticsReportStream):
+    @property
+    def level(self):
+        return "ADVERTISER"
+
+
+class AdvertiserTargetingReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "ADVERTISER_TARGETING"
+
+
+class AdGroupReport(PinterestAnalyticsReportStream):
+    @property
+    def level(self):
+        return "AD_GROUP"
+
+
+class AdGroupTargetingReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "AD_GROUP_TARGETING"
+
+
+class PinPromotionReport(PinterestAnalyticsReportStream):
+    @property
+    def level(self):
+        return "PIN_PROMOTION"
+
+
+class PinPromotionTargetingReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "PIN_PROMOTION_TARGETING"
+
+
+class ProductGroupReport(PinterestAnalyticsReportStream):
+    @property
+    def level(self):
+        return "PRODUCT_GROUP"
+
+
+class ProductGroupTargetingReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "PRODUCT_GROUP_TARGETING"
+
+
+class ProductItemReport(PinterestAnalyticsReportStream):
+    @property
+    def level(self):
+        return "PRODUCT_ITEM"
+
+
+class KeywordReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "KEYWORD"
+
+
+class CustomReport(PinterestAnalyticsTargetingReportStream):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self._custom_class_name = f"Custom_{self.config['name']}"
+        self._level = self.config["level"]
+        self.granularity = self.config["granularity"]
+        self.click_window_days = self.config["click_window_days"]
+        self.engagement_window_days = self.config["engagement_window_days"]
+        self.view_window_days = self.config["view_window_days"]
+        self.conversion_report_time = self.config["conversion_report_time"]
+        self.attribution_types = self.config["attribution_types"]
+        self.columns = self.config["columns"]
+
+    @property
+    def level(self):
+        return self._level
+
+    @property
+    def name(self) -> str:
+        """We override stream name to let the user change it via configuration."""
+        name = self._custom_class_name or self.__class__.__name__
+        return casing.camel_to_snake(name)
+
+    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+        """Return the body of the API request in JSON format."""
+        return {
+            "start_date": stream_slice["start_date"],
+            "end_date": stream_slice["end_date"],
+            "level": self.level,
+            "granularity": self.granularity,
+            "click_window_days": self.click_window_days,
+            "engagement_window_days": self.engagement_window_days,
+            "view_window_days": self.view_window_days,
+            "conversion_report_time": self.conversion_report_time,
+            "attribution_types": self.attribution_types,
+            "columns": self.columns,
+        }
+
+    @property
+    def window_in_days(self):
+        """Docs: https://developers.pinterest.com/docs/api/v5/#operation/analytics/get_report"""
+        if self.granularity == "HOUR":
+            return 2
+        elif self.level == "PRODUCT_ITEM":
+            return 31
+        else:
+            return 185

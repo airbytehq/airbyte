@@ -7,7 +7,7 @@ Connector specific tests declared in the connector code directory:
 * Integration tests
 
 Tests common to all connectors:
-* [QA checks](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connector_ops/ci_connector_ops/qa_checks.py#L1)
+* [QA checks](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connector_ops/connector_ops/qa_checks.py)
 * [Connector Acceptance tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/)
 
 ## Running tests

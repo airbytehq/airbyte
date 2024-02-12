@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.starburst_galaxy;
 
-import static io.airbyte.db.factory.DatabaseDriver.STARBURST;
+import static io.airbyte.cdk.db.factory.DatabaseDriver.STARBURST;
 
 public final class StarburstGalaxyConstants {
 

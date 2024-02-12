@@ -2,6 +2,15 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "AdGroupId": {
+      "type": ["null", "integer"]
+    },
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "CustomerId": {
+      "type": ["null", "integer"]
+    },
     "AdFormatPreference": {
       "type": ["null", "string"]
     },
@@ -9,6 +18,181 @@
       "type": ["null", "integer"]
     },
     "EditorialStatus": {
+      "type": ["null", "string"]
+    },
+    "BusinessName": {
+      "type": ["null", "string"]
+    },
+    "CallToAction": {
+      "type": ["null", "string"]
+    },
+    "CallToActionLanguage": {
+      "type": ["null", "string"]
+    },
+    "Headline": {
+      "type": ["null", "string"]
+    },
+    "Images": {
+      "type": ["null", "object"],
+      "properties": {
+        "AssetLink": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "Asset": {
+                "type": ["null", "object"],
+                "properties": {
+                  "Id": {
+                    "type": ["null", "integer"]
+                  },
+                  "Name": {
+                    "type": ["null", "string"]
+                  },
+                  "Type": {
+                    "type": ["null", "string"]
+                  },
+                  "Text": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "AssetPerformanceLabel": {
+                "type": ["null", "string"]
+              },
+              "EditorialStatus": {
+                "type": ["null", "string"]
+              },
+              "PinnedField": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Videos": {
+      "type": ["null", "object"],
+      "properties": {
+        "AssetLink": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "Asset": {
+                "type": ["null", "object"],
+                "properties": {
+                  "Id": {
+                    "type": ["null", "integer"]
+                  },
+                  "Name": {
+                    "type": ["null", "string"]
+                  },
+                  "Type": {
+                    "type": ["null", "string"]
+                  },
+                  "Text": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "AssetPerformanceLabel": {
+                "type": ["null", "string"]
+              },
+              "EditorialStatus": {
+                "type": ["null", "string"]
+              },
+              "PinnedField": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "LongHeadlines": {
+      "type": ["null", "object"],
+      "properties": {
+        "AssetLink": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "Asset": {
+                "type": ["null", "object"],
+                "properties": {
+                  "Id": {
+                    "type": ["null", "integer"]
+                  },
+                  "Name": {
+                    "type": ["null", "string"]
+                  },
+                  "Type": {
+                    "type": ["null", "string"]
+                  },
+                  "Text": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "AssetPerformanceLabel": {
+                "type": ["null", "string"]
+              },
+              "EditorialStatus": {
+                "type": ["null", "string"]
+              },
+              "PinnedField": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "LongHeadline": {
+      "type": ["null", "object"],
+      "properties": {
+        "Asset": {
+          "type": ["null", "object"],
+          "properties": {
+            "Id": {
+              "type": ["null", "integer"]
+            },
+            "Name": {
+              "type": ["null", "integer"]
+            },
+            "Type": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "AssetPerformanceLabel": {
+          "type": ["null", "string"]
+        },
+        "EditorialStatus": {
+          "type": ["null", "string"]
+        },
+        "PinnedField": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "LongHeadlineString": {
+      "type": ["null", "string"]
+    },
+    "Text": {
+      "type": ["null", "string"]
+    },
+    "TextPart2": {
+      "type": ["null", "string"]
+    },
+    "TitlePart1": {
+      "type": ["null", "string"]
+    },
+    "TitlePart2": {
+      "type": ["null", "string"]
+    },
+    "TitlePart3": {
       "type": ["null", "string"]
     },
     "FinalAppUrls": {

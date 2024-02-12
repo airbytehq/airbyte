@@ -1,0 +1,188 @@
+{
+  "title": "Timeline Comment Event",
+  "description": "Timeline Comment Event",
+  "type": "object",
+  "properties": {
+    "event": { "type": "string" },
+    "actor": {
+      "title": "Simple User",
+      "description": "A GitHub user.",
+      "type": "object",
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"] },
+        "login": { "type": "string" },
+        "id": { "type": "integer" },
+        "node_id": { "type": "string" },
+        "avatar_url": { "type": "string" },
+        "gravatar_id": { "type": ["string", "null"] },
+        "url": { "type": "string" },
+        "html_url": { "type": "string" },
+        "followers_url": { "type": "string" },
+        "following_url": { "type": "string" },
+        "gists_url": { "type": "string" },
+        "starred_url": { "type": "string" },
+        "subscriptions_url": { "type": "string" },
+        "organizations_url": { "type": "string" },
+        "repos_url": { "type": "string" },
+        "events_url": { "type": "string" },
+        "received_events_url": { "type": "string" },
+        "type": { "type": "string" },
+        "site_admin": { "type": "boolean" },
+        "starred_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "id": {
+      "description": "Unique identifier of the issue comment",
+      "type": "integer"
+    },
+    "node_id": { "type": "string" },
+    "url": { "description": "URL for the issue comment", "type": "string" },
+    "body": {
+      "description": "Contents of the issue comment",
+      "type": "string"
+    },
+    "body_text": { "type": "string" },
+    "body_html": { "type": "string" },
+    "html_url": { "type": "string" },
+    "user": {
+      "title": "Simple User",
+      "description": "A GitHub user.",
+      "type": "object",
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"] },
+        "login": { "type": "string" },
+        "id": { "type": "integer" },
+        "node_id": { "type": "string" },
+        "avatar_url": { "type": "string" },
+        "gravatar_id": { "type": ["string", "null"] },
+        "url": { "type": "string" },
+        "html_url": { "type": "string" },
+        "followers_url": { "type": "string" },
+        "following_url": { "type": "string" },
+        "gists_url": { "type": "string" },
+        "starred_url": { "type": "string" },
+        "subscriptions_url": { "type": "string" },
+        "organizations_url": { "type": "string" },
+        "repos_url": { "type": "string" },
+        "events_url": { "type": "string" },
+        "received_events_url": { "type": "string" },
+        "type": { "type": "string" },
+        "site_admin": { "type": "boolean" },
+        "starred_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "issue_url": { "type": "string" },
+    "author_association": { "type": "string" },
+    "performed_via_github_app": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "title": "GitHub app",
+          "description": "GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.",
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Unique identifier of the GitHub app",
+              "type": "integer"
+            },
+            "slug": {
+              "description": "The slug name of the GitHub app",
+              "type": "string"
+            },
+            "node_id": { "type": "string" },
+            "owner": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "title": "Simple User",
+                  "description": "A GitHub user.",
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": ["string", "null"] },
+                    "email": { "type": ["string", "null"] },
+                    "login": { "type": "string" },
+                    "id": { "type": "integer" },
+                    "node_id": { "type": "string" },
+                    "avatar_url": { "type": "string" },
+                    "gravatar_id": { "type": ["string", "null"] },
+                    "url": { "type": "string" },
+                    "html_url": { "type": "string" },
+                    "followers_url": { "type": "string" },
+                    "following_url": { "type": "string" },
+                    "gists_url": { "type": "string" },
+                    "starred_url": { "type": "string" },
+                    "subscriptions_url": { "type": "string" },
+                    "organizations_url": { "type": "string" },
+                    "repos_url": { "type": "string" },
+                    "events_url": { "type": "string" },
+                    "received_events_url": { "type": "string" },
+                    "type": { "type": "string" },
+                    "site_admin": { "type": "boolean" },
+                    "starred_at": { "type": "string", "format": "date-time" }
+                  }
+                }
+              ]
+            },
+            "name": {
+              "description": "The name of the GitHub app",
+              "type": "string"
+            },
+            "description": { "type": ["string", "null"] },
+            "external_url": { "type": "string" },
+            "html_url": { "type": "string" },
+            "created_at": { "type": "string", "format": "date-time" },
+            "updated_at": { "type": "string", "format": "date-time" },
+            "permissions": {
+              "description": "The set of permissions for the GitHub app",
+              "type": "object",
+              "properties": {
+                "issues": { "type": "string" },
+                "checks": { "type": "string" },
+                "metadata": { "type": "string" },
+                "contents": { "type": "string" },
+                "deployments": { "type": "string" }
+              }
+            },
+            "events": {
+              "description": "The list of events for the GitHub app",
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "installations_count": {
+              "description": "The number of installations associated with the GitHub app",
+              "type": "integer"
+            },
+            "client_id": { "type": "string" },
+            "client_secret": { "type": "string" },
+            "webhook_secret": { "type": ["string", "null"] },
+            "pem": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "reactions": {
+      "title": "Reaction Rollup",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "total_count": { "type": "integer" },
+        "+1": { "type": "integer" },
+        "-1": { "type": "integer" },
+        "laugh": { "type": "integer" },
+        "confused": { "type": "integer" },
+        "heart": { "type": "integer" },
+        "hooray": { "type": "integer" },
+        "eyes": { "type": "integer" },
+        "rocket": { "type": "integer" }
+      }
+    }
+  }
+}

@@ -5,17 +5,19 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,13 +60,18 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   }
 
   @Override
-  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+  public String getStagingPath(final UUID connectionId,
+                               final String namespace,
+                               final String streamName,
+                               final String outputTableName,
+                               final Instant writeDatetime) {
     // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
+    final var zonedDateTime = ZonedDateTime.ofInstant(writeDatetime, ZoneOffset.UTC);
     return nameTransformer.applyDefaultCase(String.format("%s/%02d/%02d/%02d/%s/",
-        writeDatetime.year().get(),
-        writeDatetime.monthOfYear().get(),
-        writeDatetime.dayOfMonth().get(),
-        writeDatetime.hourOfDay().get(),
+        zonedDateTime.getYear(),
+        zonedDateTime.getMonthValue(),
+        zonedDateTime.getDayOfMonth(),
+        zonedDateTime.getHour(),
         connectionId));
   }
 
@@ -198,7 +205,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   }
 
   @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
+  public void dropStageIfExists(final JdbcDatabase database, final String stageName, final String stagingPath) throws Exception {
     try {
       final String query = getDropQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
@@ -216,17 +223,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
    */
   protected String getDropQuery(final String stageName) {
     return String.format(DROP_STAGE_QUERY, stageName);
-  }
-
-  @Override
-  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
-    try {
-      final String query = getRemoveQuery(stageName);
-      LOGGER.debug("Executing query: {}", query);
-      database.execute(query);
-    } catch (final SQLException e) {
-      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
-    }
   }
 
   /**

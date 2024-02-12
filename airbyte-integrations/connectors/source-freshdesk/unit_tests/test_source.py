@@ -26,7 +26,9 @@ def test_check_connection_invalid_api_key(requests_mock, config):
     requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", responses)
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
     assert not ok
-    assert "The endpoint to access stream \'settings\' returned 401: Unauthorized. This is most likely due to wrong credentials. " in error_msg
+    assert (
+        "The endpoint to access stream 'settings' returned 401: Unauthorized. This is most likely due to wrong credentials. " in error_msg
+    )
     assert "You have to be logged in to perform this action." in error_msg
 
 

@@ -88,6 +88,7 @@ def test_field_schema(json_type, data_type, length, decimal_place, api_name, pic
         system_mandatory=True,
         display_label=api_name,
         pick_list_values=pick_list_values,
-        auto_number=autonumber or {'prefix': '', 'suffix': ''})
+        auto_number=autonumber or {"prefix": "", "suffix": ""},
+    )
 
     assert field.schema == expected_values

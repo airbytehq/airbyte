@@ -1,0 +1,150 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "ad_groups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "accounts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "account_performance_report_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "account_performance_report_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "account_performance_report_weekly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "budget_summary_report",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "labels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["Modified Time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "app_install_ads",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "app_install_ad_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "campaign_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "keyword_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_group_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "keywords",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

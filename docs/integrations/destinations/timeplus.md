@@ -16,7 +16,7 @@ Each stream will be output into its own stream in Timeplus, with corresponding s
 ## Getting Started (Airbyte Cloud)
 Coming soon...
 
-## Getting Started (Airbyte Open-Source)
+## Getting Started (Airbyte Open Source)
 You can follow the [Quickstart with Timeplus Ingestion API](https://docs.timeplus.com/quickstart-ingest-api) to createa a workspace and API key.
 
 ### Setup the Timeplus Destination in Airbyte

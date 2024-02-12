@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
   "type": "object",
   "properties": {
     "TASK_ID": {
@@ -33,6 +34,9 @@
     },
     "PERCENT_COMPLETE": {
       "type": ["integer", "null"]
+    },
+    "PUBLICLY_VISIBLE": {
+      "type": ["null", "boolean"]
     },
     "START_DATE": {
       "type": ["string", "null"],

@@ -23,10 +23,7 @@ TODAY = pendulum.local(2023, 3, 31)
             "start_date",
             pendulum.local(2019, 1, 1),
             pendulum.local(2020, 3, 2),
-            [
-                f"The start date cannot be beyond 37 months from the current date. "
-                f"Set start date to {pendulum.local(2020, 3, 2)}."
-            ]
+            [f"The start date cannot be beyond 37 months from the current date. " f"Set start date to {pendulum.local(2020, 3, 2)}."],
         ),
         (
             "start_date",

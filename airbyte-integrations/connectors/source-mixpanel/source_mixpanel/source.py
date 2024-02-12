@@ -6,18 +6,27 @@ import base64
 import json
 import logging
 import os
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, TokenAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
 
 from .streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, Revenue
 from .testing import adapt_streams_if_testing, adapt_validate_if_testing
 from .utils import read_full_refresh
+
+
+def raise_config_error(message: str, original_error: Optional[Exception] = None):
+    config_error = AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
+    if original_error:
+        raise config_error from original_error
+    raise config_error
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
@@ -29,45 +38,67 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
 class SourceMixpanel(AbstractSource):
     STREAMS = [Cohorts, CohortMembers, Funnels, Revenue, Export, Annotations, Engage]
 
-    def get_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
-        credentials = config.get("credentials")
-        if credentials:
-            username = credentials.get("username")
-            secret = credentials.get("secret")
-            if username and secret:
-                return BasicHttpAuthenticator(username=username, password=secret)
-            return TokenAuthenticatorBase64(token=credentials["api_secret"])
-        return TokenAuthenticatorBase64(token=config["api_secret"])
+    @staticmethod
+    def get_authenticator(config: Mapping[str, Any]) -> TokenAuthenticator:
+        credentials = config["credentials"]
+        username = credentials.get("username")
+        secret = credentials.get("secret")
+        if username and secret:
+            return BasicHttpAuthenticator(username=username, password=secret)
+        return TokenAuthenticatorBase64(token=credentials["api_secret"])
+
+    @staticmethod
+    def validate_date(name: str, date_str: str, default: pendulum.date) -> pendulum.date:
+        if not date_str:
+            return default
+        try:
+            return pendulum.parse(date_str).date()
+        except pendulum.parsing.exceptions.ParserError as e:
+            raise_config_error(f"Could not parse {name}: {date_str}. Please enter a valid {name}.", e)
 
     @adapt_validate_if_testing
-    def _validate_and_transform(self, config: Mapping[str, Any]):
-        logger = logging.getLogger("airbyte")
-        source_spec = self.spec(logger)
-        default_project_timezone = source_spec.connectionSpecification["properties"]["project_timezone"]["default"]
-        config["project_timezone"] = pendulum.timezone(config.get("project_timezone", default_project_timezone))
+    def _validate_and_transform(self, config: MutableMapping[str, Any]):
+        project_timezone, start_date, end_date, attribution_window, select_properties_by_default, region, date_window_size, project_id = (
+            config.get("project_timezone", "US/Pacific"),
+            config.get("start_date"),
+            config.get("end_date"),
+            config.get("attribution_window", 5),
+            config.get("select_properties_by_default", True),
+            config.get("region", "US"),
+            config.get("date_window_size", 30),
+            config.get("credentials", dict()).get("project_id"),
+        )
+        try:
+            project_timezone = pendulum.timezone(project_timezone)
+        except pendulum.tz.zoneinfo.exceptions.InvalidTimezone as e:
+            raise_config_error(f"Could not parse time zone: {project_timezone}, please enter a valid timezone.", e)
 
-        today = pendulum.today(tz=config["project_timezone"]).date()
-        start_date = config.get("start_date")
-        if start_date:
-            config["start_date"] = pendulum.parse(start_date).date()
-        else:
-            config["start_date"] = today.subtract(days=365)
+        if region not in ("US", "EU"):
+            raise_config_error("Region must be either EU or US.")
 
-        end_date = config.get("end_date")
-        if end_date:
-            config["end_date"] = pendulum.parse(end_date).date()
-        else:
-            config["end_date"] = today
+        if select_properties_by_default not in (True, False, "", None):
+            raise_config_error("Please provide a valid True/False value for the `Select properties by default` parameter.")
 
-        for k in ["attribution_window", "select_properties_by_default", "region", "date_window_size"]:
-            if k not in config:
-                config[k] = source_spec.connectionSpecification["properties"][k]["default"]
+        if not isinstance(attribution_window, int) or attribution_window < 0:
+            raise_config_error("Please provide a valid integer for the `Attribution window` parameter.")
+        if not isinstance(date_window_size, int) or date_window_size < 1:
+            raise_config_error("Please provide a valid integer for the `Date slicing window` parameter.")
 
         auth = self.get_authenticator(config)
-        if isinstance(auth, TokenAuthenticatorBase64) and "project_id" in config:
-            config.pop("project_id")
-        elif isinstance(auth, BasicHttpAuthenticator) and "project_id" not in config:
-            raise ValueError("missing required parameter 'project_id'")
+        if isinstance(auth, TokenAuthenticatorBase64) and project_id:
+            config.get("credentials").pop("project_id")
+        if isinstance(auth, BasicHttpAuthenticator) and not isinstance(project_id, int):
+            raise_config_error("Required parameter 'project_id' missing or malformed. Please provide a valid project ID.")
+
+        today = pendulum.today(tz=project_timezone).date()
+        config["project_timezone"] = project_timezone
+        config["start_date"] = self.validate_date("start date", start_date, today.subtract(days=365))
+        config["end_date"] = self.validate_date("end date", end_date, today)
+        config["attribution_window"] = attribution_window
+        config["select_properties_by_default"] = select_properties_by_default
+        config["region"] = region
+        config["date_window_size"] = date_window_size
+        config["project_id"] = project_id
 
         return config
 
@@ -80,11 +111,8 @@ class SourceMixpanel(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        try:
-            config = self._validate_and_transform(config)
-            auth = self.get_authenticator(config)
-        except Exception as e:
-            return False, e
+        config = self._validate_and_transform(config)
+        auth = self.get_authenticator(config)
 
         # https://github.com/airbytehq/airbyte/pull/27252#discussion_r1228356872
         # temporary solution, testing access for all streams to avoid 402 error

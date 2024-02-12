@@ -1,7 +1,24 @@
 plugins {
-    id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.1'
+    features = [
+            'datastore-bigquery',
+            'db-destinations',
+            'gcs-destinations',
+            's3-destinations',
+            'typing-deduping',
+    ]
+    useLocalCdk = false
+}
+
+java {
+    // TODO: rewrite code to avoid javac wornings in the first place
+    compileJava {
+        options.compilerArgs += "-Xlint:-this-escape"
+    }
 }
 
 application {
@@ -20,44 +37,6 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-commons')
-    implementation ('io.airbyte:airbyte-cdk:0.0.1') {
-        exclude group: 'io.airbyte', module: 'airbyte-commons'
-    }
-
-    implementation 'com.google.cloud:google-cloud-bigquery:2.31.1'
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'org.apache.commons:commons-csv:1.4'
+    implementation 'com.codepoetics:protonpack:1.13'
     implementation 'org.apache.commons:commons-text:1.10.0'
-
-    implementation group: 'com.google.cloud', name: 'google-cloud-storage', version: '2.4.5'
-    implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
-
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation (libs.airbyte.protocol) {
-        exclude group: 'io.airbyte', module: 'airbyte-commons'
-    }
-    implementation project(':airbyte-integrations:bases:base-java-s3')
-    implementation project(':airbyte-integrations:bases:base-typing-deduping')
-    implementation project(':airbyte-integrations:connectors:destination-gcs')
-    // implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
-    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
-    integrationTestJavaImplementation project(':airbyte-db:db-lib')
-    integrationTestJavaImplementation project(':airbyte-commons')
-}
-
-configurations.all {
-  resolutionStrategy {
-    // at time of writing: deps.toml declares google-cloud-storage 2.17.2
-    // which pulls in google-api-client:2.2.0
-    // which conflicts with google-cloud-bigquery, which requires google-api-client:1.x
-    // google-cloud-storage is OK with downgrading to anything >=1.31.1.
-    force 'com.google.api-client:google-api-client:1.31.5'
-  }
 }

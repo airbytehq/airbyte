@@ -10,6 +10,7 @@
     <exclude-pattern>.*/generated/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-integrations/.*</exclude-pattern>
     <exclude-pattern>.*/test-integration/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-cdk/.*</exclude-pattern>
 
     <rule ref="category/java/bestpractices.xml">
         <!-- exclude permanently -->

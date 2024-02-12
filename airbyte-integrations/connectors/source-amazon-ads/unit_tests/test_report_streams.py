@@ -759,24 +759,7 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
 @responses.activate
 @pytest.mark.parametrize(
     "custom_record_types, flag_match_error",
-    [
-        (
-                ["campaigns"],
-                True
-        ),
-        (
-                ["campaigns", "adGroups"],
-                True
-        ),
-        (
-                [],
-                False
-        ),
-        (
-                ["invalid_record_type"],
-                True
-        )
-    ]
+    [(["campaigns"], True), (["campaigns", "adGroups"], True), ([], False), (["invalid_record_type"], True)],
 )
 def test_display_report_stream_with_custom_record_types(config_gen, custom_record_types, flag_match_error):
     setup_responses(
@@ -791,7 +774,7 @@ def test_display_report_stream_with_custom_record_types(config_gen, custom_recor
     stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
-        if record['recordType'] not in custom_record_types:
+        if record["recordType"] not in custom_record_types:
             if flag_match_error:
                 assert False
 
@@ -800,37 +783,13 @@ def test_display_report_stream_with_custom_record_types(config_gen, custom_recor
 @pytest.mark.parametrize(
     "custom_record_types, expected_record_types, flag_match_error",
     [
-        (
-                ["campaigns"],
-                ["campaigns"],
-                True
-        ),
-        (
-                ["asins_keywords"],
-                ["asins_keywords"],
-                True
-        ),
-        (
-                ["asins_targets"],
-                ["asins_targets"],
-                True
-        ),
-        (
-                ["campaigns", "adGroups"],
-                ["campaigns", "adGroups"],
-                True
-        ),
-        (
-                [],
-                [],
-                False
-        ),
-        (
-                ["invalid_record_type"],
-                [],
-                True
-        )
-    ]
+        (["campaigns"], ["campaigns"], True),
+        (["asins_keywords"], ["asins_keywords"], True),
+        (["asins_targets"], ["asins_targets"], True),
+        (["campaigns", "adGroups"], ["campaigns", "adGroups"], True),
+        ([], [], False),
+        (["invalid_record_type"], [], True),
+    ],
 )
 def test_products_report_stream_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
     setup_responses(
@@ -846,7 +805,7 @@ def test_products_report_stream_with_custom_record_types(config_gen, custom_reco
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
         print(record)
-        if record['recordType'] not in expected_record_types:
+        if record["recordType"] not in expected_record_types:
             if flag_match_error:
                 assert False
 
@@ -855,32 +814,12 @@ def test_products_report_stream_with_custom_record_types(config_gen, custom_reco
 @pytest.mark.parametrize(
     "custom_record_types, expected_record_types, flag_match_error",
     [
-        (
-                ["campaigns"],
-                ["campaigns"],
-                True
-        ),
-        (
-                ["asins"],
-                ["asins"],
-                True
-        ),
-        (
-                ["campaigns", "adGroups"],
-                ["campaigns", "adGroups"],
-                True
-        ),
-        (
-                [],
-                [],
-                False
-        ),
-        (
-                ["invalid_record_type"],
-                [],
-                True
-        )
-    ]
+        (["campaigns"], ["campaigns"], True),
+        (["asins"], ["asins"], True),
+        (["campaigns", "adGroups"], ["campaigns", "adGroups"], True),
+        ([], [], False),
+        (["invalid_record_type"], [], True),
+    ],
 )
 def test_brands_video_report_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
     setup_responses(
@@ -896,7 +835,7 @@ def test_brands_video_report_with_custom_record_types(config_gen, custom_record_
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
         print(record)
-        if record['recordType'] not in expected_record_types:
+        if record["recordType"] not in expected_record_types:
             if flag_match_error:
                 assert False
 
@@ -906,8 +845,8 @@ def test_brands_video_report_with_custom_record_types(config_gen, custom_record_
     [
         ({"campaignId": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}, "campaigns"),
         ({"campaignId": ""}, "campaigns"),
-        ({"campaignId": None}, "campaigns")
-    ]
+        ({"campaignId": None}, "campaigns"),
+    ],
 )
 def test_get_record_id_by_report_type(config, metric_object, record_type):
     """

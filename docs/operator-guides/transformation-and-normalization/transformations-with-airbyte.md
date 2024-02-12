@@ -1,6 +1,8 @@
-# Transformations with Airbyte (Part 3/3)
+---
+products: oss-*
+---
 
-## Overview
+# Transformations with Airbyte (Part 3/3)
 
 This tutorial will describe how to push a custom dbt transformation project back to Airbyte to use during syncs.
 
@@ -18,7 +20,7 @@ After replication of data from a source connector \(Extract\) to a destination c
 
 ## Public Git repository
 
-In the connection settings page, I can add new Transformations steps to apply after [normalization](../../understanding-airbyte/basic-normalization.md). For example, I want to run my custom dbt project jaffle_shop, whenever my sync is done replicating and normalizing my data.
+In the connection settings page, I can add new Transformations steps to apply after [normalization](../../using-airbyte/core-concepts/basic-normalization.md). For example, I want to run my custom dbt project jaffle_shop, whenever my sync is done replicating and normalizing my data.
 
 You can find the jaffle shop test repository by clicking [here](https://github.com/dbt-labs/jaffle_shop).
 
@@ -97,3 +99,6 @@ run --vars '{"table_name":"sample","schema_name":"other_value"}'
 
 This string must have no space. There is a [Github issue](https://github.com/airbytehq/airbyte/issues/4348) to improve this. If you want to contribute to Airbyte, this is a good opportunity!
 
+### DBT Profile
+
+There is no need to specify `--profiles-dir`. By default AirByte based on the destination type. For example, if you're using Postgres as your destination, Airbyte will create a profile configuration based on that destination. This means you don't need to specify the credentials. If you specify a custom `profile` file, you are responsible for securely managing the credentials. Currently, we don't have a way to manage and pass secrets and it's recommended you let Airbyte pass this to dbt. 

@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.tidb;
 
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 /**
  * TiDB has some limitations on identifier length.

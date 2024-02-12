@@ -16,13 +16,14 @@ from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBas
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.stub import Stubber
+from moto import mock_sts
 from pydantic import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
 logger = logging.Logger("")
 
-endpoint_values = ["http://fake.com", None]
+endpoint_values = ["https://fake.com", None]
 _get_matching_files_cases = [
     pytest.param([], [], False, set(), id="no-files-match-if-no-globs"),
     pytest.param(
@@ -106,11 +107,10 @@ for original_case, endpoint_value in product(_get_matching_files_cases, endpoint
     get_matching_files_cases.append(test_case)
 
 
-@pytest.mark.parametrize(
-    "globs,mocked_response,multiple_pages,expected_uris,endpoint",
-    get_matching_files_cases
-)
-def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, Any]], multiple_pages: bool, expected_uris: Set[str], endpoint: Optional[str]):
+@pytest.mark.parametrize("globs,mocked_response,multiple_pages,expected_uris,endpoint", get_matching_files_cases)
+def test_get_matching_files(
+    globs: List[str], mocked_response: List[Dict[str, Any]], multiple_pages: bool, expected_uris: Set[str], endpoint: Optional[str]
+):
     reader = SourceS3StreamReader()
     try:
         aws_access_key_id = aws_secret_access_key = None if endpoint else "test"
@@ -133,7 +133,11 @@ def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, An
 @patch("boto3.client")
 def test_given_multiple_pages_when_get_matching_files_then_pass_continuation_token(boto3_client_mock) -> None:
     boto3_client_mock.return_value.list_objects_v2.side_effect = [
-        {"Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}], "KeyCount": 2, "NextContinuationToken": "a key"},
+        {
+            "Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}],
+            "KeyCount": 2,
+            "NextContinuationToken": "a key",
+        },
         {"Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}], "KeyCount": 2},
     ]
     reader = SourceS3StreamReader()
@@ -192,7 +196,9 @@ def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     with reader.open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, encoding, logger) as fp:
         fp.read()
 
-    smart_open_mock.assert_called_once_with('s3://test/', transport_params={"client": reader.s3_client}, mode=FileReadMode.READ.value, encoding=encoding)
+    smart_open_mock.assert_called_once_with(
+        "s3://test/", transport_params={"client": reader.s3_client}, mode=FileReadMode.READ.value, encoding=encoding
+    )
 
 
 def test_get_s3_client_without_config_raises_exception():
@@ -233,3 +239,33 @@ def set_stub(reader: SourceS3StreamReader, contents: List[Dict[str, Any]], multi
         )
     s3_stub.activate()
     return s3_stub
+
+
+@mock_sts
+@patch("source_s3.v4.stream_reader.boto3.client")
+def test_get_iam_s3_client(boto3_client_mock):
+    # Mock the STS client assume_role method
+    boto3_client_mock.return_value.assume_role.return_value = {
+        "Credentials": {
+            "AccessKeyId": "assumed_access_key_id",
+            "SecretAccessKey": "assumed_secret_access_key",
+            "SessionToken": "assumed_session_token",
+            "Expiration": datetime.now(),
+        }
+    }
+
+    # Instantiate your stream reader and set the config
+    reader = SourceS3StreamReader()
+    reader.config = Config(
+        bucket="test",
+        role_arn="arn:aws:iam::123456789012:role/my-role",
+        streams=[],
+        endpoint=None,
+    )
+
+    # Call _get_iam_s3_client
+    with Stubber(reader.s3_client):
+        s3_client = reader._get_iam_s3_client({})
+
+    # Assertions to validate the s3 client
+    assert s3_client is not None

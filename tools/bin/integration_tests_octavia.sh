@@ -19,4 +19,4 @@ echo "Waiting for services to begin"
 while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8000/api/v1/health)" != "200" ]]; do echo "Waiting for docker deployment.."; sleep 5; done
 
 echo "Running integration tests via gradle"
-SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:integrationTest --rerun-tasks --scan
+./gradlew :octavia-cli:integrationTest --rerun-tasks --scan

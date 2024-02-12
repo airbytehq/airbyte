@@ -23,7 +23,7 @@ acceptance_tests:
           - name: checklist_items
           - name: metrics
           - name: projects
-  incremental: 
+  incremental:
     bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
     tests:

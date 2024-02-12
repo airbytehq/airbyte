@@ -4,21 +4,21 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
+import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
-import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
-import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
-import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
-import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class mimics the same functionality as
- * {@link io.airbyte.integrations.destination.staging.StagingConsumerFactory} which likely should be
- * placed into a commons package to be utilized across all ConsumerFactories
+ * {@link io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory} which likely
+ * should be placed into a commons package to be utilized across all ConsumerFactories
  */
 public class BigQueryStagingConsumerFactory {
 
@@ -61,7 +61,13 @@ public class BigQueryStagingConsumerFactory {
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper),
-        () -> onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(false),
+        (hasFailed, recordCounts) -> {
+          try {
+            onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(hasFailed, recordCounts);
+          } catch (final Exception e) {
+            throw new RuntimeException(e);
+          }
+        },
         flusher,
         catalog,
         new BufferManager(getBigQueryBufferMemoryLimit()),
@@ -163,13 +169,13 @@ public class BigQueryStagingConsumerFactory {
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                           final Map<StreamDescriptor, BigQueryWriteConfig> writeConfigs,
                                           final TyperDeduper typerDeduper) {
-    return (hasFailed) -> {
+    return (hasFailed, streamSyncSummaries) -> {
       /*
        * Previously the hasFailed value was used to commit any remaining staged files into destination,
        * however, with the changes to checkpointing this will no longer be necessary since despite partial
        * successes, we'll be committing the target table (aka airbyte_raw) table throughout the sync
        */
-      typerDeduper.typeAndDedupe();
+      typerDeduper.typeAndDedupe(streamSyncSummaries);
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final Map.Entry<StreamDescriptor, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
         bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());

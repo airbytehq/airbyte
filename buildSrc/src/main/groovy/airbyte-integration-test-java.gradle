@@ -14,8 +14,9 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 }
             }
         }
-        project.tasks.named('test').configure {
-            dependsOn project.tasks.named('compileIntegrationTestJavaJava')
+        project.tasks.named('check').configure {
+            dependsOn project.tasks.matching { it.name == 'compileIntegrationTestJavaJava' }
+            dependsOn project.tasks.matching { it.name == 'spotbugsIntegrationTestJava' }
         }
 
         project.configurations {
@@ -27,44 +28,35 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
             classpath += project.sourceSets.integrationTestJava.runtimeClasspath
 
-            useJUnitPlatform {
-                // todo (cgardens) - figure out how to de-dupe this exclusion with the one in build.gradle.
-                excludeTags 'log4j2-config', 'logger-client', 'cloud-storage'
-            }
-
+            useJUnitPlatform()
             testLogging() {
-                events "passed", "failed", "started"
-                exceptionFormat "full"
-                // uncomment to get the full log output
-                // showStandardStreams = true
+                events 'skipped', 'started', 'passed', 'failed'
+                exceptionFormat 'full'
+                // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+                showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
             }
 
+            jvmArgs = project.test.jvmArgs
+            systemProperties = project.test.systemProperties
+            maxParallelForks = project.test.maxParallelForks
+            maxHeapSize = project.test.maxHeapSize
+
+            // Tone down the JIT when running the containerized connector to improve overall performance.
+            // The JVM default settings are optimized for long-lived processes in steady-state operation.
+            // Unlike in production, the connector containers in these tests are always short-lived.
+            // It's very much worth injecting a JAVA_OPTS environment variable into the container with
+            // flags which will reduce startup time at the detriment of long-term performance.
+            environment 'JOB_DEFAULT_ENV_JAVA_OPTS', '-XX:TieredStopAtLevel=1'
+
+            // Always re-run integration tests no matter what.
             outputs.upToDateWhen { false }
-
-            maxParallelForks = Runtime.runtime.availableProcessors()
-            // This allows to set up a `gradle.properties` file inside the connector folder to reduce parallelization.
-            // This is especially useful for connectors that shares resources (like Redshift or Snowflake).
-            if (project.hasProperty('numberThreads')) {
-                int numberThreads = 0
-                String numberThreadsString = project.property('numberThreads').toString()
-                if (numberThreadsString.isInteger()) {
-                    numberThreads = numberThreadsString as int
-                }
-                 if (numberThreads > 0 && numberThreads < maxParallelForks) {
-                    maxParallelForks = numberThreads
-                }
-            }
-            maxHeapSize = '3g'
-
-            systemProperties = [
-                // Allow tests to set @Execution(ExecutionMode.CONCURRENT)
-                'junit.jupiter.execution.parallel.enabled': 'true'
-            ]
         }
         integrationTestJava.configure {
-            mustRunAfter project.tasks.named('test')
+            mustRunAfter project.tasks.named('check')
             dependsOn project.tasks.matching { it.name == 'assemble' }
-            dependsOn project.tasks.matching { it.name == 'spotbugsMain' }
+        }
+        project.tasks.named('build').configure {
+            dependsOn integrationTestJava
         }
     }
 }

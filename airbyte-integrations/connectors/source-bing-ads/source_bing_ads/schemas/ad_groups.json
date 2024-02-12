@@ -2,6 +2,15 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "CampaignId": {
+      "type": ["null", "integer"]
+    },
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "CustomerId": {
+      "type": ["null", "integer"]
+    },
     "AdRotation": {
       "type": ["null", "object"],
       "properties": {

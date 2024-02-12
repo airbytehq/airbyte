@@ -3,6 +3,15 @@ plugins {
 }
 
 repositories {
+    // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+
+    // ## Prefer repos controlled by Airbyte.
+    // TODO: add airbyte-controlled proxy repos here
+
+    // ## Look into other, public repos.
+    // Gradle plugin portal.
+    gradlePluginPortal()
+    // Maven Central has most of everything.
     mavenCentral()
 }
 

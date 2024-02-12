@@ -1,0 +1,13 @@
+{
+  "site_urls": ["https://airbyte.io/"],
+  "_limit": 6,
+  "start_date": "2021-09-14",
+  "end_date": "2025-08-31",
+  "authorization": {
+    "auth_type": "Client",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "custom_reports_array": []
+}

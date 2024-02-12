@@ -3,6 +3,7 @@
 #
 
 import json
+from typing import Any, Optional
 
 import pytest
 import requests
@@ -42,3 +43,16 @@ def test_offset_increment_paginator_strategy_rises():
     with pytest.raises(Exception) as exc:
         paginator_strategy.get_page_size()
     assert str(exc.value) == "invalid value is of type <class 'str'>. Expected <class 'int'>"
+
+
+@pytest.mark.parametrize(
+    "inject_on_first_request, expected_initial_token",
+    [
+        pytest.param(True, 0, id="test_with_inject_offset"),
+        pytest.param(False, None, id="test_without_inject_offset"),
+    ],
+)
+def test_offset_increment_paginator_strategy_initial_token(inject_on_first_request: bool, expected_initial_token: Optional[Any]):
+    paginator_strategy = OffsetIncrement(page_size=20, parameters={}, config={}, inject_on_first_request=inject_on_first_request)
+
+    assert paginator_strategy.initial_token == expected_initial_token

@@ -4,18 +4,18 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
@@ -36,16 +36,15 @@ public class MySqlQueryUtils {
 
   public record TableSizeInfo(Long tableSize, Long avgRowLength) {}
 
-  public static final String TABLE_ESTIMATE_QUERY =
-      """
-       SELECT
-         (data_length + index_length) as %s,
-         AVG_ROW_LENGTH as %s
-      FROM
-         information_schema.tables
-      WHERE
-         table_schema = '%s' AND table_name = '%s';
-       """;
+  public static final String TABLE_ESTIMATE_QUERY = """
+                                                     SELECT
+                                                       (data_length + index_length) as %s,
+                                                       AVG_ROW_LENGTH as %s
+                                                    FROM
+                                                       information_schema.tables
+                                                    WHERE
+                                                       table_schema = '%s' AND table_name = '%s';
+                                                    """;
 
   public static final String MAX_PK_VALUE_QUERY =
       """
@@ -84,7 +83,7 @@ public class MySqlQueryUtils {
       return storageEngines;
     } catch (final Exception e) {
       LOGGER.info("Storage engines could not be determined");
-      return Collections.EMPTY_SET;
+      return Collections.emptySet();
     }
   }
 

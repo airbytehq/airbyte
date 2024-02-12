@@ -3,19 +3,38 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
+import pendulum
 import pydantic
 import requests
+from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from requests import HTTPError
 
 from .utils import transform_properties
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
+
+
+class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
+    """
+    Inherit from HttpAvailabilityStrategy with slight modification to 403 error message.
+    """
+
+    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
+
+        reasons_for_codes: Dict[int, str] = {
+            requests.codes.FORBIDDEN: "This is likely due to insufficient permissions for your Notion integration. "
+            "Please make sure your integration has read access for the resources you are trying to sync"
+        }
+        return reasons_for_codes
 
 
 class NotionStream(HttpStream, ABC):
@@ -30,11 +49,28 @@ class NotionStream(HttpStream, ABC):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
-        self.start_date = config["start_date"]
+        self.start_date = config.get("start_date")
+
+        # If start_date is not found in config, set it to 2 years ago and update value in config for use in next stream
+        if not self.start_date:
+            self.start_date = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
+            config["start_date"] = self.start_date
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+    def availability_strategy(self) -> HttpAvailabilityStrategy:
+        return NotionAvailabilityStrategy()
+
+    @property
+    def retry_factor(self) -> int:
+        return 5
+
+    @property
+    def max_retries(self) -> int:
+        return 7
+
+    @property
+    def max_time(self) -> int:
+        return 60 * 11
 
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
@@ -43,14 +79,40 @@ class NotionStream(HttpStream, ABC):
             if message.startswith("The start_cursor provided is invalid: "):
                 return message
 
+    @staticmethod
+    def throttle_request_page_size(current_page_size):
+        """
+        Helper method to halve page_size when encountering a 504 Gateway Timeout error.
+        """
+        throttled_page_size = max(current_page_size // 2, 10)
+        return throttled_page_size
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        retry_after = response.headers.get("retry-after")
-        if retry_after:
+        """
+        Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
+        For a 429 response, we can use the retry-header to determine how long to wait before retrying.
+        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 5.
+        Docs: https://developers.notion.com/reference/errors#rate-limiting
+        """
+        retry_after = response.headers.get("retry-after", "5")
+        if response.status_code == 429:
             return float(retry_after)
         if self.check_invalid_start_cursor(response):
             return 10
+        return super().backoff_time(response)
 
     def should_retry(self, response: requests.Response) -> bool:
+        # In the case of a 504 Gateway Timeout error, we can lower the page_size when retrying to reduce the load on the server.
+        if response.status_code == 504:
+            self.page_size = self.throttle_request_page_size(self.page_size)
+            self.logger.info(f"Encountered a server timeout. Reducing request page size to {self.page_size} and retrying.")
+
+        # If page_size has been reduced after encountering a 504 Gateway Timeout error,
+        # we increase it back to the default of 100 once a success response is achieved, for the following API calls.
+        if response.status_code == 200 and self.page_size != 100:
+            self.page_size = 100
+            self.logger.info(f"Successfully reconnected after a server timeout. Increasing request page size to {self.page_size}.")
+
         return response.status_code == 400 or super().should_retry(response)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
@@ -70,9 +132,9 @@ class NotionStream(HttpStream, ABC):
             "has_more": true,
             "results": [ ... ]
         }
-        Doc: https://developers.notion.com/reference/pagination
+        Doc: https://developers.notion.com/reference/intro#pagination
         """
-        next_cursor = response.json()["next_cursor"]
+        next_cursor = response.json().get("next_cursor")
         if next_cursor:
             return {"next_cursor": next_cursor}
 
@@ -158,7 +220,7 @@ class IncrementalNotionStream(NotionStream, ABC):
             state_lmd = stream_state.get(self.cursor_field, "")
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
-            if not stream_state or record_lmd >= state_lmd:
+            if (not stream_state or record_lmd >= state_lmd) and record_lmd >= self.start_date:
                 yield from transform_properties(record)
 
     def get_updated_state(
@@ -298,3 +360,64 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             else:
                 return super().should_retry(response)
         return super().should_retry(response)
+
+
+class Comments(HttpSubStream, IncrementalNotionStream):
+    """
+    Comments Object Docs: https://developers.notion.com/reference/comment-object
+    Comments Endpoint Docs: https://developers.notion.com/reference/retrieve-a-comment
+    """
+
+    http_method = "GET"
+    # We can use the "last edited time" of the parent Page as the cursor field,
+    # since we cannot guarantee the order of comments between pages.
+    cursor_field = "page_last_edited_time"
+
+    def path(self, **kwargs) -> str:
+        return "comments"
+
+    def request_params(
+        self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        block_id = stream_slice.get("block_id")
+        params = {"block_id": block_id, "page_size": self.page_size}
+
+        if next_page_token:
+            params["start_cursor"] = next_page_token["next_cursor"]
+
+        return params
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+
+        # Get the parent's "last edited time" to compare against state
+        page_last_edited_time = stream_slice.get("page_last_edited_time", "")
+        records = response.json().get("results", [])
+
+        for record in records:
+            record["page_last_edited_time"] = page_last_edited_time
+            state_last_edited_time = stream_state.get(self.cursor_field, "")
+
+            if isinstance(state_last_edited_time, StateValueWrapper):
+                state_last_edited_time = state_last_edited_time.value
+
+            if not stream_state or page_last_edited_time >= state_last_edited_time:
+                yield from transform_properties(record)
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+
+        yield from IncrementalNotionStream.read_records(self, **kwargs)
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, **kwargs
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+
+        # Gather parent stream records in full
+        parent_records = self.parent.read_records(sync_mode=SyncMode.full_refresh, cursor_field=self.parent.cursor_field)
+
+        # The parent stream is the Pages stream, but we have to pass its id to the request_params as "block_id"
+        # because pages are also blocks in the Notion API.
+        # We also grab the last_edited_time from the parent record to use as the cursor field.
+        for record in parent_records:
+            yield {"block_id": record["id"], "page_last_edited_time": record["last_edited_time"]}

@@ -315,6 +315,54 @@ definitions:
       name: "quote_line_group"
       primary_key: "id"
       path: "/quotes/{{ stream_slice.id }}/quote_line_groups"
+  site_migration_detail_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_by[asc]: migrated_at
+          include_deleted: "true"
+          migrated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+    incremental_sync:
+      $ref: "#/definitions/date_stream_slicer"
+    $parameters:
+      name: "site_migration_detail"
+      primary_key: "entity_id"
+      path: "/site_migration_details"
+      stream_cursor_field: "migrated_at"
+  comment_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_by[asc]: created_at
+          include_deleted: "true"
+          created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+    incremental_sync:
+      $ref: "#/definitions/date_stream_slicer"
+    $parameters:
+      name: "comment"
+      primary_key: "id"
+      path: "/comments"
+      stream_cursor_field: "created_at"
+  item_family_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "item_family"
+      primary_key: "id"
+      path: "/item_families"
+      stream_cursor_field: "updated_at"
+  differential_price_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "differential_price"
+      primary_key: "id"
+      path: "/differential_prices"
+      stream_cursor_field: "updated_at"
 
 streams:
   - "#/definitions/addon_stream"
@@ -339,6 +387,10 @@ streams:
   - "#/definitions/virtual_bank_account_stream"
   - "#/definitions/quote_stream"
   - "#/definitions/quote_line_group_stream"
+  - "#/definitions/site_migration_detail_stream"
+  - "#/definitions/comment_stream"
+  - "#/definitions/item_family_stream"
+  - "#/definitions/differential_price_stream"
 
 check:
   stream_names:

@@ -2,22 +2,35 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from requests import HTTPError
 
 from .utils import get_analytics_columns, to_datetime_str
 
 # For Pinterest analytics streams rate limit is 300 calls per day / per user.
 # once hit - response would contain `code` property with int.
 MAX_RATE_LIMIT_CODE = 8
+
+
+class NonJSONResponse(Exception):
+    pass
+
+
+class RateLimitExceeded(Exception):
+    pass
 
 
 class PinterestStream(HttpStream, ABC):
@@ -39,10 +52,6 @@ class PinterestStream(HttpStream, ABC):
     @property
     def window_in_days(self):
         return 30  # Set window_in_days to 30 days date range
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("bookmark", {}) if self.data_fields else {}
@@ -69,8 +78,13 @@ class PinterestStream(HttpStream, ABC):
                 yield record
 
     def should_retry(self, response: requests.Response) -> bool:
-        if isinstance(response.json(), dict):
-            self.max_rate_limit_exceeded = response.json().get("code", 0) == MAX_RATE_LIMIT_CODE
+        try:
+            resp = response.json()
+        except requests.exceptions.JSONDecodeError:
+            raise NonJSONResponse(f"Received unexpected response in non json format: '{response.text}'")
+
+        if isinstance(resp, dict):
+            self.max_rate_limit_exceeded = resp.get("code", 0) == MAX_RATE_LIMIT_CODE
         # when max rate limit exceeded, we should skip the stream.
         if response.status_code == requests.codes.too_many_requests and self.max_rate_limit_exceeded:
             self.logger.error(f"For stream {self.name} Max Rate Limit exceeded.")
@@ -80,7 +94,12 @@ class PinterestStream(HttpStream, ABC):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
             self.logger.error(f"For stream {self.name} rate limit exceeded.")
-            return float(response.headers.get("X-RateLimit-Reset", 0))
+            sleep_time = float(response.headers.get("X-RateLimit-Reset", 0))
+            if sleep_time > 600:
+                raise RateLimitExceeded(
+                    f"Rate limit exceeded for stream {self.name}. Waiting time is longer than 10 minutes: {sleep_time}s."
+                )
+            return sleep_time
 
 
 class PinterestSubStream(HttpSubStream):
@@ -106,6 +125,53 @@ class Boards(PinterestStream):
         return "boards"
 
 
+class Catalogs(PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs/list"""
+
+    use_cache = True
+
+    def path(self, **kwargs) -> str:
+        return "catalogs"
+
+
+class CatalogsFeeds(PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/feeds/list"""
+
+    use_cache = True
+
+    def path(self, **kwargs) -> str:
+        return "catalogs/feeds"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        # Remove sensitive data
+        for record in super().parse_response(response, stream_state, **kwargs):
+            record.pop("credentials", None)
+            yield record
+
+
+class CatalogsProductGroupsAvailabilityStrategy(HttpAvailabilityStrategy):
+    def reasons_for_unavailable_status_codes(
+        self, stream: Stream, logger: logging.Logger, source: Optional[Source], error: HTTPError
+    ) -> Dict[int, str]:
+        reasons_for_codes: Dict[int, str] = super().reasons_for_unavailable_status_codes(stream, logger, source, error)
+        reasons_for_codes[409] = "Can't access catalog product groups because there is no existing catalog."
+
+        return reasons_for_codes
+
+
+class CatalogsProductGroups(PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs_product_groups/list"""
+
+    use_cache = True
+
+    def path(self, **kwargs) -> str:
+        return "catalogs/product_groups"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return CatalogsProductGroupsAvailabilityStrategy()
+
+
 class AdAccounts(PinterestStream):
     use_cache = True
 
@@ -126,6 +192,34 @@ class BoardPins(PinterestSubStream, PinterestStream):
 class BoardSectionPins(PinterestSubStream, PinterestStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"boards/{stream_slice['sub_parent']['parent']['id']}/sections/{stream_slice['parent']['id']}/pins"
+
+
+class Audiences(PinterestSubStream, PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/audiences/list"""
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"ad_accounts/{stream_slice['parent']['id']}/audiences"
+
+
+class Keywords(PinterestSubStream, PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/keywords/get"""
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"ad_accounts/{stream_slice['parent']['ad_account_id']}/keywords?ad_group_id={stream_slice['parent']['id']}"
+
+
+class ConversionTags(PinterestSubStream, PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/conversion_tags/list"""
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"ad_accounts/{stream_slice['parent']['id']}/conversion_tags"
+
+
+class CustomerLists(PinterestSubStream, PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#tag/customer_lists"""
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"ad_accounts/{stream_slice['parent']['id']}/customer_lists"
 
 
 class IncrementalPinterestStream(PinterestStream, ABC):
@@ -283,7 +377,7 @@ class AdAccountAnalytics(PinterestAnalyticsStream):
 
 
 class Campaigns(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
+    def __init__(self, parent: HttpStream, with_data_slices: bool = False, status_filter: str = "", **kwargs):
         super().__init__(parent, with_data_slices, **kwargs)
         self.status_filter = status_filter
 
@@ -300,11 +394,12 @@ class CampaignAnalytics(PinterestAnalyticsStream):
 
 
 class AdGroups(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
+    def __init__(self, parent: HttpStream, with_data_slices: bool = False, status_filter: str = "", **kwargs):
         super().__init__(parent, with_data_slices, **kwargs)
         self.status_filter = status_filter
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        print(f"=========== stream_slice: {stream_slice} =====================")
         params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
         return f"ad_accounts/{stream_slice['parent']['id']}/ad_groups{params}"
 
@@ -317,7 +412,7 @@ class AdGroupAnalytics(PinterestAnalyticsStream):
 
 
 class Ads(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
+    def __init__(self, parent: HttpStream, with_data_slices: bool = False, status_filter: str = "", **kwargs):
         super().__init__(parent, with_data_slices, **kwargs)
         self.status_filter = status_filter
 

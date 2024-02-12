@@ -32,7 +32,12 @@ decoder = JsonDecoder(parameters={})
         ),
         ("test_field_does_not_exist", ["record"], {"id": 1}, []),
         ("test_nested_list", ["list", "*", "item"], {"list": [{"item": {"id": "1"}}]}, [{"id": "1"}]),
-        ("test_complex_nested_list", ['data', '*', 'list', 'data2', '*'], {"data": [{"list": {"data2": [{"id": 1}, {"id": 2}]}},{"list": {"data2": [{"id": 3}, {"id": 4}]}}]}, [{"id": 1}, {"id": 2}, {"id": 3}, {"id": 4}])
+        (
+            "test_complex_nested_list",
+            ["data", "*", "list", "data2", "*"],
+            {"data": [{"list": {"data2": [{"id": 1}, {"id": 2}]}}, {"list": {"data2": [{"id": 3}, {"id": 4}]}}]},
+            [{"id": 1}, {"id": 2}, {"id": 3}, {"id": 4}],
+        ),
     ],
 )
 def test_dpath_extractor(test_name, field_path, body, expected_records):

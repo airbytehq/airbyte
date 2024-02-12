@@ -69,7 +69,7 @@ class CustomDatetimeBasedCursor(DatetimeBasedCursor):
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: typing.Optional[Record]) -> None:
         super(CustomDatetimeBasedCursor, self).close_slice(
             stream_slice=stream_slice,
-            last_record=LastRecordDictProxy(most_recent_record, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
+            most_recent_record=LastRecordDictProxy(most_recent_record, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
         )
 
     def _format_datetime(self, dt: datetime.datetime):

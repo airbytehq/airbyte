@@ -439,9 +439,7 @@ class TestDestination:
         destination = resources.Destination(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
         assert destination.definition == mock_api_instance.get_destination_definition.return_value
         resources.destination_definition_api.DestinationDefinitionApi.assert_called_with(mock_api_client)
-        expected_payload = DestinationDefinitionIdRequestBody(
-            destination_definition_id=destination.definition_id
-        )
+        expected_payload = DestinationDefinitionIdRequestBody(destination_definition_id=destination.definition_id)
         mock_api_instance.get_destination_definition.assert_called_with(expected_payload)
 
     def test_definition_specification(self, mocker, mock_api_client, local_configuration):

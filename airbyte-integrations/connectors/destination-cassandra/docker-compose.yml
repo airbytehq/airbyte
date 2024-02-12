@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   cassandra1:
@@ -9,7 +9,6 @@ services:
       - "MAX_HEAP_SIZE=2048M"
       - "HEAP_NEWSIZE=1024M"
       - "CASSANDRA_CLUSTER_NAME=cassandra_cluster"
-
 #  Uncomment if you want to run a Cassandra cluster
 #  cassandra2:
 #    image: cassandra:4.0

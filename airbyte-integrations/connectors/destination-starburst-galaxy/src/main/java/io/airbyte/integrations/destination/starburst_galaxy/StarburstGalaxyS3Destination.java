@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.destination.starburst_galaxy;
 
-import static io.airbyte.integrations.destination.s3.S3BaseChecks.attemptS3WriteAndDelete;
+import static io.airbyte.cdk.integrations.destination.s3.S3BaseChecks.attemptS3WriteAndDelete;
 
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
 
 public class StarburstGalaxyS3Destination
     extends StarburstGalaxyBaseDestination {

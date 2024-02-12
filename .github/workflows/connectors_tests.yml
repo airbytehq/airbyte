@@ -17,19 +17,15 @@ on:
       test-connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors test' command"
         default: "--modified"
-      runner:
-        description: "The runner to use for this job"
-        default: "conn-prod-xlarge-runner"
   pull_request:
     types:
       - opened
       - synchronize
-      - ready_for_review
 jobs:
   connectors_ci:
     name: Connectors CI
+    runs-on: connector-test-large
     timeout-minutes: 1440 # 24 hours
-    runs-on: ${{ inputs.runner || 'conn-prod-xlarge-runner'}}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -43,18 +39,6 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: extract_branch
-      #      - name: Format connectors [PULL REQUESTS]
-      #        if: github.event_name == 'pull_request'
-      #        uses: ./.github/actions/run-dagger-pipeline
-      #        with:
-      #          context: "pull_request"
-      #          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      #          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-      #          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      #          git_branch: ${{ github.head_ref }}
-      #          git_revision: ${{ github.sha }}
-      #          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-      #          subcommand: "connectors --modified format"
       - name: Fetch last commit id from remote branch [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
@@ -63,17 +47,12 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
         run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
-      - name: Pull formatting changes [PULL REQUESTS]
-        if: github.event_name == 'pull_request'
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
       - name: Test connectors [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -81,12 +60,15 @@ jobs:
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
           github_token: ${{ env.PAT }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -94,4 +76,6 @@ jobs:
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
           github_token: ${{ env.PAT }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --modified test"

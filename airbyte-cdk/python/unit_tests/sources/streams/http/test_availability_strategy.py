@@ -34,6 +34,7 @@ class MockHttpStream(HttpStream):
         stub_resp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stub_resp
+
     pass
 
     def retry_factor(self) -> float:
@@ -43,21 +44,44 @@ class MockHttpStream(HttpStream):
 @pytest.mark.parametrize(
     ("status_code", "json_contents", "expected_is_available", "expected_messages"),
     [
-        (403, {"error": "Something went wrong"}, False, [
-            "This is most likely due to insufficient permissions on the credentials in use.",
-            "Something went wrong",
-        ]),
-        (200, {}, True, [])
-    ]
+        (
+            403,
+            {"error": "Something went wrong"},
+            False,
+            [
+                "This is most likely due to insufficient permissions on the credentials in use.",
+                "Something went wrong",
+            ],
+        ),
+        (200, {}, True, []),
+    ],
 )
 @pytest.mark.parametrize(
-    ("include_source", "expected_docs_url_messages"), [
+    ("include_source", "expected_docs_url_messages"),
+    [
         (True, ["Please visit https://docs.airbyte.com/integrations/sources/MockSource to learn more."]),
         (False, ["Please visit the connector's documentation to learn more."]),
-    ]
+    ],
 )
-def test_default_http_availability_strategy(mocker, status_code, json_contents, expected_is_available, expected_messages, include_source, expected_docs_url_messages):
-    http_stream = MockHttpStream()
+@pytest.mark.parametrize("records_as_list", [True, False])
+def test_default_http_availability_strategy(
+    mocker,
+    status_code,
+    json_contents,
+    expected_is_available,
+    expected_messages,
+    include_source,
+    expected_docs_url_messages,
+    records_as_list,
+):
+    class MockListHttpStream(MockHttpStream):
+        def read_records(self, *args, **kvargs):
+            if records_as_list:
+                return list(super().read_records(*args, **kvargs))
+            else:
+                return super().read_records(*args, **kvargs)
+
+    http_stream = MockListHttpStream()
     assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
 
     class MockResponseWithJsonContents(requests.Response, mocker.MagicMock):
@@ -131,8 +155,8 @@ def test_send_handles_retries_when_checking_availability(mocker, caplog):
         assert message in caplog.text
 
 
-def test_http_availability_strategy_on_empty_stream(mocker):
-
+@pytest.mark.parametrize("records_as_list", [True, False])
+def test_http_availability_strategy_on_empty_stream(mocker, records_as_list):
     class MockEmptyHttpStream(mocker.MagicMock, MockHttpStream):
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)
@@ -144,7 +168,10 @@ def test_http_availability_strategy_on_empty_stream(mocker):
     assert isinstance(empty_stream.availability_strategy, HttpAvailabilityStrategy)
 
     # Generator should have no values to generate
-    empty_stream.read_records.return_value = iter([])
+    if records_as_list:
+        empty_stream.read_records.return_value = []
+    else:
+        empty_stream.read_records.return_value = iter([])
 
     logger = logging.getLogger("airbyte.test-source")
     stream_is_available, _ = empty_stream.check_availability(logger)

@@ -5,12 +5,12 @@ on:
     inputs:
       runs-on:
         type: string
-        default: conn-prod-xlarge-runner
+        default: ci-runner-connector-publish-large-dagger-0-9-5
         required: true
 
 jobs:
   no-op:
     name: No-op
-    runs-on: ${{ inputs.runs-on || 'conn-prod-xlarge-runner' }}
+    runs-on: ${{ inputs.runs-on || 'ci-runner-connector-publish-large-dagger-0-9-5' }}
     steps:
       - run: echo 'hi!'

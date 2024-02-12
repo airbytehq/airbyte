@@ -39,19 +39,9 @@ def cohorts_stream(streams):
             "annotations_stream",
             "https://amplitude.com/api/2/annotations",
             [
-                {
-                    "date": "2023-09-22",
-                    "details": "vacate et scire",
-                    "id": 1,
-                    "label": "veritas"
-                },
-                {
-                    "date": "2023-09-22",
-                    "details": "valenter volenter",
-                    "id": 2,
-                    "label": "veritas"
-                }
-            ]
+                {"date": "2023-09-22", "details": "vacate et scire", "id": 1, "label": "veritas"},
+                {"date": "2023-09-22", "details": "valenter volenter", "id": 2, "label": "veritas"},
+            ],
         ),
         (
             "cohorts_stream",
@@ -83,11 +73,11 @@ def cohorts_stream(streams):
                     "size": 186,
                     "type": "one",
                     "view_count": 2,
-                    "viewers": ["me", "mom"]
+                    "viewers": ["me", "mom"],
                 }
-            ]
-        )
-    ]
+            ],
+        ),
+    ],
 )
 def test_empty_streams(stream_fixture_name, url, expected_records, request, requests_mock):
     """
@@ -95,32 +85,18 @@ def test_empty_streams(stream_fixture_name, url, expected_records, request, requ
     due to free subscription plan for the sandbox
     """
     stream = request.getfixturevalue(stream_fixture_name)
-    records_reader = stream.read_records(
-        sync_mode=SyncMode.full_refresh,
-        cursor_field=None,
-        stream_slice={}
-    )
-    requests_mock.get(
-        url,
-        status_code=200,
-        json={"data": expected_records}
-    )
+    records_reader = stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice={})
+    requests_mock.get(url, status_code=200, json={"data": expected_records})
 
     # Sort actual and expected records by ID.
     # Prepare pairs of the actual and expected versions of the same record.
-    pairs = zip(*[
-        sorted(record, key=operator.itemgetter('id'))
-        for record in (list(records_reader), expected_records)
-    ])
+    pairs = zip(*[sorted(record, key=operator.itemgetter("id")) for record in (list(records_reader), expected_records)])
 
     # Calculate unmatched records and return their key, actual value and expected value
     unmatched = [
-        [
-            (key, _actual[key], _expected[key])
-            for key in _actual
-            if _actual[key] != _expected[key]
-        ]
-        for _actual, _expected in pairs if _actual != _expected
+        [(key, _actual[key], _expected[key]) for key in _actual if _actual[key] != _expected[key]]
+        for _actual, _expected in pairs
+        if _actual != _expected
     ]
 
     # Ensure we don't have any unmatched records

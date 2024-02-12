@@ -1,10 +1,6 @@
 plugins {
     id 'airbyte-python'
-    id 'airbyte-docker'
-}
-
-airbytePython {
-    moduleDirectory 'airbyte_cdk'
+    id 'airbyte-docker-legacy'
 }
 
 def generateComponentManifestClassFiles = tasks.register('generateComponentManifestClassFiles', Exec) {

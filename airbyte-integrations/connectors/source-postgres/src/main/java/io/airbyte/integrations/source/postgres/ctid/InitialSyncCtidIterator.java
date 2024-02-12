@@ -4,23 +4,23 @@
 
 package io.airbyte.integrations.source.postgres.ctid;
 
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.EIGHT_KB;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.GIGABYTE;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.MAX_ALLOWED_RESYNCS;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.QUERY_TARGET_SIZE_GB;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.RowDataWithCtid;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
-import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -283,13 +283,13 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setObject(1, lowerBound.toString());
         preparedStatement.setObject(2, upperBound.toString());
-        LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+        LOGGER.info("Executing query for table {}: {} with bindings {} and {}", tableName, sql, lowerBound, upperBound);
         return preparedStatement;
       } else {
         final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setObject(1, lowerBound.toString());
-        LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+        LOGGER.info("Executing query for table {}: {} with binding {}", tableName, sql, lowerBound);
         return preparedStatement;
       }
     } catch (final SQLException e) {
@@ -303,13 +303,12 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     Preconditions.checkArgument(lowerBound != null, "Lower bound ctid expected");
     Preconditions.checkArgument(upperBound != null, "Upper bound ctid expected");
     try {
-      LOGGER.info("*** one more {}", lowerBound);
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
           quoteString);
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
       final String sql =
-          "SELECT ctid::text, %s FROM %s WHERE ctid = ANY (ARRAY (SELECT FORMAT('(%%s,%%s)', page, tuple)::tid FROM generate_series(?, ?) as page, generate_series(?,?) as tuple))"
+          "SELECT ctid::text, %s FROM %s WHERE ctid = ANY (ARRAY (SELECT FORMAT('(%%s,%%s)', page, tuple)::tid tid_addr FROM generate_series(?, ?) as page, generate_series(?,?) as tuple ORDER BY tid_addr))"
               .formatted(
                   wrappedColumnNames, fullTableName);
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);

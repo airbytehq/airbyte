@@ -1,109 +1,131 @@
-version: "0.29.0"
+version: "0.51.11"
+type: DeclarativeSource
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/apify-dataset
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Apify Dataset Spec
+    type: object
+    required:
+      - token
+      - dataset_id
+    properties:
+      token:
+        type: string
+        title: API token
+        description: >-
+          Personal API token of your Apify account. In Apify Console, you can find your API token in the
+          <a href="https://console.apify.com/account/integrations">Settings section under the Integrations tab</a>
+          after you login. See the <a href="https://docs.apify.com/platform/integrations/api#api-token">Apify Docs</a>
+          for more information.
+        examples:
+          - apify_api_PbVwb1cBbuvbfg2jRmAIHZKgx3NQyfEMG7uk
+        airbyte_secret: true
+      dataset_id:
+        type: string
+        title: Dataset ID
+        description: >-
+          ID of the dataset you would like to load to Airbyte. In Apify Console, you can view your datasets in the
+          <a href="https://console.apify.com/storage/datasets">Storage section under the Datasets tab</a>
+          after you login. See the <a href="https://docs.apify.com/platform/storage/dataset">Apify Docs</a>
+          for more information.
+        examples:
+          - rHuMdwm6xCFt6WiGU
+    additionalProperties: true
 
 definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["data"]
-  requester:
-    type: HttpRequester
-    url_base: "https://api.apify.com/v2/"
-    http_method: "GET"
-    authenticator:
-      type: NoAuth
-    request_parameters:
-      token: "{{ config['token'] }}"
-
   retriever:
     type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: "NoPagination"
     requester:
-      $ref: "#/definitions/requester"
+      type: HttpRequester
+      url_base: "https://api.apify.com/v2/"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['token'] }}"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 50
+      page_token_option:
+        type: "RequestOption"
+        field_name: "offset"
+        inject_into: "request_parameter"
 
-  base_paginator:
-    type: "DefaultPaginator"
-    page_size_option:
-      type: "RequestOption"
-      inject_into: "request_parameter"
-      field_name: "limit"
-    pagination_strategy:
-      type: "OffsetIncrement"
-      page_size: 50
-    page_token_option:
-      type: "RequestOption"
-      field_name: "offset"
-      inject_into: "request_parameter"
-
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/retriever"
-
-  datasets_stream:
-    $ref: "#/definitions/base_stream"
+streams:
+  - type: DeclarativeStream
+    name: dataset_collection
+    primary_key: "id"
     $parameters:
-      name: "datasets"
-      primary_key: "id"
       path: "datasets"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_apify_dataset/schemas/dataset_collection.json"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/base_paginator"
       record_selector:
-        $ref: "#/definitions/selector"
+        type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: ["data", "items"]
 
-  datasets_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/datasets_stream"
-        parent_key: "id"
-        partition_field: "parent_id"
-
-  dataset_stream:
-    $ref: "#/definitions/base_stream"
+  - type: DeclarativeStream
+    name: dataset
+    primary_key: "id"
     $parameters:
-      name: "dataset"
-      primary_key: "id"
-      path: "datasets/{{ stream_partition.parent_id }}"
+      path: "datasets/{{ config['dataset_id'] }}"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_apify_dataset/schemas/dataset.json"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/base_paginator"
-      partition_router:
-        $ref: "#/definitions/datasets_partition_router"
-
-  item_collection_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "item_collection"
-      path: "datasets/{{ stream_partition.parent_id }}/items"
-    retriever:
-      $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/base_paginator"
       record_selector:
-        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["data"]
+
+  - type: DeclarativeStream
+    name: item_collection_website_content_crawler
+    $parameters:
+      path: "datasets/{{ config['dataset_id'] }}/items"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_apify_dataset/schemas/item_collection_wcc.json"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
-      partition_router:
-        $ref: "#/definitions/datasets_partition_router"
 
-streams:
-  - "#/definitions/datasets_stream"
-  - "#/definitions/dataset_stream"
-  - "#/definitions/item_collection_stream"
+  - type: DeclarativeStream
+    name: item_collection
+    $parameters:
+      path: "datasets/{{ config['dataset_id'] }}/items"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_apify_dataset/schemas/item_collection.json"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          class_name: source_apify_dataset.wrapping_dpath_extractor.WrappingDpathExtractor
+          field_path: []
 
 check:
   type: CheckStream
   stream_names:
-    - "datasets"
-    - "dataset"
-    - "item_collection"
+    - dataset_collection
+    - dataset
+    - item_collection_website_content_crawler
+    - item_collection

@@ -1,0 +1,118 @@
+{
+  "title": "Timeline Line Commented Event",
+  "description": "Timeline Line Commented Event",
+  "type": "object",
+  "properties": {
+    "event": { "type": "string" },
+    "node_id": { "type": "string" },
+    "comments": {
+      "type": "array",
+      "items": {
+        "title": "Pull Request Review Comment",
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "pull_request_review_id": {
+            "type": ["integer", "null"]
+          },
+          "id": { "type": "integer" },
+          "node_id": { "type": "string" },
+          "diff_hunk": { "type": "string" },
+          "path": { "type": "string" },
+          "position": { "type": "integer" },
+          "original_position": { "type": "integer" },
+          "commit_id": { "type": "string" },
+          "original_commit_id": { "type": "string" },
+          "in_reply_to_id": { "type": "integer" },
+          "user": {
+            "type": "object",
+            "properties": {
+              "name": { "type": ["string", "null"] },
+              "email": { "type": ["string", "null"] },
+              "login": { "type": "string" },
+              "id": { "type": "integer" },
+              "node_id": { "type": "string" },
+              "avatar_url": { "type": "string" },
+              "gravatar_id": { "type": ["string", "null"] },
+              "url": { "type": "string" },
+              "html_url": { "type": "string" },
+              "followers_url": { "type": "string" },
+              "following_url": { "type": "string" },
+              "gists_url": { "type": "string" },
+              "starred_url": { "type": "string" },
+              "subscriptions_url": { "type": "string" },
+              "organizations_url": { "type": "string" },
+              "repos_url": { "type": "string" },
+              "events_url": { "type": "string" },
+              "received_events_url": { "type": "string" },
+              "type": { "type": "string" },
+              "site_admin": { "type": "boolean" },
+              "starred_at": { "type": "string", "format": "date-time" }
+            }
+          },
+          "body": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" },
+          "html_url": { "type": "string" },
+          "pull_request_url": { "type": "string" },
+          "author_association": { "type": "string" },
+          "_links": {
+            "type": "object",
+            "properties": {
+              "self": {
+                "type": "object",
+                "properties": {
+                  "href": { "type": "string" }
+                }
+              },
+              "html": {
+                "type": "object",
+                "properties": {
+                  "href": { "type": "string" }
+                }
+              },
+              "pull_request": {
+                "type": "object",
+                "properties": {
+                  "href": { "type": "string" }
+                }
+              }
+            }
+          },
+          "start_line": {
+            "type": ["integer", "null"]
+          },
+          "original_start_line": {
+            "type": ["integer", "null"]
+          },
+          "start_side": {
+            "type": ["string", "null"]
+          },
+          "line": { "type": "integer" },
+          "original_line": { "type": "integer" },
+          "side": { "type": "string" },
+          "subject_type": { "type": "string" },
+          "reactions": {
+            "type": "object",
+            "properties": {
+              "url": { "type": "string" },
+              "total_count": { "type": "integer" },
+              "+1": { "type": "integer" },
+              "-1": { "type": "integer" },
+              "laugh": { "type": "integer" },
+              "confused": { "type": "integer" },
+              "heart": { "type": "integer" },
+              "hooray": { "type": "integer" },
+              "eyes": { "type": "integer" },
+              "rocket": { "type": "integer" }
+            }
+          },
+          "body_html": { "type": "string" },
+          "body_text": { "type": "string" }
+        }
+      }
+    }
+  }
+}

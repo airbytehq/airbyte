@@ -1,7 +1,16 @@
 name: Require Connector Checklist
 on:
   pull_request:
-    types: [opened, edited, synchronize, labeled, unlabeled, reopened, ready_for_review]
+    types:
+      [
+        opened,
+        edited,
+        synchronize,
+        labeled,
+        unlabeled,
+        reopened,
+        ready_for_review,
+      ]
     paths:
       - "airbyte-integrations/connectors/source-**"
       - "airbyte-integrations/connectors/destination-**"

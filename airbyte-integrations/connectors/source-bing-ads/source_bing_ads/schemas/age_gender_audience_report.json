@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "AgeGroup": {
+      "type": ["null", "string"]
+    },
+    "Gender": {
+      "type": ["null", "string"]
+    },
+    "TimePeriod": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "AllConversions": {
+      "type": ["null", "integer"]
+    },
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "type": ["null", "string"]
+    },
+    "CampaignName": {
+      "type": ["null", "string"]
+    },
+    "CampaignId": {
+      "type": ["null", "integer"]
+    },
+    "AdGroupName": {
+      "type": ["null", "string"]
+    },
+    "AdGroupId": {
+      "type": ["null", "integer"]
+    },
+    "AdDistribution": {
+      "type": ["null", "string"]
+    },
+    "Impressions": {
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "type": ["null", "integer"]
+    },
+    "Conversions": {
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "type": ["null", "number"]
+    },
+    "ExtendedCost": {
+      "type": ["null", "number"]
+    },
+    "Assists": {
+      "type": ["null", "integer"]
+    },
+    "Language": {
+      "type": ["null", "string"]
+    },
+    "AccountStatus": {
+      "type": ["null", "string"]
+    },
+    "CampaignStatus": {
+      "type": ["null", "string"]
+    },
+    "AdGroupStatus": {
+      "type": ["null", "string"]
+    },
+    "BaseCampaignId": {
+      "type": ["null", "string"]
+    },
+    "AllRevenue": {
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversions": {
+      "type": ["null", "integer"]
+    },
+    "Goal": {
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "type": ["null", "string"]
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "type": ["null", "number"]
+    },
+    "TopImpressionRatePercent": {
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "AllConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "ViewThroughRevenue": {
+      "type": ["null", "number"]
+    }
+  }
+}

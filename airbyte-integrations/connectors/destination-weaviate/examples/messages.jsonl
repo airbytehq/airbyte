@@ -1,0 +1,2 @@
+{"type": "RECORD", "record": {"stream": "example_stream", "data": { "title": "valueZXXXXXXXX1", "field2": "value2", "pk": "1", "vector": [1,2,3,4,5,6,7] }, "emitted_at": 1625383200000}}
+{"type": "RECORD", "record": {"stream": "example_stream", "data": { "title": "a completely different value and so on", "field2": "value2", "pk": "1", "vector": [0,0,0,0,0,0,0] }, "emitted_at": 1625383200000}}

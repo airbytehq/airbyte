@@ -22,8 +22,11 @@ from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+from airbyte_cdk.utils import is_cloud_environment
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
+from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
@@ -36,10 +39,8 @@ class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         init_uncaught_exception_handler(logger)
 
-        # DEPLOYMENT_MODE is read when instantiating the entrypoint because it is the common path shared by syncs and connector
-        # builder test requests
-        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
-        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE:
+        # deployment mode is read when instantiating the entrypoint because it is the common path shared by syncs and connector builder test requests
+        if is_cloud_environment():
             _init_internal_request_filter()
 
         self.source = source
@@ -87,6 +88,7 @@ class AirbyteEntrypoint(object):
 
         if hasattr(parsed_args, "debug") and parsed_args.debug:
             self.logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
             self.logger.debug("Debug logs enabled")
         else:
             self.logger.setLevel(logging.INFO)
@@ -94,6 +96,7 @@ class AirbyteEntrypoint(object):
         source_spec: ConnectorSpecification = self.source.spec(self.logger)
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
+                os.environ[ENV_REQUEST_CACHE_PATH] = temp_dir  # set this as default directory for request_cache to store *.sqlite files
                 if cmd == "spec":
                     message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
                     yield from [
@@ -104,6 +107,9 @@ class AirbyteEntrypoint(object):
                     raw_config = self.source.read_config(parsed_args.config)
                     config = self.source.configure(raw_config, temp_dir)
 
+                    yield from [
+                        self.airbyte_message_to_string(queued_message) for queued_message in self._emit_queued_messages(self.source)
+                    ]
                     if cmd == "check":
                         yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.check(source_spec, config))
                     elif cmd == "discover":
@@ -176,6 +182,13 @@ class AirbyteEntrypoint(object):
         return airbyte_message.json(exclude_unset=True)
 
     @classmethod
+    def extract_state(cls, args: List[str]) -> Optional[Any]:
+        parsed_args = cls.parse_args(args)
+        if hasattr(parsed_args, "state"):
+            return parsed_args.state
+        return None
+
+    @classmethod
     def extract_catalog(cls, args: List[str]) -> Optional[Any]:
         parsed_args = cls.parse_args(args)
         if hasattr(parsed_args, "catalog"):
@@ -199,7 +212,9 @@ def launch(source: Source, args: List[str]) -> None:
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
     for message in source_entrypoint.run(parsed_args):
-        print(message)
+        # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
+        # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
+        print(f"{message}\n", end="")
 
 
 def _init_internal_request_filter() -> None:
@@ -224,9 +239,10 @@ def _init_internal_request_filter() -> None:
         try:
             is_private = _is_private_url(parsed_url.hostname, parsed_url.port)  # type: ignore [arg-type]
             if is_private:
-                raise ValueError(
-                    "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
-                    + "connectors only support requesting data from public API endpoints."
+                raise AirbyteTracedException(
+                    internal_message=f"Invalid URL endpoint: `{parsed_url.hostname!r}` belongs to a private network",
+                    failure_type=FailureType.config_error,
+                    message="Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source connectors only support requesting data from public API endpoints.",
                 )
         except socket.gaierror as exception:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
