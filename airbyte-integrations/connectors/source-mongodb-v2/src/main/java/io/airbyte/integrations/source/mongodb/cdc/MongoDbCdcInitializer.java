@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -82,9 +81,10 @@ public class MongoDbCdcInitializer {
 
     LOGGER.info("*** config {}", config.rawConfig());
     final Duration firstRecordWaitTime = Duration.ofSeconds(config.getInitialWaitingTimeSeconds());
-    // #35059: debezium heartbeats are not sent on the expected interval. this is a worksaround to allow making
+    // #35059: debezium heartbeats are not sent on the expected interval. this is a worksaround to allow
+    // making
     // subsequent wait time configurable.
-//    final Duration subsequentRecordWaitTime = firstRecordWaitTime.dividedBy(2);
+    // final Duration subsequentRecordWaitTime = firstRecordWaitTime.dividedBy(2);
     final Duration subsequentRecordWaitTime = firstRecordWaitTime;
     LOGGER.info("*** subs {} init {}", subsequentRecordWaitTime, firstRecordWaitTime);
     final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
