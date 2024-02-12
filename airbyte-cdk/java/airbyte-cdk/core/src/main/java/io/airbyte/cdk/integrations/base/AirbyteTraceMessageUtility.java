@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
+import java.time.Instant;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -92,7 +93,11 @@ public final class AirbyteTraceMessageUtility {
   }
 
   private static AirbyteMessage makeAnalyticsTraceAirbyteMessage(final AirbyteAnalyticsTraceMessage airbyteAnalyticsTraceMessage) {
-    return new AirbyteMessage().withType(Type.TRACE).withTrace(new AirbyteTraceMessage().withAnalytics(airbyteAnalyticsTraceMessage));
+    return new AirbyteMessage().withType(Type.TRACE)
+        .withTrace(new AirbyteTraceMessage()
+            .withAnalytics(airbyteAnalyticsTraceMessage)
+            .withType(AirbyteTraceMessage.Type.ANALYTICS)
+            .withEmittedAt((double) Instant.now().toEpochMilli()));
   }
 
   private static AirbyteMessage makeStreamStatusTraceAirbyteMessage(final AirbyteStreamStatusHolder airbyteStreamStatusHolder) {
