@@ -22,7 +22,6 @@ import java.util.concurrent.Callable;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -77,11 +76,6 @@ class MySqlStressTest extends JdbcStressTest {
     });
 
     super.setup();
-  }
-
-  @AfterEach
-  void tearDown() {
-    dslContext.close();
   }
 
   @AfterAll
