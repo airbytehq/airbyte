@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="INFO" packages="io.airbyte.commons.logging">
+<Configuration status="INFO">
     <Properties>
         <!-- Set the LOG_SCRUB_PATTERN env var to a regex pattern to scrub the log messages of secrets or any other unwanted content. -->
         <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %replace{%m}{$${env:LOG_SCRUB_PATTERN:-\*\*\*\*\*}}{*****}%n</Property>

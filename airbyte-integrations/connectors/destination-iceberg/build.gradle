@@ -52,12 +52,6 @@ dependencies {
     testImplementation libs.testcontainers.postgresql
     integrationTestJavaImplementation libs.testcontainers.postgresql
 
-    compileOnly 'org.projectlombok:lombok:1.18.24'
-    annotationProcessor 'org.projectlombok:lombok:1.18.24'
-
-    testCompileOnly 'org.projectlombok:lombok:1.18.24'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
-
     testImplementation 'org.mockito:mockito-inline:4.7.0'
 }
 
