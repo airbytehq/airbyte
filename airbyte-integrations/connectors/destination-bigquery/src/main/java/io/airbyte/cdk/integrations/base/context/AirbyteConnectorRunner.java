@@ -8,8 +8,6 @@ import io.micronaut.context.env.CommandLinePropertySource;
 import io.micronaut.context.env.Environment;
 import picocli.CommandLine;
 
-import static io.airbyte.cdk.integrations.base.JavaBaseConstants.ARGS_CATALOG_KEY;
-
 public class AirbyteConnectorRunner {
 
     public static <R extends Runnable> void run(final Class<R> cls, final String... args) {
