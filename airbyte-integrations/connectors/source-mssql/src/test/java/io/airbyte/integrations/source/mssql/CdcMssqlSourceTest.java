@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_DEFAULT_CURSOR;
@@ -11,6 +12,8 @@ import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_EVENT_SERIAL_
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.ORDERED_COL_STATE_TYPE;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.STATE_TYPE_KEY;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,25 +36,38 @@ import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteGlobalState;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestDatabase> {
@@ -71,14 +87,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   }
 
   protected MSSQLServerContainer<?> createContainer() {
-    return new MsSQLContainerFactory()
-        .createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
-  }
-
-  @BeforeAll
-  public void beforeAll() {
-    new MsSQLContainerFactory().withAgent(privateContainer);
-    privateContainer.start();
+    return new MsSQLContainerFactory().exclusive(
+        MsSQLTestDatabase.BaseImage.MSSQL_2022.reference,
+        MsSQLTestDatabase.ContainerModifier.AGENT.methodName);
   }
 
   @AfterAll
@@ -116,6 +127,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         .withSchemas(modelsSchema(), randomSchema())
         .withCdcReplication()
         .withoutSsl()
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build();
   }
 
@@ -183,6 +195,69 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   @Override
   public void newTableSnapshotTest() {
     // Do nothing
+  }
+
+  // Utilize the setup to do test on MssqlDebeziumStateUtil.
+  @Test
+  public void testCdcSnapshot() {
+    MssqlDebeziumStateUtil util = new MssqlDebeziumStateUtil();
+
+    JdbcDatabase testDatabase = testDatabase();
+    testDatabase.setSourceConfig(config());
+    testDatabase.setDatabaseConfig(source().toDatabaseConfig(config()));
+
+    JsonNode debeziumState = util.constructInitialDebeziumState(MssqlCdcHelper.getDebeziumProperties(testDatabase, getConfiguredCatalog(), true),
+        getConfiguredCatalog(), testDatabase);
+
+    Assertions.assertEquals(3, Jsons.object(debeziumState, Map.class).size());
+    Assertions.assertTrue(debeziumState.has("is_compressed"));
+    Assertions.assertFalse(debeziumState.get("is_compressed").asBoolean());
+    Assertions.assertTrue(debeziumState.has("mssql_db_history"));
+    Assertions.assertNotNull(debeziumState.get("mssql_db_history"));
+    Assertions.assertTrue(debeziumState.has("mssql_cdc_offset"));
+  }
+
+  // Tests even with consistent inserting operations, CDC snapshot and incremental load will not lose
+  // data.
+  @Test
+  public void testCdcNotLoseDataWithConsistentWriting() throws Exception {
+    ExecutorService executor = Executors.newFixedThreadPool(10);
+
+    // Inserting 50 records in 10 seconds.
+    // Intention is to insert records while we are running the first snapshot read. And we check with
+    // the first snapshot read operations
+    // and a following incremental read operation, we will be able to capture all data.
+    int numberOfRecordsToInsert = 50;
+    var insertingProcess = executor.submit(() -> {
+      for (int i = 0; i < numberOfRecordsToInsert; i++) {
+        testdb.with("INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');",
+            modelsSchema(), MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, 910019 + i, i, "car description");
+        try {
+          Thread.sleep(200);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
+
+    final AutoCloseableIterator<AirbyteMessage> read1 = source()
+        .read(config(), getConfiguredCatalog(), null);
+    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
+    final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords1);
+    final List<AirbyteStateMessage> stateMessagesFromFirstSync = extractStateMessages(actualRecords1);
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessagesFromFirstSync.get(stateMessagesFromFirstSync.size() - 1)));
+    // Make sure we have finished inserting process and read from previous state.
+    insertingProcess.get();
+
+    final AutoCloseableIterator<AirbyteMessage> read2 = source()
+        .read(config(), getConfiguredCatalog(), state);
+    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
+
+    recordMessages.addAll(extractRecordMessages(actualRecords2));
+
+    final Set<Integer> ids = recordMessages.stream().map(message -> message.getData().get("id").intValue()).collect(Collectors.toSet());
+    // Originally in setup we have inserted 6 records in the table.
+    assertEquals(ids.size(), numberOfRecordsToInsert + 6);
   }
 
   @Override
@@ -355,10 +430,52 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   @Override
   protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+    assertEquals(7, stateMessages.size());
+    assertStateTypes(stateMessages, 4);
+  }
+
+  @Override
+  protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
-    assertNotNull(stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_CDC_OFFSET));
-    assertNotNull(stateMessages.get(0).getData().get("cdc_state").get("state").get(MSSQL_DB_HISTORY));
+    for (final AirbyteStateMessage stateMessage : stateMessages) {
+      assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MSSQL_CDC_OFFSET));
+      assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MSSQL_DB_HISTORY));
+    }
+  }
+
+  @Override
+  protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
+    assertEquals(2, stateMessages.size());
+  }
+
+  @Override
+  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
+    assertEquals(27, stateAfterFirstBatch.size());
+    assertStateTypes(stateAfterFirstBatch, 24);
+  }
+
+  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectOcState) {
+    JsonNode sharedState = null;
+    for (int i = 0; i < stateMessages.size(); i++) {
+      final AirbyteStateMessage stateMessage = stateMessages.get(i);
+      assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
+      final AirbyteGlobalState global = stateMessage.getGlobal();
+      assertNotNull(global.getSharedState());
+      if (Objects.isNull(sharedState)) {
+        sharedState = global.getSharedState();
+      } else {
+        assertEquals(sharedState, global.getSharedState());
+      }
+      assertEquals(1, global.getStreamStates().size());
+      final AirbyteStreamState streamState = global.getStreamStates().get(0);
+      if (i <= indexTillWhichExpectOcState) {
+        assertTrue(streamState.getStreamState().has(STATE_TYPE_KEY));
+        assertEquals(ORDERED_COL_STATE_TYPE, streamState.getStreamState().get(STATE_TYPE_KEY).asText());
+      } else {
+        assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
+      }
+    }
   }
 
 }

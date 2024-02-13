@@ -3,16 +3,19 @@ from __future__ import annotations
 
 import json
 import tempfile
+import warnings
 from contextlib import contextmanager, suppress
 from typing import TYPE_CHECKING, Any
 
 import jsonschema
+import pendulum
 import yaml
 from rich import print
 
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteMessage,
+    AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
@@ -25,7 +28,8 @@ from airbyte_protocol.models import (
 
 from airbyte_lib import exceptions as exc
 from airbyte_lib._factories.cache_factories import get_default_cache
-from airbyte_lib._util import protocol_util  # Internal utility functions
+from airbyte_lib._util import protocol_util
+from airbyte_lib._util.text_util import lower_case_set  # Internal utility functions
 from airbyte_lib.datasets._lazy import LazyDataset
 from airbyte_lib.progress import progress
 from airbyte_lib.results import ReadResult
@@ -46,7 +50,7 @@ if TYPE_CHECKING:
 
 
 @contextmanager
-def as_temp_files(files_contents: list[dict]) -> Generator[list[str], Any, None]:
+def as_temp_files(files_contents: list[Any]) -> Generator[list[str], Any, None]:
     """Write the given contents to temporary files and yield the file paths as strings."""
     temp_files: list[Any] = []
     try:
@@ -87,20 +91,34 @@ class Source:
         self._last_log_messages: list[str] = []
         self._discovered_catalog: AirbyteCatalog | None = None
         self._spec: ConnectorSpecification | None = None
-        self._selected_stream_names: list[str] | None = None
+        self._selected_stream_names: list[str] = []
         if config is not None:
             self.set_config(config, validate=validate)
         if streams is not None:
             self.set_streams(streams)
 
     def set_streams(self, streams: list[str]) -> None:
-        """Optionally, select the stream names that should be read from the connector.
+        """Deprecated. See select_streams()."""
+        warnings.warn(
+            "The 'set_streams' method is deprecated and will be removed in a future version. "
+            "Please use the 'select_streams' method instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.select_streams(streams)
+
+    def select_all_streams(self) -> None:
+        """Select all streams.
+
+        This is a more streamlined equivalent to:
+        > source.select_streams(source.get_available_streams()).
+        """
+        self._selected_stream_names = self.get_available_streams()
+
+    def select_streams(self, streams: list[str]) -> None:
+        """Select the stream names that should be read from the connector.
 
         Currently, if this is not set, all streams will be read.
-
-        TODO: In the future if not set, the default behavior may exclude streams which the connector
-        would default to disabled. (For instance, streams that require a premium license
-        are sometimes disabled by default within the connector.)
         """
         available_streams = self.get_available_streams()
         for stream in streams:
@@ -115,12 +133,9 @@ class Source:
     def get_selected_streams(self) -> list[str]:
         """Get the selected streams.
 
-        If no streams are selected, return all available streams.
+        If no streams are selected, return an empty list.
         """
-        if self._selected_stream_names:
-            return self._selected_stream_names
-
-        return self.get_available_streams()
+        return self._selected_stream_names
 
     def set_config(
         self,
@@ -140,11 +155,15 @@ class Source:
 
         self._config_dict = config
 
+    def get_config(self) -> dict[str, Any]:
+        """Get the config for the connector."""
+        return self._config
+
     @property
     def _config(self) -> dict[str, Any]:
         if self._config_dict is None:
             raise exc.AirbyteConnectorConfigurationMissingError(
-                guidance="Provide via get_connector() or set_config()"
+                guidance="Provide via get_source() or set_config()"
             )
         return self._config_dict
 
@@ -245,19 +264,24 @@ class Source:
         disable by default. (For instance, streams that require a premium license are sometimes
         disabled by default within the connector.)
         """
-        _ = self.discovered_catalog  # Ensure discovered catalog is cached before we start
-        streams_filter: list[str] | None = self._selected_stream_names
+        # Ensure discovered catalog is cached before we start
+        _ = self.discovered_catalog
+
+        # Filter for selected streams if set, otherwise use all available streams:
+        streams_filter: list[str] = self._selected_stream_names or self.get_available_streams()
+
         return ConfiguredAirbyteCatalog(
             streams=[
-                # TODO: Set sync modes and primary key to a sensible adaptive default
                 ConfiguredAirbyteStream(
                     stream=stream,
-                    sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                     primary_key=stream.source_defined_primary_key,
+                    # TODO: The below assumes all sources can coalesce from incremental sync to
+                    # full_table as needed. CDK supports this, so it might be safe:
+                    sync_mode=SyncMode.incremental,
                 )
                 for stream in self.discovered_catalog.streams
-                if streams_filter is None or stream.name in streams_filter
+                if stream.name in streams_filter
             ],
         )
 
@@ -295,13 +319,17 @@ class Source:
             ) from KeyError(stream)
 
         configured_stream = configured_catalog.streams[0]
-        col_list = configured_stream.stream.json_schema["properties"].keys()
+        all_properties = set(configured_stream.stream.json_schema["properties"].keys())
 
         def _with_missing_columns(records: Iterable[dict[str, Any]]) -> Iterator[dict[str, Any]]:
             """Add missing columns to the record with null values."""
             for record in records:
-                appended_columns = set(col_list) - set(record.keys())
-                appended_dict = {col: None for col in appended_columns}
+                existing_properties_lower = lower_case_set(record.keys())
+                appended_dict = {
+                    prop: None
+                    for prop in all_properties
+                    if prop.lower() not in existing_properties_lower
+                }
                 yield {**record, **appended_dict}
 
         iterator: Iterator[dict[str, Any]] = _with_missing_columns(
@@ -309,7 +337,6 @@ class Source:
                 self._read_with_catalog(
                     streaming_cache_info,
                     configured_catalog,
-                    force_full_refresh=True,  # Always full refresh when skipping the cache
                 ),
             )
         )
@@ -329,7 +356,8 @@ class Source:
                 for msg in self._execute(["check", "--config", config_file]):
                     if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
                         if msg.connectionStatus.status != Status.FAILED:
-                            return  # Success!
+                            print(f"Connection check succeeded for `{self.name}`.")
+                            return
 
                         raise exc.AirbyteConnectorCheckFailedError(
                             help_url=self.docs_url,
@@ -360,8 +388,7 @@ class Source:
     def _read(
         self,
         cache_info: CacheTelemetryInfo,
-        *,
-        force_full_refresh: bool,
+        state: list[AirbyteStateMessage] | None = None,
     ) -> Iterable[AirbyteMessage]:
         """
         Call read on the connector.
@@ -379,15 +406,14 @@ class Source:
         yield from self._read_with_catalog(
             cache_info,
             catalog=self.configured_catalog,
-            force_full_refresh=force_full_refresh,
+            state=state,
         )
 
     def _read_with_catalog(
         self,
         cache_info: CacheTelemetryInfo,
         catalog: ConfiguredAirbyteCatalog,
-        *,
-        force_full_refresh: bool,
+        state: list[AirbyteStateMessage] | None = None,
     ) -> Iterator[AirbyteMessage]:
         """Call read on the connector.
 
@@ -397,34 +423,44 @@ class Source:
         * Listen to the messages and return the AirbyteRecordMessages that come along.
         * Send out telemetry on the performed sync (with information about which source was used and
           the type of the cache)
-
-        TODO: When we add support for incremental syncs, we should only send `--state <state_file>`
-              if force_full_refresh is False.
         """
-        _ = force_full_refresh  # TODO: Use this decide whether to send `--state <state_file>`
         source_tracking_information = self.executor.get_telemetry_info()
         send_telemetry(source_tracking_information, cache_info, SyncState.STARTED)
+        sync_failed = False
+        self._processed_records = 0  # Reset the counter before we start
         try:
-            with as_temp_files([self._config, catalog.json()]) as [
+            with as_temp_files(
+                [self._config, catalog.json(), json.dumps(state) if state else "[]"]
+            ) as [
                 config_file,
                 catalog_file,
+                state_file,
             ]:
                 yield from self._execute(
-                    # TODO: Add support for incremental syncs by sending `--state <state_file>`
-                    ["read", "--config", config_file, "--catalog", catalog_file],
+                    [
+                        "read",
+                        "--config",
+                        config_file,
+                        "--catalog",
+                        catalog_file,
+                        "--state",
+                        state_file,
+                    ],
                 )
         except Exception:
             send_telemetry(
                 source_tracking_information, cache_info, SyncState.FAILED, self._processed_records
             )
+            sync_failed = True
             raise
         finally:
-            send_telemetry(
-                source_tracking_information,
-                cache_info,
-                SyncState.SUCCEEDED,
-                self._processed_records,
-            )
+            if not sync_failed:
+                send_telemetry(
+                    source_tracking_information,
+                    cache_info,
+                    SyncState.SUCCEEDED,
+                    self._processed_records,
+                )
 
     def _add_to_logs(self, message: str) -> None:
         self._last_log_messages.append(message)
@@ -447,11 +483,13 @@ class Source:
             for line in self.executor.execute(args):
                 try:
                     message = AirbyteMessage.parse_raw(line)
-                    yield message
+                    if message.type is Type.RECORD:
+                        self._processed_records += 1
                     if message.type == Type.LOG:
                         self._add_to_logs(message.log.message)
                     if message.type == Type.TRACE and message.trace.type == TraceType.ERROR:
                         self._add_to_logs(message.trace.error.message)
+                    yield message
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
@@ -468,8 +506,6 @@ class Source:
         progress.reset(len(self._selected_stream_names or []))
 
         for message in messages:
-            if message.type is Type.RECORD:
-                self._processed_records += 1
             yield message
             progress.log_records_read(self._processed_records)
 
@@ -515,20 +551,29 @@ class Source:
                     },
                 ) from None
 
+        if not self._selected_stream_names:
+            raise exc.AirbyteLibNoStreamsSelectedError(
+                connector_name=self.name,
+                available_streams=self.get_available_streams(),
+            )
+
         cache.register_source(
             source_name=self.name,
             incoming_source_catalog=self.configured_catalog,
-            stream_names=set(self.get_selected_streams()),
+            stream_names=set(self._selected_stream_names),
         )
+        state = cache.get_state() if not force_full_refresh else None
+        print(f"Started `{self.name}` read operation at {pendulum.now().format('HH:mm:ss')}...")
         cache.process_airbyte_messages(
             self._tally_records(
                 self._read(
                     cache.get_telemetry_info(),
-                    force_full_refresh=force_full_refresh,
+                    state=state,
                 ),
             ),
             write_strategy=write_strategy,
         )
+        print(f"Completed `{self.name}` read operation at {pendulum.now().format('HH:mm:ss')}.")
 
         return ReadResult(
             processed_records=self._processed_records,

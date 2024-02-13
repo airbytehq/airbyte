@@ -90,6 +90,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         .withoutSsl()
         .withCdcReplication("After loading Data in the destination")
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .with("heartbeat_action_query", "")
         .build();
   }
 

@@ -49,6 +49,7 @@ so we insert as values instead.</p>
                 <dd id="DuckDBCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
                 <dd id="DuckDBCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
                 <dd id="DuckDBCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+                <dd id="DuckDBCache.get_state" class="function"><a href="#SQLCacheBase.get_state">get_state</a></dd>
                 <dd id="DuckDBCache.register_source" class="function"><a href="#SQLCacheBase.register_source">register_source</a></dd>
 
             </div>
@@ -60,6 +61,7 @@ so we insert as values instead.</p>
             </div>
             <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="DuckDBCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="DuckDBCache.source_catalog" class="variable">source_catalog</dd>
                 <dd id="DuckDBCache.process_stdin" class="function">process_stdin</dd>
                 <dd id="DuckDBCache.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="DuckDBCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
@@ -267,11 +269,13 @@ or another import method. (Relatively low priority, since for now it works fine 
                 <dd id="PostgresCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
                 <dd id="PostgresCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
                 <dd id="PostgresCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+                <dd id="PostgresCache.get_state" class="function"><a href="#SQLCacheBase.get_state">get_state</a></dd>
                 <dd id="PostgresCache.register_source" class="function"><a href="#SQLCacheBase.register_source">register_source</a></dd>
 
             </div>
             <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="PostgresCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="PostgresCache.source_catalog" class="variable">source_catalog</dd>
                 <dd id="PostgresCache.process_stdin" class="function">process_stdin</dd>
                 <dd id="PostgresCache.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="PostgresCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
@@ -659,6 +663,21 @@ or another import method. (Relatively low priority, since for now it works fine 
 
 
                             </div>
+                            <div id="SQLCacheBase.get_state" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_state</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_state"></a>
+    
+            <div class="docstring"><p>Return the current state of the source.</p>
+</div>
+
+
+                            </div>
                             <div id="SQLCacheBase.register_source" class="classattr">
                                 <div class="attr function">
                     <div class="decorator">@overrides</div>
@@ -699,6 +718,7 @@ we only register the stream if is expected to receive data.</p>
                                 <dl>
                                     <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="SQLCacheBase.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="SQLCacheBase.source_catalog" class="variable">source_catalog</dd>
                 <dd id="SQLCacheBase.process_stdin" class="function">process_stdin</dd>
                 <dd id="SQLCacheBase.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="SQLCacheBase.process_airbyte_messages" class="function">process_airbyte_messages</dd>
@@ -939,11 +959,13 @@ we only register the stream if is expected to receive data.</p>
                 <dd id="SnowflakeSQLCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
                 <dd id="SnowflakeSQLCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
                 <dd id="SnowflakeSQLCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+                <dd id="SnowflakeSQLCache.get_state" class="function"><a href="#SQLCacheBase.get_state">get_state</a></dd>
                 <dd id="SnowflakeSQLCache.register_source" class="function"><a href="#SQLCacheBase.register_source">register_source</a></dd>
 
             </div>
             <div><dt>airbyte_lib._processors.RecordProcessor</dt>
                                 <dd id="SnowflakeSQLCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="SnowflakeSQLCache.source_catalog" class="variable">source_catalog</dd>
                 <dd id="SnowflakeSQLCache.process_stdin" class="function">process_stdin</dd>
                 <dd id="SnowflakeSQLCache.process_input_stream" class="function">process_input_stream</dd>
                 <dd id="SnowflakeSQLCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>

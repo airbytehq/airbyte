@@ -12,16 +12,21 @@ from __future__ import annotations
 import airbyte_lib as ab
 
 
-SCALE = 5_000_000  # Number of records to generate between users and purchases.
+SCALE = 500_000  # Number of records to generate between users and purchases.
+
+# This is a dummy secret, just to test functionality.
+DUMMY_SECRET = ab.get_secret("DUMMY_SECRET")
 
 
-source = ab.get_connector(
+print("Installing Faker source...")
+source = ab.get_source(
     "source-faker",
     config={"count": SCALE / 2},
     install_if_missing=True,
 )
+print("Faker source installed.")
 source.check()
-source.set_streams(["products", "users", "purchases"])
+source.select_streams(["products", "users", "purchases"])
 
 result = source.read()
 
