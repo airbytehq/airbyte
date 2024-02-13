@@ -44,13 +44,14 @@ def _get_secret_from_env(
 def _get_secret_from_dotenv(
     secret_name: str,
 ) -> str | None:
-    dotenv_vars: dict[str, str | None] = {}
     try:
         dotenv_vars: dict[str, str | None] = dotenv_values()
     except Exception:
+        # Can't locate or parse a .env file
         return None
 
     if secret_name not in dotenv_vars:
+        # Secret not found
         return None
 
     return dotenv_vars[secret_name]
