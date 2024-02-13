@@ -30,6 +30,7 @@ pyarrow = "^14.0.2"
 # psycopg = {extras = ["binary", "pool"], version = "^3.1.16"}
 rich = "^13.7.0"
 pendulum = "<=3.0.0"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
