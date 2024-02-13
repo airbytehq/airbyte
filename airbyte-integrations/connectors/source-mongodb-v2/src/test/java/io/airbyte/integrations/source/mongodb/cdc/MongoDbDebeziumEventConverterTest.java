@@ -29,7 +29,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 class MongoDbDebeziumEventConverterTest {
 
@@ -115,7 +114,7 @@ class MongoDbDebeziumEventConverterTest {
     final ConfiguredAirbyteCatalog deleteNoBeforeConfiguredAirbyteCatalog = buildFromAirbyteMessage(expectedDeleteNoBefore);
 
     final JsonNode noSchemaConfig =
-        Jsons.jsonNode(ImmutableMap.builder().put(MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY, false).build());
+        Jsons.jsonNode(Map.of(MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY, false));
     final AirbyteMessage actualInsert = new MongoDbDebeziumEventConverter(
         cdcMetadataInjector, buildFromAirbyteMessage(expectedInsert), emittedAt, noSchemaConfig)
             .toAirbyteMessage(insertChangeEvent);
