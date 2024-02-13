@@ -202,5 +202,6 @@ class Budget(BingAdsBulkStream):
     """
     https://learn.microsoft.com/en-us/advertising/bulk-service/budget?view=bingads-13&viewFallbackFrom=bingads-13
     """
+
     data_scope = ["EntityData"]
     download_entities = ["Budgets"]

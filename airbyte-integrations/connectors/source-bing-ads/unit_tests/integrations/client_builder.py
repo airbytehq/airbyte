@@ -1,9 +1,9 @@
-from typing import Dict, Any
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from airbyte_cdk.test.mock_http import HttpRequest
 import json
+from typing import Any, Dict
 
-from airbyte_cdk.test.mock_http import HttpResponse
+from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 

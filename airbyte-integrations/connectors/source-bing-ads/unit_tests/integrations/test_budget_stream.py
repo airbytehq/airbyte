@@ -1,7 +1,8 @@
-from test_bulk_stream import TestBulkStream
-from airbyte_cdk.models import SyncMode, Level
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from airbyte_cdk.models import Level, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
+from test_bulk_stream import TestBulkStream
 
 
 class TestBudgetStream(TestBulkStream):

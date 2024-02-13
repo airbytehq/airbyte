@@ -1,26 +1,24 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 from unittest import TestCase, skipIf
 from unittest.mock import patch
 
 import suds.transport
-from airbyte_cdk.models import SyncMode, Level
-
-from source_bing_ads.client import Client
-from config import ConfigBuilder
-
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.models import Level, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from source_bing_ads.source import SourceBingAds
-
-from client_builder import build_request, response_with_status
-from source_bing_ads.base_streams import BingAdsStream
-from suds.transport.https import HttpAuthenticated
+from airbyte_cdk.test.mock_http import HttpMocker
 from bingads.v13.bulk.bulk_service_manager import BulkServiceManager
-from constants import AD_ACC_DATA
-from catalog_builder import CatalogBuilder
-
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
+from catalog_builder import CatalogBuilder
+from client_builder import build_request, response_with_status
+from config import ConfigBuilder
+from constants import AD_ACC_DATA
+from source_bing_ads.base_streams import BingAdsStream
+from source_bing_ads.client import Client
+from source_bing_ads.source import SourceBingAds
+from suds.transport.https import HttpAuthenticated
 
 
 class TestReportStream(TestCase):

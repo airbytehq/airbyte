@@ -674,6 +674,7 @@ class ProductDimensionPerformanceReport(BingAdsReportingServicePerformanceStream
     """
     https://learn.microsoft.com/en-us/advertising/reporting-service/productdimensionperformancereportrequest?view=bingads-13
     """
+
     report_name: str = "ProductDimensionPerformanceReport"
     report_schema_name = "product_dimension_performance_report"
     primary_key = None

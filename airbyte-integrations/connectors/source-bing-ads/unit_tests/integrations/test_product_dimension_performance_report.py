@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from test_report_stream import TestSuiteReportStream
 
 

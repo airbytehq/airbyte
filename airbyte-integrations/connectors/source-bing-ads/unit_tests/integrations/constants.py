@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 AD_ACC_DATA = b"""<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
     <s:Header>
         <h:TrackingId xmlns:h="https://bingads.microsoft.com/Customer/v13">6f0a329e-4cb4-4c79-9c08-2dfe601ba05a
