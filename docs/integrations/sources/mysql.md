@@ -223,6 +223,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.7   | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751)   | Emit analytics message for invalid CDC cursor.                                                                                                  |
 | 3.3.6   | 2024-02-13 | [34869](https://github.com/airbytehq/airbyte/pull/34573)   | Don't emit state in SourceStateIterator when there is an underlying stream failure.                                                             |
 | 3.3.5   | 2024-02-12 | [34580](https://github.com/airbytehq/airbyte/pull/34580)   | Support special chars in db name                                                                                                                |
 | 3.3.4   | 2024-02-08 | [34750](https://github.com/airbytehq/airbyte/pull/34750)   | Adopt CDK 0.19.0                                                                                                                                |
