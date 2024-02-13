@@ -11,7 +11,9 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CON
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_AUTH_SOURCE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.INITIAL_RECORD_WAITING_TIME_SEC;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
@@ -27,33 +29,32 @@ import java.util.OptionalInt;
  */
 public record MongoDbSourceConfig(JsonNode rawConfig) {
 
-  /**
-   * Constructs a new {@link MongoDbSourceConfig} from the provided raw configuration.
-   *
-   * @param rawConfig The underlying JSON configuration provided by the connector framework.
-   * @throws IllegalArgumentException if the raw configuration does not contain the
-   *         {@link MongoConstants#DATABASE_CONFIG_CONFIGURATION_KEY} key.
-   */
-  public MongoDbSourceConfig(final JsonNode rawConfig) {
-    if (rawConfig.has(DATABASE_CONFIG_CONFIGURATION_KEY)) {
-      this.rawConfig = rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY);
-    } else {
+  public MongoDbSourceConfig {
+    if (rawConfig == null) {
+      throw new IllegalArgumentException("MongoDbSourceConfig cannot accept a null config.");
+    }
+    if (!rawConfig.hasNonNull(DATABASE_CONFIG_CONFIGURATION_KEY)) {
       throw new IllegalArgumentException("Database configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' property.");
     }
   }
 
+  public JsonNode getDatabaseConfig() {
+    return rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY);
+  }
+
   public String getAuthSource() {
-    return rawConfig.has(AUTH_SOURCE_CONFIGURATION_KEY) ? rawConfig.get(AUTH_SOURCE_CONFIGURATION_KEY).asText(DEFAULT_AUTH_SOURCE)
+    return getDatabaseConfig().has(AUTH_SOURCE_CONFIGURATION_KEY) ? getDatabaseConfig().get(AUTH_SOURCE_CONFIGURATION_KEY).asText(DEFAULT_AUTH_SOURCE)
         : DEFAULT_AUTH_SOURCE;
   }
 
   public Integer getCheckpointInterval() {
-    return rawConfig.has(CHECKPOINT_INTERVAL_CONFIGURATION_KEY) ? rawConfig.get(CHECKPOINT_INTERVAL_CONFIGURATION_KEY).asInt(CHECKPOINT_INTERVAL)
+    return getDatabaseConfig().has(CHECKPOINT_INTERVAL_CONFIGURATION_KEY)
+        ? getDatabaseConfig().get(CHECKPOINT_INTERVAL_CONFIGURATION_KEY).asInt(CHECKPOINT_INTERVAL)
         : CHECKPOINT_INTERVAL;
   }
 
   public String getDatabaseName() {
-    return rawConfig.has(DATABASE_CONFIGURATION_KEY) ? rawConfig.get(DATABASE_CONFIGURATION_KEY).asText() : null;
+    return getDatabaseConfig().has(DATABASE_CONFIGURATION_KEY) ? getDatabaseConfig().get(DATABASE_CONFIGURATION_KEY).asText() : null;
   }
 
   public OptionalInt getQueueSize() {
@@ -63,15 +64,15 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   }
 
   public String getPassword() {
-    return rawConfig.has(PASSWORD_CONFIGURATION_KEY) ? rawConfig.get(PASSWORD_CONFIGURATION_KEY).asText() : null;
+    return getDatabaseConfig().has(PASSWORD_CONFIGURATION_KEY) ? getDatabaseConfig().get(PASSWORD_CONFIGURATION_KEY).asText() : null;
   }
 
   public String getUsername() {
-    return rawConfig.has(USERNAME_CONFIGURATION_KEY) ? rawConfig.get(USERNAME_CONFIGURATION_KEY).asText() : null;
+    return getDatabaseConfig().has(USERNAME_CONFIGURATION_KEY) ? getDatabaseConfig().get(USERNAME_CONFIGURATION_KEY).asText() : null;
   }
 
   public boolean hasAuthCredentials() {
-    return rawConfig.has(USERNAME_CONFIGURATION_KEY) && rawConfig.has(PASSWORD_CONFIGURATION_KEY);
+    return getDatabaseConfig().has(USERNAME_CONFIGURATION_KEY) && getDatabaseConfig().has(PASSWORD_CONFIGURATION_KEY);
   }
 
   public Integer getSampleSize() {
@@ -83,8 +84,16 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   }
 
   public boolean getEnforceSchema() {
-    return rawConfig.has(SCHEMA_ENFORCED_CONFIGURATION_KEY) ? rawConfig.get(SCHEMA_ENFORCED_CONFIGURATION_KEY).asBoolean(true)
+    return getDatabaseConfig().has(SCHEMA_ENFORCED_CONFIGURATION_KEY) ? getDatabaseConfig().get(SCHEMA_ENFORCED_CONFIGURATION_KEY).asBoolean(true)
         : true;
+  }
+
+  public Integer getInitialWaitingTimeSeconds() {
+    if (rawConfig.has(INITIAL_RECORD_WAITING_TIME_SEC)) {
+      return rawConfig.get(INITIAL_RECORD_WAITING_TIME_SEC).asInt(DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC);
+    } else {
+      return DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC;
+    }
   }
 
 }

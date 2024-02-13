@@ -34,6 +34,8 @@ public class MongoConstants {
   public static final String USERNAME_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
   public static final String SCHEMA_ENFORCED_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY;
   public static final String SCHEMALESS_MODE_DATA_FIELD = Configuration.SCHEMALESS_MODE_DATA_FIELD;
+  public static final String INITIAL_RECORD_WAITING_TIME_SEC = "initial_waiting_seconds";
+  public static final Integer DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC = 300;
 
   private MongoConstants() {}
 
