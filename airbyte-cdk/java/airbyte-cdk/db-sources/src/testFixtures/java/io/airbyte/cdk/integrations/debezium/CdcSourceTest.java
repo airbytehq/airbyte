@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -141,6 +142,14 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
   protected abstract void addCdcDefaultCursorField(final AirbyteStream stream);
 
   protected abstract void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages);
+
+  // TODO: this assertion should be added into test cases in this class, we will need to implement corresponding iterator for other connectors before
+  // doing so.
+  protected void assertExpectedStateMessageCountMatches(final List<AirbyteStateMessage> stateMessages, long totalCount) {
+    AtomicLong count = new AtomicLong(0L);
+    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
+    assertEquals(totalCount, count.get());
+  }
 
   @BeforeEach
   protected void setup() {

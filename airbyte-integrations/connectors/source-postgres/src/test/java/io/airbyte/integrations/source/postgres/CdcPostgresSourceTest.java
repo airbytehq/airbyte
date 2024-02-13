@@ -196,7 +196,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        assertEquals(sharedState, global.getSharedState());
+        assertEquals(sharedState, global.getSharedState(), "all statemessage: " + stateMessages);
       }
       assertEquals(1, global.getStreamStates().size());
       final AirbyteStreamState streamState = global.getStreamStates().get(0);
@@ -314,6 +314,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
     assertEquals(13, stateMessages1.size());
+    assertExpectedStateMessageCountMatches(stateMessages1, recordMessages1.size());
     JsonNode sharedState = null;
     StreamDescriptor firstStreamInState = null;
     for (int i = 0; i < stateMessages1.size(); i++) {

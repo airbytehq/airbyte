@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.destination.postgres.PostgresDestination;
@@ -17,20 +15,6 @@ import org.junit.jupiter.api.BeforeAll;
 public class PostgresTypingDedupingTest extends AbstractPostgresTypingDedupingTest {
 
   protected static PostgresTestDatabase testContainer;
-
-  private static final int DEFAULT_VARCHAR_LIMIT_IN_JDBC_GEN = 65535;
-
-  private static final Random RANDOM = new Random();
-
-  private String generateBigString() {
-    // Generate exactly 2 chars over the limit
-    final int length = DEFAULT_VARCHAR_LIMIT_IN_JDBC_GEN + 2;
-    return RANDOM
-        .ints('a', 'z' + 1)
-        .limit(length)
-        .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-        .toString();
-  }
 
   @BeforeAll
   public static void setupPostgres() {
