@@ -210,7 +210,7 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
         },
         flusher,
         catalog,
-        new BufferManager(getMemoryLimit(bufferMemoryLimit)),
+        new BufferManager(getMemoryLimit(bufferMemoryLimit), outputRecordCollector),
         defaultNamespace);
   }
 

@@ -118,7 +118,7 @@ class AsyncStreamConsumerTest {
         onClose,
         flushFunction,
         CATALOG,
-        new BufferManager(),
+        new BufferManager(outputRecordCollector),
         flushFailure,
         "default_ns");
 
@@ -204,7 +204,7 @@ class AsyncStreamConsumerTest {
         (hasFailed, recordCounts) -> {},
         flushFunction,
         CATALOG,
-        new BufferManager(1024 * 10),
+        new BufferManager(1024 * 10, outputRecordCollector),
         flushFailure,
         "default_ns");
     when(flushFunction.getOptimalBatchSizeBytes()).thenReturn(0L);

@@ -10,13 +10,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -95,11 +96,13 @@ public class GlobalAsyncStateManager {
   private long retroactiveGlobalStateId = 0;
   // All access to this field MUST be guarded by a synchronized(lock) block
   private long arrivalNumber = 0;
+  private final Consumer<AirbyteMessage> outputRecordCollector;
 
-  private final Object LOCK = new Object();
+  private static final Object LOCK = new Object();
 
-  public GlobalAsyncStateManager(final GlobalMemoryManager memoryManager) {
+  public GlobalAsyncStateManager(final GlobalMemoryManager memoryManager, final Consumer<AirbyteMessage> outputRecordCollector) {
     this.memoryManager = memoryManager;
+    this.outputRecordCollector = outputRecordCollector;
     this.memoryAllocated = new AtomicLong(memoryManager.requestMemory());
     this.memoryUsed = new AtomicLong();
   }
@@ -161,8 +164,7 @@ public class GlobalAsyncStateManager {
    *
    * @return list of state messages with no more inflight records.
    */
-  public List<PartialStateWithDestinationStats> flushStates() {
-    final List<PartialStateWithDestinationStats> output = new ArrayList<>();
+  public void flushStates() {
     Long bytesFlushed = 0L;
     synchronized (LOCK) {
       for (final Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>> entry : descToStateIdQ.entrySet()) {
@@ -195,8 +197,13 @@ public class GlobalAsyncStateManager {
           if (allRecordsCommitted) {
             final StateMessageWithArrivalNumber stateMessage = oldestState.getLeft();
             final double flushedRecordsAssociatedWithState = stateIdToCounterForPopulatingDestinationStats.get(oldestStateId).doubleValue();
-            output.add(new PartialStateWithDestinationStats(stateMessage.partialAirbyteStateMessage(),
-                new AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState), stateMessage.arrivalNumber()));
+
+            log.info("State with arrival number {} emitted from thread {} at {}", stateMessage.arrivalNumber(), Thread.currentThread().getName(),
+                Instant.now().toString());
+            final AirbyteMessage message = Jsons.deserialize(stateMessage.partialAirbyteStateMessage.getSerialized(), AirbyteMessage.class);
+            message.getState().setDestinationStats(new AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState));
+            outputRecordCollector.accept(message);
+
             bytesFlushed += oldestState.getRight();
 
             // cleanup
@@ -212,7 +219,6 @@ public class GlobalAsyncStateManager {
     }
 
     freeBytes(bytesFlushed);
-    return output;
   }
 
   private Long getStateIdAndIncrement(final StreamDescriptor streamDescriptor, final long increment) {

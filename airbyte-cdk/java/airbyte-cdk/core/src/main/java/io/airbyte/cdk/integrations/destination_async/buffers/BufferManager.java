@@ -9,6 +9,7 @@ import io.airbyte.cdk.integrations.destination_async.AirbyteFileUtils;
 import io.airbyte.cdk.integrations.destination_async.FlushWorkers;
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -38,8 +40,8 @@ public class BufferManager {
 
   public static final double MEMORY_LIMIT_RATIO = 0.7;
 
-  public BufferManager() {
-    this((long) (Runtime.getRuntime().maxMemory() * MEMORY_LIMIT_RATIO));
+  public BufferManager(final Consumer<AirbyteMessage> outputRecordCollector) {
+    this((long) (Runtime.getRuntime().maxMemory() * MEMORY_LIMIT_RATIO), outputRecordCollector);
   }
 
   /**
@@ -47,12 +49,13 @@ public class BufferManager {
    *        GlobalMemoryManager will apply back pressure once this quota is filled. "Memory" can be
    *        released back once flushing finishes. This number should be large enough we don't block
    *        reading unnecessarily, but small enough we apply back pressure before OOMing.
+   * @param outputRecordCollector
    */
-  public BufferManager(final long memoryLimit) {
+  public BufferManager(final long memoryLimit, final Consumer<AirbyteMessage> outputRecordCollector) {
     maxMemory = memoryLimit;
     LOGGER.info("Max 'memory' available for buffer allocation {}", FileUtils.byteCountToDisplaySize(maxMemory));
     memoryManager = new GlobalMemoryManager(maxMemory);
-    this.stateManager = new GlobalAsyncStateManager(memoryManager);
+    this.stateManager = new GlobalAsyncStateManager(memoryManager, outputRecordCollector);
     buffers = new ConcurrentHashMap<>();
     bufferEnqueue = new BufferEnqueue(memoryManager, buffers, stateManager);
     bufferDequeue = new BufferDequeue(memoryManager, buffers, stateManager);

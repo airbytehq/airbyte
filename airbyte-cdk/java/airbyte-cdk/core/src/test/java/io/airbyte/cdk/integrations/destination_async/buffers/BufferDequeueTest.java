@@ -11,10 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -22,20 +24,20 @@ public class BufferDequeueTest {
 
   private static final int RECORD_SIZE_20_BYTES = 20;
   private static final String DEFAULT_NAMESPACE = "foo_namespace";
-  public static final String RECORD_20_BYTES = "abc";
   private static final String STREAM_NAME = "stream1";
   private static final StreamDescriptor STREAM_DESC = new StreamDescriptor().withName(STREAM_NAME);
   private static final PartialAirbyteMessage RECORD_MSG_20_BYTES = new PartialAirbyteMessage()
       .withType(Type.RECORD)
       .withRecord(new PartialAirbyteRecordMessage()
           .withStream(STREAM_NAME));
+  private final Consumer<AirbyteMessage> outputRecordCollector = c -> {};
 
   @Nested
   class Take {
 
     @Test
     void testTakeShouldBestEffortRead() {
-      final BufferManager bufferManager = new BufferManager();
+      final BufferManager bufferManager = new BufferManager(outputRecordCollector);
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
@@ -57,7 +59,7 @@ public class BufferDequeueTest {
 
     @Test
     void testTakeShouldReturnAllIfPossible() {
-      final BufferManager bufferManager = new BufferManager();
+      final BufferManager bufferManager = new BufferManager(outputRecordCollector);
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
@@ -74,7 +76,7 @@ public class BufferDequeueTest {
 
     @Test
     void testTakeFewerRecordsThanSizeLimitShouldNotError() {
-      final BufferManager bufferManager = new BufferManager();
+      final BufferManager bufferManager = new BufferManager(outputRecordCollector);
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
@@ -92,7 +94,7 @@ public class BufferDequeueTest {
 
   @Test
   void testMetadataOperationsCorrect() {
-    final BufferManager bufferManager = new BufferManager();
+    final BufferManager bufferManager = new BufferManager(outputRecordCollector);
     final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
     final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
@@ -120,7 +122,7 @@ public class BufferDequeueTest {
 
   @Test
   void testMetadataOperationsError() {
-    final BufferManager bufferManager = new BufferManager();
+    final BufferManager bufferManager = new BufferManager(outputRecordCollector);
     final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
     final var ghostStream = new StreamDescriptor().withName("ghost stream");
@@ -136,7 +138,7 @@ public class BufferDequeueTest {
 
   @Test
   void cleansUpMemoryForEmptyQueues() throws Exception {
-    final var bufferManager = new BufferManager();
+    final var bufferManager = new BufferManager(outputRecordCollector);
     final var enqueue = bufferManager.getBufferEnqueue();
     final var dequeue = bufferManager.getBufferDequeue();
     final var memoryManager = bufferManager.getMemoryManager();
