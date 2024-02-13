@@ -195,9 +195,8 @@ public class GlobalAsyncStateManager {
           if (allRecordsCommitted) {
             final StateMessageWithArrivalNumber stateMessage = oldestState.getLeft();
             final double flushedRecordsAssociatedWithState = stateIdToCounterForPopulatingDestinationStats.get(oldestStateId).doubleValue();
-            LOGGER.info("State with arrival number {} emitted", stateMessage.arrivalNumber);
             output.add(new PartialStateWithDestinationStats(stateMessage.partialAirbyteStateMessage(),
-                new AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState)));
+                new AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState), stateMessage.arrivalNumber()));
             bytesFlushed += oldestState.getRight();
 
             // cleanup
@@ -287,8 +286,12 @@ public class GlobalAsyncStateManager {
         stateIdToCounter.clear();
         stateIdToCounter.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
 
+        final long statsCounter = stateIdToCounterForPopulatingDestinationStats.values()
+            .stream()
+            .mapToLong(AtomicLong::get)
+            .sum();
         stateIdToCounterForPopulatingDestinationStats.clear();
-        stateIdToCounterForPopulatingDestinationStats.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
+        stateIdToCounterForPopulatingDestinationStats.put(retroactiveGlobalStateId, new AtomicLong(statsCounter));
       }
     }
   }
