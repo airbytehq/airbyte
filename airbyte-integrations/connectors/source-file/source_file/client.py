@@ -172,6 +172,7 @@ class URLFile:
         """
         storage_name = self._provider["storage"].upper()
         parse_result = urlparse(self._url)
+
         if storage_name == "GCS":
             return "gs://"
         elif storage_name == "S3":
@@ -191,7 +192,7 @@ class URLFile:
         elif parse_result.scheme:
             return parse_result.scheme
 
-        logger.error(f"Unknown Storage provider in: {self.full_url}")
+        logger.error(f"Unknown Storage provider in: {self._url}")
         return ""
 
     def _open_gcs_url(self) -> object:
@@ -328,6 +329,7 @@ class Client:
             "html": pd.read_html,
             "excel": pd.read_excel,
             "excel_binary": pd.read_excel,
+            "fwf": pd.read_fwf,
             "feather": pd.read_feather,
             "parquet": pd.read_parquet,
             "orc": pd.read_orc,
@@ -354,9 +356,9 @@ class Client:
                     yield record
                     if read_sample_chunk and bytes_read >= self.CSV_CHUNK_SIZE:
                         return
-            elif self._reader_options == "excel_binary":
+            elif self._reader_format == "excel_binary":
                 reader_options["engine"] = "pyxlsb"
-                yield from reader(fp, **reader_options)
+                yield reader(fp, **reader_options)
             elif self._reader_format == "excel":
                 # Use openpyxl to read new-style Excel (xlsx) file; return to pandas for others
                 try:
@@ -483,7 +485,7 @@ class Client:
 
     def openpyxl_chunk_reader(self, file, **kwargs):
         """Use openpyxl lazy loading feature to read excel files (xlsx only) in chunks of 500 lines at a time"""
-        work_book = load_workbook(filename=file, read_only=True)
+        work_book = load_workbook(filename=file)
         user_provided_column_names = kwargs.get("names")
         for sheetname in work_book.sheetnames:
             work_sheet = work_book[sheetname]
