@@ -5,7 +5,8 @@
 
 import csv
 import gzip
-import json as json_lib
+import json
+import os
 import time
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -31,6 +32,8 @@ FINANCES_API_VERSION = "v0"
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 DATE_FORMAT = "%Y-%m-%d"
+
+IS_TESTING = os.environ.get("DEPLOYMENT_MODE") == "testing"
 
 
 class AmazonSPStream(HttpStream, ABC):
@@ -63,6 +66,12 @@ class AmazonSPStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+    def retry_factor(self) -> float:
+        """
+        Override for testing purposes
+        """
+        return 0 if IS_TESTING else super().retry_factor
 
 
 class IncrementalAmazonSPStream(AmazonSPStream, ABC):
@@ -204,8 +213,11 @@ class ReportsAmazonSPStream(HttpStream, ABC):
 
     @property
     def retry_factor(self) -> float:
-        # https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference#post-reports2021-06-30reports
-        return 60.0
+        """
+        Set this 60.0 due to https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference#post-reports2021-06-30reports
+        Override to 0 for integration testing purposes
+        """
+        return 0 if IS_TESTING else 60.0
 
     @property
     def url_base(self) -> str:
@@ -246,7 +258,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         create_report_request = self._create_prepared_request(
             path=f"{self.path_prefix}/reports",
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
-            data=json_lib.dumps(report_data),
+            data=json.dumps(report_data),
         )
         report_response = self._send_request(create_report_request, {})
         self.http_method = "GET"  # rollback
@@ -268,8 +280,9 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         """
         Unpacks a report document
         """
-        report = requests.get(payload.get("url"))
-        report.raise_for_status()
+
+        download_report_request = self._create_prepared_request(path=payload.get("url"))
+        report = self._send_request(download_report_request, {})
         if "compressionAlgorithm" in payload:
             return gzip.decompress(report.content).decode("iso-8859-1")
         return report.content.decode("iso-8859-1")
@@ -649,7 +662,7 @@ class FbaInventoryPlaningReport(IncrementalReportsAmazonSPStream):
 
 class AnalyticsStream(ReportsAmazonSPStream):
     def parse_document(self, document):
-        parsed = json_lib.loads(document)
+        parsed = json.loads(document)
         return parsed.get(self.result_key, [])
 
     def _report_data(
@@ -885,12 +898,15 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
 
     def get_transform_function(self):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-            if original_value and "format" in field_schema and field_schema["format"] == "date":
+            if original_value and field_schema.get("format") == "date":
                 date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(self.marketplace_id)
                 if not date_format:
                     raise KeyError(f"Date format not found for Marketplace ID: {self.marketplace_id}")
-                transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
-                return transformed_value
+                try:
+                    transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
+                    return transformed_value
+                except ValueError:
+                    pass
 
             return original_value
 
@@ -1098,6 +1114,12 @@ class VendorDirectFulfillmentShipping(IncrementalAmazonSPStream):
 
     def path(self, **kwargs) -> str:
         return f"vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        stream_data = response.json()
+        next_page_token = stream_data.get("payload", {}).get("pagination", {}).get(self.next_page_token_field)
+        if next_page_token:
+            return {self.next_page_token_field: next_page_token}
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
