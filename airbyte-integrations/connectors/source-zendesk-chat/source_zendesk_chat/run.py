@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_zendesk_chat import SourceZendeskChat
 
-if __name__ == "__main__":
+
+def run():
     source = SourceZendeskChat()
     launch(source, sys.argv[1:])
