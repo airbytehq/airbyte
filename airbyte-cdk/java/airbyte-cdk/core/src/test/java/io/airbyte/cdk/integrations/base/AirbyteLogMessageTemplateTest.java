@@ -88,7 +88,7 @@ public class AirbyteLogMessageTemplateTest {
     // validate that the message inside AirbyteLogMessage matches the pattern.
     // pattern to check for is: LOG_LEVEL className(methodName):LineNumber logMessage
     final String connectorLogMessageRegex =
-        "^INFO [\\w+.]*.AirbyteLogMessageTemplateTest\\(testAirbyteLogMessageFormat\\):\\d+ hello$";
+        "^INFO " + Thread.currentThread().getName() + " [\\w+.]*.AirbyteLogMessageTemplateTest\\(testAirbyteLogMessageFormat\\):\\d+ hello$";
     final Pattern pattern = Pattern.compile(connectorLogMessageRegex);
 
     final Matcher matcher = pattern.matcher(connectorLogMessage);
