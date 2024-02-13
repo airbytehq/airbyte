@@ -64,9 +64,59 @@
         "type": "object",
         "oneOf": [
           {
-            "title": "OAuth2.0",
+            "title": "Key Pair Authentication",
             "type": "object",
             "order": 0,
+            "required": ["private_key"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Key Pair Authentication",
+                "enum": ["Key Pair Authentication"],
+                "default": "Key Pair Authentication",
+                "order": 0
+              },
+              "private_key": {
+                "type": "string",
+                "title": "Private Key",
+                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "private_key_password": {
+                "type": "string",
+                "title": "Passphrase",
+                "description": "Passphrase for private key",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Username and Password",
+            "type": "object",
+            "required": ["password"],
+            "order": 1,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Username and Password",
+                "enum": ["Username and Password"],
+                "default": "Username and Password",
+                "order": 0
+              },
+              "password": {
+                "description": "Enter the password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "title": "Password",
+                "order": 1
+              }
+            }
+          },
+          {
+            "title": "OAuth2.0",
+            "type": "object",
+            "order": 2,
             "required": ["access_token", "refresh_token"],
             "properties": {
               "auth_type": {
@@ -99,56 +149,6 @@
                 "title": "Refresh Token",
                 "description": "Enter your application's Refresh Token",
                 "airbyte_secret": true
-              }
-            }
-          },
-          {
-            "title": "Key Pair Authentication",
-            "type": "object",
-            "order": 1,
-            "required": ["private_key"],
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "Key Pair Authentication",
-                "enum": ["Key Pair Authentication"],
-                "default": "Key Pair Authentication",
-                "order": 0
-              },
-              "private_key": {
-                "type": "string",
-                "title": "Private Key",
-                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
-                "multiline": true,
-                "airbyte_secret": true
-              },
-              "private_key_password": {
-                "type": "string",
-                "title": "Passphrase",
-                "description": "Passphrase for private key",
-                "airbyte_secret": true
-              }
-            }
-          },
-          {
-            "title": "Username and Password",
-            "type": "object",
-            "required": ["password"],
-            "order": 2,
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "Username and Password",
-                "enum": ["Username and Password"],
-                "default": "Username and Password",
-                "order": 0
-              },
-              "password": {
-                "description": "Enter the password associated with the username.",
-                "type": "string",
-                "airbyte_secret": true,
-                "title": "Password",
-                "order": 1
               }
             }
           }
