@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Account Id": {
+      "type": ["null", "integer"]
+    },
+    "Type": {
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "Id": {
+      "type": ["null", "integer"]
+    },
+    "Parent Id": {
+      "type": ["null", "integer"]
+    },
+    "Client Id": {
+      "type": ["null", "integer"]
+    },
+    "Modified Time": {
+      "type": ["null", "string"]
+    },
+    "Budget Id": {
+      "type": ["null", "integer"]
+    },
+    "Budget Name": {
+      "type": ["null", "string"]
+    },
+    "Budget": {
+      "type": ["null", "string"]
+    },
+    "Budget Type": {
+      "type": ["null", "string"]
+    }
+  }
+}
