@@ -32,7 +32,6 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
  * All communication with Elasticsearch should be done through this class.
@@ -111,7 +110,7 @@ public class ElasticsearchConnection {
       }
     }
 
-    headerList.add(new BasicHeader("user-agent", this.getConnectorVersion()));
+    headerList.add(new BasicHeader("user-agent", this.makeConnectorUAString()));
 
     return headerList.toArray(new Header[headerList.size()]);
   }
@@ -120,7 +119,7 @@ public class ElasticsearchConnection {
    * Read the version of the connector from the environment
    * @return the version of the connector
    */
-  private String getConnectorVersion() {
+  private String makeConnectorUAString() {
     var ua =  Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
         .orElse("airbyte-destination-elasticsearch/unknown")
         .replace("airbyte/", "airbyte-")
