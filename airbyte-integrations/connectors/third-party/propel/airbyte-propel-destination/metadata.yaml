@@ -1,0 +1,24 @@
+data:
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: destination
+  definitionId: # TODO: set ID
+  dockerImageTag: 0.0.1
+  dockerRepository: propel/airbyte-propel-destination
+  githubIssueLabel: propel/airbyte-propel-destination
+  icon: propel.svg
+  license: MIT
+  name: Propel
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/propel
+  tags:
+    - language:unknown
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"
