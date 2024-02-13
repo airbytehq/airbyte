@@ -65,13 +65,19 @@
     "permissions": {
       "type": ["null", "object"],
       "properties": {
-        "pull": {
+        "admin": {
+          "type": ["null", "boolean"]
+        },
+        "maintain": {
           "type": ["null", "boolean"]
         },
         "push": {
           "type": ["null", "boolean"]
         },
-        "admin": {
+        "pull": {
+          "type": ["null", "boolean"]
+        },
+        "triage": {
           "type": ["null", "boolean"]
         }
       }

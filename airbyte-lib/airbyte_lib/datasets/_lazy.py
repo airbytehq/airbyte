@@ -20,6 +20,7 @@ class LazyDataset(DatasetBase):
         iterator: Iterator[Mapping[str, Any]],
     ) -> None:
         self._iterator: Iterator[Mapping[str, Any]] = iterator
+        super().__init__()
 
     @overrides
     def __iter__(self) -> Iterator[Mapping[str, Any]]:

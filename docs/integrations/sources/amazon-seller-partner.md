@@ -15,6 +15,7 @@ connector.
 - AWS Region
 - AWS Seller Partner Account Type
 - Granted OAuth access
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -27,11 +28,14 @@ connector.
 - LWA Client Id
 - LWA Client Secret
 - Refresh Token
+
 <!-- /env:oss -->
 
 ## Setup Guide
 
 ## Step 1: Set up Amazon Seller Partner
+
+[Register](https://sellercentral.amazon.com/) your Amazon Seller Partner account.
 
 <!-- env:oss -->
 
@@ -44,6 +48,8 @@ connector.
 <!-- /env:oss -->
 
 ## Step 2: Set up the source connector in Airbyte
+
+<!-- env:cloud -->
 
 **For Airbyte Cloud:**
 
@@ -64,6 +70,10 @@ connector.
    [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 10. Click `Set up source`.
 
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Using developer application from Step 1,
@@ -81,6 +91,8 @@ connector.
    options can be found in corresponding category
    [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 8. Click `Set up source`.
+
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -225,7 +237,13 @@ Information about rate limits you may find
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                                             |
 | :------- | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `3.2.0`  | 2023-12-19 | [\#32977](https://github.com/airbytehq/airbyte/pull/33541) | Add `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream                                                                                                                             |
+| `3.3.3`  | 2023-12-19 | [\#32977](https://github.com/airbytehq/airbyte/pull/33541) | Add `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream                                                                                                                             |
+| `3.3.2`  | 2024-02-13 | [\#33996](https://github.com/airbytehq/airbyte/pull/33996) | Add integration tests                                                                                                                                                               |
+| `3.3.1`  | 2024-02-09 | [\#35106](https://github.com/airbytehq/airbyte/pull/35106) | Add logs for the failed check command                                                                                                                                               |
+| `3.3.0`  | 2024-02-09 | [\#35062](https://github.com/airbytehq/airbyte/pull/35062) | Fix the check command for the `Vendor` account type                                                                                                                                 |
+| `3.2.2`  | 2024-02-07 | [\#34914](https://github.com/airbytehq/airbyte/pull/34914) | Fix date formatting for ledger reports with aggregation by month                                                                                                                    |
+| `3.2.1`  | 2024-01-30 | [\#34654](https://github.com/airbytehq/airbyte/pull/34654) | Fix date format in state message for streams with custom dates formatting                                                                                                           |
+| `3.2.0`  | 2024-01-26 | [\#34549](https://github.com/airbytehq/airbyte/pull/34549) | Update schemas for vendor analytics streams                                                                                                                                         |
 | `3.1.0`  | 2024-01-17 | [\#34283](https://github.com/airbytehq/airbyte/pull/34283) | Delete deprecated streams                                                                                                                                                           |
 | `3.0.1`  | 2023-12-22 | [\#33741](https://github.com/airbytehq/airbyte/pull/33741) | Improve report streams performance                                                                                                                                                  |
 | `3.0.0`  | 2023-12-12 | [\#32977](https://github.com/airbytehq/airbyte/pull/32977) | Make all streams incremental                                                                                                                                                        |

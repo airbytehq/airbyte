@@ -1,24 +1,38 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-linnworks:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_linnworks/spec.json"
+    tests:
+      - spec_path: "source_linnworks/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
-  incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "processed_orders"
+            bypass_reason: "No seed data in our sandbox account"
+          - name: "processed_order_details"
+            bypass_reason: "No seed data in our sandbox account"
+          - name: "stock_items"
+            bypass_reason: "No seed data in our sandbox account"
+  # Removing incremental tests for now as we have no seed data in our sandbox account for the two streams that support it
+  # incremental:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #       configured_catalog_path: "integration_tests/configured_catalog.json"
+  #       future_state:
+  #         future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
