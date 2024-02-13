@@ -15,7 +15,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Properties;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled("The provided refresh token is invalid.")
 public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptanceTest {
 
   @Override
