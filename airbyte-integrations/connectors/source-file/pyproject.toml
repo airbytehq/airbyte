@@ -42,6 +42,6 @@ version = "==6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
-pytest = "^6.2"
+pytest = "==6.2.5"
 requests-mock = "^1.9.3"
-pytest-docker = "^2.0.1"
+pytest-docker = "==2.0.1"
