@@ -84,8 +84,7 @@ public class MongoDbCdcInitializer {
     // #35059: debezium heartbeats are not sent on the expected interval. this is a worksaround to allow
     // making
     // subsequent wait time configurable.
-    // final Duration subsequentRecordWaitTime = firstRecordWaitTime.dividedBy(2);
-    final Duration subsequentRecordWaitTime = firstRecordWaitTime;
+     final Duration subsequentRecordWaitTime = firstRecordWaitTime.dividedBy(2);
     LOGGER.info("*** subs {} init {}", subsequentRecordWaitTime, firstRecordWaitTime);
     final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.getDatabaseName();
@@ -102,7 +101,7 @@ public class MongoDbCdcInitializer {
         Jsons.clone(defaultDebeziumProperties),
         catalog,
         cdcState.state(),
-        config.rawConfig(),
+        config.getDatabaseConfig(),
         mongoClient);
 
     // We should always be able to extract offset out of state if it's not null
@@ -136,12 +135,12 @@ public class MongoDbCdcInitializer {
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), cdcMetadataInjector,
             emittedAt, config.getCheckpointInterval(), isEnforceSchema);
 
-    final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
+    final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.getDatabaseConfig(),
         new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
-    final var propertiesManager = new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.rawConfig(), catalog);
-    final var eventConverter = new MongoDbDebeziumEventConverter(cdcMetadataInjector, catalog, emittedAt, config.rawConfig());
+    final var propertiesManager = new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), catalog);
+    final var eventConverter = new MongoDbDebeziumEventConverter(cdcMetadataInjector, catalog, emittedAt, config.getDatabaseConfig());
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
         propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
