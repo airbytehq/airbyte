@@ -7,6 +7,8 @@
         <Property name="simple-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0}%replace{ %X{log_source}}{^ -}{} > %replace{%m}{$${env:LOG_SCRUB_PATTERN:-\*\*\*\*\*}}{*****}%n</Property>
         <!-- Always log INFO by default. -->
         <Property name="log-level">${sys:LOG_LEVEL:-${env:LOG_LEVEL:-INFO}}</Property>
+        <Property name="logSubDir">${sys:airbyteLogSubDir:-${date:yyyy-MM-dd'T'HH:mm:ss}}</Property>
+        <Property name="logDir">build/tests/${logSubDir}</Property>
     </Properties>
 
     <Appenders>
@@ -23,12 +25,41 @@
             </ContextMapFilter>
             <PatternLayout pattern="${simple-pattern}"/>
         </Console>
+
+        <File name="SimpleFile" fileName="${logDir}/airbyte_simple.log">
+            <ContextMapFilter onMatch="ACCEPT" onMismatch="DENY">
+                <KeyValuePair key="simple" value="true"/>
+            </ContextMapFilter>
+            <PatternLayout pattern="${simple-pattern}"/>
+        </File>
+        <File name="DefaultFile" fileName="${logDir}/airbyte_default.log">
+            <ContextMapFilter onMatch="DENY" onMismatch="ACCEPT">
+                <KeyValuePair key="simple" value="true"/>
+            </ContextMapFilter>
+            <PatternLayout pattern="${default-pattern}"/>
+        </File>
+        <File name="UnifiedSimpleFile" fileName="${logDir}/airbyte_unified.log">
+            <ContextMapFilter onMatch="ACCEPT" onMismatch="DENY">
+                <KeyValuePair key="simple" value="true"/>
+            </ContextMapFilter>
+            <PatternLayout pattern="${simple-pattern}"/>
+        </File>
+        <File name="UnifiedDefaultFile" fileName="${logDir}/airbyte_unified.log">
+            <ContextMapFilter onMatch="DENY" onMismatch="ACCEPT">
+                <KeyValuePair key="simple" value="true"/>
+            </ContextMapFilter>
+            <PatternLayout pattern="${default-pattern}"/>
+        </File>
     </Appenders>
 
     <Loggers>
         <Root level="${log-level}">
             <AppenderRef ref="Default"/>
             <AppenderRef ref="SimpleDefault"/>
+            <AppenderRef ref="SimpleFile"/>
+            <AppenderRef ref="DefaultFile"/>
+            <AppenderRef ref="UnifiedSimpleFile"/>
+            <AppenderRef ref="UnifiedDefaultFile"/>
         </Root>
 
         <Logger name="org.eclipse.jetty" level="INFO" />
