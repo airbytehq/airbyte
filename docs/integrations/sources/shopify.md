@@ -211,6 +211,7 @@ If a child stream is synced independently of its parent stream, a full sync will
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| 1.1.8 | 2024-02-12 | [35166](https://github.com/airbytehq/airbyte/pull/35166) | Manage dependencies with Poetry. |
 | 1.1.7   | 2024-01-19 | [33804](https://github.com/airbytehq/airbyte/pull/33804) | Updated documentation with list of all supported streams |
 | 1.1.6   | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
 | 1.1.5   | 2023-12-28 | [33827](https://github.com/airbytehq/airbyte/pull/33827) | Fix GraphQL query |
