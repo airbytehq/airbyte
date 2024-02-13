@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.62.1
+[ISSUE #34910] add headers to HttpResponse for test framework
+
 ## 0.62.0
 File-based CDK: functionality to make incremental syncs concurrent
 

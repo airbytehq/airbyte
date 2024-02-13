@@ -24,6 +24,30 @@ def connector_config_with_report_options():
         "lwa_app_id": "amzn1.application-oa2-client.abc123",
         "lwa_client_secret": "abc123",
         "aws_environment": "SANDBOX",
+        "account_type": "Seller",
+        "region": "US",
+        "report_options_list": [
+            {
+                "stream_name": "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA",
+                "options_list": [
+                    {"option_name": "some_name_1", "option_value": "some_value_1"},
+                    {"option_name": "some_name_2", "option_value": "some_value_2"},
+                ],
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def connector_vendor_config_with_report_options():
+    return {
+        "replication_start_date": "2017-01-25T00:00:00Z",
+        "replication_end_date": "2017-02-25T00:00:00Z",
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "account_type": "Vendor",
         "region": "US",
         "report_options_list": [
             {
@@ -48,7 +72,7 @@ def connector_config_without_start_date():
     }
 
 
-def test_check_connection_with_vendor_report(mocker, requests_mock, connector_config_with_report_options):
+def test_check_connection_with_vendor_report(mocker, requests_mock, connector_vendor_config_with_report_options):
     mocker.patch("time.sleep", lambda x: None)
     requests_mock.register_uri(
         "POST",
@@ -56,15 +80,9 @@ def test_check_connection_with_vendor_report(mocker, requests_mock, connector_co
         status_code=200,
         json={"access_token": "access_token", "expires_in": "3600"},
     )
-    requests_mock.register_uri(
-        "GET",
-        "https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders",
-        status_code=403,
-        json={"error": "forbidden"},
-    )
 
     with patch.object(VendorSalesReports, "read_records", return_value=iter([{"some_key": "some_value"}])):
-        assert SourceAmazonSellerPartner().check_connection(logger, connector_config_with_report_options) == (True, None)
+        assert SourceAmazonSellerPartner().check_connection(logger, connector_vendor_config_with_report_options) == (True, None)
 
 
 def test_check_connection_with_orders_stop_iteration(requests_mock, connector_config_with_report_options):
