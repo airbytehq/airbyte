@@ -217,7 +217,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.3.17  | 2024-13-02 | [34678](https://github.com/airbytehq/airbyte/pull/34678) | Add Fixed-Width File Support                                                                            |
+| 0.3.17  | 2024-02-13 | [34678](https://github.com/airbytehq/airbyte/pull/34678) | Add Fixed-Width File Support                                                                            |
 | 0.3.16  | 2024-02-12 | [35186](https://github.com/airbytehq/airbyte/pull/35186) | Manage dependencies with Poetry                                                                         |
 | 0.3.15  | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Upgrade to airbyte/python-connector-base:1.0.1                                                          |
 | 0.3.14  | 2023-10-13 | [30984](https://github.com/airbytehq/airbyte/pull/30984) | Prevent local file usage on cloud                                                                       |
