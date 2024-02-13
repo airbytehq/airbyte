@@ -111,4 +111,5 @@ public final class AirbyteTraceMessageUtility {
   private static AirbyteTraceMessage makeAirbyteTraceMessage(final AirbyteTraceMessage.Type traceMessageType) {
     return new AirbyteTraceMessage().withType(traceMessageType).withEmittedAt((double) System.currentTimeMillis());
   }
+
 }
