@@ -15,5 +15,8 @@ application {
 
 dependencies {
     implementation 'mysql:mysql-connector-java:8.0.33'
+
     testFixturesApi 'org.testcontainers:tidb:1.19.4'
+
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }
