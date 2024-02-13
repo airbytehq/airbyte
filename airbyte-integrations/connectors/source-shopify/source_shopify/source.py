@@ -123,6 +123,10 @@ class SourceShopify(AbstractSource):
     def continue_sync_on_stream_failure(self) -> bool:
         return True
 
+    @property
+    def raise_exception_on_missing_stream(self) -> bool:
+        return False
+
     @staticmethod
     def get_shop_name(config) -> str:
         split_pattern = ".myshopify.com"
