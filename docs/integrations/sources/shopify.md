@@ -207,7 +207,8 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
-| 2.0.0   | 2024-01-23 | [32345](https://github.com/airbytehq/airbyte/pull/32345) | Fixed the issue with `state` causing the `substreams` to skip the records, made `metafield_*`: `collections, customers, draft_orders, locations, orders, product_images, product_variants, products`, and `fulfillment_orders, collections, discount_codes, inventory_levels, inventory_items, transactions_graphql, customer_address` streams to use `BULK Operations` instead of `REST`|
+| 2.0.0   | 2024-02-12 | [32345](https://github.com/airbytehq/airbyte/pull/32345) | Fixed the issue with `state` causing the `substreams` to skip the records, made `metafield_*`: `collections, customers, draft_orders, locations, orders, product_images, product_variants, products`, and `fulfillment_orders, collections, discount_codes, inventory_levels, inventory_items, transactions_graphql, customer_address` streams to use `BULK Operations` instead of `REST`|
+| 1.1.8 | 2024-02-12 | [35166](https://github.com/airbytehq/airbyte/pull/35166) | Manage dependencies with Poetry. |
 | 1.1.7   | 2024-01-19 | [33804](https://github.com/airbytehq/airbyte/pull/33804) | Updated documentation with list of all supported streams |
 | 1.1.6   | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
 | 1.1.5   | 2023-12-28 | [33827](https://github.com/airbytehq/airbyte/pull/33827) | Fix GraphQL query |

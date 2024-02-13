@@ -71,7 +71,7 @@ class TestReportsAmazonSPStream:
                 None,
                 [
                     {"dataStartTime": "2021-10-01T00:00:00Z", "dataEndTime": "2022-09-30T23:59:59Z"},
-                    {"dataStartTime": "2022-10-01T00:00:00Z", "dataEndTime": "2023-01-01T00:00:00Z"}
+                    {"dataStartTime": "2022-10-01T00:00:00Z", "dataEndTime": "2023-01-01T00:00:00Z"},
                 ],
             ),
             (
@@ -129,8 +129,10 @@ class TestReportsAmazonSPStream:
         stream_start = "2022-09-03T00:00:00Z"
         stream_end = "2022-10-03T00:00:00Z"
         with pytest.raises(AirbyteTracedException) as e:
-            list(stream.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice={"dataStartTime": stream_start, "dataEndTime": stream_end})
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh, stream_slice={"dataStartTime": stream_start, "dataEndTime": stream_end}
+                )
             )
         assert e.value.internal_message == (
             f"Failed to retrieve the report 'GET_TEST_REPORT' for period {stream_start}-{stream_end} "
@@ -210,11 +212,7 @@ class TestReportsAmazonSPStream:
 
         report_id = "some_report_id"
         requests_mock.register_uri(
-            "POST",
-            "https://test.url/reports/2021-06-30/reports",
-            status_code=403,
-            json={"reportId": report_id},
-            reason="Forbidden"
+            "POST", "https://test.url/reports/2021-06-30/reports", status_code=403, json={"reportId": report_id}, reason="Forbidden"
         )
 
         stream = SomeReportStream(**report_init_kwargs)

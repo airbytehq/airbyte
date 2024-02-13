@@ -10,19 +10,14 @@ import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
-public class MsSQLContainerFactory implements ContainerFactory<MSSQLServerContainer<?>> {
+public class MsSQLContainerFactory extends ContainerFactory<MSSQLServerContainer<?>> {
 
   @Override
-  public MSSQLServerContainer<?> createNewContainer(DockerImageName imageName) {
-    MSSQLServerContainer container =
-        new MSSQLServerContainer<>(imageName.asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server")).acceptLicense();
+  protected MSSQLServerContainer<?> createNewContainer(DockerImageName imageName) {
+    imageName = imageName.asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server");
+    var container = new MSSQLServerContainer<>(imageName).acceptLicense();
     container.addEnv("MSSQL_MEMORY_LIMIT_MB", "384");
     return container;
-  }
-
-  @Override
-  public Class<?> getContainerClass() {
-    return MSSQLServerContainer.class;
   }
 
   /**

@@ -26,7 +26,7 @@
     "GeneralInfo": {
       "type": "object",
       "description": "General information about order",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "Status": {
           "type": "integer",
@@ -73,7 +73,7 @@
           "description": "Order identifiers. [Prime | Scheduled]",
           "items": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "IdentifierId": {
                 "type": "integer",
@@ -141,7 +141,7 @@
         "ScheduledDelivery": {
           "type": "object",
           "description": "Scheduled delivery dates. Take priority over despatch by date",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "From": {
               "type": "string",
@@ -179,7 +179,7 @@
     "ShippingInfo": {
       "type": "object",
       "description": "Order shipping information",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "Vendor": {
           "type": ["null", "string"],
@@ -238,7 +238,7 @@
     "CustomerInfo": {
       "type": "object",
       "description": "Order Customer information (Name, email etc)",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "ChannelBuyerName": {
           "type": "string",
@@ -247,7 +247,7 @@
         "Address": {
           "type": "object",
           "description": "Customer address",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "EmailAddress": {
               "type": "string",
@@ -305,7 +305,7 @@
         "BillingAddress": {
           "type": "object",
           "description": "Customer billing address",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "EmailAddress": {
               "type": "string",
@@ -365,7 +365,7 @@
     "TotalsInfo": {
       "type": "object",
       "description": "Order totals information",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "pkOrderId": {
           "type": "string",
@@ -426,7 +426,7 @@
       "description": "Extended properties of an order",
       "items": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "RowId": {
             "type": "string",
@@ -459,7 +459,7 @@
       "description": "List of order items",
       "items": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "ItemId": {
             "type": "string",
@@ -507,7 +507,7 @@
           "OnPurchaseOrder": {
             "type": "object",
             "description": "Purchase order bound to this item",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "pkPurchaseItemId": {
                 "type": "string",
@@ -648,7 +648,7 @@
             "description": "List of order item options",
             "items": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "pkOptionId": {
                   "type": "string",
@@ -698,7 +698,7 @@
             "description": "List of BinRacks used for OrderItem",
             "items": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "Quantity": {
                   "type": "integer",
@@ -747,7 +747,7 @@
             "type": "array",
             "items": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "BoxId": {
                   "type": "integer",
@@ -818,7 +818,7 @@
       "description": "List of order notes",
       "items": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "OrderNoteId": {
             "type": "string",

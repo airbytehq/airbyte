@@ -161,6 +161,7 @@ def _install_python_dependencies_from_poetry(
     pip_install_poetry_cmd = ["pip", "install", "poetry"]
     poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
     poetry_install_cmd = ["poetry", "install"]
+    poetry_check_cmd = ["poetry", "check"]
     if not install_root_package:
         poetry_install_cmd += ["--no-root"]
     if additional_dependency_groups:
@@ -168,7 +169,12 @@ def _install_python_dependencies_from_poetry(
             poetry_install_cmd += ["--with", group]
     else:
         poetry_install_cmd += ["--only", "main"]
-    return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_cmd)
+    return (
+        container.with_exec(pip_install_poetry_cmd)
+        .with_exec(poetry_disable_virtual_env_cmd)
+        .with_exec(poetry_check_cmd)
+        .with_exec(poetry_install_cmd)
+    )
 
 
 async def with_installed_python_package(
