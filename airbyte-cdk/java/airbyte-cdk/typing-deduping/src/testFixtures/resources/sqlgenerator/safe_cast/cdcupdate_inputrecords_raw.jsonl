@@ -1,0 +1,2 @@
+// Invalid values in _ab_cdc_deleted_at result in the record NOT being deleted. This behavior is up for debate, but it's an extreme edge case so not a high priority.
+{"_airbyte_raw_id": "d4e1d989-c115-403c-9e68-5d320e6376bb", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 5, "id2": 100, "updated_at": "2023-01-01T07:00:00Z", "_ab_cdc_deleted_at": {}, "string": "david1"}}

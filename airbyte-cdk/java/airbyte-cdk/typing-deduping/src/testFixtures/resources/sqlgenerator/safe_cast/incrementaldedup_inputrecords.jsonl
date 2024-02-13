@@ -1,0 +1,2 @@
+// This record verifies that we can update an existing record, with a new record where one column has an invalid value.
+{"_airbyte_raw_id": "ad690bfb-c2c2-4172-bd73-a16c86ccbb67", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 2, "id2": 100, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}}
