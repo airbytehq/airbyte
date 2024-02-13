@@ -3,16 +3,16 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple, Union
+from typing import Any, List, Mapping, Tuple
 
-import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, RequestException, SSLError
+from requests.exceptions import ConnectionError, RequestException, SSLError
 
 from .auth import MissingAccessTokenError, ShopifyAuthenticator
+from .scopes import ShopifyScopes
 from .streams.streams import (
     AbandonedCheckouts,
     Articles,
@@ -61,7 +61,6 @@ from .streams.streams import (
     Transactions,
     TransactionsGraphql,
 )
-from .utils import SCOPES_MAPPING, ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyConnectionError, ShopifyWrongShopNameError
 
 
 class ConnectionCheckTest:
@@ -124,6 +123,16 @@ class SourceShopify(AbstractSource):
     def continue_sync_on_stream_failure(self) -> bool:
         return True
 
+    @staticmethod
+    def get_shop_name(config) -> str:
+        split_pattern = ".myshopify.com"
+        shop_name = config.get("shop")
+        return shop_name.split(split_pattern)[0] if split_pattern in shop_name else shop_name
+
+    @staticmethod
+    def format_stream_name(name) -> str:
+        return "".join(x.capitalize() for x in name.split("_"))
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
@@ -131,6 +140,16 @@ class SourceShopify(AbstractSource):
         config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
         return ConnectionCheckTest(config).test_connection()
+
+    def select_transactions_stream(self, config: Mapping[str, Any]) -> Stream:
+        """
+        Allow the Customer to decide which API type to use when it comes to the `Transactions` stream.
+        """
+        should_fetch_user_id = config.get("fetch_transactions_user_id")
+        if should_fetch_user_id:
+            return Transactions(config)
+        else:
+            return TransactionsGraphql(config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -141,13 +160,10 @@ class SourceShopify(AbstractSource):
         config["authenticator"] = ShopifyAuthenticator(config)
         # add `shop_id` int value
         config["shop_id"] = ConnectionCheckTest(config).get_shop_id()
-        user_scopes = self.get_user_scopes(config)
-        always_permitted_streams = ["MetafieldShops", "Shop", "Countries"]
-        permitted_streams = [
-            stream for stream, stream_scopes in SCOPES_MAPPING.items() if all(scope in user_scopes for scope in stream_scopes)
-        ] + always_permitted_streams
-
-        # before adding stream to stream_instances list, please add it to SCOPES_MAPPING
+        # define scopes checker
+        scopes_manager: ShopifyScopes = ShopifyScopes(config)
+        # get the list of the permitted streams, based on the authenticated user scopes
+        permitted_streams = scopes_manager.get_permitted_streams()
         stream_instances = [
             AbandonedCheckouts(config),
             Articles(config),
@@ -196,44 +212,6 @@ class SourceShopify(AbstractSource):
             Countries(config),
         ]
 
-        return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
-
-    def select_transactions_stream(self, config: Mapping[str, Any]) -> Stream:
-        """
-        Allow the Customer to decide which API type to use when it comes to the `Transactions` stream.
-        """
-        should_fetch_user_id = config.get("fetch_transactions_user_id")
-        if should_fetch_user_id:
-            return Transactions(config)
-        else:
-            return TransactionsGraphql(config)
-
-    @staticmethod
-    def get_user_scopes(config) -> list[Any]:
-        session = requests.Session()
-        url = f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json"
-        headers = config["authenticator"].get_auth_header()
-        try:
-            response = session.get(url, headers=headers).json()
-            access_scopes = [scope.get("handle") for scope in response.get("access_scopes")]
-        except InvalidURL:
-            raise ShopifyWrongShopNameError(url)
-        except JSONDecodeError as json_error:
-            raise ShopifyBadJsonError(json_error)
-        except (SSLError, ConnectionError) as con_error:
-            raise ShopifyConnectionError(con_error)
-
-        if access_scopes:
-            return access_scopes
-        else:
-            raise ShopifyAccessScopesError(response)
-
-    @staticmethod
-    def get_shop_name(config) -> str:
-        split_pattern = ".myshopify.com"
-        shop_name = config.get("shop")
-        return shop_name.split(split_pattern)[0] if split_pattern in shop_name else shop_name
-
-    @staticmethod
-    def format_name(name) -> str:
-        return "".join(x.capitalize() for x in name.split("_"))
+        return [
+            stream_instance for stream_instance in stream_instances if self.format_stream_name(stream_instance.name) in permitted_streams
+        ]

@@ -34,10 +34,9 @@ def test_get_next_page_token(requests_mock, auth_config):
 
 
 @pytest.mark.parametrize(
-    "_acceptance_test, fetch_transactions_user_id, expected",
+    "fetch_transactions_user_id, expected",
     [
         (
-            False,
             True,
             [
                 "abandoned_checkouts",
@@ -55,7 +54,6 @@ def test_get_next_page_token(requests_mock, auth_config):
         ),
         (
             False,
-            False,
             [
                 "abandoned_checkouts",
                 "fulfillments",
@@ -70,34 +68,14 @@ def test_get_next_page_token(requests_mock, auth_config):
                 "countries",
             ],
         ),
-        (
-            True,
-            False,
-            [
-                "abandoned_checkouts",
-                "fulfillments",
-                "metafield_orders",
-                "metafield_shops",
-                "order_refunds",
-                "order_risks",
-                "orders",
-                "shop",
-                "tender_transactions",
-                "transactions",
-                "countries",
-            ],
-        )
     ],
 )
-def test_privileges_validation(requests_mock, _acceptance_test, fetch_transactions_user_id, basic_config, expected):
-
+def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_config, expected):
     requests_mock.get(
         "https://test_shop.myshopify.com/admin/oauth/access_scopes.json",
         json={"access_scopes": [{"handle": "read_orders"}]},
     )
     basic_config["fetch_transactions_user_id"] = fetch_transactions_user_id
-    if _acceptance_test:
-        basic_config["_acceptance_test"] = _acceptance_test
     # mock the get_shop_id method
     with patch.object(ConnectionCheckTest, "get_shop_id", return_value=123) as mock:
         source = SourceShopify()
