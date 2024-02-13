@@ -26,10 +26,10 @@
             "type": ["null", "integer"]
           },
           "custom_event": {
-            "type" : ["null", "boolean"]
+            "type": ["null", "boolean"]
           },
           "custom_event_id": {
-            "type" : ["null", "integer"]
+            "type": ["null", "integer"]
           },
           "avg_time": {
             "type": ["null", "number"],
