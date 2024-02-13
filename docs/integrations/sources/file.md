@@ -217,7 +217,8 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.3.16  | 2023-10-19 | [34678](https://github.com/airbytehq/airbyte/pull/34678) | Add Fixed-Width File Support                                                                            |
+| 0.3.17  | 2024-02-13 | [34678](https://github.com/airbytehq/airbyte/pull/34678) | Add Fixed-Width File Support                                                                            |
+| 0.3.16 | 2024-02-12 | [35186](https://github.com/airbytehq/airbyte/pull/35186) | Manage dependencies with Poetry. |
 | 0.3.15  | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Upgrade to airbyte/python-connector-base:1.0.1                                                          |
 | 0.3.14  | 2023-10-13 | [30984](https://github.com/airbytehq/airbyte/pull/30984) | Prevent local file usage on cloud                                                                       |
 | 0.3.13  | 2023-10-12 | [31341](https://github.com/airbytehq/airbyte/pull/31341) | Build from airbyte/python-connector-base:1.0.0                                                          |
@@ -276,3 +277,4 @@ In order to read large files from a remote location, this connector uses the [sm
 | 0.1.7   | 2020-12-16 | [1331](https://github.com/airbytehq/airbyte/pull/1331)   | Refactor Python base connector                                                                          |
 | 0.1.6   | 2020-12-08 | [1249](https://github.com/airbytehq/airbyte/pull/1249)   | Handle NaN values                                                                                       |
 | 0.1.5   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                                                 |
+
