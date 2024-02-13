@@ -67,6 +67,8 @@ public class FlushWorkers implements AutoCloseable {
   private final AtomicBoolean isClosing;
   private final GlobalAsyncStateManager stateManager;
 
+  private final Object LOCK = new Object();
+
   public FlushWorkers(final BufferDequeue bufferDequeue,
                       final DestinationFlushFunction flushFunction,
                       final Consumer<AirbyteMessage> outputRecordCollector,
@@ -238,10 +240,13 @@ public class FlushWorkers implements AutoCloseable {
   }
 
   private void emitStateMessages(final List<PartialStateWithDestinationStats> partials) {
-    for (final PartialStateWithDestinationStats partial : partials) {
-      final AirbyteMessage message = Jsons.deserialize(partial.stateMessage().getSerialized(), AirbyteMessage.class);
-      message.getState().setDestinationStats(partial.stats());
-      outputRecordCollector.accept(message);
+    synchronized (LOCK) {
+      for (final PartialStateWithDestinationStats partial : partials) {
+        final AirbyteMessage message = Jsons.deserialize(partial.stateMessage().getSerialized(), AirbyteMessage.class);
+        message.getState().setDestinationStats(partial.stats());
+        log.info("State with arrival number {} emitted from thread {}", partial.stateArrivalNumber(), Thread.currentThread().getName());
+        outputRecordCollector.accept(message);
+      }
     }
   }
 

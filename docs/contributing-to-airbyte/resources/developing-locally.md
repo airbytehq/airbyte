@@ -204,11 +204,10 @@ cd airbyte-webapp
 nvm install
 ```
 
-- Install the `pnpm` package manager in the required version:
+- Install the `pnpm` package manager in the required version. You can use Node's [corepack](https://nodejs.org/api/corepack.html) for that:
 
 ```bash
-# <version> must be the exact version from airbyte-webapp/package.json > engines.pnpm
-npm install -g pnpm@<version>
+corepack enable && corepack install
 ```
 
 - Start up the react app.
