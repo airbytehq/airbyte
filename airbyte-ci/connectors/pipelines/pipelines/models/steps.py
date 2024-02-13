@@ -74,6 +74,7 @@ class Result:
     report: Optional[str] = None
     exc_info: Optional[Exception] = None
     output_artifact: Any = None
+    test_artifacts_path: Optional[Path] = None
 
     @property
     def success(self) -> bool:
