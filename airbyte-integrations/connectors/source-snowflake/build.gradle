@@ -17,4 +17,5 @@ dependencies {
     implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.14.1'
 
     testImplementation 'org.testcontainers:jdbc:1.19.4'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }
