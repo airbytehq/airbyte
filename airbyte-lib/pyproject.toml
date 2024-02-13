@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "airbyte-lib"
 description = "AirbyteLib"
-version = "0.1.0dev.2"
+version = "0.1.0"
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
 packages = [{include = "airbyte_lib"}]
@@ -14,7 +14,9 @@ airbyte-cdk = "^0.58.3"
 jsonschema = "3.2.0"
 orjson = "^3.9.10"
 overrides = "^7.4.0"
-pandas = "2.1.4" # 2.2.0 breaks sqlalchemy interop - TODO: optionally retest higher versions
+pandas = ">=1.5.3,<=2.1.4"
+# Pandas 1.5.3 is required by Google Colab
+# Pandas 2.2.0 broke sqlalchemy interop - TODO: retest later versions
 psycopg2-binary = "^2.9.9"
 python-ulid = "^2.2.0"
 types-pyyaml = "^6.0.12.12"
