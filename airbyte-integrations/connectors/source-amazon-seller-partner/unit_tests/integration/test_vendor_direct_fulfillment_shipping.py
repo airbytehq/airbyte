@@ -45,7 +45,9 @@ def _vendor_direct_fulfillment_shipping_response() -> HttpResponseBuilder:
 
 def _a_shipping_label_record() -> RecordBuilder:
     return create_record_builder(
-        find_template(_STREAM_NAME, __file__), NestedPath(["payload", "shippingLabels"]), record_id_path=FieldPath("purchaseOrderNumber")
+        response_template=find_template(_STREAM_NAME, __file__),
+        records_path=NestedPath(["payload", "shippingLabels"]),
+        record_id_path=FieldPath("purchaseOrderNumber"),
     )
 
 
@@ -55,7 +57,10 @@ class TestFullRefresh:
     @staticmethod
     def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
-            config_builder=config_, stream_name=_STREAM_NAME, sync_mode=SyncMode.full_refresh, expecting_exception=expecting_exception
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
         )
 
     @HttpMocker()
@@ -73,7 +78,9 @@ class TestFullRefresh:
         mock_auth(http_mocker)
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().build(),
-            _vendor_direct_fulfillment_shipping_response().with_pagination().with_record(_a_shipping_label_record()).build()
+            _vendor_direct_fulfillment_shipping_response().with_pagination().with_record(
+                _a_shipping_label_record()
+            ).build(),
         )
         query_params_with_next_page_token = {"nextToken": NEXT_TOKEN_STRING}
         http_mocker.get(
@@ -86,7 +93,9 @@ class TestFullRefresh:
         assert len(output.records) == 3
 
     @HttpMocker()
-    def test_given_http_status_500_then_200_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_500_then_200_when_read_then_retry_and_return_records(
+        self, http_mocker: HttpMocker
+    ) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().build(),
@@ -99,7 +108,9 @@ class TestFullRefresh:
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(
+        self, http_mocker: HttpMocker
+    ) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().build(),
@@ -116,7 +127,9 @@ class TestIncremental:
     replication_end_date = NOW
 
     @staticmethod
-    def _read(config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False) -> EntrypointOutput:
+    def _read(
+        config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
+    ) -> EntrypointOutput:
         return read_output(
             config_builder=config_,
             stream_name=_STREAM_NAME,
@@ -130,10 +143,12 @@ class TestIncremental:
         mock_auth(http_mocker)
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_a_shipping_label_record()).build()
+            _vendor_direct_fulfillment_shipping_response().with_record(_a_shipping_label_record()).build(),
         )
 
-        output = self._read(config().with_start_date(self.replication_start_date).with_end_date(self.replication_end_date))
+        output = self._read(
+            config().with_start_date(self.replication_start_date).with_end_date(self.replication_end_date)
+        )
 
         expected_cursor_value = self.replication_end_date.strftime(_TIME_FORMAT)
         assert output.records[0].record.data[self.cursor_field] == expected_cursor_value
@@ -145,10 +160,12 @@ class TestIncremental:
             _vendor_direct_fulfillment_shipping_request().build(),
             _vendor_direct_fulfillment_shipping_response().with_record(_a_shipping_label_record()).with_record(
                 _a_shipping_label_record()
-            ).build()
+            ).build(),
         )
 
-        output = self._read(config().with_start_date(self.replication_start_date).with_end_date(self.replication_end_date))
+        output = self._read(
+            config().with_start_date(self.replication_start_date).with_end_date(self.replication_end_date)
+        )
         assert len(output.state_messages) == 1
 
         cursor_value_from_state_message = output.most_recent_state.get(_STREAM_NAME, {}).get(self.cursor_field)
@@ -164,22 +181,26 @@ class TestIncremental:
             "createdAfter": self.replication_start_date.strftime(_TIME_FORMAT),
             self.cursor_field: self.replication_end_date.strftime(_TIME_FORMAT),
         }
-        query_params_incremental_read = {"createdAfter": state_value, self.cursor_field: self.replication_end_date.strftime(_TIME_FORMAT)}
+        query_params_incremental_read = {
+            "createdAfter": state_value, self.cursor_field: self.replication_end_date.strftime(_TIME_FORMAT)
+        }
 
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().with_query_params(query_params_first_read).build(),
             _vendor_direct_fulfillment_shipping_response().with_record(_a_shipping_label_record()).with_record(
                 _a_shipping_label_record()
-            ).build()
+            ).build(),
         )
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().with_query_params(query_params_incremental_read).build(),
             _vendor_direct_fulfillment_shipping_response().with_record(_a_shipping_label_record()).with_record(
                 _a_shipping_label_record()
-            ).build()
+            ).build(),
         )
         output = self._read(
             config_=config().with_start_date(self.replication_start_date).with_end_date(self.replication_end_date),
             state=StateBuilder().with_stream_state(_STREAM_NAME, {self.cursor_field: state_value}).build(),
         )
-        assert output.most_recent_state == {_STREAM_NAME: {self.cursor_field: self.replication_end_date.strftime(_TIME_FORMAT)}}
+        assert output.most_recent_state == {
+            _STREAM_NAME: {self.cursor_field: self.replication_end_date.strftime(_TIME_FORMAT)}
+        }
