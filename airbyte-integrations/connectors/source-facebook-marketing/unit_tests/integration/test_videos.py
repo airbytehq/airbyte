@@ -6,6 +6,7 @@
 from typing import List, Optional
 from unittest import TestCase
 
+import freezegun
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -19,7 +20,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStateMessage, SyncMode
 
-from .config import ACCESS_TOKEN, ACCOUNT_ID, ConfigBuilder
+from .config import ACCESS_TOKEN, ACCOUNT_ID, NOW, ConfigBuilder
 from .pagination import FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import error_reduce_amount_of_data_response, get_account_response
@@ -83,6 +84,7 @@ def _video_record() -> RecordBuilder:
     )
 
 
+@freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh(TestCase):
 
     @staticmethod
@@ -191,6 +193,7 @@ class TestFullRefresh(TestCase):
         self._read(config())
 
 
+@freezegun.freeze_time(NOW.isoformat())
 class TestIncremental(TestCase):
     @staticmethod
     def _read(

@@ -5,13 +5,18 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, List, MutableMapping
+
+import pendulum
 
 ACCESS_TOKEN = "test_access_token"
 ACCOUNT_ID = "111111111111111"
 CLIENT_ID = "test_client_id"
 CLIENT_SECRET = "test_client_secret"
+DATE_FORMAT = "%Y-%m-%d"
 END_DATE = "2023-01-01T23:59:59Z"
+NOW = pendulum.now(tz="utc")
 START_DATE = "2023-01-01T00:00:00Z"
 
 
@@ -37,12 +42,12 @@ class ConfigBuilder:
         self._config["account_ids"] = account_ids
         return self
 
-    def with_start_date(self, start_date: str) -> ConfigBuilder:
-        self._config["start_date"] = start_date
+    def with_start_date(self, start_date: datetime) -> ConfigBuilder:
+        self._config["start_date"] = start_date.isoformat()[:-13] + "Z"
         return self
 
-    def with_end_date(self, end_date: str) -> ConfigBuilder:
-        self._config["end_date"] = end_date
+    def with_end_date(self, end_date: datetime) -> ConfigBuilder:
+        self._config["end_date"] = end_date.isoformat()[:-13] + "Z"
         return self
 
     def build(self) -> MutableMapping[str, Any]:
