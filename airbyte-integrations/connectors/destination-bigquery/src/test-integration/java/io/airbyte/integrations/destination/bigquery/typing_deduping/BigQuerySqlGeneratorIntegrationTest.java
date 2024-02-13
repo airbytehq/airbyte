@@ -326,6 +326,11 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   @Override
+  public boolean supportsSafeCast() {
+    return true;
+  }
+
+  @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
     destinationHandler.execute(generator.createTable(incrementalDedupStream, "", false));

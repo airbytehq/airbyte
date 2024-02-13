@@ -54,7 +54,8 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   }
 
   @Override
-  public LinkedHashMap<String, TableDefinition> findExistingFinalTables(List<StreamId> streamIds) throws Exception {
+  public LinkedHashMap<String, TableDefinition> findExistingFinalTables(final List<StreamId> streamIds) throws Exception {
+    // Currently unused
     return null;
   }
 
