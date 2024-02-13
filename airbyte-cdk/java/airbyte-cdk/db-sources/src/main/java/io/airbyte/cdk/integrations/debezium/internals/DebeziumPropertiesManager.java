@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.debezium.spi.common.ReplacementFunction;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -76,13 +77,40 @@ public abstract class DebeziumPropertiesManager {
     props.setProperty("max.queue.size.in.bytes", BYTE_VALUE_256_MB);
 
     // WARNING : Never change the value of this otherwise all the connectors would start syncing from
-    // scratch
-    props.setProperty(TOPIC_PREFIX_KEY, getName(config));
+    // scratch.
+    props.setProperty(TOPIC_PREFIX_KEY, sanitizeTopicPrefix(getName(config)));
 
     // includes
     props.putAll(getIncludeConfiguration(catalog, config));
 
     return props;
+  }
+
+  public static String sanitizeTopicPrefix(final String topicName) {
+    StringBuilder sanitizedNameBuilder = new StringBuilder(topicName.length());
+    boolean changed = false;
+
+    for (int i = 0; i < topicName.length(); ++i) {
+      char c = topicName.charAt(i);
+      if (isValidCharacter(c)) {
+        sanitizedNameBuilder.append(c);
+      } else {
+        sanitizedNameBuilder.append(ReplacementFunction.UNDERSCORE_REPLACEMENT.replace(c));
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      return sanitizedNameBuilder.toString();
+    } else {
+      return topicName;
+    }
+  }
+
+  // We need to keep the validation rule the same as debezium engine, which is defined here:
+  // https://github.com/debezium/debezium/blob/c51ef3099a688efb41204702d3aa6d4722bb4825/debezium-core/src/main/java/io/debezium/schema/AbstractTopicNamingStrategy.java#L178
+  private static boolean isValidCharacter(char c) {
+    return c == '.' || c == '_' || c == '-' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9';
   }
 
   protected abstract Properties getConnectionConfiguration(final JsonNode config);

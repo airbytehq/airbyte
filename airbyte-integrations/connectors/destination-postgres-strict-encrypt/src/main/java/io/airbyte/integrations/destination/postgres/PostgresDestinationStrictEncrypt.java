@@ -60,6 +60,11 @@ public class PostgresDestinationStrictEncrypt extends SpecModifyingDestination i
     return super.check(config);
   }
 
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
   public static void main(final String[] args) throws Exception {
     final Destination destination = new PostgresDestinationStrictEncrypt();
     LOGGER.info("starting destination: {}", PostgresDestinationStrictEncrypt.class);
