@@ -11,7 +11,7 @@ ACCESS_TOKEN = "test_access_token"
 ACCOUNT_ID = "111111111111111"
 CLIENT_ID = "test_client_id"
 CLIENT_SECRET = "test_client_secret"
-END_DATE = "2023-01-01T00:00:00Z"
+END_DATE = "2023-01-01T23:59:59Z"
 START_DATE = "2023-01-01T00:00:00Z"
 
 
@@ -35,6 +35,14 @@ class ConfigBuilder:
 
     def with_account_ids(self, account_ids: List[str]) -> ConfigBuilder:
         self._config["account_ids"] = account_ids
+        return self
+
+    def with_start_date(self, start_date: str) -> ConfigBuilder:
+        self._config["start_date"] = start_date
+        return self
+
+    def with_end_date(self, end_date: str) -> ConfigBuilder:
+        self._config["end_date"] = end_date
         return self
 
     def build(self) -> MutableMapping[str, Any]:

@@ -5,7 +5,7 @@
 
 import json
 from http import HTTPStatus
-from typing import Optional
+from typing import List, Optional
 from unittest import TestCase
 
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
@@ -19,22 +19,19 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-from airbyte_protocol.models import SyncMode
+from airbyte_protocol.models import AirbyteStateMessage, SyncMode
 from source_facebook_marketing.streams.async_job import Status
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, ConfigBuilder
-from .request_builder import RequestBuilder
-from .response_builder import build_response
+from .pagination import FacebookMarketingPaginationStrategy
+from .request_builder import RequestBuilder, get_account_request
+from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response
 from .utils import config, read_output
 
 _STREAM_NAME = "ads_insights_action_product_id"
 _CURSOR_FIELD = "date_start"
 _REPORT_RUN_ID = "1571860060019548"
 _JOB_ID = "1049937379601625"
-
-
-def _get_account_request() -> RequestBuilder:
-    return RequestBuilder.get_account_endpoint(access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID)
 
 
 def _update_api_throttle_limit_request() -> RequestBuilder:
@@ -92,12 +89,7 @@ def _job_status_request(report_run_id: str) -> RequestBuilder:
 
 
 def _get_insights_request(job_id: str) -> RequestBuilder:
-    return RequestBuilder.get_insights_download_endpoint(access_token=ACCESS_TOKEN, job_id=job_id)
-
-
-def _get_account_response(account_id: Optional[str] = ACCOUNT_ID) -> HttpResponse:
-    response = {"account_id": account_id, "id": f"act_{account_id}"}
-    return build_response(body=response, status_code=HTTPStatus.OK)
+    return RequestBuilder.get_insights_download_endpoint(access_token=ACCESS_TOKEN, job_id=job_id).with_limit(100)
 
 
 def _update_api_throttle_limit_response() -> HttpResponse:
@@ -115,19 +107,14 @@ def _job_start_response(report_run_id: str) -> HttpResponse:
     return build_response(body=body, status_code=HTTPStatus.OK)
 
 
-def _job_status_response(job_id: str, status: Optional[Status] = Status.COMPLETED) -> HttpResponse:
+def _job_status_response(
+    job_id: str, status: Optional[Status] = Status.COMPLETED, account_id: Optional[str] = ACCOUNT_ID
+) -> HttpResponse:
     body = [
         {
             "body": json.dumps(
                 {
-                    "id": job_id,
-                    "account_id": "798085168510957",
-                    "time_ref": 1707753468,
-                    "time_completed": 1707753470,
-                    "async_status": status,
-                    "async_percent_completion": 100,
-                    "date_start": "2023-05-01",
-                    "date_stop": "2023-05-01",
+                    "id": job_id, "account_id": account_id, "async_status": status, "async_percent_completion": 100
                 }
             ),
         },
@@ -139,6 +126,7 @@ def _insights_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=find_template(_STREAM_NAME, __file__),
         records_path=FieldPath("data"),
+        pagination_strategy=FacebookMarketingPaginationStrategy(_get_insights_request(_JOB_ID).with_limit(100).build()),
     )
 
 
@@ -163,14 +151,209 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(_get_account_request().build(), _get_account_response())
+        http_mocker.get(get_account_request().build(), get_account_response())
         http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
         http_mocker.post(_job_start_request().build(), _job_start_response(_REPORT_RUN_ID))
         http_mocker.post(_job_status_request(_REPORT_RUN_ID).build(), _job_status_response(_JOB_ID))
         http_mocker.get(
-            _get_insights_request(_JOB_ID).with_limit(100).build(),
+            _get_insights_request(_JOB_ID).build(),
             _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
         )
 
         output = self._read(config())
         assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_given_multiple_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        http_mocker.post(_job_start_request().build(), _job_start_response(_REPORT_RUN_ID))
+        http_mocker.post(_job_status_request(_REPORT_RUN_ID).build(), _job_status_response(_JOB_ID))
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).build(),
+            _insights_response().with_pagination().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).with_pagination_parameter().build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).with_record(
+                _ads_insights_action_product_id_record()
+            ).build(),
+        )
+
+        output = self._read(config())
+        assert len(output.records) == 3
+
+    @HttpMocker()
+    def test_given_multiple_account_ids_when_read_then_return_records_from_all_accounts(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        account_id_1 = "123123123"
+        account_id_2 = "321321321"
+        report_run_id_1 = "1571860060019500"
+        report_run_id_2 = "4571860060019599"
+        job_id_1 = "1049937379601600"
+        job_id_2 = "1049937379601699"
+
+        api_throttle_limit_response = _update_api_throttle_limit_response()
+
+        http_mocker.get(
+            get_account_request().with_account_id(account_id_1).build(), get_account_response(account_id=account_id_1)
+        )
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id_1).build(), api_throttle_limit_response
+        )
+        http_mocker.post(
+            _job_start_request().with_account_id(account_id_1).build(), _job_start_response(report_run_id_1)
+        )
+        http_mocker.post(
+            _job_status_request(report_run_id_1).build(), _job_status_response(job_id=job_id_1, account_id=account_id_1)
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_1).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+
+        http_mocker.get(
+            get_account_request().with_account_id(account_id_2).build(), get_account_response(account_id=account_id_2)
+        )
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id_2).build(), api_throttle_limit_response
+        )
+        http_mocker.post(
+            _job_start_request().with_account_id(account_id_2).build(), _job_start_response(report_run_id_2)
+        )
+        http_mocker.post(
+            _job_status_request(report_run_id_2).build(), _job_status_response(job_id=job_id_2, account_id=account_id_2)
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_2).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+
+        output = self._read(config().with_account_ids([account_id_1, account_id_2]))
+        assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_given_status_500_reduce_amount_of_data_when_read_then_limit_reduced(self, http_mocker: HttpMocker) -> None:
+        limit = 100
+
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        http_mocker.post(_job_start_request().build(), _job_start_response(_REPORT_RUN_ID))
+        http_mocker.post(_job_status_request(_REPORT_RUN_ID).build(), _job_status_response(_JOB_ID))
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).with_limit(limit).build(),
+            error_reduce_amount_of_data_response(),
+        )
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).with_limit(int(limit / 2)).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+
+        self._read(config())
+
+
+class TestIncremental(TestCase):
+    @staticmethod
+    def _read(
+        config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
+    ) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.incremental,
+            state=state,
+            expecting_exception=expecting_exception,
+        )
+
+    @HttpMocker()
+    def test_when_read_then_state_message_produced_and_state_match_start_interval(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        account_id = "123123123"
+        start_date = "2023-01-01T00:00:00Z"
+        end_date = "2023-01-01T23:59:59Z"
+
+        http_mocker.get(
+            get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id)
+        )
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        http_mocker.post(_job_start_request().with_account_id(account_id).build(), _job_start_response(_REPORT_RUN_ID))
+        http_mocker.post(
+            _job_status_request(_REPORT_RUN_ID).build(), _job_status_response(job_id=_JOB_ID, account_id=account_id)
+        )
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+
+        output = self._read(config().with_account_ids([account_id]).with_start_date(start_date).with_end_date(end_date))
+        cursor_value_from_state_message = output.most_recent_state.get(_STREAM_NAME, {}).get(account_id, {}).get(
+            _CURSOR_FIELD
+        )
+        assert cursor_value_from_state_message == start_date[:10]
+
+    @HttpMocker()
+    def test_given_multiple_account_ids_when_read_then_state_produced_by_account_id_and_state_match_start_interval(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        account_id_1 = "123123123"
+        account_id_2 = "321321321"
+        start_date = "2023-01-01T00:00:00Z"
+        end_date = "2023-01-01T23:59:59Z"
+        report_run_id_1 = "1571860060019500"
+        report_run_id_2 = "4571860060019599"
+        job_id_1 = "1049937379601600"
+        job_id_2 = "1049937379601699"
+
+        api_throttle_limit_response = _update_api_throttle_limit_response()
+
+        http_mocker.get(
+            get_account_request().with_account_id(account_id_1).build(), get_account_response(account_id=account_id_1)
+        )
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id_1).build(), api_throttle_limit_response
+        )
+        http_mocker.post(
+            _job_start_request().with_account_id(account_id_1).build(), _job_start_response(report_run_id_1)
+        )
+        http_mocker.post(
+            _job_status_request(report_run_id_1).build(), _job_status_response(job_id=job_id_1, account_id=account_id_1)
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_1).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+
+        http_mocker.get(
+            get_account_request().with_account_id(account_id_2).build(), get_account_response(account_id=account_id_2)
+        )
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id_2).build(), api_throttle_limit_response
+        )
+        http_mocker.post(
+            _job_start_request().with_account_id(account_id_2).build(), _job_start_response(report_run_id_2)
+        )
+        http_mocker.post(
+            _job_status_request(report_run_id_2).build(), _job_status_response(job_id=job_id_2, account_id=account_id_2)
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_2).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+
+        output = self._read(
+            config().with_account_ids([account_id_1, account_id_2]).with_start_date(start_date).with_end_date(end_date)
+        )
+        cursor_value_from_state_account_1 = output.most_recent_state.get(_STREAM_NAME, {}).get(account_id_1, {}).get(
+            _CURSOR_FIELD
+        )
+        cursor_value_from_state_account_2 = output.most_recent_state.get(_STREAM_NAME, {}).get(account_id_2, {}).get(
+            _CURSOR_FIELD
+        )
+        expected_cursor_value = start_date[:10]
+        assert cursor_value_from_state_account_1 == expected_cursor_value
+        assert cursor_value_from_state_account_2 == expected_cursor_value

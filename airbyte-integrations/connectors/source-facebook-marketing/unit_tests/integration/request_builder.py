@@ -9,7 +9,12 @@ from typing import Any, List, Mapping, Optional, Union
 
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
+from .config import ACCESS_TOKEN, ACCOUNT_ID
 from .pagination import CURSOR_AFTER
+
+
+def get_account_request() -> RequestBuilder:
+    return RequestBuilder.get_account_endpoint(access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID)
 
 
 class RequestBuilder:

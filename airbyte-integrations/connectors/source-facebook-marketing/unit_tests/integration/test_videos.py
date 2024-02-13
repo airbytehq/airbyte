@@ -3,7 +3,6 @@
 #
 
 
-from http import HTTPStatus
 from typing import List, Optional
 from unittest import TestCase
 
@@ -11,7 +10,6 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
-    HttpResponse,
     HttpResponseBuilder,
     RecordBuilder,
     create_record_builder,
@@ -23,8 +21,8 @@ from airbyte_protocol.models import AirbyteStateMessage, SyncMode
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, ConfigBuilder
 from .pagination import FacebookMarketingPaginationStrategy
-from .request_builder import RequestBuilder
-from .response_builder import build_response
+from .request_builder import RequestBuilder, get_account_request
+from .response_builder import error_reduce_amount_of_data_response, get_account_response
 from .utils import config, read_output
 
 _STREAM_NAME = "videos"
@@ -62,19 +60,10 @@ _FIELDS = [
 ]
 
 
-def _get_account_request() -> RequestBuilder:
-    return RequestBuilder.get_account_endpoint(access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID)
-
-
 def _get_videos_request() -> RequestBuilder:
     return RequestBuilder.get_videos_endpoint(
         access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID
     ).with_limit(100).with_fields(_FIELDS).with_summary()
-
-
-def _get_account_response(account_id: Optional[str] = ACCOUNT_ID) -> HttpResponse:
-    response = {"account_id": account_id, "id": f"act_{account_id}"}
-    return build_response(body=response, status_code=HTTPStatus.OK)
 
 
 def _get_videos_response() -> HttpResponseBuilder:
@@ -107,7 +96,7 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(_get_account_request().build(), _get_account_response())
+        http_mocker.get(get_account_request().build(), get_account_response())
         http_mocker.get(_get_videos_request().build(), _get_videos_response().with_record(_video_record()).build())
 
         output = self._read(config())
@@ -115,7 +104,7 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_multiple_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(_get_account_request().build(), _get_account_response())
+        http_mocker.get(get_account_request().build(), get_account_response())
         http_mocker.get(
             _get_videos_request().build(),
             _get_videos_response().with_pagination().with_record(_video_record()).build(),
@@ -136,14 +125,14 @@ class TestFullRefresh(TestCase):
         account_id_2 = "321321321"
 
         http_mocker.get(
-            _get_account_request().with_account_id(account_id_1).build(), _get_account_response(account_id=account_id_1)
+            get_account_request().with_account_id(account_id_1).build(), get_account_response(account_id=account_id_1)
         )
         http_mocker.get(
             _get_videos_request().with_account_id(account_id_1).build(),
             _get_videos_response().with_record(_video_record()).build(),
         )
         http_mocker.get(
-            _get_account_request().with_account_id(account_id_2).build(), _get_account_response(account_id=account_id_2)
+            get_account_request().with_account_id(account_id_2).build(), get_account_response(account_id=account_id_2)
         )
         http_mocker.get(
             _get_videos_request().with_account_id(account_id_2).build(),
@@ -155,19 +144,18 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_when_read_then_add_account_id_field(self, http_mocker: HttpMocker) -> None:
-        test_account_id = "123123123"
+        account_id = "123123123"
 
         http_mocker.get(
-            _get_account_request().with_account_id(test_account_id).build(),
-            _get_account_response(account_id=test_account_id),
+            get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id)
         )
         http_mocker.get(
-            _get_videos_request().with_account_id(test_account_id).build(),
+            _get_videos_request().with_account_id(account_id).build(),
             _get_videos_response().with_record(_video_record()).build(),
         )
 
-        output = self._read(config().with_account_ids([test_account_id]))
-        assert output.records[0].record.data["account_id"] == test_account_id
+        output = self._read(config().with_account_ids([account_id]))
+        assert output.records[0].record.data["account_id"] == account_id
 
     @HttpMocker()
     def test_when_read_then_datetime_fields_transformed(self, http_mocker: HttpMocker) -> None:
@@ -175,9 +163,9 @@ class TestFullRefresh(TestCase):
         input_datetime_value = "2024-01-01t00:00:00 0000"
         expected_datetime_value = "2024-01-01T00:00:00+0000"
 
-        http_mocker.get(_get_account_request().build(), _get_account_response())
+        http_mocker.get(get_account_request().build(), get_account_response())
         http_mocker.get(
-            _get_videos_request().with_limit(100).with_fields(_FIELDS).with_summary().build(),
+            _get_videos_request().with_fields(_FIELDS).with_summary().build(),
             _get_videos_response().with_record(
                 _video_record().with_field(FieldPath(created_time_field), input_datetime_value)
             ).build(),
@@ -185,6 +173,22 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config())
         assert output.records[0].record.data[created_time_field] == expected_datetime_value
+
+    @HttpMocker()
+    def test_given_status_500_reduce_amount_of_data_when_read_then_limit_reduced(self, http_mocker: HttpMocker) -> None:
+        limit = 100
+
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(
+            _get_videos_request().with_limit(limit).with_fields(_FIELDS).with_summary().build(),
+            error_reduce_amount_of_data_response(),
+        )
+        http_mocker.get(
+            _get_videos_request().with_limit(int(limit / 2)).with_fields(_FIELDS).with_summary().build(),
+            _get_videos_response().with_record(_video_record()).build(),
+        )
+
+        self._read(config())
 
 
 class TestIncremental(TestCase):
@@ -204,21 +208,20 @@ class TestIncremental(TestCase):
     def test_when_read_then_state_message_produced_and_state_match_latest_record(self, http_mocker: HttpMocker) -> None:
         min_cursor_value = "2024-01-01T00:00:00+00:00"
         max_cursor_value = "2024-02-01T00:00:00+00:00"
-        test_account_id = "123123123"
+        account_id = "123123123"
 
         http_mocker.get(
-            _get_account_request().with_account_id(test_account_id).build(),
-            _get_account_response(account_id=test_account_id),
+            get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id)
         )
         http_mocker.get(
-            _get_videos_request().with_account_id(test_account_id).build(),
+            _get_videos_request().with_account_id(account_id).build(),
             _get_videos_response().with_record(_video_record().with_cursor(max_cursor_value)).with_record(
                 _video_record().with_cursor(min_cursor_value)
             ).build(),
         )
 
-        output = self._read(config().with_account_ids([test_account_id]))
-        cursor_value_from_state_message = output.most_recent_state.get(_STREAM_NAME, {}).get(test_account_id, {}).get(
+        output = self._read(config().with_account_ids([account_id]))
+        cursor_value_from_state_message = output.most_recent_state.get(_STREAM_NAME, {}).get(account_id, {}).get(
             _CURSOR_FIELD
         )
         assert cursor_value_from_state_message == max_cursor_value
@@ -235,7 +238,7 @@ class TestIncremental(TestCase):
         max_cursor_value_account_id_2 = "2024-04-01T00:00:00+00:00"
 
         http_mocker.get(
-            _get_account_request().with_account_id(account_id_1).build(), _get_account_response(account_id=account_id_1)
+            get_account_request().with_account_id(account_id_1).build(), get_account_response(account_id=account_id_1)
         )
         http_mocker.get(
             _get_videos_request().with_account_id(account_id_1).build(),
@@ -244,7 +247,7 @@ class TestIncremental(TestCase):
             ).build(),
         )
         http_mocker.get(
-            _get_account_request().with_account_id(account_id_2).build(), _get_account_response(account_id=account_id_2)
+            get_account_request().with_account_id(account_id_2).build(), get_account_response(account_id=account_id_2)
         )
         http_mocker.get(
             _get_videos_request().with_account_id(account_id_2).build(),
@@ -267,17 +270,16 @@ class TestIncremental(TestCase):
     def test_given_state_when_read_then_records_with_cursor_value_less_than_state_filtered(
         self, http_mocker: HttpMocker
     ) -> None:
-        test_account_id = "123123123"
+        account_id = "123123123"
         cursor_value_1 = "2024-01-01T00:00:00+00:00"
         cursor_value_2 = "2024-01-02T00:00:00+00:00"
         cursor_value_3 = "2024-01-03T00:00:00+00:00"
 
         http_mocker.get(
-            _get_account_request().with_account_id(test_account_id).build(),
-            _get_account_response(account_id=test_account_id),
+            get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id)
         )
         http_mocker.get(
-            _get_videos_request().with_account_id(test_account_id).build(),
+            _get_videos_request().with_account_id(account_id).build(),
             _get_videos_response().with_record(_video_record().with_cursor(cursor_value_3)).with_record(
                 _video_record().with_cursor(cursor_value_2)
             ).with_record(
@@ -286,10 +288,8 @@ class TestIncremental(TestCase):
         )
 
         output = self._read(
-            config().with_account_ids([test_account_id]),
-            state=StateBuilder().with_stream_state(
-                _STREAM_NAME, {test_account_id: {_CURSOR_FIELD: cursor_value_2}}
-            ).build(),
+            config().with_account_ids([account_id]),
+            state=StateBuilder().with_stream_state(_STREAM_NAME, {account_id: {_CURSOR_FIELD: cursor_value_2}}).build(),
         )
         assert len(output.records) == 2
 
@@ -304,7 +304,7 @@ class TestIncremental(TestCase):
         cursor_value_3 = "2024-01-03T00:00:00+00:00"
 
         http_mocker.get(
-            _get_account_request().with_account_id(account_id_1).build(), _get_account_response(account_id=account_id_1)
+            get_account_request().with_account_id(account_id_1).build(), get_account_response(account_id=account_id_1)
         )
         http_mocker.get(
             _get_videos_request().with_account_id(account_id_1).build(),
@@ -315,7 +315,7 @@ class TestIncremental(TestCase):
             ).build(),
         )
         http_mocker.get(
-            _get_account_request().with_account_id(account_id_2).build(), _get_account_response(account_id=account_id_2)
+            get_account_request().with_account_id(account_id_2).build(), get_account_response(account_id=account_id_2)
         )
         http_mocker.get(
             _get_videos_request().with_account_id(account_id_2).build(),
