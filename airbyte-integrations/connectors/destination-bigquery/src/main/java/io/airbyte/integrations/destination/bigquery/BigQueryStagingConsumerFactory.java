@@ -70,7 +70,7 @@ public class BigQueryStagingConsumerFactory {
         },
         flusher,
         catalog,
-        new BufferManager(getBigQueryBufferMemoryLimit()),
+        new BufferManager(getBigQueryBufferMemoryLimit(), outputRecordCollector),
         defaultNamespace);
   }
 

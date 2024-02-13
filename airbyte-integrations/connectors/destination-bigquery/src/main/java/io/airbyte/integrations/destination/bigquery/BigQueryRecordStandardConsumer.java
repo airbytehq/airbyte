@@ -35,7 +35,7 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
         onClose,
         new BigQueryAsyncStandardFlush(bigQuery, uploaderMap),
         catalog,
-        new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.5)),
+        new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.5), outputRecordCollector),
         defaultNamespace,
         Executors.newFixedThreadPool(2));
   }
