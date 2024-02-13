@@ -3,10 +3,14 @@
 #
 from __future__ import annotations
 
+import asyncio
 import json
+import os
 import webbrowser
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from types import MappingProxyType
+from typing import TYPE_CHECKING, Optional
+from zipfile import ZIP_DEFLATED, ZipFile
 
 from anyio import Path
 from connector_ops.utils import console  # type: ignore
@@ -42,13 +46,19 @@ class ConnectorReport(Report):
     def html_report_file_name(self) -> str:
         return self.filename + ".html"
 
+    def file_remote_storage_key(self, file_name: str) -> str:
+        return f"{self.report_output_prefix}/{file_name}"
+
     @property
     def html_report_remote_storage_key(self) -> str:
-        return f"{self.report_output_prefix}/{self.html_report_file_name}"
+        return self.file_remote_storage_key(self.html_report_file_name)
+
+    def file_url(self, file_name: str) -> str:
+        return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{self.file_remote_storage_key(file_name)}"
 
     @property
     def html_report_url(self) -> str:
-        return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
+        return self.file_url(self.html_report_file_name)
 
     def to_json(self) -> str:
         """Create a JSON representation of the connector test report.
@@ -92,6 +102,11 @@ class ConnectorReport(Report):
         template.globals["StepStatus"] = StepStatus
         template.globals["format_duration"] = format_duration
         local_icon_path = await Path(f"{self.pipeline_context.connector.code_directory}/icon.svg").resolve()
+        step_result_to_artifact_link = {}
+        for step_result in self.steps_results:
+            test_artifacts_link = await self.get_path_as_link(step_result.test_artifacts_path)
+            if test_artifacts_link:
+                step_result_to_artifact_link[step_result.step.title] = test_artifacts_link
         template_context = {
             "connector_name": self.pipeline_context.connector.technical_name,
             "step_results": self.steps_results,
@@ -104,6 +119,8 @@ class ConnectorReport(Report):
             "git_revision": self.pipeline_context.git_revision,
             "commit_url": None,
             "icon_url": local_icon_path.as_uri(),
+            "report": self,
+            "step_result_to_artifact_link": MappingProxyType(step_result_to_artifact_link),
         }
 
         if self.pipeline_context.is_ci:
@@ -126,7 +143,6 @@ class ConnectorReport(Report):
                 webbrowser.open(absolute_path.as_uri())
         if self.remote_storage_enabled:
             await self.save_remote(local_html_path, self.html_report_remote_storage_key, "text/html")
-            self.pipeline_context.logger.info(f"HTML report uploaded to {self.html_report_url}")
         await super().save()
 
     def print(self) -> None:
@@ -155,3 +171,31 @@ class ConnectorReport(Report):
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
         console.print(main_panel)
+
+    async def get_path_as_link(self, path: Path) -> Optional[str]:
+        if not path or not path.exists():
+            return None
+        if self.pipeline_context.is_local:
+            return str(path.resolve())
+
+        zip_file_path = Path(str(path) + ".zip")
+        with ZipFile(zip_file_path, mode="w") as zip_file:
+            # lifted from https://github.com/python/cpython/blob/3.12/Lib/zipfile/__init__.py#L2277C9-L2295C44
+            def add_to_zip(zf: ZipFile, path_to_zip: str, zippath: str) -> None:
+                if os.path.isfile(path_to_zip):
+                    zf.write(path_to_zip, zippath, ZIP_DEFLATED)
+                elif os.path.isdir(path_to_zip):
+                    if zippath:
+                        zf.write(path_to_zip, zippath)
+                    for nm in sorted(os.listdir(path_to_zip)):
+                        add_to_zip(zf, os.path.join(path_to_zip, nm), os.path.join(zippath, nm))
+
+            add_to_zip(zip_file, str(path), "")
+
+        if not self.remote_storage_enabled:
+            self.pipeline_context.logger.info(f"remote storage is disable. zip file is at {zip_file_path.resolve()}")
+            return str(zip_file_path.resolve())
+        else:
+            await self.save_remote(zip_file_path, self.file_remote_storage_key(zip_file_path.name), "application/zip")
+            self.pipeline_context.logger.info(f"zip file uploaded to {self.file_url(str(zip_file_path))}")
+            return self.file_url(zip_file_path.name)

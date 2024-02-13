@@ -39,6 +39,7 @@ class IntegrationTests(GradleTask):
     mount_connector_secrets = True
     bind_to_docker_host = True
     with_test_report = True
+    with_logs = True
 
     @property
     def default_params(self) -> STEP_PARAMS:
@@ -77,6 +78,7 @@ class UnitTests(GradleTask):
     gradle_task_name = "test"
     bind_to_docker_host = True
     with_test_report = True
+    with_logs = True
 
 
 def _create_integration_step_args_factory(context: ConnectorContext) -> Callable:

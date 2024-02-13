@@ -1,13 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import html
-import re
 from abc import ABC
-from typing import Any, ClassVar, List, Optional, Tuple
+from datetime import datetime
+from pathlib import Path
+from typing import Any, ClassVar, List, Optional, Tuple, cast
 
 import pipelines.dagger.actions.system.docker
-import xmltodict
 from dagger import CacheSharingMode, CacheVolume, Container, QueryError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
@@ -37,7 +36,17 @@ class GradleTask(Step, ABC):
     bind_to_docker_host: ClassVar[bool] = False
     mount_connector_secrets: ClassVar[bool] = False
     with_test_report: ClassVar[bool] = False
+    with_logs: ClassVar[bool] = False
     accept_extra_params = True
+
+    @property
+    def airbyte_logs_subdir(self) -> str:
+        return datetime.fromtimestamp(cast(float, self.context.pipeline_start_timestamp)).isoformat() + "-" + self.gradle_task_name
+
+    @property
+    def test_artifacts_path(self) -> Path:
+        test_artifacts_path = f"{self.context.connector.code_directory}/build/test-artifacts/{self.airbyte_logs_subdir}"
+        return Path(test_artifacts_path)
 
     @property
     def gradle_task_options(self) -> Tuple[str, ...]:
@@ -68,22 +77,22 @@ class GradleTask(Step, ABC):
 
     async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
         include = [
-            ".root",
-            ".env",
-            "build.gradle",
-            "deps.toml",
-            "gradle.properties",
-            "gradle",
-            "gradlew",
-            "settings.gradle",
-            "build.gradle",
-            "tools/gradle",
-            "spotbugs-exclude-filter-file.xml",
-            "buildSrc",
-            "tools/bin/build_image.sh",
-            "tools/lib/lib.sh",
-            "pyproject.toml",
-        ] + self.build_include
+                      ".root",
+                      ".env",
+                      "build.gradle",
+                      "deps.toml",
+                      "gradle.properties",
+                      "gradle",
+                      "gradlew",
+                      "settings.gradle",
+                      "build.gradle",
+                      "tools/gradle",
+                      "spotbugs-exclude-filter-file.xml",
+                      "buildSrc",
+                      "tools/bin/build_image.sh",
+                      "tools/lib/lib.sh",
+                      "pyproject.toml",
+                  ] + self.build_include
 
         yum_packages_to_install = [
             "docker",  # required by :integrationTestJava.
@@ -102,7 +111,7 @@ class GradleTask(Step, ABC):
             # Set GRADLE_HOME to the directory which will be rsync-ed with the gradle cache volume.
             .with_env_variable("GRADLE_HOME", self.GRADLE_HOME_PATH)
             # Same for GRADLE_USER_HOME.
-            .with_env_variable("GRADLE_USER_HOME", self.GRADLE_HOME_PATH)
+            .with_env_variable("GRADLE_USER_HOME", self.GRADLE_HOME_PATH).with_env_variable("AIRBYTE_LOG_SUBDIR", self.airbyte_logs_subdir)
             # Install a bunch of packages as early as possible.
             .with_exec(
                 sh_dash_c(
@@ -193,6 +202,8 @@ class GradleTask(Step, ABC):
         connector_gradle_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
         gradle_command = self._get_gradle_command(connector_gradle_task, task_options=self.params_as_cli_options)
         gradle_container = gradle_container.with_(never_fail_exec([gradle_command]))
+        await self._collect_logs(gradle_container)
+        await self._collect_test_report(gradle_container)
         return await self.get_step_result(gradle_container)
 
     async def get_step_result(self, container: Container) -> StepResult:
@@ -203,76 +214,38 @@ class GradleTask(Step, ABC):
             status=step_result.status,
             stdout=step_result.stdout,
             stderr=step_result.stderr,
-            report=await self._collect_test_report(container),
             output_artifact=step_result.output_artifact,
+            test_artifacts_path=self.test_artifacts_path,
         )
 
-    async def _collect_test_report(self, gradle_container: Container) -> Optional[str]:
+    async def _collect_logs(self, gradle_container: Container) -> None:
+        if not self.with_logs:
+            return None
+        logs_dir_path = f"{self.context.connector.code_directory}/build/test-logs/{self.airbyte_logs_subdir}"
+        try:
+            container_logs_dir = await gradle_container.directory(logs_dir_path)
+            # the gradle task didn't create any logs.
+            if not container_logs_dir:
+                return None
+
+            self.test_artifacts_path.mkdir(parents=True, exist_ok=True)
+            if not await container_logs_dir.export(str(self.test_artifacts_path)):
+                self.context.logger.error("Error when trying to export log files from container")
+        except QueryError as e:
+            self.context.logger.error(str(e))
+            self.context.logger.warn(f"Failed to retrieve junit test results from {logs_dir_path} gradle container.")
+            return None
+
+    async def _collect_test_report(self, gradle_container: Container) -> None:
         if not self.with_test_report:
             return None
 
         junit_xml_path = f"{self.context.connector.code_directory}/build/test-results/{self.gradle_task_name}"
-        testsuites = []
         try:
             junit_xml_dir = await gradle_container.directory(junit_xml_path)
             for file_name in await junit_xml_dir.entries():
                 if file_name.endswith(".xml"):
-                    junit_xml = await junit_xml_dir.file(file_name).contents()
-                    # This will be embedded in the HTML report in a <pre lang="xml"> block.
-                    # The java logging backend will have already taken care of masking any secrets.
-                    # Nothing to do in that regard.
-                    try:
-                        if testsuite := xmltodict.parse(junit_xml):
-                            testsuites.append(testsuite)
-                    except Exception as e:
-                        self.context.logger.error(str(e))
-                        self.context.logger.warn(f"Failed to parse junit xml file {file_name}.")
+                    export_succeeded = await junit_xml_dir.file(file_name).export(str(self.test_artifacts_path), allow_parent_dir_path=True)
         except QueryError as e:
             self.context.logger.error(str(e))
-            self.context.logger.warn(f"Failed to retrieve junit test results from {junit_xml_path} gradle container.")
             return None
-        return render_junit_xml(testsuites)
-
-
-MAYBE_STARTS_WITH_XML_TAG = re.compile("^ *<")
-ESCAPED_ANSI_COLOR_PATTERN = re.compile(r"\?\[0?m|\?\[[34][0-9]m")
-
-
-def render_junit_xml(testsuites: List[Any]) -> str:
-    """Renders the JUnit XML report as something readable in the HTML test report."""
-    # Transform the dict contents.
-    indent = "  "
-    for testsuite in testsuites:
-        testsuite = testsuite.get("testsuite")
-        massage_system_out_and_err(testsuite, indent, 4)
-        if testcases := testsuite.get("testcase"):
-            if not isinstance(testcases, list):
-                testcases = [testcases]
-            for testcase in testcases:
-                massage_system_out_and_err(testcase, indent, 5)
-    # Transform back to XML string.
-    # Try to respect the JUnit XML test result schema.
-    root = {"testsuites": {"testsuite": testsuites}}
-    xml = xmltodict.unparse(root, pretty=True, short_empty_elements=True, indent=indent)
-    # Escape < and > and so forth to make them render properly, but not in the log messages.
-    # These lines will already have been escaped by xmltodict.unparse.
-    lines = xml.splitlines()
-    for idx, line in enumerate(lines):
-        if MAYBE_STARTS_WITH_XML_TAG.match(line):
-            lines[idx] = html.escape(line)
-    return "\n".join(lines)
-
-
-def massage_system_out_and_err(d: dict, indent: str, indent_levels: int) -> None:
-    """Makes the system-out and system-err text prettier."""
-    if d:
-        for key in ["system-out", "system-err"]:
-            if s := d.get(key):
-                lines = s.splitlines()
-                s = ""
-                for line in lines:
-                    stripped = line.strip()
-                    if stripped:
-                        s += "\n" + indent * indent_levels + ESCAPED_ANSI_COLOR_PATTERN.sub("", line.strip())
-                s = s + "\n" + indent * (indent_levels - 1) if s else None
-                d[key] = s

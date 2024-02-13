@@ -93,9 +93,9 @@ class Report:
 
     async def save_remote(self, local_path: Path, remote_key: str, content_type: str) -> int:
         assert self.pipeline_context.ci_report_bucket is not None, "The ci_report_bucket must be set to save reports."
-
         gcs_cp_flags = None if content_type is None else [f"--content-type={content_type}"]
         local_file = self.pipeline_context.dagger_client.host().directory(".", include=[str(local_path)]).file(str(local_path))
+
         report_upload_exit_code, _, _ = await remote_storage.upload_to_gcs(
             dagger_client=self.pipeline_context.dagger_client,
             file_to_upload=local_file,
