@@ -1,14 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "Suppliers": {
       "type": "array",
       "description": "Suppliers",
       "items": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "IsDefault": {
             "type": "boolean",
@@ -82,11 +82,11 @@
       "description": "Stock Levels",
       "items": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "Location": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Location ID",
             "properties": {
               "StockLocationId": {
@@ -200,7 +200,7 @@
       "description": "List of item descriptions",
       "items": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "pkRowId": {
             "type": "string",
@@ -234,7 +234,7 @@
       "description": "List of extended properties",
       "items": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "pkRowId": {
             "type": "string",
@@ -264,7 +264,7 @@
       "description": "List item titles",
       "items": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "pkRowId": {
             "type": "string",
@@ -298,14 +298,14 @@
       "description": "List of item prices",
       "items": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "Rules": {
             "type": "array",
             "description": "Pricing rule",
             "items": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "pkRowId": {
                   "type": ["null", "integer"],
@@ -369,7 +369,7 @@
       "description": "Image urls",
       "items": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "Source": {
             "type": "string",

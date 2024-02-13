@@ -7,7 +7,7 @@ from unittest.mock import Mock
 import pendulum
 import pytest
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_slack.source import Threads, Users
+from source_slack.source import Channels, Threads, Users
 
 
 @pytest.fixture
@@ -93,3 +93,18 @@ def test_get_updated_state(authenticator, legacy_token_config, current_state, la
 def test_backoff(authenticator, headers, expected_result):
     stream = Users(authenticator=authenticator)
     assert stream.backoff_time(Mock(headers=headers)) == expected_result
+
+
+def test_channels_stream_with_autojoin(authenticator) -> None:
+    """
+    The test uses the `conversations_list` fixture(autouse=true) as API mocker.
+    """
+    expected = [
+        {'name': 'advice-data-architecture', 'id': 1, 'is_member': False},
+        {'name': 'advice-data-orchestration', 'id': 2, 'is_member': True},
+        {'name': 'airbyte-for-beginners', 'id': 3, 'is_member': False},
+        {'name': 'good-reads', 'id': 4, 'is_member': True},
+    ]
+    stream = Channels(channel_filter=[], join_channels=True, authenticator=authenticator)
+    assert list(stream.read_records(None)) == expected
+    

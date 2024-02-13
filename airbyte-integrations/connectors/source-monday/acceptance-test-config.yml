@@ -39,7 +39,7 @@ acceptance_tests:
           extra_records: yes
         empty_streams:
           - name: teams
-            bypass_reason: "unable to populate"
+            bypass_reason: "The stream has no test data and tested with integration tests"
         ignored_fields:
           items:
             - name: assets/*/public_url
@@ -55,7 +55,7 @@ acceptance_tests:
           extra_records: yes
         empty_streams:
           - name: teams
-            bypass_reason: "unable to populate"
+            bypass_reason: "The stream has no test data and tested with integration tests"
         ignored_fields:
           items:
             - name: assets/*/public_url

@@ -7,7 +7,6 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
-import org.elasticsearch.common.Strings;
 
 /**
  * Represents a list of SQL transactions, where each transaction consists of one or more SQL
@@ -27,7 +26,7 @@ public record Sql(List<List<String>> transactions) {
       if (transaction.isEmpty()) {
         throw new IllegalArgumentException("Transaction must not be empty");
       }
-      if (transaction.stream().anyMatch(Strings::isNullOrEmpty)) {
+      if (transaction.stream().anyMatch(s -> s == null || s.isEmpty())) {
         throw new IllegalArgumentException("Transaction must not contain empty statements");
       }
     });
@@ -104,7 +103,7 @@ public record Sql(List<List<String>> transactions) {
   public static Sql create(final List<List<String>> transactions) {
     return new Sql(transactions.stream()
         .map(transaction -> transaction.stream()
-            .filter(statement -> !Strings.isNullOrEmpty(statement))
+            .filter(statement -> statement != null && !statement.isEmpty())
             .map(statement -> {
               if (!statement.trim().endsWith(";")) {
                 return statement + ";";

@@ -109,6 +109,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.2 | 2024-02-12 | [35167](https://github.com/airbytehq/airbyte/pull/35167) | Manage dependencies with Poetry. |
 | 2.1.1   | 2024-01-12 | [34203](https://github.com/airbytehq/airbyte/pull/34203) | prepare for airbyte-lib                                                        |
 | 2.1.0   | 2023-12-20 | [33676](https://github.com/airbytehq/airbyte/pull/33676) | Add fields to Commits (extended_trailers), Groups (emails_enabled, service_access_tokens_expiration_enforced) and Projects (code_suggestions, model_registry_access_level) streams |
 | 2.0.0   | 2023-10-23 | [31700](https://github.com/airbytehq/airbyte/pull/31700) | Add correct date-time format for Deployments, Projects and Groups Members streams                                                                                                  |

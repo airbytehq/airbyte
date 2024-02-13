@@ -5,7 +5,15 @@
 import copy
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStream,
+    AirbyteStreamState,
+    StreamDescriptor,
+)
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams import Stream
 from pydantic import Extra
@@ -29,7 +37,9 @@ class ConnectorStateManager:
     """
 
     def __init__(
-        self, stream_instance_map: Mapping[str, Stream], state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None
+        self,
+        stream_instance_map: Mapping[str, Union[Stream, AirbyteStream]],
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ):
         shared_state, per_stream_states = self._extract_from_state_message(state, stream_instance_map)
 
@@ -97,7 +107,9 @@ class ConnectorStateManager:
 
     @classmethod
     def _extract_from_state_message(
-        cls, state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]], stream_instance_map: Mapping[str, Stream]
+        cls,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]],
+        stream_instance_map: Mapping[str, Union[Stream, AirbyteStream]],
     ) -> Tuple[Optional[AirbyteStateBlob], MutableMapping[HashableStreamDescriptor, Optional[AirbyteStateBlob]]]:
         """
         Takes an incoming list of state messages or the legacy state format and extracts state attributes according to type
@@ -149,7 +161,7 @@ class ConnectorStateManager:
 
     @staticmethod
     def _create_descriptor_to_stream_state_mapping(
-        state: MutableMapping[str, Any], stream_to_instance_map: Mapping[str, Stream]
+        state: MutableMapping[str, Any], stream_to_instance_map: Mapping[str, Union[Stream, AirbyteStream]]
     ) -> MutableMapping[HashableStreamDescriptor, Optional[AirbyteStateBlob]]:
         """
         Takes incoming state received in the legacy format and transforms it into a mapping of StreamDescriptor to AirbyteStreamState

@@ -12,7 +12,7 @@ jooq = "3.13.4"
 junit-jupiter = "5.9.1"
 kotlin = "1.9.0"
 log4j = "2.21.1"
-lombok = "1.18.24"
+lombok = "1.18.30"
 postgresql = "42.6.0"
 reactor = "3.5.2"
 segment = "2.1.1"
@@ -87,7 +87,7 @@ log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j
 log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4j" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3" }
-mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "4.6.1" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "5.10.0" }
 mockk = { module = "io.mockk:mockk", version = "1.13.3" }
 mongo-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version = "4.10.2" }
 otel-bom = { module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0" }

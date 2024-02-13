@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -381,6 +382,36 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
+   * Run the first sync from {@link #incrementalDedup()}, but repeat the messages many times. Some
+   * destinations behave differently with small vs large record count, so this test case tries to
+   * exercise that behavior.
+   */
+  @Test
+  public void largeDedupSync() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    // Run a sync with 25K copies of the input messages
+    final List<AirbyteMessage> messages1 = repeatList(25_000, readMessages("dat/sync1_messages.jsonl"));
+
+    runSync(catalog, messages1);
+
+    // The raw table will contain 25K copies of each record
+    final List<JsonNode> expectedRawRecords1 = repeatList(25_000, readRecords("dat/sync1_expectedrecords_raw.jsonl"));
+    // But the final table should be fully deduped
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+  }
+
+  /**
    * Identical to {@link #incrementalDedup()}, except that the stream has no namespace.
    */
   @Test
@@ -705,6 +736,14 @@ public abstract class BaseTypingDedupingTest {
     // we probably don't want to do the exact same thing, but the general spirit of testing a wide range
     // of values for every data type is approximately correct
     // this test probably needs some configuration per destination to specify what values are supported?
+  }
+
+  private <T> List<T> repeatList(final int n, final List<T> list) {
+    return Collections
+        .nCopies(n, list)
+        .stream()
+        .flatMap(List::stream)
+        .collect(toList());
   }
 
   protected void verifySyncResult(final List<JsonNode> expectedRawRecords,

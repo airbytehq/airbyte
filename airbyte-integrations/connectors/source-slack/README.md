@@ -1,17 +1,17 @@
 # Orbit Source
 
 This is the repository for the Orbit configuration based source connector.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/orbit).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/slack).
 
 ## Local development
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/orbit)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/slack)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_orbit/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source orbit test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source slack test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector docker image
@@ -20,23 +20,23 @@ and place them into `secrets/config.json`.
 #### Build
 **Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
 ```bash
-airbyte-ci connectors --name source-orbit build
+airbyte-ci connectors --name source-slack build
 ```
 
-An image will be built with the tag `airbyte/source-orbit:dev`.
+An image will be built with the tag `airbyte/source-slack:dev`.
 
 **Via `docker build`:**
 ```bash
-docker build -t airbyte/source-orbit:dev .
+docker build -t airbyte/source-slack:dev .
 ```
 
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-orbit:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-orbit:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-orbit:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-orbit:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-slack:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-slack:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-slack:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-slack:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ## Testing

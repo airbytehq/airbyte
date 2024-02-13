@@ -156,13 +156,12 @@ with
     "numbered_rows" as (
         select
             *,
-            row_number() over (partition by
-        "id1",
-        "id2"
-       order by
-        "updated_at" desc NULLS LAST,
-        "_airbyte_extracted_at" desc
-      ) as "row_number"
+            row_number() over (
+                partition by "id1", "id2"
+            order by
+                "updated_at" desc NULLS LAST,
+                "_airbyte_extracted_at" desc
+            ) as "row_number"
         from "intermediate_data"
     )
 select
@@ -193,13 +192,12 @@ where "_airbyte_raw_id" in (
     from (
              select
                  "_airbyte_raw_id",
-                 row_number() over (partition by
-        "id1",
-        "id2"
-       order by
-        "updated_at" desc NULLS LAST,
-        "_airbyte_extracted_at" desc
-      ) as "row_number"
+                 row_number() over (
+                    partition by "id1", "id2"
+                order by
+                    "updated_at" desc NULLS LAST,
+                    "_airbyte_extracted_at" desc
+                ) as "row_number"
              from "test_schema"."users_finalunittest"
          ) as "airbyte_ids"
     where "row_number" <> 1
@@ -207,7 +205,8 @@ where "_airbyte_raw_id" in (
 delete from "test_schema"."users_finalunittest"
 where "_ab_cdc_deleted_at" is not null;
 update "test_schema"."users_raw"
-set "_airbyte_loaded_at" = GETDATE()
+set
+"_airbyte_loaded_at" = GETDATE()
 where (
           "_airbyte_loaded_at" is null
               and "_airbyte_extracted_at" > '2023-02-15T18:35:24Z'

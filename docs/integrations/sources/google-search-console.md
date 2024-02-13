@@ -202,6 +202,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
 |:---------|:-----------|:--------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.7 | 2024-02-12 | [35163](https://github.com/airbytehq/airbyte/pull/35163) | Manage dependencies with Poetry. |
 | `1.3.6`  | 2023-10-26 | [31863](https://github.com/airbytehq/airbyte/pull/31863)                                                      | Base image migration: remove Dockerfile and use the python-connector-base image                                                |
 | `1.3.5`  | 2023-09-28 | [30822](https://github.com/airbytehq/airbyte/pull/30822)                                                      | Fix primary key for custom reports                                                                                             |
 | `1.3.4`  | 2023-09-27 | [30785](https://github.com/airbytehq/airbyte/pull/30785)                                                      | Do not migrate config for the newly created connections                                                                        |

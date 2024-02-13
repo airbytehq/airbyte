@@ -1,10 +1,10 @@
+import com.github.spotbugs.snom.Confidence
+import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsTask
-
 
 plugins {
     id 'base'
-    id 'com.github.node-gradle.node' version '3.5.1'
-    id 'com.github.spotbugs' version '5.0.13'
+    id 'com.github.spotbugs' version '6.0.7'
     id 'version-catalog'
     id 'ru.vyarus.use-python'
 }
@@ -180,12 +180,12 @@ subprojects { subproj ->
     }
 
     apply plugin: 'java'
-    apply plugin: 'jacoco'
+    apply plugin: 'java-test-fixtures'
     apply plugin: 'com.github.spotbugs'
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
         compileJava {
             options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing"]
         }
@@ -193,6 +193,10 @@ subprojects { subproj ->
             //rawtypes and unchecked are necessary for mockito
             //deprecation and removal are removed from error since we should still test those constructs.
             options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked,-deprecation,-removal"]
+        }
+        compileTestFixturesJava {
+            //rawtypes and unchecked are necessary for mockito
+            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked"]
         }
     }
 
@@ -213,50 +217,13 @@ subprojects { subproj ->
         }
     }
 
-    jacoco {
-        toolVersion = "0.8.8"
-    }
-
-    jacocoTestReport {
-        reports {
-            html.required = true
-            xml.required = true
-            csv.required = false
-        }
-    }
-    def jacocoTestReportTask = tasks.named('jacocoTestReport')
-    jacocoTestReportTask.configure {
-        dependsOn tasks.named('test')
-    }
-
-    jacocoTestCoverageVerification {
-        violationRules {
-            failOnViolation = false
-            rule {
-                element = 'CLASS'
-                excludes = ['**/*Test*', '**/generated*']
-                limit {
-                    counter = 'BRANCH'
-                    minimum = 0.8
-                }
-                limit {
-                    counter = 'INSTRUCTION'
-                    minimum = 0.8
-                }
-            }
-        }
-    }
-
     spotbugs {
         ignoreFailures = false
-        effort = 'max'
+        effort = Effort.valueOf(rootProject.ext.skipSlowTests ? 'MIN' : 'MAX')
         excludeFilter.set rootProject.file('spotbugs-exclude-filter-file.xml')
-        reportLevel = 'high'
+        reportLevel = Confidence.valueOf('HIGH')
         showProgress = false
-        toolVersion = '4.7.3'
-        if (rootProject.ext.skipSlowTests && isConnectorProject(subproj)) {
-            effort = 'min'
-        }
+        toolVersion = '4.8.3'
     }
 
     test {
@@ -267,6 +234,17 @@ subprojects { subproj ->
             // Swallow the logs when running in airbyte-ci, rely on test reports instead.
             showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
         }
+        reports {
+            junitXml {
+                outputPerTestCase = true
+            }
+        }
+
+        // This is required by mockito, see https://github.com/mockito/mockito/issues/3037.
+        jvmArgs "-XX:+EnableDynamicAgentLoading"
+        // This is also required, to prevent stderr spam starting with
+        //   "OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader cl..."
+        jvmArgs "-Xshare:off"
 
         // Set the timezone to UTC instead of picking up the host machine's timezone,
         // which on a developer's laptop is more likely to be PST.
@@ -311,53 +289,28 @@ subprojects { subproj ->
             exclude '**/io/airbyte/integrations/source/**'
             exclude '**/io/airbyte/integrations/destination/**'
         }
-
-        jacoco {
-            enabled = !rootProject.ext.skipSlowTests
-            excludes = ['**/*Test*', '**/generated*']
-        }
-        finalizedBy jacocoTestReportTask
     }
 
-    // TODO: These should be added to the CDK or to the individual projects that need them:
-
     dependencies {
-        implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
-        implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
-
-        // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
-        implementation libs.bundles.jackson
-        implementation libs.guava
-        implementation libs.commons.io
-        implementation libs.bundles.apache
-        implementation libs.slf4j.api
-
-        // SLF4J as a facade over Log4j2 required dependencies
-        implementation libs.bundles.log4j
-        implementation libs.appender.log4j2
-
-        // Bridges from other logging implementations to SLF4J
-        implementation libs.bundles.slf4j
-
         // Lombok dependencies
         compileOnly libs.lombok
         annotationProcessor libs.lombok
-
         testCompileOnly libs.lombok
         testAnnotationProcessor libs.lombok
+        testFixturesCompileOnly libs.lombok
+        testFixturesAnnotationProcessor libs.lombok
 
+        // JUnit dependencies
         testRuntimeOnly libs.junit.jupiter.engine
         testImplementation libs.bundles.junit
         testImplementation libs.assertj.core
-
         testImplementation libs.junit.pioneer
+        testFixturesImplementation libs.bundles.junit
+        testFixturesImplementation libs.assertj.core
+        testFixturesImplementation libs.junit.pioneer
 
         // adds owasp plugin
-        spotbugsPlugins libs.findsecbugs.plugin
-        implementation libs.spotbugs.annotations
-
-        // Airbyte dependencies.
-        implementation libs.airbyte.protocol
+        implementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
     }
 
     tasks.withType(SpotBugsTask).configureEach {

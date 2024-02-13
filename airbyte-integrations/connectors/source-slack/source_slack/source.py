@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import copy
+
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -14,7 +14,9 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from pendulum import DateTime, Period
+from pendulum import DateTime
+
+from .utils import chunk_date_range
 
 
 class SlackStream(HttpStream, ABC):
@@ -80,12 +82,66 @@ class SlackStream(HttpStream, ABC):
         return response.status_code == requests.codes.REQUEST_TIMEOUT or super().should_retry(response)
 
 
+class JoinChannelsStream(HttpStream):
+    """
+    This class is a special stream which joins channels because the Slack API only returns messages from channels this bot is in.
+    Its responses should only be logged for debugging reasons, not read as records.
+    """
+
+    url_base = "https://slack.com/api/"
+    http_method = "POST"
+    primary_key = "id"
+
+    def __init__(self, channel_filter: List[str] = None, **kwargs):
+        self.channel_filter = channel_filter or []
+        super().__init__(**kwargs)
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable:
+        """
+        Override to simply indicate that the specific channel was joined successfully.
+        This method should not return any data, but should return an empty iterable.
+        """
+        self.logger.info(f"Successfully joined channel: {stream_slice['channel_name']}")
+        return []
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        The pagination is not applicable to this Service Stream.
+        """
+        return None
+
+    def path(self, **kwargs) -> str:
+        return "conversations.join"
+
+    def request_body_json(self, stream_slice: Mapping = None, **kwargs) -> Optional[Mapping]:
+        return {"channel": stream_slice["channel"]}
+
+
 class ChanneledStream(SlackStream, ABC):
     """Slack stream with channel filter"""
 
-    def __init__(self, channel_filter: List[str] = [], **kwargs):
+    def __init__(self, channel_filter: List[str] = [], join_channels: bool = False, **kwargs):
         self.channel_filter = channel_filter
+        self.join_channels = join_channels
+        self.kwargs = kwargs
         super().__init__(**kwargs)
+
+    @property
+    def join_channels_stream(self) -> JoinChannelsStream:
+        return JoinChannelsStream(authenticator=self.kwargs.get("authenticator"), channel_filter=self.channel_filter)
+
+    def should_join_to_channel(self, channel: Mapping[str, Any]) -> bool:
+        """
+        The `is_member` property indicates whether or not the API Bot is already assigned / joined to the channel.
+        https://api.slack.com/types/conversation#booleans
+        """
+        return self.join_channels and not channel.get("is_member")
+
+    def make_join_channel_slice(self, channel: Mapping[str, Any]) -> Mapping[str, Any]:
+        channel_id: str = channel.get("id")
+        channel_name: str = channel.get("name")
+        self.logger.info(f"Joining Slack Channel: `{channel_name}`")
+        return {"channel": channel_id, "channel_name": channel_name}
 
 
 class Channels(ChanneledStream):
@@ -103,18 +159,29 @@ class Channels(ChanneledStream):
         params["types"] = "public_channel"
         return params
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[MutableMapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
         json_response = response.json()
         channels = json_response.get(self.data_field, [])
         if self.channel_filter:
             channels = [channel for channel in channels if channel["name"] in self.channel_filter]
         yield from channels
+
+    def read_records(self, sync_mode: SyncMode, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Override the default `read_records` method to provide the `JoinChannelsStream` functionality,
+        and be able to read all the channels, not just the ones that already has the API Bot joined.
+        """
+        for channel in super().read_records(sync_mode=sync_mode):
+            # check the channel should be joined before reading
+            if self.should_join_to_channel(channel):
+                # join the channel before reading it
+                yield from self.join_channels_stream.read_records(
+                    sync_mode=sync_mode,
+                    stream_slice=self.make_join_channel_slice(channel),
+                )
+            # reading the channel data
+            self.logger.info(f"Reading the channel: `{channel.get('name')}`")
+            yield channel
 
 
 class ChannelMembers(ChanneledStream):
@@ -134,7 +201,7 @@ class ChannelMembers(ChanneledStream):
             # Slack just returns raw IDs as a string, so we want to put them in a "join table" format
             yield {"member_id": member_id, "channel_id": stream_slice["channel_id"]}
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
         for channel_record in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"channel_id": channel_record["id"]}
@@ -148,21 +215,6 @@ class Users(SlackStream):
 
 
 # Incremental Streams
-def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1), end_date: Optional[DateTime] = None) -> Iterable[Period]:
-    """
-    Yields a list of the beginning and ending timestamps of each day between the start date and now.
-    The return value is a pendulum.period
-    """
-
-    end_date = end_date or pendulum.now()
-    # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
-    chunk_start_date = start_date
-    while chunk_start_date < end_date:
-        chunk_end_date = min(chunk_start_date + interval, end_date)
-        yield pendulum.period(chunk_start_date, chunk_end_date)
-        chunk_start_date = chunk_end_date
-
-
 class IncrementalMessageStream(ChanneledStream, ABC):
     data_field = "messages"
     cursor_field = "float_ts"
@@ -179,8 +231,7 @@ class IncrementalMessageStream(ChanneledStream, ABC):
             for index, value in enumerate(self.primary_key):
                 setattr(self, f"sub_primary_key_{index + 1}", value)
         else:
-            logger = AirbyteLogger()
-            logger.error("Failed during setting sub primary keys. Primary key should be list.")
+            self.logger.error("Failed during setting sub primary keys. Primary key should be list.")
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
@@ -223,7 +274,7 @@ class ChannelMessages(HttpSubStream, IncrementalMessageStream):
     def use_cache(self) -> bool:
         return True
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         start_date = pendulum.from_timestamp(stream_state.get(self.cursor_field, self._start_ts))
         end_date = self._end_ts and pendulum.from_timestamp(self._end_ts)
@@ -246,14 +297,14 @@ class Threads(IncrementalMessageStream):
     def path(self, **kwargs) -> str:
         return "conversations.replies"
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         The logic for incrementally syncing threads is not very obvious, so buckle up.
 
         To get all messages in a thread, one must specify the channel and timestamp of the parent (first) message of that thread,
         basically its ID.
 
-        One complication is that threads can be updated at any time in the future. Therefore, if we wanted to comprehensively sync data
+        One complication is that threads can be updated at Any time in the future. Therefore, if we wanted to comprehensively sync data
         i.e: get every single response in a thread, we'd have to read every message in the slack instance every time we ran a sync,
         because otherwise there is no way to guarantee that a thread deep in the past didn't receive a new message.
 
@@ -297,38 +348,6 @@ class Threads(IncrementalMessageStream):
             yield {}
 
 
-class JoinChannelsStream(HttpStream):
-    """
-    This class is a special stream which joins channels because the Slack API only returns messages from channels this bot is in.
-    Its responses should only be logged for debugging reasons, not read as records.
-    """
-
-    url_base = "https://slack.com/api/"
-    http_method = "POST"
-    primary_key = "id"
-
-    def __init__(self, channel_filter: List[str] = None, **kwargs):
-        self.channel_filter = channel_filter or []
-        super().__init__(**kwargs)
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        return [{"message": f"Successfully joined channel: {stream_slice['channel_name']}"}]
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None  # No pagination
-
-    def path(self, **kwargs) -> str:
-        return "conversations.join"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
-        for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"channel": channel["id"], "channel_name": channel["name"]}
-
-    def request_body_json(self, stream_slice: Mapping = None, **kwargs) -> Optional[Mapping]:
-        return {"channel": stream_slice["channel"]}
-
-
 class SourceSlack(AbstractSource):
     def _get_authenticator(self, config: Mapping[str, Any]):
         # Added to maintain backward compatibility with previous versions
@@ -365,8 +384,9 @@ class SourceSlack(AbstractSource):
         end_date = end_date and pendulum.parse(end_date)
         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
         channel_filter = config.get("channel_filter", [])
+        should_join_to_channels = config.get("join_channels")
 
-        channels = Channels(authenticator=authenticator, channel_filter=channel_filter)
+        channels = Channels(authenticator=authenticator, join_channels=should_join_to_channels, channel_filter=channel_filter)
         streams = [
             channels,
             ChannelMembers(authenticator=authenticator, channel_filter=channel_filter),
@@ -386,14 +406,5 @@ class SourceSlack(AbstractSource):
             ),
             Users(authenticator=authenticator),
         ]
-
-        # To sync data from channels, the bot backed by this token needs to join all those channels. This operation is idempotent.
-        if config["join_channels"]:
-            logger = AirbyteLogger()
-            logger.info("joining Slack channels")
-            join_channels_stream = JoinChannelsStream(authenticator=authenticator, channel_filter=channel_filter)
-            for stream_slice in join_channels_stream.stream_slices():
-                for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                    logger.info(message["message"])
 
         return streams

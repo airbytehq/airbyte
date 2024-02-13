@@ -51,7 +51,7 @@ class TestMigrateReportOptions:
         ("input_config", "expected_report_options_list"),
         (
             (
-                {"report_options": "{\"GET_REPORT\": {\"reportPeriod\": \"WEEK\"}}"},
+                {"report_options": '{"GET_REPORT": {"reportPeriod": "WEEK"}}'},
                 [{"stream_name": "GET_REPORT", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]}],
             ),
             ({"report_options": None}, []),

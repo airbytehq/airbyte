@@ -26,6 +26,10 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         timeout_seconds: 4800
+        ignored_fields:
+          channels:
+            - name: updated
+              bypass_reason: Value can change while interacting with data
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

@@ -19,4 +19,5 @@ source = ab.get_source(
 )
 source.check()
 
-print(list(source.get_records("pokemon")))
+# print(list(source.get_records("pokemon")))
+source.read(cache=ab.new_local_cache("poke"))

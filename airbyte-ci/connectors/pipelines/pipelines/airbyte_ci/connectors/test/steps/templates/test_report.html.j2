@@ -168,6 +168,10 @@
         <span class="std">Standard error:</span>
         <pre>{{ step_result.stderr }}</pre>
         {% endif %}
+        {% if step_result.report %}
+        <span class="std">Report:</span>
+        <pre lang="xml">{{ step_result.report }}</pre>
+        {% endif %}
       </div>
     </div>
   </div>

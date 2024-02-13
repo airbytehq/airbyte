@@ -103,7 +103,11 @@ class ManifestComponentTransformer:
                 propagated_component["type"] = found_type
 
         # When there is no resolved type, we're not processing a component (likely a regular object) and don't need to propagate parameters
-        if "type" not in propagated_component:
+        # When the type refers to a json schema, we're not processing a component as well. This check is currently imperfect as there could
+        # be json_schema are not objects but we believe this is not likely in our case because:
+        # * records are Mapping so objects hence SchemaLoader root should be an object
+        # * connection_specification is a Mapping
+        if "type" not in propagated_component or self._is_json_schema_object(propagated_component):
             return propagated_component
 
         # Combines parameters defined at the current level with parameters from parent components. Parameters at the current
@@ -140,3 +144,7 @@ class ManifestComponentTransformer:
         if current_parameters:
             propagated_component[PARAMETERS_STR] = current_parameters
         return propagated_component
+
+    @staticmethod
+    def _is_json_schema_object(propagated_component: Mapping[str, Any]) -> bool:
+        return propagated_component.get("type") == "object"

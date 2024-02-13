@@ -90,15 +90,11 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
 @pytest.mark.parametrize(
     "json_schema, record, should_fail",
     [
-        (
-            {"type": "object", "properties": {"a": {"type": "string"}}},
-            {"a": "str", "b": "extra_string"},
-            True
-        ),
+        ({"type": "object", "properties": {"a": {"type": "string"}}}, {"a": "str", "b": "extra_string"}, True),
         (
             {"type": "object", "properties": {"a": {"type": "string"}, "some_obj": {"type": ["null", "object"]}}},
             {"a": "str", "some_obj": {"b": "extra_string"}},
-            False
+            False,
         ),
         (
             {
@@ -106,13 +102,12 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
                 "properties": {"a": {"type": "string"}, "some_obj": {"type": ["null", "object"], "properties": {"a": {"type": "string"}}}},
             },
             {"a": "str", "some_obj": {"a": "str", "b": "extra_string"}},
-            True
+            True,
         ),
-
         (
             {"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "object"}}}},
             {"a": "str", "b": [{"a": "extra_string"}]},
-            False
+            False,
         ),
         (
             {
@@ -120,10 +115,10 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
                 "properties": {
                     "a": {"type": "string"},
                     "b": {"type": "array", "items": {"type": "object", "properties": {"a": {"type": "string"}}}},
-                }
+                },
             },
             {"a": "str", "b": [{"a": "string", "b": "extra_string"}]},
-            True
+            True,
         ),
     ],
     ids=[
@@ -136,7 +131,7 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
 )
 def test_verify_records_schema_with_fail_on_extra_columns(configured_catalog: ConfiguredAirbyteCatalog, json_schema, record, should_fail):
     """Test that fail_on_extra_columns works correctly with nested objects, array of objects"""
-    configured_catalog.streams[0].stream.json_schema =json_schema
+    configured_catalog.streams[0].stream.json_schema = json_schema
     records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0)]
     streams_with_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns=True)
     errors = [error.message for error in streams_with_errors["my_stream"].values()]

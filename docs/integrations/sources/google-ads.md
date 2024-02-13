@@ -280,6 +280,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.2 | 2024-02-12 | [35158](https://github.com/airbytehq/airbyte/pull/35158) | Manage dependencies with Poetry. |
 | `3.3.1`   | 2024-01-16 | [34007](https://github.com/airbytehq/airbyte/pull/34007) | prepare for airbyte-lib                                                        |
 | `3.3.0`  | 2024-01-12 | [34212](https://github.com/airbytehq/airbyte/pull/34212) | Remove metric from query in Ad Group stream for non-manager account                                                                  |
 | `3.2.1`  | 2024-01-12 | [34200](https://github.com/airbytehq/airbyte/pull/34200) | Disable raising error for not enabled accounts                                                                                       |

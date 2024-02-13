@@ -76,6 +76,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------|
+| 1.1.5 | 2024-02-12 | [35182](https://github.com/airbytehq/airbyte/pull/35182) | Manage dependencies with Poetry. |
 | 1.1.4   | 2024-02-02 | [34772](https://github.com/airbytehq/airbyte/pull/34772) | Fix airbyte-lib distribution  |
 | 1.1.3   | 2024-01-31 | [34707](https://github.com/airbytehq/airbyte/pull/34707) | Added the UI toggle `Use 'Orders' Deprecated API` to switch between `deprecated` and `modern` api versions for `Orders` stream  |
 | 1.1.2   | 2023-11-03 | [32132](https://github.com/airbytehq/airbyte/pull/32132) | Reduced `period in days` value for `Subscriptions` stream, to avoid `504 - Gateway TimeOut` error  |

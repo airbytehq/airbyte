@@ -19,6 +19,7 @@ import pytest
 from _pytest.nodes import Item
 from google.cloud import secretmanager
 from pytest_docker.plugin import get_docker_ip
+from sqlalchemy import create_engine
 
 from airbyte_lib.caches import PostgresCacheConfig
 
@@ -192,6 +193,10 @@ def snowflake_config():
     )
 
     yield config
+
+    engine = create_engine(config.get_sql_alchemy_url())
+    with engine.begin() as connection:
+        connection.execute(f"DROP SCHEMA IF EXISTS {config.schema_name}")
 
 
 @pytest.fixture(autouse=True)

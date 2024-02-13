@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<AmazonEnvelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="amznenvelope.xsd">
+	<Header>
+		<DocumentVersion>1.01</DocumentVersion>
+		<MerchantIdentifier>M_SELLER_354577</MerchantIdentifier>
+	</Header>
+	<MessageType>Product</MessageType>
+	<PurgeAndReplace>true</PurgeAndReplace>
+	<Message>
+		<MessageID>1</MessageID>
+		<OrderReport>
+			<AmazonOrderID>AmazonOrderID 1</AmazonOrderID>
+			<AmazonSessionID>AmazonSessionID 1</AmazonSessionID>
+			<OrderDate>2022-07-05</OrderDate>
+			<OrderPostedDate>2022-07-05</OrderPostedDate>
+			<BillingData>
+				<BuyerEmailAddress>BuyerEmailAddress 1</BuyerEmailAddress>
+				<BuyerName>BuyerName 1</BuyerName>
+				<BuyerPhoneNumber>BuyerPhoneNumber 1</BuyerPhoneNumber>
+			</BillingData>
+			<FulfillmentData>
+				<FulfillmentMethod>FulfillmentMethod 1</FulfillmentMethod>
+				<FulfillmentServiceLevel>FulfillmentServiceLevel 1</FulfillmentServiceLevel>
+				<Address>
+					<Name>Name 1</Name>
+					<AddressFieldOne>AddressFieldOne 1</AddressFieldOne>
+					<City>City 1</City>
+					<PostalCode>PostalCode 1</PostalCode>
+					<CountryCode>CountryCode 1</CountryCode>
+					<PhoneNumber>PhoneNumber 1</PhoneNumber>
+				</Address>
+			</FulfillmentData>
+			<IsBusinessOrder>false</IsBusinessOrder>
+			<IsPrime>true</IsPrime>
+			<IsIba>false</IsIba>
+			<Item>
+				<AmazonOrderItemCode>AmazonOrderItemCode 1</AmazonOrderItemCode>
+				<SKU>SKU 1</SKU>
+				<Title>Title 1</Title>
+				<Quantity>11</Quantity>
+				<ProductTaxCode>ProductTaxCode 1</ProductTaxCode>
+				<ItemPrice>
+					<Type>Type 1</Type>
+					<Amount>111.00</Amount>
+					<currency>USD</currency>
+				</ItemPrice>
+				<ItemFees>
+					<Type>Type 1</Type>
+					<Amount>0.00</Amount>
+					<currency>USD</currency>
+				</ItemFees>
+			</Item>
+		</OrderReport>
+	</Message>
+	<Message>
+		<MessageID>2</MessageID>
+		<OrderReport>
+			<AmazonOrderID>AmazonOrderID 2</AmazonOrderID>
+			<AmazonSessionID>AmazonSessionID 2</AmazonSessionID>
+			<OrderDate>2022-07-06</OrderDate>
+			<OrderPostedDate>2022-07-06</OrderPostedDate>
+			<BillingData>
+				<BuyerEmailAddress>BuyerEmailAddress 2</BuyerEmailAddress>
+				<BuyerName>BuyerName 2</BuyerName>
+				<BuyerPhoneNumber>BuyerPhoneNumber 2</BuyerPhoneNumber>
+			</BillingData>
+			<FulfillmentData>
+				<FulfillmentMethod>FulfillmentMethod 2</FulfillmentMethod>
+				<FulfillmentServiceLevel>FulfillmentServiceLevel 2</FulfillmentServiceLevel>
+				<Address>
+					<Name>Name 2</Name>
+					<AddressFieldOne>AddressFieldOne 2</AddressFieldOne>
+					<City>City 2</City>
+					<PostalCode>PostalCode 2</PostalCode>
+					<CountryCode>CountryCode 2</CountryCode>
+					<PhoneNumber>PhoneNumber 2</PhoneNumber>
+				</Address>
+			</FulfillmentData>
+			<IsBusinessOrder>false</IsBusinessOrder>
+			<IsPrime>true</IsPrime>
+			<IsIba>false</IsIba>
+			<Item>
+				<AmazonOrderItemCode>AmazonOrderItemCode 2</AmazonOrderItemCode>
+				<SKU>SKU 2</SKU>
+				<Title>Title 2</Title>
+				<Quantity>2</Quantity>
+				<ProductTaxCode>ProductTaxCode 2</ProductTaxCode>
+				<ItemPrice>
+					<Type>Type 2</Type>
+					<Amount>222.00</Amount>
+					<currency>USD</currency>
+				</ItemPrice>
+				<ItemFees>
+					<Type>Type 2</Type>
+					<Amount>0.00</Amount>
+					<currency>USD</currency>
+				</ItemFees>
+			</Item>
+		</OrderReport>
+	</Message>
+</AmazonEnvelope>

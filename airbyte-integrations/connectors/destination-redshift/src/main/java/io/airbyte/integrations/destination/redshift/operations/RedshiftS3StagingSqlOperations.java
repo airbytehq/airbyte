@@ -19,13 +19,15 @@ import io.airbyte.cdk.integrations.destination.staging.StagingOperations;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.joda.time.DateTime;
 
 public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implements StagingOperations {
 
@@ -44,7 +46,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
     this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, s3Config);
     this.s3Config = s3Config;
     this.objectMapper = new ObjectMapper();
-    if (encryptionConfig instanceof AesCbcEnvelopeEncryption e) {
+    if (encryptionConfig instanceof final AesCbcEnvelopeEncryption e) {
       this.s3StorageOperations.addBlobDecorator(new AesCbcEnvelopeEncryptionBlobDecorator(e.key()));
       this.keyEncryptingKey = e.key();
     } else {
@@ -57,21 +59,22 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
                                final String namespace,
                                final String streamName,
                                final String outputTableName,
-                               final DateTime writeDatetime) {
+                               final Instant writeDatetime) {
     final String bucketPath = s3Config.getBucketPath();
     final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+    final ZonedDateTime zdt = writeDatetime.atZone(ZoneOffset.UTC);
     return nameTransformer.applyDefaultCase(String.format("%s%s/%s_%02d_%02d_%02d_%s/",
         prefix,
         nameTransformer.applyDefaultCase(nameTransformer.convertStreamName(outputTableName)),
-        writeDatetime.year().get(),
-        writeDatetime.monthOfYear().get(),
-        writeDatetime.dayOfMonth().get(),
-        writeDatetime.hourOfDay().get(),
+        zdt.getYear(),
+        zdt.getMonthValue(),
+        zdt.getDayOfMonth(),
+        zdt.getHour(),
         connectionId));
   }
 
   @Override
-  public String getStageName(String namespace, String streamName) {
+  public String getStageName(final String namespace, final String streamName) {
     return "garbage-unused";
   }
 

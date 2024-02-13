@@ -110,4 +110,14 @@ The connector waits for the default initial wait time of 5 minutes (300 seconds)
 
 If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
 
+### (Advanced) WAL disk consumption and heartbeat action query
 
+In certain situations, WAL disk consumption increases. This can occur when there are a large volume of changes, but only a small percentage of them are being made to the databases, schemas and tables configured for capture.
+
+A workaround for this situation is to artificially add events to a heartbeat table that the Airbyte use has write access to. This will ensure that Airbyte can process the WAL and prevent disk space to spike. To configure this: 
+1. Create a table (e.g. `airbyte_heartbeat`) in the database and schema being tracked. 
+2. Add this table to the airbyte publication. 
+3. Configure the `heartbeat_action_query` property while setting up the source-postgres connector. This query will be periodically executed by Airbyte on the `airbyte_heartbeat` table. For example, this param can be set to a query like `INSERT INTO airbyte_heartbeat (text) VALUES ('heartbeat')`.
+
+
+See detailed documentation [here](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-wal-disk-space).

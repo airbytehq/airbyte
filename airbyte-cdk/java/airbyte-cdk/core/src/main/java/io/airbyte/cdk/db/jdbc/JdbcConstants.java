@@ -13,6 +13,8 @@ public final class JdbcConstants {
   public static final String JDBC_COLUMN_TABLE_NAME = "TABLE_NAME";
   public static final String JDBC_COLUMN_COLUMN_NAME = "COLUMN_NAME";
   public static final String JDBC_COLUMN_DATA_TYPE = "DATA_TYPE";
+  public static final String JDBC_COLUMN_TYPE = "TYPE";
+
   public static final String JDBC_COLUMN_TYPE_NAME = "TYPE_NAME";
   public static final String JDBC_COLUMN_SIZE = "COLUMN_SIZE";
   public static final String JDBC_INDEX_NAME = "INDEX_NAME";

@@ -2,7 +2,7 @@
 
 The following technologies are required to build Airbyte locally.
 
-1. [`Java 17`](https://jdk.java.net/archive/)
+1. [`Java 21`](https://jdk.java.net/archive/)
 2. `Node 16`
 3. `Python 3.9`
 4. `Docker`
@@ -204,11 +204,10 @@ cd airbyte-webapp
 nvm install
 ```
 
-- Install the `pnpm` package manager in the required version:
+- Install the `pnpm` package manager in the required version. You can use Node's [corepack](https://nodejs.org/api/corepack.html) for that:
 
 ```bash
-# <version> must be the exact version from airbyte-webapp/package.json > engines.pnpm
-npm install -g pnpm@<version>
+corepack enable && corepack install
 ```
 
 - Start up the react app.

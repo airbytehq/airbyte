@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.mongodb.MongoDatabase;
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;

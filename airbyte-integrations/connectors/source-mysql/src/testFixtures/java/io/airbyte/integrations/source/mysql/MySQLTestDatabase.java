@@ -17,31 +17,32 @@ import org.testcontainers.containers.MySQLContainer;
 public class MySQLTestDatabase extends
     TestDatabase<MySQLContainer<?>, MySQLTestDatabase, MySQLTestDatabase.MySQLConfigBuilder> {
 
-  public static enum BaseImage {
+  public enum BaseImage {
 
     MYSQL_8("mysql:8.0"),
     ;
 
-    private final String reference;
+    public final String reference;
 
-    private BaseImage(String reference) {
+    BaseImage(String reference) {
       this.reference = reference;
     }
 
   }
 
-  public static enum ContainerModifier {
+  public enum ContainerModifier {
 
     MOSCOW_TIMEZONE("withMoscowTimezone"),
     INVALID_TIMEZONE_CEST("withInvalidTimezoneCEST"),
     ROOT_AND_SERVER_CERTIFICATES("withRootAndServerCertificates"),
     CLIENT_CERTITICATE("withClientCertificate"),
     NETWORK("withNetwork"),
-    ;
 
-    private final String methodName;
+    CUSTOM_NAME("withCustomName");
 
-    private ContainerModifier(String methodName) {
+    public final String methodName;
+
+    ContainerModifier(String methodName) {
       this.methodName = methodName;
     }
 
@@ -51,6 +52,15 @@ public class MySQLTestDatabase extends
     String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
     final var container = new MySQLContainerFactory().shared(baseImage.reference, methodNames);
     return new MySQLTestDatabase(container).initialized();
+  }
+
+  static public MySQLTestDatabase inWithDbName(BaseImage baseImage, String dbName, ContainerModifier... methods) {
+    String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
+    final var container = new MySQLContainerFactory().shared(baseImage.reference, methodNames);
+    MySQLTestDatabase db = new MySQLTestDatabase(container);
+    db.setDatabaseName(dbName);
+    db.initialized();
+    return db;
   }
 
   public MySQLTestDatabase(MySQLContainer<?> container) {
@@ -70,23 +80,49 @@ public class MySQLTestDatabase extends
   }
 
   static private final int MAX_CONNECTIONS = 1000;
+  private String databaseName = "";
+
+  @Override
+  public String getDatabaseName() {
+    if (databaseName.isBlank()) {
+      return super.getDatabaseName();
+    } else {
+      return databaseName;
+    }
+  }
+
+  @Override
+  public void close() {
+    super.close();
+    databaseName = "";
+  }
+
+  public void setDatabaseName(final String databaseName) {
+    this.databaseName = databaseName;
+  }
 
   @Override
   protected Stream<Stream<String>> inContainerBootstrapCmd() {
-    return Stream.of(mysqlCmd(Stream.of(
-        String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
-        String.format("CREATE DATABASE %s", getDatabaseName()),
-        String.format("CREATE USER '%s' IDENTIFIED BY '%s'", getUserName(), getPassword()),
-        // Grant privileges also to the container's user, which is not root.
-        String.format("GRANT ALL PRIVILEGES ON *.* TO '%s', '%s' WITH GRANT OPTION", getUserName(),
-            getContainer().getUsername()))));
+    // Besides setting up user and privileges, we also need to create a soft link otherwise
+    // airbyte-ci on github runner would not be able to connect to DB, because the sock file does not
+    // exist.
+    return Stream.of(Stream.of(
+        "sh", "-c", "ln -s -f /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock"),
+        mysqlCmd(Stream.of(
+            String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
+            String.format("CREATE DATABASE \\`%s\\`", getDatabaseName()),
+            String.format("CREATE USER '%s' IDENTIFIED BY '%s'", getUserName(), getPassword()),
+            // Grant privileges also to the container's user, which is not root.
+            String.format("GRANT ALL PRIVILEGES ON *.* TO '%s', '%s' WITH GRANT OPTION", getUserName(),
+                getContainer().getUsername()))));
+
   }
 
   @Override
   protected Stream<String> inContainerUndoBootstrapCmd() {
     return mysqlCmd(Stream.of(
         String.format("DROP USER '%s'", getUserName()),
-        String.format("DROP DATABASE %s", getDatabaseName())));
+        String.format("DROP DATABASE \\`%s\\`", getDatabaseName())));
   }
 
   @Override

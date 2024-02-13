@@ -15,6 +15,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
 
@@ -45,6 +46,7 @@ class AbstractFileBasedStream(Stream):
         parsers: Dict[Type[Any], FileTypeParser],
         validation_policy: AbstractSchemaValidationPolicy,
         errors_collector: FileBasedErrorsCollector,
+        cursor: AbstractFileBasedCursor,
     ):
         super().__init__()
         self.config = config
@@ -55,6 +57,7 @@ class AbstractFileBasedStream(Stream):
         self._availability_strategy = availability_strategy
         self._parsers = parsers
         self.errors_collector = errors_collector
+        self._cursor = cursor
 
     @property
     @abstractmethod

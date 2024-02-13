@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+
+    api 'com.google.cloud:google-cloud-storage:2.32.1'
+}

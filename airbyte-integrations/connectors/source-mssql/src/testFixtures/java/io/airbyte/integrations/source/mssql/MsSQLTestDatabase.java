@@ -27,29 +27,30 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   static public final int MAX_RETRIES = 60;
 
-  public static enum BaseImage {
+  public enum BaseImage {
 
     MSSQL_2022("mcr.microsoft.com/mssql/server:2022-latest"),
     MSSQL_2017("mcr.microsoft.com/mssql/server:2017-latest"),
     ;
 
-    private final String reference;
+    public final String reference;
 
-    private BaseImage(final String reference) {
+    BaseImage(final String reference) {
       this.reference = reference;
     }
 
   }
 
-  public static enum ContainerModifier {
+  public enum ContainerModifier {
 
     NETWORK("withNetwork"),
     AGENT("withAgent"),
-    WITH_SSL_CERTIFICATES("withSslCertificates");
+    WITH_SSL_CERTIFICATES("withSslCertificates"),
+    ;
 
-    private final String methodName;
+    public final String methodName;
 
-    private ContainerModifier(final String methodName) {
+    ContainerModifier(final String methodName) {
       this.methodName = methodName;
     }
 

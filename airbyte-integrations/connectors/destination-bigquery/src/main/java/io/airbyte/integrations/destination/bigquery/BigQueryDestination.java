@@ -25,6 +25,10 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.gcs.BaseGcsDestination;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.cdk.integrations.destination.gcs.GcsNameTransformer;
+import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
@@ -44,10 +48,6 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
-import io.airbyte.integrations.destination.gcs.GcsDestination;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsNameTransformer;
-import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -155,7 +155,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .map(i -> REQUIRED_PERMISSIONS.get(Math.toIntExact(i.getIndex())))
           .toList());
 
-      final GcsDestination gcsDestination = new GcsDestination();
+      final BaseGcsDestination gcsDestination = new BaseGcsDestination() {};
       final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
       return gcsDestination.check(gcsJsonNodeConfig);
     } catch (final Exception e) {

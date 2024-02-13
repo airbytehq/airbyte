@@ -104,4 +104,5 @@ For a more lightweight check, the `--validate-install-only` flag can be used. Th
 
 | Version     | PR                                                         | Description                                                                                                       |
 | ----------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 0.1.0  | [#35184](https://github.com/airbytehq/airbyte/pull/35184) | Beta Release 0.1.0 |
 | 0.1.0dev.2   | [#34111](https://github.com/airbytehq/airbyte/pull/34111)  | Initial publish - add publish workflow                                                                            |

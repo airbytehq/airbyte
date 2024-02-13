@@ -3,21 +3,21 @@
 #
 
 from contextlib import nullcontext as does_not_raise
-from typing import Any, Iterable, List, Mapping
+from typing import List
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStream,
+    AirbyteStreamState,
+    StreamDescriptor,
+    SyncMode,
+)
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, HashableStreamDescriptor
-from airbyte_cdk.sources.streams import Stream
-
-
-class StreamWithNamespace(Stream):
-    primary_key = None
-    namespace = "public"
-
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        return {}
 
 
 @pytest.mark.parametrize(
@@ -156,7 +156,11 @@ class StreamWithNamespace(Stream):
     ),
 )
 def test_initialize_state_manager(input_stream_state, expected_stream_state, expected_error):
-    stream_to_instance_map = {"actors": StreamWithNamespace()}
+    stream_to_instance_map = {
+        "actors": AirbyteStream(
+            name="actors", namespace="public", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+        )
+    }
 
     if isinstance(input_stream_state, List):
         input_stream_state = [AirbyteStateMessage.parse_obj(state_obj) for state_obj in list(input_stream_state)]
@@ -264,7 +268,10 @@ def test_initialize_state_manager(input_stream_state, expected_stream_state, exp
     ],
 )
 def test_get_stream_state(input_state, stream_name, namespace, expected_state):
-    stream_to_instance_map = {"users": StreamWithNamespace()}
+    stream_to_instance_map = {stream_name: AirbyteStream(
+            name=stream_name, namespace=namespace, json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+        )
+    }
     state_messages = [AirbyteStateMessage.parse_obj(state_obj) for state_obj in list(input_state)]
     state_manager = ConnectorStateManager(stream_to_instance_map, state_messages)
 

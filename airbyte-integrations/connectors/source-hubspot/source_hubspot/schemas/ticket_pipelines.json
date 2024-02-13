@@ -5,6 +5,9 @@
     "label": {
       "type": ["null", "string"]
     },
+    "displayOrder": {
+      "type": ["null", "integer"]
+    },
     "id": {
       "type": ["null", "string"]
     },
@@ -46,6 +49,12 @@
           },
           "active": {
             "type": ["null", "boolean"]
+          },
+          "archived": {
+            "type": ["null", "boolean"]
+          },
+          "writePermissions": {
+            "type": ["null", "string"]
           }
         }
       }

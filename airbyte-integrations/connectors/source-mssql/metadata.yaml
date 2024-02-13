@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 3.6.1
+  dockerImageTag: 3.7.0
   dockerRepository: airbyte/source-mssql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   githubIssueLabel: source-mssql
@@ -18,8 +18,12 @@ data:
   name: Microsoft SQL Server (MSSQL)
   registries:
     cloud:
+      # CI pipeline is broken for mssql
+      dockerImageTag: 3.6.1
       enabled: true
     oss:
+      # CI pipeline is broken for mssql
+      dockerImageTag: 3.6.1
       enabled: true
   releaseStage: alpha
   supportLevel: community

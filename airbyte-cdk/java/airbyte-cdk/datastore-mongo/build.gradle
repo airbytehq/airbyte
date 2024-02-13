@@ -1,0 +1,15 @@
+java {
+    // TODO: rewrite code to avoid javac wornings in the first place
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-unchecked"
+    }
+}
+
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+
+    api 'org.mongodb:mongodb-driver-sync:4.10.2'
+
+    testFixturesApi 'org.testcontainers:mongodb:1.19.0'
+}

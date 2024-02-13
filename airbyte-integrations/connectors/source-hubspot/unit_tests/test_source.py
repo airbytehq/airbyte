@@ -93,7 +93,7 @@ def test_streams(requests_mock, config_experimental):
 
     streams = SourceHubspot().streams(config_experimental)
 
-    assert len(streams) == 44
+    assert len(streams) == 45
 
 
 def test_custom_streams(config_experimental):

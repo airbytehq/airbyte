@@ -1,0 +1,28 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "2.2.2"
+name = "source-paypal-transaction"
+description = "Source implementation for Paypal Transaction."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/paypal-transaction"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_paypal_transaction"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "==0.58.8"
+
+[tool.poetry.scripts]
+source-paypal-transaction = "source_paypal_transaction.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.1"
+pytest-mock = "^3.6"
+requests-mock = "^1.11.0"
