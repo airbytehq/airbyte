@@ -23,6 +23,7 @@ import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.Jdbc
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import java.nio.file.Files;
@@ -38,6 +39,9 @@ import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.InsertValuesStepN;
+import org.jooq.Name;
+import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
@@ -153,6 +157,11 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   @Override
   protected DestinationHandler<TableDefinition> getDestinationHandler() {
     return new RedshiftDestinationHandler(databaseName, database);
+  }
+
+  @Override
+  protected boolean supportsSafeCast() {
+    return true;
   }
 
   @Override

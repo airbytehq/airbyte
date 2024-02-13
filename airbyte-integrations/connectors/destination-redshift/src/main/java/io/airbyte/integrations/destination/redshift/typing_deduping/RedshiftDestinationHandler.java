@@ -14,12 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.SQLDialect;
 
 @Slf4j
 public class RedshiftDestinationHandler extends JdbcDestinationHandler {
 
   public RedshiftDestinationHandler(final String databaseName, final JdbcDatabase jdbcDatabase) {
-    super(databaseName, jdbcDatabase);
+    super(databaseName, jdbcDatabase, SQLDialect.POSTGRES);
   }
 
   @Override
