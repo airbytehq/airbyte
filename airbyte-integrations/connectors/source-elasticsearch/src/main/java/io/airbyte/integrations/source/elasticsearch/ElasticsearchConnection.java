@@ -89,7 +89,7 @@ public class ElasticsearchConnection {
       }
     }
 
-    headerList.add(new BasicHeader("user-agent", this.getConnectorVersion()));
+    headerList.add(new BasicHeader("user-agent", this.makeConnectorUAString()));
 
     return headerList.toArray(new Header[headerList.size()]);
   }
@@ -98,7 +98,7 @@ public class ElasticsearchConnection {
    * Read the version of the connector from the environment
    * @return the version of the connector
    */
-  private String getConnectorVersion() {
+  private String makeConnectorUAString() {
     var ua =  Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
         .orElse("airbyte-source-elasticsearch/unknown")
         .replace("airbyte/", "airbyte-")
