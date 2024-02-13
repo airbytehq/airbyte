@@ -28,11 +28,12 @@ import java.util.OptionalInt;
  * @param rawConfig The underlying JSON configuration provided by the connector framework.
  */
 public record MongoDbSourceConfig(JsonNode rawConfig) {
+
   public MongoDbSourceConfig {
     if (rawConfig == null) {
       throw new IllegalArgumentException("MongoDbSourceConfig cannot accept a null config.");
     }
-    if ( !rawConfig.hasNonNull(DATABASE_CONFIG_CONFIGURATION_KEY)) {
+    if (!rawConfig.hasNonNull(DATABASE_CONFIG_CONFIGURATION_KEY)) {
       throw new IllegalArgumentException("Database configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' property.");
     }
   }
@@ -47,7 +48,8 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   }
 
   public Integer getCheckpointInterval() {
-    return getDatabaseConfig().has(CHECKPOINT_INTERVAL_CONFIGURATION_KEY) ? getDatabaseConfig().get(CHECKPOINT_INTERVAL_CONFIGURATION_KEY).asInt(CHECKPOINT_INTERVAL)
+    return getDatabaseConfig().has(CHECKPOINT_INTERVAL_CONFIGURATION_KEY)
+        ? getDatabaseConfig().get(CHECKPOINT_INTERVAL_CONFIGURATION_KEY).asInt(CHECKPOINT_INTERVAL)
         : CHECKPOINT_INTERVAL;
   }
 
