@@ -8,6 +8,10 @@ from airbyte_lib.types import SQLTypeConverter
     "json_schema_property_def, expected_sql_type",
     [
         ({"type": "string"}, types.VARCHAR),
+        ({"type": ["boolean", "null"]}, types.BOOLEAN),
+        ({"type": ["null", "boolean"]}, types.BOOLEAN),
+        ({"type": "string"}, types.VARCHAR),
+        ({"type": ["null", "string"]}, types.VARCHAR),
         ({"type": "boolean"}, types.BOOLEAN),
         ({"type": "string", "format": "date"}, types.DATE),
         ({"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"}, types.TIMESTAMP),
