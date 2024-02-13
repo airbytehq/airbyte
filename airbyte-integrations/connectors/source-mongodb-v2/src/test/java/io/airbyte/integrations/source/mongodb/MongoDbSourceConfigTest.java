@@ -43,12 +43,12 @@ class MongoDbSourceConfigTest {
             DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, sampleSize,
             QUEUE_SIZE_CONFIGURATION_KEY, queueSize,
             DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(
-            AUTH_SOURCE_CONFIGURATION_KEY, authSource,
-            CHECKPOINT_INTERVAL_CONFIGURATION_KEY, checkpointInterval,
-            DATABASE_CONFIGURATION_KEY, database,
-            PASSWORD_CONFIGURATION_KEY, password,
-            USERNAME_CONFIGURATION_KEY, username,
-            SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced)));
+                AUTH_SOURCE_CONFIGURATION_KEY, authSource,
+                CHECKPOINT_INTERVAL_CONFIGURATION_KEY, checkpointInterval,
+                DATABASE_CONFIGURATION_KEY, database,
+                PASSWORD_CONFIGURATION_KEY, password,
+                USERNAME_CONFIGURATION_KEY, username,
+                SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced)));
     final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(rawConfig);
     assertNotNull(sourceConfig);
     assertEquals(authSource, sourceConfig.getAuthSource());
