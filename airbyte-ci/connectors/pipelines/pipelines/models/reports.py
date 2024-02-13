@@ -10,10 +10,9 @@ import json
 import typing
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import List
 
-import anyio
-from anyio import Path
 from connector_ops.utils import console  # type: ignore
 from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT
 from pipelines.dagger.actions import remote_storage
@@ -86,16 +85,16 @@ class Report:
 
     async def save_local(self, filename: str, content: str) -> Path:
         """Save the report files locally."""
-        local_path = anyio.Path(f"{LOCAL_REPORTS_PATH_ROOT}/{self.report_output_prefix}/{filename}")
-        await local_path.parents[0].mkdir(parents=True, exist_ok=True)
-        await local_path.write_text(content)
+        local_path = Path(f"{LOCAL_REPORTS_PATH_ROOT}/{self.report_output_prefix}/{filename}")
+        local_path.parents[0].mkdir(parents=True, exist_ok=True)
+        local_path.write_text(content)
         return local_path
 
     async def save_remote(self, local_path: Path, remote_key: str, content_type: str) -> int:
         assert self.pipeline_context.ci_report_bucket is not None, "The ci_report_bucket must be set to save reports."
-
         gcs_cp_flags = None if content_type is None else [f"--content-type={content_type}"]
         local_file = self.pipeline_context.dagger_client.host().directory(".", include=[str(local_path)]).file(str(local_path))
+
         report_upload_exit_code, _, _ = await remote_storage.upload_to_gcs(
             dagger_client=self.pipeline_context.dagger_client,
             file_to_upload=local_file,
@@ -116,7 +115,7 @@ class Report:
         """Save the report files."""
 
         local_json_path = await self.save_local(self.json_report_file_name, self.to_json())
-        absolute_path = await local_json_path.absolute()
+        absolute_path = local_json_path.absolute()
         self.pipeline_context.logger.info(f"Report saved locally at {absolute_path}")
         if self.remote_storage_enabled:
             await self.save_remote(local_json_path, self.json_report_remote_storage_key, "application/json")
