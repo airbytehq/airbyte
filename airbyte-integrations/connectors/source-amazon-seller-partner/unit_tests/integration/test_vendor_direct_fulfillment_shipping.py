@@ -22,7 +22,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStateMessage, FailureType, SyncMode
 
 from .config import NOW, ConfigBuilder
-from .pagination import NEXT_TOKEN_STRING, VendorDirectFulfillmentShippingPaginationStrategy
+from .pagination import NEXT_TOKEN_STRING, VendorFulfillmentPaginationStrategy
 from .request_builder import RequestBuilder
 from .response_builder import response_with_status
 from .utils import config, mock_auth, read_output
@@ -37,9 +37,9 @@ def _vendor_direct_fulfillment_shipping_request() -> RequestBuilder:
 
 def _vendor_direct_fulfillment_shipping_response() -> HttpResponseBuilder:
     return create_response_builder(
-        find_template(_STREAM_NAME, __file__),
-        NestedPath(["payload", "shippingLabels"]),
-        pagination_strategy=VendorDirectFulfillmentShippingPaginationStrategy(),
+        response_template=find_template(_STREAM_NAME, __file__),
+        records_path=NestedPath(["payload", "shippingLabels"]),
+        pagination_strategy=VendorFulfillmentPaginationStrategy(),
     )
 
 

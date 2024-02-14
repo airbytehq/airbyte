@@ -3,7 +3,6 @@
 #
 
 
-import traceback
 from os import getenv
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -64,6 +63,7 @@ from source_amazon_seller_partner.streams import (
     StrandedInventoryUiReport,
     VendorDirectFulfillmentShipping,
     VendorInventoryReports,
+    VendorOrders,
     VendorSalesReports,
     VendorTrafficReport,
     XmlAllOrdersDataByOrderDataGeneral,
@@ -181,6 +181,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             FbaInventoryPlaningReport,
             LedgerSummaryViewReport,
             FbaReimbursementsReports,
+            VendorOrders,
         ]
 
         # TODO: Remove after Brand Analytics will be enabled in CLOUD: https://github.com/airbytehq/airbyte/issues/32353
@@ -222,7 +223,7 @@ class SourceAmazonSellerPartner(AbstractSource):
                 set(x.get("option_name") for x in stream_report_option.get("options_list"))
             ):
                 raise AmazonConfigException(
-                    message=f"Option names should be unique for `{stream_report_option.get('stream_name')}` report options"
+                    message=(f"Option names should be unique for `{stream_report_option.get('stream_name')}` report options")
                 )
 
     @staticmethod
