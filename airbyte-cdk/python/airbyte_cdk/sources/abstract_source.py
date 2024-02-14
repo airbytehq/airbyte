@@ -18,6 +18,7 @@ from airbyte_cdk.models import (
     StreamDescriptor,
     SyncMode,
 )
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -170,9 +171,10 @@ class AbstractSource(Source, ABC):
         if len(stream_name_to_exception) > 0:
             error_message = self._generate_failed_streams_error_message(stream_name_to_exception)
             logger.info(error_message)
-            # We still raise at least one exception when a stream raises an exception because the platform
-            # currently relies on a non-zero exit code to determine if a sync attempt has failed
-            raise AirbyteTracedException(message=error_message)
+            # We still raise at least one exception when a stream raises an exception because the platform currently relies
+            # on a non-zero exit code to determine if a sync attempt has failed. We also raise the exception as a config_error
+            # type because this combined error isn't actionable, but rather the previously emitted individual errors.
+            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
         logger.info(f"Finished syncing {self.name}")
 
     @property
@@ -312,6 +314,6 @@ class AbstractSource(Source, ABC):
         return False
 
     @staticmethod
-    def _generate_failed_streams_error_message(stream_failures: Mapping[str, AirbyteTracedException]) -> str:
+    def _generate_failed_streams_error_message(stream_failures: Mapping[str, AirbyteTracedException]) -> (str, FailureType):
         failures = ", ".join([f"{stream}: {filter_secrets(exception.__repr__())}" for stream, exception in stream_failures.items()])
         return f"During the sync, the following streams did not sync successfully: {failures}"

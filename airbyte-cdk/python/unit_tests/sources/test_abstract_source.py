@@ -1256,6 +1256,7 @@ def test_continue_sync_with_failed_streams(mocker, exception_to_raise, expected_
         assert expected == messages
 
     assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
 
 
 def test_continue_sync_source_override_false(mocker):
@@ -1305,6 +1306,7 @@ def test_continue_sync_source_override_false(mocker):
         assert expected == messages
 
     assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
 
 
 def test_sync_error_trace_messages_obfuscate_secrets(mocker):
@@ -1353,6 +1355,7 @@ def test_sync_error_trace_messages_obfuscate_secrets(mocker):
         assert expected == messages
 
     assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
 
 
 def test_continue_sync_with_failed_streams_with_override_false(mocker):
@@ -1397,6 +1400,7 @@ def test_continue_sync_with_failed_streams_with_override_false(mocker):
         assert expected == messages
 
     assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
 
 
 def _remove_stack_trace(message: AirbyteMessage) -> AirbyteMessage:
