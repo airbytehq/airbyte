@@ -314,6 +314,6 @@ class AbstractSource(Source, ABC):
         return False
 
     @staticmethod
-    def _generate_failed_streams_error_message(stream_failures: Mapping[str, AirbyteTracedException]) -> (str, FailureType):
+    def _generate_failed_streams_error_message(stream_failures: Mapping[str, AirbyteTracedException]) -> str:
         failures = ", ".join([f"{stream}: {filter_secrets(exception.__repr__())}" for stream, exception in stream_failures.items()])
         return f"During the sync, the following streams did not sync successfully: {failures}"
