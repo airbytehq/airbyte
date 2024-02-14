@@ -43,10 +43,10 @@ You must create a Propel Application. Propel Applications provide the API creden
 
 ## Configuration
 
-| Parameter  |  Type  | Notes                      |
-| :--------- | :----: | :------------------------- |
-| privateKey | string | You private key on Streamr |
-| streamId   | string | Your full Stream ID        |
+| Parameter          |  Type  | Notes                     |
+| :----------------- | :----: | :------------------------ |
+| application_id     | string | Propel Application ID     |
+| application_secret | string | Propel Application secret |
 
 ## Troubleshooting
 
