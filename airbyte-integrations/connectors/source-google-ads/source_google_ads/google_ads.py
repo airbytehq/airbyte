@@ -5,7 +5,7 @@
 
 import logging
 from enum import Enum
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional
 
 import backoff
 from airbyte_cdk.models import FailureType
@@ -214,8 +214,10 @@ class GoogleAds:
         return field_value
 
     @staticmethod
-    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):
+    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow, nullable: Optional[List[str]] = None):
+        if nullable is None:
+            nullable = []
         props = schema.get("properties")
         fields = GoogleAds.get_fields_from_schema(schema)
-        single_record = {field: GoogleAds.get_field_value(result, field, props.get(field)) for field in fields}
+        single_record = {field: GoogleAds.get_field_value(result, field, props.get(field)) if field not in nullable else None for field in fields}
         return single_record
