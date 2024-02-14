@@ -98,6 +98,8 @@ def snowflake_cache(snowflake_config) -> Generator[caches.SnowflakeCache, None, 
 # Uncomment this line if you want to see performance trace logs.
 # You can render perf traces using the viztracer CLI or the VS Code VizTracer Extension.
 #@viztracer.trace_and_save(output_dir=".pytest_cache/snowflake_trace/")
+@pytest.mark.requires_creds
+@pytest.mark.slow
 def test_faker_read_to_snowflake(
     source_faker_seed_a: ab.Source,
     snowflake_cache: ab.SnowflakeCache,
@@ -109,6 +111,8 @@ def test_faker_read_to_snowflake(
     assert len(list(result.cache.streams["users"])) == FAKER_SCALE_A
 
 
+@pytest.mark.requires_creds
+@pytest.mark.slow
 def test_replace_strategy(
     source_faker_seed_a: ab.Source,
     snowflake_cache: ab.SnowflakeCache,
@@ -121,6 +125,8 @@ def test_replace_strategy(
     assert len(list(result.cache.streams["users"])) == FAKER_SCALE_A
 
 
+@pytest.mark.requires_creds
+@pytest.mark.slow
 def test_merge_strategy(
     source_faker_seed_a: ab.Source,
     source_faker_seed_b: ab.Source,

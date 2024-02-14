@@ -56,7 +56,10 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-# addopts = "--mypy"  # FIXME: This sometimes blocks test discovery and execution
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "requires_creds: marks a test as requiring credentials (skip when secrets unavailable)"
+]
 
 [tool.ruff.pylint]
 max-args = 8  # Relaxed from default of 5
