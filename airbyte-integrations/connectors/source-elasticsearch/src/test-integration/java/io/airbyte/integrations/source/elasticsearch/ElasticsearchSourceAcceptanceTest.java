@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -47,7 +48,7 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected JsonNode getConfig() {
     var configJson = mapper.createObjectNode();
-    configJson.put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)));
+    configJson.put("endpoint", String.format("http://%s:%s", HostPortResolver.resolveHost(container), HostPortResolver.resolvePort(container)));
     return configJson;
   }
 

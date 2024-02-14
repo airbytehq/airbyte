@@ -303,7 +303,7 @@ def test_read_isolated_by_prefix(expected_test_stream_data: dict[str, list[dict[
     assert len(list(no_prefix_cache.__iter__())) == 0
 
     # read partial data into the other two caches
-    source.set_streams(["stream1"])
+    source.select_streams(["stream1"])
     source.read(different_prefix_cache)
     source.read(no_prefix_cache)
 
@@ -325,7 +325,7 @@ def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[s
     source = ab.get_source("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache(cache_name)
 
-    source.set_streams(["stream1"])
+    source.select_streams(["stream1"])
     source.read(cache)
 
     # Assert that the cache only contains stream1
@@ -334,7 +334,7 @@ def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[s
 
     # Create a new cache with the same name
     second_cache = ab.new_local_cache(cache_name)
-    source.set_streams(["stream2"])
+    source.select_streams(["stream2"])
     result = source.read(second_cache)
 
     # Assert that the read result only contains stream2
@@ -634,7 +634,7 @@ def test_tracking(
     request_call_fails: bool,
     extra_env: dict[str, str],
     expected_flags: dict[str, bool],
-    cache_type: str, 
+    cache_type: str,
     number_of_records_read: int
 ):
     """
@@ -723,6 +723,8 @@ def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_tes
             assert len(expected_test_stream_data[stream_name]) == 0
 
 
+@pytest.mark.slow
+@pytest.mark.requires_creds
 def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_source("source-test", config={"apiKey": "test"})
     source.select_all_streams()
@@ -748,7 +750,7 @@ def test_sync_limited_streams(expected_test_stream_data):
     source = ab.get_source("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache()
 
-    source.set_streams(["stream2"])
+    source.select_streams(["stream2"])
 
     result = source.read(cache)
 
