@@ -51,13 +51,13 @@ subprojects { subproject ->
 
         compileKotlin {
             compilerOptions {
-                jvmTarget = JvmTarget.JVM_17
+                jvmTarget = JvmTarget.JVM_21
                 languageVersion = KotlinVersion.KOTLIN_1_9
             }
         }
         compileTestKotlin {
             compilerOptions {
-                jvmTarget = JvmTarget.JVM_17
+                jvmTarget = JvmTarget.JVM_21
                 languageVersion = KotlinVersion.KOTLIN_1_9
             }
         }
