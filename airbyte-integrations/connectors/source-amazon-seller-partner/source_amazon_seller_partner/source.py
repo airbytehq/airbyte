@@ -223,7 +223,7 @@ class SourceAmazonSellerPartner(AbstractSource):
                 set(x.get("option_name") for x in stream_report_option.get("options_list"))
             ):
                 raise AmazonConfigException(
-                    message=(f"Option names should be unique for `{stream_report_option.get('stream_name')}` report options")
+                    message=f"Option names should be unique for `{stream_report_option.get('stream_name')}` report options"
                 )
 
     @staticmethod

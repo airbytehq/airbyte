@@ -755,7 +755,11 @@ class IncrementalAnalyticsStream(AnalyticsStream):
         return data
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs: Any
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        **kwargs: Any,
     ) -> Iterable[Mapping]:
         payload = response.json()
 
