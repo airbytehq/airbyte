@@ -18,7 +18,7 @@
           "uploaded_by": {
             "type": ["null", "object"],
             "properties": {
-              "id": { "type": ["null", "integer"] }
+              "id": { "type": ["null", "string"] }
             }
           },
           "url": { "type": ["null", "string"] },

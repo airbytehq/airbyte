@@ -107,12 +107,39 @@ def test_check_failure(requests_mock, config_gen):
 
 
 @pytest.mark.parametrize(
-    "status_code",
-    [
-        (403),
-        (401),
-    ],
+    ("status_code", "expected_message"),
+    (
+        (403, "Please check configuration for custom report cohort_report. "),
+        (400, "Please check configuration for custom report cohort_report. Granularity in the cohortsRange is required."),
+    ),
 )
+def test_check_incorrect_custom_reports_config(requests_mock, config_gen, status_code, expected_message):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata",
+        json={
+            "dimensions": [{"apiName": "date"}, {"apiName": "country"}, {"apiName": "language"}, {"apiName": "browser"}],
+            "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
+        },
+    )
+    requests_mock.register_uri(
+        "POST",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
+        status_code=status_code,
+        json={"error": {"message": "Granularity in the cohortsRange is required."}},
+    )
+    config = {"custom_reports_array": '[{"name": "cohort_report", "dimensions": ["date"], "metrics": ["totalUsers"]}]'}
+    source = SourceGoogleAnalyticsDataApi()
+    logger = MagicMock()
+    status, message = source.check_connection(logger, config_gen(**config))
+    assert status is False
+    assert message == expected_message
+
+
+@pytest.mark.parametrize("status_code", (403, 401))
 def test_missing_metadata(requests_mock, status_code):
     # required for MetadataDescriptor $instance input
     class TestConfig:

@@ -11,4 +11,11 @@ import java.util.LinkedHashMap;
  */
 public record Struct(LinkedHashMap<String, AirbyteType> properties) implements AirbyteType {
 
+  public static final String TYPE = "STRUCT";
+
+  @Override
+  public String getTypeName() {
+    return TYPE;
+  }
+
 }

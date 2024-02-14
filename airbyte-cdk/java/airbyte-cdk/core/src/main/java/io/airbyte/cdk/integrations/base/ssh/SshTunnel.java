@@ -23,10 +23,13 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import javax.validation.constraints.NotNull;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.SshException;
+import org.apache.sshd.common.session.SessionHeartbeatController;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
 import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.core.CoreModuleProperties;
@@ -46,11 +49,23 @@ public class SshTunnel implements AutoCloseable {
   public static final String SSH_TIMEOUT_DISPLAY_MESSAGE =
       "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
 
+  public static final String CONNECTION_OPTIONS_KEY = "ssh_connection_options";
+  public static final String SESSION_HEARTBEAT_INTERVAL_KEY = "session_heartbeat_interval";
+  public static final long SESSION_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS = 1000;
+  public static final String GLOBAL_HEARTBEAT_INTERVAL_KEY = "global_heartbeat_interval";
+  public static final long GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS = 2000;
+  public static final String IDLE_TIMEOUT_KEY = "idle_timeout";
+  public static final long IDLE_TIMEOUT_DEFAULT_INFINITE = 0;
+
   public enum TunnelMethod {
     NO_TUNNEL,
     SSH_PASSWORD_AUTH,
     SSH_KEY_AUTH
   }
+
+  public record SshConnectionOptions(Duration sessionHeartbeatInterval,
+                                     Duration globalHeartbeatInterval,
+                                     Duration idleTimeout) {}
 
   public static final int TIMEOUT_MILLIS = 15000; // 15 seconds
 
@@ -99,6 +114,7 @@ public class SshTunnel implements AutoCloseable {
    *        tunnel host).
    * @param remoteServicePort - the actual port of the remote service (as it is known to the tunnel
    *        host).
+   * @param connectionOptions - optional connection options for ssh client.
    */
   public SshTunnel(final JsonNode config,
                    final List<String> hostKey,
@@ -112,7 +128,8 @@ public class SshTunnel implements AutoCloseable {
                    final String sshKey,
                    final String tunnelUserPassword,
                    final String remoteServiceHost,
-                   final int remoteServicePort) {
+                   final int remoteServicePort,
+                   final Optional<SshConnectionOptions> connectionOptions) {
     this.config = config;
     this.hostKey = hostKey;
     this.portKey = portKey;
@@ -168,9 +185,40 @@ public class SshTunnel implements AutoCloseable {
       this.tunnelUser = tunnelUser;
       this.sshKey = sshKey;
       this.tunnelUserPassword = tunnelUserPassword;
-      this.sshclient = createClient();
+      this.sshclient = connectionOptions.map(sshConnectionOptions -> createClient(sshConnectionOptions.sessionHeartbeatInterval(),
+          sshConnectionOptions.globalHeartbeatInterval(),
+          sshConnectionOptions.idleTimeout())).orElseGet(this::createClient);
       this.tunnelSession = openTunnel(sshclient);
     }
+  }
+
+  public SshTunnel(final JsonNode config,
+                   final List<String> hostKey,
+                   final List<String> portKey,
+                   final String endPointKey,
+                   final String remoteServiceUrl,
+                   final TunnelMethod tunnelMethod,
+                   final String tunnelHost,
+                   final int tunnelPort,
+                   final String tunnelUser,
+                   final String sshKey,
+                   final String tunnelUserPassword,
+                   final String remoteServiceHost,
+                   final int remoteServicePort) {
+    this(config,
+        hostKey,
+        portKey,
+        endPointKey,
+        remoteServiceUrl,
+        tunnelMethod,
+        tunnelHost,
+        tunnelPort,
+        tunnelUser,
+        sshKey,
+        tunnelUserPassword,
+        remoteServiceHost,
+        remoteServicePort,
+        Optional.empty());
   }
 
   public JsonNode getOriginalConfig() {
@@ -216,7 +264,32 @@ public class SshTunnel implements AutoCloseable {
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
         Strings.safeTrim(Jsons.getStringOrNull(config, hostKey)),
-        Jsons.getIntOrZero(config, portKey));
+        Jsons.getIntOrZero(config, portKey),
+        getSshConnectionOptions(config));
+  }
+
+  @NotNull
+  private static Optional<SshConnectionOptions> getSshConnectionOptions(JsonNode config) {
+    // piggybacking on JsonNode config to make it configurable at connector level.
+    Optional<JsonNode> connectionOptionConfig = Jsons.getOptional(config, CONNECTION_OPTIONS_KEY);
+    final Optional<SshConnectionOptions> connectionOptions;
+    if (connectionOptionConfig.isPresent()) {
+      JsonNode connectionOptionsNode = connectionOptionConfig.get();
+      Duration sessionHeartbeatInterval = Jsons.getOptional(connectionOptionsNode, SESSION_HEARTBEAT_INTERVAL_KEY)
+          .map(interval -> Duration.ofMillis(interval.asLong()))
+          .orElse(Duration.ofSeconds(1));
+      Duration globalHeartbeatInterval = Jsons.getOptional(connectionOptionsNode, GLOBAL_HEARTBEAT_INTERVAL_KEY)
+          .map(interval -> Duration.ofMillis(interval.asLong()))
+          .orElse(Duration.ofSeconds(2));
+      Duration idleTimeout = Jsons.getOptional(connectionOptionsNode, IDLE_TIMEOUT_KEY)
+          .map(interval -> Duration.ofMillis(interval.asLong()))
+          .orElse(Duration.ZERO);
+      connectionOptions = Optional.of(
+          new SshConnectionOptions(sessionHeartbeatInterval, globalHeartbeatInterval, idleTimeout));
+    } else {
+      connectionOptions = Optional.empty();
+    }
+    return connectionOptions;
   }
 
   public static SshTunnel getInstance(final JsonNode config, final String endPointKey) throws Exception {
@@ -237,7 +310,8 @@ public class SshTunnel implements AutoCloseable {
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
-        null, 0);
+        null, 0,
+        getSshConnectionOptions(config));
   }
 
   public static void sshWrap(final JsonNode config,
@@ -332,7 +406,22 @@ public class SshTunnel implements AutoCloseable {
     final SshClient client = SshClient.setUpDefaultClient();
     client.setForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
     client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
-    CoreModuleProperties.IDLE_TIMEOUT.set(client, Duration.ZERO);
+    return client;
+  }
+
+  private SshClient createClient(Duration sessionHeartbeatInterval, Duration globalHeartbeatInterval, Duration idleTimeout) {
+    LOGGER.info("Creating SSH client with Heartbeat and Keepalive enabled");
+    final SshClient client = createClient();
+    // Session level heartbeat using SSH_MSG_IGNORE every second.
+    client.setSessionHeartbeat(SessionHeartbeatController.HeartbeatType.IGNORE, sessionHeartbeatInterval);
+    // idle-timeout zero indicates NoTimeout.
+    CoreModuleProperties.IDLE_TIMEOUT.set(client, idleTimeout);
+    // Use tcp keep-alive mechanism.
+    CoreModuleProperties.SOCKET_KEEPALIVE.set(client, true);
+    // Additional delay used for ChannelOutputStream to wait for space in the remote socket send buffer.
+    CoreModuleProperties.WAIT_FOR_SPACE_TIMEOUT.set(client, Duration.ofMinutes(2));
+    // Global keepalive message sent every 2 seconds. This precedes the session level heartbeat.
+    CoreModuleProperties.HEARTBEAT_INTERVAL.set(client, globalHeartbeatInterval);
     return client;
   }
 

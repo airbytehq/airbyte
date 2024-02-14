@@ -63,4 +63,7 @@ You need a Teradata user which has read permissions on the database
 
 | Version | Date       | Pull Request                                    | Subject                     |
 |:--------|:-----------|:------------------------------------------------|:----------------------------|
+| 0.2.2 | 2024-02-13 | [35219](https://github.com/airbytehq/airbyte/pull/35219) | Adopt CDK 0.20.4 |
+| 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version            |
+| 0.2.0   | 2023-12-18 | https://github.com/airbytehq/airbyte/pull/33485 | Remove LEGACY state         |
 | 0.1.0   | 2022-03-27 | https://github.com/airbytehq/airbyte/pull/24221 | New Source Teradata Vantage |

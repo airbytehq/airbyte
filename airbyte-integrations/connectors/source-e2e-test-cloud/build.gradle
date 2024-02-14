@@ -1,22 +1,12 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
+    cdkVersionRequired = '0.20.4'
     features = ['db-sources']
     useLocalCdk = false
 }
-
-//remove once upgrading the CDK version to 0.4.x or later
-java {
-    compileJava {
-        options.compilerArgs.remove("-Werror")
-    }
-}
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.e2e_test.CloudTestingSources'
@@ -24,6 +14,4 @@ application {
 
 dependencies {
     implementation project(':airbyte-integrations:connectors:source-e2e-test')
-
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-e2e-test-cloud')
 }

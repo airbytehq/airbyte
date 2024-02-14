@@ -14,7 +14,7 @@ def data_center_fixture():
 
 @fixture(name="config")
 def config_fixture(data_center):
-    return {"apikey": f"API_KEY-{data_center}"}
+    return {"apikey": f"API_KEY-{data_center}", "start_date": "2022-01-01T00:00:00.000Z"}
 
 
 @fixture(name="access_token")

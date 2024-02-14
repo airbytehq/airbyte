@@ -7,8 +7,8 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -33,7 +33,7 @@ public class SqlOperationsUtils {
   public static void insertRawRecordsInSingleQuery(final String insertQueryComponent,
                                                    final String recordQueryComponent,
                                                    final JdbcDatabase jdbcDatabase,
-                                                   final List<AirbyteRecordMessage> records)
+                                                   final List<PartialAirbyteMessage> records)
       throws SQLException {
     insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
   }
@@ -54,7 +54,7 @@ public class SqlOperationsUtils {
   public static void insertRawRecordsInSingleQueryNoSem(final String insertQueryComponent,
                                                         final String recordQueryComponent,
                                                         final JdbcDatabase jdbcDatabase,
-                                                        final List<AirbyteRecordMessage> records)
+                                                        final List<PartialAirbyteMessage> records)
       throws SQLException {
     insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
   }
@@ -63,7 +63,7 @@ public class SqlOperationsUtils {
   static void insertRawRecordsInSingleQuery(final String insertQueryComponent,
                                             final String recordQueryComponent,
                                             final JdbcDatabase jdbcDatabase,
-                                            final List<AirbyteRecordMessage> records,
+                                            final List<PartialAirbyteMessage> records,
                                             final Supplier<UUID> uuidSupplier,
                                             final boolean sem)
       throws SQLException {
@@ -83,7 +83,7 @@ public class SqlOperationsUtils {
       // how many records can be inserted at once
       // TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of 10k by
       // default
-      for (List<AirbyteRecordMessage> partition : Iterables.partition(records, 10_000)) {
+      for (final List<PartialAirbyteMessage> partition : Iterables.partition(records, 10_000)) {
         final StringBuilder sql = new StringBuilder(insertQueryComponent);
         partition.forEach(r -> sql.append(recordQueryComponent));
         final String s = sql.toString();
@@ -91,13 +91,26 @@ public class SqlOperationsUtils {
 
         try (final PreparedStatement statement = connection.prepareStatement(s1)) {
           // second loop: bind values to the SQL string.
+          // 1-indexed
           int i = 1;
-          for (final AirbyteRecordMessage message : partition) {
-            // 1-indexed
+          for (final PartialAirbyteMessage message : partition) {
+            // Airbyte Raw ID
             statement.setString(i, uuidSupplier.get().toString());
-            statement.setString(i + 1, Jsons.serialize(message.getData()));
-            statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
-            i += 3;
+            i++;
+
+            // Message Data
+            statement.setString(i, message.getSerialized());
+            i++;
+
+            // Extracted At
+            statement.setTimestamp(i, Timestamp.from(Instant.ofEpochMilli(message.getRecord().getEmittedAt())));
+            i++;
+
+            if (TypingAndDedupingFlag.isDestinationV2()) {
+              // Loaded At
+              statement.setTimestamp(i, null);
+              i++;
+            }
           }
 
           statement.execute();

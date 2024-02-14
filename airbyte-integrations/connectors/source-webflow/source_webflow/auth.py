@@ -23,6 +23,6 @@ class WebflowAuthMixin:
 
 class WebflowTokenAuthenticator(WebflowAuthMixin, TokenAuthenticator):
     """
-    Auth class for Personal Access Token
-    https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens
+    Authentication class information
+    https://docs.developers.webflow.com/reference/authorization
     """

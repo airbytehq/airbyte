@@ -1,15 +1,22 @@
-# Using custom connectors
-If our connector catalog does not fulfill your needs, you can build your own Airbyte connectors. 
-There are two approaches you can take while jumping on connector development project:
-1. You want to build a connector for an **external** source or destination (public API, off-the-shelf DBMS, data warehouses, etc.). In this scenario, your connector development will probably benefit the community. The right way is to open a PR on our repo to add your connector to our catalog. You will then benefit from an Airbyte team review and potential future improvements and maintenance from the community.
-2. You want to build a connector for an **internal** source or destination (private API) specific to your organization. This connector has no good reason to be exposed to the community.
+---
+products: oss-*
+sidebar_label: Uploading custom connectors 
+--- 
+ 
+# Uploading Docker-based custom connectors
 
-This guide focuses on the second approach and assumes the following:
-* You followed our other guides and tutorials about connector developments.
-* You finished your connector development, running it locally on an Airbyte development instance.
+:::info
+This guide walks through the setup of a Docker-based custom connector. To understand how to use our low-code connector builder, read our guide [here](/connector-development/connector-builder-ui/overview.md).
+:::
+
+If our connector catalog does not fulfill your needs, you can build your own Airbyte connectors! You can either use our [low-code connector builder](/connector-development/connector-builder-ui/overview.md) or upload a Docker-based custom connector. 
+
+This page walks through the process to upload a **Docker-based custom connector**. This is an ideal route for connectors that have an **internal** use case like a private API with a specific fit for your organization. This guide for using Docker-based custom connectors assumes the following:
+* You followed our other guides and tutorials about [connector development](/connector-development/connector-builder-ui/overview.md)
+* You finished your connector development and have it running locally on an Airbyte development instance.
 * You want to deploy this connector to a production Airbyte instance running on a VM with docker-compose or on a Kubernetes cluster.
 
-If you prefer video tutorials, [we recorded a demo about uploading connectors images to a GCP Artifact Registry](https://www.youtube.com/watch?v=4YF20PODv30&ab_channel=Airbyte).
+If you prefer video tutorials, we recorded a demo on how to upload [connectors images to a GCP Artifact Registry](https://www.youtube.com/watch?v=4YF20PODv30&ab_channel=Airbyte).
 
 ## 1. Create a private Docker registry
 Airbyte needs to pull its Docker images from a remote Docker registry to consume a connector.
@@ -70,42 +77,21 @@ If you want Airbyte to pull images from another private Docker registry, you wil
 
 You should run all the above commands from your local/CI environment, where your connector source code is available.
 
-## 4. Use your custom connector in Airbyte
+## 4. Use your custom Docker connector in Airbyte
 At this step, you should have:
 * A private Docker registry hosting your custom connector image.
 * Authenticated your Airbyte instance to your private Docker registry.
 
 You can pull your connector image from your private registry to validate the previous steps. On your Airbyte instance: run `docker pull <image-name>:<tag>` if you are using our `docker-compose` deployment, or start a pod that is using the connector image.
 
-### 1. Click on Settings
-![Step 1 screenshot](https://images.tango.us/public/screenshot_bf5c3e27-19a3-4cc0-bc40-90c80afdbcba?crop=focalpoint&fit=crop&fp-x=0.0211&fp-y=0.9320&fp-z=2.9521&w=1200&mark-w=0.2&mark-pad=0&mark64=aHR0cHM6Ly9pbWFnZXMudGFuZ28udXMvc3RhdGljL21hZGUtd2l0aC10YW5nby13YXRlcm1hcmsucG5n&ar=4594%3A2234)
+1. Click on `Settings` in the left-hand sidebar. Navigate to `Sources` or `Destinations` depending on your connector. Click on `Add a new Docker connector`.
 
+2. Name your custom connector in `Connector display name`. This is just the display name used for your workspace. 
 
-### 2. Click on Sources (or Destinations)
-![Step 2 screenshot](https://images.tango.us/public/screenshot_d956e987-424d-4f76-ad39-f6d6172f6acc?crop=focalpoint&fit=crop&fp-x=0.0855&fp-y=0.1083&fp-z=2.7473&w=1200&mark-w=0.2&mark-pad=0&mark64=aHR0cHM6Ly9pbWFnZXMudGFuZ28udXMvc3RhdGljL21hZGUtd2l0aC10YW5nby13YXRlcm1hcmsucG5n&ar=4594%3A2234)
+3. Fill in the Docker `Docker full image name` and `Docker image tag`.
 
+4. (Optional) Add a link to connector's documentation in `Connector documentation URL`
+You can optionally fill this with any value if you do not have online documentation for your connector.
+This documentation will be linked in your connector setting's page.
 
-### 3. Click on + New connector
-![Step 3 screenshot](https://images.tango.us/public/screenshot_52248202-6351-496d-bc8f-892c43cf7cf8?crop=focalpoint&fit=crop&fp-x=0.8912&fp-y=0.0833&fp-z=3.0763&w=1200&mark-w=0.2&mark-pad=0&mark64=aHR0cHM6Ly9pbWFnZXMudGFuZ28udXMvc3RhdGljL21hZGUtd2l0aC10YW5nby13YXRlcm1hcmsucG5n&ar=4594%3A2234)
-
-
-### 4. Fill the name of your custom connector
-![Step 4 screenshot](https://images.tango.us/public/screenshot_809a22c8-ff38-4b10-8292-bce7364f111c?crop=focalpoint&fit=crop&fp-x=0.4989&fp-y=0.4145&fp-z=1.9188&w=1200&mark-w=0.2&mark-pad=0&mark64=aHR0cHM6Ly9pbWFnZXMudGFuZ28udXMvc3RhdGljL21hZGUtd2l0aC10YW5nby13YXRlcm1hcmsucG5n&ar=4594%3A2234)
-
-
-### 5. Fill the Docker image name of your custom connector
-![Step 5 screenshot](https://images.tango.us/public/screenshot_ed91d789-9fc7-4758-a6f0-50bf2f04f248?crop=focalpoint&fit=crop&fp-x=0.4989&fp-y=0.4924&fp-z=1.9188&w=1200&mark-w=0.2&mark-pad=0&mark64=aHR0cHM6Ly9pbWFnZXMudGFuZ28udXMvc3RhdGljL21hZGUtd2l0aC10YW5nby13YXRlcm1hcmsucG5n&ar=4594%3A2234)
-
-
-### 6. Fill the Docker Tag of your custom connector image
-![Step 6 screenshot](https://images.tango.us/public/screenshot_5b6bff70-5703-4dac-b359-95b9ab8f8ce1?crop=focalpoint&fit=crop&fp-x=0.4989&fp-y=0.5703&fp-z=1.9188&w=1200&mark-w=0.2&mark-pad=0&mark64=aHR0cHM6Ly9pbWFnZXMudGFuZ28udXMvc3RhdGljL21hZGUtd2l0aC10YW5nby13YXRlcm1hcmsucG5n&ar=4594%3A2234)
-
-
-### 7. Fill the URL to your connector documentation
-This is a required field at the moment, but you can fill with any value if you do not have online documentation for your connector.
-This documentation will be linked in the connector setting page.
-![Step 7 screenshot](https://images.tango.us/public/screenshot_007e6465-619f-4553-8d65-9af2f5ad76bc?crop=focalpoint&fit=crop&fp-x=0.4989&fp-y=0.6482&fp-z=1.9188&w=1200&mark-w=0.2&mark-pad=0&mark64=aHR0cHM6Ly9pbWFnZXMudGFuZ28udXMvc3RhdGljL21hZGUtd2l0aC10YW5nby13YXRlcm1hcmsucG5n&ar=4594%3A2234)
-
-
-### 8. Click on Add
-![Step 8 screenshot](https://images.tango.us/public/screenshot_c097183f-1687-469f-852d-f66f743e8c10?crop=focalpoint&fit=crop&fp-x=0.5968&fp-y=0.7010&fp-z=3.0725&w=1200&mark-w=0.2&mark-pad=0&mark64=aHR0cHM6Ly9pbWFnZXMudGFuZ28udXMvc3RhdGljL21hZGUtd2l0aC10YW5nby13YXRlcm1hcmsucG5n&ar=4594%3A2234)
+5. `Add` the connector to save the configuration. You can now select your new connector when setting up a new connection!

@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "*"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pokeapi
   registries:
     oss:
       enabled: true
@@ -16,10 +20,10 @@ data:
   icon: pokeapi.svg
   license: MIT
   name: PokeAPI
-  releaseDate: "2020-05-04"
+  releaseDate: "2020-05-14"
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
   tags:
-    - language:lowcode
+    - language:low-code
 metadataSpecVersion: "1.0"

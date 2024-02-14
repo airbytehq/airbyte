@@ -30,6 +30,7 @@ from source_pinterest.streams import (
     Keywords,
     PinterestStream,
     PinterestSubStream,
+    RateLimitExceeded,
     UserAccountAnalytics,
 )
 
@@ -148,6 +149,12 @@ def test_non_json_response(requests_mock):
     "test_response, test_headers, status_code, expected",
     [
         ({"code": 7, "message": "Some other error message"}, {"X-RateLimit-Reset": "2"}, 429, 2.0),
+        (
+            {"code": 7, "message": "Some other error message"},
+            {"X-RateLimit-Reset": "2000"},
+            429,
+            (RateLimitExceeded, "Rate limit exceeded for stream boards. Waiting time is longer than 10 minutes: 2000.0s."),
+        ),
     ],
 )
 def test_backoff_on_rate_limit_error(requests_mock, test_response, status_code, test_headers, expected):
@@ -161,8 +168,13 @@ def test_backoff_on_rate_limit_error(requests_mock, test_response, status_code, 
     )
 
     response = requests.get(url)
-    result = stream.backoff_time(response)
-    assert result == expected
+
+    if isinstance(expected, tuple):
+        with pytest.raises(expected[0], match=expected[1]):
+            stream.backoff_time(response)
+    else:
+        result = stream.backoff_time(response)
+        assert result == expected
 
 
 @pytest.mark.parametrize(

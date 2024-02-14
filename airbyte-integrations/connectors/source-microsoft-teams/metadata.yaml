@@ -2,17 +2,29 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eaf50f04-21dd-4620-913b-2a83f5635227
-  dockerImageTag: 0.2.5
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-microsoft-teams
   githubIssueLabel: source-microsoft-teams
   icon: microsoft-teams.svg
   license: MIT
   name: Microsoft teams
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-microsoft-teams
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          Version 1.0.0 introduces breaking schema changes to all streams.
+          A full schema refresh is required to upgrade to this version.
+          For more details, see our <a href='https://docs.airbyte.io/integrations/sources/microsoft-teams-migrations'>migration guide</a>.
+        upgradeDeadline: "2024-01-24"
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-teams
   tags:

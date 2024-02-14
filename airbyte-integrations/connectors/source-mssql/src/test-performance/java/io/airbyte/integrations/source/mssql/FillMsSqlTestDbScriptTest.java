@@ -28,9 +28,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
-  }
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
   @Override
   protected String getImageName() {

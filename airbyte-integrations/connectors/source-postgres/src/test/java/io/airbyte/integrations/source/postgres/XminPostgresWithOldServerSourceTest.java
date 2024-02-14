@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -25,8 +26,8 @@ import org.junit.jupiter.api.Test;
 public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest {
 
   @Override
-  protected String getDatabaseImageName() {
-    return "postgres:9-alpine";
+  protected BaseImage getDatabaseImage() {
+    return BaseImage.POSTGRES_9;
   }
 
   @Test
@@ -76,7 +77,7 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest 
     // We add some data and perform a third read. We should verify that (i) a delete is not captured and
     // (ii) the new record that is inserted into the
     // table is read.
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
       ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
       return null;

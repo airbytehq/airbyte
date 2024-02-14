@@ -10,7 +10,7 @@ Airbyte uses a two tiered system for connectors to help you understand what to e
 
 **Community**: A community connector is maintained by the Airbyte community until it becomes Certified. Airbyte has over 800 code contributors and 15,000 people in the Slack community to help. The Airbyte team is continually certifying Community connectors as usage grows. As these connectors are not maintained by Airbyte, we do not offer support SLAs around them, and we encourage caution when using them in production.
 
-For more information about the system, see [Product Support Levels](https://docs.airbyte.com/project-overview/product-support-levels)
+For more information about the system, see [Connector Support Levels](./connector-support-levels.md)
 
 _[View the connector registries in full](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html)_
 

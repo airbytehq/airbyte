@@ -340,7 +340,7 @@ class SessionTokenRequestBearerAuthenticator(BaseModel):
     type: Literal['Bearer']
 
 
-class HttpMethodEnum(Enum):
+class HttpMethod(Enum):
     GET = 'GET'
     POST = 'POST'
 
@@ -570,6 +570,11 @@ class RecordFilter(BaseModel):
         ],
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class SchemaNormalization(Enum):
+    None_ = 'None'
+    Default = 'Default'
 
 
 class RemoveFields(BaseModel):
@@ -1019,6 +1024,7 @@ class RecordSelector(BaseModel):
         description='Responsible for filtering records to be emitted by the Source.',
         title='Record Filter',
     )
+    schema_normalization: Optional[SchemaNormalization] = SchemaNormalization.None_
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -1067,6 +1073,45 @@ class DeclarativeSource(BaseModel):
         None,
         description='For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.',
     )
+
+
+class SelectiveAuthenticator(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['SelectiveAuthenticator']
+    authenticator_selection_path: List[str] = Field(
+        ...,
+        description='Path of the field in config with selected authenticator name',
+        examples=[['auth'], ['auth', 'type']],
+        title='Authenticator Selection Path',
+    )
+    authenticators: Dict[
+        str,
+        Union[
+            ApiKeyAuthenticator,
+            BasicHttpAuthenticator,
+            BearerAuthenticator,
+            CustomAuthenticator,
+            OAuthAuthenticator,
+            NoAuth,
+            SessionTokenAuthenticator,
+            LegacySessionTokenAuthenticator,
+        ],
+    ] = Field(
+        ...,
+        description='Authenticators to select from.',
+        examples=[
+            {
+                'authenticators': {
+                    'token': '#/definitions/ApiKeyAuthenticator',
+                    'oauth': '#/definitions/OAuthAuthenticator',
+                }
+            }
+        ],
+        title='Authenticators',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class DeclarativeStream(BaseModel):
@@ -1179,6 +1224,7 @@ class HttpRequester(BaseModel):
             NoAuth,
             SessionTokenAuthenticator,
             LegacySessionTokenAuthenticator,
+            SelectiveAuthenticator,
         ]
     ] = Field(
         None,
@@ -1192,8 +1238,8 @@ class HttpRequester(BaseModel):
         description='Error handler component that defines how to handle errors.',
         title='Error Handler',
     )
-    http_method: Optional[Union[str, HttpMethodEnum]] = Field(
-        'GET',
+    http_method: Optional[HttpMethod] = Field(
+        HttpMethod.GET,
         description='The HTTP method used to fetch data from the source (can be GET or POST).',
         examples=['GET', 'POST'],
         title='HTTP Method',
@@ -1234,6 +1280,11 @@ class HttpRequester(BaseModel):
             {'sort_by[asc]': 'updated_at'},
         ],
         title='Query Parameters',
+    )
+    use_cache: Optional[bool] = Field(
+        False,
+        description='Enables stream requests caching. This field is automatically set by the CDK.',
+        title='Use Cache',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1308,6 +1359,7 @@ class SubstreamPartitionRouter(BaseModel):
 
 CompositeErrorHandler.update_forward_refs()
 DeclarativeSource.update_forward_refs()
+SelectiveAuthenticator.update_forward_refs()
 DeclarativeStream.update_forward_refs()
 SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()

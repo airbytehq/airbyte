@@ -8,7 +8,12 @@ import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.countOfTypingDedupingThreads;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 
+import com.google.common.collect.Streams;
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -50,9 +55,21 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
+  private void prepareSchemas(final ParsedCatalog parsedCatalog) throws Exception {
+    final var rawSchema = parsedCatalog.streams().stream().map(stream -> stream.id().rawNamespace());
+    final var finalSchema = parsedCatalog.streams().stream().map(stream -> stream.id().finalNamespace());
+    final var createAllSchemasSql = Streams.concat(rawSchema, finalSchema)
+        .filter(Objects::nonNull)
+        .distinct()
+        .map(sqlGenerator::createSchema)
+        .toList();
+    destinationHandler.execute(Sql.concat(createAllSchemasSql));
+  }
+
   @Override
   public void prepareTables() throws Exception {
-    log.info("executing NoOp prepareTables with V1V2 migrations");
+    log.info("ensuring schemas exist for prepareTables with V1V2 migrations");
+    prepareSchemas(parsedCatalog);
     final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
     for (final StreamConfig stream : parsedCatalog.streams()) {
       prepareTablesTasks.add(CompletableFuture.supplyAsync(() -> {
@@ -63,7 +80,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
           log.info("Migrating V2 legacy for stream {}", stream.id());
           v2TableMigrator.migrateIfNecessary(stream);
           return Optional.empty();
-        } catch (Exception e) {
+        } catch (final Exception e) {
           return Optional.of(e);
         }
       }, executorService));
@@ -73,12 +90,12 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
   }
 
   @Override
-  public void typeAndDedupe(String originalNamespace, String originalName, boolean mustRun) {
+  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun) {
     log.info("Skipping TypeAndDedupe");
   }
 
   @Override
-  public Lock getRawTableInsertLock(String originalNamespace, String originalName) {
+  public Lock getRawTableInsertLock(final String originalNamespace, final String originalName) {
     return new Lock() {
 
       @Override
@@ -118,7 +135,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
   }
 
   @Override
-  public void typeAndDedupe() {
+  public void typeAndDedupe(final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries) {
     log.info("Skipping TypeAndDedupe final");
   }
 
