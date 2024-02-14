@@ -324,27 +324,6 @@ subprojects { subproj ->
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 }
 
-// integration and performance test tasks per project
-allprojects {
-    tasks.register('integrationTest') {
-        dependsOn tasks.matching {
-            [
-                    'integrationTestJava',
-                    'integrationTestPython',
-            ].contains(it.name)
-        }
-    }
-
-    tasks.register('performanceTest') {
-        dependsOn tasks.matching {
-            [
-                    'performanceTestJava',
-            ].contains(it.name)
-        }
-    }
-}
-
-
 // convenience task to list all dependencies per project
 subprojects {
     tasks.register('listAllDependencies', DependencyReportTask) {}
