@@ -31,7 +31,7 @@ class SQLTypeConversionError(Exception):
     """An exception to be raised when a type conversion fails."""
 
 
-def _get_airbyte_type(  # noqa: PLR0911
+def _get_airbyte_type(  # noqa: PLR0911  # Too many return statements
     json_schema_property_def: dict[str, str | dict | list],
 ) -> tuple[str, str | None]:
     """Get the airbyte type and subtype from a JSON schema property definition.
@@ -47,7 +47,7 @@ def _get_airbyte_type(  # noqa: PLR0911
 
     # if json_schema_type is an array of two strings with one of them being null, pick the other one
     # this strategy is often used by connectors to indicate a field might not be set all the time
-    if isinstance(json_schema_type, list) and "null" in json_schema_type:
+    if isinstance(json_schema_type, list):
         non_null_types = [t for t in json_schema_type if t != "null"]
         if len(non_null_types) == 1:
             json_schema_type = non_null_types[0]
@@ -65,10 +65,15 @@ def _get_airbyte_type(  # noqa: PLR0911
     if json_schema_type in ["string", "number", "boolean", "integer"]:
         return cast(str, json_schema_type), None
 
-    if json_schema_type == "object" and "properties" in json_schema_property_def:
+    if json_schema_type == "object":
         return "object", None
 
-    if json_schema_type == "array" and "items" in json_schema_property_def:
+    if json_schema_type == "array":
+        items_def = json_schema_property_def.get("items", None)
+        if isinstance(items_def, dict):
+            subtype, _ = _get_airbyte_type(items_def)
+            return "array", subtype
+
         return "array", None
 
     err_msg = f"Could not determine airbyte type from JSON schema type: {json_schema_property_def}"
@@ -95,7 +100,7 @@ class SQLTypeConverter:
     ) -> sqlalchemy.types.TypeEngine:
         """Convert a value to a SQL type."""
         try:
-            airbyte_type, airbyte_subtype = _get_airbyte_type(json_schema_property_def)
+            airbyte_type, _ = _get_airbyte_type(json_schema_property_def)
             return self.conversion_map[airbyte_type]()
         except SQLTypeConversionError:
             print(f"Could not determine airbyte type from JSON schema: {json_schema_property_def}")

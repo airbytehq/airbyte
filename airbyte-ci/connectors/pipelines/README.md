@@ -640,6 +640,8 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.2.1   | [#35204](https://github.com/airbytehq/airbyte/pull/35204)  | Run `poetry check` before `poetry install` on poetry package install.                                                      |
+| 4.2.0   | [#35103](https://github.com/airbytehq/airbyte/pull/35103)  | Java 21 support.                                                                                                           |
 | 4.1.4   | [#35039](https://github.com/airbytehq/airbyte/pull/35039)  | Fix bug which prevented gradle test reports from being added.                                                              |
 | 4.1.3   | [#35010](https://github.com/airbytehq/airbyte/pull/35010)  | Use `poetry install --no-root` in the builder container.                                                                   |
 | 4.1.2   | [#34945](https://github.com/airbytehq/airbyte/pull/34945)  | Only install main dependencies when running poetry install.                                                                |

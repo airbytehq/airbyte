@@ -9,8 +9,12 @@ airbyteJavaConnector {
 }
 
 java {
+    // TODO: rewrite code to avoid javac wornings in the first place
     compileJava {
         options.compilerArgs += "-Xlint:-try,-rawtypes"
+    }
+    compileTestFixturesJava {
+        options.compilerArgs += "-Xlint:-this-escape"
     }
 }
 
