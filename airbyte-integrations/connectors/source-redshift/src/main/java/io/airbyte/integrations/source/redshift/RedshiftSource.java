@@ -109,7 +109,6 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return new HashSet<>(database.bufferedResultSetQuery(
         connection -> {

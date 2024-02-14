@@ -1,12 +1,25 @@
 plugins {
+    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.20.4'
+    cdkVersionRequired = '0.13.2'
     features = ['db-sources']
     useLocalCdk = false
 }
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileTestJava {
+        options.compilerArgs.remove("-Werror")
+    }
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.teradata.TeradataSource'
@@ -16,5 +29,6 @@ dependencies {
 
     implementation 'com.teradata.jdbc:terajdbc:20.00.00.06'
 
-    testImplementation 'org.testcontainers:jdbc:1.19.4'
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation libs.testcontainers.jdbc
 }

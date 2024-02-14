@@ -24,7 +24,6 @@ data:
   registries:
     cloud:
       enabled: true
-      dockerImageTag: 0.1.21
     oss:
       enabled: true
   releaseStage: generally_available

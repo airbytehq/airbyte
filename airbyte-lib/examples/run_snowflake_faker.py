@@ -39,7 +39,7 @@ cache = SnowflakeSQLCache(
 
 source.check()
 
-source.select_streams(["products"])
+source.set_streams(["products"])
 result = source.read(cache)
 
 for name in ["products"]:

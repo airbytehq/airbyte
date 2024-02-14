@@ -25,12 +25,6 @@
           "count": {
             "type": ["null", "integer"]
           },
-          "custom_event": {
-            "type": ["null", "boolean"]
-          },
-          "custom_event_id": {
-            "type": ["null", "integer"]
-          },
           "avg_time": {
             "type": ["null", "number"],
             "multipleOf": 1e-20

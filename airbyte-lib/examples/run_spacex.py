@@ -22,7 +22,7 @@ cache = ab.new_local_cache()
 
 source.check()
 
-source.select_streams(["launches", "rockets", "capsules"])
+source.set_streams(["launches", "rockets", "capsules"])
 
 result = source.read(cache)
 

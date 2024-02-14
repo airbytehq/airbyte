@@ -79,7 +79,6 @@ public class SftpCommand {
     return fileSchemas;
   }
 
-  @SuppressWarnings("unchecked")
   private Set<String> getFileNames() {
     checkIfConnected();
     Vector<LsEntry> entries = new Vector<>();

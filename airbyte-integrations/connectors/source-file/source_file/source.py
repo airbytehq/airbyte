@@ -16,7 +16,6 @@ from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConnectorSpecification,
     FailureType,
@@ -25,7 +24,6 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
-from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
 from .client import Client
 from .utils import LOCAL_STORAGE_NAME, dropbox_force_download
@@ -63,7 +61,6 @@ class SourceFile(Source):
     - read_json
     - read_html
     - read_excel
-    - read_fwf
     - read_feather
     - read_parquet
     - read_orc
@@ -173,33 +170,14 @@ class SourceFile(Source):
         fields = self.selected_fields(catalog, config)
         name = client.stream_name
 
-        configured_stream = catalog.streams[0]
-
-        logger.info(f"Syncing stream: {name} ({client.reader.full_url})...")
-
-        yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.STARTED)
-
-        record_counter = 0
+        logger.info(f"Reading {name} ({client.reader.full_url})...")
         try:
             for row in client.read(fields=fields):
                 record = AirbyteRecordMessage(stream=name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000)
-
-                record_counter += 1
-                if record_counter == 1:
-                    logger.info(f"Marking stream {name} as RUNNING")
-                    yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.RUNNING)
-
                 yield AirbyteMessage(type=Type.RECORD, record=record)
-
-            logger.info(f"Marking stream {name} as STOPPED")
-            yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.COMPLETE)
-
         except Exception as err:
             reason = f"Failed to read data of {name} at {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
-            logger.exception(f"Encountered an exception while reading stream {name}")
-            logger.info(f"Marking stream {name} as STOPPED")
-            yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.INCOMPLETE)
             raise err
 
     @staticmethod

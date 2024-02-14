@@ -90,7 +90,6 @@ public class SftpClient {
     return channelSftp != null && channelSftp.isConnected();
   }
 
-  @SuppressWarnings("rawtypes")
   public Vector lsFile(SupportedFileExtension fileExtension) {
     try {
       return channelSftp.ls("*." + fileExtension.typeName);

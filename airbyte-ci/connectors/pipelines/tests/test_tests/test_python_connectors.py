@@ -175,4 +175,4 @@ class TestAirbyteLibValidationTests:
             result = await AirbyteLibValidation(context_for_invalid_connector)._run(mocker.MagicMock())
             assert isinstance(result, StepResult)
             assert result.status == StepStatus.FAILURE
-            assert "is not installable" in result.stderr
+            assert "does not appear to be a Python project" in result.stderr

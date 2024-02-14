@@ -98,7 +98,6 @@ class SpeedBenchmarkSourceTest {
   }
 
   @Test
-  @SuppressWarnings("try")
   void testSource() throws Exception {
     final SpeedBenchmarkSource speedBenchmarkSource = new SpeedBenchmarkSource();
 
