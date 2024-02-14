@@ -55,7 +55,7 @@ def expected_test_stream_data() -> dict[str, list[dict[str, str | int]]]:
         "stream2": [
             {"column1": "value1", "column2": 1, "empty_column": None},
         ],
-        "stream3": []
+        "always-empty-stream": []
     }
 
 def test_registry_get():
@@ -236,9 +236,9 @@ def test_read_result_mapping():
     assert isinstance(result, Mapping)
     assert "stream1" in result
     assert "stream2" in result
-    assert "stream3" in result
+    assert "always-empty-stream" in result
     assert "stream4" not in result
-    assert result.keys() == {"stream1", "stream2", "stream3"}
+    assert result.keys() == {"stream1", "stream2", "always-empty-stream"}
 
 
 def test_dataset_list_and_len(expected_test_stream_data):
@@ -257,9 +257,9 @@ def test_dataset_list_and_len(expected_test_stream_data):
     assert isinstance(result, Mapping)
     assert "stream1" in result
     assert "stream2" in result
-    assert "stream3" in result
+    assert "always-empty-stream" in result
     assert "stream4" not in result
-    assert result.keys() == {"stream1", "stream2", "stream3"}
+    assert result.keys() == {"stream1", "stream2", "always-empty-stream"}
 
 
 def test_read_from_cache(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
@@ -343,10 +343,10 @@ def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[s
 
     # Create a third cache with the same name
     third_cache = ab.new_local_cache(cache_name)
-    source.set_streams(["stream3"])
+    source.set_streams(["always-empty-stream"])
     result = source.read(third_cache)
 
-    # Assert that the read result only contains stream3
+    # Assert that the read result only contains always-empty-stream
     with pytest.raises(KeyError):
         result["stream1"]
     with pytest.raises(KeyError):
@@ -364,10 +364,10 @@ def test_read_result_as_list(expected_test_stream_data: dict[str, list[dict[str,
     result: ReadResult = source.read(cache)
     stream_1_list = list(result["stream1"])
     stream_2_list = list(result["stream2"])
-    stream_3_list = list(result["stream3"])
+    stream_3_list = list(result["always-empty-stream"])
     assert stream_1_list == expected_test_stream_data["stream1"]
     assert stream_2_list == expected_test_stream_data["stream2"]
-    assert stream_3_list == expected_test_stream_data["stream3"]
+    assert stream_3_list == expected_test_stream_data["always-empty-stream"]
 
 
 def test_get_records_result_as_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
@@ -376,10 +376,10 @@ def test_get_records_result_as_list(expected_test_stream_data: dict[str, list[di
 
     stream_1_list = list(source.get_records("stream1"))
     stream_2_list = list(source.get_records("stream2"))
-    stream_3_list = list(source.get_records("stream3"))
+    stream_3_list = list(source.get_records("always-empty-stream"))
     assert stream_1_list == expected_test_stream_data["stream1"]
     assert stream_2_list == expected_test_stream_data["stream2"]
-    assert stream_3_list == expected_test_stream_data["stream3"]
+    assert stream_3_list == expected_test_stream_data["always-empty-stream"]
 
 
 
@@ -571,7 +571,6 @@ def test_check_fail_on_missing_config(method_call):
     with pytest.raises(exc.AirbyteConnectorConfigurationMissingError):
         method_call(source)
 
-@pytest.mark.skip(reason="Test is disabled for now")
 def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     """Test that the merge strategy works as expected.
 
@@ -703,7 +702,6 @@ def test_tracking(
     ])
 
 
-#@pytest.mark.skip(reason="Test is disabled for now")
 def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_source("source-test", config={"apiKey": "test"})
     source.select_all_streams()
@@ -725,7 +723,6 @@ def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_tes
             assert len(expected_test_stream_data[stream_name]) == 0
 
 
-@pytest.mark.skip(reason="Test is disabled for now")
 def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_source("source-test", config={"apiKey": "test"})
     source.select_all_streams()

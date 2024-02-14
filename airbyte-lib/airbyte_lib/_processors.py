@@ -206,7 +206,7 @@ class RecordProcessor(abc.ABC):
                 # Type.LOG, Type.TRACE, Type.CONTROL, etc.
                 pass
 
-        # Add empty streams to the dictionary, so we create a destiantion table for it
+        # Add empty streams to the dictionary, so we create a destination table for it
         for stream_name in self._expected_streams:
             if stream_name not in stream_batches.keys():
                 if DEBUG_MODE:
