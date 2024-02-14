@@ -10,11 +10,11 @@ import sys
 import tempfile
 import traceback
 import urllib
+import zipfile
 from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
 from zipfile import BadZipFile
-import zipfile
 
 import backoff
 import boto3
@@ -443,13 +443,13 @@ class Client:
 
     def _unzip(self, fp):
         tmp_dir = tempfile.TemporaryDirectory()
-        with zipfile.ZipFile(str(fp.name), 'r') as zip_ref:
+        with zipfile.ZipFile(str(fp.name), "r") as zip_ref:
             zip_ref.extractall(tmp_dir.name)
-            
+
         logger.info("Temp dir content: " + str(os.listdir(tmp_dir.name)))
-        final_file:str =  os.path.join(tmp_dir.name, os.listdir(tmp_dir.name)[0])
+        final_file: str = os.path.join(tmp_dir.name, os.listdir(tmp_dir.name)[0])
         logger.info("Pick up first file: " + final_file)
-        fp_tmp = open(final_file, 'r')
+        fp_tmp = open(final_file, "r")
         return fp_tmp
 
     def _cache_stream(self, fp):
