@@ -50,6 +50,7 @@ types-requests = "2.31.0.4"
 freezegun = "^1.4.0"
 airbyte-source-faker = "^6.0.0"
 viztracer = "^0.16.2"
+poethepoet = "^0.24.4"
 
 [build-system]
 requires = ["poetry-core"]
@@ -251,6 +252,16 @@ airbyte-lib-validate-source = "airbyte_lib.validate:run"
 
 [tool.poe.tasks]
 test = "pytest tests"
+lint = "ruff check ."
+lint-fix = "ruff check --fix ."
+lint-fix-unsafe.shell = """
+git diff --exit-code > /dev/null || (echo 'There are unstaged changes. Skipping unsafe fixes.' && ruff check --unsafe-fixes .) || (echo 'Attempting unsafe fixes...' && ruff check --fix --unsafe-fixes .)
+"""
+format = ["_format-py", "lint-fix"]
+_format-py = "ruff format ."
+format-check = ["_format-py", "lint-fix"]
+generate-docs = "generate-docs"
+fix = ["lint-fix", "format", "generate-docs", "lint-fix-unsafe"]
 
 [tool.airbyte_ci]
 extra_poetry_groups = ["dev"]
