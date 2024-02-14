@@ -60,7 +60,7 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
     subscriptionConfig.put("subscription_type", "subscribe");
     subscriptionConfig.put("topic_pattern", topicName);
 
-    var bootstrapServers = String.format("PLAINTEXT://%s:%s", HostPortResolver.resolveHost(KAFKA), HostPortResolver.resolvePort(KAFKA));
+    var bootstrapServers = String.format("PLAINTEXT://%s:%d", HostPortResolver.resolveHost(KAFKA), HostPortResolver.resolvePort(KAFKA));
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("bootstrap_servers", bootstrapServers)
         .put("subscription", subscriptionConfig)
