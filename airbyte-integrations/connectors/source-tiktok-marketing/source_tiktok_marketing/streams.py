@@ -5,7 +5,7 @@
 
 import json
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from enum import Enum
 from functools import total_ordering
@@ -443,6 +443,8 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # needs to save a last state if all advertisers are used before only
         current_stream_state_value = (self.select_cursor_field_value(current_stream_state)) or ""
+        # current hypothesis is that if the ingestion takes too long, and a row is modified during the run, the modification won't be ingested
+        self.max_cursor_date = (datetime.strptime(self.max_cursor_date, "%Y-%m-%d %H:%M:%S") - timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S")
 
         # a object JsonUpdatedState is related with a current stream and should return a new updated state if needed
         if not isinstance(current_stream_state_value, JsonUpdatedState):
