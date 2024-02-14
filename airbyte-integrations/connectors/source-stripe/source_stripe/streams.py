@@ -361,14 +361,21 @@ class CustomerBalanceTransactions(BasePaginationStripeStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        REPORT_AFTER_N_CUSTOMERS_SKIPPED = 500
         for _slice in slices:
+            counter = 0
             for customer in parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
+                if counter % REPORT_AFTER_N_CUSTOMERS_SKIPPED == 0:
+                    # Printing something every REPORT_AFTER_N_CUSTOMERS_SKIPPED customers to show that the sync is still running
+                    # because if a customer does not have balance transactions we won't get a record for them
+                    # if there are many such customer we won't have any logs for a long time giving impression of a stuck sync
+                    self.logger.info(f"Last {REPORT_AFTER_N_CUSTOMERS_SKIPPED} customers processed did not have balance transactions")
                 # we use `get` here because some attributes may not be returned by some API versions
                 if customer.get("next_invoice_sequence") == 1 and customer.get("balance") == 0:
                     # We're making this check in order to speed up a sync. if a customer's balance is 0 and there are no
                     # associated invoices, he shouldn't have any balance transactions. So we're saving time of one API call per customer.
+                    counter += 1
                     continue
-
                 yield customer
 
 
