@@ -121,6 +121,7 @@ dependencyResolutionManagement {
         }
     }
 
+    // TODO: get rid of this
     versionCatalogs {
         libs {
             from(files("deps.toml"))

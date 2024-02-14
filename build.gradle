@@ -5,51 +5,45 @@ import com.github.spotbugs.snom.SpotBugsTask
 plugins {
     id 'base'
     id 'com.github.spotbugs' version '6.0.7'
-    id 'version-catalog'
 }
-
 
 ext {
     skipSlowTests = (System.getProperty('skipSlowTests', 'false') != 'false')
 }
 
-
 allprojects {
     apply plugin: 'base'
+    apply plugin: 'java'
+    apply plugin: 'java-test-fixtures'
+    apply plugin: 'com.github.spotbugs'
 
-    // by default gradle uses directory as the project name. That works very well in a single project environment but
+    // By default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
     def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
     group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
     project.base.archivesName = "${project.group}-${project.name}"
 
-}
+    // Produce reproducible archives
+    // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
+    tasks.withType(AbstractArchiveTask).configureEach {
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+    }
 
-
-// Common configurations for 'assemble'.
-allprojects {
-
+    // Common configurations for 'assemble'.
     tasks.withType(Tar).configureEach {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
-
     tasks.withType(Zip).configureEach {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
         // Disabling distZip causes the build to break for some reason, so: instead of disabling it, make it fast.
         entryCompression ZipEntryCompression.STORED
     }
-}
 
-// Java projects common configurations.
-subprojects { subproj ->
+    // Convenience task to list all dependencies per project
+    tasks.register('listAllDependencies', DependencyReportTask) {}
 
-    if (!subproj.file('src/main/java').directory) {
-        return
-    }
-
-    apply plugin: 'java'
-    apply plugin: 'java-test-fixtures'
-    apply plugin: 'com.github.spotbugs'
+    // Common java configurations
 
     java {
         sourceCompatibility = JavaVersion.VERSION_21
@@ -115,7 +109,7 @@ subprojects { subproj ->
         // Order test classes by annotation.
         systemProperty 'junit.jupiter.testclass.order.default', 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation'
 
-        if (!subproj.hasProperty('testExecutionConcurrency')) {
+        if (!project.hasProperty('testExecutionConcurrency')) {
             // By default, let gradle spawn as many independent workers as it wants.
             maxParallelForks = Runtime.runtime.availableProcessors()
             maxHeapSize = '3G'
@@ -125,7 +119,7 @@ subprojects { subproj ->
             maxParallelForks = 1
             maxHeapSize = '8G'
             // Manage test execution concurrency in JUnit.
-            String concurrency = subproj.property('testExecutionConcurrency').toString()
+            String concurrency = project.property('testExecutionConcurrency').toString()
             if (concurrency.isInteger() && (concurrency as int) > 0) {
                 // Define a fixed number of threads when the property is set to a positive integer.
                 systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', concurrency
@@ -173,23 +167,4 @@ subprojects { subproj ->
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-}
-
-// convenience task to list all dependencies per project
-subprojects {
-    tasks.register('listAllDependencies', DependencyReportTask) {}
-}
-
-// produce reproducible archives
-// (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
-tasks.withType(AbstractArchiveTask).configureEach {
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-}
-
-// pin dependency versions according to ./deps.toml
-catalog {
-    versionCatalog {
-        from(files("deps.toml"))
-    }
 }
