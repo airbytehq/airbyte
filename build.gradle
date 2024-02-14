@@ -6,7 +6,6 @@ plugins {
     id 'base'
     id 'com.github.spotbugs' version '6.0.7'
     id 'version-catalog'
-    id 'ru.vyarus.use-python' version '2.3.0'
 }
 
 
@@ -26,15 +25,6 @@ ext {
     image_tag = System.getenv("VERSION") ?: 'dev'
     skipSlowTests = (System.getProperty('skipSlowTests', 'false') != 'false')
 }
-// Pyenv support.
-try {
-    def pyenvRoot = "pyenv root".execute()
-    if (pyenvRoot.waitFor() == 0) {
-        ext.pyenvRoot = pyenvRoot.text.trim()
-    }
-} catch (IOException _) {
-    // Swallow exception if pyenv is not installed.
-}
 
 def isConnectorProject = { Project project ->
     if (project.parent == null || project.parent.name != 'connectors') {
@@ -53,50 +43,6 @@ allprojects {
     project.base.archivesName = "${project.group}-${project.name}"
 
     version = rootProject.ext.version
-}
-
-// python is required by the root project to run CAT tests for connectors
-python {
-    envPath = '.venv'
-    minPythonVersion = '3.10' // should be 3.10 for local development
-
-    // Amazon Linux support.
-    // The airbyte-ci tool runs gradle tasks in AL2023-based containers.
-    // In AL2023, `python3` is necessarily v3.9, and later pythons need to be installed and named explicitly.
-    // See https://github.com/amazonlinux/amazon-linux-2023/issues/459 for details.
-    try {
-        if ("python3.11 --version".execute().waitFor() == 0) {
-            // python3.11 definitely exists at this point, use it instead of 'python3'.
-            pythonBinary "python3.11"
-        }
-    } catch (IOException _) {
-        // Swallow exception if python3.11 is not installed.
-    }
-    // Pyenv support.
-    try {
-        def pyenvRoot = "pyenv root".execute()
-        def pyenvLatest = "pyenv latest ${minPythonVersion}".execute()
-        // Pyenv definitely exists at this point: use 'python' instead of 'python3' in all cases.
-        pythonBinary "python"
-        if (pyenvRoot.waitFor() == 0 && pyenvLatest.waitFor() == 0) {
-            pythonPath "${pyenvRoot.text.trim()}/versions/${pyenvLatest.text.trim()}/bin"
-        }
-    } catch (IOException _) {
-        // Swallow exception if pyenv is not installed.
-    }
-
-    scope = 'VIRTUALENV'
-    installVirtualenv = true
-    // poetry is required for installing and running airbyte-ci
-    pip 'poetry:1.5.1'
-}
-
-def cleanPythonVenv = rootProject.tasks.register('cleanPythonVenv', Exec) {
-    commandLine 'rm'
-    args '-rf', "${rootProject.projectDir.absolutePath}/.venv"
-}
-rootProject.tasks.named('clean').configure {
-    dependsOn cleanPythonVenv
 }
 
 
@@ -327,70 +273,6 @@ subprojects { subproj ->
 // convenience task to list all dependencies per project
 subprojects {
     tasks.register('listAllDependencies', DependencyReportTask) {}
-}
-
-// airbyte-ci tasks for local development
-def poetryInstallAirbyteCI = tasks.register('poetryInstallAirbyteCI', Exec) {
-    workingDir rootProject.file('airbyte-ci/connectors/pipelines')
-    commandLine rootProject.file('.venv/bin/python').absolutePath
-    args "-m", "poetry", "install", "--no-cache"
-}
-poetryInstallAirbyteCI.configure {
-    dependsOn tasks.named('pipInstall')
-}
-def poetryCleanVirtualenv = tasks.register('cleanVirtualenv', Exec) {
-    workingDir rootProject.file('airbyte-ci/connectors/pipelines')
-    commandLine rootProject.file('.venv/bin/python').absolutePath
-    args "-m", "poetry", "env", "remove", "--all"
-    onlyIf {
-        rootProject.file('.venv/bin/python').exists()
-    }
-}
-cleanPythonVenv.configure {
-    dependsOn poetryCleanVirtualenv
-}
-
-subprojects {
-    if (!isConnectorProject(project)) {
-        return
-    }
-    def airbyteCIConnectorsTask = { String taskName, String... connectorsArgs ->
-        def task = tasks.register(taskName, Exec) {
-            workingDir rootDir
-            environment "CI", "1" // set to use more suitable logging format
-            commandLine rootProject.file('.venv/bin/python').absolutePath
-            args "-m", "poetry"
-            args "--directory", "${rootProject.file('airbyte-ci/connectors/pipelines').absolutePath}"
-            args "run"
-            args "airbyte-ci", "connectors", "--name=${project.name}"
-            args connectorsArgs
-            // Forbid these kinds of tasks from running concurrently.
-            // We can induce serial execution by giving them all a common output directory.
-            outputs.dir rootProject.file("${rootProject.buildDir}/airbyte-ci-lock")
-            outputs.upToDateWhen { false }
-        }
-        task.configure { dependsOn poetryInstallAirbyteCI }
-        return task
-    }
-
-    // Build connector image as part of 'assemble' task.
-    // This is required for local 'integrationTest' execution.
-    def buildConnectorImage = airbyteCIConnectorsTask(
-            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
-    buildConnectorImage.configure {
-        // Images for java projects always rely on the distribution tarball.
-        dependsOn tasks.matching { it.name == 'distTar' }
-        // Ensure that all files exist beforehand.
-        dependsOn tasks.matching { it.name == 'generate' }
-    }
-    tasks.named('assemble').configure {
-        // We may revisit the dependency on assemble but the dependency should always be on a base task.
-        dependsOn buildConnectorImage
-    }
-
-    // Convenience tasks for local airbyte-ci execution.
-    airbyteCIConnectorsTask('airbyteCIConnectorBuild', 'build')
-    airbyteCIConnectorsTask('airbyteCIConnectorTest', 'test')
 }
 
 // produce reproducible archives
