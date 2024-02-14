@@ -46,7 +46,9 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
         for result in response:
-            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result, nullable=["user_interest.availabilities", "user_interest.launched_to_all"])
+            yield self.google_ads_client.parse_single_result(
+                self.get_json_schema(), result, nullable=["user_interest.availabilities", "user_interest.launched_to_all"]
+            )
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:

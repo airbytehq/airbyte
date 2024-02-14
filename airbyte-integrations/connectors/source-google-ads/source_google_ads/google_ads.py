@@ -219,5 +219,7 @@ class GoogleAds:
             nullable = []
         props = schema.get("properties")
         fields = GoogleAds.get_fields_from_schema(schema)
-        single_record = {field: GoogleAds.get_field_value(result, field, props.get(field)) if field not in nullable else None for field in fields}
+        single_record = {
+            field: GoogleAds.get_field_value(result, field, props.get(field)) if field not in nullable else None for field in fields
+        }
         return single_record
