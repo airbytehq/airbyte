@@ -139,6 +139,7 @@ public class PostgresCdcCtidInitializer {
         final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
             finalListOfStreamsToBeSyncedViaCtid,
             quoteString);
+        LOGGER.info("xiaohan test: state to be used in manager: " + stateToBeUsed);
         final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodeHandler, stateToBeUsed, catalog);
         final CtidPostgresSourceOperations ctidPostgresSourceOperations = new CtidPostgresSourceOperations(
             Optional.of(new CdcMetadataInjector(

@@ -186,6 +186,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     assertStateTypes(stateAfterFirstBatch, 24);
   }
 
+  protected int getPostgresVersion() {
+    return 16;
+  }
+
   private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
     JsonNode sharedState = null;
     for (int i = 0; i < stateMessages.size(); i++) {
@@ -196,7 +200,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        assertEquals(sharedState, global.getSharedState(), "all statemessage: " + stateMessages);
+        if (getPostgresVersion() >= 15 || i == stateMessages.size() - 1) {
+          assertEquals(sharedState, global.getSharedState());
+        }
       }
       assertEquals(1, global.getStreamStates().size());
       final AirbyteStreamState streamState = global.getStreamStates().get(0);

@@ -16,4 +16,9 @@ public class CdcPostgresSourceLegacyCtidTest extends CdcPostgresSourceTest {
     return PostgresTestDatabase.in(BaseImage.POSTGRES_13, ContainerModifier.CONF).withReplicationSlot();
   }
 
+  @Override
+  protected int getPostgresVersion() {
+    return 13;
+  }
+
 }
