@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 
 
 DEFAULT_BATCH_SIZE = 10_000
-DEBUG_MODE = True  # Set to True to enable additional debug logging.
+DEBUG_MODE = False  # Set to True to enable additional debug logging.
 
 
 class BatchHandle:
