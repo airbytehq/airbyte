@@ -72,6 +72,10 @@ tasks.named('clean').configure {
 }
 
 allprojects {
+    // Evaluate CDK project before evaluating the connector.
+    evaluationDependsOn(':airbyte-cdk:java:airbyte-cdk')
+
+    // Adds airbyte-ci task.
     def airbyteCIConnectorsTask = { String taskName, String... connectorsArgs ->
         def task = tasks.register(taskName, Exec) {
             workingDir rootDir

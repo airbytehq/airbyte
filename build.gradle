@@ -149,9 +149,6 @@ subprojects { subproj ->
     if (isConnectorProject(subproj)) {
         // This is a Java connector project.
 
-        // Evaluate CDK project before evaluating the connector.
-        evaluationDependsOn(':airbyte-cdk:java:airbyte-cdk')
-
         if (!gradle.startParameter.taskNames.any { it.contains(':airbyte-cdk:') } &&
             gradle.startParameter.taskNames.any { it.contains(':source-') || it.contains(':destination-') }) {
             // We are building a connector. Warn if the CDK JAR is missing or out of date.
