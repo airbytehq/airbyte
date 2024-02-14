@@ -64,7 +64,11 @@ class ThreadPoolManager:
                     if optional_exception:
                         # Exception handling should be done in the main thread. Hence, we only store the exception and expect the main
                         # thread to call raise_if_exception
-                        self._most_recently_seen_exception = RuntimeError(f"Failed reading with error: {optional_exception}")
+                        # We do not expect this error to happen. The futures created during concurrent syncs should catch the exception and
+                        # push it to the queue. If this exception occurs, please review the futures and how they handle exceptions.
+                        self._most_recently_seen_exception = RuntimeError(
+                            f"Failed processing a future: {optional_exception}. Please contact the Airbyte team."
+                        )
                     futures.pop(index)
 
     def shutdown(self) -> None:

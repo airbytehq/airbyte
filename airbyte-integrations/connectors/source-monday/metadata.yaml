@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.2
   releases:
     breakingChanges:
       2.0.0:
@@ -36,8 +36,7 @@ data:
   name: Monday
   remoteRegistries:
     pypi:
-      enabled: false
-      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      enabled: true
       packageName: airbyte-source-monday
   registries:
     cloud:
@@ -47,6 +46,5 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:low-code
     - language:python
 metadataSpecVersion: "1.0"
