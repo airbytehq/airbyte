@@ -20,9 +20,12 @@ import com.google.cloud.bigquery.TableId;
 import com.google.common.collect.Streams;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.math.BigInteger;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,6 +51,11 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   public Optional<TableDefinition> findExistingTable(final StreamId id) {
     final Table table = bq.getTable(id.finalNamespace(), id.finalName());
     return Optional.ofNullable(table).map(Table::getDefinition);
+  }
+
+  @Override
+  public LinkedHashMap<String, TableDefinition> findExistingFinalTables(List<StreamId> streamIds) throws Exception {
+    return null;
   }
 
   @Override
@@ -98,18 +106,20 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   }
 
   @Override
-  public void execute(final String sql) throws InterruptedException {
-    if ("".equals(sql)) {
+  public void execute(final Sql sql) throws InterruptedException {
+    final List<String> transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT TRANSACTION");
+    if (transactions.isEmpty()) {
       return;
     }
     final UUID queryId = UUID.randomUUID();
-    LOGGER.debug("Executing sql {}: {}", queryId, sql);
+    final String statement = String.join("\n", transactions);
+    LOGGER.debug("Executing sql {}: {}", queryId, statement);
 
     /*
      * If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery
      * doesn't do a good job of inferring the query location. Pass it in explicitly.
      */
-    Job job = bq.create(JobInfo.of(JobId.newBuilder().setLocation(datasetLocation).build(), QueryJobConfiguration.newBuilder(sql).build()));
+    Job job = bq.create(JobInfo.of(JobId.newBuilder().setLocation(datasetLocation).build(), QueryJobConfiguration.newBuilder(statement).build()));
     AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
     // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
     while (!JobStatus.State.DONE.equals(job.getStatus().getState())) {

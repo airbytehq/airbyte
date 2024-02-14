@@ -10,13 +10,17 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
-  dockerImageTag: 0.3.12
+  dockerImageTag: 0.3.16
   dockerRepository: airbyte/source-google-sheets
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
   license: Elv2
   name: Google Sheets
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-sheets
   registries:
     cloud:
       enabled: true

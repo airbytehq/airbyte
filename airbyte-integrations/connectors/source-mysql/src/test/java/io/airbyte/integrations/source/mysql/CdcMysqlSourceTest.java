@@ -5,14 +5,14 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.IS_COMPRESSED;
-import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
-import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_DB_HISTORY;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_DEFAULT_CURSOR;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
+import static io.airbyte.integrations.source.mysql.cdc.MysqlCdcStateConstants.IS_COMPRESSED;
+import static io.airbyte.integrations.source.mysql.cdc.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
+import static io.airbyte.integrations.source.mysql.cdc.MysqlCdcStateConstants.MYSQL_DB_HISTORY;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.STATE_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,12 +33,13 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
-import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
+import io.airbyte.integrations.source.mysql.cdc.MySqlCdcProperties;
+import io.airbyte.integrations.source.mysql.cdc.MySqlCdcTargetPosition;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -99,7 +100,12 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected String createSchemaSqlFmt() {
-    return "CREATE DATABASE IF NOT EXISTS %s;";
+    return "CREATE DATABASE IF NOT EXISTS `%s`;";
+  }
+
+  @Override
+  protected String createTableSqlFmt() {
+    return "CREATE TABLE `%s`.`%s`(%s);";
   }
 
   @Override
@@ -173,6 +179,36 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
       stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
     }
+  }
+
+  @Override
+  protected void writeRecords(
+                              final JsonNode recordJson,
+                              final String dbName,
+                              final String streamName,
+                              final String idCol,
+                              final String makeIdCol,
+                              final String modelCol) {
+    testdb.with("INSERT INTO `%s` .`%s` (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
+        idCol, makeIdCol, modelCol,
+        recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
+        recordJson.get(modelCol).asText());
+  }
+
+  @Override
+  protected void deleteMessageOnIdCol(final String streamName, final String idCol, final int idValue) {
+    testdb.with("DELETE FROM `%s`.`%s` WHERE %s = %s", modelsSchema(), streamName, idCol, idValue);
+  }
+
+  @Override
+  protected void deleteCommand(final String streamName) {
+    testdb.with("DELETE FROM `%s`.`%s`", modelsSchema(), streamName);
+  }
+
+  @Override
+  protected void updateCommand(final String streamName, final String modelCol, final String modelVal, final String idCol, final int idValue) {
+    testdb.with("UPDATE `%s`.`%s` SET %s = '%s' WHERE %s = %s", modelsSchema(), streamName,
+        modelCol, modelVal, COL_ID, 11);
   }
 
   @Test
@@ -286,6 +322,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
     assertStateTypes(stateMessages, 4);
+  }
+
+  protected void assertExpectedStateMessagesWithTotalCount(final List<AirbyteStateMessage> stateMessages, final long totalRecordCount) {
+    long actualRecordCount = 0L;
+    for (final AirbyteStateMessage message : stateMessages) {
+      actualRecordCount += message.getSourceStats().getRecordCount();
+    }
+    assertEquals(actualRecordCount, totalRecordCount);
   }
 
   @Override
@@ -433,6 +477,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordMessages);
     assertExpectedStateMessages(stateMessages);
+    assertExpectedStateMessagesWithTotalCount(stateMessages, 6);
   }
 
   @Test
@@ -451,6 +496,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordMessages1);
     assertExpectedStateMessages(stateMessages1);
+    assertExpectedStateMessagesWithTotalCount(stateMessages1, 6);
 
     // Re-run the sync with state associated with record w/ id = 15 (second to last record).
     // We expect to read 2 records, since in the case of a composite PK we issue a >= query.
@@ -514,6 +560,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
     assertEquals(13, stateMessages1.size());
+    assertExpectedStateMessagesWithTotalCount(stateMessages1, 12);
+
     JsonNode sharedState = null;
     StreamDescriptor firstStreamInState = null;
     for (int i = 0; i < stateMessages1.size(); i++) {
@@ -582,6 +630,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
 
     assertEquals(6, stateMessages2.size());
+    // State was reset to the 7th; thus 5 remaining records were expected to be reloaded.
+    assertExpectedStateMessagesWithTotalCount(stateMessages2, 5);
     for (int i = 0; i < stateMessages2.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages2.get(i);
       assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());

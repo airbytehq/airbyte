@@ -3,6 +3,7 @@
 #
 
 
+import traceback
 from os import getenv
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -11,12 +12,11 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError
 from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.streams import (
-    BrandAnalyticsAlternatePurchaseReports,
-    BrandAnalyticsItemComparisonReports,
     BrandAnalyticsMarketBasketReports,
     BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
@@ -112,23 +112,25 @@ class SourceAmazonSellerPartner(AbstractSource):
             self.validate_replication_dates(config)
             self.validate_stream_report_options(config)
             stream_kwargs = self._get_stream_kwargs(config)
-            orders_stream = Orders(**stream_kwargs)
-            next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
+
+            if config.get("account_type", "Seller") == "Seller":
+                stream_to_check = Orders(**stream_kwargs)
+            else:
+                stream_to_check = VendorSalesReports(**stream_kwargs)
+
+            next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
 
             return True, None
         except Exception as e:
-            # Validate Orders stream without data
+            # Validate stream without data
             if isinstance(e, StopIteration):
                 return True, None
 
-            # Additional check, since Vendor-only accounts within Amazon Seller API will not pass the test without this exception
-            if "403 Client Error" in str(e):
-                stream_to_check = VendorSalesReports(**stream_kwargs)
-                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
-                return True, None
-
-            error_message = e.response.json().get("error_description") if isinstance(e, HTTPError) else e
-            return False, error_message
+            if isinstance(e, HTTPError):
+                return False, e.response.json().get("error_description")
+            else:
+                error_message = "Caught unexpected exception during the check"
+                raise AirbyteTracedException(internal_message=error_message, message=error_message, exception=e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -187,8 +189,6 @@ class SourceAmazonSellerPartner(AbstractSource):
                 BrandAnalyticsMarketBasketReports,
                 BrandAnalyticsSearchTermsReports,
                 BrandAnalyticsRepeatPurchaseReports,
-                BrandAnalyticsAlternatePurchaseReports,
-                BrandAnalyticsItemComparisonReports,
                 SellerAnalyticsSalesAndTrafficReports,
                 VendorSalesReports,
                 VendorInventoryReports,

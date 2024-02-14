@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.mongodb;
 
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration;
 import java.time.Duration;
 
 public class MongoConstants {
@@ -34,6 +34,8 @@ public class MongoConstants {
   public static final String USERNAME_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
   public static final String SCHEMA_ENFORCED_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY;
   public static final String SCHEMALESS_MODE_DATA_FIELD = Configuration.SCHEMALESS_MODE_DATA_FIELD;
+  public static final String INITIAL_RECORD_WAITING_TIME_SEC = "initial_waiting_seconds";
+  public static final Integer DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC = 300;
 
   private MongoConstants() {}
 

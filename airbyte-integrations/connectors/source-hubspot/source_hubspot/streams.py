@@ -1348,16 +1348,7 @@ class ContactLists(IncrementalStream):
     unnest_fields = ["metaData"]
 
 
-class ContactsListMemberships(Stream):
-    """Contacts list Memberships, API v1
-    The Stream was created due to issue #8477, where supporting List Memberships in Contacts stream was requested.
-    According to the issue this feature is supported in API v1 by setting parameter showListMemberships=true
-    in get all contacts endpoint. API will return list memberships for each contact record.
-    But for syncing Contacts API v3 is used, where list memberships for contacts isn't supported.
-    Therefore, new stream was created based on get all contacts endpoint of API V1.
-    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
-    """
-
+class ContactsAllBase(Stream):
     url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     more_key = "has-more"
@@ -1367,16 +1358,14 @@ class ContactsListMemberships(Stream):
     primary_key = "canonical-vid"
     scopes = {"crm.objects.contacts.read"}
     properties_scopes = {"crm.schemas.contacts.read"}
+    records_field = None
+    filter_field = None
+    filter_value = None
 
     def _transform(self, records: Iterable) -> Iterable:
-        """Extracting list membership records from contacts
-        According to documentation Contacts may have multiple vids,
-        but the canonical-vid will be the primary ID for a record.
-        Docs: https://legacydocs.hubspot.com/docs/methods/contacts/contacts-overview
-        """
         for record in super()._transform(records):
             canonical_vid = record.get("canonical-vid")
-            for item in record.get("list-memberships", []):
+            for item in record.get(self.records_field, []):
                 yield {"canonical-vid": canonical_vid, **item}
 
     def request_params(
@@ -1386,8 +1375,31 @@ class ContactsListMemberships(Stream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params.update({"showListMemberships": True})
+        if self.filter_field and self.filter_value:
+            params.update({self.filter_field: self.filter_value})
         return params
+
+
+class ContactsListMemberships(ContactsAllBase, ABC):
+    """Contacts list Memberships, API v1
+    The Stream was created due to issue #8477, where supporting List Memberships in Contacts stream was requested.
+    According to the issue this feature is supported in API v1 by setting parameter showListMemberships=true
+    in get all contacts endpoint. API will return list memberships for each contact record.
+    But for syncing Contacts API v3 is used, where list memberships for contacts isn't supported.
+    Therefore, new stream was created based on get all contacts endpoint of API V1.
+    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
+    """
+
+    records_field = "list-memberships"
+    filter_field = "showListMemberships"
+    filter_value = True
+
+
+class ContactsFormSubmissions(ContactsAllBase, ABC):
+
+    records_field = "form-submissions"
+    filter_field = "formSubmissionMode"
+    filter_value = "all"
 
 
 class Deals(CRMSearchStream):
@@ -1836,6 +1848,11 @@ class PropertyHistory(ClientSideIncrementalStream):
 
     @property
     @abstractmethod
+    def entity_primary_key(self) -> str:
+        """Indicates a field name which is considered to be a primary key of the parent entity"""
+
+    @property
+    @abstractmethod
     def additional_keys(self) -> list:
         """The root keys to be placed into each record while iterating through versions"""
 
@@ -1873,7 +1890,7 @@ class PropertyHistory(ClientSideIncrementalStream):
     def _transform(self, records: Iterable) -> Iterable:
         for record in records:
             properties = record.get("properties")
-            primary_key = record.get(self.primary_key)
+            primary_key = record.get(self.entity_primary_key)
             additional_keys = {additional_key: record.get(additional_key) for additional_key in self.additional_keys}
             value_dict: Dict
             for property_name, value_dict in properties.items():
@@ -1888,7 +1905,7 @@ class PropertyHistory(ClientSideIncrementalStream):
                 if versions:
                     for version in versions:
                         version["property"] = property_name
-                        version[self.primary_key] = primary_key
+                        version[self.entity_primary_key] = primary_key
                         yield version | additional_keys
 
 
@@ -1922,8 +1939,12 @@ class ContactsPropertyHistory(PropertyHistory):
         return "contacts"
 
     @property
-    def primary_key(self) -> list:
+    def entity_primary_key(self) -> list:
         return "vid"
+
+    @property
+    def primary_key(self) -> list:
+        return ["vid", "property", "timestamp"]
 
     @property
     def additional_keys(self) -> list:
@@ -1970,15 +1991,19 @@ class CompaniesPropertyHistory(PropertyHistory):
 
     @property
     def more_key(self) -> str:
-        return "hasMore"
+        return "has-more"
 
     @property
     def entity(self) -> str:
         return "companies"
 
     @property
-    def primary_key(self) -> list:
+    def entity_primary_key(self) -> list:
         return "companyId"
+
+    @property
+    def primary_key(self) -> list:
+        return ["companyId", "property", "timestamp"]
 
     @property
     def additional_keys(self) -> list:
@@ -2045,8 +2070,12 @@ class DealsPropertyHistory(PropertyHistory):
         return "deals"
 
     @property
-    def primary_key(self) -> list:
+    def entity_primary_key(self) -> list:
         return "dealId"
+
+    @property
+    def primary_key(self) -> list:
+        return ["dealId", "property", "timestamp"]
 
     @property
     def additional_keys(self) -> list:

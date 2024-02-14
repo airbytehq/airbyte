@@ -6,9 +6,9 @@ package io.airbyte.cdk.integrations.destination_async;
 
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.cdk.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination_async.state.FlushFailure;
 import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
+import io.airbyte.cdk.integrations.destination_async.state.PartialStateWithDestinationStats;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -66,6 +66,8 @@ public class FlushWorkers implements AutoCloseable {
 
   private final AtomicBoolean isClosing;
   private final GlobalAsyncStateManager stateManager;
+
+  private final Object LOCK = new Object();
 
   public FlushWorkers(final BufferDequeue bufferDequeue,
                       final DestinationFlushFunction flushFunction,
@@ -237,11 +239,15 @@ public class FlushWorkers implements AutoCloseable {
     debugLoop.shutdownNow();
   }
 
-  private void emitStateMessages(final List<PartialAirbyteMessage> partials) {
-    partials
-        .stream()
-        .map(partial -> Jsons.deserialize(partial.getSerialized(), AirbyteMessage.class))
-        .forEach(outputRecordCollector);
+  private void emitStateMessages(final List<PartialStateWithDestinationStats> partials) {
+    synchronized (LOCK) {
+      for (final PartialStateWithDestinationStats partial : partials) {
+        final AirbyteMessage message = Jsons.deserialize(partial.stateMessage().getSerialized(), AirbyteMessage.class);
+        message.getState().setDestinationStats(partial.stats());
+        log.info("State with arrival number {} emitted from thread {}", partial.stateArrivalNumber(), Thread.currentThread().getName());
+        outputRecordCollector.accept(message);
+      }
+    }
   }
 
   private static String humanReadableFlushWorkerId(final UUID flushWorkerId) {

@@ -6,11 +6,13 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -58,6 +60,11 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
     } else {
       return Optional.of(new SnowflakeTableDefinition(columns));
     }
+  }
+
+  @Override
+  public LinkedHashMap<String, SnowflakeTableDefinition> findExistingFinalTables(final List<StreamId> list) throws Exception {
+    return null;
   }
 
   @Override
@@ -123,31 +130,32 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   }
 
   @Override
-  public void execute(final String sql) throws Exception {
-    if ("".equals(sql)) {
-      return;
-    }
+  public void execute(final Sql sql) throws Exception {
+    final List<String> transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT");
     final UUID queryId = UUID.randomUUID();
-    LOGGER.debug("Executing sql {}: {}", queryId, sql);
-    final long startTime = System.currentTimeMillis();
+    for (final String transaction : transactions) {
+      final UUID transactionId = UUID.randomUUID();
+      LOGGER.debug("Executing sql {}-{}: {}", queryId, transactionId, transaction);
+      final long startTime = System.currentTimeMillis();
 
-    try {
-      database.execute(sql);
-    } catch (final SnowflakeSQLException e) {
-      LOGGER.error("Sql {} failed", queryId, e);
-      // Snowflake SQL exceptions by default may not be super helpful, so we try to extract the relevant
-      // part of the message.
-      final String trimmedMessage;
-      if (e.getMessage().startsWith(EXCEPTION_COMMON_PREFIX)) {
-        // The first line is a pretty generic message, so just remove it
-        trimmedMessage = e.getMessage().substring(e.getMessage().indexOf("\n") + 1);
-      } else {
-        trimmedMessage = e.getMessage();
+      try {
+        database.execute(transaction);
+      } catch (final SnowflakeSQLException e) {
+        LOGGER.error("Sql {} failed", queryId, e);
+        // Snowflake SQL exceptions by default may not be super helpful, so we try to extract the relevant
+        // part of the message.
+        final String trimmedMessage;
+        if (e.getMessage().startsWith(EXCEPTION_COMMON_PREFIX)) {
+          // The first line is a pretty generic message, so just remove it
+          trimmedMessage = e.getMessage().substring(e.getMessage().indexOf("\n") + 1);
+        } else {
+          trimmedMessage = e.getMessage();
+        }
+        throw new RuntimeException(trimmedMessage, e);
       }
-      throw new RuntimeException(trimmedMessage, e);
-    }
 
-    LOGGER.debug("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
+      LOGGER.debug("Sql {}-{} completed in {} ms", queryId, transactionId, System.currentTimeMillis() - startTime);
+    }
   }
 
   /**

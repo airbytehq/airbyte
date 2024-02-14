@@ -106,9 +106,8 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
                                 \t@role_name     = N'%s',
                                 \t@supports_net_changes = 0""";
     testdb
-        .withSnapshotIsolation()
-        .withCdc()
         .withWaitUntilAgentRunning()
+        .withCdc()
         // create tables
         .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME)
         .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME2)
@@ -118,6 +117,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         // enable cdc on tables for designated role
         .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME, CDC_ROLE_NAME)
         .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME2, CDC_ROLE_NAME)
+        .withShortenedCapturePollingInterval()
         .withWaitUntilMaxLsnAvailable()
         // revoke user permissions
         .with("REVOKE ALL FROM %s CASCADE;", testdb.getUserName())
@@ -145,7 +145,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     final List<AirbyteStreamState> streamStates = stateMessages.get(0).getGlobal().getStreamStates();
 
     assertEquals(3, recordMessages.size());
-    assertEquals(1, stateMessages.size());
+    assertEquals(2, stateMessages.size());
     assertEquals(1, streamStates.size());
     assertEquals(STREAM_NAME, streamStates.get(0).getStreamDescriptor().getName());
     assertEquals(SCHEMA_NAME, streamStates.get(0).getStreamDescriptor().getNamespace());

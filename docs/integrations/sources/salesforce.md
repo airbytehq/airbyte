@@ -1,6 +1,10 @@
 # Salesforce
 
-This page contains the setup guide and reference information for the Salesforce source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Salesforce](https://www.salesforce.com/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -43,7 +47,7 @@ To create a dedicated read only Salesforce user:
 
 <!-- env:oss -->
 
-### For Airbyte Open Source only: Obtain Salesforce OAuth credentials
+### For Airbyte Open Source: Obtain Salesforce OAuth credentials
 
 If you are using Airbyte Open Source, you will need to obtain the following OAuth credentials to authenticate:
 
@@ -61,21 +65,41 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 
 ### Step 2: Set up the Salesforce connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
+<!-- env:cloud -->
+
+**For Airbyte Cloud:**
+
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Salesforce** from the list of available sources.
 4. Enter a **Source name** of your choosing to help you identify this source.
 5. To authenticate:
-   <!-- env:cloud -->
    **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Please make sure you are logged into the right account.
-   <!-- /env:cloud -->
-   <!-- env:oss -->
-   **For Airbyte Open Source**: Enter your Client ID, Client Secret, and Refresh Token.
-   <!-- /env:oss -->
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
 9. Click **Set up source** and wait for the tests to complete.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+**For Airbyte Open Source:**
+
+1. Navigate to your Airbyte Open Source dashboard.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **Salesforce** from the list of available sources.
+4. Enter a **Source name** of your choosing to help you identify this source.
+5. To authenticate:
+   **For Airbyte Open Source**: Enter your Client ID, Client Secret, and Refresh Token.
+6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
+7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
+8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
+9. Click **Set up source** and wait for the tests to complete.
+
+<!-- /env:oss -->
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -85,6 +109,7 @@ The Salesforce source connector supports the following sync modes:
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- (Recommended)[ Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Objects
 
@@ -95,26 +120,35 @@ Airbyte allows exporting all available Salesforce objects dynamically based on:
 - If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
 - If the salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
 
+
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Salesforce connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+
+The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) sync mode.
+
+#### A note on the BULK API vs REST API and their limitations
 ## Syncing Formula Fields
 
-The Salesforce connector syncs formula field outputs from Salesforce. If the formula of a field changes in Salesforce and no other field on the record is updated, you will need to reset the stream and sync a historical backfill to pull in all the updated values of the field. 
+The Salesforce connector syncs formula field outputs from Salesforce. If the formula of a field changes in Salesforce and no other field on the record is updated, you will need to reset the stream and sync a historical backfill to pull in all the updated values of the field.
 
 ## Syncing Deletes
 
 The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For the streams which support it, a deleted record will be marked with `isDeleted=true`. To find out more about how Salesforce manages records in the recycle bin, please visit their [docs](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
-
-
-## Performance considerations
-
-The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) sync mode.
-
 
 ## Usage of the BULK API vs REST API
 
 Salesforce allows extracting data using either the [BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by default to extract any Salesforce objects, unless any of the following conditions are met:
 
 - The Salesforce object has columns which are unsupported by the BULK API, like columns with a `base64` or `complexvalue` type
-- The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionally cost more of your API quota. This includes the following objects: 
+- The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionally cost more of your API quota. This includes the following objects:
    - AcceptedEventRelation
    - Attachment
    - CaseStatus
@@ -142,18 +176,26 @@ More information on the differences between various Salesforce APIs can be found
 If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync Stream using BULK API.
 :::
 
+### Troubleshooting
 
-## Tutorials
+#### Tutorials
 
 Now that you have set up the Salesforce source connector, check out the following Salesforce tutorials:
 
 - [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
 - [Replicate Salesforce and Zendesk data to Keen for unified analytics](https://airbyte.com/tutorials/salesforce-zendesk-analytics)
 
+* Check out common troubleshooting issues for the Salesforce source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.1 | 2024-02-12 | [35147](https://github.com/airbytehq/airbyte/pull/35147) | Manage dependencies with Poetry. |
+| 2.3.0   | 2023-12-15 | [33522](https://github.com/airbytehq/airbyte/pull/33522) | Sync streams concurrently in all sync modes                                                                                          |
+| 2.2.2   | 2024-01-04 | [33936](https://github.com/airbytehq/airbyte/pull/33936) | Prepare for airbyte-lib                                                                                                              |
 | 2.2.1   | 2023-12-12 | [33342](https://github.com/airbytehq/airbyte/pull/33342) | Added new ContentDocumentLink stream                                                                                                 |
 | 2.2.0   | 2023-12-12 | [33350](https://github.com/airbytehq/airbyte/pull/33350) | Sync streams concurrently on full refresh                                                                                            |
 | 2.1.6   | 2023-11-28 | [32535](https://github.com/airbytehq/airbyte/pull/32535) | Run full refresh syncs concurrently                                                                                                  |
@@ -233,3 +275,5 @@ Now that you have set up the Salesforce source connector, check out the followin
 | 0.1.2   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)   | Annotate Oauth2 flow initialization parameters in connector specification                                                            |
 | 0.1.1   | 2021-09-21 | [6209](https://github.com/airbytehq/airbyte/pull/6209)   | Fix bug with pagination for BULK API                                                                                                 |
 | 0.1.0   | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/5619)   | Salesforce Aitbyte-Native Connector                                                                                                  |
+
+</HideInUI>

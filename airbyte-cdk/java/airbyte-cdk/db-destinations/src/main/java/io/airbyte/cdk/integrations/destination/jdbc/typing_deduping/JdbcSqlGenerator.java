@@ -11,6 +11,8 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+import static io.airbyte.integrations.base.destination.typing_deduping.Sql.transactionally;
+import static java.util.stream.Collectors.toList;
 import static org.jooq.impl.DSL.alterTable;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.cast;
@@ -28,11 +30,11 @@ import static org.jooq.impl.DSL.with;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
@@ -42,11 +44,12 @@ import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jooq.CommonTableExpression;
 import org.jooq.Condition;
 import org.jooq.CreateSchemaFinalStep;
@@ -69,7 +72,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   private static final String TYPING_CTE_ALIAS = "intermediate_data";
   private static final String NUMBERED_ROWS_CTE_ALIAS = "numbered_rows";
 
-  private final NamingConventionTransformer namingTransformer;
+  protected final NamingConventionTransformer namingTransformer;
   protected final ColumnId cdcDeletedAtColumn;
 
   public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer) {
@@ -110,7 +113,8 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     };
   }
 
-  protected DataType<?> toDialectType(final AirbyteProtocolType airbyteProtocolType) {
+  @VisibleForTesting
+  public DataType<?> toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
       // Many destinations default to a very short length (e.g. Redshift defaults to 256).
       // Explicitly set 64KiB here. Subclasses may want to override this value.
@@ -133,6 +137,11 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
 
   protected abstract DataType<?> getArrayType();
 
+  @VisibleForTesting
+  public DataType<?> getTimestampWithTimeZoneType() {
+    return toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+  }
+
   protected abstract DataType<?> getWidestType();
 
   protected abstract SQLDialect getDialect();
@@ -140,9 +149,10 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   /**
    * @param columns from the schema to be extracted from _airbyte_data column. Use the destination
    *        specific syntax to extract data
+   * @param useExpensiveSaferCasting
    * @return a list of jooq fields for the final table insert statement.
    */
-  protected abstract List<Field<?>> extractRawDataFields(final LinkedHashMap<ColumnId, AirbyteType> columns);
+  protected abstract List<Field<?>> extractRawDataFields(final LinkedHashMap<ColumnId, AirbyteType> columns, boolean useExpensiveSaferCasting);
 
   /**
    *
@@ -184,10 +194,10 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   @VisibleForTesting
   List<Field<?>> buildFinalTableFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final Map<String, DataType<?>> metaColumns) {
     final List<Field<?>> fields =
-        metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(Collectors.toList());
+        metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(toList());
     final List<Field<?>> dataFields =
         columns.entrySet().stream().map(column -> field(quotedName(column.getKey().name()), toDialectType(column.getValue()))).collect(
-            Collectors.toList());
+            toList());
     dataFields.addAll(fields);
     return dataFields;
   }
@@ -198,10 +208,10 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
    * @param includeMetaColumn
    * @return
    */
-  LinkedHashMap<String, DataType<?>> getFinalTableMetaColumns(boolean includeMetaColumn) {
+  LinkedHashMap<String, DataType<?>> getFinalTableMetaColumns(final boolean includeMetaColumn) {
     final LinkedHashMap<String, DataType<?>> metaColumns = new LinkedHashMap<>();
     metaColumns.put(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false));
-    metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
+    metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false));
     if (includeMetaColumn)
       metaColumns.put(COLUMN_NAME_AB_META, getStructType().nullable(false));
     return metaColumns;
@@ -216,17 +226,19 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
    * @return
    */
   @VisibleForTesting
-  List<Field<?>> buildRawTableSelectFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final Map<String, DataType<?>> metaColumns) {
+  List<Field<?>> buildRawTableSelectFields(final LinkedHashMap<ColumnId, AirbyteType> columns,
+                                           final Map<String, DataType<?>> metaColumns,
+                                           final boolean useExpensiveSaferCasting) {
     final List<Field<?>> fields =
-        metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(Collectors.toList());
+        metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(toList());
     // Use originalName with non-sanitized characters when extracting data from _airbyte_data
-    final List<Field<?>> dataFields = extractRawDataFields(columns);
+    final List<Field<?>> dataFields = extractRawDataFields(columns, useExpensiveSaferCasting);
     dataFields.addAll(fields);
     return dataFields;
   }
 
   @VisibleForTesting
-  Condition rawTableCondition(DestinationSyncMode syncMode, boolean isCdcDeletedAtPresent, Optional<Instant> minRawTimestamp) {
+  Condition rawTableCondition(final DestinationSyncMode syncMode, final boolean isCdcDeletedAtPresent, final Optional<Instant> minRawTimestamp) {
     Condition condition = field(name(COLUMN_NAME_AB_LOADED_AT)).isNull();
     if (syncMode == DestinationSyncMode.APPEND_DEDUP) {
       if (isCdcDeletedAtPresent) {
@@ -240,34 +252,31 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   }
 
   @Override
-  public String createSchema(final String schema) {
-    return createSchemaSql(schema) + ";";
+  public Sql createSchema(final String schema) {
+    return Sql.of(createSchemaSql(schema));
   }
 
   @Override
-  public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
+  public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
-    String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
+    final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
     if (!force) {
-      return Strings.join(
-          List.of(
-              createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
-          ";" + System.lineSeparator());
+      return transactionally(Stream.concat(
+          Stream.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
+          createIndexSql(stream, suffix).stream()).toList());
     }
-    return Strings.join(
-        List.of(
-            beginTransaction(),
-            dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)),
-            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()),
-            commitTransactionInternal()),
-        ";" + System.lineSeparator());
+    return transactionally(Stream.concat(
+        Stream.of(
+            dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
+            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
+        createIndexSql(stream, suffix).stream()).toList());
   }
 
   @Override
-  public String updateTable(final StreamConfig streamConfig,
-                            final String finalSuffix,
-                            final Optional<Instant> minRawTimestamp,
-                            final boolean useExpensiveSaferCasting) {
+  public Sql updateTable(final StreamConfig streamConfig,
+                         final String finalSuffix,
+                         final Optional<Instant> minRawTimestamp,
+                         final boolean useExpensiveSaferCasting) {
 
     // TODO: Add flag to use merge vs insert/delete
     return insertAndDeleteTransaction(streamConfig, finalSuffix, minRawTimestamp, useExpensiveSaferCasting);
@@ -275,43 +284,39 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   }
 
   @Override
-  public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
-    return Strings.join(
-        List.of(
-            dropTableIfExists(name(stream.finalNamespace(), stream.finalName())),
-            alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
-                .renameTo(name(stream.finalName()))
-                .getSQL()),
-        ";" + System.lineSeparator());
+  public Sql overwriteFinalTable(final StreamId stream, final String finalSuffix) {
+    return transactionally(
+        dropTableIfExists(name(stream.finalNamespace(), stream.finalName())).getSQL(ParamType.INLINED),
+        alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
+            .renameTo(name(stream.finalName()))
+            .getSQL());
   }
 
   @Override
-  public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
+  public Sql migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     final Name rawTableName = name(streamId.rawNamespace(), streamId.rawName());
-    DSLContext dsl = getDslContext();
-    return Strings.join(
-        List.of(
-            dsl.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
-            dsl.dropTableIfExists(rawTableName).getSQL(),
-            DSL.createTable(rawTableName)
-                .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
-                .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
-                .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
-                .column(COLUMN_NAME_DATA, getStructType().nullable(false))
-                .as(select(
-                    field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
-                    field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
-                    cast(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
-                    field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(table(name(namespace, tableName))))
-                .getSQL(ParamType.INLINED)),
-        ";" + System.lineSeparator());
+    final DSLContext dsl = getDslContext();
+    return transactionally(
+        dsl.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
+        dsl.dropTableIfExists(rawTableName).getSQL(),
+        DSL.createTable(rawTableName)
+            .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
+            .column(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false))
+            .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType().nullable(false))
+            .column(COLUMN_NAME_DATA, getStructType().nullable(false))
+            .as(select(
+                field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
+                field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
+                cast(null, getTimestampWithTimeZoneType()).as(COLUMN_NAME_AB_LOADED_AT),
+                field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(table(name(namespace, tableName))))
+            .getSQL(ParamType.INLINED));
   }
 
   @Override
-  public String clearLoadedAt(final StreamId streamId) {
-    return update(table(name(streamId.rawNamespace(), streamId.rawName())))
+  public Sql clearLoadedAt(final StreamId streamId) {
+    return Sql.of(update(table(name(streamId.rawNamespace(), streamId.rawName())))
         .set(field(COLUMN_NAME_AB_LOADED_AT), inline((String) null))
-        .getSQL();
+        .getSQL());
   }
 
   @VisibleForTesting
@@ -319,10 +324,11 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
                                                  final String tableName,
                                                  final LinkedHashMap<ColumnId, AirbyteType> columns,
                                                  final Map<String, DataType<?>> metaColumns,
-                                                 final Condition condition) {
+                                                 final Condition condition,
+                                                 final boolean useExpensiveSaferCasting) {
     final DSLContext dsl = getDslContext();
     return dsl
-        .select(buildRawTableSelectFields(columns, metaColumns))
+        .select(buildRawTableSelectFields(columns, metaColumns, useExpensiveSaferCasting))
         .select(buildAirbyteMetaColumn(columns))
         .from(table(quotedName(schemaName, tableName)))
         .where(condition);
@@ -339,10 +345,10 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         .columns(buildFinalTableFields(columns, metaFields));
   }
 
-  private String insertAndDeleteTransaction(final StreamConfig streamConfig,
-                                            final String finalSuffix,
-                                            final Optional<Instant> minRawTimestamp,
-                                            final boolean useExpensiveSaferCasting) {
+  private Sql insertAndDeleteTransaction(final StreamConfig streamConfig,
+                                         final String finalSuffix,
+                                         final Optional<Instant> minRawTimestamp,
+                                         final boolean useExpensiveSaferCasting) {
     final String finalSchema = streamConfig.id().finalNamespace();
     final String finalTable = streamConfig.id().finalName() + (finalSuffix != null ? finalSuffix.toLowerCase() : "");
     final String rawSchema = streamConfig.id().rawNamespace();
@@ -355,7 +361,8 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
             getFinalTableMetaColumns(false),
             rawTableCondition(streamConfig.destinationSyncMode(),
                 streamConfig.columns().containsKey(cdcDeletedAtColumn),
-                minRawTimestamp)));
+                minRawTimestamp),
+            useExpensiveSaferCasting));
     final List<Field<?>> finalTableFields = buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true));
     final Field<Integer> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
     final CommonTableExpression<Record> filteredRows = name(NUMBERED_ROWS_CTE_ALIAS).as(
@@ -368,7 +375,8 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
                 .with(filteredRows)
                 .select(finalTableFields)
                 .from(filteredRows)
-                .where(field(ROW_NUMBER_COLUMN_NAME, Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
+                .where(field(name(ROW_NUMBER_COLUMN_NAME), Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type
+                                                                                 // them.
             )
             .getSQL(ParamType.INLINED);
 
@@ -385,25 +393,17 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     final String checkpointStmt = checkpointRawTable(rawSchema, rawTable, minRawTimestamp);
 
     if (streamConfig.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
-      return Strings.join(
-          List.of(
-              beginTransaction(),
-              insertStmt,
-              checkpointStmt,
-              commitTransactionInternal()),
-          ";" + System.lineSeparator());
+      return transactionally(
+          insertStmt,
+          checkpointStmt);
     }
 
     // For append-dedupe
-    return Strings.join(
-        List.of(
-            beginTransaction(),
-            insertStmtWithDedupe,
-            deleteStmt,
-            deleteCdcDeletesStmt,
-            checkpointStmt,
-            commitTransactionInternal()),
-        ";" + System.lineSeparator());
+    return transactionally(
+        insertStmtWithDedupe,
+        deleteStmt,
+        deleteCdcDeletesStmt,
+        checkpointStmt);
   }
 
   private String mergeTransaction(final StreamConfig streamConfig,
@@ -416,17 +416,25 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   }
 
   protected String createSchemaSql(final String namespace) {
-    DSLContext dsl = getDslContext();
-    CreateSchemaFinalStep createSchemaSql = dsl.createSchemaIfNotExists(quotedName(namespace));
+    final DSLContext dsl = getDslContext();
+    final CreateSchemaFinalStep createSchemaSql = dsl.createSchemaIfNotExists(quotedName(namespace));
     return createSchemaSql.getSQL();
   }
 
   protected String createTableSql(final String namespace, final String tableName, final LinkedHashMap<ColumnId, AirbyteType> columns) {
-    DSLContext dsl = getDslContext();
-    CreateTableColumnStep createTableSql = dsl
+    final DSLContext dsl = getDslContext();
+    final CreateTableColumnStep createTableSql = dsl
         .createTable(quotedName(namespace, tableName))
-        .columns(buildFinalTableFields(columns, getFinalTableMetaColumns(true)));;
+        .columns(buildFinalTableFields(columns, getFinalTableMetaColumns(true)));
     return createTableSql.getSQL();
+  }
+
+  /**
+   * Subclasses may override this method to add additional indexes after their CREATE TABLE statement.
+   * This is useful if the destination's CREATE TABLE statement does not accept an index definition.
+   */
+  protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
+    return Collections.emptyList();
   }
 
   protected String beginTransaction() {
@@ -441,7 +449,10 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     return commitTransaction() + ";";
   }
 
-  private String deleteFromFinalTable(final String schemaName, final String tableName, List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
+  private String deleteFromFinalTable(final String schemaName,
+                                      final String tableName,
+                                      final List<ColumnId> primaryKeys,
+                                      final Optional<ColumnId> cursor) {
     final DSLContext dsl = getDslContext();
     // Unknown type doesn't play well with where .. in (select..)
     final Field<Object> airbyteRawId = field(quotedName(COLUMN_NAME_AB_RAW_ID));
@@ -451,7 +462,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
             select(airbyteRawId)
                 .from(select(airbyteRawId, rowNumber)
                     .from(table(quotedName(schemaName, tableName))).asTable("airbyte_ids"))
-                .where(field("row_number").ne(1))))
+                .where(field(name(ROW_NUMBER_COLUMN_NAME)).ne(1))))
         .getSQL(ParamType.INLINED);
   }
 
@@ -474,22 +485,26 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         .getSQL(ParamType.INLINED);
   }
 
-  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias) {
+  protected Field<?> castedField(
+                                 final Field<?> field,
+                                 final AirbyteType type,
+                                 final String alias,
+                                 final boolean useExpensiveSaferCasting) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
-      return castedField(field, airbyteProtocolType).as(quotedName(alias));
-
+      return castedField(field, airbyteProtocolType, useExpensiveSaferCasting).as(quotedName(alias));
     }
+
     // Redshift SUPER can silently cast an array type to struct and vice versa.
     return switch (type.getTypeName()) {
       case Struct.TYPE, UnsupportedOneOf.TYPE -> cast(field, getStructType()).as(quotedName(alias));
       case Array.TYPE -> cast(field, getArrayType()).as(quotedName(alias));
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias);
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias, useExpensiveSaferCasting);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
 
-  protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type) {
+  protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type, final boolean useExpensiveSaferCasting) {
     return cast(field, toDialectType(type));
   }
 

@@ -22,7 +22,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
@@ -56,15 +55,15 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
-  private void prepareSchemas(ParsedCatalog parsedCatalog) throws Exception {
-    var rawSchema = parsedCatalog.streams().stream().map(stream -> stream.id().rawNamespace());
-    var finalSchema = parsedCatalog.streams().stream().map(stream -> stream.id().finalNamespace());
-    var createAllSchemasSql = Streams.concat(rawSchema, finalSchema)
+  private void prepareSchemas(final ParsedCatalog parsedCatalog) throws Exception {
+    final var rawSchema = parsedCatalog.streams().stream().map(stream -> stream.id().rawNamespace());
+    final var finalSchema = parsedCatalog.streams().stream().map(stream -> stream.id().finalNamespace());
+    final var createAllSchemasSql = Streams.concat(rawSchema, finalSchema)
         .filter(Objects::nonNull)
         .distinct()
         .map(sqlGenerator::createSchema)
-        .collect(Collectors.joining("\n"));
-    destinationHandler.execute(createAllSchemasSql);
+        .toList();
+    destinationHandler.execute(Sql.concat(createAllSchemasSql));
   }
 
   @Override

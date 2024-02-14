@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.cdc;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isDebugMode;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
@@ -11,10 +12,10 @@ import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintC
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
-import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
@@ -48,7 +49,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -71,9 +71,9 @@ public class PostgresCdcCtidInitializer {
       final JsonNode sourceConfig = database.getSourceConfig();
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
       final Duration subsequentRecordWaitTime = PostgresUtils.getSubsequentRecordWaitTime(sourceConfig);
-      final OptionalInt queueSize = OptionalInt.of(PostgresUtils.getQueueSize(sourceConfig));
+      final int queueSize = PostgresUtils.getQueueSize(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
-      LOGGER.info("Queue size: {}", queueSize.getAsInt());
+      LOGGER.info("Queue size: {}", queueSize);
 
       if (isDebugMode(sourceConfig) && !PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
         throw new ConfigErrorException("WARNING: The config indicates that we are clearing the WAL while reading data. This will mutate the WAL" +
@@ -111,6 +111,7 @@ public class PostgresCdcCtidInitializer {
           savedOffset);
 
       if (!savedOffsetAfterReplicationSlotLSN) {
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
         LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
       } else if (!isDebugMode(sourceConfig) && PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
         // We do not want to acknowledge the WAL logs in debug mode.
@@ -177,18 +178,14 @@ public class PostgresCdcCtidInitializer {
       // receive that is after the target LSN.
       PostgresUtils.advanceLsn(database);
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
-          targetPosition, false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
+          targetPosition, false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
+      final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
+          PostgresCdcProperties.getDebeziumDefaultProperties(database), sourceConfig, catalog);
+      final var eventConverter = new RelationalDbDebeziumEventConverter(new PostgresCdcConnectorMetadataInjector(), emittedAt);
 
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
-          catalog,
-          new PostgresCdcSavedInfoFetcher(stateToBeUsed),
-          postgresCdcStateHandler,
-          new PostgresCdcConnectorMetadataInjector(),
-          PostgresCdcProperties.getDebeziumDefaultProperties(database),
-          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
-          emittedAt,
-          false);
+          propertiesManager, eventConverter, new PostgresCdcSavedInfoFetcher(stateToBeUsed), postgresCdcStateHandler);
 
       if (initialSyncCtidIterators.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());

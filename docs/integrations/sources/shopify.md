@@ -111,6 +111,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 - [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2022-01/resources/abandoned-checkouts#top)
 - [Articles](https://shopify.dev/api/admin-rest/2022-01/resources/article)
+- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2023-10/resources/transactions)
 - [Blogs](https://shopify.dev/api/admin-rest/2022-01/resources/blog)
 - [Collects](https://shopify.dev/api/admin-rest/2022-01/resources/collect#top)
 - [Collections](https://shopify.dev/api/admin-rest/2022-01/resources/collection)
@@ -210,7 +211,11 @@ If a child stream is synced independently of its parent stream, a full sync will
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
-| 1.1.4 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.1.8 | 2024-02-12 | [35166](https://github.com/airbytehq/airbyte/pull/35166) | Manage dependencies with Poetry. |
+| 1.1.7   | 2024-01-19 | [33804](https://github.com/airbytehq/airbyte/pull/33804) | Updated documentation with list of all supported streams |
+| 1.1.6   | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
+| 1.1.5   | 2023-12-28 | [33827](https://github.com/airbytehq/airbyte/pull/33827) | Fix GraphQL query |
+| 1.1.4   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.1.3   | 2023-10-17 | [31500](https://github.com/airbytehq/airbyte/pull/31500) | Fixed the issue caused by the `missing access token` while setup the new source and not yet authenticated |
 | 1.1.2   | 2023-10-13 | [31381](https://github.com/airbytehq/airbyte/pull/31381) | Fixed the issue caused by the `state` presence while fetching the `deleted events` with pagination |
 | 1.1.1   | 2023-09-18 | [30560](https://github.com/airbytehq/airbyte/pull/30560) | Performance testing - include socat binary in docker image |

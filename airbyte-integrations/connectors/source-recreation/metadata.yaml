@@ -8,6 +8,10 @@ data:
   icon: recreation.svg
   license: MIT
   name: Recreation
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-recreation
   registries:
     cloud:
       enabled: true

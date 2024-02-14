@@ -128,30 +128,6 @@ on discovering a self-hosted deployment connection string.
 To configure the Airbyte MongoDB source, use the database credentials and connection string from steps 1 and 2, respectively.
 The source will test the connection to the MongoDB instance upon creation.
 
-### Upgrade From Previous Version
-
-:::caution
-
-The 1.0.0 version of the MongoDB V2 source connector contains breaking changes from previous versions of the connector.
-
-:::
-
-The quickest upgrade path is to click upgrade on any out-of-date connection in the UI.  These connections will display
-the following message banner:
- 
-> **Action Required**
-> There is a pending upgrade for **MongoDB**.
->
-> **Version 1.0.0:**
-> **We advise against upgrading until you have run a test upgrade as outlined [here](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).**  This version brings a host of updates to the MongoDB source connector, significantly increasing its scalability and reliability, especially for large collections. As of this version with checkpointing, [CDC incremental updates](https://docs.airbyte.com/understanding-airbyte/cdc) and improved schema discovery, this connector is also now [certified](https://docs.airbyte.com/integrations/). Selecting `Upgrade` will upgrade **all** connections using this source, require you to reconfigure the source, then run a full reset on **all** of your connections.
->
-> Upgrade **MongoDB** by **Dec 1, 2023** to continue syncing with this source. For more information, see this [guide](https://docs.airbyte.com/integrations/sources/mongodb-v2).
-
-After upgrading to the latest version of the MongoDB V2 source connector, users will be required to manually re-configure
-existing MongoDB V2 source connector configurations.  The required [configuration parameter](#configuration-parameters) values can be discovered
-using the [quick start](#quick-start) steps in this documentation.
-
-
 ## Replication Methods
 
 The MongoDB source utilizes change data capture (CDC) as a reliable way to keep your data up to date.
@@ -180,15 +156,42 @@ When Schema is not enforced there is not way to deselect fields as all fields ar
 
 ## Limitations & Troubleshooting
 
+### MongoDB Oplog and Change Streams
+
+[MongoDB's Change Streams](https://www.mongodb.com/docs/manual/changeStreams/) are based on the [Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/). This has retention limitations.  Syncs that run less frequently than the retention period of the Oplog may encounter issues with missing data.
+
+We recommend adjusting the Oplog size for your MongoDB cluster to ensure it holds at least 24 hours of changes. For optimal results, we suggest expanding it to maintain a week's worth of data. To adjust your Oplog size, see the corresponding tutorials for [MongoDB Atlas](https://www.mongodb.com/docs/atlas/cluster-additional-settings/#set-oplog-size) (fully-managed) and [MongoDB shell](https://www.mongodb.com/docs/manual/tutorial/change-oplog-size/) (self-hosted).
+
+If you are running into an issue similar to "invalid resume token", it may mean you need to:
+1. Increase the Oplog retention period.
+2. Increase the Oplog size.
+3. Increase the Airbyte sync frequency.
+
+You can run the commands outlined [in this tutorial](https://www.mongodb.com/docs/manual/tutorial/troubleshoot-replica-sets/#check-the-size-of-the-oplog) to verify the current of your Oplog. The expect output is:
+
+```yaml
+configured oplog size:   10.10546875MB
+log length start to end: 94400 (26.22hrs)
+oplog first event time:  Mon Mar 19 2012 13:50:38 GMT-0400 (EDT)
+oplog last event time:   Wed Oct 03 2012 14:59:10 GMT-0400 (EDT)
+now:                     Wed Oct 03 2012 15:00:21 GMT-0400 (EDT)
+```
+
+When importing a large MongoDB collection for the first time, the import duration might exceed the Oplog retention period. The Oplog is crucial for incremental updates, and an invalid resume token will require the MongoDB collection to be re-imported to ensure no source updates were missed.
+
+### Supported MongoDB Clusters
+
 * Only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster type.
-* Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields.  This value is universally applied to all collections discovered in the target database.  The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency.  By default, 10,000 documents are sampled.  This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered.  However, the trade-off is time, as a higher value will take the process longer to sample the collection. 
-* When Running with Schema Enforced set to `false` there is no attempt to discover any schema. See more in [Schema Enforcement](#Schema-Enforcement).
 * TLS/SSL is required by this connector. TLS/SSL is enabled by default for MongoDB Atlas clusters. To enable TSL/SSL connection for a self-hosted MongoDB instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
 * Views, capped collections and clustered collections are not supported.
 * Empty collections are excluded from schema discovery.
 * Collections with different data types for the values in the `_id` field among the documents in a collection are not supported.  All `_id` values within the collection must be the same data type.
-* [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/) are based on the [Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/), which has retention limitations.  Syncs that run less frequently than the retention period of the oplog may encounter issues with missing data.
 * Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.
+
+### Schema Discovery & Enforcement
+
+* Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields.  This value is universally applied to all collections discovered in the target database.  The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency.  By default, 10,000 documents are sampled.  This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered.  However, the trade-off is time, as a higher value will take the process longer to sample the collection. 
+* When Running with Schema Enforced set to `false` there is no attempt to discover any schema. See more in [Schema Enforcement](#Schema-Enforcement).
 
 ## Configuration Parameters
 
@@ -211,6 +214,15 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 1.2.10   | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751) | Emit analytics message for invalid CDC cursor.                                                            |
+| 1.2.9   | 2024-02-13 | [35114](https://github.com/airbytehq/airbyte/pull/35114) | Extend subsequent cdc record wait time to the duration of initial. Bug Fixes                              |
+| 1.2.8   | 2024-02-08 | [34748](https://github.com/airbytehq/airbyte/pull/34748) | Adopt CDK 0.19.0                                                                                          |
+| 1.2.7   | 2024-02-01 | [34759](https://github.com/airbytehq/airbyte/pull/34759) | Fail sync if initial snapshot for any stream fails.                                                       |
+| 1.2.6   | 2024-01-31 | [34594](https://github.com/airbytehq/airbyte/pull/34594) | Scope initial resume token to streams of interest.                                                        |
+| 1.2.5   | 2024-01-29 | [34641](https://github.com/airbytehq/airbyte/pull/34641) | Allow resuming an initial snapshot when Id type is not of default ObjectId .                              |
+| 1.2.4   | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573) | Adopt CDK v0.16.0.                                                                                        |
+| 1.2.3   | 2024-01-18 | [34364](https://github.com/airbytehq/airbyte/pull/34364) | Add additional logging for resume token + reduce discovery size to 10.                                    |
+| 1.2.2   | 2024-01-16 | [34314](https://github.com/airbytehq/airbyte/pull/34314) | Reduce minimum document discovery size to 100.                                                            |
 | 1.2.1   | 2023-12-18 | [33549](https://github.com/airbytehq/airbyte/pull/33549) | Add logging to understand op log size.                                                                    |
 | 1.2.0   | 2023-12-18 | [33438](https://github.com/airbytehq/airbyte/pull/33438) | Remove LEGACY state flag                                                                                  |
 | 1.1.0   | 2023-12-14 | [32328](https://github.com/airbytehq/airbyte/pull/32328) | Schema less mode in mongodb.                                                                              |

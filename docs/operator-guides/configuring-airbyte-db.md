@@ -25,6 +25,10 @@ If you need to interact with it, for example, to make back-ups or perform some c
 
 ## Connecting to an External Postgres database
 
+:::info
+Currently, Airbyte requires connection to a Postgres 13 instance.
+:::
+
 Let's walk through what is required to use a Postgres instance that is not managed by Airbyte. First, for the sake of the tutorial, we will run a new instance of Postgres in its own docker container with the command below. If you already have Postgres running elsewhere, you can skip this step and use the credentials for that in future steps.
 
 ```bash

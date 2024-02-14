@@ -13,13 +13,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
-  dockerImageTag: 0.10.1
+  dockerImageTag: 0.10.2
   dockerRepository: airbyte/source-twilio
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   githubIssueLabel: source-twilio
   icon: twilio.svg
   license: MIT
   name: Twilio
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-twilio
   registries:
     cloud:
       enabled: true

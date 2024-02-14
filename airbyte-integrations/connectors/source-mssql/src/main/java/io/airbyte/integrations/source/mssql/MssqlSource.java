@@ -5,53 +5,77 @@
 package io.airbyte.integrations.source.mssql;
 
 import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.logStreamSyncStatus;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.convertNameNamespacePairFromV0;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.identifyStreamsForCursorBased;
+import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getCursorBasedSyncStatusForStreams;
+import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.initPairToOrderedColumnInfoMap;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.streamsForInitialOrderedColumnLoad;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.db.util.SSLCertificateUtils;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
+import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
+import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
+import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.mssql.cursor_based.MssqlCursorBasedStateManager;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStreamStateManager;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.CursorBasedStreams;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
-import java.io.File;
+import io.debezium.engine.ChangeEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -61,12 +85,17 @@ import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,16 +116,18 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String IS_COMPRESSED = "is_compressed";
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
-  private static final String HIERARCHYID = "hierarchyid";
+  public static final String HIERARCHYID = "hierarchyid";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
   public static final String TUNNEL_METHOD = "tunnel_method";
   public static final String NO_TUNNEL = "NO_TUNNEL";
   public static final String SSL_METHOD = "ssl_method";
   public static final String SSL_METHOD_UNENCRYPTED = "unencrypted";
+
+  public static final String JDBC_DELIMITER = ";";
   private List<String> schemas;
 
-  public static Source sshWrappedSource(MssqlSource source) {
+  public static Source sshWrappedSource(final MssqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
@@ -163,13 +194,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   /**
-   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be
-   * converted to a nvarchar(4000) data type by calling the ToString() method. So we make a separate
-   * query to get Table's MetaData, check is there any hierarchyid columns, and wrap required fields
-   * with the ToString() function in the final Select query. Reference:
-   * https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
-   *
-   * @return the list with Column names updated to handle functions (if nay) properly
+   * See {@link MssqlQueryUtils#getWrappedColumnNames}
    */
   @Override
   protected String getWrappedColumnNames(final JdbcDatabase database,
@@ -177,38 +202,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                          final List<String> columnNames,
                                          final String schemaName,
                                          final String tableName) {
-    final List<String> hierarchyIdColumns = new ArrayList<>();
-    try {
-      final String identifierQuoteString = database.getMetaData().getIdentifierQuoteString();
-      final SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
-          .queryMetadata(String
-              .format("SELECT TOP 1 %s FROM %s", // only first row is enough to get field's type
-                  enquoteIdentifierList(columnNames, getQuoteString()),
-                  getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
-
-      // metadata will be null if table doesn't contain records
-      if (sqlServerResultSetMetaData != null) {
-        for (int i = 1; i <= sqlServerResultSetMetaData.getColumnCount(); i++) {
-          if (HIERARCHYID.equals(sqlServerResultSetMetaData.getColumnTypeName(i))) {
-            hierarchyIdColumns.add(sqlServerResultSetMetaData.getColumnName(i));
-          }
-        }
-      }
-
-      // iterate through names and replace Hierarchyid field for query is with toString() function
-      // Eventually would get columns like this: testColumn.toString as "testColumn"
-      // toString function in SQL server is the only way to get human readable value, but not mssql
-      // specific HEX value
-      return String.join(", ", columnNames.stream()
-          .map(
-              el -> hierarchyIdColumns.contains(el) ? String
-                  .format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
-                  : getIdentifierWithQuoting(el, getQuoteString()))
-          .toList());
-    } catch (final SQLException e) {
-      LOGGER.error("Failed to fetch metadata to prepare a proper request.", e);
-      throw new RuntimeException(e);
-    }
+    return MssqlQueryUtils.getWrappedColumnNames(database, quoteString, columnNames, schemaName, tableName);
   }
 
   @Override
@@ -364,7 +358,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       checkOperations.add(database -> assertCdcEnabledInDb(config, database));
       checkOperations.add(database -> assertCdcSchemaQueryable(config, database));
       checkOperations.add(database -> assertSqlServerAgentRunning(database));
-      checkOperations.add(database -> assertSnapshotIsolationAllowed(config, database));
     }
 
     return checkOperations;
@@ -448,35 +441,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
   }
 
-  protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
-      throws SQLException {
-    if (MssqlCdcHelper.getSnapshotIsolationConfig(config) != SnapshotIsolation.SNAPSHOT) {
-      return;
-    }
-
-    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
-      final PreparedStatement ps = connection.prepareStatement(sql);
-      ps.setString(1, config.get(JdbcUtils.DATABASE_KEY).asText());
-      LOGGER.info(String.format(
-          "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
-          config.get(JdbcUtils.DATABASE_KEY).asText(), sql));
-      return ps;
-    }, sourceOperations::rowToJson);
-
-    if (queryResponse.size() < 1) {
-      throw new RuntimeException(String.format(
-          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-          config.get(JdbcUtils.DATABASE_KEY).asText()));
-    }
-    if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
-      throw new RuntimeException(String.format(
-          "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
-              + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
-          config.get(JdbcUtils.DATABASE_KEY).asText()));
-    }
-  }
-
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
@@ -485,60 +449,85 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
-      LOGGER.info("using CDC: {}", true);
-      final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-      final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
-      final var targetPosition = MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
-      final AirbyteDebeziumHandler<Lsn> handler = new AirbyteDebeziumHandler<>(
-          sourceConfig,
-          targetPosition,
-          true,
-          firstRecordWaitTime,
-          subsequentRecordWaitTime,
-          OptionalInt.empty());
-      final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
-
-      // Determine if new stream(s) have been added to the catalog after initial sync of existing streams
-      final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
-      final ConfiguredAirbyteCatalog streamsToSnapshotCatalog = new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot);
-
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(
-          catalog,
-          new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MssqlCdcStateHandler(stateManager),
-          mssqlCdcConnectorMetadataInjector,
-          MssqlCdcHelper.getDebeziumProperties(database, catalog, false),
-          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
-          emittedAt,
-          true);
-
-      /*
-       * If the CDC state is null or there is no streams to snapshot, that means no stream has gone
-       * through the initial sync, so we return the list of incremental iterators
-       */
-      if ((stateManager.getCdcStateManager().getCdcState() == null ||
-          stateManager.getCdcStateManager().getCdcState().getState() == null ||
-          streamsToSnapshot.isEmpty())) {
-        return List.of(incrementalIteratorsSupplier.get());
-      }
-
-      // Otherwise, we build the snapshot iterators for the newly added streams(s)
-      final AutoCloseableIterator<AirbyteMessage> snapshotIterators =
-          handler.getSnapshotIterators(streamsToSnapshotCatalog,
-              mssqlCdcConnectorMetadataInjector,
-              MssqlCdcHelper.getDebeziumProperties(database, catalog, true),
-              new MssqlCdcStateHandler(stateManager),
-              DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
-              emittedAt);
-      /*
-       * The incremental iterators needs to be wrapped in a lazy iterator since only 1 Debezium engine for
-       * the DB can be running at a time
-       */
-      return List.of(snapshotIterators, AutoCloseableIterators.lazyIterator(incrementalIteratorsSupplier, null));
+      LOGGER.info("using OC + CDC");
+      return MssqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
     } else {
-      LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      if (isAnyStreamIncrementalSyncMode(catalog)) {
+        LOGGER.info("Syncing via Primary Key");
+        final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
+        final InitialLoadStreams initialLoadStreams = streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog);
+        final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
+            getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, quoteString);
+        final CursorBasedStreams cursorBasedStreams =
+            new CursorBasedStreams(identifyStreamsForCursorBased(catalog, initialLoadStreams.streamsForInitialLoad()), pairToCursorBasedStatus);
+
+        logStreamSyncStatus(initialLoadStreams.streamsForInitialLoad(), "Primary Key");
+        logStreamSyncStatus(cursorBasedStreams.streamsForCursorBased(), "Cursor");
+
+        final MssqlInitialLoadStreamStateManager mssqlInitialLoadStreamStateManager = new MssqlInitialLoadStreamStateManager(catalog,
+            initialLoadStreams, initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString));
+        final MssqlInitialLoadHandler initialLoadHandler =
+            new MssqlInitialLoadHandler(sourceConfig, database, new MssqlSourceOperations(), quoteString, mssqlInitialLoadStreamStateManager,
+                namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
+                getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
+
+        final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
+            new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
+            tableNameToTable,
+            emittedAt));
+
+        // Build Cursor based iterator
+        final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterator =
+            new ArrayList<>(super.getIncrementalIterators(database,
+                new ConfiguredAirbyteCatalog().withStreams(
+                    cursorBasedStreams.streamsForCursorBased()),
+                tableNameToTable,
+                cursorBasedStateManager, emittedAt));
+
+        return Stream.of(initialLoadIterator, cursorBasedIterator).flatMap(Collection::stream).collect(Collectors.toList());
+
+      }
     }
+
+    LOGGER.info("using CDC: {}", false);
+    return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+  }
+
+  public AutoCloseableIterator<AirbyteMessage> getDebeziumSnapshotIterators(
+                                                                            final JsonNode config,
+                                                                            final ConfiguredAirbyteCatalog catalog,
+                                                                            final CdcTargetPosition<Lsn> targetPosition,
+                                                                            final Duration firstRecordWaitTime,
+                                                                            final Duration subsequentRecordWaitTime,
+                                                                            final MssqlCdcConnectorMetadataInjector cdcMetadataInjector,
+                                                                            final Properties properties,
+                                                                            final CdcStateHandler cdcStateHandler,
+                                                                            final Instant emittedAt) {
+
+    LOGGER.info("Running snapshot for " + catalog.getStreams().size() + " new tables");
+    final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(AirbyteDebeziumHandler.QUEUE_CAPACITY);
+
+    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
+    final var emptyHistory = new AirbyteSchemaHistoryStorage.SchemaHistory<Optional<JsonNode>>(Optional.empty(), false);
+    final var schemaHistoryManager = AirbyteSchemaHistoryStorage.initializeDBHistory(emptyHistory, cdcStateHandler.compressSchemaHistoryForState());
+    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(properties, config, catalog);
+    final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(propertiesManager);
+    tableSnapshotPublisher.start(queue, offsetManager, Optional.of(schemaHistoryManager));
+
+    final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
+        queue,
+        targetPosition,
+        tableSnapshotPublisher::hasClosed,
+        new DebeziumShutdownProcedure<>(queue, tableSnapshotPublisher::close, tableSnapshotPublisher::hasClosed),
+        firstRecordWaitTime,
+        subsequentRecordWaitTime);
+
+    final var eventConverter = new RelationalDbDebeziumEventConverter(cdcMetadataInjector, emittedAt);
+    return AutoCloseableIterators.concatWithEagerClose(
+        AutoCloseableIterators.transform(eventIterator, eventConverter::toAirbyteMessage),
+        AutoCloseableIterators.fromIterator(
+            MoreIterators.singletonIteratorFromSupplier(
+                cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));
   }
 
   @Override
@@ -599,36 +588,47 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private void readSsl(final JsonNode sslMethod, final List<String> additionalParameters) {
     final JsonNode config = sslMethod.get("ssl_method");
     switch (config.get("ssl_method").asText()) {
-      case "unencrypted" -> additionalParameters.add("encrypt=false");
+      case "unencrypted" -> {
+        additionalParameters.add("encrypt=false");
+        additionalParameters.add("trustServerCertificate=true");
+      }
       case "encrypted_trust_server_certificate" -> {
         additionalParameters.add("encrypt=true");
         additionalParameters.add("trustServerCertificate=true");
       }
       case "encrypted_verify_certificate" -> {
         additionalParameters.add("encrypt=true");
+        additionalParameters.add("trustServerCertificate=false");
 
-        // trust store location code found at https://stackoverflow.com/a/56570588
-        final String trustStoreLocation = Optional
-            .ofNullable(System.getProperty("javax.net.ssl.trustStore"))
-            .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
-        final File trustStoreFile = new File(trustStoreLocation);
-        if (!trustStoreFile.exists()) {
-          throw new RuntimeException(
-              "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
-                  + trustStoreLocation + " does not exist.");
-        }
-        final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
-        additionalParameters.add("trustStore=" + trustStoreLocation);
-        if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
+        if (config.has("certificate")) {
+          String certificate = config.get("certificate").asText();
+          String password = RandomStringUtils.randomAlphanumeric(100);
+          final URI keyStoreUri;
+          try {
+            keyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(certificate, password, null, null);
+          } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+            throw new RuntimeException(e);
+          }
           additionalParameters
-              .add("trustStorePassword=" + config.get("trustStorePassword").asText());
+              .add("trustStore=" + keyStoreUri.getPath());
+          additionalParameters
+              .add("trustStorePassword=" + password);
         }
+
         if (config.has("hostNameInCertificate")) {
           additionalParameters
               .add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
         }
       }
     }
+  }
+
+  @Override
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
+      throws Exception {
+    final JdbcDatabase database = createDatabase(config);
+    logPreSyncDebugData(database, catalog);
+    return super.readStreams(config, catalog, state);
   }
 
   private boolean cloudDeploymentMode() {
@@ -639,11 +639,22 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return getConnectionTimeout(connectionProperties);
   }
 
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    return createDatabase(sourceConfig, JDBC_DELIMITER);
+  }
+
   public static void main(final String[] args) throws Exception {
     final Source source = MssqlSource.sshWrappedSource(new MssqlSource());
     LOGGER.info("starting source: {}", MssqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSource.class);
+  }
+
+  @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) throws SQLException {
+    super.logPreSyncDebugData(database, catalog);
+    MssqlQueryUtils.getIndexInfoForStreams(database, catalog, getQuoteString());
   }
 
 }

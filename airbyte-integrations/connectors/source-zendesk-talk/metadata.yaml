@@ -1,6 +1,6 @@
 data:
   ab_internal:
-    ql: 400
+    ql: 200
     sl: 200
   allowedHosts:
     hosts:
@@ -11,13 +11,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c8630570-086d-4a40-99ae-ea5b18673071
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-zendesk-talk
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
   githubIssueLabel: source-zendesk-talk
   icon: zendesk-talk.svg
   license: MIT
   name: Zendesk Talk
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zendesk-talk
   registries:
     cloud:
       enabled: true

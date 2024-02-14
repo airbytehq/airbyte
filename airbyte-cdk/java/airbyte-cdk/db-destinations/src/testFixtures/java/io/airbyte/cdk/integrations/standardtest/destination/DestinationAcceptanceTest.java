@@ -35,9 +35,7 @@ import io.airbyte.configoss.OperatorDbt;
 import io.airbyte.configoss.StandardCheckConnectionInput;
 import io.airbyte.configoss.StandardCheckConnectionOutput;
 import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
-import io.airbyte.configoss.StandardDestinationDefinition;
 import io.airbyte.configoss.WorkerDestinationConfig;
-import io.airbyte.configoss.init.LocalDefinitionsProvider;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -65,6 +63,8 @@ import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -74,7 +74,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -83,7 +82,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Getter;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -142,20 +140,31 @@ public abstract class DestinationAcceptanceTest {
     return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
   }
 
-  protected static Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(
-                                                                                                        final String imageNameWithoutTag) {
-    final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
-    return provider.getDestinationDefinitions().stream()
-        .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
-        .findFirst();
+  private JsonNode readMetadata() {
+    try {
+      return Jsons.jsonNodeFromFile(MoreResources.readResourceAsFile("metadata.yaml"));
+    } catch (IllegalArgumentException | URISyntaxException e) {
+      // Resource is not found.
+      return Jsons.emptyObject();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   protected String getNormalizationImageName() {
-    return getOptionalDestinationDefinitionFromProvider(getDestinationDefinitionKey())
-        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
-        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":"
-            + NORMALIZATION_VERSION)
-        .orElse(null);
+    var metadata = readMetadata().get("data");
+    if (metadata == null) {
+      return null;
+    }
+    var normalizationConfig = metadata.get("normalizationConfig");
+    if (normalizationConfig == null) {
+      return null;
+    }
+    var normalizationRepository = normalizationConfig.get("normalizationRepository");
+    if (normalizationRepository == null) {
+      return null;
+    }
+    return normalizationRepository.asText() + ":" + NORMALIZATION_VERSION;
   }
 
   /**
@@ -240,18 +249,24 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected boolean normalizationFromDefinition() {
-    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
-        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository())
-            && Objects.nonNull(standardDestinationDefinition.getNormalizationConfig().getNormalizationTag()))
-        .orElse(false);
+    var metadata = readMetadata().get("data");
+    if (metadata == null) {
+      return false;
+    }
+    var normalizationConfig = metadata.get("normalizationConfig");
+    if (normalizationConfig == null) {
+      return false;
+    }
+    return normalizationConfig.has("normalizationRepository") && normalizationConfig.has("normalizationTag");
   }
 
   protected boolean dbtFromDefinition() {
-    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getSupportsDbt())
-            && standardDestinationDefinition.getSupportsDbt())
-        .orElse(false);
+    var metadata = readMetadata().get("data");
+    if (metadata == null) {
+      return false;
+    }
+    var supportsDbt = metadata.get("supportsDbt");
+    return supportsDbt != null && supportsDbt.asBoolean(false);
   }
 
   protected String getDestinationDefinitionKey() {
@@ -259,10 +274,19 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected String getNormalizationIntegrationType() {
-    return getOptionalDestinationDefinitionFromProvider(getDestinationDefinitionKey())
-        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
-        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
-        .orElse(null);
+    var metadata = readMetadata().get("data");
+    if (metadata == null) {
+      return null;
+    }
+    var normalizationConfig = metadata.get("normalizationConfig");
+    if (normalizationConfig == null) {
+      return null;
+    }
+    var normalizationIntegrationType = normalizationConfig.get("normalizationIntegrationType");
+    if (normalizationIntegrationType == null) {
+      return null;
+    }
+    return normalizationIntegrationType.asText();
   }
 
   /**
@@ -1268,6 +1292,13 @@ public abstract class DestinationAcceptanceTest {
         .stream()
         .filter(m -> m.getType() == Type.STATE)
         .findFirst()
+        .map(msg -> {
+          // Modify state message to remove destination stats.
+          final AirbyteStateMessage clone = msg.getState();
+          clone.setDestinationStats(null);
+          msg.setState(clone);
+          return msg;
+        })
         .orElseGet(() -> {
           fail("Destination failed to output state");
           return null;
@@ -1517,7 +1548,7 @@ public abstract class DestinationAcceptanceTest {
       while (true) {
         System.out.println(
             "currentStreamNumber=" + currentStreamNumber + ", currentRecordNumberForStream="
-                + currentRecordNumberForStream + ", " + DateTime.now());
+                + currentRecordNumberForStream + ", " + Instant.now());
         try {
           Thread.sleep(10000);
         } catch (final InterruptedException e) {

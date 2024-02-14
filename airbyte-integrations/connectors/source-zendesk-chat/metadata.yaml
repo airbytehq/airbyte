@@ -1,6 +1,6 @@
 data:
   ab_internal:
-    ql: 400
+    ql: 200
     sl: 200
   allowedHosts:
     hosts:
@@ -10,13 +10,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-zendesk-chat
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
   githubIssueLabel: source-zendesk-chat
   icon: zendesk-chat.svg
   license: MIT
   name: Zendesk Chat
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zendesk-chat
   registries:
     cloud:
       enabled: true

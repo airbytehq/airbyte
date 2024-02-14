@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 from typing import Any, Dict, Optional
 
 import dpath.util
@@ -31,6 +30,14 @@ class Config(AbstractFileBasedSpec):
         order=2,
     )
 
+    role_arn: Optional[str] = Field(
+        title=f"AWS Role ARN",
+        default=None,
+        description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
+        f"requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
+        order=6,
+    )
+
     aws_secret_access_key: Optional[str] = Field(
         title="AWS Secret Access Key",
         default=None,
@@ -46,6 +53,13 @@ class Config(AbstractFileBasedSpec):
         description="Endpoint to an S3 compatible service. Leave empty to use AWS.",
         examples=["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
         order=4,
+    )
+
+    region_name: Optional[str] = Field(
+        title="AWS Region",
+        default=None,
+        description="AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
+        order=5,
     )
 
     @root_validator

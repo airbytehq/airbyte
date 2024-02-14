@@ -10,13 +10,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 2.0.1
+  dockerImageTag: 3.1.1
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   githubIssueLabel: source-hubspot
   icon: hubspot.svg
   license: ELv2
   name: HubSpot
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-hubspot
   registries:
     cloud:
       enabled: true
@@ -30,6 +34,14 @@ data:
           This version eliminates the Property History stream in favor of creating 3 different streams, Contacts, Companies, and Deals, which can now all fetch their property history.
           It will affect only users who use Property History stream, who will need to fix schema conflicts and sync Contacts Property History stream instead of Property History.
         upgradeDeadline: 2024-01-15
+      3.0.0:
+        message: >-
+          This update brings extended schema with data type changes for the Marketing Emails stream.
+          Users will need to refresh it and reset this stream after upgrading.
+        upgradeDeadline: 2024-02-12
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["marketing_emails"]
   suggestedStreams:
     streams:
       - contacts

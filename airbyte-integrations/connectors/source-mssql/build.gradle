@@ -1,21 +1,22 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.7.7'
+    cdkVersionRequired = '0.19.0'
     features = ['db-sources']
     useLocalCdk = false
 }
 
-configurations.all {
-    resolutionStrategy {
-        force libs.jooq
+java {
+    // TODO: rewrite code to avoid javac wornings in the first place
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes"
+    }
+    compileTestFixturesJava {
+        options.compilerArgs += "-Xlint:-this-escape"
     }
 }
-
-
 
 application {
     mainClass = 'io.airbyte.integrations.source.mssql.MssqlSource'
@@ -23,17 +24,14 @@ application {
 }
 
 dependencies {
-    implementation libs.postgresql
-
-    implementation libs.debezium.sqlserver
-    implementation libs.debezium.embedded
     implementation 'com.microsoft.sqlserver:mssql-jdbc:10.2.1.jre8'
+    implementation 'io.debezium:debezium-embedded:2.4.0.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:2.4.0.Final'
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation 'org.awaitility:awaitility:4.2.0'
+    testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'
 
-    testImplementation libs.testcontainers.mssqlserver
-    testFixturesImplementation libs.testcontainers.mssqlserver
+    testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
+    testImplementation 'org.testcontainers:mssqlserver:1.19.0'
 }

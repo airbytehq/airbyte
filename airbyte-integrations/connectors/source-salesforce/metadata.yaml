@@ -10,13 +10,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
-  dockerImageTag: 2.2.1
+  dockerImageTag: 2.3.1
   dockerRepository: airbyte/source-salesforce
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   githubIssueLabel: source-salesforce
   icon: salesforce.svg
   license: ELv2
   name: Salesforce
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-salesforce
   registries:
     cloud:
       enabled: true

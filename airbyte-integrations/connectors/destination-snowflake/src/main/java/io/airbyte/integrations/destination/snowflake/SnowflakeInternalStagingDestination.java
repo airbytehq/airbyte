@@ -99,17 +99,17 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
       sqlOperations.attemptWriteToStage(outputSchema, stageName, database);
     } finally {
       // drop created tmp stage
-      sqlOperations.dropStageIfExists(database, stageName);
+      sqlOperations.dropStageIfExists(database, stageName, null);
     }
   }
 
   @Override
-  protected DataSource getDataSource(final JsonNode config) {
+  public DataSource getDataSource(final JsonNode config) {
     return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
   }
 
   @Override
-  protected JdbcDatabase getDatabase(final DataSource dataSource) {
+  public JdbcDatabase getDatabase(final DataSource dataSource) {
     return SnowflakeDatabase.getDatabase(dataSource);
   }
 
@@ -165,7 +165,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
           new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, defaultThreadCount);
     }
 
-    return new StagingConsumerFactory().createAsync(
+    return StagingConsumerFactory.builder(
         outputRecordCollector,
         database,
         new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
@@ -177,8 +177,16 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true,
-        Optional.of(getSnowflakeBufferMemoryLimit()));
+        true)
+        .setBufferMemoryLimit(Optional.of(getSnowflakeBufferMemoryLimit()))
+        .setOptimalBatchSizeBytes(
+            // The per stream size limit is following recommendations from:
+            // https://docs.snowflake.com/en/user-guide/data-load-considerations-prepare.html#general-file-sizing-recommendations
+            // "To optimize the number of parallel operations for a load,
+            // we recommend aiming to produce data files roughly 100-250 MB (or larger) in size compressed."
+            200 * 1024 * 1024)
+        .build()
+        .createAsync();
   }
 
   private static long getSnowflakeBufferMemoryLimit() {

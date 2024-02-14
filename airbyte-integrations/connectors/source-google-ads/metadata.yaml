@@ -11,13 +11,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 3.0.0
+  dockerImageTag: 3.3.2
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg
   license: Elv2
   name: Google Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-ads
   registries:
     cloud:
       enabled: true

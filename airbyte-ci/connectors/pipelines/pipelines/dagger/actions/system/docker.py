@@ -6,7 +6,7 @@ import json
 import uuid
 from typing import Callable, Dict, List, Optional, Union
 
-from dagger import Client, Container, File, Secret
+from dagger import Client, Container, File, Secret, Service
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import (
@@ -17,7 +17,6 @@ from pipelines.consts import (
     DOCKER_TMP_VOLUME_NAME,
     DOCKER_VAR_LIB_VOLUME_NAME,
     STORAGE_DRIVER,
-    TAILSCALE_AUTH_KEY,
 )
 from pipelines.helpers.utils import sh_dash_c
 
@@ -117,10 +116,10 @@ def with_global_dockerd_service(
     dagger_client: Client,
     docker_hub_username_secret: Optional[Secret] = None,
     docker_hub_password_secret: Optional[Secret] = None,
-) -> Container:
+) -> Service:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
-    It is optionally bound to a tailscale VPN if the TAILSCALE_AUTH_KEY env var is set.
+    It is optionally connected to a DockerHub mirror if the DOCKER_REGISTRY_MIRROR_URL env var is set.
     Args:
         dagger_client (Client): The dagger client used to create the container.
         docker_hub_username_secret (Optional[Secret]): The DockerHub username secret.
@@ -130,7 +129,7 @@ def with_global_dockerd_service(
     """
 
     dockerd_container = get_base_dockerd_container(dagger_client)
-    if TAILSCALE_AUTH_KEY is not None:
+    if DOCKER_REGISTRY_MIRROR_URL is not None:
         # Ping the registry mirror host to make sure it's reachable through VPN
         # We set a cache buster here to guarantee the curl command is always executed.
         dockerd_container = dockerd_container.with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(
@@ -140,13 +139,13 @@ def with_global_dockerd_service(
     else:
         daemon_config_json = get_daemon_config_json()
 
-    dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", daemon_config_json)
+    dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", contents=daemon_config_json)
     if docker_hub_username_secret and docker_hub_password_secret:
         # Docker login happens late because there's a cache buster in the docker login command.
         dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
     return dockerd_container.with_exec(
         ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
-    )
+    ).as_service()
 
 
 def with_bound_docker_host(
