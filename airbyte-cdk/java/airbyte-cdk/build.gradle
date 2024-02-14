@@ -1,10 +1,8 @@
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
-    apply plugin: 'airbyte-java-cdk'
-    apply plugin: 'airbyte-integration-test-java'
-    apply plugin: 'airbyte-performance-test-java'
     apply plugin: 'java-test-fixtures'
+    apply plugin: 'airbyte-java-cdk'
 
     group 'io.airbyte.cdk'
     version = getCdkTargetVersion()
@@ -53,12 +51,12 @@ subprojects { subproject ->
 description = "Airbyte Connector Development Kit (CDK) for Java."
 
 def recursiveTasks = [
-    'assemble',
-    'build',
-    'integrationTestJava',
-    'publish',
-    'publishToMavenLocal',
-    'test',
+        'assemble',
+        'build',
+        'integrationTestJava',
+        'publish',
+        'publishToMavenLocal',
+        'test',
 ]
 recursiveTasks.each { taskName ->
     tasks.named(taskName).configure {
