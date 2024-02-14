@@ -8,6 +8,10 @@ data:
   icon: twilio.svg
   license: MIT
   name: Twilio Taskrouter
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-twilio-taskrouter
   registries:
     cloud:
       enabled: true

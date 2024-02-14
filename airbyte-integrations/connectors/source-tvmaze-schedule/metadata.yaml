@@ -8,6 +8,10 @@ data:
   icon: tvmazeschedule.svg
   license: MIT
   name: TVMaze Schedule
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-tvmaze-schedule
   registries:
     cloud:
       enabled: true

@@ -7,12 +7,16 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
-  dockerImageTag: 3.0.1
+  dockerImageTag: 3.0.3
   dockerRepository: airbyte/source-instagram
   githubIssueLabel: source-instagram
   icon: instagram.svg
   license: MIT
   name: Instagram
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-instagram
   registries:
     cloud:
       enabled: true

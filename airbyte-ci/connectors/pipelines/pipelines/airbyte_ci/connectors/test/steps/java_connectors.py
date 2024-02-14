@@ -21,23 +21,30 @@ from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.system import docker
-from pipelines.helpers.run_steps import StepToRun
+from pipelines.helpers.execution.run_steps import StepToRun
 from pipelines.helpers.utils import export_container_to_tarball
-from pipelines.models.steps import StepResult, StepStatus
+from pipelines.models.steps import STEP_PARAMS, StepResult, StepStatus
 
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional
 
-    from pipelines.helpers.run_steps import RESULTS_DICT, STEP_TREE
+    from pipelines.helpers.execution.run_steps import RESULTS_DICT, STEP_TREE
 
 
 class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
     title = "Java Connector Integration Tests"
-    gradle_task_name = "integrationTestJava -x buildConnectorImage -x assemble"
+    gradle_task_name = "integrationTestJava"
     mount_connector_secrets = True
     bind_to_docker_host = True
+    with_test_report = True
+
+    @property
+    def default_params(self) -> STEP_PARAMS:
+        return super().default_params | {
+            "-x": ["buildConnectorImage", "assemble"],  # Exclude the buildConnectorImage and assemble tasks
+        }
 
     async def _load_normalization_image(self, normalization_tar_file: File) -> None:
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
@@ -58,7 +65,7 @@ class IntegrationTests(GradleTask):
                     tg.start_soon(self._load_normalization_image, normalization_tar_file)
                 tg.start_soon(self._load_connector_image, connector_tar_file)
         except QueryError as e:
-            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
         # Run the gradle integration test task now that the required docker images have been loaded.
         return await super()._run()
 
@@ -69,6 +76,7 @@ class UnitTests(GradleTask):
     title = "Java Connector Unit Tests"
     gradle_task_name = "test"
     bind_to_docker_host = True
+    with_test_report = True
 
 
 def _create_integration_step_args_factory(context: ConnectorContext) -> Callable:

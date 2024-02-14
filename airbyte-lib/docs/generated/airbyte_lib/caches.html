@@ -1,5 +1,979 @@
 <!-- THIS IS AN AUTO-GENERATED FILE, DO NOT EDIT MANUALLY. INSTEAD, RUN `poetry run generate-docs` -->
 <main class="pdoc">
+                <section id="DuckDBCache">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">DuckDBCache</span><wbr>(<span class="base">airbyte_lib.caches.duckdb.DuckDBCacheBase</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCache"></a>
+    
+            <div class="docstring"><p>A DuckDB implementation of the cache.</p>
+
+<p>Parquet is used for local file storage before bulk loading.
+Unlike the Snowflake implementation, we can't use the COPY command to load data
+so we insert as values instead.</p>
+</div>
+
+
+                            <div id="DuckDBCache.file_writer_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">file_writer_class</span>        =
+<span class="default_value">&lt;class &#39;airbyte_lib._file_writers.parquet.ParquetWriter&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCache.file_writer_class"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt><a href="#SQLCacheBase">SQLCacheBase</a></dt>
+                                <dd id="DuckDBCache.__init__" class="function">SQLCacheBase</dd>
+                <dd id="DuckDBCache.type_converter_class" class="variable"><a href="#SQLCacheBase.type_converter_class">type_converter_class</a></dd>
+                <dd id="DuckDBCache.use_singleton_connection" class="variable"><a href="#SQLCacheBase.use_singleton_connection">use_singleton_connection</a></dd>
+                <dd id="DuckDBCache.config" class="variable"><a href="#SQLCacheBase.config">config</a></dd>
+                <dd id="DuckDBCache.file_writer" class="variable"><a href="#SQLCacheBase.file_writer">file_writer</a></dd>
+                <dd id="DuckDBCache.type_converter" class="variable"><a href="#SQLCacheBase.type_converter">type_converter</a></dd>
+                <dd id="DuckDBCache.get_sql_alchemy_url" class="function"><a href="#SQLCacheBase.get_sql_alchemy_url">get_sql_alchemy_url</a></dd>
+                <dd id="DuckDBCache.database_name" class="variable"><a href="#SQLCacheBase.database_name">database_name</a></dd>
+                <dd id="DuckDBCache.get_sql_engine" class="function"><a href="#SQLCacheBase.get_sql_engine">get_sql_engine</a></dd>
+                <dd id="DuckDBCache.get_sql_connection" class="function"><a href="#SQLCacheBase.get_sql_connection">get_sql_connection</a></dd>
+                <dd id="DuckDBCache.get_sql_table_name" class="function"><a href="#SQLCacheBase.get_sql_table_name">get_sql_table_name</a></dd>
+                <dd id="DuckDBCache.get_sql_table" class="function"><a href="#SQLCacheBase.get_sql_table">get_sql_table</a></dd>
+                <dd id="DuckDBCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
+                <dd id="DuckDBCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
+                <dd id="DuckDBCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+                <dd id="DuckDBCache.get_state" class="function"><a href="#SQLCacheBase.get_state">get_state</a></dd>
+                <dd id="DuckDBCache.register_source" class="function"><a href="#SQLCacheBase.register_source">register_source</a></dd>
+
+            </div>
+            <div><dt>airbyte_lib.caches.duckdb.DuckDBCacheBase</dt>
+                                <dd id="DuckDBCache.config_class" class="variable">config_class</dd>
+                <dd id="DuckDBCache.supports_merge_insert" class="variable">supports_merge_insert</dd>
+                <dd id="DuckDBCache.get_telemetry_info" class="function">get_telemetry_info</dd>
+
+            </div>
+            <div><dt>airbyte_lib._processors.RecordProcessor</dt>
+                                <dd id="DuckDBCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="DuckDBCache.source_catalog" class="variable">source_catalog</dd>
+                <dd id="DuckDBCache.process_stdin" class="function">process_stdin</dd>
+                <dd id="DuckDBCache.process_input_stream" class="function">process_input_stream</dd>
+                <dd id="DuckDBCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="DuckDBCacheConfig">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">DuckDBCacheConfig</span><wbr>(<span class="base">airbyte_lib.caches.base.SQLCacheConfigBase</span>, <span class="base">airbyte_lib._file_writers.parquet.ParquetWriterConfig</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCacheConfig"></a>
+    
+            <div class="docstring"><p>Configuration for the DuckDB cache.</p>
+
+<p>Also inherits config from the ParquetWriter, which is responsible for writing files to disk.</p>
+</div>
+
+
+                            <div id="DuckDBCacheConfig.db_path" class="classattr">
+                                <div class="attr variable">
+            <span class="name">db_path</span><span class="annotation">: pathlib.Path | str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCacheConfig.db_path"></a>
+    
+            <div class="docstring"><p>Normally db_path is a Path object.</p>
+
+<p>There are some cases, such as when connecting to MotherDuck, where it could be a string that
+is not also a path, such as "md:" to connect the user's default MotherDuck DB.</p>
+</div>
+
+
+                            </div>
+                            <div id="DuckDBCacheConfig.schema_name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">schema_name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCacheConfig.schema_name"></a>
+    
+            <div class="docstring"><p>The name of the schema to write to. Defaults to "main".</p>
+</div>
+
+
+                            </div>
+                            <div id="DuckDBCacheConfig.get_sql_alchemy_url" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">get_sql_alchemy_url</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCacheConfig.get_sql_alchemy_url"></a>
+    
+            <div class="docstring"><p>Return the SQLAlchemy URL to use.</p>
+</div>
+
+
+                            </div>
+                            <div id="DuckDBCacheConfig.get_database_name" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_database_name</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#DuckDBCacheConfig.get_database_name"></a>
+    
+            <div class="docstring"><p>Return the name of the database.</p>
+</div>
+
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>pydantic.main.BaseModel</dt>
+                                <dd id="DuckDBCacheConfig.__init__" class="function">BaseModel</dd>
+                <dd id="DuckDBCacheConfig.Config" class="variable">Config</dd>
+                <dd id="DuckDBCacheConfig.dict" class="function">dict</dd>
+                <dd id="DuckDBCacheConfig.json" class="function">json</dd>
+                <dd id="DuckDBCacheConfig.parse_obj" class="function">parse_obj</dd>
+                <dd id="DuckDBCacheConfig.parse_raw" class="function">parse_raw</dd>
+                <dd id="DuckDBCacheConfig.parse_file" class="function">parse_file</dd>
+                <dd id="DuckDBCacheConfig.from_orm" class="function">from_orm</dd>
+                <dd id="DuckDBCacheConfig.construct" class="function">construct</dd>
+                <dd id="DuckDBCacheConfig.copy" class="function">copy</dd>
+                <dd id="DuckDBCacheConfig.schema" class="function">schema</dd>
+                <dd id="DuckDBCacheConfig.schema_json" class="function">schema_json</dd>
+                <dd id="DuckDBCacheConfig.validate" class="function">validate</dd>
+                <dd id="DuckDBCacheConfig.update_forward_refs" class="function">update_forward_refs</dd>
+
+            </div>
+            <div><dt>airbyte_lib.caches.base.SQLCacheConfigBase</dt>
+                                <dd id="DuckDBCacheConfig.table_prefix" class="variable">table_prefix</dd>
+                <dd id="DuckDBCacheConfig.table_suffix" class="variable">table_suffix</dd>
+
+            </div>
+            <div><dt>airbyte_lib._file_writers.base.FileWriterConfigBase</dt>
+                                <dd id="DuckDBCacheConfig.cache_dir" class="variable">cache_dir</dd>
+                <dd id="DuckDBCacheConfig.cleanup" class="variable">cleanup</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="PostgresCache">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">PostgresCache</span><wbr>(<span class="base"><a href="#SQLCacheBase">airbyte_lib.caches.SQLCacheBase</a></span>):
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCache"></a>
+    
+            <div class="docstring"><p>A Postgres implementation of the cache.</p>
+
+<p>Parquet is used for local file storage before bulk loading.
+Unlike the Snowflake implementation, we can't use the COPY command to load data
+so we insert as values instead.</p>
+
+<p>TOOD: Add optimized bulk load path for Postgres. Could use an alternate file writer
+or another import method. (Relatively low priority, since for now it works fine as-is.)</p>
+</div>
+
+
+                            <div id="PostgresCache.config_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">config_class</span>        =
+<span class="default_value">&lt;class &#39;<a href="#PostgresCacheConfig">PostgresCacheConfig</a>&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCache.config_class"></a>
+    
+    
+
+                            </div>
+                            <div id="PostgresCache.file_writer_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">file_writer_class</span>        =
+<span class="default_value">&lt;class &#39;airbyte_lib._file_writers.parquet.ParquetWriter&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCache.file_writer_class"></a>
+    
+    
+
+                            </div>
+                            <div id="PostgresCache.supports_merge_insert" class="classattr">
+                                <div class="attr variable">
+            <span class="name">supports_merge_insert</span>        =
+<span class="default_value">False</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCache.supports_merge_insert"></a>
+    
+    
+
+                            </div>
+                            <div id="PostgresCache.get_telemetry_info" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">get_telemetry_info</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">telemetry</span><span class="o">.</span><span class="n">CacheTelemetryInfo</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCache.get_telemetry_info"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt><a href="#SQLCacheBase">SQLCacheBase</a></dt>
+                                <dd id="PostgresCache.__init__" class="function">SQLCacheBase</dd>
+                <dd id="PostgresCache.type_converter_class" class="variable"><a href="#SQLCacheBase.type_converter_class">type_converter_class</a></dd>
+                <dd id="PostgresCache.use_singleton_connection" class="variable"><a href="#SQLCacheBase.use_singleton_connection">use_singleton_connection</a></dd>
+                <dd id="PostgresCache.config" class="variable"><a href="#SQLCacheBase.config">config</a></dd>
+                <dd id="PostgresCache.file_writer" class="variable"><a href="#SQLCacheBase.file_writer">file_writer</a></dd>
+                <dd id="PostgresCache.type_converter" class="variable"><a href="#SQLCacheBase.type_converter">type_converter</a></dd>
+                <dd id="PostgresCache.get_sql_alchemy_url" class="function"><a href="#SQLCacheBase.get_sql_alchemy_url">get_sql_alchemy_url</a></dd>
+                <dd id="PostgresCache.database_name" class="variable"><a href="#SQLCacheBase.database_name">database_name</a></dd>
+                <dd id="PostgresCache.get_sql_engine" class="function"><a href="#SQLCacheBase.get_sql_engine">get_sql_engine</a></dd>
+                <dd id="PostgresCache.get_sql_connection" class="function"><a href="#SQLCacheBase.get_sql_connection">get_sql_connection</a></dd>
+                <dd id="PostgresCache.get_sql_table_name" class="function"><a href="#SQLCacheBase.get_sql_table_name">get_sql_table_name</a></dd>
+                <dd id="PostgresCache.get_sql_table" class="function"><a href="#SQLCacheBase.get_sql_table">get_sql_table</a></dd>
+                <dd id="PostgresCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
+                <dd id="PostgresCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
+                <dd id="PostgresCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+                <dd id="PostgresCache.get_state" class="function"><a href="#SQLCacheBase.get_state">get_state</a></dd>
+                <dd id="PostgresCache.register_source" class="function"><a href="#SQLCacheBase.register_source">register_source</a></dd>
+
+            </div>
+            <div><dt>airbyte_lib._processors.RecordProcessor</dt>
+                                <dd id="PostgresCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="PostgresCache.source_catalog" class="variable">source_catalog</dd>
+                <dd id="PostgresCache.process_stdin" class="function">process_stdin</dd>
+                <dd id="PostgresCache.process_input_stream" class="function">process_input_stream</dd>
+                <dd id="PostgresCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="PostgresCacheConfig">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">PostgresCacheConfig</span><wbr>(<span class="base">airbyte_lib.caches.base.SQLCacheConfigBase</span>, <span class="base">airbyte_lib._file_writers.parquet.ParquetWriterConfig</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCacheConfig"></a>
+    
+            <div class="docstring"><p>Configuration for the Postgres cache.</p>
+
+<p>Also inherits config from the ParquetWriter, which is responsible for writing files to disk.</p>
+</div>
+
+
+                            <div id="PostgresCacheConfig.host" class="classattr">
+                                <div class="attr variable">
+            <span class="name">host</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCacheConfig.host"></a>
+    
+    
+
+                            </div>
+                            <div id="PostgresCacheConfig.port" class="classattr">
+                                <div class="attr variable">
+            <span class="name">port</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCacheConfig.port"></a>
+    
+    
+
+                            </div>
+                            <div id="PostgresCacheConfig.username" class="classattr">
+                                <div class="attr variable">
+            <span class="name">username</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCacheConfig.username"></a>
+    
+    
+
+                            </div>
+                            <div id="PostgresCacheConfig.password" class="classattr">
+                                <div class="attr variable">
+            <span class="name">password</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCacheConfig.password"></a>
+    
+    
+
+                            </div>
+                            <div id="PostgresCacheConfig.database" class="classattr">
+                                <div class="attr variable">
+            <span class="name">database</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCacheConfig.database"></a>
+    
+    
+
+                            </div>
+                            <div id="PostgresCacheConfig.get_sql_alchemy_url" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">get_sql_alchemy_url</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCacheConfig.get_sql_alchemy_url"></a>
+    
+            <div class="docstring"><p>Return the SQLAlchemy URL to use.</p>
+</div>
+
+
+                            </div>
+                            <div id="PostgresCacheConfig.get_database_name" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_database_name</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PostgresCacheConfig.get_database_name"></a>
+    
+            <div class="docstring"><p>Return the name of the database.</p>
+</div>
+
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>pydantic.main.BaseModel</dt>
+                                <dd id="PostgresCacheConfig.__init__" class="function">BaseModel</dd>
+                <dd id="PostgresCacheConfig.Config" class="variable">Config</dd>
+                <dd id="PostgresCacheConfig.dict" class="function">dict</dd>
+                <dd id="PostgresCacheConfig.json" class="function">json</dd>
+                <dd id="PostgresCacheConfig.parse_obj" class="function">parse_obj</dd>
+                <dd id="PostgresCacheConfig.parse_raw" class="function">parse_raw</dd>
+                <dd id="PostgresCacheConfig.parse_file" class="function">parse_file</dd>
+                <dd id="PostgresCacheConfig.from_orm" class="function">from_orm</dd>
+                <dd id="PostgresCacheConfig.construct" class="function">construct</dd>
+                <dd id="PostgresCacheConfig.copy" class="function">copy</dd>
+                <dd id="PostgresCacheConfig.schema" class="function">schema</dd>
+                <dd id="PostgresCacheConfig.schema_json" class="function">schema_json</dd>
+                <dd id="PostgresCacheConfig.validate" class="function">validate</dd>
+                <dd id="PostgresCacheConfig.update_forward_refs" class="function">update_forward_refs</dd>
+
+            </div>
+            <div><dt>airbyte_lib.caches.base.SQLCacheConfigBase</dt>
+                                <dd id="PostgresCacheConfig.schema_name" class="variable">schema_name</dd>
+                <dd id="PostgresCacheConfig.table_prefix" class="variable">table_prefix</dd>
+                <dd id="PostgresCacheConfig.table_suffix" class="variable">table_suffix</dd>
+
+            </div>
+            <div><dt>airbyte_lib._file_writers.base.FileWriterConfigBase</dt>
+                                <dd id="PostgresCacheConfig.cache_dir" class="variable">cache_dir</dd>
+                <dd id="PostgresCacheConfig.cleanup" class="variable">cleanup</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="SQLCacheBase">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SQLCacheBase</span><wbr>(<span class="base">airbyte_lib._processors.RecordProcessor</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase"></a>
+    
+            <div class="docstring"><p>A base class to be used for SQL Caches.</p>
+
+<p>Optionally we can use a file cache to store the data in parquet files.</p>
+</div>
+
+
+                            <div id="SQLCacheBase.type_converter_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">type_converter_class</span><span class="annotation">: type[airbyte_lib.types.SQLTypeConverter]</span>        =
+<span class="default_value">&lt;class &#39;airbyte_lib.types.SQLTypeConverter&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.type_converter_class"></a>
+    
+    
+
+                            </div>
+                            <div id="SQLCacheBase.config_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">config_class</span><span class="annotation">: type[airbyte_lib.caches.base.SQLCacheConfigBase]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.config_class"></a>
+    
+    
+
+                            </div>
+                            <div id="SQLCacheBase.file_writer_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">file_writer_class</span><span class="annotation">: type[airbyte_lib._file_writers.base.FileWriterBase]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.file_writer_class"></a>
+    
+    
+
+                            </div>
+                            <div id="SQLCacheBase.supports_merge_insert" class="classattr">
+                                <div class="attr variable">
+            <span class="name">supports_merge_insert</span>        =
+<span class="default_value">False</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.supports_merge_insert"></a>
+    
+    
+
+                            </div>
+                            <div id="SQLCacheBase.use_singleton_connection" class="classattr">
+                                <div class="attr variable">
+            <span class="name">use_singleton_connection</span>        =
+<span class="default_value">False</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.use_singleton_connection"></a>
+    
+    
+
+                            </div>
+                            <div id="SQLCacheBase.config" class="classattr">
+                                <div class="attr variable">
+            <span class="name">config</span><span class="annotation">: airbyte_lib.caches.base.SQLCacheConfigBase</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.config"></a>
+    
+    
+
+                            </div>
+                            <div id="SQLCacheBase.file_writer" class="classattr">
+                                <div class="attr variable">
+            <span class="name">file_writer</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.file_writer"></a>
+    
+    
+
+                            </div>
+                            <div id="SQLCacheBase.type_converter" class="classattr">
+                                <div class="attr variable">
+            <span class="name">type_converter</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.type_converter"></a>
+    
+    
+
+                            </div>
+                            <div id="SQLCacheBase.get_sql_alchemy_url" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_sql_alchemy_url</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_sql_alchemy_url"></a>
+    
+            <div class="docstring"><p>Return the SQLAlchemy URL to use.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.database_name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">database_name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.database_name"></a>
+    
+            <div class="docstring"><p>Return the name of the database.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.get_sql_engine" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@final</div>
+
+        <span class="def">def</span>
+        <span class="name">get_sql_engine</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">Engine</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_sql_engine"></a>
+    
+            <div class="docstring"><p>Return a new SQL engine to use.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.get_sql_connection" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@contextmanager</div>
+
+        <span class="def">def</span>
+        <span class="name">get_sql_connection</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Generator</span><span class="p">[</span><span class="n">sqlalchemy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_sql_connection"></a>
+    
+            <div class="docstring"><p>A context manager which returns a new SQL connection for running queries.</p>
+
+<p>If the connection needs to close, it will be closed automatically.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.get_sql_table_name" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_sql_table_name</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_sql_table_name"></a>
+    
+            <div class="docstring"><p>Return the name of the SQL table for the given stream.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.get_sql_table" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@final</div>
+
+        <span class="def">def</span>
+        <span class="name">get_sql_table</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">Table</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_sql_table"></a>
+    
+            <div class="docstring"><p>Return the main table object for the stream.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.streams" class="classattr">
+                                <div class="attr variable">
+            <span class="name">streams</span><span class="annotation">: dict[str, airbyte_lib.datasets._sql.CachedDataset]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.streams"></a>
+    
+            <div class="docstring"><p>Return a temporary table name.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.get_records" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_records</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">_sql</span><span class="o">.</span><span class="n">CachedDataset</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_records"></a>
+    
+            <div class="docstring"><p>Uses SQLAlchemy to select all rows from the table.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.get_pandas_dataframe" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_pandas_dataframe</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_pandas_dataframe"></a>
+    
+            <div class="docstring"><p>Return a Pandas data frame with the stream's data.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.get_state" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_state</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_state"></a>
+    
+            <div class="docstring"><p>Return the current state of the source.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.register_source" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">register_source</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">source_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">incoming_source_catalog</span><span class="p">:</span> <span class="n">airbyte_protocol</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">airbyte_protocol</span><span class="o">.</span><span class="n">ConfiguredAirbyteCatalog</span>,</span><span class="param">	<span class="n">stream_names</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.register_source"></a>
+    
+            <div class="docstring"><p>Register the source with the cache.</p>
+
+<p>We use stream_names to determine which streams will receive data, and
+we only register the stream if is expected to receive data.</p>
+
+<p>This method is called by the source when it is initialized.</p>
+</div>
+
+
+                            </div>
+                            <div id="SQLCacheBase.get_telemetry_info" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@abc.abstractmethod</div>
+
+        <span class="def">def</span>
+        <span class="name">get_telemetry_info</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">telemetry</span><span class="o">.</span><span class="n">CacheTelemetryInfo</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SQLCacheBase.get_telemetry_info"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>airbyte_lib._processors.RecordProcessor</dt>
+                                <dd id="SQLCacheBase.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="SQLCacheBase.source_catalog" class="variable">source_catalog</dd>
+                <dd id="SQLCacheBase.process_stdin" class="function">process_stdin</dd>
+                <dd id="SQLCacheBase.process_input_stream" class="function">process_input_stream</dd>
+                <dd id="SQLCacheBase.process_airbyte_messages" class="function">process_airbyte_messages</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="SnowflakeCacheConfig">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SnowflakeCacheConfig</span><wbr>(<span class="base">airbyte_lib.caches.base.SQLCacheConfigBase</span>, <span class="base">airbyte_lib._file_writers.parquet.ParquetWriterConfig</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig"></a>
+    
+            <div class="docstring"><p>Configuration for the Snowflake cache.</p>
+
+<p>Also inherits config from the ParquetWriter, which is responsible for writing files to disk.</p>
+</div>
+
+
+                            <div id="SnowflakeCacheConfig.account" class="classattr">
+                                <div class="attr variable">
+            <span class="name">account</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.account"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.username" class="classattr">
+                                <div class="attr variable">
+            <span class="name">username</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.username"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.password" class="classattr">
+                                <div class="attr variable">
+            <span class="name">password</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.password"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.warehouse" class="classattr">
+                                <div class="attr variable">
+            <span class="name">warehouse</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.warehouse"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.database" class="classattr">
+                                <div class="attr variable">
+            <span class="name">database</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.database"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.role" class="classattr">
+                                <div class="attr variable">
+            <span class="name">role</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.role"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.dedupe_mode" class="classattr">
+                                <div class="attr variable">
+            <span class="name">dedupe_mode</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.dedupe_mode"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.get_sql_alchemy_url" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">get_sql_alchemy_url</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.get_sql_alchemy_url"></a>
+    
+            <div class="docstring"><p>Return the SQLAlchemy URL to use.</p>
+</div>
+
+
+                            </div>
+                            <div id="SnowflakeCacheConfig.get_database_name" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_database_name</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeCacheConfig.get_database_name"></a>
+    
+            <div class="docstring"><p>Return the name of the database.</p>
+</div>
+
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>pydantic.main.BaseModel</dt>
+                                <dd id="SnowflakeCacheConfig.__init__" class="function">BaseModel</dd>
+                <dd id="SnowflakeCacheConfig.Config" class="variable">Config</dd>
+                <dd id="SnowflakeCacheConfig.dict" class="function">dict</dd>
+                <dd id="SnowflakeCacheConfig.json" class="function">json</dd>
+                <dd id="SnowflakeCacheConfig.parse_obj" class="function">parse_obj</dd>
+                <dd id="SnowflakeCacheConfig.parse_raw" class="function">parse_raw</dd>
+                <dd id="SnowflakeCacheConfig.parse_file" class="function">parse_file</dd>
+                <dd id="SnowflakeCacheConfig.from_orm" class="function">from_orm</dd>
+                <dd id="SnowflakeCacheConfig.construct" class="function">construct</dd>
+                <dd id="SnowflakeCacheConfig.copy" class="function">copy</dd>
+                <dd id="SnowflakeCacheConfig.schema" class="function">schema</dd>
+                <dd id="SnowflakeCacheConfig.schema_json" class="function">schema_json</dd>
+                <dd id="SnowflakeCacheConfig.validate" class="function">validate</dd>
+                <dd id="SnowflakeCacheConfig.update_forward_refs" class="function">update_forward_refs</dd>
+
+            </div>
+            <div><dt>airbyte_lib.caches.base.SQLCacheConfigBase</dt>
+                                <dd id="SnowflakeCacheConfig.schema_name" class="variable">schema_name</dd>
+                <dd id="SnowflakeCacheConfig.table_prefix" class="variable">table_prefix</dd>
+                <dd id="SnowflakeCacheConfig.table_suffix" class="variable">table_suffix</dd>
+
+            </div>
+            <div><dt>airbyte_lib._file_writers.base.FileWriterConfigBase</dt>
+                                <dd id="SnowflakeCacheConfig.cache_dir" class="variable">cache_dir</dd>
+                <dd id="SnowflakeCacheConfig.cleanup" class="variable">cleanup</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="SnowflakeSQLCache">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SnowflakeSQLCache</span><wbr>(<span class="base"><a href="#SQLCacheBase">airbyte_lib.caches.SQLCacheBase</a></span>):
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeSQLCache"></a>
+    
+            <div class="docstring"><p>A Snowflake implementation of the cache.</p>
+
+<p>Parquet is used for local file storage before bulk loading.</p>
+</div>
+
+
+                            <div id="SnowflakeSQLCache.config_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">config_class</span>        =
+<span class="default_value">&lt;class &#39;<a href="#SnowflakeCacheConfig">SnowflakeCacheConfig</a>&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeSQLCache.config_class"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeSQLCache.file_writer_class" class="classattr">
+                                <div class="attr variable">
+            <span class="name">file_writer_class</span>        =
+<span class="default_value">&lt;class &#39;airbyte_lib._file_writers.parquet.ParquetWriter&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeSQLCache.file_writer_class"></a>
+    
+    
+
+                            </div>
+                            <div id="SnowflakeSQLCache.get_telemetry_info" class="classattr">
+                                <div class="attr function">
+                    <div class="decorator">@overrides</div>
+
+        <span class="def">def</span>
+        <span class="name">get_telemetry_info</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">airbyte_lib</span><span class="o">.</span><span class="n">telemetry</span><span class="o">.</span><span class="n">CacheTelemetryInfo</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SnowflakeSQLCache.get_telemetry_info"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt><a href="#SQLCacheBase">SQLCacheBase</a></dt>
+                                <dd id="SnowflakeSQLCache.__init__" class="function">SQLCacheBase</dd>
+                <dd id="SnowflakeSQLCache.type_converter_class" class="variable"><a href="#SQLCacheBase.type_converter_class">type_converter_class</a></dd>
+                <dd id="SnowflakeSQLCache.supports_merge_insert" class="variable"><a href="#SQLCacheBase.supports_merge_insert">supports_merge_insert</a></dd>
+                <dd id="SnowflakeSQLCache.use_singleton_connection" class="variable"><a href="#SQLCacheBase.use_singleton_connection">use_singleton_connection</a></dd>
+                <dd id="SnowflakeSQLCache.config" class="variable"><a href="#SQLCacheBase.config">config</a></dd>
+                <dd id="SnowflakeSQLCache.file_writer" class="variable"><a href="#SQLCacheBase.file_writer">file_writer</a></dd>
+                <dd id="SnowflakeSQLCache.type_converter" class="variable"><a href="#SQLCacheBase.type_converter">type_converter</a></dd>
+                <dd id="SnowflakeSQLCache.get_sql_alchemy_url" class="function"><a href="#SQLCacheBase.get_sql_alchemy_url">get_sql_alchemy_url</a></dd>
+                <dd id="SnowflakeSQLCache.database_name" class="variable"><a href="#SQLCacheBase.database_name">database_name</a></dd>
+                <dd id="SnowflakeSQLCache.get_sql_engine" class="function"><a href="#SQLCacheBase.get_sql_engine">get_sql_engine</a></dd>
+                <dd id="SnowflakeSQLCache.get_sql_connection" class="function"><a href="#SQLCacheBase.get_sql_connection">get_sql_connection</a></dd>
+                <dd id="SnowflakeSQLCache.get_sql_table_name" class="function"><a href="#SQLCacheBase.get_sql_table_name">get_sql_table_name</a></dd>
+                <dd id="SnowflakeSQLCache.get_sql_table" class="function"><a href="#SQLCacheBase.get_sql_table">get_sql_table</a></dd>
+                <dd id="SnowflakeSQLCache.streams" class="variable"><a href="#SQLCacheBase.streams">streams</a></dd>
+                <dd id="SnowflakeSQLCache.get_records" class="function"><a href="#SQLCacheBase.get_records">get_records</a></dd>
+                <dd id="SnowflakeSQLCache.get_pandas_dataframe" class="function"><a href="#SQLCacheBase.get_pandas_dataframe">get_pandas_dataframe</a></dd>
+                <dd id="SnowflakeSQLCache.get_state" class="function"><a href="#SQLCacheBase.get_state">get_state</a></dd>
+                <dd id="SnowflakeSQLCache.register_source" class="function"><a href="#SQLCacheBase.register_source">register_source</a></dd>
+
+            </div>
+            <div><dt>airbyte_lib._processors.RecordProcessor</dt>
+                                <dd id="SnowflakeSQLCache.skip_finalize_step" class="variable">skip_finalize_step</dd>
+                <dd id="SnowflakeSQLCache.source_catalog" class="variable">source_catalog</dd>
+                <dd id="SnowflakeSQLCache.process_stdin" class="function">process_stdin</dd>
+                <dd id="SnowflakeSQLCache.process_input_stream" class="function">process_input_stream</dd>
+                <dd id="SnowflakeSQLCache.process_airbyte_messages" class="function">process_airbyte_messages</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
 </main>
 
 

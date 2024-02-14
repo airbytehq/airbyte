@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import os
 from datetime import datetime
+from functools import lru_cache
 from glob import glob
 from types import TracebackType
 from typing import TYPE_CHECKING
@@ -18,11 +19,11 @@ from dagger import Client, Directory, File, GitRepository, Secret, Service
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import CIContext, ContextState
+from pipelines.helpers.execution.run_steps import RunStepOptions
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
-from pipelines.helpers.run_steps import RunStepOptions
 from pipelines.helpers.slack import send_message_to_webhook
-from pipelines.helpers.utils import AIRBYTE_REPO_URL
+from pipelines.helpers.utils import AIRBYTE_REPO_URL, java_log_scrub_pattern
 from pipelines.models.reports import Report
 
 if TYPE_CHECKING:
@@ -42,21 +43,23 @@ class PipelineContext:
 
     PRODUCTION = bool(os.environ.get("PRODUCTION", False))  # Set this to True to enable production mode (e.g. to send PR comments)
 
-    DEFAULT_EXCLUDED_FILES = (
-        [".git", "airbyte-ci/connectors/pipelines/*"]
-        + glob("**/build", recursive=True)
-        + glob("**/.venv", recursive=True)
-        + glob("**/secrets", recursive=True)
-        + glob("**/__pycache__", recursive=True)
-        + glob("**/*.egg-info", recursive=True)
-        + glob("**/.vscode", recursive=True)
-        + glob("**/.pytest_cache", recursive=True)
-        + glob("**/.eggs", recursive=True)
-        + glob("**/.mypy_cache", recursive=True)
-        + glob("**/.DS_Store", recursive=True)
-        + glob("**/airbyte_ci_logs", recursive=True)
-        + glob("**/.gradle", recursive=True)
-    )
+    @lru_cache
+    def get_default_excluded_files(self) -> list[str]:
+        return (
+            [".git", "airbyte-ci/connectors/pipelines/*"]
+            + glob("**/build", recursive=True)
+            + glob("**/.venv", recursive=True)
+            + glob("**/secrets", recursive=True)
+            + glob("**/__pycache__", recursive=True)
+            + glob("**/*.egg-info", recursive=True)
+            + glob("**/.vscode", recursive=True)
+            + glob("**/.pytest_cache", recursive=True)
+            + glob("**/.eggs", recursive=True)
+            + glob("**/.mypy_cache", recursive=True)
+            + glob("**/.DS_Store", recursive=True)
+            + glob("**/airbyte_ci_logs", recursive=True)
+            + glob("**/.gradle", recursive=True)
+        )
 
     def __init__(
         self,
@@ -167,6 +170,12 @@ class PipelineContext:
         return self.dagger_client.set_secret("ci_github_access_token", self.ci_github_access_token)
 
     @property
+    def java_log_scrub_pattern_secret(self) -> Optional[Secret]:
+        if not self.secrets_to_mask:
+            return None
+        return self.dagger_client.set_secret("log_scrub_pattern", java_log_scrub_pattern(self.secrets_to_mask))
+
+    @property
     def github_commit_status(self) -> dict:
         """Build a dictionary used as kwargs to the update_commit_status_check function."""
         target_url: Optional[str] = self.gha_workflow_run_url
@@ -228,10 +237,11 @@ class PipelineContext:
         Returns:
             Directory: The selected repo directory.
         """
+
         if exclude is None:
-            exclude = self.DEFAULT_EXCLUDED_FILES
+            exclude = self.get_default_excluded_files()
         else:
-            exclude += self.DEFAULT_EXCLUDED_FILES
+            exclude += self.get_default_excluded_files()
             exclude = list(set(exclude))
         exclude.sort()  # sort to make sure the order is always the same to not burst the cache. Casting exclude to set can change the order
         if subdir != ".":
@@ -260,7 +270,9 @@ class PipelineContext:
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
             # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook and reporting_slack_channel
-            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)  # type: ignore
+            await asyncify(send_message_to_webhook)(
+                self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook  # type: ignore
+            )
         return self
 
     @staticmethod
@@ -317,6 +329,8 @@ class PipelineContext:
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
             # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook and reporting_slack_channel
-            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)  # type: ignore
+            await asyncify(send_message_to_webhook)(
+                self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook  # type: ignore
+            )
         # supress the exception if it was handled
         return True

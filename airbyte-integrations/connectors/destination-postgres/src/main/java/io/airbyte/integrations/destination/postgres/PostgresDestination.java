@@ -12,6 +12,7 @@ import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.obtain
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
@@ -20,8 +21,10 @@ import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +43,31 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   public PostgresDestination() {
     super(DRIVER_CLASS, new PostgresSQLNameTransformer(), new PostgresSqlOperations());
+  }
+
+  @Override
+  protected DataSourceFactory.DataSourceBuilder modifyDataSourceBuilder(final DataSourceFactory.DataSourceBuilder builder) {
+    // Anything in the pg_temp schema is only visible to the connection that created it.
+    // So this creates an airbyte_safe_cast function that only exists for the duration of
+    // a single connection.
+    // This avoids issues with creating the same function concurrently (e.g. if multiple syncs run
+    // at the same time).
+    // Function definition copied from https://dba.stackexchange.com/a/203986
+
+    // Adding 60 seconds to connection timeout, for ssl connections, default 10 seconds is not enough
+    return builder.withConnectionTimeout(Duration.ofSeconds(60))
+        .withConnectionInitSql("""
+                               CREATE FUNCTION pg_temp.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
+                                 LANGUAGE plpgsql AS
+                               $func$
+                               BEGIN
+                                 EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
+                                 INTO  _out;
+                               EXCEPTION WHEN others THEN
+                                 -- do nothing: _out already carries default
+                               END
+                               $func$;
+                               """);
   }
 
   @Override
@@ -68,7 +96,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     if (encodedDatabase != null) {
       try {
         encodedDatabase = URLEncoder.encode(encodedDatabase, "UTF-8");
-      } catch (UnsupportedEncodingException e) {
+      } catch (final UnsupportedEncodingException e) {
         // Should never happen
         e.printStackTrace();
       }
@@ -96,7 +124,12 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   protected JdbcSqlGenerator getSqlGenerator() {
-    throw new UnsupportedOperationException("PostgresDestination#getSqlGenerator is not implemented");
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
   }
 
   public static void main(final String[] args) throws Exception {

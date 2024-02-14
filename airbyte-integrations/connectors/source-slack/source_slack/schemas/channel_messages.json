@@ -10,6 +10,36 @@
         "properties": {
           "type": {
             "type": ["null", "string"]
+          },
+          "block_id": {
+            "type": ["null", "string"]
+          },
+          "elements": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "elements": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "text": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                },
+                "type": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
           }
         },
         "type": ["null", "object"]

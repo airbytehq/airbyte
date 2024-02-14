@@ -50,9 +50,9 @@ The PayPal Transaction source connector supports the following [sync modes](http
 
 | Feature                   | Supported? |
 | :------------------------ | :--------- |
-| Full Refresh Sync         |    Yes     |
-| Incremental - Append Sync |    Yes     |
-| Namespaces                |     No     |
+| Full Refresh Sync         | Yes        |
+| Incremental - Append Sync | Yes        |
+| Namespaces                | No         |
 
 ## Supported Streams
 
@@ -78,18 +78,20 @@ By default, syncs are performed with a slice period of 7 days. If you see errors
 
 | Integration Type | Airbyte Type |
 | :--------------- | :----------- |
-|     `string`     |   `string`   |
-|     `number`     |   `number`   |
-|     `array`      |   `array`    |
-|     `object`     |   `object`   |
+| `string`         | `string`     |
+| `number`         | `number`     |
+| `array`          | `array`      |
+| `object`         | `object`     |
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-| 2.2.0 | 2023-10-25 | [31852](https://github.com/airbytehq/airbyte/pull/31852) | The size of the time_window can be configured                                                                               |
-| 2.1.2 | 2023-10-23 | [31759](https://github.com/airbytehq/airbyte/pull/31759) | Keep transaction_id as a string and fetch data in 7-day batches
-| 2.1.1 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                              |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.2.2   | 2024-02-09 | [35075](https://github.com/airbytehq/airbyte/pull/35075) | Manage dependencies with Poetry.                                                                                             |
+| 2.2.1   | 2024-01-11 | [34155](https://github.com/airbytehq/airbyte/pull/34155) | prepare for airbyte-lib                                                                                                      |
+| 2.2.0   | 2023-10-25 | [31852](https://github.com/airbytehq/airbyte/pull/31852) | The size of the time_window can be configured                                                                                |
+| 2.1.2   | 2023-10-23 | [31759](https://github.com/airbytehq/airbyte/pull/31759) | Keep transaction_id as a string and fetch data in 7-day batches                                                              |
+| 2.1.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                              |
 | 2.1.0   | 2023-08-14 | [29223](https://github.com/airbytehq/airbyte/pull/29223) | Migrate Python CDK to Low Code schema                                                                                        |
 | 2.0.0   | 2023-07-05 | [27916](https://github.com/airbytehq/airbyte/pull/27916) | Update `Balances` schema                                                                                                     |
 | 1.0.0   | 2023-07-03 | [27968](https://github.com/airbytehq/airbyte/pull/27968) | mark `Client ID` and `Client Secret` as required fields                                                                      |

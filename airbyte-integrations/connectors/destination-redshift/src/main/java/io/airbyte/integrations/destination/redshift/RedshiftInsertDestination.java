@@ -22,6 +22,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
+import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +59,11 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         getDefaultConnectionProperties(config),
         Duration.ofMinutes(2));
+  }
+
+  @Override
+  protected void destinationSpecificTableOperations(final JdbcDatabase database) throws Exception {
+    RedshiftUtil.checkSvvTableAccess(database);
   }
 
   @Override

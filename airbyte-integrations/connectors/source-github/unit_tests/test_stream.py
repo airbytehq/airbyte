@@ -234,6 +234,7 @@ def test_stream_organizations_read():
 def test_stream_teams_read():
     organization_args = {"organizations": ["org1", "org2"]}
     stream = Teams(**organization_args)
+    stream._session.cache.clear()
     responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
     records = list(read_full_refresh(stream))
@@ -533,7 +534,8 @@ def test_stream_project_columns():
 
     projects_stream = Projects(**repository_args_with_start_date)
     stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
-
+    projects_stream._session.cache.clear()
+    stream._session.cache.clear()
     stream_state = {}
 
     records = read_incremental(stream, stream_state=stream_state)
@@ -918,7 +920,7 @@ def test_stream_reviews_incremental_read():
 
 
 @responses.activate
-def test_stream_team_members_full_refresh(caplog):
+def test_stream_team_members_full_refresh(caplog, rate_limit_mock_response):
     organization_args = {"organizations": ["org1"]}
     repository_args = {"repositories": [], "page_size_for_large_streams": 100}
 
@@ -959,6 +961,7 @@ def test_stream_commit_comment_reactions_incremental_read():
 
     repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
     stream = CommitCommentReactions(**repository_args)
+    stream._parent_stream._session.cache.clear()
 
     responses.add(
         "GET",
@@ -1305,7 +1308,7 @@ def test_stream_pull_request_comment_reactions_read():
 
 
 @responses.activate
-def test_stream_projects_v2_graphql_retry():
+def test_stream_projects_v2_graphql_retry(rate_limit_mock_response):
     repository_args_with_start_date = {
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 20,
@@ -1368,7 +1371,7 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
 
 
 @responses.activate
-def test_stream_contributor_activity_accepted_response(caplog):
+def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_response):
     responses.add(
         responses.GET,
         "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
@@ -1376,17 +1379,17 @@ def test_stream_contributor_activity_accepted_response(caplog):
         status=200,
     )
     responses.add(
-            responses.GET,
-            "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-            json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
-            status=200,
-        )
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
+        status=200,
+    )
     responses.add(
-                responses.GET,
-                "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
-                json={},
-                status=200,
-            )
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        json={},
+        status=200,
+    )
     resp = responses.add(
         responses.GET,
         "https://api.github.com/repos/airbytehq/test_airbyte/stats/contributors?per_page=100",
@@ -1398,9 +1401,14 @@ def test_stream_contributor_activity_accepted_response(caplog):
     configured_catalog = {
         "streams": [
             {
-                "stream": {"name": "contributor_activity", "json_schema": {}, "supported_sync_modes": ["full_refresh"],"source_defined_primary_key": [["id"]]},
+                "stream": {
+                    "name": "contributor_activity",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_primary_key": [["id"]],
+                },
                 "sync_mode": "full_refresh",
-                "destination_sync_mode": "overwrite"
+                "destination_sync_mode": "overwrite",
             }
         ]
     }

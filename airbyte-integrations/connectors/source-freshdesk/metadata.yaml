@@ -10,13 +10,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
-  dockerImageTag: 3.0.5
+  dockerImageTag: 3.0.7
   dockerRepository: airbyte/source-freshdesk
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
   githubIssueLabel: source-freshdesk
   icon: freshdesk.svg
   license: MIT
   name: Freshdesk
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-freshdesk
   registries:
     cloud:
       enabled: true

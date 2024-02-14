@@ -113,13 +113,18 @@ REGISTRY_ENTRY_RESOURCE_TREE = {
     ),
 }
 
-CONNECTOR_TEST_REPORT_RESOURCE_TREE = {
-    **SLACK_RESOURCE_TREE,
-    **GITHUB_RESOURCE_TREE,
+CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE = {
     **GCS_RESOURCE_TREE,
     "latest_nightly_complete_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_COMPLETE_REPORT_FILE_NAME}$"}
     ),
+}
+
+CONNECTOR_TEST_REPORT_RESOURCE_TREE = {
+    **SLACK_RESOURCE_TREE,
+    **GITHUB_RESOURCE_TREE,
+    **GCS_RESOURCE_TREE,
+    **CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE,
     "latest_nightly_test_output_file_blobs": gcs_directory_blobs.configured(
         {
             "gcs_bucket": {"env": "CI_REPORT_BUCKET"},
@@ -155,7 +160,7 @@ SENSORS = [
     ),
     new_gcs_blobs_sensor(
         job=generate_nightly_reports,
-        resources_def=CONNECTOR_TEST_REPORT_RESOURCE_TREE,
+        resources_def=CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE,
         gcs_blobs_resource_key="latest_nightly_complete_file_blobs",
         interval=(1 * 60 * 60),
     ),

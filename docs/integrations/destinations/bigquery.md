@@ -143,7 +143,7 @@ could be subject to change in future versions.
   misformatted or unexpected data. The column type in BigQuery is `JSON`. ... and a column of the
   proper data type for each of the top-level properties from your source's schema. Arrays and
   Objects will remain as JSON columns in BigQuery. Learn more about Typing and Deduping
-  [here](/understanding-airbyte/typing-deduping)
+  [here](/using-airbyte/core-concepts/typing-deduping)
 
 The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a
 daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions
@@ -209,9 +209,20 @@ tutorials:
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.3.29  | 2024-01-09 | [34003](https://github.com/airbytehq/airbyte/pull/34003)   | Fix loading credentials from GCP Env                                                                                                                            |
-| 2.3.28  | 2024-01-08 | [34021](https://github.com/airbytehq/airbyte/pull/34021)   | Add idempotency ids in dummy insert for check call                                                                                                              |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.8   | 2024-02-12 | [35144](https://github.com/airbytehq/airbyte/pull/35144) | Adopt CDK 0.20.2                                                                                                                                                |
+| 2.4.7   | 2024-02-12 | [35111](https://github.com/airbytehq/airbyte/pull/35111) | Adopt CDK 0.20.1                                                                                                                                                |
+| 2.4.6   | 2024-02-09 | [34575](https://github.com/airbytehq/airbyte/pull/34575) | Adopt CDK 0.20.0                                                                                                                                                |
+| 2.4.5   | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745) | Adopt CDK 0.19.0                                                                                                                                                |
+| 2.4.4   | 2024-02-08 | [35027](https://github.com/airbytehq/airbyte/pull/35027)   | Upgrade CDK to 0.17.1                                                                                                                                           |
+| 2.4.3   | 2024-02-01 | [34728](https://github.com/airbytehq/airbyte/pull/34728)   | Upgrade CDK to 0.16.4; Notable changes from 0.14.2, 0.15.1 and 0.16.3                                                                                           |
+| 2.4.2   | 2024-01-24 | [34451](https://github.com/airbytehq/airbyte/pull/34451)   | Improve logging for unparseable input                                                                                                                           |
+| 2.4.1   | 2024-01-24 | [34458](https://github.com/airbytehq/airbyte/pull/34458)   | Improve error reporting                                                                                                                                         |
+| 2.4.0   | 2024-01-24 | [34468](https://github.com/airbytehq/airbyte/pull/34468)   | Upgrade CDK to 0.14.0                                                                                                                                           |
+| 2.3.31  | 2024-01-22 | [\#34023](https://github.com/airbytehq/airbyte/pull/34023) | Combine DDL operations into a single execution                                                                                                                  |
+| 2.3.30  | 2024-01-12 | [\#34226](https://github.com/airbytehq/airbyte/pull/34226) | Upgrade CDK to 0.12.0; Cleanup dependencies                                                                                                                     |
+| 2.3.29  | 2024-01-09 | [\#34003](https://github.com/airbytehq/airbyte/pull/34003) | Fix loading credentials from GCP Env                                                                                                                            |
+| 2.3.28  | 2024-01-08 | [\#34021](https://github.com/airbytehq/airbyte/pull/34021) | Add idempotency ids in dummy insert for check call                                                                                                              |
 | 2.3.27  | 2024-01-05 | [\#33948](https://github.com/airbytehq/airbyte/pull/33948) | Skip retrieving initial table state when setup fails                                                                                                            |
 | 2.3.26  | 2024-01-04 | [\#33730](https://github.com/airbytehq/airbyte/pull/33730) | Internal code structure changes                                                                                                                                 |
 | 2.3.25  | 2023-12-20 | [\#33704](https://github.com/airbytehq/airbyte/pull/33704) | Update to java CDK 0.10.0 (no changes)                                                                                                                          |

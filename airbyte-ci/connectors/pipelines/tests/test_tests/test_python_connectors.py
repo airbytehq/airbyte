@@ -2,12 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from unittest.mock import patch
+
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.test.steps.python_connectors import UnitTests
-from pipelines.models.steps import StepResult
+from pipelines.airbyte_ci.connectors.test.steps.python_connectors import AirbyteLibValidation, UnitTests
+from pipelines.models.steps import StepResult, StepStatus
 
 pytestmark = [
     pytest.mark.anyio,
@@ -97,3 +99,80 @@ class TestUnitTests:
             context_for_connector_with_poetry.connector.technical_name in pip_freeze_output
         ), "The connector should be installed in the test environment."
         assert "pytest" in pip_freeze_output, "The pytest package should be installed in the test environment."
+
+    def test_params(self, context_for_certified_connector_with_setup):
+        step = UnitTests(context_for_certified_connector_with_setup)
+        assert step.params_as_cli_options == [
+            "-s",
+            f"--cov={context_for_certified_connector_with_setup.connector.technical_name.replace('-', '_')}",
+            f"--cov-fail-under={step.MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS}",
+        ]
+
+
+class TestAirbyteLibValidationTests:
+    @pytest.fixture
+    def compatible_connector(self):
+        return Connector("source-faker")
+
+    @pytest.fixture
+    def incompatible_connector(self):
+        return Connector("source-postgres")
+
+    @pytest.fixture
+    def context_for_valid_connector(self, compatible_connector, dagger_client, current_platform):
+        context = ConnectorContext(
+            pipeline_name="test airbyte-lib validation",
+            connector=compatible_connector,
+            git_branch="test",
+            git_revision="test",
+            report_output_prefix="test",
+            is_local=True,
+            use_remote_secrets=True,
+            targeted_platforms=[current_platform],
+        )
+        context.dagger_client = dagger_client
+        return context
+
+    @pytest.fixture
+    def context_for_invalid_connector(self, incompatible_connector, dagger_client, current_platform):
+        context = ConnectorContext(
+            pipeline_name="test airbyte-lib validation",
+            connector=incompatible_connector,
+            git_branch="test",
+            git_revision="test",
+            report_output_prefix="test",
+            is_local=True,
+            use_remote_secrets=True,
+            targeted_platforms=[current_platform],
+        )
+        context.dagger_client = dagger_client
+        return context
+
+    async def test__run_validation_success(self, mocker, context_for_valid_connector: ConnectorContext):
+        result = await AirbyteLibValidation(context_for_valid_connector)._run(mocker.MagicMock())
+        assert isinstance(result, StepResult)
+        assert result.status == StepStatus.SUCCESS
+        assert "Creating source and validating spec is returned successfully..." in result.stdout
+
+    async def test__run_validation_skip_unpublished_connector(
+        self,
+        mocker,
+        context_for_invalid_connector: ConnectorContext,
+    ):
+        result = await AirbyteLibValidation(context_for_invalid_connector)._run(mocker.MagicMock())
+        assert isinstance(result, StepResult)
+        assert result.status == StepStatus.SKIPPED
+
+    async def test__run_validation_fail(
+        self,
+        mocker,
+        context_for_invalid_connector: ConnectorContext,
+    ):
+        metadata = context_for_invalid_connector.connector.metadata
+        metadata["remoteRegistries"] = {"pypi": {"enabled": True, "packageName": "airbyte-source-postgres"}}
+        metadata_mock = mocker.PropertyMock(return_value=metadata)
+        with patch.object(Connector, "metadata", metadata_mock):
+            result = await AirbyteLibValidation(context_for_invalid_connector)._run(mocker.MagicMock())
+            assert isinstance(result, StepResult)
+            assert result.status == StepStatus.FAILURE
+            assert "is not installable" in result.stderr

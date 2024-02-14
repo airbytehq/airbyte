@@ -14,7 +14,7 @@ black = "~22.3.0"
 [tool.black]
 line-length = 140
 target-version = ["py37"]
-extend-exclude = "(build|integration_tests|unit_tests|generated)"
+extend-exclude = "(build|integration_tests|unit_tests|generated|airbyte-lib)"
 
 [tool.coverage.report]
 fail_under = 0
@@ -61,7 +61,12 @@ multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
-skip_glob = ["**/connector_builder/generated/**"]
+skip_glob = [
+  "**/connector_builder/generated/**",
+  "airbyte-lib" # Handled by Ruff, with some conflicting rules
+  # TODO: Remove this after we move to Ruff. Ruff is mono-repo-aware and
+  # correctly handles first-party imports in subdirectories.
+]
 
 
 [tool.mypy]
@@ -96,5 +101,3 @@ error_summary = true
 [tool.pytest.ini_options]
 minversion = "6.2.5"
 addopts ="-r a --capture=no -vv --color=yes"
-
-

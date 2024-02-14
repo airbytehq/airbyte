@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.debezium.spi.common.ReplacementFunction;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -17,33 +18,29 @@ public abstract class DebeziumPropertiesManager {
   public static final String TOPIC_PREFIX_KEY = "topic.prefix";
 
   private final JsonNode config;
-  private final AirbyteFileOffsetBackingStore offsetManager;
-  private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
-
   private final Properties properties;
   private final ConfiguredAirbyteCatalog catalog;
 
   public DebeziumPropertiesManager(final Properties properties,
                                    final JsonNode config,
-                                   final ConfiguredAirbyteCatalog catalog,
-                                   final AirbyteFileOffsetBackingStore offsetManager,
-                                   final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
+                                   final ConfiguredAirbyteCatalog catalog) {
     this.properties = properties;
     this.config = config;
     this.catalog = catalog;
-    this.offsetManager = offsetManager;
-    this.schemaHistoryManager = schemaHistoryManager;
   }
 
-  public Properties getDebeziumProperties() {
+  public Properties getDebeziumProperties(final AirbyteFileOffsetBackingStore offsetManager) {
+    return getDebeziumProperties(offsetManager, Optional.empty());
+  }
+
+  public Properties getDebeziumProperties(
+                                          final AirbyteFileOffsetBackingStore offsetManager,
+                                          final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
     final Properties props = new Properties();
     props.putAll(properties);
 
     // debezium engine configuration
-    // https://debezium.io/documentation/reference/2.2/development/engine.html#engine-properties
-    props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
-    props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
-    props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
+    offsetManager.setDebeziumProperties(props);
     // default values from debezium CommonConnectorConfig
     props.setProperty("max.batch.size", "2048");
     props.setProperty("max.queue.size", "8192");
@@ -57,15 +54,7 @@ public abstract class DebeziumPropertiesManager {
     props.setProperty("errors.retry.delay.initial.ms", "299");
     props.setProperty("errors.retry.delay.max.ms", "300");
 
-    if (schemaHistoryManager.isPresent()) {
-      // https://debezium.io/documentation/reference/2.2/operations/debezium-server.html#debezium-source-database-history-class
-      // https://debezium.io/documentation/reference/development/engine.html#_in_the_code
-      // As mentioned in the documents above, debezium connector for MySQL needs to track the schema
-      // changes. If we don't do this, we can't fetch records for the table.
-      props.setProperty("schema.history.internal", "io.debezium.storage.file.history.FileSchemaHistory");
-      props.setProperty("schema.history.internal.file.filename", schemaHistoryManager.get().getPath().toString());
-      props.setProperty("schema.history.internal.store.only.captured.databases.ddl", "true");
-    }
+    schemaHistoryManager.ifPresent(m -> m.setDebeziumProperties(props));
 
     // https://debezium.io/documentation/reference/2.2/configuration/avro.html
     props.setProperty("key.converter.schemas.enable", "false");
@@ -88,8 +77,8 @@ public abstract class DebeziumPropertiesManager {
     props.setProperty("max.queue.size.in.bytes", BYTE_VALUE_256_MB);
 
     // WARNING : Never change the value of this otherwise all the connectors would start syncing from
-    // scratch
-    props.setProperty(TOPIC_PREFIX_KEY, getName(config));
+    // scratch.
+    props.setProperty(TOPIC_PREFIX_KEY, sanitizeTopicPrefix(getName(config)));
 
     // includes
     props.putAll(getIncludeConfiguration(catalog, config));
@@ -97,15 +86,37 @@ public abstract class DebeziumPropertiesManager {
     return props;
   }
 
+  public static String sanitizeTopicPrefix(final String topicName) {
+    StringBuilder sanitizedNameBuilder = new StringBuilder(topicName.length());
+    boolean changed = false;
+
+    for (int i = 0; i < topicName.length(); ++i) {
+      char c = topicName.charAt(i);
+      if (isValidCharacter(c)) {
+        sanitizedNameBuilder.append(c);
+      } else {
+        sanitizedNameBuilder.append(ReplacementFunction.UNDERSCORE_REPLACEMENT.replace(c));
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      return sanitizedNameBuilder.toString();
+    } else {
+      return topicName;
+    }
+  }
+
+  // We need to keep the validation rule the same as debezium engine, which is defined here:
+  // https://github.com/debezium/debezium/blob/c51ef3099a688efb41204702d3aa6d4722bb4825/debezium-core/src/main/java/io/debezium/schema/AbstractTopicNamingStrategy.java#L178
+  private static boolean isValidCharacter(char c) {
+    return c == '.' || c == '_' || c == '-' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9';
+  }
+
   protected abstract Properties getConnectionConfiguration(final JsonNode config);
 
   protected abstract String getName(final JsonNode config);
 
   protected abstract Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config);
-
-  public enum DebeziumConnectorType {
-    RELATIONALDB,
-    MONGODB;
-  }
 
 }

@@ -74,6 +74,8 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
+| 0.1.12 | 2024-02-12 | [35156](https://github.com/airbytehq/airbyte/pull/35156) | Manage dependencies with Poetry. |
+| 0.1.11   | 2024-01-12 | [34204](https://github.com/airbytehq/airbyte/pull/34204) | prepare for airbyte-lib                                                        |
 | 0.1.10  | 2023-12-04 | [33030](https://github.com/airbytehq/airbyte/pull/33030) | Base image migration: remove Dockerfile and use python-connector-base image |
 | 0.1.9   | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes                                        |
 | 0.1.8   | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references                                    |

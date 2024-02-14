@@ -8,6 +8,10 @@ data:
   icon: plaid.svg
   license: MIT
   name: Plaid
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-plaid
   registries:
     cloud:
       enabled: false
