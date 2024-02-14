@@ -111,7 +111,7 @@ def test_faker_read_to_snowflake(
 
 def test_replace_strategy(
     source_faker_seed_a: ab.Source,
-    snowflake_cache: ab.DuckDBCache,
+    snowflake_cache: ab.SnowflakeCache,
 ) -> None:
     """Test that the append strategy works as expected."""
     for _ in range(2):
