@@ -13,10 +13,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.mongodb.MongoDatabase;
+import io.airbyte.cdk.db.mongodb.MongoUtils;
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.mongodb.MongoUtils.MongoInstanceType;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,7 +53,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", MongoInstanceType.ATLAS.getType())
+        .put("instance", MongoUtils.MongoInstanceType.ATLAS.getType())
         .put("cluster_url", credentialsJson.get("cluster_url").asText())
         .build());
 
@@ -110,7 +111,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   @Test
   void testCheck() throws Exception {
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", MongoInstanceType.STANDALONE.getType())
+        .put("instance", MongoUtils.MongoInstanceType.STANDALONE.getType())
         .put("tls", false)
         .build());
 

@@ -58,18 +58,8 @@ def test_multiple_token_authenticator_with_rate_limiter():
             counter_rate_limits += 1
             resp_body = {
                 "resources": {
-                    "core": {
-                        "limit": 500,
-                        "used": 0,
-                        "remaining": 500,
-                        "reset": 4070908800
-                    },
-                    "graphql": {
-                        "limit": 500,
-                        "used": 0,
-                        "remaining": 500,
-                        "reset": 4070908800
-                    }
+                    "core": {"limit": 500, "used": 0, "remaining": 500, "reset": 4070908800},
+                    "graphql": {"limit": 500, "used": 0, "remaining": 500, "reset": 4070908800},
                 }
             }
             return (200, {}, json.dumps(resp_body))
@@ -96,7 +86,9 @@ def test_multiple_token_authenticator_with_rate_limiter():
     with pytest.raises(AirbyteTracedException) as e:
         list(read_full_refresh(stream))
     assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(0, 500), (0, 500), (0, 500)]
-    message = "Stream: `organizations`, slice: `{'organization': 'org1'}`. Limits for all provided tokens are reached, please try again later"
+    message = (
+        "Stream: `organizations`, slice: `{'organization': 'org1'}`. Limits for all provided tokens are reached, please try again later"
+    )
     assert e.value.internal_message == message
 
 
@@ -121,18 +113,8 @@ def test_multiple_token_authenticator_with_rate_limiter_and_sleep(sleep_mock, ca
             counter_rate_limits += 1
             resp_body = {
                 "resources": {
-                    "core": {
-                        "limit": 500,
-                        "used": 0,
-                        "remaining": 500,
-                        "reset": reset_time
-                    },
-                    "graphql": {
-                        "limit": 500,
-                        "used": 0,
-                        "remaining": 500,
-                        "reset": reset_time
-                    }
+                    "core": {"limit": 500, "used": 0, "remaining": 500, "reset": reset_time},
+                    "graphql": {"limit": 500, "used": 0, "remaining": 500, "reset": reset_time},
                 }
             }
             return (200, {}, json.dumps(resp_body))

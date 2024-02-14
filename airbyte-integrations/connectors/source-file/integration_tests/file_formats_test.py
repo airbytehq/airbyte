@@ -30,6 +30,7 @@ def check_read(config, expected_columns=10, expected_rows=42):
         ("jsonl", "jsonl", 2, 6492, "jsonl"),
         ("excel", "xls", 8, 50, "demo"),
         ("excel", "xlsx", 8, 50, "demo"),
+        ("fwf", "txt", 4, 2, "demo"),
         ("feather", "feather", 9, 3, "demo"),
         ("parquet", "parquet", 9, 3, "demo"),
         ("yaml", "yaml", 8, 3, "demo"),

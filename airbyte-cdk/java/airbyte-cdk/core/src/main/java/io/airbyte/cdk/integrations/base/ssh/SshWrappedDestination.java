@@ -137,7 +137,7 @@ public class SshWrappedDestination implements Destination {
 
   @Override
   public boolean isV2Destination() {
-    return this.delegate.isV2Destination();
+    return delegate.isV2Destination();
   }
 
 }

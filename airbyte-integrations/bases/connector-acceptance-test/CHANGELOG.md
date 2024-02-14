@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.5.0
+Add `validate_stream_statuses` to TestBasicRead.test_read:: Validate all statuses for all streams in the catalogs were emitted in correct order.
+
 ## 3.4.0
 Add TestConnectorDocumentation suite for validating connectors documentation structure and content. 
 
@@ -7,7 +10,7 @@ Add TestConnectorDocumentation suite for validating connectors documentation str
 Аix `NoAdditionalPropertiesValidator` if no type found in `items` 
 
 ## 3.3.2
-Fix TestBasicRead.test_read.validate_schema: set `additionalProperties` to False recursively for objects
+Fix TestBasicRead.test_read.validate_schema: set `additionalProperties` to False recursively for objects.
 
 ## 3.3.1
 Fix TestSpec.test_oauth_is_default_method to skip connectors that doesn't have predicate_key object. 
