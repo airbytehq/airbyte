@@ -36,9 +36,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
+@Disabled("need to fix docker container networking")
 public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final ObjectMapper mapper = MoreMappers.initMapper();
