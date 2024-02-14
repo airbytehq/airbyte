@@ -689,6 +689,7 @@ def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_tes
         )
 
 @pytest.mark.slow
+@pytest.mark.requires_creds
 def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_source("source-test", config={"apiKey": "test"})
     source.select_all_streams()
