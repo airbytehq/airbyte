@@ -135,6 +135,7 @@ ignore = [
     "PIE790", # Allow unnecssary 'pass' (sometimes useful for readability)
     "PERF203",  # exception handling in loop
     "S", # flake8-bandit (noisy, security related)
+    "SIM910", # Allow "None" as second argument to Dict.get(). "Explicit is better than implicit."
     "TD002", # Require author for TODOs
     "TRIO", # flake8-trio (opinionated, noisy)
     "INP001", # Dir 'examples' is part of an implicit namespace package. Add an __init__.py.
