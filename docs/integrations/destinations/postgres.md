@@ -154,8 +154,8 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 
 ### Output Schema (Raw Tables)
 
-Each stream will be mapped to a separate raw table in Postgres. The default schema in which the raw tables are 
-created is `airbyte_internal`. This can be overridden in the configuration. 
+Each stream will be mapped to a separate raw table in Postgres. The default schema in which the raw tables are
+created is `airbyte_internal`. This can be overridden in the configuration.
 Each table will contain 3 columns:
 
 - `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
@@ -193,6 +193,7 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.0.1   | 2024-02-13 | [35266](https://github.com/airbytehq/airbyte/pull/35266)   | Improve error reporting.                                                                            |
 | 2.0.0   | 2024-02-09 | [35042](https://github.com/airbytehq/airbyte/pull/35042)   | GA release V2 destinations format.                                                                  |
 | 0.6.3   | 2024-02-06 | [34891](https://github.com/airbytehq/airbyte/pull/34891)   | Remove varchar limit, use system defaults                                                           |
 | 0.6.2   | 2024-01-30 | [34683](https://github.com/airbytehq/airbyte/pull/34683)   | CDK Upgrade 0.16.3; Fix dependency mismatches in slf4j lib                                          |
