@@ -2,7 +2,7 @@
 
 import os
 
-import docs
+import docs.generate as generate
 
 
 def test_docs_checked_in():
@@ -13,7 +13,7 @@ def test_docs_checked_in():
     It will fail if there are any differences.
     """
 
-    docs.run()
+    generate.run()
 
     # compare the generated docs with the checked in docs
     diff = os.system("git diff --exit-code docs/generated")
