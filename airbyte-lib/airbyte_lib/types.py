@@ -69,11 +69,12 @@ def _get_airbyte_type(  # noqa: PLR0911  # Too many return statements
         return "object", None
 
     if json_schema_type == "array":
-        if "items" not in json_schema_property_def:
-            return "array", None
+        items_def = json_schema_property_def.get("items", None)
+        if isinstance(items_def, dict):
+            subtype, _ = _get_airbyte_type(items_def)
+            return "array", subtype
 
-        subtype, _ = _get_airbyte_type(json_schema_property_def["items"])
-        return "array", subtype
+        return "array", None
 
     err_msg = f"Could not determine airbyte type from JSON schema type: {json_schema_property_def}"
     raise SQLTypeConversionError(err_msg)
@@ -95,11 +96,11 @@ class SQLTypeConverter:
 
     def to_sql_type(
         self,
-        json_schema_property_def: dict[str, str | dict],
+        json_schema_property_def: dict[str, str | dict | list],
     ) -> sqlalchemy.types.TypeEngine:
         """Convert a value to a SQL type."""
         try:
-            airbyte_type, airbyte_subtype = _get_airbyte_type(json_schema_property_def)
+            airbyte_type, _ = _get_airbyte_type(json_schema_property_def)
             return self.conversion_map[airbyte_type]()
         except SQLTypeConversionError:
             print(f"Could not determine airbyte type from JSON schema: {json_schema_property_def}")
