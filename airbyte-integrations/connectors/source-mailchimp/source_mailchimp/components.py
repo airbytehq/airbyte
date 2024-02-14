@@ -18,6 +18,9 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 @dataclass
 class MailChimpRequester(HttpRequester):
+    """
+    Defines `get_data_center_location` method to define data_center and update config on the fly, as it depends on Authenticator implementation.
+    """
 
     request_body_json: Optional[RequestInput] = None
     request_headers: Optional[RequestInput] = None
