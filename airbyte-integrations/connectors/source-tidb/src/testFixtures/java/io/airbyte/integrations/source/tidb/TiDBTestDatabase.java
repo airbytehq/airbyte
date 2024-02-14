@@ -5,42 +5,38 @@
 package io.airbyte.integrations.source.tidb;
 
 import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.testutils.ContainerFactory;
 import io.airbyte.cdk.testutils.TestDatabase;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
 import org.testcontainers.tidb.TiDBContainer;
+import org.testcontainers.utility.DockerImageName;
 
 public class TiDBTestDatabase extends
-    TestDatabase<TiDBContainer, TiDBTestDatabase, TiDBTestDatabase.TiDBDbConfigBuilder> {
-
-  protected static final String USER = "root";
-  protected static final String DATABASE = "test";
-  private final TiDBContainer container;
+    TestDatabase<TiDBContainer, TiDBTestDatabase, TiDBTestDatabase.TiDBConfigBuilder> {
 
   protected TiDBTestDatabase(final TiDBContainer container) {
     super(container);
-    this.container = container;
   }
 
   @Override
-  public String getJdbcUrl() {
-    return container.getJdbcUrl();
+  public String withNamespace(String name) {
+    return name;
   }
 
   @Override
   public String getDatabaseName() {
-    return DATABASE;
+    return getContainer().getDatabaseName();
   }
 
   @Override
   public String getUserName() {
-    return container.getUsername();
+    return getContainer().getUsername();
   }
 
   @Override
   public String getPassword() {
-    return container.getPassword();
+    return getContainer().getPassword();
   }
 
   @Override
@@ -64,25 +60,28 @@ public class TiDBTestDatabase extends
   }
 
   @Override
-  public void close() {
-    container.close();
+  public TiDBConfigBuilder configBuilder() {
+    return new TiDBConfigBuilder(this);
   }
 
-  @Override
-  public TiDBDbConfigBuilder configBuilder() {
-    return new TiDBDbConfigBuilder(this)
-        .with(JdbcUtils.HOST_KEY, "127.0.0.1")
-        .with(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
-        .with(JdbcUtils.USERNAME_KEY, USER)
-        .with(JdbcUtils.DATABASE_KEY, DATABASE);
-  }
+  static public class TiDBConfigBuilder extends ConfigBuilder<TiDBTestDatabase, TiDBConfigBuilder> {
 
-  static public class TiDBDbConfigBuilder extends TestDatabase.ConfigBuilder<TiDBTestDatabase, TiDBDbConfigBuilder> {
-
-    protected TiDBDbConfigBuilder(final TiDBTestDatabase testdb) {
+    protected TiDBConfigBuilder(final TiDBTestDatabase testdb) {
       super(testdb);
     }
 
+  }
+
+  static public TiDBContainer container() {
+    var factory = new ContainerFactory<TiDBContainer>() {
+
+      @Override
+      protected TiDBContainer createNewContainer(DockerImageName dockerImageName) {
+        return new TiDBContainer(dockerImageName).withExposedPorts(4000);
+      }
+
+    };
+    return factory.exclusive("pingcap/tidb:nightly");
   }
 
 }
