@@ -1,6 +1,5 @@
 package io.airbyte.integrations.destination.bigquery.service;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,14 +11,13 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
-import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.UploadingMethod;
 import io.airbyte.integrations.destination.bigquery.config.properties.BigQueryConnectorConfiguration;
 import io.airbyte.integrations.destination.bigquery.config.properties.LoadingMethodConfiguration;
 import io.airbyte.integrations.destination.bigquery.helpers.CheckPermissionHelper;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import jakarta.inject.Singleton;
 import org.apache.commons.lang3.tuple.ImmutablePair;

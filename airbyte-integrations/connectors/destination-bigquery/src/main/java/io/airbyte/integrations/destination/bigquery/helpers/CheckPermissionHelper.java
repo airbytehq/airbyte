@@ -2,7 +2,7 @@ package io.airbyte.integrations.destination.bigquery.helpers;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import jakarta.inject.Singleton;
 
 import java.io.IOException;

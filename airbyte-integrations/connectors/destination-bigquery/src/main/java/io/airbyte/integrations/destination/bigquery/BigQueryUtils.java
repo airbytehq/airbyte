@@ -44,7 +44,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.bigquery.config.properties.BigQueryConnectorConfiguration;
 import io.airbyte.integrations.destination.bigquery.config.properties.LoadingMethodConfiguration;
 import io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
 import java.io.ByteArrayInputStream;

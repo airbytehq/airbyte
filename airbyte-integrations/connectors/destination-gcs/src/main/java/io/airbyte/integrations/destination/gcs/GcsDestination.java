@@ -13,7 +13,7 @@ public class GcsDestination extends BaseGcsDestination {
   public static void main(final String[] args) throws Exception {
     System.setProperty(SkipMd5CheckStrategy.DISABLE_GET_OBJECT_MD5_VALIDATION_PROPERTY, "true");
     System.setProperty(SkipMd5CheckStrategy.DISABLE_PUT_OBJECT_MD5_VALIDATION_PROPERTY, "true");
-    new IntegrationRunner(new GcsDestination(new GcsNameTransformer())).run(args);
+    new IntegrationRunner(new GcsDestination()).run(args);
   }
 
 }

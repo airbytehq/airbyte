@@ -5,7 +5,6 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.TableId;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
-import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.base.config.AirbyteConfiguredCatalog;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.commons.json.Jsons;
@@ -34,9 +33,9 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsNameTransformer;
-import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.cdk.integrations.destination.gcs.GcsNameTransformer;
+import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -64,8 +63,6 @@ import java.util.function.Supplier;
 public class SerializedAirbyteMessageConsumerFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SerializedAirbyteMessageConsumerFactory.class);
-
-    private static final String RAW_DATA_DATASET = "raw_data_dataset";
 
     private final BigQuery bigQuery;
     private final BigQueryConnectorConfiguration configuration;

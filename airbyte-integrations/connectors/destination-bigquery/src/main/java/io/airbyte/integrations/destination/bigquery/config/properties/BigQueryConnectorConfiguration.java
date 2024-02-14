@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.airbyte.cdk.integrations.base.config.ConnectorConfiguration;
 import io.micronaut.context.annotation.ConfigurationBuilder;
 import io.micronaut.context.annotation.ConfigurationProperties;
-import org.springframework.util.StringUtils;
+import io.micronaut.core.util.StringUtils;
 
 import java.util.Optional;
 
