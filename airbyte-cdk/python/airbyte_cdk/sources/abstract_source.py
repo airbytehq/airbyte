@@ -14,11 +14,11 @@ from airbyte_cdk.models import (
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
+    FailureType,
     Status,
     StreamDescriptor,
     SyncMode,
 )
-from airbyte_cdk.models import FailureType
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -308,7 +308,7 @@ class AbstractSource(Source, ABC):
         WARNING: This function is in-development which means it is subject to change. Use at your own risk.
 
         By default, when a source encounters an exception while syncing a stream, it will emit an error trace message and then
-        continue syncing the next stream. This can be overwridden on a per-source basis so that the source will stop the sync
+        continue syncing the next stream. This can be overwritten on a per-source basis so that the source will stop the sync
         on the first error seen and emit a single error trace message for that stream.
         """
         return False
