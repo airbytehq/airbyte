@@ -42,10 +42,11 @@ definitions:
       url_base: https://{{ config['data_center'] }}.api.mailchimp.com/3.0/
       http_method: GET
       authenticator:
-        class_name: source_mailchimp.components.MailChimpAuthenticator
-        type: CustomAuthenticator
-        bearer: "#/definitions/bearer_authenticator"
-        basic: "#/definitions/basic_authenticator"
+        type: SelectiveAuthenticator
+        authenticator_selection_path: ["credentials", "auth_type"]
+        authenticators:
+          oauth2.0: "#/definitions/bearer_authenticator"
+          apikey: "#/definitions/basic_authenticator"
       request_parameters:
         exclude_fields: "{{ parameters.get('data_field') }}._links"
 

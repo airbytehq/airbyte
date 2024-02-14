@@ -5,8 +5,7 @@ from typing import Any, List, Mapping, Optional
 
 import pendulum
 import requests
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -72,18 +71,6 @@ class MailChimpRequester(HttpRequester):
         # Handle any other exceptions that may occur.
         except Exception as e:
             raise Exception(f"An error occured while retrieving the data center for your account. \n {repr(e)}")
-
-
-class MailChimpAuthenticator(DeclarativeAuthenticator):
-    config: Mapping[str, Any]
-    bearer: BearerAuthenticator
-    basic: BasicHttpAuthenticator
-
-    def __new__(cls, bearer, basic, config, *args, **kwargs):
-        if config.get("credentials", {}).get("auth_type") == "oauth2.0":
-            return bearer
-        else:
-            return basic
 
 
 class MailChimpRecordFilter(RecordFilter):
