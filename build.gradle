@@ -6,7 +6,7 @@ plugins {
     id 'base'
     id 'com.github.spotbugs' version '6.0.7'
     id 'version-catalog'
-    id 'ru.vyarus.use-python'
+    id 'ru.vyarus.use-python' version '2.3.0'
 }
 
 
