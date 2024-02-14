@@ -280,8 +280,9 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.2 | 2024-02-12 | [35158](https://github.com/airbytehq/airbyte/pull/35158) | Manage dependencies with Poetry. |
-| `3.3.1`   | 2024-01-16 | [34007](https://github.com/airbytehq/airbyte/pull/34007) | prepare for airbyte-lib                                                        |
+| `3.3.3`  | 2024-02-14 | [35280](https://github.com/airbytehq/airbyte/pull/35280) | Temporary patch that disables some fields to avoid 500 error when syncing `user_interest` steam                                      |
+| `3.3.2`  | 2024-02-12 | [35158](https://github.com/airbytehq/airbyte/pull/35158) | Manage dependencies with Poetry.                                                                                                     |
+| `3.3.1`  | 2024-01-16 | [34007](https://github.com/airbytehq/airbyte/pull/34007) | prepare for airbyte-lib                                                                                                              |
 | `3.3.0`  | 2024-01-12 | [34212](https://github.com/airbytehq/airbyte/pull/34212) | Remove metric from query in Ad Group stream for non-manager account                                                                  |
 | `3.2.1`  | 2024-01-12 | [34200](https://github.com/airbytehq/airbyte/pull/34200) | Disable raising error for not enabled accounts                                                                                       |
 | `3.2.0`  | 2024-01-09 | [33707](https://github.com/airbytehq/airbyte/pull/33707) | Add possibility to sync all connected accounts                                                                                       |
