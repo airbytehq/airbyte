@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.19.0'
+    cdkVersionRequired = '0.20.2'
     features = [
             'datastore-bigquery',
             'db-destinations',
@@ -12,6 +12,13 @@ airbyteJavaConnector {
             'typing-deduping',
     ]
     useLocalCdk = false
+}
+
+java {
+    // TODO: rewrite code to avoid javac wornings in the first place
+    compileJava {
+        options.compilerArgs += "-Xlint:-this-escape"
+    }
 }
 
 application {

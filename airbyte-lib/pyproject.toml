@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "airbyte-lib"
 description = "AirbyteLib"
-version = "0.1.0dev.2"
+version = "0.1.0"
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
 packages = [{include = "airbyte_lib"}]
@@ -30,6 +30,7 @@ pyarrow = "^14.0.2"
 # psycopg = {extras = ["binary", "pool"], version = "^3.1.16"}
 rich = "^13.7.0"
 pendulum = "<=3.0.0"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -134,6 +135,7 @@ ignore = [
     "PIE790", # Allow unnecssary 'pass' (sometimes useful for readability)
     "PERF203",  # exception handling in loop
     "S", # flake8-bandit (noisy, security related)
+    "SIM910", # Allow "None" as second argument to Dict.get(). "Explicit is better than implicit."
     "TD002", # Require author for TODOs
     "TRIO", # flake8-trio (opinionated, noisy)
     "INP001", # Dir 'examples' is part of an implicit namespace package. Add an __init__.py.
