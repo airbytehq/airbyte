@@ -13,11 +13,13 @@ import shutil
 from pathlib import Path
 
 import pytest
+import ulid
+import viztracer
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 import airbyte_lib as ab
 from airbyte_lib import caches
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
-import ulid
 
 
 # Product count is always the same, regardless of faker scale.
@@ -64,8 +66,7 @@ def source_faker_seed_a() -> ab.Source:
         install_if_missing=False,  # Should already be on PATH
     )
     source.check()
-    # TODO: We can optionally add back 'users' once Postgres can handle complex object types.
-    source.set_streams([
+    source.select_streams([
         "users",
         "products",
         "purchases",
@@ -87,10 +88,10 @@ def source_faker_seed_b() -> ab.Source:
         install_if_missing=False,  # Should already be on PATH
     )
     source.check()
-    # TODO: We can optionally add back 'users' once Postgres can handle complex object types.
-    source.set_streams([
+    source.select_streams([
         "products",
         "purchases",
+        "users",
     ])
     return source
 
@@ -99,15 +100,6 @@ def source_faker_seed_b() -> ab.Source:
 def duckdb_cache() -> Generator[caches.DuckDBCache, None, None]:
     """Fixture to return a fresh cache."""
     cache: caches.DuckDBCache = ab.new_local_cache()
-    yield cache
-    # TODO: Delete cache DB file after test is complete.
-    return
-
-
-@pytest.fixture(scope="function")
-def snowflake_cache(snowflake_config) -> Generator[caches.SnowflakeCache, None, None]:
-    """Fixture to return a fresh cache."""
-    cache: caches.SnowflakeCache = caches.SnowflakeSQLCache(snowflake_config)
     yield cache
     # TODO: Delete cache DB file after test is complete.
     return
@@ -125,16 +117,13 @@ def postgres_cache(new_pg_cache_config) -> Generator[caches.PostgresCache, None,
 @pytest.fixture
 def all_cache_types(
     duckdb_cache: ab.DuckDBCache,
-    snowflake_cache: ab.SnowflakeCache,
     postgres_cache: ab.PostgresCache,
 ):
     _ = postgres_cache
     return [
         duckdb_cache,
         postgres_cache,
-        # snowflake_cache,  # Snowflake works, but is slow and expensive to test. # TODO: Re-enable.
     ]
-
 
 def test_faker_pks(
     source_faker_seed_a: ab.Source,
@@ -150,23 +139,6 @@ def test_faker_pks(
     read_result = source_faker_seed_a.read(duckdb_cache, write_strategy="append")
     assert read_result.cache._get_primary_keys("products") == ["id"]
     assert read_result.cache._get_primary_keys("purchases") == ["id"]
-
-
-def test_faker_read_to_all(
-    source_faker_seed_a: ab.Source,
-    snowflake_cache: ab.SnowflakeCache,
-    postgres_cache: ab.PostgresCache,
-    duckdb_cache: ab.DuckDBCache,
-) -> None:
-    """Test that the append strategy works as expected."""
-    # Function-scoped fixtures can't be used in parametrized().
-    for cache in [snowflake_cache, postgres_cache, duckdb_cache]:
-        result = source_faker_seed_a.read(
-            cache, write_strategy="replace", force_full_refresh=True
-        )
-        assert len(result.cache.streams) == 3
-        assert len(list(result.cache.streams["products"])) == NUM_PRODUCTS
-        assert len(list(result.cache.streams["purchases"])) == FAKER_SCALE_A
 
 
 def test_replace_strategy(
@@ -246,7 +218,7 @@ def test_incremental_sync(
     result1 = source_faker_seed_a.read(duckdb_cache)
     assert len(list(result1.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result1.cache.streams["purchases"])) == FAKER_SCALE_A
-    assert result1.processed_records == NUM_PRODUCTS + FAKER_SCALE_A
+    assert result1.processed_records == NUM_PRODUCTS + FAKER_SCALE_A * 2
 
     assert not duckdb_cache.get_state() == []
 
@@ -271,7 +243,7 @@ def test_incremental_state_cache_persistence(
     cache_name = str(ulid.ULID())
     cache = ab.new_local_cache(cache_name)
     result = source_faker_seed_a.read(cache)
-    assert result.processed_records == NUM_PRODUCTS + FAKER_SCALE_A
+    assert result.processed_records == NUM_PRODUCTS + FAKER_SCALE_A * 2
     second_cache = ab.new_local_cache(cache_name)
     # The state should be persisted across cache instances.
     result2 = source_faker_seed_b.read(second_cache)
@@ -298,10 +270,10 @@ def test_incremental_state_prefix_isolation(
     different_prefix_cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="different_prefix_"))
 
     result = source_faker_seed_a.read(cache)
-    assert result.processed_records == NUM_PRODUCTS + FAKER_SCALE_A
+    assert result.processed_records == NUM_PRODUCTS + FAKER_SCALE_A * 2
 
     result2 = source_faker_seed_b.read(different_prefix_cache)
-    assert result2.processed_records == NUM_PRODUCTS + FAKER_SCALE_B
+    assert result2.processed_records == NUM_PRODUCTS + FAKER_SCALE_B * 2
 
     assert len(list(result2.cache.streams["products"])) == NUM_PRODUCTS
     assert len(list(result2.cache.streams["purchases"])) == FAKER_SCALE_B
