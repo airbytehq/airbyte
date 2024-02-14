@@ -95,7 +95,9 @@ def snowflake_cache(snowflake_config) -> Generator[caches.SnowflakeCache, None, 
     return
 
 
-@viztracer.trace_and_save(output_dir=".pytest_cache/snowflake_trace/")
+# Uncomment this line if you want to see performance trace logs.
+# You can render perf traces using the viztracer CLI or the VS Code VizTracer Extension.
+#@viztracer.trace_and_save(output_dir=".pytest_cache/snowflake_trace/")
 def test_faker_read_to_snowflake(
     source_faker_seed_a: ab.Source,
     snowflake_cache: ab.SnowflakeCache,
