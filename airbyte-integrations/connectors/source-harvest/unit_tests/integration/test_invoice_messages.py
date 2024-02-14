@@ -1,8 +1,9 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 from unittest import TestCase
 
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
@@ -16,10 +17,9 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-
+from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from integration.config import ConfigBuilder
 from source_harvest import SourceHarvest
-
 
 _A_REPLICATION_START_DATE = "2021-01-01T00:00:00+00:00"
 _AN_ACCOUNT_ID = "1209384"
