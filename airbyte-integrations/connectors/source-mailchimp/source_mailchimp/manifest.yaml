@@ -1,0 +1,366 @@
+version: 0.52.0
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  # TODO: how to make simple ping ?
+  stream_names:
+    - "campaigns"
+
+definitions:
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  basic_authenticator:
+    type: BasicHttpAuthenticator
+    username: "anystring"
+    password: "{{ config.get('apikey') or config['credentials']['apikey'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["{{ parameters.get('data_field') }}"]
+    paginator:
+      type: "DefaultPaginator"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 1000
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page_size"
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "offset"
+    requester:
+      type: CustomRequester
+      class_name: source_mailchimp.components.MailChimpRequester
+      url_base: https://{{ config['data_center'] }}.api.mailchimp.com/3.0/
+      http_method: GET
+      authenticator:
+        class_name: source_mailchimp.components.MailChimpAuthenticator
+        type: CustomAuthenticator
+        bearer: "#/definitions/bearer_authenticator"
+        basic: "#/definitions/basic_authenticator"
+      request_parameters:
+        exclude_fields: "{{ parameters.get('data_field') }}._links"
+
+  #  datetime_incremental_sync:
+  #    type: DatetimeBasedCursor
+  #    start_datetime:
+  #      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}" #
+  #    end_datetime:
+  #      datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+  #    datetime_format: "%Y-%m-%d"
+  #    cursor_datetime_formats:
+  #      - "%Y-%m-%d"
+  #      - "%Y-%m-%dT%H:%M:%S"
+  #    cursor_granularity: P1D
+  #    step: P15D
+  #    cursor_field: "{{ parameters['stream_cursor_field'] }}"
+
+  base_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  base_incremental_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_field: "{{ parameters['cursor_field'] }}"
+          sort_dir: "ASC"
+          exclude_fields: "{{ parameters.get('data_field') }}._links"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      # TODO: check if needed
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      #      cursor_datetime_formats: [ ]
+      start_datetime:
+        type: MinMaxDatetime
+        # TODO: ref to use datetime as optional parameter if possible
+        datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S%z')) }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: "since_{{ parameters['cursor_field'] }}"
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: "before_{{ parameters['cursor_field'] }}"
+        type: RequestOption
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      step: P1M
+      cursor_granularity: PT1S
+
+  automations_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "automations"
+      primary_key: "id"
+      path: "automations"
+      data_field: "automations"
+      cursor_field: "create_time"
+
+  campaigns_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "campaigns"
+      primary_key: "id"
+      path: "/campaigns"
+      data_field: "campaigns"
+  #    incremental_sync:
+  #      $ref: "#/definitions/datetime_incremental_sync"
+  #      step: P1M
+  #      cursor_field: "date"
+
+  # TODO: check how works nested stream state
+  list_members_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "list_members"
+      primary_key: "id"
+      path: "/lists/{{ stream_slice.id }}/members"
+      data_field: "members"
+      cursor_field: "last_changed"
+  #    incremental_sync:
+  #      $ref: "#/definitions/base_incremental_stream/incremental_sync"
+  #      cursor_field: "last_changed"
+
+  lists_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "lists"
+      primary_key: "id"
+      path: "lists"
+      data_field: "lists"
+      cursor_field: "date_created"
+  #    incremental_sync:
+  #      $ref: "#/definitions/base_incremental_stream/incremental_sync"
+  #      cursor_field: "date_created"
+
+  tags_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "tags"
+      primary_key: "id"
+      path: "lists/{{ stream_slice.id }}/tag-search"
+      data_field: "tags"
+
+  interest_categories_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["list_id"]
+            value: "{{ stream_slice.id }}"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "interest_categories"
+      primary_key: "id"
+      path: "lists/{{ stream_slice.id }}/interest-categories"
+      data_field: "categories"
+
+  interests_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/interest_categories_stream"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "interests"
+      primary_key: "id"
+      path: "lists/{{ stream_slice.parent_slice.id }}/interest-categories/{{ stream_slice.id }}/interests"
+      data_field: "interests"
+
+  reports_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "reports"
+      primary_key: "id"
+      path: "reports"
+      data_field: "reports"
+      cursor_field: "send_time"
+
+  segments_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "segments"
+      primary_key: "id"
+      path: "/lists/{{ stream_slice.id }}/segments"
+      data_field: "segments"
+      cursor_field: "updated_at"
+
+  segment_members_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/segments_stream"
+            parent_key: id
+            partition_field: id
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_mailchimp.components.MailChimpRecordFilter
+    $parameters:
+      name: "segment_members"
+      primary_key: "id"
+      path: "/lists/{{ stream_slice.parent_slice.id }}/segments/{{ stream_slice.id }}/members"
+      data_field: "members"
+      cursor_field: "last_changed"
+
+  unsubscribes_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/campaigns_stream"
+            parent_key: id
+            partition_field: id
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_mailchimp.components.MailChimpRecordFilter
+    incremental_sync:
+      type: DatetimeBasedCursor
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      #      cursor_datetime_formats: [ ]
+      start_datetime:
+        type: MinMaxDatetime
+        # TODO: ref to use datetime as optional parameter if possible
+        datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S%z')) }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    $parameters:
+      name: "unsubscribes"
+      primary_key: ["campaign_id", "email_id", "timestamp"]
+      path: "/reports/{{ stream_slice.id }}/unsubscribed"
+      data_field: "unsubscribes"
+      cursor_field: "timestamp"
+
+  email_activity_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/campaigns_stream"
+            parent_key: id
+            partition_field: id
+      record_selector:
+        # TODO: make extractor based on base class
+        $ref: "#/definitions/retriever/record_selector"
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_mailchimp.components.MailChimpRecordFilterEmailActivity
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        # TODO: check if needed
+        cursor_field: "{{ parameters['cursor_field'] }}"
+        #      cursor_datetime_formats: [ ]
+        start_datetime:
+          type: MinMaxDatetime
+          # TODO: ref to use datetime as optional parameter if possible
+          datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S%z')) }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_time_option:
+          inject_into: request_parameter
+          field_name: "since"
+          type: RequestOption
+    #          step: P1M
+    #          cursor_granularity: PT1S
+    #    incremental_sync:
+    #      type: DatetimeBasedCursor
+    #      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    #      cursor_field: "{{ parameters['cursor_field'] }}"
+    #      #      cursor_datetime_formats: [ ]
+    #      start_datetime:
+    #        type: MinMaxDatetime
+    #        # TODO: ref to use datetime as optional parameter if possible
+    #        datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S%z')) }}"
+    #        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    $parameters:
+      name: "email_activity"
+      primary_key: ["timestamp", "email_id", "action"]
+      path: "/reports/{{ stream_slice.id }}/email-activity"
+      data_field: "emails"
+      cursor_field: "timestamp"
+
+streams:
+  - "#/definitions/automations_stream"
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/email_activity_stream"
+  - "#/definitions/lists_stream"
+  - "#/definitions/list_members_stream"
+  - "#/definitions/tags_stream"
+  - "#/definitions/interest_categories_stream"
+  - "#/definitions/interests_stream"
+  - "#/definitions/reports_stream"
+  - "#/definitions/segments_stream"
+  - "#/definitions/segment_members_stream"
+  - "#/definitions/unsubscribes_stream"
