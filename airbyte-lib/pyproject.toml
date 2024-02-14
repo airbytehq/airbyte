@@ -58,6 +58,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "requires_creds: marks a test as requiring credentials (skip when secrets unavailable)"
 ]
 
 [tool.ruff.pylint]
