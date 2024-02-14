@@ -141,6 +141,7 @@ def test_faker_pks(
     assert read_result.cache._get_primary_keys("purchases") == ["id"]
 
 
+@pytest.mark.slow
 def test_replace_strategy(
     source_faker_seed_a: ab.Source,
     all_cache_types: ab.DuckDBCache,
@@ -155,6 +156,7 @@ def test_replace_strategy(
             assert len(list(result.cache.streams["purchases"])) == FAKER_SCALE_A
 
 
+@pytest.mark.slow
 def test_append_strategy(
     source_faker_seed_a: ab.Source,
     all_cache_types: ab.DuckDBCache,
@@ -167,6 +169,7 @@ def test_append_strategy(
             assert len(list(result.cache.streams["purchases"])) == FAKER_SCALE_A * iteration
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("strategy", ["merge", "auto"])
 def test_merge_strategy(
     strategy: str,
