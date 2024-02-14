@@ -22,7 +22,7 @@ definitions:
       type: RecordSelector
       extractor:
         type: DpathExtractor
-        field_path: ["{{ parameters.get('data_field') }}"]
+        field_path: [ "{{ parameters.get('data_field') }}" ]
     paginator:
       type: "DefaultPaginator"
       pagination_strategy:
@@ -183,7 +183,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: ["list_id"]
+          - path: [ "list_id" ]
             value: "{{ stream_slice.id }}"
     retriever:
       $ref: "#/definitions/retriever"
@@ -260,6 +260,12 @@ definitions:
         record_filter:
           type: CustomRecordFilter
           class_name: source_mailchimp.components.MailChimpRecordFilter
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "segment_id" ]
+            value: "{{ stream_slice.id }}"
+
     $parameters:
       name: "segment_members"
       primary_key: "id"
@@ -295,7 +301,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     $parameters:
       name: "unsubscribes"
-      primary_key: ["campaign_id", "email_id", "timestamp"]
+      primary_key: [ "campaign_id", "email_id", "timestamp" ]
       path: "/reports/{{ stream_slice.id }}/unsubscribed"
       data_field: "unsubscribes"
       cursor_field: "timestamp"
@@ -346,7 +352,7 @@ definitions:
     #        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     $parameters:
       name: "email_activity"
-      primary_key: ["timestamp", "email_id", "action"]
+      primary_key: [ "timestamp", "email_id", "action" ]
       path: "/reports/{{ stream_slice.id }}/email-activity"
       data_field: "emails"
       cursor_field: "timestamp"
