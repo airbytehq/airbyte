@@ -11,9 +11,17 @@ Learn how you can become a contributor to AirbyteLib.
 
 ## Documentation
 
-Regular documentation lives in the `/docs` folder. Based on the doc strings of public methods, we generate API documentation using [pdoc](https://pdoc.dev). To generate the documentation, run `poetry run generate-docs`. The documentation will be generated in the `docs/generate` folder. This needs to be done manually when changing the public interface of the library.
+Regular documentation lives in the `/docs` folder. Based on the doc strings of public methods, we generate API documentation using [pdoc](https://pdoc.dev).
 
-A unit test validates the documentation is up to date.
+To generate the documentation, run:
+
+```console
+poetry run generate-docs
+```
+
+The `generate-docs` CLI command is mapped to the `run()` function of `docs.py` in the root `airbyte-lib` directory.
+
+Documentation pages will be generated in the `docs/generated` folder. The `test_docs.py` test in pytest will automatically update generated content. This updates must be manually committed before docs tests will pass.
 
 ## Release
 
