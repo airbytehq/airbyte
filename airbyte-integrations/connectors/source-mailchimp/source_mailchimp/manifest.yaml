@@ -171,6 +171,11 @@ definitions:
           - stream: "#/definitions/lists_stream"
             parent_key: id
             partition_field: id
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "list_id" ]
+            value: "{{ stream_slice.id }}"
     $parameters:
       name: "tags"
       primary_key: "id"
