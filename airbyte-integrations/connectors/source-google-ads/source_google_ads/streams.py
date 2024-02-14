@@ -36,7 +36,8 @@ class GoogleAdsStream(Stream, ABC):
         # The oncall issue: https://github.com/airbytehq/oncall/issues/4306
         # TODO: replace with fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
         fields = [
-            field for field in GoogleAds.get_fields_from_schema(self.get_json_schema())
+            field
+            for field in GoogleAds.get_fields_from_schema(self.get_json_schema())
             if not (field == "user_interest.availabilities" or field == "user_interest.launched_to_all")
         ]
         table_name = get_resource_name(self.name)
