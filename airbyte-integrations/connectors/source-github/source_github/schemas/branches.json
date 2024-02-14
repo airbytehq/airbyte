@@ -36,6 +36,20 @@
               "items": {
                 "type": ["null", "string"]
               }
+            },
+            "checks": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": ["null", "string"]
+                  },
+                  "app_id": {
+                    "type": ["null", "integer"]
+                  }
+                }
+              }
             }
           }
         }
