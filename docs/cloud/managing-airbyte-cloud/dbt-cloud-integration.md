@@ -4,12 +4,6 @@ products: cloud
 
 # Use the dbt Cloud integration 
 
-:::warning
-Normalization and Custom Transformation are deprecated features. 
-Destinations using Normalization will be replaced by [Typing and Deduping](/using-airbyte/core-concepts/typing-deduping.md).
-Custom Transformation will be removed on March 31. For more information, visit [here](https://github.com/airbytehq/airbyte/discussions/34860).
-:::
-
 By using the dbt Cloud integration, you can create and run dbt transformations during syncs in Airbyte Cloud. This allows you to transform raw data into a format that is suitable for analysis and reporting, including cleaning and enriching the data. 
 
 :::note
