@@ -9,20 +9,7 @@ plugins {
 }
 
 
-Properties env = new Properties()
-rootProject.file('gradle.properties').withInputStream { env.load(it) }
-
-if (!env.containsKey('VERSION')) {
-    throw new Exception('Version not specified in .env file...')
-}
-
-// `version` is used as the application build version for artifacts like jars
-// `image_tag` is used as the docker tag applied to built images.
-// These values are the same for building an specific Airbyte release or branch via the 'VERSION' environment variable.
-// For local development builds, the 'VERSION' environment variable is unset, and built images are tagged with 'dev'.
 ext {
-    version = System.getenv("VERSION") ?: env.VERSION
-    image_tag = System.getenv("VERSION") ?: 'dev'
     skipSlowTests = (System.getProperty('skipSlowTests', 'false') != 'false')
 }
 
@@ -42,7 +29,6 @@ allprojects {
     group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
     project.base.archivesName = "${project.group}-${project.name}"
 
-    version = rootProject.ext.version
 }
 
 
