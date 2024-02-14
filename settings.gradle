@@ -160,7 +160,6 @@ if (isCiServer || isAirbyteCI) {
 rootProject.name = 'airbyte'
 
 include ':airbyte-cdk:python'
-include ':airbyte-cdk:python:code-generator'
 
 include ':airbyte-cdk:java:airbyte-cdk'
 include ':airbyte-cdk:java:airbyte-cdk:dependencies'

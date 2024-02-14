@@ -1,16 +1,18 @@
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
 plugins {
-    id 'airbyte-docker-legacy'
     id 'ru.vyarus.use-python'
 }
 
+def generateCodeGeneratorImage = tasks.register('generateCodeGeneratorImage', Exec) {
+    commandLine 'bin/build_code_generator_image.sh'
+}
 def generateComponentManifestClassFiles = tasks.register('generateComponentManifestClassFiles', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-component-manifest-files.sh'
 }
 generateComponentManifestClassFiles.configure {
-    dependsOn project(':airbyte-cdk:python:code-generator').tasks.named('assemble')
+    dependsOn generateCodeGeneratorImage
 }
 tasks.register('generate').configure {
     dependsOn generateComponentManifestClassFiles
