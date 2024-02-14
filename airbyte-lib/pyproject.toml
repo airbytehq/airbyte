@@ -8,6 +8,7 @@ packages = [{include = "airbyte_lib"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+tomli = "^2.0"
 
 airbyte-cdk = "^0.58.3"
 # airbyte-protocol-models = "^1.0.1"  # Conflicts with airbyte-cdk # TODO: delete or resolve

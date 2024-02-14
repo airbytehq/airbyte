@@ -35,6 +35,20 @@ sample_catalog = {
                     },
                 },
             },
+            {
+                "name": "stream3",
+                "supported_sync_modes": ["full_refresh", "incremental"],
+                "source_defined_cursor": False,
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "column1": {"type": "string"},
+                        "column2": {"type": "number"},
+                        "column3": {"type": "number"},
+                    },
+                },
+            },
         ]
     },
 }
