@@ -2,20 +2,6 @@
 
 airbyte-lib is a library that allows to run Airbyte syncs embedded into any Python application, without the need to run Airbyte server.
 
-## Development
-
-- Make sure [Poetry is installed](https://python-poetry.org/docs/#).
-- Run `poetry install`
-- For examples, check out the `examples` folder. They can be run via `poetry run python examples/<example file>`
-- Unit tests and type checks can be run via `poetry run pytest`
-
-## Release
-
-- In your PR:
-  - Bump the version in `pyproject.toml`
-  - Add a changelog entry to the table below
-- Once the PR is merged, go to Github and trigger the `Publish AirbyteLib Manually` workflow. This will publish the new version to PyPI.
-
 ## Secrets Management
 
 AirbyteLib can auto-import secrets from the following sources:
@@ -44,22 +30,13 @@ The `get_secret()` function accepts an optional `source` argument of enum type `
 
 By default, AirbyteLib will prompt the user for any requested secrets that are not provided via other secret managers. You can disable this prompt by passing `prompt=False` to `get_secret()`.
 
-### Versioning
-
-Versioning follows [Semantic Versioning](https://semver.org/). For new features, bump the minor version. For bug fixes, bump the patch version. For pre-releases, append `dev.N` to the version. For example, `0.1.0dev.1` is the first pre-release of the `0.1.0` version.
-
-## Documentation
-
-Regular documentation lives in the `/docs` folder. Based on the doc strings of public methods, we generate API documentation using [pdoc](https://pdoc.dev). To generate the documentation, run `poetry run generate-docs`. The documentation will be generated in the `docs/generate` folder. This needs to be done manually when changing the public interface of the library.
-
-A unit test validates the documentation is up to date.
-
 ## Connector compatibility
 
 To make a connector compatible with airbyte-lib, the following requirements must be met:
-* The connector must be a Python package, with a `pyproject.toml` or a `setup.py` file.
-* In the package, there must be a `run.py` file that contains a `run` method. This method should read arguments from the command line, and run the connector with them, outputting messages to stdout.
-* The `pyproject.toml` or `setup.py` file must specify a command line entry point for the `run` method called `source-<connector name>`. This is usually done by adding a `console_scripts` section to the `pyproject.toml` file, or a `entry_points` section to the `setup.py` file. For example:
+
+- The connector must be a Python package, with a `pyproject.toml` or a `setup.py` file.
+- In the package, there must be a `run.py` file that contains a `run` method. This method should read arguments from the command line, and run the connector with them, outputting messages to stdout.
+- The `pyproject.toml` or `setup.py` file must specify a command line entry point for the `run` method called `source-<connector name>`. This is usually done by adding a `console_scripts` section to the `pyproject.toml` file, or a `entry_points` section to the `setup.py` file. For example:
 
 ```toml
 [tool.poetry.scripts]
@@ -100,6 +77,10 @@ airbyte-lib-validate-source —connector-dir . -—sample-config secrets/config.
 The script will install the python package in the provided directory, and run the connector against the provided config. The config should be a valid JSON file, with the same structure as the one that would be provided to the connector in Airbyte. The script will exit with a non-zero exit code if the connector fails to run.
 
 For a more lightweight check, the `--validate-install-only` flag can be used. This will only check that the connector can be installed and returns a spec, no sample config required.
+
+## Contributing
+
+To learn how you can contribute to AirbyteLib, please see our [AirbyteLib Contributors Guide](./CONTRIBUTING.md).
 
 ## Changelog
 
