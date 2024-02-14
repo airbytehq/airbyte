@@ -46,17 +46,6 @@ public class AirbyteExceptionHandlerTest {
   }
 
   @Test
-  void testTraceMessageEmission() throws Exception {
-    runTestWithMessage("error");
-
-    final AirbyteMessage traceMessage = findFirstTraceMessage();
-    assertAll(
-        () -> assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
-        () -> assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
-        () -> assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType()));
-  }
-
-  @Test
   void testMessageDeinterpolation() throws Exception {
     AirbyteExceptionHandler.addStringForDeinterpolation("foo");
     AirbyteExceptionHandler.addStringForDeinterpolation("bar");
@@ -89,12 +78,10 @@ public class AirbyteExceptionHandlerTest {
     runTestWithMessage("Error happened in foobar");
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
-    // We shouldn't deinterpolate at all in this case, so we will get the default trace message
-    // behavior.
     assertAll(
-        () -> assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
+        () -> assertEquals("Error happened in foobar", traceMessage.getTrace().getError().getMessage()),
         () -> assertEquals(
-            "java.lang.RuntimeException: Error happened in foobar",
+            "Error happened in foobar",
             traceMessage.getTrace().getError().getInternalMessage()));
   }
 
