@@ -24,6 +24,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableS
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
@@ -43,7 +44,7 @@ import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
+public class SnowflakeDestinationHandler extends JdbcDestinationHandler<SnowflakeState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestinationHandler.class);
   public static final String EXCEPTION_COMMON_PREFIX = "JavaScript execution error: Uncaught Execution of multiple statements failed on statement";

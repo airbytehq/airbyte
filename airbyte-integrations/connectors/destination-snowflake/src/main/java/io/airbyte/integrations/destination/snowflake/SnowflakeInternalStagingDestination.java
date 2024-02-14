@@ -27,11 +27,13 @@ import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDe
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV2TableMigrator;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.ExtractedAtUtcTimezoneMigration;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -163,10 +165,16 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, sqlGenerator, snowflakeDestinationHandler);
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
     if (disableTypeDedupe) {
-      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator);
+      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator);
     } else {
       typerDeduper =
-          new DefaultTyperDeduper(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator);
+          new DefaultTyperDeduper<>(
+              sqlGenerator,
+              snowflakeDestinationHandler,
+              parsedCatalog,
+              migrator,
+              v2TableMigrator,
+              List.of(new ExtractedAtUtcTimezoneMigration(database)));
     }
 
     return StagingConsumerFactory.builder(

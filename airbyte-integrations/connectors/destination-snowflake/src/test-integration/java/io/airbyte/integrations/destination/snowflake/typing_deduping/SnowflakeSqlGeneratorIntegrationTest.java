@@ -29,6 +29,7 @@ import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestSourceOperations;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -45,7 +46,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest {
+public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<SnowflakeState> {
 
   private static String databaseName;
   private static JdbcDatabase database;
