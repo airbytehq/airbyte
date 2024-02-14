@@ -507,7 +507,7 @@ def test_get_customers(mocker, customer_status_filter, expected_ids, send_reques
 
     mock_google_api.get_accessible_accounts.return_value = ["123", "789"]
     mock_google_api.send_request.side_effect = mock_send_request
-    mock_google_api.parse_single_result.side_effect = lambda schema, result: result
+    mock_google_api.parse_single_result.side_effect = lambda schema, result, nullable: result
 
     mock_config = {"customer_status_filter": customer_status_filter, "customer_ids": ["123", "456", "789"]}
 
