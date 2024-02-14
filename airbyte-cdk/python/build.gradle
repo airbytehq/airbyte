@@ -1,14 +1,15 @@
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
 plugins {
-    id 'ru.vyarus.use-python'
+    id 'base'
+    id 'ru.vyarus.use-python' version '2.3.0'
 }
 
 def generateCodeGeneratorImage = tasks.register('generateCodeGeneratorImage', Exec) {
     commandLine 'bin/build_code_generator_image.sh'
 }
 def generateComponentManifestClassFiles = tasks.register('generateComponentManifestClassFiles', Exec) {
-    environment 'ROOT_DIR', rootDir.absolutePath
+    environment 'ROOT_DIR', rootDir.parentFile.parentFile.absolutePath
     commandLine 'bin/generate-component-manifest-files.sh'
 }
 generateComponentManifestClassFiles.configure {
@@ -19,12 +20,12 @@ tasks.register('generate').configure {
 }
 
 tasks.register('validateSourceYamlManifest', Exec) {
-    environment 'ROOT_DIR', rootDir.absolutePath
+    environment 'ROOT_DIR', rootDir.parentFile.parentFile.absolutePath
     commandLine 'bin/validate-yaml-schema.sh'
 }
 
 tasks.register('runLowCodeConnectorUnitTests', Exec) {
-    environment 'ROOT_DIR', rootDir.absolutePath
+    environment 'ROOT_DIR', rootDir.parentFile.parentFile.absolutePath
     commandLine 'bin/low-code-unit-tests.sh'
 }
 
