@@ -9,6 +9,9 @@ import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYN
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_LSN;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.FAIL_SYNC_OPTION;
+import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
+import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.RESYNC_DATA_OPTION;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.USE_TEST_CHUNK_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -88,7 +91,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     return testdb.testConfigBuilder()
         .withSchemas(modelsSchema(), modelsSchema() + "_random")
         .withoutSsl()
-        .withCdcReplication("After loading Data in the destination")
+        .withCdcReplication()
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .with("heartbeat_action_query", "")
         .build();
@@ -106,7 +109,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     final JsonNode invalidDebugConfig = testdb.testConfigBuilder()
         .withSchemas(modelsSchema(), modelsSchema() + "_random")
         .withoutSsl()
-        .withCdcReplication("While reading Data")
+        .withCdcReplication("While reading Data", RESYNC_DATA_OPTION)
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .with("debug_mode", true)
         .build();
@@ -587,8 +590,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     final JsonNode config = testdb.testConfigBuilder()
         .withSchemas(modelsSchema(), modelsSchema() + "_random")
         .withoutSsl()
-        .withCdcReplication()
+        .withCdcReplication("While reading Data", RESYNC_DATA_OPTION)
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .with(INVALID_CDC_CURSOR_POSITION_PROPERTY, RESYNC_DATA_OPTION)
         .build();
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
         .read(config, getConfiguredCatalog(), null);
@@ -630,6 +634,47 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         dataFromThirdBatch);
 
     assertEquals(MODEL_RECORDS.size() + recordsToCreate + 1, recordsFromThirdBatch.size());
+  }
+
+  @Test
+  void testSyncShouldFailPurgedLogs() throws Exception {
+    final int recordsToCreate = 20;
+
+    final JsonNode config = testdb.testConfigBuilder()
+        .withSchemas(modelsSchema(), modelsSchema() + "_random")
+        .withoutSsl()
+        .withCdcReplication()
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .build();
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
+        .read(config, getConfiguredCatalog(), null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
+    assertExpectedStateMessages(stateAfterFirstBatch);
+    // second batch of records again 20 being created
+    bulkInsertRecords(recordsToCreate);
+
+    // Extract the last state message
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = source()
+        .read(config, getConfiguredCatalog(), state);
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
+    assertExpectedStateMessagesFromIncrementalSync(stateAfterSecondBatch);
+
+    for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 400 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "H-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    // Triggering sync with the first sync's state only which would mimic a scenario that the second
+    // sync failed on destination end, and we didn't save state
+    assertThrows(ConfigErrorException.class, () -> source().read(config, getConfiguredCatalog(), state));
   }
 
   protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages) {
