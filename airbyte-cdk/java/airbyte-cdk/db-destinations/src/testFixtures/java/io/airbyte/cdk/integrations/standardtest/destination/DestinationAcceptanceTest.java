@@ -789,7 +789,7 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
-    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
+    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, supportsNormalization());
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
@@ -1847,6 +1847,10 @@ public abstract class DestinationAcceptanceTest {
           });
     }
 
+  }
+
+  private boolean supportsNormalization() {
+    return supportsInDestinationNormalization() || normalizationFromDefinition();
   }
 
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {

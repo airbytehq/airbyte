@@ -5,9 +5,7 @@
 package io.airbyte.integrations.destination.clickhouse;
 
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
-import org.junit.jupiter.api.Disabled;
 
-@Disabled("This test was failing on the master branch and seems unrelated to any changes in the PR")
 public class SshPasswordClickhouseDestinationAcceptanceTest extends SshClickhouseDestinationAcceptanceTest {
 
   @Override
