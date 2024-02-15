@@ -31,7 +31,7 @@ const plugin = () => {
         node.attributes = toAttributes({
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
-          isPypiPublished: false,
+          isPypiPublished: isPypiConnector(registryEntry),
           supportLevel: registryEntry.supportLevel_oss,
           dockerImageTag: registryEntry.dockerImageTag_oss,
           iconUrl: registryEntry.iconUrl_oss,
