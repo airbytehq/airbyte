@@ -31,7 +31,8 @@ import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep4;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
-import org.jooq.conf.ParamType;
+import org.jooq.conf.Settings;
+import org.jooq.conf.StatementType;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
@@ -112,7 +113,19 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
         // > default
         for (final List<PartialAirbyteMessage> batch : Iterables.partition(records, 10_000)) {
           LOGGER.info("Prepared batch size: {}, {}, {}", batch.size(), schemaName, tableName);
-          final DSLContext create = using(connection, SQLDialect.POSTGRES);
+          final DSLContext create = using(
+              connection,
+              SQLDialect.POSTGRES,
+              // Force inlined params.
+              // jooq normally tries to intelligently use bind params when possible.
+              // This would cause queries with many params to use inline params,
+              // but small queries would use bind params.
+              // In turn, that would force us to intelligently escape string values,
+              // since we need to escape inlined strings
+              // but need to not escape bound strings.
+              // Instead, we force jooq to always inline params,
+              // and always call escapeStringLiteral() on the string values.
+              new Settings().withStatementType(StatementType.STATIC_STATEMENT));
           // JOOQ adds some overhead here. Building the InsertValuesStep object takes about 139ms for 5K
           // records.
           // That's a nontrivial execution speed loss when the actual statement execution takes 500ms.
@@ -138,13 +151,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
                 val(Instant.ofEpochMilli(record.getRecord().getEmittedAt()).atOffset(ZoneOffset.UTC)),
                 val((OffsetDateTime) null));
           }
-          // Intentionally don't use insert.execute().
-          // jooq will try to use a parameterized query if there are not too many query params.
-          // This means that for small queries, we would need to not-escape backslashes,
-          // but for large queries we _would_ need to escape them.
-          // Instead, force jooq to always inline params.
-          // This allows us to always escape backslashes.
-          connection.createStatement().execute(insert.getSQL(ParamType.INLINED));
+          insert.execute();
           LOGGER.info("Executed batch size: {}, {}, {}", batch.size(), schemaName, tableName);
         }
       });

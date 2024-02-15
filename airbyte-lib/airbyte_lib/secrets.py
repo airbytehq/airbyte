@@ -2,30 +2,90 @@
 """Secrets management for AirbyteLib."""
 from __future__ import annotations
 
+import contextlib
 import os
 from enum import Enum, auto
 from getpass import getpass
+from typing import TYPE_CHECKING
+
+from dotenv import dotenv_values
 
 from airbyte_lib import exceptions as exc
 
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+
+try:
+    from google.colab import userdata as colab_userdata
+except ImportError:
+    colab_userdata = None
+
+
 class SecretSource(Enum):
     ENV = auto()
+    DOTENV = auto()
     GOOGLE_COLAB = auto()
     ANY = auto()
 
     PROMPT = auto()
 
 
-ALL_SOURCES = [
-    SecretSource.ENV,
-    SecretSource.GOOGLE_COLAB,
-]
+def _get_secret_from_env(
+    secret_name: str,
+) -> str | None:
+    if secret_name not in os.environ:
+        return None
 
-try:
-    from google.colab import userdata as colab_userdata
-except ImportError:
-    colab_userdata = None
+    return os.environ[secret_name]
+
+
+def _get_secret_from_dotenv(
+    secret_name: str,
+) -> str | None:
+    try:
+        dotenv_vars: dict[str, str | None] = dotenv_values()
+    except Exception:
+        # Can't locate or parse a .env file
+        return None
+
+    if secret_name not in dotenv_vars:
+        # Secret not found
+        return None
+
+    return dotenv_vars[secret_name]
+
+
+def _get_secret_from_colab(
+    secret_name: str,
+) -> str | None:
+    if colab_userdata is None:
+        # The module doesn't exist. We probably aren't in Colab.
+        return None
+
+    try:
+        return colab_userdata.get(secret_name)
+    except Exception:
+        # Secret name not found. Continue.
+        return None
+
+
+def _get_secret_from_prompt(
+    secret_name: str,
+) -> str | None:
+    with contextlib.suppress(Exception):
+        return getpass(f"Enter the value for secret '{secret_name}': ")
+
+    return None
+
+
+_SOURCE_FUNCTIONS: dict[SecretSource, Callable] = {
+    SecretSource.ENV: _get_secret_from_env,
+    SecretSource.DOTENV: _get_secret_from_dotenv,
+    SecretSource.GOOGLE_COLAB: _get_secret_from_colab,
+    SecretSource.PROMPT: _get_secret_from_prompt,
+}
 
 
 def get_secret(
@@ -45,8 +105,9 @@ def get_secret(
     user will be prompted to enter the secret if it is not found in any of the other sources.
     """
     sources = [source] if not isinstance(source, list) else source
+    all_sources = set(_SOURCE_FUNCTIONS.keys()) - {SecretSource.PROMPT}
     if SecretSource.ANY in sources:
-        sources += [s for s in ALL_SOURCES if s not in sources]
+        sources += [s for s in all_sources if s not in sources]
         sources.remove(SecretSource.ANY)
 
     if prompt or SecretSource.PROMPT in sources:
@@ -55,8 +116,9 @@ def get_secret(
 
         sources.append(SecretSource.PROMPT)  # Always check prompt last
 
-    for s in sources:
-        val = _get_secret_from_source(secret_name, s)
+    for source in sources:
+        fn = _SOURCE_FUNCTIONS[source]  # Get the matching function for this source
+        val = fn(secret_name)
         if val:
             return val
 
@@ -64,23 +126,3 @@ def get_secret(
         secret_name=secret_name,
         sources=[str(s) for s in sources],
     )
-
-
-def _get_secret_from_source(
-    secret_name: str,
-    source: SecretSource,
-) -> str | None:
-    if source in [SecretSource.ENV, SecretSource.ANY] and secret_name in os.environ:
-        return os.environ[secret_name]
-
-    if (
-        source in [SecretSource.GOOGLE_COLAB, SecretSource.ANY]
-        and colab_userdata is not None
-        and colab_userdata.get(secret_name)
-    ):
-        return colab_userdata.get(secret_name)
-
-    if source == SecretSource.PROMPT:
-        return getpass(f"Enter the value for secret '{secret_name}': ")
-
-    return None
