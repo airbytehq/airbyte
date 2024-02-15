@@ -5,6 +5,7 @@
 
 import logging
 from abc import ABC
+from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -25,6 +26,7 @@ class VkusvillStream(HttpStream, ABC):
     transformer: TypeTransformer = TypeTransformer(
         config=TransformConfig.DefaultSchemaNormalization,
     )
+    data_key = None
 
     def __init__(self, authenticator: TokenAuthenticator, url_base: str):
         super().__init__(authenticator)
@@ -49,9 +51,67 @@ class VkusvillStream(HttpStream, ABC):
         yield {}
 
 
-class PaginationStream(VkusvillStream, ABC):
+class PaginationStream(VkusvillStream, IncrementalMixin, ABC):
     page_size = 100
-    data_key = None
+    cursor_field = None
+    cursor_field_in_record = None
+
+    def __init__(
+        self,
+        authenticator: TokenAuthenticator,
+        url_base: str,
+        date_from: datetime,
+        date_to: datetime,
+        is_incremental: bool,
+    ):
+        super().__init__(authenticator, url_base)
+        self.date_from = date_from
+        self.date_to = date_to
+        self.is_incremental = is_incremental
+        self._state = {}
+
+    @property
+    def state_checkpoint_interval(self) -> int:
+        return self.page_size
+
+    @property
+    def supports_incremental(self) -> bool:
+        return (
+            self.is_incremental
+            and self.cursor_field is not None
+            and self.date_to is None
+            and self.date_from is not None
+        )
+
+    @property
+    def state(self):
+        if not self._state:
+            print("self.cursor_field", self.cursor_field)
+            self._state = {self.cursor_field: self.dt_to_source_format(self.date_from)}
+        return self._state
+
+    @staticmethod
+    def dt_to_source_format(dt: datetime) -> str:
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+    @staticmethod
+    def source_format_to_dt(dt: str) -> datetime:
+        return datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
+
+    @state.setter
+    def state(self, value):
+        self._state[self.cursor_field] = value[self.cursor_field]
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            if self.supports_incremental:
+                current_cursor_value = self.source_format_to_dt(self.state[self.cursor_field])
+                latest_cursor_value = self.in_record_date_str_to_dt(
+                    record[self.cursor_field_in_record]
+                )
+                new_cursor_value = max(latest_cursor_value, current_cursor_value)
+                self.state = {self.cursor_field: self.dt_to_source_format(new_cursor_value)}
+            yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         headers = response.json()["Headers"]
@@ -59,9 +119,6 @@ class PaginationStream(VkusvillStream, ABC):
         current_page = headers["x-pagination-current-page"][0]
 
         next_page = current_page + 1
-        # REMOVE - for testing
-        if current_page == 3:
-            next_page = None
 
         if total_pages == 0 or current_page == total_pages:
             next_page = None
@@ -71,6 +128,9 @@ class PaginationStream(VkusvillStream, ABC):
         if next_page is None:
             return None
         return {"next_page_token": current_page + 1}
+
+    def in_record_date_str_to_dt(self, date_str: str) -> datetime:
+        return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
 
     def request_params(
         self,
@@ -84,8 +144,23 @@ class PaginationStream(VkusvillStream, ABC):
             "per-page": self.page_size,
             "page": page,
         }
+        if self.cursor_field:
+            params = {**params, **self.build_params_filter(stream_state)}
+
         if next_page_token:
             params["page_token"] = next_page_token["next_page_token"]
+        return params
+
+    def build_params_filter(
+        self,
+        stream_state: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        params = {}
+        sort_value = stream_state.get(self.cursor_field, self.date_from)
+        if isinstance(sort_value, datetime):
+            sort_value = self.dt_to_source_format(sort_value)
+        params["sort"] = self.cursor_field
+        params[f"filter[{self.cursor_field}][>]"] = sort_value
         return params
 
     @classmethod
@@ -116,40 +191,43 @@ class PaginationStream(VkusvillStream, ABC):
             yield from response.json()["DATA"][self.data_key]
 
 
-class Candidates(PaginationStream, IncrementalMixin):
+class Candidates(PaginationStream):
     # OK
     use_cache = True
     primary_key = "id"
     data_key = "candidate_list"
     cursor_field = "updated_at"
+    cursor_field_in_record = "updated_at"
 
     def path(self, *args, **kwargs) -> str:
         return "candidates"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        return {
-            **super().request_params(stream_state, stream_slice, next_page_token),
-            "sort": "-updated_at",
-            # "filter[created_at][>]": "2023-12-25",
-        }
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, value):
-        self._state[self.cursor_field] = value[self.cursor_field]
 
 
 class DataLogs(PaginationStream):
     # OK
     primary_key = "id"
+    cursor_field = "date"
+    cursor_field_in_record = "date"
+
+    def in_record_date_str_to_dt(self, date_str: str) -> datetime:
+        return datetime.strptime(date_str, "%d.%m.%Y %H:%M")
+
+    def build_params_filter(
+        self,
+        stream_state: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        # build between[created_at]=01.02.2024-02.02.2024
+        params = {}
+        from_value = stream_state.get(self.cursor_field, self.date_from)
+        if isinstance(from_value, datetime):
+            from_value = self.dt_to_source_format(from_value)
+
+        to_value = self.date_to or datetime.now()
+        if isinstance(from_value, datetime):
+            to_value = self.dt_to_source_format(from_value)
+        params["sort"] = self.cursor_field
+        params[f"between[{self.cursor_field}]"] = f"{from_value}-{to_value}"
+        return params
 
     def path(self, *args, **kwargs) -> str:
         return "data-logs"
@@ -285,6 +363,8 @@ class DictionaryOptions(PaginationStream):
 class DictionaryValues(PaginationStream):
     # OK
     primary_key = "id"
+    cursor_field_in_record = "updated_at"
+    cursor_field = "updated_at"
 
     def path(self, *args, **kwargs) -> str:
         return "dictionary-values"
@@ -293,6 +373,8 @@ class DictionaryValues(PaginationStream):
 class Flows(PaginationStream):
     # OK
     primary_key = "id"
+    cursor_field_in_record = "created_at"
+    cursor_field = "created_at"
 
     def path(self, *args, **kwargs) -> str:
         return "flows"
@@ -303,6 +385,8 @@ class Requests(PaginationStream):
     primary_key = "id"
     use_cache = True
     data_key = "request_list"
+    cursor_field_in_record = "updated_at"
+    cursor_field = "updated_at"
 
     def path(self, *args, **kwargs) -> str:
         return "requests"
@@ -311,6 +395,8 @@ class Requests(PaginationStream):
 class Resumes(PaginationStream):
     # OK
     primary_key = "id"
+    cursor_field_in_record = "updated_at"
+    cursor_field = "updated_at"
 
     def path(self, *args, **kwargs) -> str:
         return "resumes"
@@ -357,6 +443,8 @@ class StageStateSelf(VkusvillStream):
 class Stores(PaginationStream):
     # OK
     primary_key = "id"
+    cursor_field_in_record = "updated_at"
+    cursor_field = "updated_at"
 
     def path(self, *args, **kwargs) -> str:
         return "stores"
@@ -429,34 +517,73 @@ class SourceVkusvill(AbstractSource):
             config["credentials"]["password"],
         )
 
+    @staticmethod
+    def parse_date_string(date_string: str) -> Optional[datetime]:
+        return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S")
+
+    def transform_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        config["date_from_transformed"], config["date_to_transformed"] = None, None
+        config["use_incremental"] = False
+        if config["date_range"]["date_range_type"] == "incremental_sync":
+            if user_date_from := config["date_range"].get("date_from"):
+                config["date_from_transformed"] = self.parse_date_string(user_date_from)
+            else:
+                config["date_from_transformed"] = datetime.fromtimestamp(0)
+            config["date_to_transformed"] = None
+            config["use_incremental"] = True
+        elif config["date_range"]["date_range_type"] == "custom_date":
+            config["date_from_transformed"] = self.parse_date_string(
+                config["date_range"]["date_from"]
+            )
+            config["date_to_transformed"] = self.parse_date_string(config["date_range"]["date_to"])
+        elif config["date_range"]["date_range_type"] == "last_days":
+            delta = int(config["date_range"]["last_days_count"])
+            config["date_to_transformed"] = datetime.now().replace(
+                hour=23, minute=59, second=59, microsecond=999999
+            )
+            if config["date_range"].get("load_today", False):
+                config["date_to_transformed"] = config["date_to_transformed"] - timedelta(days=1)
+            config["date_from_transformed"] = config["date_to_transformed"] - timedelta(days=delta)
+        else:
+            raise ValueError("Invalid date_range_type")
+
+        return config
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self.get_auth(config)
+        config = self.transform_config(config)
         shared_kwargs = dict(authenticator=auth, url_base=config["url_base"])
+        pagination_kwargs = dict(
+            **shared_kwargs,
+            date_from=config["date_from_transformed"],
+            date_to=config["date_to_transformed"],
+            is_incremental=config["use_incremental"],
+        )
 
-        candidates_stream = Candidates(**shared_kwargs)
-        requests_stream = Requests(**shared_kwargs)
-        vacancies_stream = Vacancies(**shared_kwargs)
-        dictionaries_stream = Dictionaries(**shared_kwargs)
+        candidates_stream = Candidates(**pagination_kwargs)
+        requests_stream = Requests(**pagination_kwargs)
+        vacancies_stream = Vacancies(**pagination_kwargs)
+        dictionaries_stream = Dictionaries(**pagination_kwargs)
         return [
             candidates_stream,
             requests_stream,
             vacancies_stream,
             dictionaries_stream,
-            DataLogs(**shared_kwargs),
+            DataLogs(**pagination_kwargs),
             CandidateInterviewStory(**shared_kwargs, parent=candidates_stream),
             CandidateStageCounters(**shared_kwargs),
-            CandidateTags(**shared_kwargs),
+            CandidateTags(**pagination_kwargs),
             DictionaryDropdowns(**shared_kwargs, parent=dictionaries_stream),
             DictionaryDropdownGroups(**shared_kwargs),
-            DictionaryOptions(**shared_kwargs),
-            DictionaryValues(**shared_kwargs),
-            Flows(**shared_kwargs),
-            Resumes(**shared_kwargs),
-            Stages(**shared_kwargs),
+            DictionaryOptions(**pagination_kwargs),
+            DictionaryValues(**pagination_kwargs),
+            Flows(**pagination_kwargs),
+            Resumes(**pagination_kwargs),
+            Stages(**pagination_kwargs),
             StageTypes(**shared_kwargs),
-            StageStates(**shared_kwargs),
+            StageStates(**pagination_kwargs),
             StageStateSelf(**shared_kwargs),
-            Stores(**shared_kwargs),
-            Users(**shared_kwargs),
+            Stores(**pagination_kwargs),
+            Users(**pagination_kwargs),
             VacancyCandidates(**shared_kwargs, parent=vacancies_stream),
         ]

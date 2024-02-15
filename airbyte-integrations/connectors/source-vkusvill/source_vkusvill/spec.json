@@ -101,43 +101,6 @@
         "oneOf": [
           {
             "type": "object",
-            "title": "Пользовательский период",
-            "required": [
-              "date_from",
-              "date_to"
-            ],
-            "properties": {
-              "date_range_type": {
-                "type": "string",
-                "const": "custom_date",
-                "order": 0
-              },
-              "date_from": {
-                "title": "Начало периода",
-                "description": "Начало периода в формате YYYY-MM-DD",
-                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-                "pattern_descriptor": "YYYY-MM-DD",
-                "examples": [
-                  "2023-05-01"
-                ],
-                "order": 1,
-                "type": "string"
-              },
-              "date_to": {
-                "title": "Конец периода",
-                "description": "Конец периода в формате YYYY-MM-DD",
-                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-                "pattern_descriptor": "YYYY-MM-DD",
-                "order": 2,
-                "examples": [
-                  "2023-05-01"
-                ],
-                "type": "string"
-              }
-            }
-          },
-          {
-            "type": "object",
             "title": "Последние несколько дней",
             "required": [
               "last_days_count"
@@ -167,6 +130,29 @@
                 "always_show": true,
                 "order": 2,
                 "default": false
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Инкрементальная выгрузка",
+            "required": [],
+            "properties": {
+              "date_range_type": {
+                "type": "string",
+                "const": "incremental_sync",
+                "order": 0
+              },
+              "date_from": {
+                "title": "Начало выгрузки",
+                "description": "Начало выгрузки в формате YYYY-MM-DD",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+                "pattern_descriptor": "YYYY-MM-DD",
+                "examples": [
+                  "2023-05-01"
+                ],
+                "order": 1,
+                "type": "string"
               }
             }
           }
