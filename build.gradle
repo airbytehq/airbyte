@@ -128,21 +128,29 @@ allprojects {
 
     dependencies {
         // Lombok dependencies
-        compileOnly libs.lombok
-        annotationProcessor libs.lombok
-        testCompileOnly libs.lombok
-        testAnnotationProcessor libs.lombok
-        testFixturesCompileOnly libs.lombok
-        testFixturesAnnotationProcessor libs.lombok
+        def lombok = "org.projectlombok:lombok:1.18.30"
+        compileOnly lombok
+        annotationProcessor lombok
+        testCompileOnly lombok
+        testAnnotationProcessor lombok
+        testFixturesCompileOnly lombok
+        testFixturesAnnotationProcessor lombok
 
         // JUnit dependencies
-        testRuntimeOnly libs.junit.jupiter.engine
-        testImplementation libs.bundles.junit
-        testImplementation libs.assertj.core
-        testImplementation libs.junit.pioneer
-        testFixturesImplementation libs.bundles.junit
-        testFixturesImplementation libs.assertj.core
-        testFixturesImplementation libs.junit.pioneer
+        def junit_version = "5.9.1"
+        testFixturesImplementation "org.junit.jupiter:junit-jupiter-api:${junit_version}"
+        testFixturesImplementation "org.junit.jupiter:junit-jupiter-params:${junit_version}"
+        testFixturesImplementation "org.mockito:mockito-junit-jupiter:5.10.0"
+        testFixturesImplementation "org.assertj:assertj-core:3.21.0"
+        testFixturesImplementation "org.junit-pioneer:junit-pioneer:1.7.1"
+
+        testImplementation "org.junit.jupiter:junit-jupiter-api:${junit_version}"
+        testImplementation "org.junit.jupiter:junit-jupiter-params:${junit_version}"
+        testImplementation "org.mockito:mockito-junit-jupiter:5.10.0"
+        testImplementation "org.assertj:assertj-core:3.21.0"
+        testImplementation "org.junit-pioneer:junit-pioneer:1.7.1"
+
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit_version}"
 
         // adds owasp plugin
         implementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
