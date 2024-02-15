@@ -16,13 +16,19 @@ definitions:
     username: "anystring"
     password: "{{ config.get('apikey') or config['credentials']['apikey'] }}"
 
+  transformer_remove_empty_fields:
+    type: RemoveFields
+    field_pointers:
+      - ["**"]
+    condition: "{{ property|string == '' }}"
+
   retriever:
     type: SimpleRetriever
     record_selector:
       type: RecordSelector
       extractor:
         type: DpathExtractor
-        field_path: [ "{{ parameters.get('data_field') }}" ]
+        field_path: ["{{ parameters.get('data_field') }}"]
     paginator:
       type: "DefaultPaginator"
       pagination_strategy:
@@ -77,6 +83,8 @@ definitions:
           sort_field: "{{ parameters['cursor_field'] }}"
           sort_dir: "ASC"
           exclude_fields: "{{ parameters.get('data_field') }}._links"
+    transformations:
+      - "#/definitions/transformer_remove_empty_fields"
     incremental_sync:
       type: DatetimeBasedCursor
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
@@ -115,12 +123,13 @@ definitions:
 
   campaigns_stream:
     type: DeclarativeStream
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "campaigns"
       primary_key: "id"
       path: "/campaigns"
       data_field: "campaigns"
+      cursor_field: "create_time"
   #    incremental_sync:
   #      $ref: "#/definitions/datetime_incremental_sync"
   #      step: P1M
@@ -175,7 +184,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "list_id" ]
+          - path: ["list_id"]
             value: "{{ stream_slice.id }}"
     $parameters:
       name: "tags"
@@ -189,7 +198,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "list_id" ]
+          - path: ["list_id"]
             value: "{{ stream_slice.id }}"
     retriever:
       $ref: "#/definitions/retriever"
@@ -269,8 +278,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "segment_id" ]
+          - path: ["segment_id"]
             value: "{{ stream_slice.id }}"
+      - "#/definitions/transformer_remove_empty_fields"
 
     $parameters:
       name: "segment_members"
@@ -307,7 +317,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     $parameters:
       name: "unsubscribes"
-      primary_key: [ "campaign_id", "email_id", "timestamp" ]
+      primary_key: ["campaign_id", "email_id", "timestamp"]
       path: "/reports/{{ stream_slice.id }}/unsubscribed"
       data_field: "unsubscribes"
       cursor_field: "timestamp"
@@ -358,7 +368,7 @@ definitions:
     #        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     $parameters:
       name: "email_activity"
-      primary_key: [ "timestamp", "email_id", "action" ]
+      primary_key: ["timestamp", "email_id", "action"]
       path: "/reports/{{ stream_slice.id }}/email-activity"
       data_field: "emails"
       cursor_field: "timestamp"
