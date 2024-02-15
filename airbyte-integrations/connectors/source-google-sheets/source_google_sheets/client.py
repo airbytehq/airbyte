@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Dict, List, Mapping, Any
+from typing import Dict, List
 
 import backoff
 from googleapiclient import errors
