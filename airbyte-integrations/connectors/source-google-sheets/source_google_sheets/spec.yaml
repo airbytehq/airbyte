@@ -6,8 +6,16 @@ connectionSpecification:
   required:
     - spreadsheet_id
     - credentials
+    - batch_size
   additionalProperties: true
   properties:
+    batch_size:
+      type: integer
+      title: Batch Size
+      description: >-
+        An integer representing batch size for each Google Sheets API request.
+        Default value is 200, as it was with previous connector's version.
+      default: 200
     spreadsheet_id:
       type: string
       title: Spreadsheet Link
