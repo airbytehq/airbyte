@@ -21,6 +21,10 @@ on:
 
 jobs:
   run-check:
+    # The gradle check task which we will run is embarrassingly parallelizable.
+    # We therefore run this on a machine with a maximum number of cores.
+    # We pay per time and per core, so there should be little difference in total cost.
+    # The latency overhead of setting up gradle prior to running the actual task adds up to about a minute.
     runs-on: connector-test-xxlarge
     name: Gradle Check
     timeout-minutes: 30

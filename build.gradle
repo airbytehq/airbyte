@@ -127,7 +127,7 @@ allprojects {
     }
 
     dependencies {
-        // Lombok dependencies
+        // Lombok dependencies.
         def lombok = "org.projectlombok:lombok:1.18.30"
         compileOnly lombok
         annotationProcessor lombok
@@ -136,24 +136,29 @@ allprojects {
         testFixturesCompileOnly lombok
         testFixturesAnnotationProcessor lombok
 
-        // JUnit dependencies
-        def junit_version = "5.9.1"
-        testFixturesImplementation "org.junit.jupiter:junit-jupiter-api:${junit_version}"
-        testFixturesImplementation "org.junit.jupiter:junit-jupiter-params:${junit_version}"
-        testFixturesImplementation "org.mockito:mockito-junit-jupiter:5.10.0"
-        testFixturesImplementation "org.assertj:assertj-core:3.21.0"
-        testFixturesImplementation "org.junit-pioneer:junit-pioneer:1.7.1"
+        // JUnit dependencies.
+        def vAssertJ = "3.21.0"
+        def vJUnit = "5.9.1"
+        def vJUnitJupiter = "5.10.0"
+        def vJUnitPioneer = "1.7.1"
 
-        testImplementation "org.junit.jupiter:junit-jupiter-api:${junit_version}"
-        testImplementation "org.junit.jupiter:junit-jupiter-params:${junit_version}"
-        testImplementation "org.mockito:mockito-junit-jupiter:5.10.0"
-        testImplementation "org.assertj:assertj-core:3.21.0"
-        testImplementation "org.junit-pioneer:junit-pioneer:1.7.1"
+        testFixturesImplementation "org.junit.jupiter:junit-jupiter-api:${vJUnit}"
+        testFixturesImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
+        testFixturesImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
+        testFixturesImplementation "org.assertj:assertj-core:${vAssertJ}"
+        testFixturesImplementation "org.junit-pioneer:junit-pioneer:${vJUnitPioneer}"
 
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit_version}"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:${vJUnit}"
+        testImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
+        testImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
+        testImplementation "org.assertj:assertj-core:${vAssertJ}"
+        testImplementation  "org.junit-pioneer:junit-pioneer:${vJUnitPioneer}"
 
-        // adds owasp plugin
-        implementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"
+
+        // Spotbugs dependencies.
+        def vSpotbugs = "4.8.3"
+        implementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
     }
 
     tasks.withType(SpotBugsTask).configureEach {
