@@ -22,8 +22,8 @@ CONVERSION_MAP = {
     "time_without_timezone": sqlalchemy.types.TIME,
     # Technically 'object' and 'array' as JSON Schema types, not airbyte types.
     # We include them here for completeness.
-    "object": sqlalchemy.types.VARCHAR,
-    "array": sqlalchemy.types.VARCHAR,
+    "object": sqlalchemy.types.JSON,
+    "array": sqlalchemy.types.JSON,
 }
 
 
