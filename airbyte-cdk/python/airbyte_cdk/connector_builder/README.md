@@ -22,6 +22,7 @@ Note:
 *See [ConnectionSpecification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#actor-specification) for details on the `"config"` key if needed.
 
 - When the `__command` is `resolve_manifest`, the argument to `catalog` should be an empty string.
+- The config can optionally contain an object under the `__test_read_config` key which can define custom test read limits with `max_records`, `max_slices`, and `max_pages_per_slice` properties. All custom limits are optional; a default will be used for any limit that is not provided.
 
 ### Locally running the docker image
 
