@@ -10,7 +10,7 @@ airbyteJavaConnector {
             'typing-deduping',
             'gcs-destinations',
     ]
-    useLocalCdk = true
+    useLocalCdk = false
 }
 
 java {
