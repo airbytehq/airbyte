@@ -217,7 +217,6 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
         idCol, makeIdCol, modelCol,
         recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
         recordJson.get(modelCol).asText());
-
   }
 
   protected void deleteMessageOnIdCol(final String streamName, final String idCol, final int idValue) {
@@ -663,6 +662,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
         .read(config(), updatedCatalog, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
+
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
     assertStateMessagesForNewTableSnapshotTest(stateAfterSecondBatch, stateMessageEmittedAfterFirstSyncCompletion);
 
