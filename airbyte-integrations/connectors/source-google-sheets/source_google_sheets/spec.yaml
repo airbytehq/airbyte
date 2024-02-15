@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - spreadsheet_id
     - credentials
-    - batch_size
   additionalProperties: true
   properties:
     batch_size:
