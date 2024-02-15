@@ -60,7 +60,7 @@ class RemoveFields(RecordTransformation):
         for pointer in self.field_pointers:
             # the dpath library by default doesn't delete fields from arrays
             try:
-                dpath.util.delete(record, pointer, afilter=lambda x: self._filter_interpolator.eval(config, property=x))
+                dpath.util.delete(record, pointer, afilter=lambda x: self._filter_interpolator.eval(config or {}, property=x))
             except dpath.exceptions.PathNotFound:
                 # if the (potentially nested) property does not exist, silently skip
                 pass
