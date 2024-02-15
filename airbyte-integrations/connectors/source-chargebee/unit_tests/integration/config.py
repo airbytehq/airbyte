@@ -22,11 +22,11 @@ class ConfigBuilder:
         return self
 
     def with_start_date(self, start_datetime: datetime) -> "ConfigBuilder":
-        self._config["start_date"] = start_datetime.isoformat()[:-13]+"Z"
+        self._config["start_date"] = start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         return self
 
     def with_product_catalog(self, product_catalog: str) -> "ConfigBuilder":
-        self._config["product_catalog"] = product_catalog
+        self._config["product_catalog"] = product_catalog or "2.0"
         return self
 
     def build(self) -> Dict[str, Any]:

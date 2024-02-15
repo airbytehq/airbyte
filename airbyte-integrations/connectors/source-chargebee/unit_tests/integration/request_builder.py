@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 import base64
 
 from airbyte_cdk.test.mock_http import HttpRequest
@@ -42,11 +42,11 @@ class ChargebeeRequestBuilder:
         return cls("subscriptions", site, site_api_key)
 
     def __init__(self, resource: str, site: str, site_api_key: str) -> "ChargebeeRequestBuilder":
-        self._resource = resource
-        self._site = site
-        self._site_api_key = base64.b64encode(f"{site_api_key}:".encode("utf-8")).decode("utf-8")
-        self._any_query_params = False
-        self._include_deleted: Optional[bool] = None
+        self._resource: str = resource
+        self._site: str = site
+        self._site_api_key: str = site_api_key
+        self._any_query_params: bool = False
+        self._include_deleted: Optional[str] = None
         self._created_at_btw: Optional[str] = None
         self._updated_at_btw: Optional[str] = None
         self._occurred_at_btw: Optional[str] = None
@@ -55,20 +55,24 @@ class ChargebeeRequestBuilder:
         self._offset: Optional[str] = None
         self._limit: Optional[str] = None
 
+    def with_any_query_params(self) -> "ChargebeeRequestBuilder":
+        self._any_query_params = True
+        return self
+
     def with_include_deleted(self, include_deleted: bool) -> "ChargebeeRequestBuilder":
-        self._include_deleted = include_deleted
+        self._include_deleted = str(include_deleted).lower()
         return self
 
-    def with_created_at_btw(self, created_at_btw: str) -> "ChargebeeRequestBuilder":
-        self._created_at_btw = created_at_btw
+    def with_created_at_btw(self, created_at_btw: List[int]) -> "ChargebeeRequestBuilder":
+        self._created_at_btw = f'{created_at_btw}'
         return self
 
-    def with_updated_at_btw(self, updated_at_btw: str) -> "ChargebeeRequestBuilder":
-        self._updated_at_btw = updated_at_btw
+    def with_updated_at_btw(self, updated_at_btw: List[int]) -> "ChargebeeRequestBuilder":
+        self._updated_at_btw = f"{updated_at_btw}"
         return self
 
     def with_occurred_at_btw(self, occurred_at_btw: List[int]) -> "ChargebeeRequestBuilder":
-        self._occurred_at_btw = occurred_at_btw
+        self._occurred_at_btw = f"{occurred_at_btw}"
         return self
 
     def with_sort_by_asc(self, sort_by_asc: str) -> "ChargebeeRequestBuilder":
@@ -89,22 +93,22 @@ class ChargebeeRequestBuilder:
 
     def build(self) -> HttpRequest:
         query_params= {}
-        if self._include_deleted:
-            query_params['include_deleted'] = self._include_deleted
-        if self._created_at_btw:
-            query_params['created_at[between]'] = self._created_at_btw
-        if self._updated_at_btw:
-            query_params['updated_at[between]'] = self._updated_at_btw
-        if self._occurred_at_btw:
-            query_params['occurred_at[between]'] = self._occurred_at_btw
         if self._sort_by_asc:
-            query_params['sort_by[asc]'] = self._sort_by_asc
+            query_params["sort_by[asc]"] = self._sort_by_asc
         if self._sort_by_desc:
-            query_params['sort_by[desc]'] = self._sort_by_desc
+            query_params["sort_by[desc]"] = self._sort_by_desc
+        if self._include_deleted:
+            query_params["include_deleted"] = self._include_deleted
+        if self._created_at_btw:
+            query_params["created_at[between]"] = self._created_at_btw
+        if self._updated_at_btw:
+            query_params["updated_at[between]"] = self._updated_at_btw
+        if self._occurred_at_btw:
+            query_params["occurred_at[between]"] = self._occurred_at_btw
         if self._offset:
-            query_params['offset'] = self._offset
+            query_params["offset"] = self._offset
         if self._limit:
-            query_params['limit'] = self._limit
+            query_params["limit"] = self._limit
 
         if self._any_query_params:
             if query_params:
@@ -114,5 +118,5 @@ class ChargebeeRequestBuilder:
         return HttpRequest(
             url=f"https://{self._site}.chargebee.com/api/v2/{self._resource}",
             query_params=query_params,
-            headers={"Authorization": f"Basic {self._site_api_key}"},
+            headers={"Authorization": f"Basic {base64.b64encode((str(self._site_api_key) + ':').encode('utf-8')).decode('utf-8')}"},
         )

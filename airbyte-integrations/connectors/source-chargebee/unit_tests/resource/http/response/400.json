@@ -1,7 +1,7 @@
 {
-  "message": "Coupon has expired",
+  "message": "Resource has expired",
   "api_error_code": "resource_limit_exhausted",
   "error_code": "resource_limit_exhausted",
-  "error_msg": "Coupon has expired",
+  "error_msg": "Resource has expired",
   "http_status_code": 400
 }

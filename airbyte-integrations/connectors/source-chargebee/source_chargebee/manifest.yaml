@@ -77,7 +77,7 @@ definitions:
         request_parameters:
           sort_by[asc]: updated_at
           include_deleted: "true"
-          updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+          updated_at[between]: "'[{{stream_slice[\"start_time\"]}}, {{stream_slice[\"end_time\"]}}]'"
     incremental_sync:
       $ref: "#/definitions/date_stream_slicer"
   semi_incremental_stream:
@@ -195,7 +195,7 @@ definitions:
         request_parameters:
           sort_by[asc]: date
           include_deleted: "true"
-          updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+          updated_at[between]: "[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]"
     $parameters:
       name: "credit_note"
       primary_key: "id"
@@ -208,9 +208,8 @@ definitions:
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
-          sort_by[asc]: "occurred_at"
-          include_deleted: "true"
-          occurred_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+          sort_by[asc]: occurred_at
+          occurred_at[between]: "'[{{stream_slice['start_time']}},{{stream_slice['end_time']}}]'"
     $parameters:
       name: "event"
       primary_key: "id"
@@ -373,7 +372,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/nested_selector"
         record_filter:
-          condition: "{{ record['updated_at'] >= ( stream_state.get('prior_state', {}).get('updated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}"
+          condition: "{{ record['migrated_at'] >= ( stream_state.get('prior_state', {}).get('migrated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('migrated_at', 0) ) }}"
     $parameters:
       name: "site_migration_detail"
       primary_key: "entity_id"
