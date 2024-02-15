@@ -236,7 +236,7 @@
         }
       }
     },
-    "createdBefore": {
+    "changedBefore": {
       "type": ["null", "string"],
       "format": "date-time"
     }

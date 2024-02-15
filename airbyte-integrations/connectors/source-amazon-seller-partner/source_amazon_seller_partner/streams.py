@@ -1128,12 +1128,8 @@ class LedgerSummaryViewReport(LedgerDetailedViewReports):
 
 class VendorFulfillment(IncrementalAmazonSPStream, ABC):
     primary_key = "purchaseOrderNumber"
-    replication_start_date_field = "createdAfter"
-    replication_end_date_field = "createdBefore"
     next_page_token_field = "nextToken"
     page_size_field = "limit"
-    time_format = "%Y-%m-%dT%H:%M:%SZ"
-    cursor_field = "createdBefore"
 
     @property
     @abstractmethod
@@ -1146,34 +1142,48 @@ class VendorFulfillment(IncrementalAmazonSPStream, ABC):
         if next_page_token:
             return {self.next_page_token_field: next_page_token}
 
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_date = pendulum.parse(self._replication_start_date)
+        end_date = pendulum.parse(self._replication_end_date) if self._replication_end_date else pendulum.now("utc")
+
+        stream_state = stream_state or {}
+        if state_value := stream_state.get(self.cursor_field):
+            start_date = max(start_date, pendulum.parse(state_value))
+
+        start_date = min(start_date, end_date)
+        while start_date < end_date:
+            end_date_slice = start_date.add(days=7)
+            yield {
+                self.replication_start_date_field: start_date.strftime(DATE_TIME_FORMAT),
+                self.replication_end_date_field: min(end_date_slice, end_date).strftime(DATE_TIME_FORMAT),
+            }
+            start_date = end_date_slice
+
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
+        stream_slice = stream_slice or {}
         if next_page_token:
-            return dict(next_page_token)
+            stream_slice.update(next_page_token)
 
-        end_date = pendulum.now("utc").strftime(self.time_format)
-        if self._replication_end_date:
-            end_date = self._replication_end_date
-
-        # The date range to search must not be more than 7 days - see docs:
-        # https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference and
-        # https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders
-        start_date = max(pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=7, hours=1)).strftime(
-            self.time_format
-        )
-        if stream_state_value := stream_state.get(self.cursor_field):
-            start_date = max(stream_state_value, start_date)
-        return {self.replication_start_date_field: start_date, self.replication_end_date_field: end_date}
+        return stream_slice
 
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        **kwargs: Any,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
-        params = self.request_params(stream_state)
+        params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         for record in response.json().get(self.data_field, {}).get(self.records_path, []):
             record[self.replication_end_date_field] = params.get(self.replication_end_date_field)
             yield record
@@ -1191,6 +1201,9 @@ class VendorDirectFulfillmentShipping(VendorFulfillment):
 
     name = "VendorDirectFulfillmentShipping"
     records_path = "shippingLabels"
+    replication_start_date_field = "createdAfter"
+    replication_end_date_field = "createdBefore"
+    cursor_field = "createdBefore"
 
     def path(self, **kwargs: Any) -> str:
         return f"vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
@@ -1207,6 +1220,9 @@ class VendorOrders(VendorFulfillment):
 
     name = "VendorOrders"
     records_path = "orders"
+    replication_start_date_field = "changedAfter"
+    replication_end_date_field = "changedBefore"
+    cursor_field = "changedBefore"
 
     def path(self, **kwargs: Any) -> str:
         return f"vendor/orders/{VENDOR_ORDERS_API_VERSION}/purchaseOrders"
