@@ -111,14 +111,14 @@ class GlobalAsyncStateManagerTest {
   void testBasic() {
     final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
     final GlobalAsyncStateManager stateManager =
-        new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+        new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
     final var firstStateId = stateManager.getStateIdAndIncrementCounter(STREAM1_DESC);
     final var secondStateId = stateManager.getStateIdAndIncrementCounter(STREAM1_DESC);
     assertEquals(firstStateId, secondStateId);
 
     stateManager.decrement(firstStateId, 2);
-    stateManager.flushStates();
+    stateManager.flushStates(emittedStatesFromDestination::add);
     // because no state message has been tracked, there is nothing to flush yet.
     final Map<AirbyteMessage, AirbyteStateStats> stateWithStats =
         emittedStatesFromDestination.stream()
@@ -126,7 +126,7 @@ class GlobalAsyncStateManagerTest {
     assertEquals(0, stateWithStats.size());
 
     stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
-    stateManager.flushStates();
+    stateManager.flushStates(emittedStatesFromDestination::add);
 
     final AirbyteStateStats expectedDestinationStats = new AirbyteStateStats().withRecordCount(2.0);
     final Map<AirbyteMessage, AirbyteStateStats> stateWithStats2 =
@@ -151,11 +151,11 @@ class GlobalAsyncStateManagerTest {
     void testEmptyQueuesGlobalState() {
       final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
       final GlobalAsyncStateManager stateManager =
-          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       // GLOBAL
       stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats = new AirbyteStateStats().withRecordCount(0.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats =
           emittedStatesFromDestination.stream()
@@ -174,7 +174,7 @@ class GlobalAsyncStateManagerTest {
     void testConversion() {
       final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
       final GlobalAsyncStateManager stateManager =
-          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       final var preConvertId1 = simulateIncomingRecords(STREAM2_DESC, 10, stateManager);
@@ -185,13 +185,13 @@ class GlobalAsyncStateManagerTest {
 
       // Since this is actually a global state, we can only flush after all streams are done.
       stateManager.decrement(preConvertId0, 10);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       assertEquals(0, emittedStatesFromDestination.size());
       stateManager.decrement(preConvertId1, 10);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       assertEquals(0, emittedStatesFromDestination.size());
       stateManager.decrement(preConvertId2, 10);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats = new AirbyteStateStats().withRecordCount(30.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats =
           emittedStatesFromDestination.stream()
@@ -208,12 +208,12 @@ class GlobalAsyncStateManagerTest {
     void testCorrectFlushingOneStream() {
       final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
       final GlobalAsyncStateManager stateManager =
-          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(preConvertId0, 10);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats = new AirbyteStateStats().withRecordCount(10.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats =
           emittedStatesFromDestination.stream()
@@ -229,7 +229,7 @@ class GlobalAsyncStateManagerTest {
       final var afterConvertId1 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(afterConvertId1, 10);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats2 =
           emittedStatesFromDestination.stream()
               .collect(Collectors.toMap(c -> c, c -> c.getState().getDestinationStats()));
@@ -244,12 +244,12 @@ class GlobalAsyncStateManagerTest {
     void testZeroRecordFlushing() {
       final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
       final GlobalAsyncStateManager stateManager =
-          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(preConvertId0, 10);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats = new AirbyteStateStats().withRecordCount(10.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats =
           emittedStatesFromDestination.stream()
@@ -262,7 +262,7 @@ class GlobalAsyncStateManagerTest {
       emittedStatesFromDestination.clear();
 
       stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats2 = new AirbyteStateStats().withRecordCount(0.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats2 =
           emittedStatesFromDestination.stream()
@@ -277,7 +277,7 @@ class GlobalAsyncStateManagerTest {
       final var afterConvertId2 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       stateManager.trackState(GLOBAL_STATE_MESSAGE3, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(afterConvertId2, 10);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats3 =
           emittedStatesFromDestination.stream()
               .collect(Collectors.toMap(c -> c, c -> c.getState().getDestinationStats()));
@@ -292,7 +292,7 @@ class GlobalAsyncStateManagerTest {
     void testCorrectFlushingManyStreams() {
       final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
       final GlobalAsyncStateManager stateManager =
-          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       final var preConvertId1 = simulateIncomingRecords(STREAM2_DESC, 10, stateManager);
@@ -300,7 +300,7 @@ class GlobalAsyncStateManagerTest {
       stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(preConvertId0, 10);
       stateManager.decrement(preConvertId1, 10);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats = new AirbyteStateStats().withRecordCount(20.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats =
           emittedStatesFromDestination.stream()
@@ -317,7 +317,7 @@ class GlobalAsyncStateManagerTest {
       assertEquals(afterConvertId0, afterConvertId1);
       stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(afterConvertId0, 20);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats2 =
           emittedStatesFromDestination.stream()
               .collect(Collectors.toMap(c -> c, c -> c.getState().getDestinationStats()));
@@ -337,11 +337,11 @@ class GlobalAsyncStateManagerTest {
     void testEmptyQueues() {
       final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
       final GlobalAsyncStateManager stateManager =
-          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       // GLOBAL
       stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats = new AirbyteStateStats().withRecordCount(0.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats =
           emittedStatesFromDestination.stream()
@@ -359,12 +359,12 @@ class GlobalAsyncStateManagerTest {
     void testCorrectFlushingOneStream() {
       final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
       final GlobalAsyncStateManager stateManager =
-          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       var stateId = simulateIncomingRecords(STREAM1_DESC, 3, stateManager);
       stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(stateId, 3);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats = new AirbyteStateStats().withRecordCount(3.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats =
           emittedStatesFromDestination.stream()
@@ -380,7 +380,7 @@ class GlobalAsyncStateManagerTest {
       stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(stateId, 10);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats2 = new AirbyteStateStats().withRecordCount(10.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats2 =
           emittedStatesFromDestination.stream()
@@ -395,12 +395,12 @@ class GlobalAsyncStateManagerTest {
     void testZeroRecordFlushing() {
       final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
       final GlobalAsyncStateManager stateManager =
-          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       var stateId = simulateIncomingRecords(STREAM1_DESC, 3, stateManager);
       stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(stateId, 3);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats = new AirbyteStateStats().withRecordCount(3.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats =
           emittedStatesFromDestination.stream()
@@ -413,7 +413,7 @@ class GlobalAsyncStateManagerTest {
       emittedStatesFromDestination.clear();
 
       stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats2 =
           emittedStatesFromDestination.stream()
               .collect(Collectors.toMap(c -> c, c -> c.getState().getDestinationStats()));
@@ -427,7 +427,7 @@ class GlobalAsyncStateManagerTest {
       stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       stateManager.trackState(STREAM1_STATE_MESSAGE3, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(stateId, 10);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats3 =
           emittedStatesFromDestination.stream()
               .collect(Collectors.toMap(c -> c, c -> c.getState().getDestinationStats()));
@@ -442,14 +442,14 @@ class GlobalAsyncStateManagerTest {
     void testCorrectFlushingManyStream() {
       final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
       final GlobalAsyncStateManager stateManager =
-          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+          new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       final var stream1StateId = simulateIncomingRecords(STREAM1_DESC, 3, stateManager);
       final var stream2StateId = simulateIncomingRecords(STREAM2_DESC, 7, stateManager);
 
       stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(stream1StateId, 3);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats = new AirbyteStateStats().withRecordCount(3.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats =
           emittedStatesFromDestination.stream()
@@ -462,12 +462,12 @@ class GlobalAsyncStateManagerTest {
       emittedStatesFromDestination.clear();
 
       stateManager.decrement(stream2StateId, 4);
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       assertEquals(List.of(), emittedStatesFromDestination);
       stateManager.trackState(STREAM2_STATE_MESSAGE, STATE_MSG_SIZE, DEFAULT_NAMESPACE);
       stateManager.decrement(stream2StateId, 3);
       // only flush state if counter is 0.
-      stateManager.flushStates();
+      stateManager.flushStates(emittedStatesFromDestination::add);
       final AirbyteStateStats expectedDestinationStats2 = new AirbyteStateStats().withRecordCount(7.0);
       final Map<AirbyteMessage, AirbyteStateStats> stateWithStats2 =
           emittedStatesFromDestination.stream()
@@ -493,14 +493,14 @@ class GlobalAsyncStateManagerTest {
   void flushingRecordsShouldNotReduceStatsCounterForGlobalState() {
     final List<AirbyteMessage> emittedStatesFromDestination = new ArrayList<>();
     final GlobalAsyncStateManager stateManager =
-        new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES), emittedStatesFromDestination::add);
+        new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
     final long stateId = simulateIncomingRecords(STREAM1_DESC, 6, stateManager);
     stateManager.decrement(stateId, 4);
     stateManager.trackState(GLOBAL_STATE_MESSAGE1, 1, STREAM1_DESC.getNamespace());
-    stateManager.flushStates();
+    stateManager.flushStates(emittedStatesFromDestination::add);
     assertEquals(0, emittedStatesFromDestination.size());
     stateManager.decrement(stateId, 2);
-    stateManager.flushStates();
+    stateManager.flushStates(emittedStatesFromDestination::add);
     assertEquals(1, emittedStatesFromDestination.size());
     assertEquals(6.0, emittedStatesFromDestination.getFirst().getState().getDestinationStats().getRecordCount());
   }

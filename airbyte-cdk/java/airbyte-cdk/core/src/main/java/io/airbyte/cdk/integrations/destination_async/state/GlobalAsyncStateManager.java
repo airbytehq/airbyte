@@ -96,13 +96,11 @@ public class GlobalAsyncStateManager {
   private long retroactiveGlobalStateId = 0;
   // All access to this field MUST be guarded by a synchronized(lock) block
   private long arrivalNumber = 0;
-  private final Consumer<AirbyteMessage> outputRecordCollector;
 
-  private static final Object LOCK = new Object();
+  private final Object LOCK = new Object();
 
-  public GlobalAsyncStateManager(final GlobalMemoryManager memoryManager, final Consumer<AirbyteMessage> outputRecordCollector) {
+  public GlobalAsyncStateManager(final GlobalMemoryManager memoryManager) {
     this.memoryManager = memoryManager;
-    this.outputRecordCollector = outputRecordCollector;
     this.memoryAllocated = new AtomicLong(memoryManager.requestMemory());
     this.memoryUsed = new AtomicLong();
   }
@@ -156,15 +154,12 @@ public class GlobalAsyncStateManager {
   }
 
   /**
-   * Returns state messages with no more inflight records i.e. counter = 0 across all streams.
+   * Flushes state messages with no more inflight records i.e. counter = 0 across all streams.
    * Intended to be called by {@link io.airbyte.cdk.integrations.destination_async.FlushWorkers} after
    * a worker has finished flushing its record batch.
    * <p>
-   * The return list of states should be emitted back to the platform.
-   *
-   * @return list of state messages with no more inflight records.
    */
-  public void flushStates() {
+  public void flushStates(final Consumer<AirbyteMessage> outputRecordCollector) {
     Long bytesFlushed = 0L;
     synchronized (LOCK) {
       for (final Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>> entry : descToStateIdQ.entrySet()) {

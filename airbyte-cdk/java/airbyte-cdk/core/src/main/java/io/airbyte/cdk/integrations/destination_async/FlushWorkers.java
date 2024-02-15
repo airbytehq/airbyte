@@ -167,7 +167,7 @@ public class FlushWorkers implements AutoCloseable {
               AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
 
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
-          batch.flushStates(stateIdToCount);
+          batch.flushStates(stateIdToCount, outputRecordCollector);
         }
 
         log.info("Flush Worker ({}) -- Worker finished flushing. Current queue size: {}",
@@ -217,7 +217,7 @@ public class FlushWorkers implements AutoCloseable {
     log.info("Closing flush workers -- all buffers flushed");
 
     // before shutting down the supervisor, flush all state.
-    stateManager.flushStates();
+    stateManager.flushStates(outputRecordCollector);
     supervisorThread.shutdown();
     while (!supervisorThread.awaitTermination(5L, TimeUnit.MINUTES)) {
       log.info("Waiting for flush worker supervisor to shut down");
