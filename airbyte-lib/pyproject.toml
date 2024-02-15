@@ -64,6 +64,7 @@ markers = [
 
 [tool.ruff.pylint]
 max-args = 8  # Relaxed from default of 5
+max-branches = 15 # Relaxed from default of 12
 
 [tool.ruff]
 target-version = "py39"

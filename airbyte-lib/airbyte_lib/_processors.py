@@ -47,6 +47,7 @@ if TYPE_CHECKING:
 DEFAULT_BATCH_SIZE = 10_000
 DEBUG_MODE = False  # Set to True to enable additional debug logging.
 
+
 class BatchHandle:
     pass
 
@@ -207,7 +208,7 @@ class RecordProcessor(abc.ABC):
 
         # Add empty streams to the dictionary, so we create a destination table for it
         for stream_name in self._expected_streams:
-            if stream_name not in stream_batches.keys():
+            if stream_name not in stream_batches:
                 if DEBUG_MODE:
                     print(f"Stream {stream_name} has no data")
                 stream_batches[stream_name] = []
