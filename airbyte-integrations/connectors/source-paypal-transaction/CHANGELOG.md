@@ -9,5 +9,5 @@ Mark Client ID and Client Secret as required files
 ## 2.1.0
 Migration to Low code
 
-## 2.3.1
+## 2.3.0
 Adding New Streams - Payments, Disputes, Invoices, Product Catalog
