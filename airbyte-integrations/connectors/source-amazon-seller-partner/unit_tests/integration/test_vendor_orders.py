@@ -30,14 +30,14 @@ from .utils import config, mock_auth, read_output
 
 _START_DATE = pendulum.datetime(year=2023, month=1, day=1)
 _END_DATE = pendulum.datetime(year=2023, month=1, day=5)
-_REPLICATION_START_FIELD = "createdAfter"
-_REPLICATION_END_FIELD = "createdBefore"
-_CURSOR_FIELD = "createdBefore"
-_STREAM_NAME = "VendorDirectFulfillmentShipping"
+_REPLICATION_START_FIELD = "changedAfter"
+_REPLICATION_END_FIELD = "changedBefore"
+_CURSOR_FIELD = "changedBefore"
+_STREAM_NAME = "VendorOrders"
 
 
-def _vendor_direct_fulfillment_shipping_request() -> RequestBuilder:
-    return RequestBuilder.vendor_direct_fulfillment_shipping_endpoint().with_query_params(
+def _vendor_orders_request() -> RequestBuilder:
+    return RequestBuilder.vendor_orders_endpoint().with_query_params(
         {
             _REPLICATION_START_FIELD: _START_DATE.strftime(TIME_FORMAT),
             _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT),
@@ -45,18 +45,18 @@ def _vendor_direct_fulfillment_shipping_request() -> RequestBuilder:
     )
 
 
-def _vendor_direct_fulfillment_shipping_response() -> HttpResponseBuilder:
+def _vendor_orders_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=find_template(_STREAM_NAME, __file__),
-        records_path=NestedPath(["payload", "shippingLabels"]),
+        records_path=NestedPath(["payload", "orders"]),
         pagination_strategy=VendorFulfillmentPaginationStrategy(),
     )
 
 
-def _shipping_label_record() -> RecordBuilder:
+def _order_record() -> RecordBuilder:
     return create_record_builder(
         response_template=find_template(_STREAM_NAME, __file__),
-        records_path=NestedPath(["payload", "shippingLabels"]),
+        records_path=NestedPath(["payload", "orders"]),
         record_id_path=FieldPath("purchaseOrderNumber"),
     )
 
@@ -77,8 +77,7 @@ class TestFullRefresh:
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).build(),
+            _vendor_orders_request().build(), _vendor_orders_response().with_record(_order_record()).build()
         )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
@@ -88,10 +87,8 @@ class TestFullRefresh:
     def test_given_two_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().build(),
-            _vendor_direct_fulfillment_shipping_response().with_pagination().with_record(
-                _shipping_label_record()
-            ).build(),
+            _vendor_orders_request().build(),
+            _vendor_orders_response().with_pagination().with_record(_order_record()).build(),
         )
         query_params_with_next_page_token = {
             _REPLICATION_START_FIELD: _START_DATE.strftime(TIME_FORMAT),
@@ -99,10 +96,8 @@ class TestFullRefresh:
             "nextToken": NEXT_TOKEN_STRING,
         }
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().with_query_params(query_params_with_next_page_token).build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).with_record(
-                _shipping_label_record()
-            ).build(),
+            _vendor_orders_request().with_query_params(query_params_with_next_page_token).build(),
+            _vendor_orders_response().with_record(_order_record()).with_record(_order_record()).build(),
         )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
@@ -118,8 +113,8 @@ class TestFullRefresh:
             _REPLICATION_END_FIELD: _START_DATE.add(days=7).strftime(TIME_FORMAT),
         }
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().with_query_params(query_params_first_slice).build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).build(),
+            _vendor_orders_request().with_query_params(query_params_first_slice).build(),
+            _vendor_orders_response().with_record(_order_record()).build(),
         )
 
         query_params_second_slice = {
@@ -127,8 +122,8 @@ class TestFullRefresh:
             _REPLICATION_END_FIELD: end_date.strftime(TIME_FORMAT),
         }
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().with_query_params(query_params_second_slice).build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).build(),
+            _vendor_orders_request().with_query_params(query_params_second_slice).build(),
+            _vendor_orders_response().with_record(_order_record()).build(),
         )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(end_date))
@@ -140,10 +135,10 @@ class TestFullRefresh:
     ) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().build(),
+            _vendor_orders_request().build(),
             [
                 response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
-                _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).build(),
+                _vendor_orders_response().with_record(_order_record()).build(),
             ],
         )
 
@@ -156,8 +151,7 @@ class TestFullRefresh:
     ) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().build(),
-            response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+            _vendor_orders_request().build(), response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
         )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE), expecting_exception=True)
@@ -183,8 +177,7 @@ class TestIncremental:
     def test_when_read_then_add_cursor_field(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).build(),
+            _vendor_orders_request().build(), _vendor_orders_response().with_record(_order_record()).build()
         )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
@@ -195,10 +188,8 @@ class TestIncremental:
     def test_when_read_then_state_message_produced_and_state_match_latest_record(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).with_record(
-                _shipping_label_record()
-            ).build(),
+            _vendor_orders_request().build(),
+            _vendor_orders_response().with_record(_order_record()).with_record(_order_record()).build(),
         )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
@@ -222,16 +213,12 @@ class TestIncremental:
         }
 
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().with_query_params(query_params_first_read).build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).with_record(
-                _shipping_label_record()
-            ).build(),
+            _vendor_orders_request().with_query_params(query_params_first_read).build(),
+            _vendor_orders_response().with_record(_order_record()).with_record(_order_record()).build(),
         )
         http_mocker.get(
-            _vendor_direct_fulfillment_shipping_request().with_query_params(query_params_incremental_read).build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).with_record(
-                _shipping_label_record()
-            ).build(),
+            _vendor_orders_request().with_query_params(query_params_incremental_read).build(),
+            _vendor_orders_response().with_record(_order_record()).with_record(_order_record()).build(),
         )
 
         output = self._read(

@@ -376,11 +376,11 @@ class TestFullRefresh:
         )
 
         output = self._read(stream_name, config(), expecting_exception=True)
-        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
-        assert output.errors[-1].trace.error.internal_message == (
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        assert (
             f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{CONFIG_END_DATE} "
             "due to Amazon Seller Partner platform issues. This will be read during the next sync."
-        )
+        ) in output.errors[-1].trace.error.message
 
     @pytest.mark.parametrize(
         ("stream_name", "date_field", "expected_date_value"),

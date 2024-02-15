@@ -52,6 +52,10 @@ class RequestBuilder:
     def vendor_direct_fulfillment_shipping_endpoint(cls) -> RequestBuilder:
         return cls("vendor/directFulfillment/shipping/v1/shippingLabels")
 
+    @classmethod
+    def vendor_orders_endpoint(cls) -> RequestBuilder:
+        return cls("vendor/orders/v1/purchaseOrders")
+
     def __init__(self, resource: str) -> None:
         self._resource = resource
         self._base_url = "https://sellingpartnerapi-na.amazon.com"

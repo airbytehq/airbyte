@@ -131,7 +131,8 @@ class TestReportsAmazonSPStream:
         with pytest.raises(AirbyteTracedException) as e:
             list(
                 stream.read_records(
-                    sync_mode=SyncMode.full_refresh, stream_slice={"dataStartTime": stream_start, "dataEndTime": stream_end}
+                    sync_mode=SyncMode.full_refresh,
+                    stream_slice={"dataStartTime": stream_start, "dataEndTime": stream_end},
                 )
             )
         assert e.value.internal_message == (
@@ -164,7 +165,7 @@ class TestReportsAmazonSPStream:
 
         stream = SomeReportStream(**report_init_kwargs)
         list(stream.read_records(sync_mode=SyncMode.full_refresh))
-        assert "The report for stream 'GET_TEST_REPORT' was cancelled or there is no data to return" in caplog.messages[-1]
+        assert "The report for stream 'GET_TEST_REPORT' was cancelled or there is no data" in caplog.messages[-1]
 
     def test_read_records_retrieve_done(self, report_init_kwargs, mocker, requests_mock):
         mocker.patch("time.sleep", lambda x: None)
@@ -187,7 +188,11 @@ class TestReportsAmazonSPStream:
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": ReportProcessingStatus.DONE, "dataEndTime": "2022-10-03T00:00:00Z", "reportDocumentId": document_id},
+            json={
+                "processingStatus": ReportProcessingStatus.DONE,
+                "dataEndTime": "2022-10-03T00:00:00Z",
+                "reportDocumentId": document_id,
+            },
         )
         requests_mock.register_uri(
             "GET",
@@ -212,7 +217,11 @@ class TestReportsAmazonSPStream:
 
         report_id = "some_report_id"
         requests_mock.register_uri(
-            "POST", "https://test.url/reports/2021-06-30/reports", status_code=403, json={"reportId": report_id}, reason="Forbidden"
+            "POST",
+            "https://test.url/reports/2021-06-30/reports",
+            status_code=403,
+            json={"reportId": report_id},
+            reason="Forbidden",
         )
 
         stream = SomeReportStream(**report_init_kwargs)
@@ -224,23 +233,74 @@ class TestReportsAmazonSPStream:
         ) in caplog.messages[-1]
 
 
-class TestVendorDirectFulfillmentShipping:
+class TestVendorFulfillment:
     @pytest.mark.parametrize(
-        ("start_date", "end_date", "expected_params"),
+        ("start_date", "end_date", "stream_state", "expected_slices"),
         (
-            ("2022-09-01T00:00:00Z", None, {"createdAfter": "2022-09-01T00:00:00Z", "createdBefore": "2022-09-05T00:00:00Z"}),
-            ("2022-08-01T00:00:00Z", None, {"createdAfter": "2022-08-28T23:00:00Z", "createdBefore": "2022-09-05T00:00:00Z"}),
             (
                 "2022-09-01T00:00:00Z",
-                "2022-09-05T00:00:00Z",
-                {"createdAfter": "2022-09-01T00:00:00Z", "createdBefore": "2022-09-05T00:00:00Z"},
+                None,
+                None,
+                [{"createdAfter": "2022-09-01T00:00:00Z", "createdBefore": "2022-09-05T00:00:00Z"}],
             ),
+            (
+                "2022-08-01T00:00:00Z",
+                "2022-08-16T00:00:00Z",
+                None,
+                [
+                    {"createdAfter": "2022-08-01T00:00:00Z", "createdBefore": "2022-08-08T00:00:00Z"},
+                    {"createdAfter": "2022-08-08T00:00:00Z", "createdBefore": "2022-08-15T00:00:00Z"},
+                    {"createdAfter": "2022-08-15T00:00:00Z", "createdBefore": "2022-08-16T00:00:00Z"},
+                ],
+            ),
+            (
+                "2022-08-01T00:00:00Z",
+                "2022-08-05T00:00:00Z",
+                None,
+                [{"createdAfter": "2022-08-01T00:00:00Z", "createdBefore": "2022-08-05T00:00:00Z"}],
+            ),
+            (
+                "2022-08-01T00:00:00Z",
+                "2022-08-11T00:00:00Z",
+                {"createdBefore": "2022-08-05T00:00:00Z"},
+                [{"createdAfter": "2022-08-05T00:00:00Z", "createdBefore": "2022-08-11T00:00:00Z"}],
+            ),
+            ("2022-08-01T00:00:00Z", "2022-08-05T00:00:00Z", {"createdBefore": "2022-08-06T00:00:00Z"}, []),
         ),
     )
-    def test_request_params(self, report_init_kwargs, start_date, end_date, expected_params):
+    def test_stream_slices(self, report_init_kwargs, start_date, end_date, stream_state, expected_slices):
         report_init_kwargs["replication_start_date"] = start_date
         report_init_kwargs["replication_end_date"] = end_date
 
         stream = VendorDirectFulfillmentShipping(**report_init_kwargs)
         with patch("pendulum.now", return_value=pendulum.parse("2022-09-05T00:00:00Z")):
-            assert stream.request_params(stream_state={}) == expected_params
+            assert list(
+                stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)
+            ) == expected_slices
+
+    @pytest.mark.parametrize(
+        ("stream_slice", "next_page_token", "expected_params"),
+        (
+            (
+                {"createdAfter": "2022-08-05T00:00:00Z", "createdBefore": "2022-08-11T00:00:00Z"},
+                None,
+                {"createdAfter": "2022-08-05T00:00:00Z", "createdBefore": "2022-08-11T00:00:00Z"},
+            ),
+            (
+                {"createdAfter": "2022-08-05T00:00:00Z", "createdBefore": "2022-08-11T00:00:00Z"},
+                {"nextToken": "123123123"},
+                {
+                    "createdAfter": "2022-08-05T00:00:00Z",
+                    "createdBefore": "2022-08-11T00:00:00Z",
+                    "nextToken": "123123123",
+                },
+            ),
+            (None, {"nextToken": "123123123"}, {"nextToken": "123123123"}),
+            (None, None, {}),
+        )
+    )
+    def test_request_params(self, report_init_kwargs, stream_slice, next_page_token, expected_params):
+        stream = VendorDirectFulfillmentShipping(**report_init_kwargs)
+        assert stream.request_params(
+            stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token
+        ) == expected_params
