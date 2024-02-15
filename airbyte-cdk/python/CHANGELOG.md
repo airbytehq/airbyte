@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.62.2
+mask access key when logging refresh response
+
 ## 0.62.1
 [ISSUE #34910] add headers to HttpResponse for test framework
 
