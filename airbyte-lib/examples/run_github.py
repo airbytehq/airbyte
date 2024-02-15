@@ -24,9 +24,10 @@ source.set_config(
     }
 )
 source.check()
-source.select_streams(["issues", "pull_requests", "commits"])
+source.select_streams(["issues", "pull_requests", "commits", "collaborators"])
 
-result = source.read()
+result = source.read(cache=ab.new_local_cache("github"))
+print(result.processed_records)
 
 for name, records in result.streams.items():
     print(f"Stream {name}: {len(records)} records")
