@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.63.1
+File-based CDK:  fix record enqueuing
+
 ## 0.63.0
 Per-stream error reporting and continue syncing on error by default
 
