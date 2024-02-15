@@ -126,7 +126,7 @@ The Zendesk Support source connector supports the following streams:
 The Zendesk Support connector fetches deleted records in the following streams:
 
 | Stream                   | Deletion indicator field |
-|:-------------------------|:-------------------------|
+| :----------------------- | :----------------------- |
 | **Brands**               | `is_deleted`             |
 | **Groups**               | `deleted`                |
 | **Organizations**        | `deleted_at`             |
@@ -157,7 +157,8 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
-|:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.2.8    | 2024-02-09 | [35083](https://github.com/airbytehq/airbyte/pull/35083) | Manage dependencies with Poetry.                                                                                                                                                                                                   |
 | `2.2.7`  | 2024-02-05 | [34840](https://github.com/airbytehq/airbyte/pull/34840) | Fix missing fields in schema                                                                                                                                                                                                       |
 | `2.2.6`  | 2024-01-11 | [34064](https://github.com/airbytehq/airbyte/pull/34064) | Skip 504 Error for stream `Ticket Audits`                                                                                                                                                                                          |
 | `2.2.5`  | 2024-01-08 | [34010](https://github.com/airbytehq/airbyte/pull/34010) | prepare for airbyte-lib                                                                                                                                                                                                            |

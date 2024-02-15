@@ -12,6 +12,7 @@ from dagger import CacheSharingMode, CacheVolume, Container, QueryError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
+from pipelines.hacks import never_fail_exec
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.steps import Step, StepResult
 
@@ -189,19 +190,14 @@ class GradleTask(Step, ABC):
             gradle_container = gradle_container.with_exec(["yum", "install", "-y", "docker"])
 
         # Run the gradle task that we actually care about.
-        connector_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
-        gradle_container = gradle_container.with_exec(
-            sh_dash_c(
-                [
-                    # Run the gradle task.
-                    self._get_gradle_command(connector_task, task_options=self.params_as_cli_options),
-                ]
-            )
-        )
+        connector_gradle_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
+        gradle_command = self._get_gradle_command(connector_gradle_task, task_options=self.params_as_cli_options)
+        gradle_container = gradle_container.with_(never_fail_exec([gradle_command]))
         return await self.get_step_result(gradle_container)
 
     async def get_step_result(self, container: Container) -> StepResult:
         step_result = await super().get_step_result(container)
+        # Decorate with test report, if applicable.
         return StepResult(
             step=step_result.step,
             status=step_result.status,
@@ -239,7 +235,7 @@ class GradleTask(Step, ABC):
 
 
 MAYBE_STARTS_WITH_XML_TAG = re.compile("^ *<")
-ESCAPED_ANSI_COLOR_PATTERN = re.compile(r"\?\[m|\?\[[34][0-9]m")
+ESCAPED_ANSI_COLOR_PATTERN = re.compile(r"\?\[0?m|\?\[[34][0-9]m")
 
 
 def render_junit_xml(testsuites: List[Any]) -> str:

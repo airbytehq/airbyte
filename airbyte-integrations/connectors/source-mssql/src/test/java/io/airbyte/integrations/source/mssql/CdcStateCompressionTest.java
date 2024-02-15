@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcStateCompressionTest {
 
@@ -54,20 +53,13 @@ public class CdcStateCompressionTest {
 
   static private final int ADDED_COLUMNS = 1000;
 
-  static private final MSSQLServerContainer<?> CONTAINER = new MsSQLContainerFactory().shared(
-      "mcr.microsoft.com/mssql/server:2022-latest", "withAgent");
-
   private MsSQLTestDatabase testdb;
 
   @BeforeEach
   public void setup() {
-    testdb = new MsSQLTestDatabase(CONTAINER);
-    testdb = testdb
-        .withConnectionProperty("encrypt", "false")
-        .withConnectionProperty("databaseName", testdb.getDatabaseName())
-        .initialized()
-        .withCdc()
-        .withWaitUntilAgentRunning();
+    testdb = MsSQLTestDatabase.in(MsSQLTestDatabase.BaseImage.MSSQL_2022, MsSQLTestDatabase.ContainerModifier.AGENT)
+        .withWaitUntilAgentRunning()
+        .withCdc();
 
     // Create a test schema and a bunch of test tables with CDC enabled.
     // Insert one row in each table so that they're not empty.
@@ -164,7 +156,6 @@ public class CdcStateCompressionTest {
         .with("replication_method", Map.of(
             "method", "CDC",
             "initial_waiting_seconds", 60))
-
         .build();
   }
 
