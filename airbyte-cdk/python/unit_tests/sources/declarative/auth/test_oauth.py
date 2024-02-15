@@ -10,9 +10,8 @@ import pendulum
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from requests import Response
-
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+from requests import Response
 
 LOGGER = logging.getLogger(__name__)
 
