@@ -105,9 +105,9 @@ You also now see the following changes in Airbyte-provided columns:
 
 ## On final table re-creation
 
-From time to time, Airbyte will drop and re-create the final table produced by a sync. This is done
-as transitionally as possible, and should be invisible to most observers. This is done for a number
-of reasons, including:
+From time to time, Airbyte will drop and re-create the final table produced by a sync (sometimes
+called a "soft reset"). This is done as transactionally as possible, and should be invisible to most
+observers. This is done for a number of reasons, including:
 
 - **Schema Migrations** - Many destinations lack the ability to control column order, or cannot
   alter one data type to another. Re-creating the table allows Airbyte to strictly control the
@@ -122,6 +122,18 @@ This means that additional permissions, constraints, views, or other rules you a
 table outside of Airbyte could be lost during a sync. Many destinations provide ways to use roles or
 wildcards to grant permissions to tables, which are better suited for this ELT process. We do not
 recommend altering the final tables (e.g. adding constraints) as it may cause issues with the sync.
+
+### Manually triggering a final table re-creation
+
+In some cases, you need to manually run a soft reset - for example, if you accidentally delete some
+records from the final table and want to repopulate them from the raw data. This can be done by:
+1. Dropping the final table entirely (`DROP TABLE <your_final_table>`)
+1. Unsetting the raw table's `_airbyte_loaded_at` column
+   (`UPDATE airbyte_internal.<your_raw_table> SET _airbyte_loaded_at = NULL`)
+   1. If you are using a nonstandard raw table schema, replace `airbyte_internal` with that schema.
+1. And then running a sync.
+
+After the sync completes, your final table will be restored to its correct state.
 
 ## Loading Data Incrementally to Final Tables
 
