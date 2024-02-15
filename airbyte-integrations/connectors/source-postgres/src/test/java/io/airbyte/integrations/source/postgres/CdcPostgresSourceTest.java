@@ -200,7 +200,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        // This validation is only true for versions on or after postgres 15. We execute EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS for earlier versions of
+        // This validation is only true for versions on or after postgres 15. We execute
+        // EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS for earlier versions of
         // Postgres. See https://github.com/airbytehq/airbyte/pull/33605 for details.
         if (getPostgresVersion() >= 15) {
           assertEquals(sharedState, global.getSharedState());
@@ -332,7 +333,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        // LSN will be advanced for postgres version before 15. See https://github.com/airbytehq/airbyte/pull/33605
+        // LSN will be advanced for postgres version before 15. See
+        // https://github.com/airbytehq/airbyte/pull/33605
         if (getPostgresVersion() >= 15) {
           assertEquals(sharedState, global.getSharedState());
         }
@@ -746,9 +748,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
             Jsons.jsonNode(Collections.singletonList(stateAfterThirdBatch.get(stateAfterThirdBatch.size() - 1))));
     final List<AirbyteMessage> dataFromFourthBatch = AutoCloseableIterators
         .toListAndClose(fourthBatchIterator);
-
-    System.out.println("states after 3rd batch: " + stateAfterThirdBatch);
-
+    
     final List<AirbyteStateMessage> stateAfterFourthBatch = extractStateMessages(dataFromFourthBatch);
     assertExpectedStateMessagesFromIncrementalSync(stateAfterFourthBatch);
     final Set<AirbyteRecordMessage> recordsFromFourthBatch = extractRecordMessages(
@@ -768,7 +768,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     if (syncNumber == 1) {
       assertEquals(1, lsnPosition2.compareTo(lsnPosition1));
     } else if (syncNumber == 2) {
-      // Earlier Postgres version will advance lsn even if there is no sync records. See https://github.com/airbytehq/airbyte/pull/33605.
+      // Earlier Postgres version will advance lsn even if there is no sync records. See
+      // https://github.com/airbytehq/airbyte/pull/33605.
       if (getPostgresVersion() >= 15) {
         assertEquals(0, lsnPosition2.compareTo(lsnPosition1));
       }

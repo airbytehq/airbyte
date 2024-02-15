@@ -104,7 +104,6 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
     this.syncCheckpointDuration = checkpointDuration;
     this.syncCheckpointRecords = checkpointRecords;
     this.previousCheckpointOffset = (HashMap<String, String>) offsetManager.read();
-    LOGGER.atInfo().log("offset previous: " + previousCheckpointOffset);
     this.initialOffset = new HashMap<>(this.previousCheckpointOffset);
     resetCheckpointValues();
   }

@@ -217,6 +217,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
         idCol, makeIdCol, modelCol,
         recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
         recordJson.get(modelCol).asText());
+
   }
 
   protected void deleteMessageOnIdCol(final String streamName, final String idCol, final int idValue) {
@@ -662,7 +663,6 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
         .read(config(), updatedCatalog, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
-
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
     assertStateMessagesForNewTableSnapshotTest(stateAfterSecondBatch, stateMessageEmittedAfterFirstSyncCompletion);
 
@@ -706,7 +706,6 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     }
 
     final JsonNode state2 = stateAfterSecondBatch.get(stateAfterSecondBatch.size() - 1).getData();
-    LOGGER.atInfo().log("State2: " + stateAfterSecondBatch);
     final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = source()
         .read(config(), updatedCatalog, state2);
     final List<AirbyteMessage> dataFromThirdBatch = AutoCloseableIterators
@@ -714,8 +713,6 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
     final List<AirbyteStateMessage> stateAfterThirdBatch = extractStateMessages(dataFromThirdBatch);
     assertTrue(stateAfterThirdBatch.size() >= 1);
-
-    LOGGER.atInfo().log("state 3: " + stateAfterThirdBatch);
 
     final AirbyteStateMessage stateMessageEmittedAfterThirdSyncCompletion = stateAfterThirdBatch.get(stateAfterThirdBatch.size() - 1);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterThirdSyncCompletion.getType());
