@@ -32,9 +32,6 @@ dependencyResolutionManagement {
     repositories {
         // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
 
-        // ## Start with the local filesystem.
-        mavenLocal()
-
         // ## Prefer repos controlled by Airbyte.
 
         maven {
@@ -103,20 +100,6 @@ dependencyResolutionManagement {
             content {
                 includeGroup 'io.confluent'
                 includeGroup 'org.apache.kafka'
-            }
-        }
-        // Node.js download repository, required only by com.github.node-gradle.node plugin.
-        ivy {
-            name = "Node.js"
-            setUrl("https://nodejs.org/dist/")
-            patternLayout {
-                artifact("v[revision]/[artifact](-v[revision]-[classifier]).[ext]")
-            }
-            metadataSources {
-                artifact()
-            }
-            content {
-                includeModule("org.nodejs", "node")
             }
         }
     }
