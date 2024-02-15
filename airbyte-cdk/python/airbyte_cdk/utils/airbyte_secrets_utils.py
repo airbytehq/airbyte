@@ -10,7 +10,7 @@ import dpath.util
 def get_secret_paths(spec: Mapping[str, Any]) -> List[List[str]]:
     paths = []
 
-    def traverse_schema(schema_item: Any, path: List[str]):
+    def traverse_schema(schema_item: Any, path: List[str]) -> None:
         """
         schema_item can be any property or value in the originally input jsonschema, depending on how far down the recursion stack we go
         path is the path to that schema item in the original input
@@ -56,10 +56,16 @@ def get_secrets(connection_specification: Mapping[str, Any], config: Mapping[str
 __SECRETS_FROM_CONFIG: List[str] = []
 
 
-def update_secrets(secrets: List[str]):
+def update_secrets(secrets: List[str]) -> None:
     """Update the list of secrets to be replaced"""
     global __SECRETS_FROM_CONFIG
     __SECRETS_FROM_CONFIG = secrets
+
+
+def add_to_secrets(secret: str) -> None:
+    """Add to the list of secrets to be replaced"""
+    global __SECRETS_FROM_CONFIG
+    __SECRETS_FROM_CONFIG.append(secret)
 
 
 def filter_secrets(string: str) -> str:

@@ -44,7 +44,9 @@ def pytest_collection_modifyitems(items: list[Item]) -> None:
     'integration' tests because 'u' comes after 'i' alphabetically.
     """
     def test_priority(item: Item) -> int:
-        if 'lint_tests' in str(item.fspath):
+        if item.get_closest_marker(name="slow"):
+            return 9  # slow tests have the lowest priority
+        elif 'lint_tests' in str(item.fspath):
             return 1  # lint tests have high priority
         elif 'unit_tests' in str(item.fspath):
             return 2  # unit tests have highest priority
