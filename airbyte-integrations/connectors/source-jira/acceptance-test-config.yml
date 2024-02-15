@@ -25,15 +25,11 @@ acceptance_tests:
         empty_streams:
           - name: "project_permission_schemes"
             bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."
-        ignored_fields:
-          sprint_issues:
-            - name: updated
-              bypass_reason: "Unstable data"
-            - name: fields/updated
-              bypass_reason: "Unstable data"
+          - name: "issues"
+            bypass_reason: "Stream contains multiple custom fields"
+          - name: "sprint_issues"
+            bypass_reason: "Stream contains multiple custom fields"
         timeout_seconds: 2400
-        # Some streams (example: issues) contain custom fields
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
