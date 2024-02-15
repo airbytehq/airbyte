@@ -26,7 +26,7 @@ source = ab.get_source(
 )
 print("Faker source installed.")
 source.check()
-source.set_streams(["products", "users", "purchases"])
+source.select_streams(["products", "users", "purchases"])
 
 result = source.read()
 

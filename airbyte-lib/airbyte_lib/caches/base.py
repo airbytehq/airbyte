@@ -15,6 +15,8 @@ import sqlalchemy
 import ulid
 from overrides import overrides
 from sqlalchemy import (
+    Column,
+    Table,
     and_,
     create_engine,
     insert,
@@ -196,6 +198,14 @@ class SQLCacheBase(RecordProcessor):
 
         return self._engine
 
+    def _init_connection_settings(self, connection: Connection) -> None:
+        """This is called automatically whenever a new connection is created.
+
+        By default this is a no-op. Subclasses can use this to set connection settings, such as
+        timezone, case-sensitivity settings, and other session-level variables.
+        """
+        pass
+
     @contextmanager
     def get_sql_connection(self) -> Generator[sqlalchemy.engine.Connection, None, None]:
         """A context manager which returns a new SQL connection for running queries.
@@ -204,10 +214,12 @@ class SQLCacheBase(RecordProcessor):
         """
         if self.use_singleton_connection and self._connection_to_reuse is not None:
             connection = self._connection_to_reuse
+            self._init_connection_settings(connection)
             yield connection
 
         else:
             with self.get_sql_engine().begin() as connection:
+                self._init_connection_settings(connection)
                 yield connection
 
         if not self.use_singleton_connection:
@@ -310,6 +322,10 @@ class SQLCacheBase(RecordProcessor):
                 schema_name in found_schemas
             ), f"Schema {schema_name} was not created. Found: {found_schemas}"
 
+    def _quote_identifier(self, identifier: str) -> str:
+        """Return the given identifier, quoted."""
+        return f'"{identifier}"'
+
     @final
     def _get_temp_table_name(
         self,
@@ -325,7 +341,7 @@ class SQLCacheBase(RecordProcessor):
         table_name: str,
     ) -> str:
         """Return the fully qualified name of the given table."""
-        return f"{self.config.schema_name}.{table_name}"
+        return f"{self.config.schema_name}.{self._quote_identifier(table_name)}"
 
     @final
     def _create_table_for_loading(
@@ -337,7 +353,7 @@ class SQLCacheBase(RecordProcessor):
         """Create a new table for loading data."""
         temp_table_name = self._get_temp_table_name(stream_name, batch_id)
         column_definition_str = ",\n  ".join(
-            f"{column_name} {sql_type}"
+            f"{self._quote_identifier(column_name)} {sql_type}"
             for column_name, sql_type in self._get_sql_column_definitions(stream_name).items()
         )
         self._create_table(temp_table_name, column_definition_str)
@@ -381,7 +397,7 @@ class SQLCacheBase(RecordProcessor):
         did_exist = self._table_exists(table_name)
         if not did_exist and create_if_missing:
             column_definition_str = ",\n  ".join(
-                f"{column_name} {sql_type}"
+                f"{self._quote_identifier(column_name)} {sql_type}"
                 for column_name, sql_type in self._get_sql_column_definitions(
                     stream_name,
                 ).items()
@@ -741,7 +757,7 @@ class SQLCacheBase(RecordProcessor):
         stream_name: str,
     ) -> None:
         nl = "\n"
-        columns = self._get_sql_column_definitions(stream_name).keys()
+        columns = [self._quote_identifier(c) for c in self._get_sql_column_definitions(stream_name)]
         self._execute_sql(
             f"""
             INSERT INTO {self._fully_qualified(final_table_name)} (
@@ -793,13 +809,14 @@ class SQLCacheBase(RecordProcessor):
 
         _ = stream_name
         deletion_name = f"{final_table_name}_deleteme"
-        commands = [
-            f"ALTER TABLE {final_table_name} RENAME TO {deletion_name}",
-            f"ALTER TABLE {temp_table_name} RENAME TO {final_table_name}",
-            f"DROP TABLE {deletion_name}",
-        ]
-        for cmd in commands:
-            self._execute_sql(cmd)
+        commands = "\n".join(
+            [
+                f"ALTER TABLE {final_table_name} RENAME TO {deletion_name};",
+                f"ALTER TABLE {temp_table_name} RENAME TO {final_table_name};",
+                f"DROP TABLE {deletion_name};",
+            ]
+        )
+        self._execute_sql(commands)
 
     def _merge_temp_table_to_final_table(
         self,
@@ -813,8 +830,8 @@ class SQLCacheBase(RecordProcessor):
         Databases that do not support this syntax can override this method.
         """
         nl = "\n"
-        columns = self._get_sql_column_definitions(stream_name).keys()
-        pk_columns = self._get_primary_keys(stream_name)
+        columns = {self._quote_identifier(c) for c in self._get_sql_column_definitions(stream_name)}
+        pk_columns = {self._quote_identifier(c) for c in self._get_primary_keys(stream_name)}
         non_pk_columns = columns - pk_columns
         join_clause = "{nl} AND ".join(f"tmp.{pk_col} = final.{pk_col}" for pk_col in pk_columns)
         set_clause = "{nl}    ".join(f"{col} = tmp.{col}" for col in non_pk_columns)
@@ -839,6 +856,25 @@ class SQLCacheBase(RecordProcessor):
             """,
         )
 
+    def _get_column_by_name(self, table: str | Table, column_name: str) -> Column:
+        """Return the column object for the given column name.
+
+        This method is case-insensitive.
+        """
+        if isinstance(table, str):
+            table = self._get_table_by_name(table)
+        try:
+            # Try to get the column in a case-insensitive manner
+            return next(col for col in table.c if col.name.lower() == column_name.lower())
+        except StopIteration:
+            raise exc.AirbyteLibInternalError(
+                message="Could not find matching column.",
+                context={
+                    "table": table,
+                    "column_name": column_name,
+                },
+            ) from None
+
     def _emulated_merge_temp_table_to_final_table(
         self,
         stream_name: str,
@@ -859,13 +895,16 @@ class SQLCacheBase(RecordProcessor):
 
         # Create a dictionary mapping columns in users_final to users_stage for updating
         update_values = {
-            getattr(final_table.c, column): getattr(temp_table.c, column)
+            self._get_column_by_name(final_table, column): (
+                self._get_column_by_name(temp_table, column)
+            )
             for column in columns_to_update
         }
 
         # Craft the WHERE clause for composite primary keys
         join_conditions = [
-            getattr(final_table.c, pk_column) == getattr(temp_table.c, pk_column)
+            self._get_column_by_name(final_table, pk_column)
+            == self._get_column_by_name(temp_table, pk_column)
             for pk_column in pk_columns
         ]
         join_clause = and_(*join_conditions)
@@ -878,7 +917,7 @@ class SQLCacheBase(RecordProcessor):
 
         # Define a condition that checks for records in temp_table that do not have a corresponding
         # record in final_table
-        where_not_exists_clause = getattr(final_table.c, pk_columns[0]) == null()
+        where_not_exists_clause = self._get_column_by_name(final_table, pk_columns[0]) == null()
 
         # Select records from temp_table that are not in final_table
         select_new_records_stmt = (

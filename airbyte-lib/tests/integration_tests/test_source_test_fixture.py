@@ -3,7 +3,8 @@
 from collections.abc import Mapping
 import os
 import shutil
-import subprocess
+import itertools
+from contextlib import nullcontext as does_not_raise
 from typing import Any
 from unittest.mock import Mock, call, patch
 import tempfile
@@ -60,6 +61,10 @@ def test_registry_get():
     metadata = registry.get_connector_metadata("source-test")
     assert metadata.name == "source-test"
     assert metadata.latest_available_version == "0.0.1"
+
+
+def test_registry_list() -> None:
+    assert registry.get_available_connectors() == ["source-test"]
 
 
 def test_list_streams(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
@@ -184,6 +189,7 @@ def test_file_write_and_cleanup() -> None:
         cache_wo_cleanup = ab.new_local_cache(cache_dir=temp_dir_2, cleanup=False)
 
         source = ab.get_source("source-test", config={"apiKey": "test"})
+        source.select_all_streams()
 
         _ = source.read(cache_w_cleanup)
         _ = source.read(cache_wo_cleanup)
@@ -207,6 +213,8 @@ def assert_cache_data(expected_test_stream_data: dict[str, list[dict[str, str | 
 
 def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = ab.new_local_cache()
 
     result: ReadResult = source.read(cache)
@@ -217,6 +225,7 @@ def test_sync_to_duckdb(expected_test_stream_data: dict[str, list[dict[str, str 
 
 def test_read_result_mapping():
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
     result: ReadResult = source.read(ab.new_local_cache())
     assert len(result) == 2
     assert isinstance(result, Mapping)
@@ -228,6 +237,8 @@ def test_read_result_mapping():
 
 def test_dataset_list_and_len(expected_test_stream_data):
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     result: ReadResult = source.read(ab.new_local_cache())
     stream_1 = result["stream1"]
     assert len(stream_1) == 2
@@ -250,6 +261,8 @@ def test_read_from_cache(expected_test_stream_data: dict[str, list[dict[str, str
     """
     cache_name = str(ulid.ULID())
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = ab.new_local_cache(cache_name)
 
     source.read(cache)
@@ -268,6 +281,7 @@ def test_read_isolated_by_prefix(expected_test_stream_data: dict[str, list[dict[
     cache_name = str(ulid.ULID())
     db_path = Path(f"./.cache/{cache_name}.duckdb")
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
     cache = ab.DuckDBCache(config=ab.DuckDBCacheConfig(db_path=db_path, table_prefix="prefix_"))
 
     source.read(cache)
@@ -282,7 +296,7 @@ def test_read_isolated_by_prefix(expected_test_stream_data: dict[str, list[dict[
     assert len(list(no_prefix_cache.__iter__())) == 0
 
     # read partial data into the other two caches
-    source.set_streams(["stream1"])
+    source.select_streams(["stream1"])
     source.read(different_prefix_cache)
     source.read(no_prefix_cache)
 
@@ -304,7 +318,7 @@ def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[s
     source = ab.get_source("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache(cache_name)
 
-    source.set_streams(["stream1"])
+    source.select_streams(["stream1"])
     source.read(cache)
 
     # Assert that the cache only contains stream1
@@ -313,7 +327,7 @@ def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[s
 
     # Create a new cache with the same name
     second_cache = ab.new_local_cache(cache_name)
-    source.set_streams(["stream2"])
+    source.select_streams(["stream2"])
     result = source.read(second_cache)
 
     # Assert that the read result only contains stream2
@@ -325,6 +339,8 @@ def test_merge_streams_in_cache(expected_test_stream_data: dict[str, list[dict[s
 
 def test_read_result_as_list(expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = ab.new_local_cache()
 
     result: ReadResult = source.read(cache)
@@ -354,6 +370,8 @@ def test_sync_with_merge_to_duckdb(expected_test_stream_data: dict[str, list[dic
     # TODO: Add a check with a primary key to ensure that the merge strategy works as expected.
     """
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = ab.new_local_cache()
 
     # Read twice to test merge strategy
@@ -373,6 +391,8 @@ def test_cached_dataset(
     expected_test_stream_data: dict[str, list[dict[str, str | int]]],
 ) -> None:
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     result: ReadResult = source.read(ab.new_local_cache())
 
     stream_name = "stream1"
@@ -435,6 +455,8 @@ def test_cached_dataset(
 
 def test_cached_dataset_filter():
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     result: ReadResult = source.read(ab.new_local_cache())
 
     stream_name = "stream1"
@@ -532,6 +554,8 @@ def test_sync_with_merge_to_postgres(new_pg_cache_config: PostgresCacheConfig, e
     # TODO: Add a check with a primary key to ensure that the merge strategy works as expected.
     """
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = PostgresCache(config=new_pg_cache_config)
 
     # Read twice to test merge strategy
@@ -559,16 +583,30 @@ def test_airbyte_lib_version() -> None:
 @patch('airbyte_lib.telemetry.requests')
 @patch('airbyte_lib.telemetry.datetime')
 @pytest.mark.parametrize(
-    "raises, api_key, expected_state, expected_number_of_records, request_call_fails, extra_env, expected_flags",
+    "raises, api_key, expected_state, expected_number_of_records, request_call_fails, extra_env, expected_flags, cache_type, number_of_records_read",
     [
-        pytest.param(True, "test_fail_during_sync", "failed", 1, False, {"CI": ""}, {"CI": False}, id="fail_during_sync"),
-        pytest.param(False, "test", "succeeded", 3, False, {"CI": ""}, {"CI": False}, id="succeed_during_sync"),
-        pytest.param(False, "test", "succeeded", 3, True, {"CI": ""}, {"CI": False}, id="fail_request_without_propagating"),
-        pytest.param(False, "test", "succeeded", 3, False, {"CI": ""}, {"CI": False}, id="falsy_ci_flag"),
-        pytest.param(False, "test", "succeeded", 3, False, {"CI": "true"}, {"CI": True}, id="truthy_ci_flag"),
+        pytest.param(pytest.raises(Exception), "test_fail_during_sync", "failed", 1, False, {"CI": ""}, {"CI": False}, "duckdb", None, id="fail_during_sync"),
+        pytest.param(does_not_raise(), "test", "succeeded", 3, False, {"CI": ""}, {"CI": False}, "duckdb", None, id="succeed_during_sync"),
+        pytest.param(does_not_raise(), "test", "succeeded", 3, True, {"CI": ""}, {"CI": False}, "duckdb", None,id="fail_request_without_propagating"),
+        pytest.param(does_not_raise(), "test", "succeeded", 3, False, {"CI": ""}, {"CI": False}, "duckdb", None,id="falsy_ci_flag"),
+        pytest.param(does_not_raise(), "test", "succeeded", 3, False, {"CI": "true"}, {"CI": True}, "duckdb", None,id="truthy_ci_flag"),
+        pytest.param(pytest.raises(Exception), "test_fail_during_sync", "failed", 1,  False, {"CI": ""}, {"CI": False}, "streaming", 3, id="streaming_fail_during_sync"),
+        pytest.param(does_not_raise(), "test", "succeeded", 2,  False, {"CI": ""}, {"CI": False}, "streaming", 2, id="streaming_succeed"),
+        pytest.param(does_not_raise(), "test", "succeeded", 1,  False, {"CI": ""}, {"CI": False}, "streaming", 1, id="streaming_partial_read"),
     ],
 )
-def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_key: str, expected_state: str, expected_number_of_records: int, request_call_fails: bool, extra_env: dict[str, str], expected_flags: dict[str, bool]):
+def test_tracking(
+    mock_datetime: Mock,
+    mock_requests: Mock,
+    raises, api_key: str,
+    expected_state: str,
+    expected_number_of_records: int,
+    request_call_fails: bool,
+    extra_env: dict[str, str],
+    expected_flags: dict[str, bool],
+    cache_type: str,
+    number_of_records_read: int
+):
     """
     Test that the telemetry is sent when the sync is successful.
     This is done by mocking the requests.post method and checking that it is called with the right arguments.
@@ -582,18 +620,19 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
     mock_requests.post = mock_post
 
     source = ab.get_source("source-test", config={"apiKey": api_key})
+    source.select_all_streams()
+
     cache = ab.new_local_cache()
 
     if request_call_fails:
         mock_post.side_effect = Exception("test exception")
 
     with patch.dict('os.environ', extra_env):
-        if raises:
-            with pytest.raises(Exception):
+        with raises:
+            if cache_type == "streaming":
+                list(itertools.islice(source.get_records("stream1"), number_of_records_read))
+            else:
                 source.read(cache)
-        else:
-            source.read(cache)
-
 
     mock_post.assert_has_calls([
             call("https://api.segment.io/v1/track",
@@ -605,7 +644,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
                     "version": get_version(),
                     "source": {'name': 'source-test', 'version': '0.0.1', 'type': 'venv'},
                     "state": "started",
-                    "cache": {"type": "duckdb"},
+                    "cache": {"type": cache_type},
                     "ip": "0.0.0.0",
                     "flags": expected_flags
                 },
@@ -623,7 +662,7 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
                     "source": {'name': 'source-test', 'version': '0.0.1', 'type': 'venv'},
                     "state": expected_state,
                     "number_of_records": expected_number_of_records,
-                    "cache": {"type": "duckdb"},
+                    "cache": {"type": cache_type},
                     "ip": "0.0.0.0",
                     "flags": expected_flags
                 },
@@ -635,6 +674,8 @@ def test_tracking(mock_datetime: Mock, mock_requests: Mock, raises: bool, api_ke
 
 def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_source("source-test", config={"apiKey": "test"})
+    source.select_all_streams()
+
     cache = PostgresCache(config=new_pg_cache_config)
 
     result: ReadResult = source.read(cache)
@@ -647,12 +688,13 @@ def test_sync_to_postgres(new_pg_cache_config: PostgresCacheConfig, expected_tes
             check_dtype=False,
         )
 
+@pytest.mark.slow
+@pytest.mark.requires_creds
 def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test_stream_data: dict[str, list[dict[str, str | int]]]):
     source = ab.get_source("source-test", config={"apiKey": "test"})
-    cache = SnowflakeSQLCache(config=snowflake_config)
+    source.select_all_streams()
 
-    with cache.get_sql_connection() as con:
-        con.execute("DROP SCHEMA IF EXISTS AIRBYTE_RAW")
+    cache = SnowflakeSQLCache(config=snowflake_config)
 
     result: ReadResult = source.read(cache)
 
@@ -664,11 +706,12 @@ def test_sync_to_snowflake(snowflake_config: SnowflakeCacheConfig, expected_test
             check_dtype=False,
         )
 
+
 def test_sync_limited_streams(expected_test_stream_data):
     source = ab.get_source("source-test", config={"apiKey": "test"})
     cache = ab.new_local_cache()
 
-    source.set_streams(["stream2"])
+    source.select_streams(["stream2"])
 
     result = source.read(cache)
 

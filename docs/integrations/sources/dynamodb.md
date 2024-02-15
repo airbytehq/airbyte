@@ -69,6 +69,7 @@ This guide describes in details how you can configure the connector to connect w
 
 | Version | Date       | Pull Request                                              | Subject                                                              |
 |:--------| :--------- | :-------------------------------------------------------- |:---------------------------------------------------------------------|
+| 0.2.3 | 2024-02-13 | [35232](https://github.com/airbytehq/airbyte/pull/35232) | Adopt CDK 0.20.4 |
 | 0.2.2   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                     |
 | 0.2.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                                    |
 | 0.2.0   | 18-12-2023 | https://github.com/airbytehq/airbyte/pull/33485           | Remove LEGACY state                                                  |
