@@ -113,7 +113,8 @@ public class PostgresCdcCtidInitializer {
       if (!savedOffsetAfterReplicationSlotLSN) {
         AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
         AirbyteTraceMessageUtility.emitConfigErrorTrace(new ConfigErrorException("Invalid cdc cursor. Check docs"), "Invalid CDC cursor.");
-        LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
+        throw new ConfigErrorException("Throwing config error - invalid cdc cursor.");
+        //LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
       } else if (!isDebugMode(sourceConfig) && PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
         // We do not want to acknowledge the WAL logs in debug mode.
         postgresDebeziumStateUtil.commitLSNToPostgresDatabase(database.getDatabaseConfig(),
