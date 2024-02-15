@@ -237,8 +237,11 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     // We use the schema_only_recovery property cause using this mode will instruct Debezium to
     // construct the db schema history.
     properties.setProperty("snapshot.mode", "schema_only_recovery");
+    final String dbName = database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText();
+    // Topic.prefix is sanitized version of database name. At this stage properties does not have this
+    // value - it's set in RelationalDbDebeziumPropertiesManager.
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
-        constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
+        constructBinlogOffset(database, dbName, DebeziumPropertiesManager.sanitizeTopicPrefix(dbName)),
         Optional.empty());
     final AirbyteSchemaHistoryStorage schemaHistoryStorage =
         AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), COMPRESSION_ENABLED);
@@ -303,13 +306,13 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
    * Method to construct initial Debezium state which can be passed onto Debezium engine to make it
    * process binlogs from a specific file and position and skip snapshot phase
    */
-  private JsonNode constructBinlogOffset(final JdbcDatabase database, final String dbName) {
-    return format(getStateAttributesFromDB(database), dbName, Instant.now());
+  private JsonNode constructBinlogOffset(final JdbcDatabase database, final String debeziumName, final String topicPrefixName) {
+    return format(getStateAttributesFromDB(database), debeziumName, topicPrefixName, Instant.now());
   }
 
   @VisibleForTesting
-  public JsonNode format(final MysqlDebeziumStateAttributes attributes, final String dbName, final Instant time) {
-    final String key = "[\"" + dbName + "\",{\"server\":\"" + dbName + "\"}]";
+  public JsonNode format(final MysqlDebeziumStateAttributes attributes, final String debeziumName, final String topicPrefixName, final Instant time) {
+    final String key = "[\"" + debeziumName + "\",{\"server\":\"" + topicPrefixName + "\"}]";
     final String gtidSet = attributes.gtidSet().isPresent() ? ",\"gtids\":\"" + attributes.gtidSet().get() + "\"" : "";
     final String value =
         "{\"transaction_id\":null,\"ts_sec\":" + time.getEpochSecond() + ",\"file\":\"" + attributes.binlogFilename() + "\",\"pos\":"

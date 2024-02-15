@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from textwrap import dedent, indent
 from typing import cast
@@ -13,6 +14,14 @@ from overrides import overrides
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.telemetry import CacheTelemetryInfo
+
+
+# Suppress warnings from DuckDB about reflection on indices.
+# https://github.com/Mause/duckdb_engine/issues/905
+warnings.filterwarnings(
+    "ignore",
+    message="duckdb-engine doesn't yet support reflection on indices",
+)
 
 
 class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):

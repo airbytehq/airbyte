@@ -5,12 +5,14 @@
 package io.airbyte.cdk.integrations.base;
 
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
+import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
+import java.time.Instant;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -50,6 +52,10 @@ public final class AirbyteTraceMessageUtility {
                 .withNamespace(streamNamespace))));
   }
 
+  public static void emitAnalyticsTrace(final AirbyteAnalyticsTraceMessage airbyteAnalyticsTraceMessage) {
+    emitMessage(makeAnalyticsTraceAirbyteMessage(airbyteAnalyticsTraceMessage));
+  }
+
   public static void emitErrorTrace(final Throwable e, final String displayMessage, final FailureType failureType) {
     emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType));
   }
@@ -84,6 +90,14 @@ public final class AirbyteTraceMessageUtility {
                 .withMessage(displayMessage)
                 .withInternalMessage(e.toString())
                 .withStackTrace(ExceptionUtils.getStackTrace(e))));
+  }
+
+  private static AirbyteMessage makeAnalyticsTraceAirbyteMessage(final AirbyteAnalyticsTraceMessage airbyteAnalyticsTraceMessage) {
+    return new AirbyteMessage().withType(Type.TRACE)
+        .withTrace(new AirbyteTraceMessage()
+            .withAnalytics(airbyteAnalyticsTraceMessage)
+            .withType(AirbyteTraceMessage.Type.ANALYTICS)
+            .withEmittedAt((double) Instant.now().toEpochMilli()));
   }
 
   private static AirbyteMessage makeStreamStatusTraceAirbyteMessage(final AirbyteStreamStatusHolder airbyteStreamStatusHolder) {

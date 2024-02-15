@@ -7,9 +7,10 @@ from unittest.mock import patch, sentinel
 
 import pytest
 from airbyte_cdk.utils import AirbyteTracedException
-from pandas import read_csv, read_excel
+from pandas import read_csv, read_excel, testing
 from paramiko import SSHException
 from source_file.client import Client, URLFile
+from source_file.utils import backoff_handler
 from urllib3.exceptions import ProtocolError
 
 
@@ -34,21 +35,22 @@ def csv_format_client():
 
 
 @pytest.mark.parametrize(
-    "storage, expected_scheme",
+    "storage, expected_scheme, url",
     [
-        ("GCS", "gs://"),
-        ("S3", "s3://"),
-        ("AZBLOB", "azure://"),
-        ("HTTPS", "https://"),
-        ("SSH", "scp://"),
-        ("SCP", "scp://"),
-        ("SFTP", "sftp://"),
-        ("WEBHDFS", "webhdfs://"),
-        ("LOCAL", "file://"),
+        ("GCS", "gs://", "http://localhost"),
+        ("S3", "s3://", "http://localhost"),
+        ("AZBLOB", "azure://", "http://localhost"),
+        ("HTTPS", "https://", "http://localhost"),
+        ("SSH", "scp://", "http://localhost"),
+        ("SCP", "scp://", "http://localhost"),
+        ("SFTP", "sftp://", "http://localhost"),
+        ("WEBHDFS", "webhdfs://", "http://localhost"),
+        ("LOCAL", "file://", "http://localhost"),
+        ("WRONG", "", ""),
     ],
 )
-def test_storage_scheme(storage, expected_scheme):
-    urlfile = URLFile(provider={"storage": storage}, url="http://localhost")
+def test_storage_scheme(storage, expected_scheme, url):
+    urlfile = URLFile(provider={"storage": storage}, url=url)
     assert urlfile.storage_scheme == expected_scheme
 
 
@@ -80,8 +82,27 @@ def test_load_dataframes_xlsb(config, absolute_path, test_files):
     assert read_file.equals(expected)
 
 
-def test_load_nested_json(client, absolute_path, test_files):
-    f = f"{absolute_path}/{test_files}/formats/json/demo.json"
+@pytest.mark.parametrize("file_name, should_raise_error", [("test.xlsx", False), ("test_one_line.xlsx", True)])
+def test_load_dataframes_xlsx(config, absolute_path, test_files, file_name, should_raise_error):
+    config["format"] = "excel"
+    client = Client(**config)
+    f = f"{absolute_path}/{test_files}/{file_name}"
+    if should_raise_error:
+        with pytest.raises(AirbyteTracedException):
+            next(client.load_dataframes(fp=f))
+    else:
+        read_file = next(client.load_dataframes(fp=f))
+        expected = read_excel(f, engine="openpyxl")
+        assert read_file.equals(expected)
+
+
+@pytest.mark.parametrize("file_format, file_path", [("json", "formats/json/demo.json"),
+                                                    ("jsonl", "formats/jsonl/jsonl_nested.jsonl")])
+def test_load_nested_json(client, config, absolute_path, test_files, file_format, file_path):
+    if file_format == "jsonl":
+        config["format"] = file_format
+        client = Client(**config)
+    f = f"{absolute_path}/{test_files}/{file_path}"
     with open(f, mode="rb") as file:
         assert client.load_nested_json(fp=file)
 
@@ -107,6 +128,11 @@ def test_cache_stream(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/test.csv"
     with open(f, mode="rb") as file:
         assert client._cache_stream(file)
+        
+def test_unzip_stream(client, absolute_path, test_files):
+    f = f"{absolute_path}/{test_files}/test.csv.zip"
+    with open(f, mode="rb") as file:
+        assert client._unzip(file)
 
 
 def test_open_aws_url():
@@ -189,3 +215,11 @@ def test_urlfile_open_backoff_sftp(monkeypatch, mocker):
     assert call_count == 7
 
     assert sleep_mock.call_count == 5
+
+
+def test_backoff_handler(caplog):
+    details = {"tries": 1, "wait": 1}
+    backoff_handler(details)
+    expected = [('airbyte', 20, 'Caught retryable error after 1 tries. Waiting 1 seconds then retrying...')]
+
+    assert caplog.record_tuples == expected
