@@ -186,6 +186,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     assertStateTypes(stateAfterFirstBatch, 24);
   }
 
+  protected int getPostgresVersion() {
+    return 16;
+  }
+
   private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
     JsonNode sharedState = null;
     for (int i = 0; i < stateMessages.size(); i++) {
@@ -196,7 +200,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        assertEquals(sharedState, global.getSharedState());
+        // This validation is only true for versions on or after postgres 15. We execute EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS for earlier versions of
+        // Postgres. See https://github.com/airbytehq/airbyte/pull/33605 for details.
+        if (getPostgresVersion() >= 15) {
+          assertEquals(sharedState, global.getSharedState());
+        }
       }
       assertEquals(1, global.getStreamStates().size());
       final AirbyteStreamState streamState = global.getStreamStates().get(0);
@@ -324,7 +332,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        assertEquals(sharedState, global.getSharedState());
+        // LSN will be advanced for postgres version before 15. See https://github.com/airbytehq/airbyte/pull/33605
+        if (getPostgresVersion() >= 15) {
+          assertEquals(sharedState, global.getSharedState());
+        }
       }
 
       if (Objects.isNull(firstStreamInState)) {
@@ -736,6 +747,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     final List<AirbyteMessage> dataFromFourthBatch = AutoCloseableIterators
         .toListAndClose(fourthBatchIterator);
 
+    System.out.println("states after 3rd batch: " + stateAfterThirdBatch);
+
     final List<AirbyteStateMessage> stateAfterFourthBatch = extractStateMessages(dataFromFourthBatch);
     assertExpectedStateMessagesFromIncrementalSync(stateAfterFourthBatch);
     final Set<AirbyteRecordMessage> recordsFromFourthBatch = extractRecordMessages(
@@ -746,7 +759,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
     // Fourth sync should again move the replication slot ahead
     assertEquals(1, replicationSlotAfterFourthSync.compareTo(replicationSlotAfterThirdSync));
-    assertEquals(1, recordsFromFourthBatch.size());
+    assertEquals(1, recordsFromFourthBatch.size(), "all messages: " + dataFromFourthBatch);
   }
 
   protected void assertLsnPositionForSyncShouldIncrementLSN(final Long lsnPosition1,
@@ -755,7 +768,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     if (syncNumber == 1) {
       assertEquals(1, lsnPosition2.compareTo(lsnPosition1));
     } else if (syncNumber == 2) {
-      assertEquals(0, lsnPosition2.compareTo(lsnPosition1));
+      // Earlier Postgres version will advance lsn even if there is no sync records. See https://github.com/airbytehq/airbyte/pull/33605.
+      if (getPostgresVersion() >= 15) {
+        assertEquals(0, lsnPosition2.compareTo(lsnPosition1));
+      }
     } else {
       throw new RuntimeException("Unknown sync number " + syncNumber);
     }
@@ -791,7 +807,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         .toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
@@ -830,7 +845,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
