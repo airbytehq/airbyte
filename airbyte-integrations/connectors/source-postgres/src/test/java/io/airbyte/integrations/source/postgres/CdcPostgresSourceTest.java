@@ -748,7 +748,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
             Jsons.jsonNode(Collections.singletonList(stateAfterThirdBatch.get(stateAfterThirdBatch.size() - 1))));
     final List<AirbyteMessage> dataFromFourthBatch = AutoCloseableIterators
         .toListAndClose(fourthBatchIterator);
-    
+
     final List<AirbyteStateMessage> stateAfterFourthBatch = extractStateMessages(dataFromFourthBatch);
     assertExpectedStateMessagesFromIncrementalSync(stateAfterFourthBatch);
     final Set<AirbyteRecordMessage> recordsFromFourthBatch = extractRecordMessages(

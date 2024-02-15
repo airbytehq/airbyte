@@ -33,5 +33,4 @@ public class CdcPostgresSourceLegacyCtidTest extends CdcPostgresSourceTest {
 
   }
 
-
 }
