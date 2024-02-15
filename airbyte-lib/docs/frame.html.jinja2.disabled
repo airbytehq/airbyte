@@ -1,4 +1,5 @@
 <!-- THIS IS AN AUTO-GENERATED FILE, DO NOT EDIT MANUALLY. INSTEAD, RUN `poetry run generate-docs` -->
+{# {% extends "default/module.html.jinja2" %} #}
 <main class="pdoc">
     {% block module_contents %}{% endblock %}
 </main>
