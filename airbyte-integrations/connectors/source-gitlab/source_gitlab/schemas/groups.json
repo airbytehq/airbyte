@@ -167,6 +167,12 @@
     },
     "service_access_tokens_expiration_enforced": {
       "type": ["null", "boolean"]
+    },
+    "lock_math_rendering_limits_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "math_rendering_limits_enabled": {
+      "type": ["null", "boolean"]
     }
   }
 }
