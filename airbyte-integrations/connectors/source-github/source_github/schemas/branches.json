@@ -25,6 +25,9 @@
     "protection": {
       "type": ["null", "object"],
       "properties": {
+        "enabled": {
+          "type": ["null", "boolean"]
+        },
         "required_status_checks": {
           "type": ["null", "object"],
           "properties": {
