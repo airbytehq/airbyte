@@ -32,6 +32,8 @@ acceptance_tests:
           projects:
             - name: "updated_at"
               bypass_reason: "value can be changed"
+            - name: "code_suggestions"
+              bypass_reason: "value can be changed"
       - config_path: "secrets/config_with_ids.json"
         timeout_seconds: 3600
         empty_streams:
@@ -48,6 +50,8 @@ acceptance_tests:
           projects:
             - name: "updated_at"
               bypass_reason: "value can be changed"
+            - name: "code_suggestions"
+              bypass_reason: "value can be changed"
       - config_path: "secrets/config_oauth.json"
         timeout_seconds: 3600
         expect_records:
@@ -58,6 +62,8 @@ acceptance_tests:
               bypass_reason: "User object contains local_time which will be different each time test is run"
           projects:
             - name: "updated_at"
+              bypass_reason: "value can be changed"
+            - name: "code_suggestions"
               bypass_reason: "value can be changed"
   incremental:
     tests:
