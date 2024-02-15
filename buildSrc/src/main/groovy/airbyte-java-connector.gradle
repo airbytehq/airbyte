@@ -159,6 +159,11 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
             performanceTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
         }
 
+        boolean withSlowTests = System.getProperty('skipSlowTests', 'false') == 'false'
+        project.test {
+            onlyIf { withSlowTests }
+        }
+
         def integrationTestJava = project.tasks.register('integrationTestJava', Test) {
             testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
             classpath += project.sourceSets.integrationTestJava.runtimeClasspath
@@ -189,6 +194,7 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
         integrationTestJava.configure {
             mustRunAfter project.tasks.named('check')
             dependsOn project.tasks.matching { it.name == 'assemble' }
+            onlyIf { withSlowTests }
         }
         project.tasks.register('integrationTest').configure {
             dependsOn integrationTestJava
@@ -216,6 +222,7 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
         performanceTestJava.configure {
             mustRunAfter project.tasks.named('check')
             dependsOn project.tasks.matching { it.name == 'assemble' }
+            onlyIf { withSlowTests }
         }
         project.tasks.register('performanceTest').configure {
             dependsOn performanceTestJava

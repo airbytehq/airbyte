@@ -7,10 +7,6 @@ plugins {
     id 'com.github.spotbugs' version '6.0.7'
 }
 
-ext {
-    skipSlowTests = (System.getProperty('skipSlowTests', 'false') != 'false')
-}
-
 allprojects {
     apply plugin: 'base'
     apply plugin: 'java'
@@ -64,7 +60,7 @@ allprojects {
 
     spotbugs {
         ignoreFailures = false
-        effort = Effort.valueOf(rootProject.ext.skipSlowTests ? 'MIN' : 'MAX')
+        effort = Effort.valueOf(System.getProperty('skipSlowTests', 'false') == 'false' ? 'MAX' : 'MIN')
         excludeFilter.set rootProject.file('spotbugs-exclude-filter-file.xml')
         reportLevel = Confidence.valueOf('HIGH')
         showProgress = false
@@ -127,12 +123,6 @@ allprojects {
                 // Otherwise let JUnit manage the concurrency dynamically.
                 systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
             }
-        }
-
-        // Exclude all connector unit tests upon request.
-        if (rootProject.ext.skipSlowTests) {
-            exclude '**/io/airbyte/integrations/source/**'
-            exclude '**/io/airbyte/integrations/destination/**'
         }
     }
 
