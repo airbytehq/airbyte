@@ -26,17 +26,13 @@ public class PostgresTestDatabase extends
     POSTGRES_9("postgres:9-alpine", 9),
     POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev", 16);
 
-    private final String reference;
-    private final int majorVersion;
+    public final String reference;
+    public final int majorVersion;
 
     private BaseImage(String reference, int majorVersion) {
       this.reference = reference;
       this.majorVersion = majorVersion;
     };
-
-    public int getMajorVersion() {
-      return majorVersion;
-    }
 
   }
 
