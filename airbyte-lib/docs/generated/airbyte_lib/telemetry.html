@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="pdoc 14.4.0"/>
-    <title>airbyte_lib.datasets API documentation</title>
+    <title>airbyte_lib.telemetry API documentation</title>
 
     <style>/*! * Bootstrap Reboot v5.0.0 (https://getbootstrap.com/) * Copyright 2011-2021 The Bootstrap Authors * Copyright 2011-2021 Twitter, Inc. * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE) * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md) */*,::after,::before{box-sizing:border-box}@media (prefers-reduced-motion:no-preference){:root{scroll-behavior:smooth}}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#fff;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}hr{margin:1rem 0;color:inherit;background-color:currentColor;border:0;opacity:.25}hr:not([size]){height:1px}h1,h2,h3,h4,h5,h6{margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2}h1{font-size:calc(1.375rem + 1.5vw)}@media (min-width:1200px){h1{font-size:2.5rem}}h2{font-size:calc(1.325rem + .9vw)}@media (min-width:1200px){h2{font-size:2rem}}h3{font-size:calc(1.3rem + .6vw)}@media (min-width:1200px){h3{font-size:1.75rem}}h4{font-size:calc(1.275rem + .3vw)}@media (min-width:1200px){h4{font-size:1.5rem}}h5{font-size:1.25rem}h6{font-size:1rem}p{margin-top:0;margin-bottom:1rem}abbr[data-bs-original-title],abbr[title]{-webkit-text-decoration:underline dotted;text-decoration:underline dotted;cursor:help;-webkit-text-decoration-skip-ink:none;text-decoration-skip-ink:none}address{margin-bottom:1rem;font-style:normal;line-height:inherit}ol,ul{padding-left:2rem}dl,ol,ul{margin-top:0;margin-bottom:1rem}ol ol,ol ul,ul ol,ul ul{margin-bottom:0}dt{font-weight:700}dd{margin-bottom:.5rem;margin-left:0}blockquote{margin:0 0 1rem}b,strong{font-weight:bolder}small{font-size:.875em}mark{padding:.2em;background-color:#fcf8e3}sub,sup{position:relative;font-size:.75em;line-height:0;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}a{color:#0d6efd;text-decoration:underline}a:hover{color:#0a58ca}a:not([href]):not([class]),a:not([href]):not([class]):hover{color:inherit;text-decoration:none}code,kbd,pre,samp{font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:1em;direction:ltr;unicode-bidi:bidi-override}pre{display:block;margin-top:0;margin-bottom:1rem;overflow:auto;font-size:.875em}pre code{font-size:inherit;color:inherit;word-break:normal}code{font-size:.875em;color:#d63384;word-wrap:break-word}a>code{color:inherit}kbd{padding:.2rem .4rem;font-size:.875em;color:#fff;background-color:#212529;border-radius:.2rem}kbd kbd{padding:0;font-size:1em;font-weight:700}figure{margin:0 0 1rem}img,svg{vertical-align:middle}table{caption-side:bottom;border-collapse:collapse}caption{padding-top:.5rem;padding-bottom:.5rem;color:#6c757d;text-align:left}th{text-align:inherit;text-align:-webkit-match-parent}tbody,td,tfoot,th,thead,tr{border-color:inherit;border-style:solid;border-width:0}label{display:inline-block}button{border-radius:0}button:focus:not(:focus-visible){outline:0}button,input,optgroup,select,textarea{margin:0;font-family:inherit;font-size:inherit;line-height:inherit}button,select{text-transform:none}[role=button]{cursor:pointer}select{word-wrap:normal}select:disabled{opacity:1}[list]::-webkit-calendar-picker-indicator{display:none}[type=button],[type=reset],[type=submit],button{-webkit-appearance:button}[type=button]:not(:disabled),[type=reset]:not(:disabled),[type=submit]:not(:disabled),button:not(:disabled){cursor:pointer}::-moz-focus-inner{padding:0;border-style:none}textarea{resize:vertical}fieldset{min-width:0;padding:0;margin:0;border:0}legend{float:left;width:100%;padding:0;margin-bottom:.5rem;font-size:calc(1.275rem + .3vw);line-height:inherit}@media (min-width:1200px){legend{font-size:1.5rem}}legend+*{clear:left}::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-fields-wrapper,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-text,::-webkit-datetime-edit-year-field{padding:0}::-webkit-inner-spin-button{height:auto}[type=search]{outline-offset:-2px;-webkit-appearance:textfield}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-color-swatch-wrapper{padding:0}::file-selector-button{font:inherit}::-webkit-file-upload-button{font:inherit;-webkit-appearance:button}output{display:inline-block}iframe{border:0}summary{display:list-item;cursor:pointer}progress{vertical-align:baseline}[hidden]{display:none!important}</style>
     <style>/*! syntax-highlighting.css */pre{line-height:125%;}span.linenos{color:inherit; background-color:transparent; padding-left:5px; padding-right:20px;}.pdoc-code .hll{background-color:#ffffcc}.pdoc-code{background:#f8f8f8;}.pdoc-code .c{color:#3D7B7B; font-style:italic}.pdoc-code .err{border:1px solid #FF0000}.pdoc-code .k{color:#008000; font-weight:bold}.pdoc-code .o{color:#666666}.pdoc-code .ch{color:#3D7B7B; font-style:italic}.pdoc-code .cm{color:#3D7B7B; font-style:italic}.pdoc-code .cp{color:#9C6500}.pdoc-code .cpf{color:#3D7B7B; font-style:italic}.pdoc-code .c1{color:#3D7B7B; font-style:italic}.pdoc-code .cs{color:#3D7B7B; font-style:italic}.pdoc-code .gd{color:#A00000}.pdoc-code .ge{font-style:italic}.pdoc-code .gr{color:#E40000}.pdoc-code .gh{color:#000080; font-weight:bold}.pdoc-code .gi{color:#008400}.pdoc-code .go{color:#717171}.pdoc-code .gp{color:#000080; font-weight:bold}.pdoc-code .gs{font-weight:bold}.pdoc-code .gu{color:#800080; font-weight:bold}.pdoc-code .gt{color:#0044DD}.pdoc-code .kc{color:#008000; font-weight:bold}.pdoc-code .kd{color:#008000; font-weight:bold}.pdoc-code .kn{color:#008000; font-weight:bold}.pdoc-code .kp{color:#008000}.pdoc-code .kr{color:#008000; font-weight:bold}.pdoc-code .kt{color:#B00040}.pdoc-code .m{color:#666666}.pdoc-code .s{color:#BA2121}.pdoc-code .na{color:#687822}.pdoc-code .nb{color:#008000}.pdoc-code .nc{color:#0000FF; font-weight:bold}.pdoc-code .no{color:#880000}.pdoc-code .nd{color:#AA22FF}.pdoc-code .ni{color:#717171; font-weight:bold}.pdoc-code .ne{color:#CB3F38; font-weight:bold}.pdoc-code .nf{color:#0000FF}.pdoc-code .nl{color:#767600}.pdoc-code .nn{color:#0000FF; font-weight:bold}.pdoc-code .nt{color:#008000; font-weight:bold}.pdoc-code .nv{color:#19177C}.pdoc-code .ow{color:#AA22FF; font-weight:bold}.pdoc-code .w{color:#bbbbbb}.pdoc-code .mb{color:#666666}.pdoc-code .mf{color:#666666}.pdoc-code .mh{color:#666666}.pdoc-code .mi{color:#666666}.pdoc-code .mo{color:#666666}.pdoc-code .sa{color:#BA2121}.pdoc-code .sb{color:#BA2121}.pdoc-code .sc{color:#BA2121}.pdoc-code .dl{color:#BA2121}.pdoc-code .sd{color:#BA2121; font-style:italic}.pdoc-code .s2{color:#BA2121}.pdoc-code .se{color:#AA5D1F; font-weight:bold}.pdoc-code .sh{color:#BA2121}.pdoc-code .si{color:#A45A77; font-weight:bold}.pdoc-code .sx{color:#008000}.pdoc-code .sr{color:#A45A77}.pdoc-code .s1{color:#BA2121}.pdoc-code .ss{color:#19177C}.pdoc-code .bp{color:#008000}.pdoc-code .fm{color:#0000FF}.pdoc-code .vc{color:#19177C}.pdoc-code .vg{color:#19177C}.pdoc-code .vi{color:#19177C}.pdoc-code .vm{color:#19177C}.pdoc-code .il{color:#666666}</style>
@@ -29,61 +29,70 @@
             <h2>API Documentation</h2>
                 <ul class="memberlist">
             <li>
-                    <a class="class" href="#CachedDataset">CachedDataset</a>
+                    <a class="variable" href="#TRACKING_KEY">TRACKING_KEY</a>
+            </li>
+            <li>
+                    <a class="class" href="#SourceType">SourceType</a>
                             <ul class="memberlist">
                         <li>
-                                <a class="function" href="#CachedDataset.__init__">CachedDataset</a>
+                                <a class="variable" href="#SourceType.VENV">VENV</a>
                         </li>
                         <li>
-                                <a class="function" href="#CachedDataset.to_pandas">to_pandas</a>
-                        </li>
-                        <li>
-                                <a class="function" href="#CachedDataset.to_sql_table">to_sql_table</a>
+                                <a class="variable" href="#SourceType.LOCAL_INSTALL">LOCAL_INSTALL</a>
                         </li>
                 </ul>
 
             </li>
             <li>
-                    <a class="class" href="#DatasetBase">DatasetBase</a>
+                    <a class="class" href="#CacheTelemetryInfo">CacheTelemetryInfo</a>
                             <ul class="memberlist">
                         <li>
-                                <a class="function" href="#DatasetBase.to_pandas">to_pandas</a>
+                                <a class="function" href="#CacheTelemetryInfo.__init__">CacheTelemetryInfo</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#CacheTelemetryInfo.type">type</a>
                         </li>
                 </ul>
 
             </li>
             <li>
-                    <a class="class" href="#DatasetMap">DatasetMap</a>
+                    <a class="variable" href="#streaming_cache_info">streaming_cache_info</a>
+            </li>
+            <li>
+                    <a class="class" href="#SyncState">SyncState</a>
                             <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#SyncState.STARTED">STARTED</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SyncState.FAILED">FAILED</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SyncState.SUCCEEDED">SUCCEEDED</a>
+                        </li>
                 </ul>
 
             </li>
             <li>
-                    <a class="class" href="#LazyDataset">LazyDataset</a>
+                    <a class="class" href="#SourceTelemetryInfo">SourceTelemetryInfo</a>
                             <ul class="memberlist">
                         <li>
-                                <a class="function" href="#LazyDataset.__init__">LazyDataset</a>
+                                <a class="function" href="#SourceTelemetryInfo.__init__">SourceTelemetryInfo</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SourceTelemetryInfo.name">name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SourceTelemetryInfo.type">type</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SourceTelemetryInfo.version">version</a>
                         </li>
                 </ul>
 
             </li>
             <li>
-                    <a class="class" href="#SQLDataset">SQLDataset</a>
-                            <ul class="memberlist">
-                        <li>
-                                <a class="function" href="#SQLDataset.__init__">SQLDataset</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#SQLDataset.stream_name">stream_name</a>
-                        </li>
-                        <li>
-                                <a class="function" href="#SQLDataset.to_pandas">to_pandas</a>
-                        </li>
-                        <li>
-                                <a class="function" href="#SQLDataset.with_filter">with_filter</a>
-                        </li>
-                </ul>
-
+                    <a class="function" href="#send_telemetry">send_telemetry</a>
             </li>
     </ul>
 
@@ -99,263 +108,355 @@
     <main class="pdoc">
             <section class="module-info">
                     <h1 class="modulename">
-<a href="./../airbyte_lib.html">airbyte_lib</a><wbr>.datasets    </h1>
+<a href="./../airbyte_lib.html">airbyte_lib</a><wbr>.telemetry    </h1>
 
                 
                 
                 
                 
             </section>
-                <section id="CachedDataset">
-                    <div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">CachedDataset</span><wbr>(<span class="base"><a href="#SQLDataset">airbyte_lib.datasets.SQLDataset</a></span>):
+                <section id="TRACKING_KEY">
+                    <div class="attr variable">
+            <span class="name">TRACKING_KEY</span>        =
+<span class="default_value">&#39;cukeSffc0G6gFQehKDhhzSurDzVSZ2OP&#39;</span>
 
         
     </div>
-    <a class="headerlink" href="#CachedDataset"></a>
-    
-            <div class="docstring"><p>A dataset backed by a SQL table cache.</p>
-
-<p>Because this dataset includes all records from the underlying table, we also expose the
-underlying table as a SQLAlchemy Table object.</p>
-</div>
-
-
-                            <div id="CachedDataset.__init__" class="classattr">
-                                <div class="attr function">
-            
-        <span class="name">CachedDataset</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">cache</span><span class="p">:</span> <span class="s1">&#39;SQLCacheBase&#39;</span>, </span><span class="param"><span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
-
-        
-    </div>
-    <a class="headerlink" href="#CachedDataset.__init__"></a>
+    <a class="headerlink" href="#TRACKING_KEY"></a>
     
     
 
-                            </div>
-                            <div id="CachedDataset.to_pandas" class="classattr">
-                                <div class="attr function">
-                    <div class="decorator">@overrides</div>
-
-        <span class="def">def</span>
-        <span class="name">to_pandas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#CachedDataset.to_pandas"></a>
-    
-            <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
-
-<p>The base implementation simply passes the record iterator to Panda's DataFrame constructor.</p>
-</div>
-
-
-                            </div>
-                            <div id="CachedDataset.to_sql_table" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">to_sql_table</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="s1">&#39;Table&#39;</span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#CachedDataset.to_sql_table"></a>
-    
-    
-
-                            </div>
-                            <div class="inherited">
-                                <h5>Inherited Members</h5>
-                                <dl>
-                                    <div><dt><a href="#SQLDataset">SQLDataset</a></dt>
-                                <dd id="CachedDataset.stream_name" class="variable"><a href="#SQLDataset.stream_name">stream_name</a></dd>
-                <dd id="CachedDataset.with_filter" class="function"><a href="#SQLDataset.with_filter">with_filter</a></dd>
-
-            </div>
-                                </dl>
-                            </div>
                 </section>
-                <section id="DatasetBase">
+                <section id="SourceType">
                     <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">DatasetBase</span><wbr>(<span class="base">abc.ABC</span>):
+    <span class="name">SourceType</span><wbr>(<span class="base">builtins.str</span>, <span class="base">enum.Enum</span>):
 
         
     </div>
-    <a class="headerlink" href="#DatasetBase"></a>
+    <a class="headerlink" href="#SourceType"></a>
     
-            <div class="docstring"><p>Base implementation for all datasets.</p>
+            <div class="docstring"><p>An enumeration.</p>
 </div>
 
 
-                            <div id="DatasetBase.to_pandas" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">to_pandas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#DatasetBase.to_pandas"></a>
-    
-            <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
-
-<p>The base implementation simply passes the record iterator to Panda's DataFrame constructor.</p>
-</div>
-
-
-                            </div>
-                </section>
-                <section id="DatasetMap">
-                    <div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">DatasetMap</span><wbr>(<span class="base">collections.abc.Mapping</span>):
-
-        
-    </div>
-    <a class="headerlink" href="#DatasetMap"></a>
-    
-            <div class="docstring"><p>A generic interface for a set of streams or datasets.</p>
-</div>
-
-
-                            <div class="inherited">
-                                <h5>Inherited Members</h5>
-                                <dl>
-                                    <div><dt>collections.abc.Mapping</dt>
-                                <dd id="DatasetMap.get" class="function">get</dd>
-                <dd id="DatasetMap.keys" class="function">keys</dd>
-                <dd id="DatasetMap.items" class="function">items</dd>
-                <dd id="DatasetMap.values" class="function">values</dd>
-
-            </div>
-                                </dl>
-                            </div>
-                </section>
-                <section id="LazyDataset">
-                    <div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">LazyDataset</span><wbr>(<span class="base"><a href="#DatasetBase">airbyte_lib.datasets.DatasetBase</a></span>):
-
-        
-    </div>
-    <a class="headerlink" href="#LazyDataset"></a>
-    
-            <div class="docstring"><p>A dataset that is loaded incrementally from a source or a SQL query.</p>
-</div>
-
-
-                            <div id="LazyDataset.__init__" class="classattr">
-                                <div class="attr function">
-            
-        <span class="name">LazyDataset</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">iterator</span><span class="p">:</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterator</span><span class="p">[</span><span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]]</span></span>)</span>
-
-        
-    </div>
-    <a class="headerlink" href="#LazyDataset.__init__"></a>
-    
-    
-
-                            </div>
-                            <div class="inherited">
-                                <h5>Inherited Members</h5>
-                                <dl>
-                                    <div><dt><a href="#DatasetBase">DatasetBase</a></dt>
-                                <dd id="LazyDataset.to_pandas" class="function"><a href="#DatasetBase.to_pandas">to_pandas</a></dd>
-
-            </div>
-                                </dl>
-                            </div>
-                </section>
-                <section id="SQLDataset">
-                    <div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">SQLDataset</span><wbr>(<span class="base"><a href="#DatasetBase">airbyte_lib.datasets.DatasetBase</a></span>):
-
-        
-    </div>
-    <a class="headerlink" href="#SQLDataset"></a>
-    
-            <div class="docstring"><p>A dataset that is loaded incrementally from a SQL query.</p>
-
-<p>The CachedDataset class is a subclass of this class, which simply passes a SELECT over the full
-table as the query statement.</p>
-</div>
-
-
-                            <div id="SQLDataset.__init__" class="classattr">
-                                <div class="attr function">
-            
-        <span class="name">SQLDataset</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">cache</span><span class="p">:</span> <span class="s1">&#39;SQLCacheBase&#39;</span>,</span><span class="param">	<span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">query_statement</span><span class="p">:</span> <span class="s1">&#39;Selectable&#39;</span></span>)</span>
-
-        
-    </div>
-    <a class="headerlink" href="#SQLDataset.__init__"></a>
-    
-    
-
-                            </div>
-                            <div id="SQLDataset.stream_name" class="classattr">
+                            <div id="SourceType.VENV" class="classattr">
                                 <div class="attr variable">
-            <span class="name">stream_name</span><span class="annotation">: str</span>
+            <span class="name">VENV</span>        =
+<span class="default_value">&lt;<a href="#SourceType.VENV">SourceType.VENV</a>: &#39;venv&#39;&gt;</span>
 
         
     </div>
-    <a class="headerlink" href="#SQLDataset.stream_name"></a>
+    <a class="headerlink" href="#SourceType.VENV"></a>
     
     
 
                             </div>
-                            <div id="SQLDataset.to_pandas" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">to_pandas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span>:</span></span>
+                            <div id="SourceType.LOCAL_INSTALL" class="classattr">
+                                <div class="attr variable">
+            <span class="name">LOCAL_INSTALL</span>        =
+<span class="default_value">&lt;<a href="#SourceType.LOCAL_INSTALL">SourceType.LOCAL_INSTALL</a>: &#39;local_install&#39;&gt;</span>
 
         
     </div>
-    <a class="headerlink" href="#SQLDataset.to_pandas"></a>
+    <a class="headerlink" href="#SourceType.LOCAL_INSTALL"></a>
     
-            <div class="docstring"><p>Return a pandas DataFrame representation of the dataset.</p>
+    
 
-<p>The base implementation simply passes the record iterator to Panda's DataFrame constructor.</p>
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>enum.Enum</dt>
+                                <dd id="SourceType.name" class="variable">name</dd>
+                <dd id="SourceType.value" class="variable">value</dd>
+
+            </div>
+            <div><dt>builtins.str</dt>
+                                <dd id="SourceType.encode" class="function">encode</dd>
+                <dd id="SourceType.replace" class="function">replace</dd>
+                <dd id="SourceType.split" class="function">split</dd>
+                <dd id="SourceType.rsplit" class="function">rsplit</dd>
+                <dd id="SourceType.join" class="function">join</dd>
+                <dd id="SourceType.capitalize" class="function">capitalize</dd>
+                <dd id="SourceType.casefold" class="function">casefold</dd>
+                <dd id="SourceType.title" class="function">title</dd>
+                <dd id="SourceType.center" class="function">center</dd>
+                <dd id="SourceType.count" class="function">count</dd>
+                <dd id="SourceType.expandtabs" class="function">expandtabs</dd>
+                <dd id="SourceType.find" class="function">find</dd>
+                <dd id="SourceType.partition" class="function">partition</dd>
+                <dd id="SourceType.index" class="function">index</dd>
+                <dd id="SourceType.ljust" class="function">ljust</dd>
+                <dd id="SourceType.lower" class="function">lower</dd>
+                <dd id="SourceType.lstrip" class="function">lstrip</dd>
+                <dd id="SourceType.rfind" class="function">rfind</dd>
+                <dd id="SourceType.rindex" class="function">rindex</dd>
+                <dd id="SourceType.rjust" class="function">rjust</dd>
+                <dd id="SourceType.rstrip" class="function">rstrip</dd>
+                <dd id="SourceType.rpartition" class="function">rpartition</dd>
+                <dd id="SourceType.splitlines" class="function">splitlines</dd>
+                <dd id="SourceType.strip" class="function">strip</dd>
+                <dd id="SourceType.swapcase" class="function">swapcase</dd>
+                <dd id="SourceType.translate" class="function">translate</dd>
+                <dd id="SourceType.upper" class="function">upper</dd>
+                <dd id="SourceType.startswith" class="function">startswith</dd>
+                <dd id="SourceType.endswith" class="function">endswith</dd>
+                <dd id="SourceType.removeprefix" class="function">removeprefix</dd>
+                <dd id="SourceType.removesuffix" class="function">removesuffix</dd>
+                <dd id="SourceType.isascii" class="function">isascii</dd>
+                <dd id="SourceType.islower" class="function">islower</dd>
+                <dd id="SourceType.isupper" class="function">isupper</dd>
+                <dd id="SourceType.istitle" class="function">istitle</dd>
+                <dd id="SourceType.isspace" class="function">isspace</dd>
+                <dd id="SourceType.isdecimal" class="function">isdecimal</dd>
+                <dd id="SourceType.isdigit" class="function">isdigit</dd>
+                <dd id="SourceType.isnumeric" class="function">isnumeric</dd>
+                <dd id="SourceType.isalpha" class="function">isalpha</dd>
+                <dd id="SourceType.isalnum" class="function">isalnum</dd>
+                <dd id="SourceType.isidentifier" class="function">isidentifier</dd>
+                <dd id="SourceType.isprintable" class="function">isprintable</dd>
+                <dd id="SourceType.zfill" class="function">zfill</dd>
+                <dd id="SourceType.format" class="function">format</dd>
+                <dd id="SourceType.format_map" class="function">format_map</dd>
+                <dd id="SourceType.maketrans" class="function">maketrans</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="CacheTelemetryInfo">
+                    <div class="attr class">
+                    <div class="decorator">@dataclass</div>
+
+    <span class="def">class</span>
+    <span class="name">CacheTelemetryInfo</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#CacheTelemetryInfo"></a>
+    
+    
+
+                            <div id="CacheTelemetryInfo.__init__" class="classattr">
+                                <div class="attr function">
+            
+        <span class="name">CacheTelemetryInfo</span><span class="signature pdoc-code condensed">(<span class="param"><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
+
+        
+    </div>
+    <a class="headerlink" href="#CacheTelemetryInfo.__init__"></a>
+    
+    
+
+                            </div>
+                            <div id="CacheTelemetryInfo.type" class="classattr">
+                                <div class="attr variable">
+            <span class="name">type</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#CacheTelemetryInfo.type"></a>
+    
+    
+
+                            </div>
+                </section>
+                <section id="streaming_cache_info">
+                    <div class="attr variable">
+            <span class="name">streaming_cache_info</span>        =
+<span class="default_value">CacheTelemetryInfo(type=&#39;streaming&#39;)</span>
+
+        
+    </div>
+    <a class="headerlink" href="#streaming_cache_info"></a>
+    
+    
+
+                </section>
+                <section id="SyncState">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SyncState</span><wbr>(<span class="base">builtins.str</span>, <span class="base">enum.Enum</span>):
+
+        
+    </div>
+    <a class="headerlink" href="#SyncState"></a>
+    
+            <div class="docstring"><p>An enumeration.</p>
 </div>
 
 
-                            </div>
-                            <div id="SQLDataset.with_filter" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">with_filter</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="o">*</span><span class="n">filter_expressions</span><span class="p">:</span> <span class="s1">&#39;ClauseElement | str&#39;</span></span><span class="return-annotation">) -> <span class="n"><a href="#SQLDataset">SQLDataset</a></span>:</span></span>
+                            <div id="SyncState.STARTED" class="classattr">
+                                <div class="attr variable">
+            <span class="name">STARTED</span>        =
+<span class="default_value">&lt;<a href="#SyncState.STARTED">SyncState.STARTED</a>: &#39;started&#39;&gt;</span>
 
         
     </div>
-    <a class="headerlink" href="#SQLDataset.with_filter"></a>
+    <a class="headerlink" href="#SyncState.STARTED"></a>
     
-            <div class="docstring"><p>Filter the dataset by a set of column values.</p>
-
-<p>Filters can be specified as either a string or a SQLAlchemy expression.</p>
-
-<p>Filters are lazily applied to the dataset, so they can be chained together. For example:</p>
-
-<pre><code>    dataset.with_filter("id &gt; 5").with_filter("id &lt; 10")
-</code></pre>
-
-<p>is equivalent to:</p>
-
-<pre><code>    dataset.with_filter("id &gt; 5", "id &lt; 10")
-</code></pre>
-</div>
-
+    
 
                             </div>
+                            <div id="SyncState.FAILED" class="classattr">
+                                <div class="attr variable">
+            <span class="name">FAILED</span>        =
+<span class="default_value">&lt;<a href="#SyncState.FAILED">SyncState.FAILED</a>: &#39;failed&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SyncState.FAILED"></a>
+    
+    
+
+                            </div>
+                            <div id="SyncState.SUCCEEDED" class="classattr">
+                                <div class="attr variable">
+            <span class="name">SUCCEEDED</span>        =
+<span class="default_value">&lt;<a href="#SyncState.SUCCEEDED">SyncState.SUCCEEDED</a>: &#39;succeeded&#39;&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SyncState.SUCCEEDED"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>enum.Enum</dt>
+                                <dd id="SyncState.name" class="variable">name</dd>
+                <dd id="SyncState.value" class="variable">value</dd>
+
+            </div>
+            <div><dt>builtins.str</dt>
+                                <dd id="SyncState.encode" class="function">encode</dd>
+                <dd id="SyncState.replace" class="function">replace</dd>
+                <dd id="SyncState.split" class="function">split</dd>
+                <dd id="SyncState.rsplit" class="function">rsplit</dd>
+                <dd id="SyncState.join" class="function">join</dd>
+                <dd id="SyncState.capitalize" class="function">capitalize</dd>
+                <dd id="SyncState.casefold" class="function">casefold</dd>
+                <dd id="SyncState.title" class="function">title</dd>
+                <dd id="SyncState.center" class="function">center</dd>
+                <dd id="SyncState.count" class="function">count</dd>
+                <dd id="SyncState.expandtabs" class="function">expandtabs</dd>
+                <dd id="SyncState.find" class="function">find</dd>
+                <dd id="SyncState.partition" class="function">partition</dd>
+                <dd id="SyncState.index" class="function">index</dd>
+                <dd id="SyncState.ljust" class="function">ljust</dd>
+                <dd id="SyncState.lower" class="function">lower</dd>
+                <dd id="SyncState.lstrip" class="function">lstrip</dd>
+                <dd id="SyncState.rfind" class="function">rfind</dd>
+                <dd id="SyncState.rindex" class="function">rindex</dd>
+                <dd id="SyncState.rjust" class="function">rjust</dd>
+                <dd id="SyncState.rstrip" class="function">rstrip</dd>
+                <dd id="SyncState.rpartition" class="function">rpartition</dd>
+                <dd id="SyncState.splitlines" class="function">splitlines</dd>
+                <dd id="SyncState.strip" class="function">strip</dd>
+                <dd id="SyncState.swapcase" class="function">swapcase</dd>
+                <dd id="SyncState.translate" class="function">translate</dd>
+                <dd id="SyncState.upper" class="function">upper</dd>
+                <dd id="SyncState.startswith" class="function">startswith</dd>
+                <dd id="SyncState.endswith" class="function">endswith</dd>
+                <dd id="SyncState.removeprefix" class="function">removeprefix</dd>
+                <dd id="SyncState.removesuffix" class="function">removesuffix</dd>
+                <dd id="SyncState.isascii" class="function">isascii</dd>
+                <dd id="SyncState.islower" class="function">islower</dd>
+                <dd id="SyncState.isupper" class="function">isupper</dd>
+                <dd id="SyncState.istitle" class="function">istitle</dd>
+                <dd id="SyncState.isspace" class="function">isspace</dd>
+                <dd id="SyncState.isdecimal" class="function">isdecimal</dd>
+                <dd id="SyncState.isdigit" class="function">isdigit</dd>
+                <dd id="SyncState.isnumeric" class="function">isnumeric</dd>
+                <dd id="SyncState.isalpha" class="function">isalpha</dd>
+                <dd id="SyncState.isalnum" class="function">isalnum</dd>
+                <dd id="SyncState.isidentifier" class="function">isidentifier</dd>
+                <dd id="SyncState.isprintable" class="function">isprintable</dd>
+                <dd id="SyncState.zfill" class="function">zfill</dd>
+                <dd id="SyncState.format" class="function">format</dd>
+                <dd id="SyncState.format_map" class="function">format_map</dd>
+                <dd id="SyncState.maketrans" class="function">maketrans</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="SourceTelemetryInfo">
+                    <div class="attr class">
+                    <div class="decorator">@dataclass</div>
+
+    <span class="def">class</span>
+    <span class="name">SourceTelemetryInfo</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#SourceTelemetryInfo"></a>
+    
+    
+
+                            <div id="SourceTelemetryInfo.__init__" class="classattr">
+                                <div class="attr function">
+            
+        <span class="name">SourceTelemetryInfo</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="nb">type</span><span class="p">:</span> <span class="n"><a href="#SourceType">SourceType</a></span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span></span>)</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SourceTelemetryInfo.__init__"></a>
+    
+    
+
+                            </div>
+                            <div id="SourceTelemetryInfo.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SourceTelemetryInfo.name"></a>
+    
+    
+
+                            </div>
+                            <div id="SourceTelemetryInfo.type" class="classattr">
+                                <div class="attr variable">
+            <span class="name">type</span><span class="annotation">: <a href="#SourceType">SourceType</a></span>
+
+        
+    </div>
+    <a class="headerlink" href="#SourceTelemetryInfo.type"></a>
+    
+    
+
+                            </div>
+                            <div id="SourceTelemetryInfo.version" class="classattr">
+                                <div class="attr variable">
+            <span class="name">version</span><span class="annotation">: str | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SourceTelemetryInfo.version"></a>
+    
+    
+
+                            </div>
+                </section>
+                <section id="send_telemetry">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">send_telemetry</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">source_info</span><span class="p">:</span> <span class="n"><a href="#SourceTelemetryInfo">SourceTelemetryInfo</a></span>,</span><span class="param">	<span class="n">cache_info</span><span class="p">:</span> <span class="n"><a href="#CacheTelemetryInfo">CacheTelemetryInfo</a></span>,</span><span class="param">	<span class="n">state</span><span class="p">:</span> <span class="n"><a href="#SyncState">SyncState</a></span>,</span><span class="param">	<span class="n">number_of_records</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#send_telemetry"></a>
+    
+    
+
                 </section>
     </main>
 </body>
