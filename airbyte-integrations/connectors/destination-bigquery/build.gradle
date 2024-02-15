@@ -3,13 +3,12 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.20.2'
+    cdkVersionRequired = '0.20.8'
     features = [
-            'datastore-bigquery',
             'db-destinations',
-            'gcs-destinations',
-            's3-destinations',
+            'datastore-bigquery',
             'typing-deduping',
+            'gcs-destinations',
     ]
     useLocalCdk = false
 }
