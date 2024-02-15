@@ -123,7 +123,8 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
         JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           final JdbcDatabase database = getDatabase(mangledConfig);
-          final String query = String.format("SELECT * FROM `%s`.`%s` ORDER BY %s ASC", schemaName, namingResolver.convertStreamName(tableName), JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
+          final String query = String.format("SELECT * FROM `%s`.`%s` ORDER BY %s ASC", schemaName, namingResolver.convertStreamName(tableName),
+              JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
           return database.queryJsons(query);
         });
   }
