@@ -13,8 +13,11 @@
 #  }
 
 # HOW TO USE:
-# To create a new product: python script_name.py --action create
-# To update an existing product: python script_name.py --action update --product_id <product_id>
+# To create a new product:
+#    python product_catalog.py --action create --description "This is a test product" --category TRAVEL
+# To update an existing product:
+#    python product_catalog.py --action update --product_id PRODUCT_ID --update_payload '[{"op": "replace", "path": "/description", "value": "My Update. Does it changes it?"}]'
+# The CATEGORY must be one of the listed in this page: https://developer.paypal.com/docs/api/catalog-products/v1/#products_create
 # NOTE: This is version one, it conly creates 1 product at a time. This has not been parametrized
 # TODO: Generate N products in one run.
 
@@ -50,7 +53,7 @@ def get_paypal_token(client_id, secret_id):
     return response.json().get("access_token")
 
 
-def create_paypal_product(access_token):
+def create_paypal_product(access_token, description="Cotton XL", category="clothing"):
     """Create a product in PayPal."""
     url = "https://api-m.sandbox.paypal.com/v1/catalogs/products"
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {access_token}"}
@@ -58,8 +61,8 @@ def create_paypal_product(access_token):
         "name": "Pines-T-Shirt-" + generate_random_string(5),
         "type": "PHYSICAL",
         "id": generate_random_string(10),
-        "description": "Cotton XL",
-        "category": "CLOTHING",
+        "description": description,
+        "category": category,
         "image_url": "https://example.com/gallary/images/" + generate_random_string(10) + ".jpg",
         "home_url": "https://example.com/catalog/" + generate_random_string(10) + ".jpg",
     }
@@ -83,7 +86,11 @@ def update_paypal_product(access_token, product_id, updates):
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="Create or Update a PayPal Product.")
 parser.add_argument("--action", choices=["create", "update"], required=True, help="Action to perform: create or update")
-parser.add_argument("--product_id", help="Product ID for update action")
+parser.add_argument("--description", help="Product description for create action", required=True)
+parser.add_argument("--category", help="Product category for create action", required=True)
+parser.add_argument("--product_id", help="Product ID for update action", required=True)
+parser.add_argument("--update_payload", help="Operation for update action", required=True)
+
 args = parser.parse_args()
 
 # Common setup
@@ -91,13 +98,18 @@ CREDS = read_json("../secrets/config.json")
 client_id = CREDS.get("client_id")
 secret_id = CREDS.get("client_secret")
 access_token = get_paypal_token(client_id, secret_id)
+
 # Perform action based on arguments
 if args.action == "create":
-    product = create_paypal_product(access_token)
+    product = create_paypal_product(access_token, args.description, args.category)
     print("Created product:", product)
-elif args.action == "update" and args.product_id:
-    updates = [{"op": "replace", "path": "/description", "value": "My Update. Does it changes it?"}]
-    product = update_paypal_product(access_token, args.product_id, updates)
-    print("Updated product:", product)
+elif args.action == "update" and args.product_id and args.update_payload:
+    try:
+        # updates = [{"op": "replace", "path": "/description", "value": "My Update. Does it changes it?"}]
+        operations = json.loads(args.update_payload)
+        product = update_paypal_product(access_token, args.product_id, operations)
+        print("Updated product:", product)
+    except json.JSONDecodeError:
+        print(f"Invalid JSON in update payload")
 else:
     print("Invalid arguments")

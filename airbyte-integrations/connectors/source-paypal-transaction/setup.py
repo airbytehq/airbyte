@@ -12,7 +12,8 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     "pytest~=8.0",
     "pytest-mock~=3.12",
-    "requests-mock",
+    "requests-mock~=1.11",
+    "selenium~=4.17.2",
 ]
 
 setup(
@@ -24,7 +25,7 @@ setup(
     name="source_paypal_transaction",
     description="Source implementation for Paypal Transaction.",
     author="Airbyte",
-    author_email="contact@airbyte.io",
+    author_email="jose.pineda@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={

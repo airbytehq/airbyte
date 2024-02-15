@@ -26,6 +26,7 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: secrets/config.json
+        # - config_path: secrets/config_sandbox.json
         backward_compatibility_tests_config:
           disable_for_version: "2.0.0" # Change in cursor field for transactions stream
   basic_read:
@@ -35,6 +36,7 @@ acceptance_tests:
       #Do not select streams that take more than 5 mins to load data as that can lead to timeouts
       #You can comment the lines if you are sure you have data for the below streams.
       - config_path: secrets/config.json
+        # - config_path: secrets/config_sandbox.json
         empty_streams:
           - name: show_product_details
             bypass_reason: "Products may not exist"
@@ -55,6 +57,7 @@ acceptance_tests:
         timeout_seconds: 3200
         expect_records:
           path: "integration_tests/sample_files/expected_records_sandbox.jsonl"
+          #path: "integration_tests/sample_files/expected_records.jsonl"
           extra_fields: yes
           exact_order: yes
           extra_records: no
@@ -62,6 +65,7 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: secrets/config.json
+        # - config_path: secrets/config_sandbox.json
         configured_catalog_path: integration_tests/incremental_catalog.json
         future_state:
           future_state_path: integration_tests/sample_files/abnormal_state.json
@@ -69,6 +73,7 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: secrets/config.json
+        # - config_path: secrets/config_sandbox.json
         configured_catalog_path: integration_tests/full_refresh_catalog.json
         ignored_fields:
           balances:

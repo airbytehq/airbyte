@@ -323,7 +323,6 @@ definitions:
             start: "{{ config['start_date'] }}"
             end: >-
               {{ format_datetime(config['end_date'] if config['end_date'] else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
-            #"{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
     $parameters:
       field_path: items
       path: "v2/invoicing/search-invoices"
@@ -390,7 +389,7 @@ streams:
   - "#/definitions/transactions_stream"
   - "#/definitions/balances_stream"
   - "#/definitions/list_products_stream"
-  #- "#/definitions/show_product_details_stream"
+  - "#/definitions/show_product_details_stream"
   - "#/definitions/list_disputes_stream"
   - "#/definitions/search_invoices_stream"
   - "#/definitions/list_payments_stream"

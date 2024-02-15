@@ -1,5 +1,24 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+# REQUIREMENTS:
+# 1. Put your sandbox credentials in ../secrets/config.json (Create them if it doesn't exist).
+# Use the following body (change all the values):
+# {
+#    "client_id": "YOUT_CLIENT_ID",
+#    "client_secret": "YOUR_SECRET_CLIENT_ID",
+#    "start_date": "2021-06-01T00:00:00Z",
+#    "end_date":   "2024-06-10T00:00:00Z",
+#    "is_sandbox": true
+#  }
+# How to Use:
+# To Create a Draft Invoice:
+# Execute the script with create_draft to generate a new invoice draft.
+# The script automatically sets the invoice and due dates based on the current date and a 30-day term.
+#     python invoices.py create_draft
+# To Send a Draft Invoice:
+# Use send_draft action along with the required --invoice_id parameter, and optional parameters for email subject, note, and additional recipients.
+#     python invoices.py send_draft --invoice_id "INV2-XXXX-XXXX-XXXX-XXXX" --subject "Your Invoice Subject" --note "Your custom note" --additional_recipients example@email.com
+
 import argparse
 import base64
 import json

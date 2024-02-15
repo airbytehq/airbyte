@@ -84,3 +84,5 @@ def test_get_headers(authenticator_parameters):
     headers = authenticator.get_headers()
     assert headers == {"Authorization": expected_basic_auth}
                 
+
+
