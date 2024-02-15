@@ -1,4 +1,4 @@
-name: Airbyte CI - Repository Health Check
+name: Connector Ops CI - Gradle Check
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
