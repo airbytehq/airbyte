@@ -69,7 +69,19 @@
                 "addressLine1": {
                   "type": ["null", "string"]
                 },
+                "addressLine2": {
+                  "type": ["null", "string"]
+                },
+                "addressLine3": {
+                  "type": ["null", "string"]
+                },
                 "city": {
+                  "type": ["null", "string"]
+                },
+                "county": {
+                  "type": ["null", "string"]
+                },
+                "district": {
                   "type": ["null", "string"]
                 },
                 "stateOrRegion": {
@@ -85,6 +97,17 @@
                   "type": ["null", "string"]
                 }
               }
+            },
+            "taxInfo": {
+              "type": ["null", "object"],
+              "properties": {
+                "taxType": {
+                  "type": ["null", "string"]
+                },
+                "taxRegistrationNumber": {
+                  "type": ["null", "string"]
+                }
+              }
             }
           }
         },
@@ -93,6 +116,55 @@
           "properties": {
             "partyId": {
               "type": ["null", "string"]
+            },
+            "address": {
+              "type": ["null", "object"],
+              "properties": {
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "addressLine1": {
+                  "type": ["null", "string"]
+                },
+                "addressLine2": {
+                  "type": ["null", "string"]
+                },
+                "addressLine3": {
+                  "type": ["null", "string"]
+                },
+                "city": {
+                  "type": ["null", "string"]
+                },
+                "county": {
+                  "type": ["null", "string"]
+                },
+                "district": {
+                  "type": ["null", "string"]
+                },
+                "stateOrRegion": {
+                  "type": ["null", "string"]
+                },
+                "postalCode": {
+                  "type": ["null", "string"]
+                },
+                "countryCode": {
+                  "type": ["null", "string"]
+                },
+                "phone": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "taxInfo": {
+              "type": ["null", "object"],
+              "properties": {
+                "taxType": {
+                  "type": ["null", "string"]
+                },
+                "taxRegistrationNumber": {
+                  "type": ["null", "string"]
+                }
+              }
             }
           }
         },
@@ -111,7 +183,19 @@
                 "addressLine1": {
                   "type": ["null", "string"]
                 },
+                "addressLine2": {
+                  "type": ["null", "string"]
+                },
+                "addressLine3": {
+                  "type": ["null", "string"]
+                },
                 "city": {
+                  "type": ["null", "string"]
+                },
+                "county": {
+                  "type": ["null", "string"]
+                },
+                "district": {
                   "type": ["null", "string"]
                 },
                 "stateOrRegion": {
@@ -124,6 +208,17 @@
                   "type": ["null", "string"]
                 },
                 "phone": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "taxInfo": {
+              "type": ["null", "object"],
+              "properties": {
+                "taxType": {
+                  "type": ["null", "string"]
+                },
+                "taxRegistrationNumber": {
                   "type": ["null", "string"]
                 }
               }
@@ -145,7 +240,19 @@
                 "addressLine1": {
                   "type": ["null", "string"]
                 },
+                "addressLine2": {
+                  "type": ["null", "string"]
+                },
+                "addressLine3": {
+                  "type": ["null", "string"]
+                },
                 "city": {
+                  "type": ["null", "string"]
+                },
+                "county": {
+                  "type": ["null", "string"]
+                },
+                "district": {
                   "type": ["null", "string"]
                 },
                 "stateOrRegion": {
@@ -161,75 +268,78 @@
                   "type": ["null", "string"]
                 }
               }
+            },
+            "taxInfo": {
+              "type": ["null", "object"],
+              "properties": {
+                "taxType": {
+                  "type": ["null", "string"]
+                },
+                "taxRegistrationNumber": {
+                  "type": ["null", "string"]
+                }
+              }
             }
           }
         },
-        "taxInfo": {
-          "type": ["null", "object"],
-          "properties": {
-            "taxType": {
-              "type": ["null", "string"]
-            },
-            "taxRegistrationNumber": {
-              "type": ["null", "string"]
-            }
-          }
-        }
-      }
-    },
-    "deliveryWindow": {
-      "type": ["null", "string"]
-    },
-    "items": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "itemSequenceNumber": {
-            "type": ["null", "string"]
-          },
-          "amazonProductIdentifier": {
-            "type": ["null", "string"]
-          },
-          "vendorProductIdentifier": {
-            "type": ["null", "string"]
-          },
-          "orderedQuantity": {
+        "shipWindow": {
+          "type": ["null", "string"]
+        },
+        "deliveryWindow": {
+          "type": ["null", "string"]
+        },
+        "items": {
+          "type": ["null", "array"],
+          "items": {
             "type": ["null", "object"],
             "properties": {
-              "amount": {
-                "type": ["null", "integer"]
-              },
-              "unitOfMeasure": {
+              "itemSequenceNumber": {
                 "type": ["null", "string"]
               },
-              "unitSize": {
-                "type": ["null", "integer"]
-              }
-            }
-          },
-          "isBackOrderAllowed": {
-            "type": ["null", "boolean"]
-          },
-          "netCost": {
-            "type": ["null", "object"],
-            "properties": {
-              "amount": {
+              "amazonProductIdentifier": {
                 "type": ["null", "string"]
               },
-              "currencyCode": {
-                "type": ["null", "string"]
-              }
-            }
-          },
-          "listPrice": {
-            "type": ["null", "object"],
-            "properties": {
-              "amount": {
+              "vendorProductIdentifier": {
                 "type": ["null", "string"]
               },
-              "currencyCode": {
-                "type": ["null", "string"]
+              "orderedQuantity": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "integer"]
+                  },
+                  "unitOfMeasure": {
+                    "type": ["null", "string"]
+                  },
+                  "unitSize": {
+                    "type": ["null", "integer"]
+                  }
+                }
+              },
+              "isBackOrderAllowed": {
+                "type": ["null", "boolean"]
+              },
+              "netCost": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "string"]
+                  },
+                  "currencyCode": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "listPrice": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "string"]
+                  },
+                  "currencyCode": {
+                    "type": ["null", "string"]
+                  }
+                }
               }
             }
           }
