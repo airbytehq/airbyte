@@ -339,8 +339,10 @@ class MergeRequests(IncrementalGitlabChildStream):
 
 
 class MergeRequestCommits(GitlabChildStream):
+    """Docs: https://docs.gitlab.com/ee/api/merge_requests.html#get-single-merge-request-commits"""
+
     path_list = ["project_id", "iid"]
-    path_template = "projects/{project_id}/merge_requests/{iid}"
+    path_template = "projects/{project_id}/merge_requests/{iid}/commits"
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         super().transform(record, stream_slice, **kwargs)
