@@ -599,6 +599,13 @@ class RemoveFields(BaseModel):
         examples=[['tags'], [['content', 'html'], ['content', 'plain_text']]],
         title='Field Paths',
     )
+    condition: Optional[str] = Field(
+        '',
+        description='The predicate to filter a property value. Property will be removed if evaluated to True.',
+        examples=[
+            "{{ property|string == '' }}",
+        ],
+    )
 
 
 class RequestPath(BaseModel):
