@@ -75,7 +75,7 @@ class HarvestStream(HttpStream, ABC):
 class IncrementalHarvestStream(HarvestStream, ABC):
     cursor_field = "updated_at"
 
-    def __init__(self, replication_start_date: pendulum.datetime = None, **kwargs):
+    def __init__(self, replication_start_date: Optional[pendulum.DateTime] = None, **kwargs) -> None:
         super().__init__(**kwargs)
         self._replication_start_date = replication_start_date
 
@@ -96,7 +96,12 @@ class IncrementalHarvestStream(HarvestStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        replication_start_date = stream_state.get(self.cursor_field) or self._replication_start_date
+
+        replication_start_date = None
+        if stream_state.get(self.cursor_field):
+            replication_start_date = stream_state.get(self.cursor_field)
+        elif self._replication_start_date:
+            replication_start_date = self._replication_start_date.format("YYYY-MM-DDTHH:mm:ssZ")
         params.update({"updated_since": replication_start_date})
         return params
 

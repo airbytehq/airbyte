@@ -5,11 +5,13 @@
 package io.airbyte.cdk.integrations.source.relationaldb.state;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -87,6 +89,13 @@ public class SourceStateIteratorTest {
 
     // After sending the final state, if iterator was called again, we will return null.
     assertEquals(null, sourceStateIterator.computeNext());
+  }
+
+  @Test
+  void testShouldRethrowExceptions() {
+    processRecordMessage();
+    doThrow(new ArrayIndexOutOfBoundsException("unexpected error")).when(messageIterator).hasNext();
+    assertThrows(RuntimeException.class, () -> sourceStateIterator.computeNext());
   }
 
 }
