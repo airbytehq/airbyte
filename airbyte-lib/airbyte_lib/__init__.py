@@ -1,4 +1,8 @@
-"""AirbyteLib brings Airbyte ELT to every Python developer."""
+"""AirbyteLib brings Airbyte ELT to every Python developer.
+
+.. include:: ../README.md
+
+"""
 from __future__ import annotations
 
 from airbyte_lib._factories.cache_factories import get_default_cache, new_local_cache
@@ -24,3 +28,5 @@ __all__ = [
     "SecretSource",
     "Source",
 ]
+
+__docformat__ = "google"

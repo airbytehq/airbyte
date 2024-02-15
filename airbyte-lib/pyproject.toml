@@ -247,7 +247,7 @@ module = [
 ignore_missing_imports = true  # No stubs yet (😢)
 
 [tool.poetry.scripts]
-generate-docs = "docs:run"
+generate-docs = "docs.generate:run"
 airbyte-lib-validate-source = "airbyte_lib.validate:run"
 
 [tool.poe.tasks]

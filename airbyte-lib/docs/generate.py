@@ -7,6 +7,12 @@ import shutil
 
 import pdoc
 
+import airbyte_lib as ab
+
+import typing
+
+typing.TYPE_CHECKING = True
+
 
 def run() -> None:
     """Generate docs for all public modules in airbyte_lib and save them to docs/generated.
@@ -21,11 +27,11 @@ def run() -> None:
     if pathlib.Path("docs/generated").exists():
         shutil.rmtree("docs/generated")
 
-    # All folders in `airbyte_lib` that don't start with "_" are treated as public modules.
-    for d in os.listdir("airbyte_lib"):
-        dir_path = pathlib.Path(f"airbyte_lib/{d}")
-        if dir_path.is_dir() and not d.startswith("_") and (dir_path / "__init__.py").exists():
-            public_modules.append(dir_path)
+    # All files and folders in `airbyte_lib` that don't start with "_" are treated as public.
+    for submodule in os.listdir("airbyte_lib"):
+        submodule_path = pathlib.Path(f"airbyte_lib/{submodule}")
+        if not submodule.startswith("_"):
+            public_modules.append(submodule_path)
 
     pdoc.render.configure(
         template_directory="docs",
