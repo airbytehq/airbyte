@@ -21,17 +21,22 @@ public class PostgresTestDatabase extends
 
   public static enum BaseImage {
 
-    POSTGRES_16("postgres:16-bullseye"),
-    POSTGRES_13("postgres:13-bullseye"),
-    POSTGRES_12("postgres:12-bullseye"),
-    POSTGRES_9("postgres:9-alpine"),
-    POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev");
+    POSTGRES_16("postgres:16-bullseye", 16),
+    POSTGRES_12("postgres:12-bullseye", 12),
+    POSTGRES_9("postgres:9-alpine", 9),
+    POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev", 16);
 
     private final String reference;
+    private final int majorVersion;
 
-    private BaseImage(String reference) {
+    private BaseImage(String reference, int majorVersion) {
       this.reference = reference;
+      this.majorVersion = majorVersion;
     };
+
+    public int getMajorVersion() {
+      return majorVersion;
+    }
 
   }
 
