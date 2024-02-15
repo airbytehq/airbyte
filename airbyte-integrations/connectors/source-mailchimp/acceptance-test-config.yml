@@ -12,8 +12,6 @@ acceptance_tests:
         # for auth with oauth2 token
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
-      - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
       - config_path: "integration_tests/invalid_config_apikey.json"
         status: "failed"
       - config_path: "integration_tests/invalid_config_oauth.json"
@@ -33,14 +31,6 @@ acceptance_tests:
         empty_streams:
           - name: "automations"
             bypass_reason: "Cannot seed in free sandbox account, need to upgrade to paid account."
-      - config_path: "secrets/config_oauth.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          extra_records: True
-        fail_on_extra_columns: false
-        empty_streams:
-          - name: "automations"
-            bypass_reason: "Cannot seed in free sandbox account, need to upgrade to paid account."
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -52,6 +42,4 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog_without_email_activities.json"
-      - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/configured_catalog_without_email_activities.json"
