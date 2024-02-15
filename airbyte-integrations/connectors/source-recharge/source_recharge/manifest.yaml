@@ -1,0 +1,126 @@
+version: 0.58.4
+
+# COMMON DEFINITIONS
+definitions:
+
+  # API VERSION REFERENCE
+  modern_api_version:
+    x-recharge-version: "2021-11"
+  deprecated_api_version:
+    x-recharge-version: "2021-01"
+
+  # COMMON PARTS
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_recharge/schemas/{{ parameters['name'] }}.json"
+  selector:
+    description: >-
+      Base records selector for Full Refresh streams
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{ parameters.get('data_path')}}"]
+    # apply default schema normalization
+    schema_normalization: Default
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "{{ config['access_token'] }}"
+    inject_into:
+      type: RequestOption
+      inject_into: header
+      field_name: X-Recharge-Access-Token 
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      inject_into: request_parameter
+      field_name: limit
+      type: RequestOption
+    pagination_strategy:
+      type: PageIncrement
+      start_from_page: 1
+      page_size: 250
+      inject_on_first_request: false
+  
+  # REQUESTERS
+  default_requester:
+    description: >-
+      Default Base Requester for Full Refresh streams
+    type: HttpRequester
+    url_base: https://api.rechargeapps.com/
+    path: "{{ parameters['name'] }}"
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      type: "DefaultErrorHandler"
+  # DEFAULT REQUESTER FOR MODERN API
+  default_retriever:
+    description: >-
+      Base Deprecated Recharge API Retriever for Full Refresh streams.
+      Doc: https://developer.rechargepayments.com/2021-01/versioning
+    record_selector:
+      $ref: "#/definitions/selector"
+    requester:
+      $ref: "#/definitions/default_requester"
+      request_headers:
+        $ref: "#/definitions/modern_api_version"
+    paginator:
+      $ref: "#/definitions/paginator"
+
+  # RETRIEVER FOR `DEPRECATED API`
+  retriever_api_deprecated:
+    $ref: "#/definitions/default_retriever"
+    # Override to have deprecated api version calls
+    requester:
+      $ref: "#/definitions/default_requester"
+      request_headers:
+        # for deprecated retriever we should use `2021-01` api version
+        $ref: "#/definitions/deprecated_api_version"
+  # RETRIEVER FOR `SHOP` STREAM
+  retriever_shop_stream:
+    $ref: "#/definitions/retriever_api_deprecated"
+    # Override the selector to provide the default value
+    record_selector:
+      $ref: "#/definitions/selector"
+      extractor:
+        type: DpathExtractor
+        field_path: []
+
+  # BASE FULL-REFRESH STREAMS
+  base_deprecated_api_stream:
+    primary_key: "id"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      $ref: "#/definitions/retriever_api_deprecated"
+    $parameters:
+        start_date: "{{ config['start_date'] }}"
+        raise_on_http_errors: true
+
+  # FULL-REFRESH STREAMS
+  shop_stream:
+    $ref: "#/definitions/base_deprecated_api_stream"
+    retriever:
+      $ref: "#/definitions/retriever_shop_stream"
+    primary_key: ["shop", "store"]
+    $parameters:
+        name: "shop"
+
+  products_stream:
+    $ref: "#/definitions/base_deprecated_api_stream"
+    $parameters:
+        name: "products"
+        data_path: "products"
+
+streams:
+  - "#/definitions/shop_stream"
+  - "#/definitions/products_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - shop
