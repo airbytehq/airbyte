@@ -110,7 +110,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   // For legacy Postgres we will call advanceLsn() after we retrieved target LSN, so that debezium
   // would not drop any record.
-  // However, that might cause unexpected state and cause failure in the test. Thus we need to bypass some check if they are on legacy postgres
+  // However, that might cause unexpected state and cause failure in the test. Thus we need to bypass
+  // some check if they are on legacy postgres
   // versions.
   private boolean isOnLegacyPostgres() {
     return postgresImage.majorVersion < 15;
