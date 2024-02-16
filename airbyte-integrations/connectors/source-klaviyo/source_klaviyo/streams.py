@@ -12,6 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 from .exceptions import KlaviyoBackoffError
@@ -241,6 +242,8 @@ class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
 
 class Profiles(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles"""
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     cursor_field = "updated"
     api_revision = "2023-02-22"
