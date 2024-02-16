@@ -1,17 +1,11 @@
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
-    apply plugin: 'airbyte-java-cdk'
-    apply plugin: 'airbyte-integration-test-java'
-    apply plugin: 'airbyte-performance-test-java'
     apply plugin: 'java-test-fixtures'
 
     group 'io.airbyte.cdk'
-    version = getCdkTargetVersion()
-}
 
-subprojects { subproject ->
-    def artifactBaseName = 'airbyte-cdk-' + subproject.name
+    def artifactBaseName = 'airbyte-cdk-' + project.name
     // E.g. airbyte-cdk-core, airbyte-cdk-db-sources, airbyte-cdk-db-destinations, etc.
 
     publishing {
@@ -25,7 +19,7 @@ subprojects { subproject ->
                 groupId = 'io.airbyte.cdk'
                 artifactId = artifactBaseName + '-test-fixtures'
                 version = project.version
-                artifact subproject.tasks.testFixturesJar
+                artifact project.tasks.testFixturesJar
             }
         }
         // This repository is only defined and used in the context of an artifact publishing
@@ -52,69 +46,30 @@ subprojects { subproject ->
 
 description = "Airbyte Connector Development Kit (CDK) for Java."
 
-def recursiveTasks = [
-    'assemble',
-    'build',
-    'integrationTestJava',
-    'publish',
-    'publishToMavenLocal',
-    'test',
-]
-recursiveTasks.each { taskName ->
-    tasks.named(taskName).configure {
-        dependsOn subprojects.collect { it.tasks.named(taskName) }
-    }
-}
-
-// The `publishSnapshotIfNeeded` task will be a no-op if CDK version does not end with '-SNAPSHOT'.
-task publishSnapshotIfNeeded {}
-
-if (version.endsWith("-SNAPSHOT")) {
-    logger.lifecycle("Version ${version} ends with '-SNAPSHOT'. Enqueing 'publishToMavenLocal'...")
-    publishSnapshotIfNeeded.dependsOn publishToMavenLocal
-} else {
-    // Uncomment as needed for debugging:
-    // logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
-}
-
-task assertCdkVersionNotPublished {
+tasks.register('assertCdkVersionNotPublished') {
     doLast {
-        def checkGroupId = "io.airbyte.cdk"
-        def checkArtifactId = "airbyte-cdk-core"
-        def checkVersion = getCdkTargetVersion()
-        def repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
-        def groupIdUrl = checkGroupId.replace('.', '/')
-        def artifactUrl = "${repoUrl}/${groupIdUrl}/${checkArtifactId}/${checkVersion}/${checkArtifactId}-${checkVersion}.pom"
+        var props = new Properties()
+        file("core/src/main/resources/version.properties").withInputStream(props::load)
 
-        def connection = artifactUrl.toURL().openConnection() as HttpURLConnection
+        var checkGroupId = "io.airbyte.cdk"
+        var checkArtifactId = "airbyte-cdk-core"
+        var checkVersion = props.getProperty('version') ?: 'undefined'
+        var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
+        var groupIdUrl = "${repoUrl}/${checkGroupId.replace('.', '/')}"
+        var artifactUrl = "${groupIdUrl}/${checkArtifactId}/${checkVersion}/${checkArtifactId}-${checkVersion}.pom"
+
+        var connection = artifactUrl.toURL().openConnection() as HttpURLConnection
         connection.setRequestMethod("HEAD")
         connection.connect()
 
-        def responseCode = connection.getResponseCode()
+        var responseCode = connection.getResponseCode()
 
         if (responseCode == 200) {
-            throw new GradleException("Assert failed. Java CDK '${checkVersion}' already published at: ${artifactUrl}")
+            throw new GradleException("Java CDK '${checkVersion}' already published at ${groupIdUrl}")
         } else if (responseCode == 404) {
-            logger.lifecycle(
-                "Assert succeeded. Version ${checkVersion} of ${checkArtifactId} has not been published. " +
-                "Checked: ${artifactUrl}"
-            )
+            logger.lifecycle("Java CDK '${checkVersion}' not yet published at ${groupIdUrl}.")
         } else {
-            logger.error("Received unexpected HTTP response code ${responseCode}. Ensure the repository is accessible.")
-            throw new GradleException("Error during assertion. Received unexpected HTTP response code ${responseCode}.")
+            throw new GradleException("Unexpected HTTP response code ${responseCode} from ${artifactUrl}, expected either 200 or 404.")
         }
     }
-}
-
-def cleanLocalCache = tasks.register('cleanLocalCache') {
-    def userHome = System.getProperty("user.home")
-    doLast {
-        delete '.gradle'
-        delete '${userHome}/.m2/repository/io/airbyte/'
-        delete '${userHome}/.gradle/caches/modules-2/files-2.1/io.airbyte.cdk/'
-    }
-}
-cleanLocalCache.configure {
-    dependsOn tasks.named('clean')
-    dependsOn subprojects.collect { it.tasks.named('clean') }
 }
