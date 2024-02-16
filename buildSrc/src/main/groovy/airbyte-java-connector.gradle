@@ -5,6 +5,7 @@ Also facilitates importing and working with the Java CDK.
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.testing.Test
 
 class AirbyteJavaConnectorExtension {
 
@@ -125,13 +126,106 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
     void apply(Project project) {
 
         project.plugins.apply('application')
-        project.plugins.apply('java-test-fixtures')
-        project.plugins.apply(AirbyteIntegrationTestJavaPlugin)
-        project.plugins.apply(AirbytePerformanceTestJavaPlugin)
+
+        project.sourceSets {
+            integrationTestJava {
+                java {
+                    srcDir 'src/test-integration/java'
+                }
+                resources {
+                    srcDir 'src/test-integration/resources'
+                }
+            }
+            performanceTestJava {
+                java {
+                    srcDir 'src/test-performance/java'
+                }
+                resources {
+                    srcDir 'src/test-performance/resources'
+                }
+            }
+        }
+
+        project.tasks.named('check').configure {
+            dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
+        }
 
         project.configurations {
             testFixturesImplementation.extendsFrom implementation
             testFixturesRuntimeOnly.extendsFrom runtimeOnly
+            integrationTestJavaImplementation.extendsFrom testImplementation
+            integrationTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
+            performanceTestJavaImplementation.extendsFrom testImplementation
+            performanceTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
+        }
+
+        boolean withSlowTests = System.getProperty('skipSlowTests', 'false') == 'false'
+        project.test {
+            onlyIf { withSlowTests }
+        }
+
+        def integrationTestJava = project.tasks.register('integrationTestJava', Test) {
+            testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
+            classpath += project.sourceSets.integrationTestJava.runtimeClasspath
+
+            useJUnitPlatform()
+            testLogging() {
+                events 'skipped', 'started', 'passed', 'failed'
+                exceptionFormat 'full'
+                // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+                showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+            }
+
+            jvmArgs = project.test.jvmArgs
+            systemProperties = project.test.systemProperties
+            maxParallelForks = project.test.maxParallelForks
+            maxHeapSize = project.test.maxHeapSize
+
+            // Tone down the JIT when running the containerized connector to improve overall performance.
+            // The JVM default settings are optimized for long-lived processes in steady-state operation.
+            // Unlike in production, the connector containers in these tests are always short-lived.
+            // It's very much worth injecting a JAVA_OPTS environment variable into the container with
+            // flags which will reduce startup time at the detriment of long-term performance.
+            environment 'JOB_DEFAULT_ENV_JAVA_OPTS', '-XX:TieredStopAtLevel=1'
+
+            // Always re-run integration tests no matter what.
+            outputs.upToDateWhen { false }
+        }
+        integrationTestJava.configure {
+            mustRunAfter project.tasks.named('check')
+            dependsOn project.tasks.matching { it.name == 'assemble' }
+            onlyIf { withSlowTests }
+        }
+        project.tasks.register('integrationTest').configure {
+            dependsOn integrationTestJava
+        }
+        project.tasks.named('build').configure {
+            dependsOn integrationTestJava
+        }
+
+        def performanceTestJava = project.tasks.register('performanceTestJava', Test) {
+            testClassesDirs = project.sourceSets.performanceTestJava.output.classesDirs
+            classpath += project.sourceSets.performanceTestJava.runtimeClasspath
+
+            systemProperty "cpuLimit", System.getProperty("cpuLimit")
+            systemProperty "memoryLimit", System.getProperty("memoryLimit")
+            useJUnitPlatform()
+            testLogging() {
+                events "passed", "failed"
+                exceptionFormat "full"
+                showStandardStreams = true
+            }
+
+            outputs.upToDateWhen { false }
+            maxHeapSize = '3g'
+        }
+        performanceTestJava.configure {
+            mustRunAfter project.tasks.named('check')
+            dependsOn project.tasks.matching { it.name == 'assemble' }
+            onlyIf { withSlowTests }
+        }
+        project.tasks.register('performanceTest').configure {
+            dependsOn performanceTestJava
         }
 
         project.dependencies {

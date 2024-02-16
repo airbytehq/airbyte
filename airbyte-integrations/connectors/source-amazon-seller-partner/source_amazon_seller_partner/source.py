@@ -11,6 +11,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError
 from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
@@ -62,6 +63,7 @@ from source_amazon_seller_partner.streams import (
     StrandedInventoryUiReport,
     VendorDirectFulfillmentShipping,
     VendorInventoryReports,
+    VendorOrders,
     VendorSalesReports,
     VendorTrafficReport,
     XmlAllOrdersDataByOrderDataGeneral,
@@ -124,8 +126,11 @@ class SourceAmazonSellerPartner(AbstractSource):
             if isinstance(e, StopIteration):
                 return True, None
 
-            error_message = e.response.json().get("error_description") if isinstance(e, HTTPError) else e
-            return False, error_message
+            if isinstance(e, HTTPError):
+                return False, e.response.json().get("error_description")
+            else:
+                error_message = "Caught unexpected exception during the check"
+                raise AirbyteTracedException(internal_message=error_message, message=error_message, exception=e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -176,6 +181,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             FbaInventoryPlaningReport,
             LedgerSummaryViewReport,
             FbaReimbursementsReports,
+            VendorOrders,
         ]
 
         # TODO: Remove after Brand Analytics will be enabled in CLOUD: https://github.com/airbytehq/airbyte/issues/32353
