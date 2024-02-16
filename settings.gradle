@@ -32,9 +32,6 @@ dependencyResolutionManagement {
     repositories {
         // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
 
-        // ## Start with the local filesystem.
-        mavenLocal()
-
         // ## Prefer repos controlled by Airbyte.
 
         maven {
@@ -105,20 +102,6 @@ dependencyResolutionManagement {
                 includeGroup 'org.apache.kafka'
             }
         }
-        // Node.js download repository, required only by com.github.node-gradle.node plugin.
-        ivy {
-            name = "Node.js"
-            setUrl("https://nodejs.org/dist/")
-            patternLayout {
-                artifact("v[revision]/[artifact](-v[revision]-[classifier]).[ext]")
-            }
-            metadataSources {
-                artifact()
-            }
-            content {
-                includeModule("org.nodejs", "node")
-            }
-        }
     }
 
     versionCatalogs {
@@ -159,22 +142,14 @@ if (isCiServer || isAirbyteCI) {
 
 rootProject.name = 'airbyte'
 
-include ':airbyte-cdk:java:airbyte-cdk'
-include ':airbyte-cdk:java:airbyte-cdk:dependencies'
-include ':airbyte-cdk:java:airbyte-cdk:core'
-include ':airbyte-cdk:java:airbyte-cdk:db-destinations'
-include ':airbyte-cdk:java:airbyte-cdk:db-sources'
-include ':airbyte-cdk:java:airbyte-cdk:s3-destinations'
-include ':airbyte-cdk:java:airbyte-cdk:typing-deduping'
-include ':airbyte-cdk:java:airbyte-cdk:azure-destinations'
-include ':airbyte-cdk:java:airbyte-cdk:gcs-destinations'
-include ':airbyte-cdk:java:airbyte-cdk:datastore-bigquery'
-include ':airbyte-cdk:java:airbyte-cdk:datastore-mongo'
-include ':airbyte-cdk:java:airbyte-cdk:datastore-postgres'
-
-include ':airbyte-integrations:connector-templates:generator'
-include ':airbyte-integrations:connectors-performance:source-harness'
-include ':airbyte-integrations:connectors-performance:destination-harness'
+// Include all java CDK modules.
+def cdkPath = rootDir.toPath().resolve('airbyte-cdk/java/airbyte-cdk')
+cdkPath.eachDir { dir ->
+    def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+    if (buildFiles.length == 1) {
+        include ":airbyte-cdk:java:airbyte-cdk:${dir.getFileName()}"
+    }
+}
 
 // Include all java connector projects.
 def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
@@ -184,3 +159,8 @@ integrationsPath.eachDir { dir ->
         include ":airbyte-integrations:connectors:${dir.getFileName()}"
     }
 }
+
+// Include miscellaneous modules.
+include ':airbyte-integrations:connector-templates:generator'
+include ':airbyte-integrations:connectors-performance:source-harness'
+include ':airbyte-integrations:connectors-performance:destination-harness'
