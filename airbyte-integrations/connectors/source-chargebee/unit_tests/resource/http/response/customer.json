@@ -21,8 +21,7 @@
                 "resource_version": 1517505747000,
                 "taxability": "taxable",
                 "unbilled_charges": 0,
-                "updated_at": 1517505747,
-                "cf_my_custom_field": "custom_value"
+                "updated_at": 1517505747
             }
         }
     ]

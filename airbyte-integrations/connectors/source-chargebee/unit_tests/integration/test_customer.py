@@ -104,11 +104,11 @@ class FullRefreshTest(TestCase):
         # Tests custom field transformation
         http_mocker.get(
             _a_request().with_any_query_params().build(),
-            _a_response().with_record(_a_record()).build()
+            _a_response().with_record(_a_record().with_field(NestedPath([_STREAM_NAME, "cf_my_custom_field"]), "my_custom_value")).build()
         )
         output = self._read(_config().with_start_date(self._start_date))
         assert output.records[0].record.data["custom_fields"][0]["name"] == "cf_my_custom_field"
-        assert output.records[0].record.data["custom_fields"][0]["value"] == "custom_value"
+        assert output.records[0].record.data["custom_fields"][0]["value"] == "my_custom_value"
 
     @HttpMocker()
     def test_given_http_status_400_when_read_then_stream_is_ignored(self, http_mocker: HttpMocker) -> None:
