@@ -4,20 +4,16 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "customer_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "subscription_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "reference_invoice_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "type": {
       "type": ["string", "null"]
@@ -29,8 +25,7 @@
       "type": ["string", "null"]
     },
     "vat_number": {
-      "type": ["string", "null"],
-      "maxLength": 20
+      "type": ["string", "null"]
     },
     "date": {
       "type": ["integer", "null"]
@@ -39,24 +34,19 @@
       "type": ["string", "null"]
     },
     "currency_code": {
-      "type": ["string", "null"],
-      "maxLength": 3
+      "type": ["string", "null"]
     },
     "total": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "amount_allocated": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "amount_refunded": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "amount_available": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "refunded_at": {
       "type": ["integer", "null"]
@@ -74,27 +64,23 @@
       "type": ["integer", "null"]
     },
     "sub_total": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "sub_total_in_local_currency": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "total_in_local_currency": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "local_currency_code": {
       "type": ["string", "null"]
     },
     "round_off_amount": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "fractional_correction": {
       "type": ["integer", "null"],
-      "minimum": 0
+      "maximum": 50000
     },
     "deleted": {
       "type": ["boolean", "null"]
@@ -103,16 +89,13 @@
       "type": ["string", "null"]
     },
     "vat_number_prefix": {
-      "type": ["string", "null"],
-      "maxLength": 10
+      "type": ["string", "null"]
     },
     "base_currency_code": {
-      "type": ["string", "null"],
-      "maxLength": 3
+      "type": ["string", "null"]
     },
     "business_entity_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "channel": {
       "type": ["string", "null"]
@@ -130,18 +113,19 @@
       "type": ["boolean", "null"],
       "$comment": "Only available for accounts which have enabled taxes for EU Region for taxes."
     },
+    "customer_notes": {
+      "type": ["string", "null"]
+    },
     "line_items": {
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "type": ["string", "null"]
           },
           "subscription_id": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "type": ["string", "null"]
           },
           "date_from": {
             "type": ["integer", "null"]
@@ -165,41 +149,31 @@
             "type": ["boolean", "null"]
           },
           "tax_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "tax_rate": {
-            "type": ["number", "null"],
-            "minimum": 0.0,
-            "maximum": 100.0
+            "type": ["number", "null"]
           },
           "unit_amount_in_decimal": {
-            "type": ["string", "null"],
-            "maxLength": 33
+            "type": ["string", "null"]
           },
           "quantity_in_decimal": {
-            "type": ["string", "null"],
-            "maxLength": 33
+            "type": ["string", "null"]
           },
           "amount_in_decimal": {
-            "type": ["string", "null"],
-            "maxLength": 33
+            "type": ["string", "null"]
           },
           "discount_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "item_level_discount_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "description": {
-            "type": ["string", "null"],
-            "maxLength": 250
+            "type": ["string", "null"]
           },
           "entity_description": {
-            "type": ["string", "null"],
-            "maxLength": 500
+            "type": ["string", "null"]
           },
           "entity_type": {
             "type": ["string", "null"]
@@ -208,12 +182,19 @@
             "type": ["string", "null"]
           },
           "entity_id": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "type": ["string", "null"]
           },
           "customer_id": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "type": ["string", "null"]
+          },
+          "metered": {
+            "type": ["boolean", "null"]
+          },
+          "reference_line_item_id": {
+            "type": ["string", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -224,19 +205,16 @@
         "type": ["object", "null"],
         "properties": {
           "amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "description": {
-            "type": ["string", "null"],
-            "maxLength": 250
+            "type": ["string", "null"]
           },
           "entity_type": {
             "type": ["string", "null"]
           },
           "entity_id": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "type": ["string", "null"]
           }
         }
       }
@@ -247,19 +225,16 @@
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "type": ["string", "null"]
           },
           "discount_type": {
             "type": ["string", "null"]
           },
           "discount_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "entity_id": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "type": ["string", "null"]
           }
         }
       }
@@ -270,39 +245,31 @@
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "type": ["string", "null"]
           },
           "starting_unit": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "ending_unit": {
             "type": ["integer", "null"]
           },
           "quantity_used": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "unit_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "starting_unit_in_decimal": {
-            "type": ["string", "null"],
-            "maxLength": 33
+            "type": ["string", "null"]
           },
           "ending_unit_in_decimal": {
-            "type": ["string", "null"],
-            "maxLength": 33
+            "type": ["string", "null"]
           },
           "quantity_used_in_decimal": {
-            "type": ["string", "null"],
-            "maxLength": 33
+            "type": ["string", "null"]
           },
           "unit_amount_in_decimal": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "type": ["string", "null"]
           }
         }
       }
@@ -313,16 +280,13 @@
         "type": ["object", "null"],
         "properties": {
           "name": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "type": ["string", "null"]
           },
           "amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "description": {
-            "type": ["string", "null"],
-            "maxLength": 250
+            "type": ["string", "null"]
           }
         }
       }
@@ -333,16 +297,13 @@
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "type": ["string", "null"]
           },
           "tax_name": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "type": ["string", "null"]
           },
           "tax_rate": {
             "type": ["number", "null"],
-            "minimum": 0.0,
             "maximum": 100.0
           },
           "is_partial_tax_applied": {
@@ -352,27 +313,22 @@
             "type": ["boolean", "null"]
           },
           "taxable_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "tax_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "tax_juris_type": {
             "type": ["string", "null"]
           },
           "tax_juris_name": {
-            "type": ["string", "null"],
-            "maxLength": 250
+            "type": ["string", "null"]
           },
           "tax_juris_code": {
-            "type": ["string", "null"],
-            "maxLength": 250
+            "type": ["string", "null"]
           },
           "tax_amount_in_local_currency": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "local_currency-code": {
             "type": ["string", "null"]
@@ -386,12 +342,10 @@
         "type": ["object", "null"],
         "properties": {
           "txn_id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "type": ["string", "null"]
           },
           "applied_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "applied_at": {
             "type": ["integer", "null"]
@@ -403,8 +357,7 @@
             "type": ["integer", "null"]
           },
           "txn_amount": {
-            "type": ["integer", "null"],
-            "minimum": 1
+            "type": ["integer", "null"]
           },
           "refund_reason_code": {
             "type": ["string", "null"]
@@ -418,12 +371,10 @@
         "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "type": ["string", "null"]
           },
           "amount": {
-            "type": ["integer", "null"],
-            "minimum": 1
+            "type": ["integer", "null"]
           },
           "description": {
             "type": ["string", "null"]
@@ -443,12 +394,10 @@
         "type": ["object", "null"],
         "properties": {
           "invoice_id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "type": ["string", "null"]
           },
           "allocated_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "allocated_at": {
             "type": ["integer", "null"]
@@ -462,19 +411,105 @@
         }
       }
     },
-    "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
+    "shipping_address": {
+      "type": ["object", "null"],
+      "properties": {
+        "first_name": {
+          "type": ["string", "null"]
+        },
+        "last_name": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": ["string", "null"]
+        },
+        "company": {
+          "type": ["string", "null"]
+        },
+        "phone": {
+          "type": ["string", "null"]
+        },
+        "line1": {
+          "type": ["string", "null"]
+        },
+        "line2": {
+          "type": ["string", "null"]
+        },
+        "line3": {
+          "type": ["string", "null"]
+        },
+        "city": {
+          "type": ["string", "null"]
+        },
+        "state_code": {
+          "type": ["string", "null"]
+        },
+        "state": {
+          "type": ["string", "null"]
+        },
+        "country": {
+          "type": ["string", "null"]
+        },
+        "zip": {
+          "type": ["string", "null"]
+        },
+        "validation_status": {
+          "type": ["string", "null"]
         }
       }
+    },
+    "billing_address": {
+      "type": ["object", "null"],
+      "properties": {
+        "first_name": {
+          "type": ["string", "null"]
+        },
+        "last_name": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": ["string", "null"]
+        },
+        "company": {
+          "type": ["string", "null"]
+        },
+        "phone": {
+          "type": ["string", "null"]
+        },
+        "line1": {
+          "type": ["string", "null"]
+        },
+        "line2": {
+          "type": ["string", "null"]
+        },
+        "line3": {
+          "type": ["string", "null"]
+        },
+        "city": {
+          "type": ["string", "null"]
+        },
+        "state_code": {
+          "type": ["string", "null"]
+        },
+        "state": {
+          "type": ["string", "null"]
+        },
+        "country": {
+          "type": ["string", "null"]
+        },
+        "zip": {
+          "type": ["string", "null"]
+        },
+        "validation_status": {
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "custom_fields": {
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

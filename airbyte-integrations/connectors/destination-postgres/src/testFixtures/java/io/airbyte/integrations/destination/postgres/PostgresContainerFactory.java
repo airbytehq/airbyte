@@ -16,17 +16,11 @@ import org.testcontainers.utility.MountableFile;
  * TODO: This class is a copy from source-postgres:testFixtures. Eventually merge into a common
  * fixtures module.
  */
-public class PostgresContainerFactory implements ContainerFactory<PostgreSQLContainer<?>> {
+public class PostgresContainerFactory extends ContainerFactory<PostgreSQLContainer<?>> {
 
   @Override
-  public PostgreSQLContainer<?> createNewContainer(DockerImageName imageName) {
+  protected PostgreSQLContainer<?> createNewContainer(DockerImageName imageName) {
     return new PostgreSQLContainer<>(imageName.asCompatibleSubstituteFor("postgres"));
-
-  }
-
-  @Override
-  public Class<?> getContainerClass() {
-    return PostgreSQLContainer.class;
   }
 
   /**
