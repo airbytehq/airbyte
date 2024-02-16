@@ -162,7 +162,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final ConnectorSpecification spec = Jsons.clone(super.spec());
       final ObjectNode properties = (ObjectNode) spec.getConnectionSpecification().get("properties");
       ((ObjectNode) properties.get(SSL_MODE)).put("default", SSL_MODE_REQUIRE);
-
       return spec;
     }
     return super.spec();
