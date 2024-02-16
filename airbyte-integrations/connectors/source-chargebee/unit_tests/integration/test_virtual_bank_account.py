@@ -177,11 +177,24 @@ class FullRefreshTest(TestCase):
         output = self._read(_config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.system_error
 
-@freezegun.freeze_time(datetime.now(timezone.utc))
+    @HttpMocker()
+    def test_when_read_then_validate_availability_for_full_refresh_and_incremental(self, http_mocker: HttpMocker) -> None:
+        request = _a_request().with_any_query_params().build()
+        http_mocker.get(
+            request,
+            _a_response().build(),
+        )
+        self._read(_config().with_start_date(self._start_date))
+        http_mocker.assert_number_of_calls(request, 3)  # one call for full_refresh availability, one call for incremental availability and one call for the actual read
+
+@freezegun.freeze_time(datetime.now())
 class IncrementalTest(TestCase):
 
     def setUp(self) -> None:
-        print("todo")
+        self._now = _NOW - timedelta(hours=8)
+        self._now_in_seconds = int(self._now.timestamp())
+        self._start_date = (_NOW - timedelta(days=28))
+        self._start_date_in_seconds = int(self._start_date.timestamp())
 
     @staticmethod
     def _read(config: ConfigBuilder, state: Dict[str, Any], expecting_exception: bool = False) -> EntrypointOutput:
@@ -190,14 +203,39 @@ class IncrementalTest(TestCase):
     @HttpMocker()
     def test_given_no_initial_state_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
         # Tests setting state
-        print("todo")
+        cursor_value = self._start_date_in_seconds + 1
+        http_mocker.get(
+            _a_request().with_any_query_params().build(),
+            _a_response().with_record(_a_record().with_cursor(cursor_value)).build()
+        )
+        output = self._read(_config().with_start_date(self._start_date), _NO_STATE)
+        assert output.most_recent_state == { _STREAM_NAME: {_CURSOR_FIELD: str(cursor_value + 1) }}
 
     @HttpMocker()
     def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
         # Tests updating query params with state
-        print("todo")
+        state_value = self._start_date_in_seconds + 1
+        state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_value}).build()
+        http_mocker.get(
+            _a_request().with_any_query_params().build(),
+            _a_response().with_record(_a_record()).build(),
+        )
+        http_mocker.get(
+            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([state_value + 1, state_value + int(timedelta(days=31).total_seconds())]).build(),
+            _a_response().with_record(_a_record()).build(),
+        )
+        self._read(_config().with_start_date(self._start_date), state)
 
     @HttpMocker()
     def test_given_state_more_recent_than_cursor_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
         # Tests properly setting state with cursor field instead of more recent state
-        print("todo")
+        cursor_value = self._start_date_in_seconds + 1
+        more_recent_than_record_cursor = self._now_in_seconds - 1
+        more_recent_state = StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: more_recent_than_record_cursor }).build()
+        http_mocker.get(
+            _a_request().with_any_query_params().build(),
+            _a_response().with_record(_a_record().with_field(NestedPath([_STREAM_NAME, _CURSOR_FIELD]), cursor_value)).build()
+        )
+        output = self._read(_config().with_start_date(self._start_date), more_recent_state)
+        # Currently failing: returned state is _now_in_seconds, not more_recent_than_record_cursor
+        assert output.most_recent_state == { _STREAM_NAME: { _CURSOR_FIELD: str(more_recent_than_record_cursor) }}
