@@ -1,6 +1,9 @@
 {
-  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
+    "user_created_at": { 
+      "type": "string" 
+    },
     "created_at": {
       "type": "string"
     },
@@ -49,6 +52,9 @@
         "type": "string"
       }
     },
+    "language": {
+      "type": "string"
+    },
     "last_client_version": {
       "type": "string"
     },
@@ -56,6 +62,9 @@
       "type": "string"
     },
     "last_name": {
+      "type": "string"
+    },
+    "phone_number": {
       "type": "string"
     },
     "plan_united_type": {
@@ -78,7 +87,8 @@
     },
     "verified": {
       "type": "number"
-    }
+    },
+    "display_name": { "type": "string" }
   },
   "required": []
 }

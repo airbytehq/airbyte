@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "assistant_id": {
       "type": "string"
@@ -34,6 +34,9 @@
     "join_url": {
       "type": "string"
     },
+    "chat_join_url": {
+      "type": "string"
+    },
     "occurrences": {
       "type": "array",
       "items": {
@@ -63,6 +66,9 @@
     },
     "pre_schedule": {
       "type": "boolean"
+    },
+    "pstn_password": {
+      "type": "string"
     },
     "recurrence": {
       "type": "object",
@@ -139,6 +145,9 @@
         "audio": {
           "type": "string"
         },
+        "audio_conference_info": {
+          "type": "string"
+        },
         "authentication_domains": {
           "type": "string"
         },
@@ -202,6 +211,9 @@
         "close_registration": {
           "type": "boolean"
         },
+        "cn_meeting": {
+          "type": "boolean"
+        },
         "contact_email": {
           "type": "string"
         },
@@ -226,7 +238,22 @@
         "email_notification": {
           "type": "boolean"
         },
+        "device_testing": {
+          "type": "boolean"
+        },
+        "email_in_attendee_report": {
+          "type": "boolean"
+        },
+        "enable_dedicated_group_chat": {
+          "type": "boolean"
+        },
         "encryption_type": {
+          "type": "string"
+        },
+        "enforce_login": {
+          "type": "boolean"
+        },
+        "enforce_login_domains": {
           "type": "string"
         },
         "focus_mode": {
@@ -263,6 +290,9 @@
           }
         },
         "host_video": {
+          "type": "boolean"
+        },
+        "in_meeting": {
           "type": "boolean"
         },
         "jbh_time": {
@@ -307,6 +337,23 @@
         "private_meeting": {
           "type": "boolean"
         },
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resource_type": {
+                "type": "string"
+              },
+              "resource_id": {
+                "type": "string"
+              },
+              "permission_level": {
+                "type": "string"
+              }
+            }
+          }
+        },
         "registrants_confirmation_email": {
           "type": "boolean"
         },
@@ -316,8 +363,23 @@
         "registration_type": {
           "type": "number"
         },
+        "request_permission_to_unmute_participants": {
+          "type": "boolean"
+        },
+        "show_join_info": {
+          "type": "boolean"
+        },
         "show_share_button": {
           "type": "boolean"
+        },
+        "sign_language_interpretation": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enable": {
+              "type": "boolean"
+            }
+          }
         },
         "use_pmi": {
           "type": "boolean"
@@ -348,9 +410,49 @@
         },
         "host_save_video_order": {
           "type": "boolean"
+        },
+        "internal_meeting": {
+          "type": "boolean"
+        },
+        "continuous_meeting_chat": {
+          "type": "object",
+          "properties": {
+            "enable": {
+              "type": "boolean"
+            },
+            "auto_add_invited_external_users": {
+              "type": "boolean"
+            },
+            "channel_id": {
+              "type": "string"
+            }
+          }
+        },
+        "participant_focused_meeting": {
+          "type": "boolean"
+        },
+        "push_change_to_calendar": {
+          "type": "boolean"
         }
       },
       "required": []
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_type": {
+            "type": "string"
+          },
+          "resource_id": {
+            "type": "string"
+          },
+          "permission_level": {
+            "type": "string"
+          }
+        }
+      }
     },
     "start_time": {
       "type": "string"
