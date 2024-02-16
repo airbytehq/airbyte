@@ -56,11 +56,6 @@ def create_draft_invoice(access_token, invoice_date, term_type, due_date):
     url = "https://api-m.sandbox.paypal.com/v2/invoicing/invoices"
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {access_token}"}
     data = {
-        # "detail": {
-        #     "invoice_number": generate_random_string(8),
-        #     "invoice_date": invoice_date,
-        #     "payment_term": {"term_type": term_type, "due_date": due_date},
-        # }
         "detail": {
             "invoice_number": generate_random_string(8),
             "invoice_date": invoice_date,
