@@ -421,7 +421,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       // https://learn.microsoft.com/en-us/sql/t-sql/functions/serverproperty-transact-sql?view=sql-server-ver16
       // SQL Server Agent is always running on SQL Managed Instance:
       // https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/transact-sql-tsql-differences-sql-server?view=azuresql#sql-server-agent
-      final Int engineEdition = database.queryInt("SELECT ServerProperty('EngineEdition')");
+      final Integer engineEdition = database.queryInt("SELECT ServerProperty('EngineEdition')");
       if (engineEdition == 8) {
         LOGGER.info(String.format("SQL Server Agent is assumed to be running when EngineEdition == '%s'"), engineEdition);
       } else {
