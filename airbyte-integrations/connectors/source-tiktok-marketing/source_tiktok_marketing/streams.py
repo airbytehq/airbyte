@@ -284,6 +284,7 @@ class AdvertiserIds(TiktokStream):
 class FullRefreshTiktokStream(TiktokStream, ABC):
     primary_key = "id"
     fields: List[str] = None
+    include_deleted_additional_params = {}
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
@@ -373,9 +374,8 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
             params["fields"] = self.convert_array_param(self.fields)
         if stream_slice:
             params.update(stream_slice)
-        if self.include_deleted and self.name in ('ads', 'ad_groups', 'campaigns'):
-            prefix = self.name.upper().replace("_", "")[:-1]  # ad_groups -> ADGROUP for example
-            params.update({"filtering": '{"secondary_status": "' + prefix + '_STATUS_ALL"}'})
+        if self.include_deleted:
+            params.update(self.include_deleted_additional_params)
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -510,6 +510,7 @@ class Campaigns(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739315828649986"""
 
     primary_key = "campaign_id"
+    include_deleted_additional_params = {"filtering": '{"secondary_status": "CAMPAIGN_STATUS_ALL"}'}
 
     def path(self, *args, **kwargs) -> str:
         return "campaign/get/"
@@ -519,6 +520,7 @@ class AdGroups(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739314558673922"""
 
     primary_key = "adgroup_id"
+    include_deleted_additional_params = {"filtering": '{"secondary_status": "ADGROUP_STATUS_ALL"}'}
 
     def path(self, *args, **kwargs) -> str:
         return "adgroup/get/"
@@ -528,6 +530,7 @@ class Ads(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1735735588640770"""
 
     primary_key = "ad_id"
+    include_deleted_additional_params = {"filtering": '{"secondary_status": "AD_STATUS_ALL"}'}
 
     def path(self, *args, **kwargs) -> str:
         return "ad/get/"
