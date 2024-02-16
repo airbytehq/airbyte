@@ -40,4 +40,5 @@ public class ClickhouseDestinationStrictEncrypt extends SpecModifyingDestination
   public boolean isV2Destination() {
     return true;
   }
+
 }
