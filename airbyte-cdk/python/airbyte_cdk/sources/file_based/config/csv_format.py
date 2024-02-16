@@ -150,7 +150,7 @@ class CsvFormat(BaseModel):
 
     @validator("delimiter")
     def validate_delimiter(cls, v: str) -> str:
-        if v == r'\t':
+        if v == r"\t":
             return v
         if len(v) != 1:
             raise ValueError("delimiter should only be one character")
