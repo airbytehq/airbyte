@@ -4,7 +4,9 @@
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
+from textwrap import dedent, indent
 from typing import cast
 
 from overrides import overrides
@@ -12,6 +14,14 @@ from overrides import overrides
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.telemetry import CacheTelemetryInfo
+
+
+# Suppress warnings from DuckDB about reflection on indices.
+# https://github.com/Mause/duckdb_engine/issues/905
+warnings.filterwarnings(
+    "ignore",
+    message="duckdb-engine doesn't yet support reflection on indices",
+)
 
 
 class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -53,7 +63,7 @@ class DuckDBCacheBase(SQLCacheBase):
     """
 
     config_class = DuckDBCacheConfig
-    supports_merge_insert = True
+    supports_merge_insert = False
 
     @overrides
     def get_telemetry_info(self) -> CacheTelemetryInfo:
@@ -80,41 +90,44 @@ class DuckDBCache(DuckDBCacheBase):
 
     file_writer_class = ParquetWriter
 
-    @overrides
-    def _merge_temp_table_to_final_table(
-        self,
-        stream_name: str,
-        temp_table_name: str,
-        final_table_name: str,
-    ) -> None:
-        """Merge the temp table into the main one.
+    # TODO: Delete or rewrite this method after DuckDB adds support for primary key inspection.
+    # @overrides
+    # def _merge_temp_table_to_final_table(
+    #     self,
+    #     stream_name: str,
+    #     temp_table_name: str,
+    #     final_table_name: str,
+    # ) -> None:
+    #     """Merge the temp table into the main one.
 
-        This implementation requires MERGE support in the SQL DB.
-        Databases that do not support this syntax can override this method.
-        """
-        if not self._get_primary_keys(stream_name):
-            raise RuntimeError(
-                f"Primary keys not found for stream {stream_name}. "
-                "Cannot run merge updates without primary keys."
-            )
+    #     This implementation requires MERGE support in the SQL DB.
+    #     Databases that do not support this syntax can override this method.
+    #     """
+    #     if not self._get_primary_keys(stream_name):
+    #         raise exc.AirbyteLibInternalError(
+    #             message="Primary keys not found. Cannot run merge updates without primary keys.",
+    #             context={
+    #                 "stream_name": stream_name,
+    #             },
+    #         )
 
-        _ = stream_name
-        final_table = self._fully_qualified(final_table_name)
-        staging_table = self._fully_qualified(temp_table_name)
-        self._execute_sql(
-            # https://duckdb.org/docs/sql/statements/insert.html
-            # NOTE: This depends on primary keys being set properly in the final table.
-            f"""
-            INSERT OR REPLACE INTO {final_table} BY NAME
-            (SELECT * FROM {staging_table})
-            """
-        )
+    #     _ = stream_name
+    #     final_table = self._fully_qualified(final_table_name)
+    #     staging_table = self._fully_qualified(temp_table_name)
+    #     self._execute_sql(
+    #         # https://duckdb.org/docs/sql/statements/insert.html
+    #         # NOTE: This depends on primary keys being set properly in the final table.
+    #         f"""
+    #         INSERT OR REPLACE INTO {final_table} BY NAME
+    #         (SELECT * FROM {staging_table})
+    #         """
+    #     )
 
     @overrides
     def _ensure_compatible_table_schema(
         self,
         stream_name: str,
-        table_name: str,
+        *,
         raise_on_error: bool = True,
     ) -> bool:
         """Return true if the given table is compatible with the stream's schema.
@@ -122,20 +135,30 @@ class DuckDBCache(DuckDBCacheBase):
         In addition to the base implementation, this also checks primary keys.
         """
         # call super
-        if not super()._ensure_compatible_table_schema(stream_name, table_name, raise_on_error):
+        if not super()._ensure_compatible_table_schema(
+            stream_name=stream_name,
+            raise_on_error=raise_on_error,
+        ):
             return False
 
-        pk_cols = self._get_primary_keys(stream_name)
-        table = self.get_sql_table(table_name)
-        table_pk_cols = table.primary_key.columns.keys()
-        if set(pk_cols) != set(table_pk_cols):
-            if raise_on_error:
-                raise RuntimeError(
-                    f"Primary keys do not match for table {table_name}. "
-                    f"Expected: {pk_cols}. "
-                    f"Found: {table_pk_cols}.",
-                )
-            return False
+        # TODO: Add validation for primary keys after DuckDB adds support for primary key
+        #       inspection: https://github.com/Mause/duckdb_engine/issues/594
+        #       This is a problem because DuckDB implicitly joins on primary keys during MERGE.
+        # pk_cols = self._get_primary_keys(stream_name)
+        # table = self.get_sql_table(table_name)
+        # table_pk_cols = table.primary_key.columns.keys()
+        # if set(pk_cols) != set(table_pk_cols):
+        #     if raise_on_error:
+        #         raise exc.AirbyteLibCacheTableValidationError(
+        #             violation="Primary keys do not match.",
+        #             context={
+        #                 "stream_name": stream_name,
+        #                 "table_name": table_name,
+        #                 "expected": pk_cols,
+        #                 "found": table_pk_cols,
+        #             },
+        #         )
+        #     return False
 
         return True
 
@@ -147,6 +170,36 @@ class DuckDBCache(DuckDBCacheBase):
     ) -> str:
         """Write a file(s) to a new table.
 
-        TODO: Optimize this for DuckDB instead of calling the base implementation.
+        We use DuckDB's `read_parquet` function to efficiently read the files and insert
+        them into the table in a single operation.
+
+        Note: This implementation is fragile in regards to column ordering. However, since
+        we are inserting into a temp table we have just created, there should be no
+        drift between the table schema and the file schema.
         """
-        return super()._write_files_to_new_table(files, stream_name, batch_id)
+        temp_table_name = self._create_table_for_loading(
+            stream_name=stream_name,
+            batch_id=batch_id,
+        )
+        columns_list = [
+            self._quote_identifier(c)
+            for c in list(self._get_sql_column_definitions(stream_name).keys())
+        ]
+        columns_list_str = indent("\n, ".join(columns_list), "    ")
+        files_list = ", ".join([f"'{f!s}'" for f in files])
+        insert_statement = dedent(
+            f"""
+            INSERT INTO {self.config.schema_name}.{temp_table_name}
+            (
+                {columns_list_str}
+            )
+            SELECT
+                {columns_list_str}
+            FROM read_parquet(
+                [{files_list}],
+                union_by_name = true
+            )
+            """
+        )
+        self._execute_sql(insert_statement)
+        return temp_table_name

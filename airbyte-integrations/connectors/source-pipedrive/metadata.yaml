@@ -5,6 +5,10 @@ data:
   allowedHosts:
     hosts:
       - api.pipedrive.com # Please change to the hostname of the source.
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pipedrive
   registries:
     cloud:
       enabled: true
@@ -29,5 +33,5 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:lowcode
+    - language:low-code
 metadataSpecVersion: "1.0"

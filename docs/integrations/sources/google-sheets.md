@@ -118,7 +118,7 @@ The Google Sheets source connector supports the following sync modes:
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
+| :--------------- | :----------- | :---- |
 | any type         | `string`     |       |
 
 ## Limitations & Troubleshooting
@@ -150,9 +150,13 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
-|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
-| 0.3.12 | 2023-12-14 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
-| 0.3.11 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| 0.3.16  | 2024-02-12 | [35136](https://github.com/airbytehq/airbyte/pull/35136) | Fix license in `pyproject.toml`.                                                  |
+| 0.3.15  | 2024-02-07 | [34944](https://github.com/airbytehq/airbyte/pull/34944) | Manage dependencies with Poetry.                                                  |
+| 0.3.14  | 2024-01-23 | [34437](https://github.com/airbytehq/airbyte/pull/34437) | Fix header cells filtering                                                        |
+| 0.3.13  | 2024-01-19 | [34376](https://github.com/airbytehq/airbyte/pull/34376) | Fix names conversion                                                              |
+| 0.3.12  | 2023-12-14 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib                                                           |
+| 0.3.11  | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image   |
 | 0.3.10  | 2023-09-27 | [30487](https://github.com/airbytehq/airbyte/pull/30487) | Fix bug causing rows to be skipped when batch size increased due to rate limits.  |
 | 0.3.9   | 2023-09-25 | [30749](https://github.com/airbytehq/airbyte/pull/30749) | Performance testing - include socat binary in docker image                        |
 | 0.3.8   | 2023-09-25 | [30747](https://github.com/airbytehq/airbyte/pull/30747) | Performance testing - include socat binary in docker image                        |

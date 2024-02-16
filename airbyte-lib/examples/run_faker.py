@@ -1,26 +1,34 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+"""A simple test of AirbyteLib, using the Faker source connector.
 
-from itertools import islice
+Usage (from airbyte-lib root directory):
+> poetry run python ./examples/run_faker.py
+
+No setup is needed, but you may need to delete the .venv-source-faker folder
+if your installation gets interrupted or corrupted.
+"""
+from __future__ import annotations
 
 import airbyte_lib as ab
 
 
-source = ab.get_connector(
+SCALE = 500_000  # Number of records to generate between users and purchases.
+
+# This is a dummy secret, just to test functionality.
+DUMMY_SECRET = ab.get_secret("DUMMY_SECRET")
+
+
+print("Installing Faker source...")
+source = ab.get_source(
     "source-faker",
-    config={"count": 10000, "seed": 0, "parallelism": 1, "always_updated": False},
+    config={"count": SCALE / 2},
     install_if_missing=True,
 )
-cache = ab.new_local_cache()
-
+print("Faker source installed.")
 source.check()
+source.select_streams(["products", "users", "purchases"])
 
-# TODO: Pur the real stream names here:
-streams = ["stream1", "stream2", "stream3"]
-# source.set_streams(["launches", "rockets", "capsules"])
+result = source.read()
 
-result = source.read(cache)
-
-print(islice(source.get_records(streams[0]), 10))
-
-for name, records in result.cache.streams.items():
-    print(f"Stream {name}: {len(list(records))} records")
+for name, records in result.streams.items():
+    print(f"Stream {name}: {len(records)} records")

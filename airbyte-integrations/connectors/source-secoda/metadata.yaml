@@ -8,6 +8,10 @@ data:
   icon: secoda.svg
   license: MIT
   name: Secoda
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-secoda
   registries:
     cloud:
       enabled: true

@@ -5,10 +5,14 @@
 TODO: This is a work in progress. It is not yet used by any other code.
 TODO: Implement before release, or delete.
 """
+from __future__ import annotations
 
 from collections.abc import Iterator, Mapping
+from typing import TYPE_CHECKING
 
-from airbyte_lib.datasets._base import DatasetBase
+
+if TYPE_CHECKING:
+    from airbyte_lib.datasets._base import DatasetBase
 
 
 class DatasetMap(Mapping):

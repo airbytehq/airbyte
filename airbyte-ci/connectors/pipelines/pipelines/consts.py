@@ -30,12 +30,12 @@ PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
 }
 LOCAL_MACHINE_TYPE = platform.machine()
 LOCAL_BUILD_PLATFORM = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[LOCAL_MACHINE_TYPE]
-AMAZONCORRETTO_IMAGE = "amazoncorretto:17.0.8-al2023"
+AMAZONCORRETTO_IMAGE = "amazoncorretto:21-al2023"
 NODE_IMAGE = "node:18.18.0-slim"
 GO_IMAGE = "golang:1.17"
 PYTHON_3_10_IMAGE = "python:3.10.13-slim"
-MAVEN_IMAGE = "maven:3.9.5-amazoncorretto-17-al2023"
-DOCKER_VERSION = "24.0.2"
+MAVEN_IMAGE = "maven:3.9.6-amazoncorretto-21-al2023"
+DOCKER_VERSION = "24"
 DOCKER_DIND_IMAGE = f"docker:{DOCKER_VERSION}-dind"
 DOCKER_CLI_IMAGE = f"docker:{DOCKER_VERSION}-cli"
 DOCKER_REGISTRY_MIRROR_URL = os.getenv("DOCKER_REGISTRY_MIRROR_URL")
@@ -59,7 +59,9 @@ PIP_CACHE_PATH = "/root/.cache/pip"
 POETRY_CACHE_VOLUME_NAME = "poetry_cache"
 POETRY_CACHE_PATH = "/root/.cache/pypoetry"
 STORAGE_DRIVER = "fuse-overlayfs"
-TAILSCALE_AUTH_KEY = os.getenv("TAILSCALE_AUTH_KEY")
+SETUP_PY_FILE_PATH = "setup.py"
+DEFAULT_PYTHON_PACKAGE_REGISTRY_URL = "https://upload.pypi.org/legacy/"
+DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL = "https://pypi.org/pypi"
 
 
 class CIContext(str, Enum):
