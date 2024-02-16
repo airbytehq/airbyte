@@ -99,7 +99,7 @@ definitions:
       start_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{ max( format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
+          {{ max( format_datetime(config.get('start_date'), '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
@@ -108,7 +108,7 @@ definitions:
       end_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{ format_datetime(config['end_date'] if config['end_date'] else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+          {{ format_datetime(config.get('end_date') if config.get('end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
       end_time_option:
         type: RequestOption
         field_name: end_date
@@ -156,7 +156,7 @@ definitions:
       start_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{ max( format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
+          {{ max( format_datetime(config.get('start_date'), '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
@@ -267,13 +267,13 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ format_datetime(config['dispute_start_date'] if config['dispute_start_date'] else (now_utc() - duration('P179D')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z' }}"
+        datetime: "{{ format_datetime(config.get('dispute_start_date') if config.get('dispute_start_date') else (now_utc() - duration('P179D')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       end_datetime:
         type: MinMaxDatetime
         #Adding a time delta as the API has a problem with the slice being too close to the now_utc. Set to 30M
         datetime: >-
-          {{ format_datetime(config['dispute_end_date'] if config['dispute_end_date'] else (now_utc() - duration('PT30M')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z'}}
+          {{ format_datetime(config.get('dispute_end_date') if config.get('dispute_end_date') else (now_utc() - duration('PT30M')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z'}}
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_time_option:
         type: RequestOption
@@ -320,9 +320,9 @@ definitions:
           Content-Type: application/json
         request_body_json:
           creation_date_range:
-            start: "{{ config['start_date'] }}"
+            start: "{{ config.get('start_date') }}"
             end: >-
-              {{ format_datetime(config['end_date'] if config['end_date'] else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+              {{ format_datetime(config.get('end_date') if config.get('end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
     $parameters:
       field_path: items
       path: "v2/invoicing/search-invoices"
@@ -364,12 +364,12 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         #type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
+        datetime: "{{ config.get('start_date') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       end_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{ format_datetime(config['end_date'] if config['end_date'] else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+          {{ format_datetime(config.get('end_date') if config.get('end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
