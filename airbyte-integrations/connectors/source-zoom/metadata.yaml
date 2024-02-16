@@ -19,6 +19,10 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: Zoom has deprecated JWT authentication in favor of OAuth. To successfully migrate, users will need to create a new server-to-server OAuth app and update their credentials in the Airbyte UI.
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
   tags:
     - language:low-code
