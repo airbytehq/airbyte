@@ -22,6 +22,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
@@ -33,7 +34,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
@@ -180,8 +183,9 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   public void testCreateTableIncremental() throws Exception {
     final Sql sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
-
-    final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(incrementalDedupStream.id());
+    List<CompletableFuture<DestinationInitialState<TableDefinition>>> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    assertEquals(1, initialStates.size());
+    final Optional<TableDefinition> existingTable = initialStates.getFirst().get().finalTableDefinition();
 
     assertTrue(existingTable.isPresent());
     assertAll(
