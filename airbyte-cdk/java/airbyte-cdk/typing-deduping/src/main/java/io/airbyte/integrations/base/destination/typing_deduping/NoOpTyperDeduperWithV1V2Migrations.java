@@ -36,10 +36,10 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
   private final V2TableMigrator v2TableMigrator;
   private final ExecutorService executorService;
   private final ParsedCatalog parsedCatalog;
-  private final SqlGenerator<DialectTableDefinition> sqlGenerator;
+  private final SqlGenerator sqlGenerator;
   private final DestinationHandler<DialectTableDefinition> destinationHandler;
 
-  public NoOpTyperDeduperWithV1V2Migrations(final SqlGenerator<DialectTableDefinition> sqlGenerator,
+  public NoOpTyperDeduperWithV1V2Migrations(final SqlGenerator sqlGenerator,
                                             final DestinationHandler<DialectTableDefinition> destinationHandler,
                                             final ParsedCatalog parsedCatalog,
                                             final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,

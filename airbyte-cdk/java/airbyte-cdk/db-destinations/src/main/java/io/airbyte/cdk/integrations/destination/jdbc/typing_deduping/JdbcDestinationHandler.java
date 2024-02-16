@@ -12,16 +12,17 @@ import static org.jooq.impl.DSL.selectOne;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
-import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.commons.exceptions.SQLRuntimeException;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStateImpl;
+import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableState;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLType;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.conf.ParamType;
@@ -38,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Slf4j
-public class JdbcDestinationHandler implements DestinationHandler<TableDefinition> {
+public abstract class JdbcDestinationHandler implements DestinationHandler<TableDefinition> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDestinationHandler.class);
 
@@ -51,17 +53,10 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     this.jdbcDatabase = jdbcDatabase;
   }
 
-  @Override
   public Optional<TableDefinition> findExistingTable(final StreamId id) throws Exception {
     return findExistingTable(jdbcDatabase, databaseName, id.finalNamespace(), id.finalName());
   }
 
-  @Override
-  public LinkedHashMap<String, TableDefinition> findExistingFinalTables(List<StreamId> streamIds) throws Exception {
-    return null;
-  }
-
-  @Override
   public boolean isFinalTableEmpty(final StreamId id) throws Exception {
     return !jdbcDatabase.queryBoolean(
         select(
@@ -72,7 +67,6 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
                         .getSQL(ParamType.INLINED));
   }
 
-  @Override
   public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
     boolean tableExists = jdbcDatabase.executeMetadataQuery(dbmetadata -> {
       LOGGER.info("Retrieving table from Db metadata: {} {} {}", databaseName, id.rawNamespace(), id.rawName());
@@ -143,6 +137,24 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     }
   }
 
+  @Override
+  public List<CompletableFuture<DestinationInitialState<TableDefinition>>> gatherInitialState(List<StreamConfig> streamConfigs) {
+    return streamConfigs.stream().map(streamConfig -> CompletableFuture.supplyAsync(() -> {
+      try {
+        final Optional<TableDefinition> finalTableDefinition = findExistingTable(streamConfig.id());
+
+        final boolean isSchemaMismatch = finalTableDefinition
+            .map(tableDefinition -> !existingSchemaMatchesStreamConfig(streamConfig, tableDefinition))
+            .orElse(false); // should this be true or false ? later on this is only considered when finalTableDefinition is present
+        final boolean isFinalTableEmpty = isFinalTableEmpty(streamConfig.id());
+        final InitialRawTableState initialRawTableState = getInitialRawTableState(streamConfig.id());
+        return (DestinationInitialState<TableDefinition>) new DestinationInitialStateImpl<>(streamConfig, finalTableDefinition, initialRawTableState, isSchemaMismatch, isFinalTableEmpty);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    })).toList();
+  }
+
   public static Optional<TableDefinition> findExistingTable(final JdbcDatabase jdbcDatabase,
                                                             final String databaseName,
                                                             final String schemaName,
@@ -159,16 +171,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
           final String columnName = columns.getString("COLUMN_NAME");
           final String typeName = columns.getString("TYPE_NAME");
           final int columnSize = columns.getInt("COLUMN_SIZE");
-          final int datatype = columns.getInt("DATA_TYPE");
-          SQLType sqlType;
-          try {
-            sqlType = JDBCType.valueOf(datatype);
-          } catch (final IllegalArgumentException e) {
-            // Unknown jdbcType convert to customSqlType
-            LOGGER.warn("Unrecognized JDBCType {}; falling back to UNKNOWN", datatype, e);
-            sqlType = new CustomSqlType("Unknown", "Unknown", datatype);
-          }
-          columnDefinitions.put(columnName, new ColumnDefinition(columnName, typeName, sqlType, columnSize));
+          columnDefinitions.put(columnName, new ColumnDefinition(columnName, typeName, columnSize));
         }
       } catch (final SQLException e) {
         LOGGER.error("Failed to retrieve column info for {}.{}.{}", databaseName, schemaName, tableName, e);

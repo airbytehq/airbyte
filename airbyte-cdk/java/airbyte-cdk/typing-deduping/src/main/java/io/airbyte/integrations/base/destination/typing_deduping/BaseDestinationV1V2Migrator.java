@@ -19,7 +19,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
 
   @Override
   public void migrateIfNecessary(
-                                 final SqlGenerator<DialectTableDefinition> sqlGenerator,
+                                 final SqlGenerator sqlGenerator,
                                  final DestinationHandler<DialectTableDefinition> destinationHandler,
                                  final StreamConfig streamConfig)
       throws Exception {
@@ -59,7 +59,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param destinationHandler the class which executes the sql statements
    * @param streamConfig the stream to migrate the raw table of
    */
-  public void migrate(final SqlGenerator<DialectTableDefinition> sqlGenerator,
+  public void migrate(final SqlGenerator sqlGenerator,
                       final DestinationHandler<DialectTableDefinition> destinationHandler,
                       final StreamConfig streamConfig)
       throws TableNotMigratedException {

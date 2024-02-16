@@ -252,9 +252,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
 
   protected abstract JdbcSqlGenerator getSqlGenerator();
 
-  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
-    return new JdbcDestinationHandler(databaseName, database);
-  }
+  protected abstract JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database);
 
   /**
    * "database" key at root of the config json, for any other variants in config, override this

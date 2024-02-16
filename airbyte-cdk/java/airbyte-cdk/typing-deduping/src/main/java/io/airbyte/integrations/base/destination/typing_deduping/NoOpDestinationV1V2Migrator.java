@@ -7,7 +7,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 public class NoOpDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator<DialectTableDefinition> {
 
   @Override
-  public void migrateIfNecessary(final SqlGenerator<DialectTableDefinition> sqlGenerator,
+  public void migrateIfNecessary(final SqlGenerator sqlGenerator,
                                  final DestinationHandler<DialectTableDefinition> destinationHandler,
                                  final StreamConfig streamConfig)
       throws TableNotMigratedException, UnexpectedSchemaException {
