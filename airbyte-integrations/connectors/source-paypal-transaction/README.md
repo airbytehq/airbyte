@@ -40,7 +40,7 @@ poetry run source-paypal-transaction spec
 poetry run source-paypal-transaction check --config secrets/config.json
 poetry run source-paypal-transaction discover --config secrets/config.json
 #Example with list_payments catalog and the debug flag
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog_list_payments.json --debug
+poetry run source-paypal-transaction read --config secrets/config.json --catalog integration_tests/configured_catalog_list_payments.json --debug
 ```
 
 ### Running unit tests
