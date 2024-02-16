@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -24,6 +25,7 @@ import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.SnapshotMetadata;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
@@ -508,14 +510,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
-    // Re-run the sync to prove that an initial snapshot is initiated due to invalid resume token
-    final List<AirbyteMessage> messages2 = runRead(configuredCatalog, state);
-
-    final List<AirbyteRecordMessage> recordMessages2 = filterRecords(messages2);
-    final List<AirbyteStateMessage> stateMessages2 = filterStateMessages(messages2);
-
-    assertEquals(recordCount, recordMessages2.size());
-    assertEquals(recordCount + 1, stateMessages2.size());
+    // Re-run the sync to prove that a config error is thrown due to invalid resume token
+    assertThrows(ConfigErrorException.class, () -> runRead(configuredCatalog, state));
   }
 
   @Test
