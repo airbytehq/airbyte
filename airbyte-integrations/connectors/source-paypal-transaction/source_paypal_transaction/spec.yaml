@@ -29,7 +29,7 @@ connectionSpecification:
         format</a>. Date must be in range from 3 years till 12 hrs before
         present time.
       type: string
-      examples: ["2021-06-11T23:59:59", "2021-06-11T23:59:59+00:00"]
+      examples: ["2021-06-11T23:59:59Z", "2021-06-11T23:59:59+00:00"]
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(|Z|[+-][0-9]{2}:[0-9]{2})$
       format: "date-time"
       order: 2
@@ -59,6 +59,8 @@ connectionSpecification:
         format</a>. This can be help you select specific range of time, mainly for test purposes 
         or data integrity tests. When this is not used, now_utc() is used by the streams.
         This does not apply to Disputes and Product streams.
+      examples: ["2021-06-11T23:59:59Z", "2021-06-11T23:59:59+00:00"]
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(|Z|[+-][0-9]{2}:[0-9]{2})$
       order: 4
     refresh_token:
       type: "string"
