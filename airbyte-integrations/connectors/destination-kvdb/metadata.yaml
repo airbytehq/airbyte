@@ -10,6 +10,7 @@ data:
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-kvdb
   githubIssueLabel: destination-kvdb
+  icon: kvdb.svg
   license: MIT
   name: KVdb
   releaseDate: 2023-07-15
