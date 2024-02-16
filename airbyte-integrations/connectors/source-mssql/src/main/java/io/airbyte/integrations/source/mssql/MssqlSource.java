@@ -423,7 +423,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       // https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/transact-sql-tsql-differences-sql-server?view=azuresql#sql-server-agent
       final Integer engineEdition = database.queryInt("SELECT ServerProperty('EngineEdition')");
       if (engineEdition == 8) {
-        LOGGER.info(String.format("SQL Server Agent is assumed to be running when EngineEdition == '%s'"), engineEdition);
+        LOGGER.info(String.format("SQL Server Agent is assumed to be running when EngineEdition == '%s'", engineEdition));
       } else {
         final List<JsonNode> queryResponse = database.queryJsons(connection -> {
           final String sql =
