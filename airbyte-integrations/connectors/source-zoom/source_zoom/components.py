@@ -63,12 +63,12 @@ class ServerToServerOauthAuthenticator(NoAuth):
         return request
 
     @property
-    def auth_header(self) -> dict[str, str]:
-        return {"Authorization": f"Bearer {self.token}", "Content-type": "application/json"}
+    def auth_header(self) -> str:
+        return "Authorization"
 
     @property
-    def token(self) -> str:
-        return self._access_token
+    def token(self) -> str | None:
+        return self._access_token if self._access_token else None
 
     def generate_access_token(self) -> str:
         self._generate_token_time = time.time()
