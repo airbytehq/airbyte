@@ -149,12 +149,13 @@ public abstract class JdbcDestinationHandler implements DestinationHandler<Table
     return streamConfigs.stream().map(streamConfig -> CompletableFuture.supplyAsync(() -> {
       try {
         final Optional<TableDefinition> finalTableDefinition = findExistingTable(streamConfig.id());
-
-        final boolean isSchemaMismatch = finalTableDefinition
-            .map(tableDefinition -> !existingSchemaMatchesStreamConfig(streamConfig, tableDefinition))
-            .orElse(false); // should this be true or false ? later on this is only considered when finalTableDefinition is
-                            // present
-        final boolean isFinalTableEmpty = isFinalTableEmpty(streamConfig.id());
+        // Only evaluate schema mismatch & final table emptiness if the final table exists.
+        boolean isSchemaMismatch = false;
+        boolean isFinalTableEmpty = true;
+        if (finalTableDefinition.isPresent()) {
+          isSchemaMismatch = !existingSchemaMatchesStreamConfig(streamConfig, finalTableDefinition.get());
+          isFinalTableEmpty = isFinalTableEmpty(streamConfig.id());
+        }
         final InitialRawTableState initialRawTableState = getInitialRawTableState(streamConfig.id());
         return (DestinationInitialState<TableDefinition>) new DestinationInitialStateImpl<>(streamConfig, finalTableDefinition, initialRawTableState,
             isSchemaMismatch, isFinalTableEmpty);
