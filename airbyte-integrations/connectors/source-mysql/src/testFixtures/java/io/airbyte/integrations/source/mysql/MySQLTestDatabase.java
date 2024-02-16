@@ -53,7 +53,7 @@ public class MySQLTestDatabase extends
 
   static public MySQLTestDatabase in(BaseImage baseImage, ContainerModifier... methods) {
     String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
-    final var container = new MySQLContainerFactory().shared(baseImage.reference, methodNames);
+    final var container = new MySQLContainerFactory().exclusive(baseImage.reference, methodNames);
     return new MySQLTestDatabase(container).initialized();
   }
 
