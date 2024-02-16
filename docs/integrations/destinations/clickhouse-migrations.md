@@ -12,6 +12,35 @@ for integrating with dbt If you are interested in the Clickhouse destination gai
 of Destinations V2 (including final tables), click [[https://github.com/airbytehq/airbyte/discussions/35339]] 
 to register your interest.
 
+This upgrade will ignore any existing raw tables and will not migrate any data to the new schema.
+For each stream, you could perform the following query to migrate the data from the old raw table
+to the new raw table:
+
+```sql
+-- assumes your database was 'default'
+-- replace `{{stream_name}}` with replace your stream name
+
+CREATE TABLE airbyte_internal.default_raw__stream_{{stream_name}}
+(
+    `_airbyte_raw_id` String,
+    `_airbyte_extracted_at` DateTime64(3, 'GMT') DEFAULT now(),
+    `_airbyte_loaded_at` DateTime64(3, 'GMT') NULL,
+    `_airbyte_data` String,
+    PRIMARY KEY(`_airbyte_raw_id`)
+)
+ENGINE = MergeTree;
+
+INSERT INTO `airbyte_internal`.`default_raw__stream_{{stream_name}}`
+    SELECT
+        `_airbyte_ab_id` AS "_airbyte_raw_id",
+        `_airbyte_emitted_at` AS "_airbyte_extracted_at",
+        NULL AS "_airbyte_loaded_at",
+        _airbyte_data AS "_airbyte_data"
+    FROM default._airbyte_raw_{{stream_name}};
+```
+
+Airbyte will not delete any of your v1 data.
+
 ### Database/Schema and the Internal Schema
 We have split the raw and final tables into their own schemas,
 which in clickhouse is analogous to a `database`. For the Clickhouse destination, this means that
