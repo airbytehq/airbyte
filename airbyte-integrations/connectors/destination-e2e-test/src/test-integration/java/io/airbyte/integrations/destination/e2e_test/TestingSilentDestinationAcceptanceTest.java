@@ -59,4 +59,9 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
     assertEquals(0, actual.size());
   }
 
+  @Override
+  public void testSyncNotFailsWithNewFields() {
+    // Skip because `retrieveRecords` returns an empty list at all times.
+  }
+
 }

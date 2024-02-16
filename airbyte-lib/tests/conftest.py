@@ -19,6 +19,7 @@ import pytest
 from _pytest.nodes import Item
 from google.cloud import secretmanager
 from pytest_docker.plugin import get_docker_ip
+from sqlalchemy import create_engine
 
 from airbyte_lib.caches import PostgresCacheConfig
 
@@ -43,7 +44,9 @@ def pytest_collection_modifyitems(items: list[Item]) -> None:
     'integration' tests because 'u' comes after 'i' alphabetically.
     """
     def test_priority(item: Item) -> int:
-        if 'lint_tests' in str(item.fspath):
+        if item.get_closest_marker(name="slow"):
+            return 9  # slow tests have the lowest priority
+        elif 'lint_tests' in str(item.fspath):
             return 1  # lint tests have high priority
         elif 'unit_tests' in str(item.fspath):
             return 2  # unit tests have highest priority
@@ -192,6 +195,10 @@ def snowflake_config():
     )
 
     yield config
+
+    engine = create_engine(config.get_sql_alchemy_url())
+    with engine.begin() as connection:
+        connection.execute(f"DROP SCHEMA IF EXISTS {config.schema_name}")
 
 
 @pytest.fixture(autouse=True)

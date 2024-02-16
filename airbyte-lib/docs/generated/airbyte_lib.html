@@ -250,6 +250,23 @@ is not also a path, such as "md:" to connect the user's default MotherDuck DB.</
                                 </dl>
                             </div>
                 </section>
+                <section id="get_available_connectors">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_available_connectors</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#get_available_connectors"></a>
+    
+            <div class="docstring"><p>Return a list of all available connectors.</p>
+
+<p>Connectors will be returned in alphabetical order, with the standard prefix "source-".</p>
+</div>
+
+
+                </section>
                 <section id="get_source">
                     <div class="attr function">
             
@@ -302,7 +319,7 @@ working directory.</p>
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_secret</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">secret_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">source</span><span class="p">:</span> <span class="n"><a href="#SecretSource">SecretSource</a></span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="#SecretSource">SecretSource</a></span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n"><a href="#SecretSource.ANY">SecretSource.ANY</a></span><span class="p">:</span> <span class="mi">3</span><span class="o">&gt;</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">prompt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+        <span class="name">get_secret</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">secret_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">source</span><span class="p">:</span> <span class="n"><a href="#SecretSource">SecretSource</a></span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="#SecretSource">SecretSource</a></span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n"><a href="#SecretSource.ANY">SecretSource.ANY</a></span><span class="p">:</span> <span class="mi">4</span><span class="o">&gt;</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">prompt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
 
         
     </div>
@@ -459,10 +476,22 @@ methods except for __getitem__, __iter__, and __len__.</p>
     
 
                             </div>
+                            <div id="SecretSource.DOTENV" class="classattr">
+                                <div class="attr variable">
+            <span class="name">DOTENV</span>        =
+<span class="default_value">&lt;<a href="#SecretSource.DOTENV">SecretSource.DOTENV</a>: 2&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource.DOTENV"></a>
+    
+    
+
+                            </div>
                             <div id="SecretSource.GOOGLE_COLAB" class="classattr">
                                 <div class="attr variable">
             <span class="name">GOOGLE_COLAB</span>        =
-<span class="default_value">&lt;<a href="#SecretSource.GOOGLE_COLAB">SecretSource.GOOGLE_COLAB</a>: 2&gt;</span>
+<span class="default_value">&lt;<a href="#SecretSource.GOOGLE_COLAB">SecretSource.GOOGLE_COLAB</a>: 3&gt;</span>
 
         
     </div>
@@ -474,7 +503,7 @@ methods except for __getitem__, __iter__, and __len__.</p>
                             <div id="SecretSource.ANY" class="classattr">
                                 <div class="attr variable">
             <span class="name">ANY</span>        =
-<span class="default_value">&lt;<a href="#SecretSource.ANY">SecretSource.ANY</a>: 3&gt;</span>
+<span class="default_value">&lt;<a href="#SecretSource.ANY">SecretSource.ANY</a>: 4&gt;</span>
 
         
     </div>
@@ -486,7 +515,7 @@ methods except for __getitem__, __iter__, and __len__.</p>
                             <div id="SecretSource.PROMPT" class="classattr">
                                 <div class="attr variable">
             <span class="name">PROMPT</span>        =
-<span class="default_value">&lt;<a href="#SecretSource.PROMPT">SecretSource.PROMPT</a>: 4&gt;</span>
+<span class="default_value">&lt;<a href="#SecretSource.PROMPT">SecretSource.PROMPT</a>: 5&gt;</span>
 
         
     </div>
@@ -568,13 +597,45 @@ methods except for __getitem__, __iter__, and __len__.</p>
     </div>
     <a class="headerlink" href="#Source.set_streams"></a>
     
-            <div class="docstring"><p>Optionally, select the stream names that should be read from the connector.</p>
+            <div class="docstring"><p>Deprecated. See select_streams().</p>
+</div>
+
+
+                            </div>
+                            <div id="Source.select_all_streams" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">select_all_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.select_all_streams"></a>
+    
+            <div class="docstring"><p>Select all streams.</p>
+
+<p>This is a more streamlined equivalent to:</p>
+
+<blockquote>
+  <p>source.select_streams(source.get_available_streams()).</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="Source.select_streams" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">select_streams</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">streams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#Source.select_streams"></a>
+    
+            <div class="docstring"><p>Select the stream names that should be read from the connector.</p>
 
 <p>Currently, if this is not set, all streams will be read.</p>
-
-<p>TODO: In the future if not set, the default behavior may exclude streams which the connector
-would default to disabled. (For instance, streams that require a premium license
-are sometimes disabled by default within the connector.)</p>
 </div>
 
 
@@ -591,7 +652,7 @@ are sometimes disabled by default within the connector.)</p>
     
             <div class="docstring"><p>Get the selected streams.</p>
 
-<p>If no streams are selected, return all available streams.</p>
+<p>If no streams are selected, return an empty list.</p>
 </div>
 
 

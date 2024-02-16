@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Properties>
+        <!-- Set the LOG_SCRUB_PATTERN env var to a regex pattern to scrub the log messages of secrets or any other unwanted content. -->
+        <Property name="jvm-log-pattern">%d{yyyy-MM-dd'T'HH:mm:ss,SSS}{GMT+0}`%highlight{%p}`%C{1.}(%M):%L - %replace{%m}{$${env:LOG_SCRUB_PATTERN:-\*\*\*\*\*}}{*****}%n</Property>
+        <!--Logs the timestamp and log_source/application name in the beginning of the line if it exists with a > separator, and then always the rest of the line.-->
+        <Property name="container-log-pattern">%d{yyyy-MM-dd'T'HH:mm:ss,SSS}{GMT+0}`%replace{ %X{log_source}}{^ -}{} > %replace{%m}{$${env:LOG_SCRUB_PATTERN:-\*\*\*\*\*}}{*****}%n</Property>
+        <!-- Always log INFO by default. -->
+        <Property name="log-level">${sys:LOG_LEVEL:-${env:LOG_LEVEL:-INFO}}</Property>
+        <Property name="logSubDir">${env:AIRBYTE_LOG_SUBDIR:-${date:yyyy-MM-dd'T'HH:mm:ss}}</Property>
+        <Property name="logDir">build/test-logs/${logSubDir}</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="JvmLogsStdOut" target="SYSTEM_OUT">
+            <ContextMapFilter onMatch="DENY" onMismatch="ACCEPT">
+                <KeyValuePair key="simple" value="true"/>
+            </ContextMapFilter>
+            <PatternLayout pattern="${jvm-log-pattern}"/>
+        </Console>
+
+        <Console name="ContainerLogsStdOut" target="SYSTEM_OUT">
+            <ContextMapFilter onMatch="ACCEPT" onMismatch="DENY">
+                <KeyValuePair key="simple" value="true"/>
+            </ContextMapFilter>
+            <PatternLayout pattern="${container-log-pattern}"/>
+        </Console>
+
+        <File name="JvmLogsFile" fileName="${logDir}/airbyte_jvm.log">
+            <ContextMapFilter onMatch="DENY" onMismatch="ACCEPT">
+                <KeyValuePair key="simple" value="true"/>
+            </ContextMapFilter>
+            <PatternLayout pattern="${jvm-log-pattern}"/>
+        </File>
+        <File name="ContainerLogFiles" fileName="${logDir}/airbyte_containers.log">
+            <ContextMapFilter onMatch="ACCEPT" onMismatch="DENY">
+                <KeyValuePair key="simple" value="true"/>
+            </ContextMapFilter>
+            <PatternLayout pattern="${container-log-pattern}"/>
+        </File>
+        <File name="UnifiedFile-JvmLogs" fileName="${logDir}/airbyte_unified.log">
+            <ContextMapFilter onMatch="DENY" onMismatch="ACCEPT">
+                <KeyValuePair key="simple" value="true"/>
+            </ContextMapFilter>
+            <PatternLayout pattern="${jvm-log-pattern}"/>
+        </File>
+        <File name="UnifiedFile-ContainerLogs" fileName="${logDir}/airbyte_unified.log">
+            <ContextMapFilter onMatch="ACCEPT" onMismatch="DENY">
+                <KeyValuePair key="simple" value="true"/>
+            </ContextMapFilter>
+            <PatternLayout pattern="${container-log-pattern}"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Root level="${log-level}">
+            <AppenderRef ref="JvmLogsStdOut"/>
+            <AppenderRef ref="ContainerLogsStdOut"/>
+            <AppenderRef ref="JvmLogsFile"/>
+            <AppenderRef ref="ContainerLogFiles"/>
+            <AppenderRef ref="UnifiedFile-JvmLogs"/>
+            <AppenderRef ref="UnifiedFile-ContainerLogs"/>
+        </Root>
+
+        <Logger name="org.eclipse.jetty" level="INFO" />
+        <Logger name="com.github.dockerjava" level="INFO" />
+        <Logger name="org.apache.hc" level="INFO" />
+        <Logger name="org.jooq" level="INFO" />
+        <logger name="org.jooq.Constants" level="OFF" />
+        <Logger name="com.networknt.schema" level="INFO" />
+        <Logger name="me.andrz.jackson" level="INFO" />
+        <Logger name="com.leansoft.bigqueue" level="INFO" />
+        <Logger name="io.netty" level="INFO" />
+        <Logger name="io.grpc" level="INFO" />
+        <Logger name="io.temporal" level="INFO" />
+        <Logger name="org.apache" level="WARN" />
+        <Logger name="httpclient" level="WARN" />
+        <Logger name="com.amazonaws" level="WARN" />
+        <!--MySQL Debezium connector generates a log whenever it converts an invalid value to empty value.
+        Ex: Invalid value '0000-00-00 00:00:00' stored in column 'column_name' of table 'table_name' converted to empty value
+        If a database has tons of such values, the logs would be filled with such messages-->
+        <Logger name="io.debezium.connector.mysql.MySqlValueConverters" level="OFF" />
+        <!--MySQL Debezium connector generates a log whenever it comes across a DDL query to mention that it skipped it.
+        If a database has tons of DDL queries, the logs would be filled with such messages-->
+        <Logger name="io.debezium.relational.history" level="OFF" />
+
+        <!--Uncomment the following to debug JOOQ generated SQL queries.-->
+        <!--<Logger name="org.jooq.tools.LoggerListener" level="debug">-->
+        <!--  <AppenderRef ref="Console"/>-->
+        <!--</Logger>-->
+
+    </Loggers>
+
+</Configuration>
