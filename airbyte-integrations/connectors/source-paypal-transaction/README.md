@@ -55,8 +55,11 @@ poetry run pytest unit_tests
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
 
+
+### Installing the connector
+From this connector directory, run:
 ```bash
-airbyte-ci connectors --name=source-paypal-transaction build
+poetry install --with dev
 ```
 
 ##### Customizing our build process
@@ -80,6 +83,7 @@ if TYPE_CHECKING:
 An image will be available on your host with the tag `airbyte/source-paypal-transaction:dev`.
 
 
+
 ### Running as a docker container
 Then run any of the connector commands as follows:
 ```
@@ -89,7 +93,9 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-paypal-transaction:dev
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-paypal-transaction:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
-## Testing with CI test suite
+
+### Running our CI test suite
+
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 
 ```bash

@@ -4,32 +4,25 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "first_name": {
-      "type": ["string", "null"],
-      "maxLength": 150
+      "type": ["string", "null"]
     },
     "last_name": {
-      "type": ["string", "null"],
-      "maxLength": 150
+      "type": ["string", "null"]
     },
     "email": {
-      "type": ["string", "null"],
-      "maxLength": 70
+      "type": ["string", "null"]
     },
     "phone": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "company": {
-      "type": ["string", "null"],
-      "maxLength": 250
+      "type": ["string", "null"]
     },
     "vat_number": {
-      "type": ["string", "null"],
-      "maxLength": 20
+      "type": ["string", "null"]
     },
     "auto_collection": {
       "type": ["string", "null"]
@@ -56,8 +49,7 @@
       "type": ["integer", "null"]
     },
     "created_from_ip": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "exemption_details": {
       "type": ["array", "null"],
@@ -73,8 +65,7 @@
       "type": ["string", "null"]
     },
     "exempt_number": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "type": ["string", "null"]
     },
     "resource_version": {
       "type": ["integer", "null"]
@@ -83,8 +74,7 @@
       "type": ["integer", "null"]
     },
     "locale": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "billing_date": {
       "type": ["integer", "null"]
@@ -108,36 +98,28 @@
       "type": ["string", "null"]
     },
     "primary_payment_source_id": {
-      "type": ["string", "null"],
-      "maxLength": 40
+      "type": ["string", "null"]
     },
     "backup_payment_source_id": {
-      "type": ["string", "null"],
-      "maxLength": 40
+      "type": ["string", "null"]
     },
     "invoice_notes": {
-      "type": ["string", "null"],
-      "maxLength": 2000
+      "type": ["string", "null"]
     },
     "preferred_currency_code": {
-      "type": ["string", "null"],
-      "maxLength": 3
+      "type": ["string", "null"]
     },
     "promotional_credits": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "unbilled_charges": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "refundable_credits": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "excess_payments": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "type": ["integer", "null"]
     },
     "deleted": {
       "type": ["boolean", "null"]
@@ -155,19 +137,16 @@
       "type": ["boolean", "null"]
     },
     "client_profile_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "use_default_hierarchy_settings": {
       "type": ["boolean", "null"]
     },
     "vat_number_prefix": {
-      "type": ["string", "null"],
-      "maxLength": 10
+      "type": ["string", "null"]
     },
     "business_entity_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "channel": {
       "type": ["string", "null"]
@@ -175,62 +154,58 @@
     "object": {
       "type": ["string", "null"]
     },
+    "mrr": {
+      "type": ["integer", "null"]
+    },
+    "tax_providers_fields": {
+      "type": ["array", "null"]
+    },
     "billing_address": {
       "type": ["object", "null"],
       "properties": {
         "first_name": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "last_name": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "email": {
-          "type": ["string", "null"],
-          "maxLength": 70
+          "type": ["string", "null"]
         },
         "company": {
-          "type": ["string", "null"],
-          "maxLength": 250
+          "type": ["string", "null"]
         },
         "phone": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "line1": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "line2": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "line3": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "city": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "state_code": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "state": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "country": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "zip": {
-          "type": ["string", "null"],
-          "maxLength": 20
+          "type": ["string", "null"]
         },
         "validation_status": {
+          "type": ["string", "null"]
+        },
+        "object": {
           "type": ["string", "null"]
         }
       }
@@ -241,12 +216,10 @@
         "type": ["object", "null"],
         "properties": {
           "external_customer_id": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "type": ["string", "null"]
           },
           "referral_sharing_url": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "type": ["string", "null"]
           },
           "created_at": {
             "type": ["integer", "null"]
@@ -255,16 +228,13 @@
             "type": ["integer", "null"]
           },
           "referral_campaign_id": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "type": ["string", "null"]
           },
           "referral_account_id": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "type": ["string", "null"]
           },
           "referral_external_campaign_id": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "type": ["string", "null"]
           },
           "referral_system": {
             "type": ["string", "null"]
@@ -278,28 +248,22 @@
         "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": ["string", "null"],
-            "maxLength": 150
+            "type": ["string", "null"]
           },
           "first_name": {
-            "type": ["string", "null"],
-            "maxLength": 150
+            "type": ["string", "null"]
           },
           "last_name": {
-            "type": ["string", "null"],
-            "maxLength": 150
+            "type": ["string", "null"]
           },
           "email": {
-            "type": ["string", "null"],
-            "maxLength": 70
+            "type": ["string", "null"]
           },
           "phone": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "type": ["string", "null"]
           },
           "label": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "type": ["string", "null"]
           },
           "enabled": {
             "type": ["boolean", "null"]
@@ -309,6 +273,9 @@
           },
           "send_billing_email": {
             "type": ["boolean", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -323,15 +290,16 @@
           "type": ["string", "null"]
         },
         "gateway_account_id": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "status": {
           "type": ["string", "null"]
         },
         "reference_id": {
-          "type": ["string", "null"],
-          "maxLength": 200
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
         }
       }
     },
@@ -341,24 +309,25 @@
         "type": ["object", "null"],
         "properties": {
           "promotional_credits": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "excess_payments": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "refundable_credits": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "unbilled_charges": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "type": ["integer", "null"]
           },
           "currency_code": {
-            "type": ["string", "null"],
-            "maxLength": 3
+            "type": ["string", "null"]
+          },
+          "balance_currency_code": {
+            "type": ["string", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -367,16 +336,13 @@
       "type": ["object", "null"],
       "properties": {
         "parent_id": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "payment_owner_id": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "invoice_owner_id": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         }
       }
     },
@@ -428,18 +394,7 @@
       "properties": {}
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

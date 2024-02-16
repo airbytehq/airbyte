@@ -19,6 +19,7 @@ include = "source_paypal_transaction"
 python = "^3.9,<3.12"
 airbyte-cdk = "==0.62.0"
 
+
 [tool.poetry.scripts]
 source-paypal-transaction = "source_paypal_transaction.run:run"
 

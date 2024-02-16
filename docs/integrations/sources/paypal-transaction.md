@@ -279,7 +279,7 @@ ___
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-| 2.3.0   | 2024-02-07 | [34510](https://github.com/airbytehq/airbyte/pull/34510) | Silver certified. New Streams Added                                                        |
+| 2.3.0   | 2024-02-014 | [34510](https://github.com/airbytehq/airbyte/pull/34510) | Silver certified. New Streams Added                                                        |
 | 2.2.2   | 2024-02-09 | [35075](https://github.com/airbytehq/airbyte/pull/35075) | Manage dependencies with Poetry. 
 | 2.2.1   | 2024-01-11 | [34155](https://github.com/airbytehq/airbyte/pull/34155) | prepare for airbyte-lib                                                        |
 | 2.2.0 | 2023-10-25 | [31852](https://github.com/airbytehq/airbyte/pull/31852) | The size of the time_window can be configured                                                                               |
