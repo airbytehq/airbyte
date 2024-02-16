@@ -6,6 +6,7 @@ from typing import Any, List, Mapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
+from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -13,7 +14,6 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     RequestInput,
 )
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from sources.declarative.extractors import DpathExtractor
 
 
 @dataclass
