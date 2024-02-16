@@ -6,7 +6,7 @@ import base64
 import time
 from dataclasses import dataclass
 from http import HTTPStatus
-from typing import Any, Mapping, Union
+from typing import Any, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
@@ -67,7 +67,7 @@ class ServerToServerOauthAuthenticator(NoAuth):
         return "Authorization"
 
     @property
-    def token(self) -> str | None:
+    def token(self) -> Optional[str]:
         return self._access_token if self._access_token else None
 
     def generate_access_token(self) -> str:
