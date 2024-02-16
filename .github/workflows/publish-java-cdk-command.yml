@@ -122,9 +122,6 @@ jobs:
         run: ./gradlew :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
       - name: Build Java CDK
         run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:build
-      - name: Publish Java Modules to MavenLocal (Dry-Run)
-        if: ${{ !(env.DRY_RUN == 'false') }}
-        run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal
       - name: Upload jars as artifacts
         if: ${{ !(env.DRY_RUN == 'false') }}
         uses: actions/upload-artifact@v2
