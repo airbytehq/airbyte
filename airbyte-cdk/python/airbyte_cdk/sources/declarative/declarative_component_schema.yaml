@@ -1848,7 +1848,15 @@ definitions:
         type: string
         enum: [RemoveFields]
       condition:
+        description: The predicate to filter a property by a property value. Property will be removed if evaluated to True.',
         type: string
+        default: ""
+        interpolation_context:
+          - config
+          - property
+          - parameters
+        examples:
+          - "{{ property|string == '' }}"
       field_pointers:
         title: Field Paths
         description: Array of paths defining the field to remove. Each item is an array whose field describe the path of a field to remove.
