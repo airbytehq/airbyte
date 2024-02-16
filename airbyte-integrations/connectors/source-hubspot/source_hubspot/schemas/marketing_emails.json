@@ -701,8 +701,17 @@
     "rssEmailEntryTemplateEnabled": {
       "type": ["null", "boolean"]
     },
-    "rootMicId": {
-      "type": ["null", "integer"]
+    "mailingIlsListsExcluded": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "mailingIlsListsIncluded": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
     }
   }
 }
