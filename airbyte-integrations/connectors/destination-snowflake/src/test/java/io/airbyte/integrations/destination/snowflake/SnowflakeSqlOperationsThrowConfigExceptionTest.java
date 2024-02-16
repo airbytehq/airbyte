@@ -40,8 +40,6 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
   private static final String TEST_PERMISSION_EXCEPTION_CATCHED = "but current role has no privileges on it";
   private static final String TEST_IP_NOT_IN_WHITE_LIST_EXCEPTION_CATCHED = "not allowed to access Snowflake";
 
-  private static SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations;
-
   private static SnowflakeSqlOperations snowflakeSqlOperations;
 
   private static final JdbcDatabase dbForExecuteQuery = Mockito.mock(JdbcDatabase.class);
@@ -60,13 +58,12 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
   public static void setup() {
     DestinationConfig.initialize(Jsons.emptyObject());
 
-    snowflakeStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
-    snowflakeSqlOperations = new SnowflakeSqlOperations();
+    snowflakeSqlOperations = new SnowflakeSqlOperations(new SnowflakeSQLNameTransformer());
 
-    createStageIfNotExists = () -> snowflakeStagingSqlOperations.createStageIfNotExists(dbForExecuteQuery, STAGE_NAME);
-    dropStageIfExists = () -> snowflakeStagingSqlOperations.dropStageIfExists(dbForExecuteQuery, STAGE_NAME, null);
+    createStageIfNotExists = () -> snowflakeSqlOperations.createStageIfNotExists(dbForExecuteQuery, STAGE_NAME);
+    dropStageIfExists = () -> snowflakeSqlOperations.dropStageIfExists(dbForExecuteQuery, STAGE_NAME, null);
     copyIntoTableFromStage =
-        () -> snowflakeStagingSqlOperations.copyIntoTableFromStage(dbForExecuteQuery, STAGE_NAME, STAGE_PATH, FILE_PATH, TABLE_NAME, SCHEMA_NAME);
+        () -> snowflakeSqlOperations.copyIntoTableFromStage(dbForExecuteQuery, STAGE_NAME, STAGE_PATH, FILE_PATH, TABLE_NAME, SCHEMA_NAME);
 
     createSchemaIfNotExists = () -> snowflakeSqlOperations.createSchemaIfNotExists(dbForExecuteQuery, SCHEMA_NAME);
     isSchemaExists = () -> snowflakeSqlOperations.isSchemaExists(dbForRunUnsafeQuery, SCHEMA_NAME);

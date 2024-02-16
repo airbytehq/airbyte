@@ -20,13 +20,13 @@ class SnowflakeInternalStagingSqlOperationsTest {
   private static final String STAGE_PATH = "stagePath/2022/";
   private static final String FILE_PATH = "filepath/filename";
 
-  private SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations;
+  private SnowflakeSqlOperations snowflakeStagingSqlOperations;
 
   @BeforeEach
   public void setup() {
     DestinationConfig.initialize(Jsons.emptyObject());
     snowflakeStagingSqlOperations =
-        new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
+        new SnowflakeSqlOperations(new SnowflakeSQLNameTransformer());
   }
 
   @Test

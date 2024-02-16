@@ -53,14 +53,14 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   public SnowflakeInternalStagingDestination(final NamingConventionTransformer nameTransformer, final String airbyteEnvironment) {
-    super("", nameTransformer, new SnowflakeInternalStagingSqlOperations(nameTransformer));
+    super("", nameTransformer, new SnowflakeSqlOperations(nameTransformer));
     this.airbyteEnvironment = airbyteEnvironment;
   }
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     final NamingConventionTransformer nameTransformer = getNamingResolver();
-    final SnowflakeInternalStagingSqlOperations snowflakeInternalStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(nameTransformer);
+    final SnowflakeSqlOperations snowflakeInternalStagingSqlOperations = new SnowflakeSqlOperations(nameTransformer);
     final DataSource dataSource = getDataSource(config);
     try {
       final JdbcDatabase database = getDatabase(dataSource);
@@ -86,7 +86,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   private static void attemptStageOperations(final String outputSchema,
                                              final JdbcDatabase database,
                                              final NamingConventionTransformer namingResolver,
-                                             final SnowflakeInternalStagingSqlOperations sqlOperations)
+                                             final SnowflakeSqlOperations sqlOperations)
       throws Exception {
 
     // verify we have permissions to create/drop stage
@@ -168,7 +168,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     return StagingConsumerFactory.builder(
         outputRecordCollector,
         database,
-        new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+        new SnowflakeSqlOperations(getNamingResolver()),
         getNamingResolver(),
         config,
         catalog,

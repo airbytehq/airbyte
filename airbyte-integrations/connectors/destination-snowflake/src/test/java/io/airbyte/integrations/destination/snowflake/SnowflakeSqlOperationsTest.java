@@ -32,7 +32,7 @@ class SnowflakeSqlOperationsTest {
   @BeforeEach
   public void setup() {
     DestinationConfig.initialize(Jsons.emptyObject());
-    snowflakeSqlOperations = new SnowflakeSqlOperations();
+    snowflakeSqlOperations = new SnowflakeSqlOperations(new SnowflakeSQLNameTransformer());
   }
 
   @Test
