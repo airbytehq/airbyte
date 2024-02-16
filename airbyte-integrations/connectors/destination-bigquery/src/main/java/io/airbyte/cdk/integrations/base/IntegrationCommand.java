@@ -70,13 +70,17 @@ public class IntegrationCommand implements Runnable {
     })
     private Optional<Path> stateFile;
 
+    @CommandLine.Spec
+    private CommandLine.Model.CommandSpec commandSpec;
+
     @Override
     public void run() {
         try {
-            execute(OperationType.valueOf(command.toUpperCase(Locale.ROOT)));
+            execute(command);
         } catch (final Exception e) {
-            LOGGER.error("Unable to perform operation {}.", command, e);
-            CommandLine.usage(command, System.out);
+            commandSpec.commandLine().usage(System.out);
+            System.out.println("");
+            LOGGER.error("Unable to perform operation '{}'.", command, e);
             // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made
             // to
             // find the root exception that corresponds to a configuration error. If that does not exist, we
@@ -108,13 +112,19 @@ public class IntegrationCommand implements Runnable {
         LOGGER.info("Completed integration: {}", connectorName);
     }
 
-    private void execute(final OperationType operationType) throws Exception {
-        final Optional<Operation> operation = operations.stream().filter(o -> operationType.equals(o.type())).findFirst();
-        if(operation.isPresent()) {
-            operation.get().execute();
-        } else {
+    private void execute(final String command) throws Exception {
+        try {
+            final OperationType operationType = OperationType.valueOf(command.toUpperCase(Locale.ROOT));
+            final Optional<Operation> operation = operations.stream().filter(o -> operationType.equals(o.type())).findFirst();
+            if (operation.isPresent()) {
+                operation.get().execute();
+            } else {
+                throw new IllegalArgumentException("Connector does not support the '" +
+                        operationType.name().toLowerCase(Locale.ROOT) + "' operation.");
+            }
+        } catch (final Exception e) {
             throw new IllegalArgumentException("Connector does not support the '" +
-                    operationType.name().toLowerCase(Locale.ROOT) + "' operation.");
+                    command.toLowerCase(Locale.ROOT) + "' operation.", e);
         }
     }
 }

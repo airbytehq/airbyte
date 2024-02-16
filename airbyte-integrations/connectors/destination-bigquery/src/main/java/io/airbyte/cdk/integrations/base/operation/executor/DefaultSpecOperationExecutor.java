@@ -5,12 +5,16 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 
+import static io.airbyte.cdk.integrations.base.config.ConnectorConfigurationPropertySource.CONNECTOR_OPERATION;
+
 @Singleton
 @Named("specOperationExecutor")
+@Requires(property = CONNECTOR_OPERATION, value = "spec")
 public class DefaultSpecOperationExecutor implements OperationExecutor {
 
     @Override

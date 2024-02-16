@@ -5,6 +5,7 @@ import io.airbyte.cdk.integrations.base.config.AirbyteConfiguredCatalog;
 import io.airbyte.cdk.integrations.base.operation.OperationExecutionException;
 import io.airbyte.integrations.destination.bigquery.consumer.SerializedAirbyteMessageConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
@@ -13,8 +14,11 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import static io.airbyte.cdk.integrations.base.config.ConnectorConfigurationPropertySource.CONNECTOR_OPERATION;
+
 @Singleton
 @Named("writeOperationExecutor")
+@Requires(property = CONNECTOR_OPERATION, value = "write")
 public class DefaultWriteOperationExecutor implements OperationExecutor {
 
     private final AirbyteConfiguredCatalog catalog;

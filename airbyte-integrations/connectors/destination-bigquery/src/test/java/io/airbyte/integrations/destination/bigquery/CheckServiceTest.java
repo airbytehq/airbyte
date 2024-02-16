@@ -43,9 +43,9 @@ public class CheckServiceTest {
 
     BigQuery mockBigQuery = mock(BigQuery.class);
     CheckPermissionHelper mockCheckPermissionHelper = mock(CheckPermissionHelper.class);
-
     @MockBean
     BigQuery mockBigQuery() { return mockBigQuery; }
+
 
     @MockBean
     @Primary

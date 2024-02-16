@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,7 +27,7 @@ public class ConnectorConfigurationPropertySource extends MapPropertySource {
 
     private static final String PREFIX_FORMAT = "%s.%s";
     private static final String ROOT_CONFIGURATION_PROPERTY_KEY = "airbyte.connector";
-    private static final String CONNECTOR_OPERATION = ROOT_CONFIGURATION_PROPERTY_KEY + ".operation";
+    public static final String CONNECTOR_OPERATION = ROOT_CONFIGURATION_PROPERTY_KEY + ".operation";
     public static final String CONNECTOR_CONFIG_PREFIX = ROOT_CONFIGURATION_PROPERTY_KEY + ".config";
     public static final String CONNECTOR_CATALOG_PREFIX = ROOT_CONFIGURATION_PROPERTY_KEY + ".catalog";
     public static final String CONNECTOR_STATE_PREFIX = ROOT_CONFIGURATION_PROPERTY_KEY + ".state";
@@ -37,11 +38,13 @@ public class ConnectorConfigurationPropertySource extends MapPropertySource {
 
     private static Map<String, Object> resolveValues(final CommandLine commandLine) {
         final Map<String,Object> values = new HashMap<>();
-        values.put(CONNECTOR_OPERATION, commandLine.getRawArguments()[0]);
-        values.putAll(loadFile((String)commandLine.optionValue(ARGS_CONFIG_KEY), CONNECTOR_CONFIG_PREFIX));
-        values.putAll(loadFileContents((String)commandLine.optionValue(ARGS_CATALOG_KEY), String.format(PREFIX_FORMAT, CONNECTOR_CATALOG_PREFIX, "configured")));
-        values.putAll(loadFileContents((String)commandLine.optionValue(ARGS_STATE_KEY), String.format(PREFIX_FORMAT, CONNECTOR_STATE_PREFIX, "json")));
-        LOGGER.debug("Resolved values: {}", values);
+        if (commandLine.getRawArguments().length > 0) {
+            values.put(CONNECTOR_OPERATION, commandLine.getRawArguments()[0].toLowerCase(Locale.ROOT));
+            values.putAll(loadFile((String) commandLine.optionValue(ARGS_CONFIG_KEY), CONNECTOR_CONFIG_PREFIX));
+            values.putAll(loadFileContents((String) commandLine.optionValue(ARGS_CATALOG_KEY), String.format(PREFIX_FORMAT, CONNECTOR_CATALOG_PREFIX, "configured")));
+            values.putAll(loadFileContents((String) commandLine.optionValue(ARGS_STATE_KEY), String.format(PREFIX_FORMAT, CONNECTOR_STATE_PREFIX, "json")));
+        }
+        LOGGER.info("Resolved values: {}", values);
         return values;
     }
 

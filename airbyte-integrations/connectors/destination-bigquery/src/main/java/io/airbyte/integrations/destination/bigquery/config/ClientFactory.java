@@ -16,7 +16,7 @@ import java.io.IOException;
 public class ClientFactory {
 
     @Singleton
-    @Requires(notEnv = Environment.TEST )
+    @Requires(notEnv = Environment.TEST)
     public BigQuery bigQuery(final BigQueryConnectorConfiguration configuration, final BigQueryUtils bigQueryUtils) throws IOException {
         final String projectId = configuration.getProjectId();
 

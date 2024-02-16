@@ -2,13 +2,17 @@ package io.airbyte.cdk.integrations.base.operation;
 
 import io.airbyte.cdk.integrations.base.operation.executor.OperationExecutor;
 import io.airbyte.cdk.integrations.base.util.ShutdownUtils;
+import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import java.util.concurrent.TimeUnit;
 
+import static io.airbyte.cdk.integrations.base.config.ConnectorConfigurationPropertySource.CONNECTOR_OPERATION;
+
 @Singleton
 @Named("writeOperation")
+@Requires(property = CONNECTOR_OPERATION, value = "write")
 public class DefaultWriteOperation implements Operation {
 
     private final OperationExecutor operationExecutor;
