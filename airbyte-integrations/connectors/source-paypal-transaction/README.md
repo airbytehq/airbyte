@@ -102,7 +102,7 @@ You can run our full test suite locally using [`airbyte-ci`](https://github.com/
 airbyte-ci connectors --name=source-paypal-transaction test
 ```
 
-If you ar etesting locally, you can use your local credentials (config.json file) by using `--use-local-secrtes`
+If you are testing locally, you can use your local credentials (config.json file) by using `--use-local-secrets`
 
 ```bash
 airbyte-ci connectors --name source-paypal-transaction --use-local-secrets test
