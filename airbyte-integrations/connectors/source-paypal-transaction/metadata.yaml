@@ -27,7 +27,6 @@ data:
       enabled: true
     oss:
       enabled: true
-  #Updates in doc changelog
   releaseDate: 2021-06-10
   releaseStage: generally_available
   releases:
