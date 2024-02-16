@@ -178,11 +178,6 @@ def approve_payment(driver, url):
             cookies_accepted = True
         except Exception as e:
             print("Could not find the accept all cookies button, exception:", e)
-        # cookies = driver.find_element(By.ID, "acceptAllButton")
-        # if cookies:
-        #     cookies.click()
-
-        # cookies_accepted = True
 
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     element = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "payment-submit-btn")))
