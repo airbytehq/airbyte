@@ -1,4 +1,4 @@
-# KVDB
+# KVDB [ARCHIVED]
 
 The KVDB destination for Airbyte
 
