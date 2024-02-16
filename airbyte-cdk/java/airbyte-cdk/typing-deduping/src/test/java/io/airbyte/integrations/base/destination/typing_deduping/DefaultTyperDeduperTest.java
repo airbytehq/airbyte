@@ -77,8 +77,7 @@ public class DefaultTyperDeduperTest {
         .thenReturn(List.of(
             CompletableFuture.completedFuture(overwriteNsState),
             CompletableFuture.completedFuture(appendNsState),
-            CompletableFuture.completedFuture(dedupeNsState)
-        ));
+            CompletableFuture.completedFuture(dedupeNsState)));
     initialStates.forEach(initialState -> when(initialState.initialRawTableState()).thenReturn(new InitialRawTableState(true, Optional.empty())));
 
     migrator = new NoOpDestinationV1V2Migrator<>();
@@ -132,9 +131,9 @@ public class DefaultTyperDeduperTest {
       when(initialState.isSchemaMismatch()).thenReturn(true);
     });
 
-//    when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
-//    when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
-//    when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(false);
+    // when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
+    // when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
+    // when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(false);
     typerDeduper.prepareTables();
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
     verify(destinationHandler).execute(Sql.of("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp"));
@@ -173,9 +172,9 @@ public class DefaultTyperDeduperTest {
       when(initialState.isSchemaMismatch()).thenReturn(true);
     });
 
-//    when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
-//    when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
-//    when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
+    // when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
+    // when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
+    // when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
 
     typerDeduper.prepareTables();
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
@@ -196,10 +195,10 @@ public class DefaultTyperDeduperTest {
       when(initialState.initialRawTableState()).thenReturn(new InitialRawTableState(true, Optional.of(Instant.parse("2023-01-01T12:34:56Z"))));
     });
 
-//    when(destinationHandler.getInitialRawTableState(any()))
-//        .thenReturn(new InitialRawTableState(true, Optional.of(Instant.parse("2023-01-01T12:34:56Z"))));
-//    when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
-//    when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
+    // when(destinationHandler.getInitialRawTableState(any()))
+    // .thenReturn(new InitialRawTableState(true, Optional.of(Instant.parse("2023-01-01T12:34:56Z"))));
+    // when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
+    // when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
     typerDeduper.prepareTables();
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
@@ -246,10 +245,11 @@ public class DefaultTyperDeduperTest {
       when(initialState.initialRawTableState()).thenReturn(new InitialRawTableState(true, Optional.of(Instant.now())));
     });
 
-//    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new InitialRawTableState(true, Optional.of(Instant.now())));
-//    when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
-//    when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
-//    when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
+    // when(destinationHandler.getInitialRawTableState(any())).thenReturn(new InitialRawTableState(true,
+    // Optional.of(Instant.now())));
+    // when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
+    // when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
+    // when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
 
     typerDeduper.prepareTables();
     // NB: We only create one tmp table here.
@@ -287,7 +287,8 @@ public class DefaultTyperDeduperTest {
   void noUnprocessedRecords() throws Exception {
     initialStates.forEach(initialState -> when(initialState.initialRawTableState()).thenReturn(new InitialRawTableState(false, Optional.empty())));
 
-    // when(destinationHandler.getInitialRawTableState(any())).thenReturn(new InitialRawTableState(false, Optional.empty()));
+    // when(destinationHandler.getInitialRawTableState(any())).thenReturn(new
+    // InitialRawTableState(false, Optional.empty()));
     typerDeduper.prepareTables();
     clearInvocations(destinationHandler);
 
@@ -309,10 +310,11 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void unprocessedRecords() throws Exception {
-    initialStates.forEach(initialState -> when(initialState.initialRawTableState()).thenReturn(new InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z")))));
+    initialStates.forEach(initialState -> when(initialState.initialRawTableState())
+        .thenReturn(new InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z")))));
 
-//    when(destinationHandler.getInitialRawTableState(any()))
-//        .thenReturn(new InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z"))));
+    // when(destinationHandler.getInitialRawTableState(any()))
+    // .thenReturn(new InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z"))));
     typerDeduper.prepareTables();
     clearInvocations(destinationHandler);
 

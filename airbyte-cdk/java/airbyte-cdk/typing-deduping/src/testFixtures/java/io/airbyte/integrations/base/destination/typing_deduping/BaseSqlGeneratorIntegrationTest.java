@@ -275,7 +275,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   private DialectTableDefinition getFinalTableDefinition(List<StreamConfig> streamConfigs) throws Exception {
-    final List<CompletableFuture<DestinationInitialState<DialectTableDefinition>>> initialState = destinationHandler.gatherInitialState(streamConfigs);
+    final List<CompletableFuture<DestinationInitialState<DialectTableDefinition>>> initialState =
+        destinationHandler.gatherInitialState(streamConfigs);
     if (initialState.size() != 1) {
       fail("gatherInitialState returned the wrong number of futures");
     }
@@ -403,7 +404,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
 
-    List<CompletableFuture<DestinationInitialState<DialectTableDefinition>>> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    List<CompletableFuture<DestinationInitialState<DialectTableDefinition>>> initialStates =
+        destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
     assertEquals(1, initialStates.size());
     DestinationInitialState<DialectTableDefinition> initialState = initialStates.getFirst().get();
     assertTrue(initialState.isFinalTableEmpty(), "Final table should be empty before T+D");
@@ -432,7 +434,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_unsafe_inputrecords.jsonl"));
 
-    List<CompletableFuture<DestinationInitialState<DialectTableDefinition>>> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    List<CompletableFuture<DestinationInitialState<DialectTableDefinition>>> initialStates =
+        destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
     assertEquals(1, initialStates.size());
     DestinationInitialState<DialectTableDefinition> initialState = initialStates.getFirst().get();
     assertTrue(initialState.isFinalTableEmpty(), "Final table should be empty before T+D");
@@ -448,7 +451,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   private InitialRawTableState getInitialRawTableState(StreamConfig streamConfig) throws Exception {
-    List<CompletableFuture<DestinationInitialState<DialectTableDefinition>>> initialStates = destinationHandler.gatherInitialState(List.of(streamConfig));
+    List<CompletableFuture<DestinationInitialState<DialectTableDefinition>>> initialStates =
+        destinationHandler.gatherInitialState(List.of(streamConfig));
     assertEquals(1, initialStates.size());
     return initialStates.getFirst().get().initialRawTableState();
   }

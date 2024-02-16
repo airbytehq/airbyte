@@ -32,10 +32,11 @@ class MockSqlGenerator implements SqlGenerator {
     return Sql.of("CREATE TABLE " + stream.id().finalTableId("", suffix));
   }
 
-//  @Override
-//  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final String existingTable) throws TableNotMigratedException {
-//    return false;
-//  }
+  // @Override
+  // public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final String
+  // existingTable) throws TableNotMigratedException {
+  // return false;
+  // }
 
   @Override
   public Sql updateTable(final StreamConfig stream,

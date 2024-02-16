@@ -121,10 +121,10 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         .stream()
         .map(stateFuture -> stateFuture.thenCompose(this::prepareTablesFuture))
         .toList();
-//    final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
-//    for (final StreamConfig stream : parsedCatalog.streams()) {
-//      prepareTablesTasks.add(prepareTablesFuture(stream));
-//    }
+    // final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
+    // for (final StreamConfig stream : parsedCatalog.streams()) {
+    // prepareTablesTasks.add(prepareTablesFuture(stream));
+    // }
     CompletableFuture.allOf(prepareTablesTasks.toArray(CompletableFuture[]::new)).join();
     reduceExceptions(prepareTablesTasks, "The following exceptions were thrown attempting to prepare tables:\n");
   }

@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 
 /**
  * Jdbc destination column definition representation
+ *
  * @param name
  * @param type
  * @param columnSize

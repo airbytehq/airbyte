@@ -62,7 +62,9 @@ public class TypeAndDedupeTransaction {
    * @param streamConfig which stream to operate on
    * @throws Exception if the safe query fails
    */
-  public static <TableDefinition> void executeSoftReset(final SqlGenerator sqlGenerator, final DestinationHandler<TableDefinition> destinationHandler, final StreamConfig streamConfig)
+  public static <TableDefinition> void executeSoftReset(final SqlGenerator sqlGenerator,
+                                                        final DestinationHandler<TableDefinition> destinationHandler,
+                                                        final StreamConfig streamConfig)
       throws Exception {
     LOGGER.info("Attempting soft reset for stream {} {}", streamConfig.id().originalNamespace(), streamConfig.id().originalName());
     destinationHandler.execute(sqlGenerator.prepareTablesForSoftReset(streamConfig));
