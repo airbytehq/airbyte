@@ -77,7 +77,7 @@ definitions:
         request_parameters:
           sort_by[asc]: updated_at
           include_deleted: "true"
-          updated_at[between]: "'[{{stream_slice[\"start_time\"]}}, {{stream_slice[\"end_time\"]}}]'"
+          updated_at[between]: '''[{{stream_slice["start_time"]}}, {{stream_slice["end_time"]}}]'''
     incremental_sync:
       $ref: "#/definitions/date_stream_slicer"
   semi_incremental_stream:

@@ -3,16 +3,16 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 from unittest import TestCase
-import isodate
 
 import freezegun
+import isodate
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
-    NestedPath,
     HttpResponseBuilder,
+    NestedPath,
     RecordBuilder,
     create_record_builder,
     create_response_builder,
@@ -20,11 +20,12 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from source_chargebee import SourceChargebee
+
 from .config import ConfigBuilder
 from .pagination import ChargebeePaginationStrategy
 from .request_builder import ChargebeeRequestBuilder
 from .response_builder import a_response_with_status
-from source_chargebee import SourceChargebee
 
 _STREAM_NAME = "virtual_bank_account"
 _SITE = "test-site"

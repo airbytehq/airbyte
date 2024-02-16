@@ -1,11 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import base64
 from datetime import datetime
 from typing import List, Optional, Union
-import base64
 
 from airbyte_cdk.test.mock_http import HttpRequest
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
+
 
 class ChargebeeRequestBuilder:
 
