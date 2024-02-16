@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "user_created_at": { 
-      "type": "string" 
+    "user_created_at": {
+      "type": "string"
     },
     "created_at": {
       "type": "string"

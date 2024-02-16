@@ -4,7 +4,7 @@
 
 As of September 8, 2023, Zoom has [deprecated JWT](https://developers.zoom.us/docs/internal-apps/jwt-faq/) authentication and now supports Oauth instead.
 
-To migrate smoothly, please use [Zoom's migration guide](https://developers.zoom.us/docs/internal-apps/jwt-app-migration/) to create a new server-to-server OAuth app and generate the necessary credentials.
+To successfully migrate, please use [Zoom's migration guide](https://developers.zoom.us/docs/internal-apps/jwt-app-migration/) to create a new server-to-server OAuth app and generate the necessary credentials.
 
 When creating the app, ensure you grant it access to the following scopes:
 
@@ -19,4 +19,4 @@ To successfully authenticate your connection in Airbyte, you will need to input 
 - client_id
 - client_secret
 - account_id
-- authorization_ednpoint
+- authorization_endpoint
