@@ -84,12 +84,6 @@
     },
     "archived": {
       "type": ["null", "boolean"]
-    },
-    "properties_hs_goal_definition_key_with_team": {
-      "type": ["null", "string"]
-    },
-    "properties_hs_goal_definition_key_with_user": {
-      "type": ["null", "string"]
     }
   }
 }
