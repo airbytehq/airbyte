@@ -31,5 +31,5 @@ data:
   ab_internal:
     sl: 100
     ql: 300
-  supportLevel: community
+  supportLevel: archived
 metadataSpecVersion: "1.0"

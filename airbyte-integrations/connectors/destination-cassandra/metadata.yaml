@@ -10,7 +10,7 @@ data:
   name: Cassandra
   registries:
     cloud:
-      enabled: false # hide Cassandra Destination https://github.com/airbytehq/airbyte-cloud/issues/2606
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
@@ -20,5 +20,5 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
 metadataSpecVersion: "1.0"
