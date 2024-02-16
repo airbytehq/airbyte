@@ -1258,6 +1258,7 @@ class CRMSearchStream(IncrementalStream, ABC):
                 else:
                     self._state = self._start_date = max(self._state, self._start_date)
 
+
 class CRMObjectStream(Stream):
     """Unified stream interface for CRM objects.
     You need to provide `entity` parameter to read concrete stream, possible values are:
