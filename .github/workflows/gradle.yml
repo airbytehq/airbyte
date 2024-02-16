@@ -1,4 +1,4 @@
-name: Airbyte CI - Repository Health Check
+name: Connector Ops CI - Gradle Check
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,47 +20,18 @@ on:
       - synchronize
 
 jobs:
-  # In case of self-hosted EC2 errors, remove this block.
-  start-check-runner:
-    name: Start EC2 Runner
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          # Use a beefier instance type than the default c5.2xlarge, but with the same per-core cost.
-          # When gradle runs on this instance, it will use up all the available cores anyway.
-          # There should be little to no difference in total cost, however the job latency will be improved.
-          # At the time of this writing, the latency doesn't improve much beyond this instance size (approx 5 minutes).
-          # This is largely thanks to the gradle cache.
-          ec2-instance-type: "c5.4xlarge"
-          github-token: ${{ env.PAT }}
-
   run-check:
-    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-check-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-check-runner.outputs.label }} # run the job on the newly created runner
+    # The gradle check task which we will run is embarrassingly parallelizable.
+    # We therefore run this on a machine with a maximum number of cores.
+    # We pay per time and per core, so there should be little difference in total cost.
+    # The latency overhead of setting up gradle prior to running the actual task adds up to about a minute.
+    runs-on: connector-test-xxlarge
     name: Gradle Check
     timeout-minutes: 30
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-
-      # IMPORTANT! This is nessesary to make sure that a status is reported on the PR
+      # IMPORTANT! This is necessary to make sure that a status is reported on the PR
       # even if the workflow is skipped. If we used github actions filters, the workflow
       # would not be reported as skipped, but instead would be forever pending.
       #
@@ -105,39 +76,6 @@ jobs:
           read-only: ${{ github.ref != 'refs/heads/master' }}
           # TODO: be able to remove the skipSlowTests property
           arguments: --scan --no-daemon --no-watch-fs check -DskipSlowTests=true
-
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-check-runner:
-    name: Stop EC2 Runner
-    timeout-minutes: 10
-    needs:
-      - start-check-runner # required to get output from the start-runner job
-      - run-check # required to wait when the main job is done
-    runs-on: ubuntu-latest
-    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
-    # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-check-runner.result != 'skipped'}}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
-      - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.10
-        with:
-          mode: stop
-          github-token: ${{ env.PAT }}
-          label: ${{ needs.start-check-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-check-runner.outputs.ec2-instance-id }}
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
