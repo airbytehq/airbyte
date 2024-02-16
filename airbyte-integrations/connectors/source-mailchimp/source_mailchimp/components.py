@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     RequestInput,
 )
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from sources.declarative.extractors import DpathExtractor
 
 
 @dataclass
@@ -95,13 +96,7 @@ class MailChimpRecordFilter(RecordFilter):
         return records
 
 
-class MailChimpRecordFilterEmailActivity(RecordFilter):
-    def filter_records(
-        self,
-        records: List[Mapping[str, Any]],
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> List[Mapping[str, Any]]:
-
+class MailChimpRecordExtractorEmailActivity(DpathExtractor):
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
+        records = super().extract_records(response=response)
         return [{**record, **activity_item} for record in records for activity_item in record.pop("activity", [])]

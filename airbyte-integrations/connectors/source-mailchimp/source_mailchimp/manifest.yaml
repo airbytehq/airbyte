@@ -334,11 +334,11 @@ definitions:
             parent_key: id
             partition_field: id
       record_selector:
-        # TODO: make extractor based on base class
-        $ref: "#/definitions/retriever/record_selector"
-        record_filter:
-          type: CustomRecordFilter
-          class_name: source_mailchimp.components.MailChimpRecordFilterEmailActivity
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_mailchimp.components.MailChimpRecordExtractorEmailActivity
+          field_path: ["{{ parameters.get('data_field') }}"]
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
