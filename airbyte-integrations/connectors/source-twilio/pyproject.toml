@@ -1,12 +1,12 @@
 [build-system]
-requires = [ "poetry-core>=1.0.0",]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 version = "0.10.2"
 name = "source-twilio"
 description = "Source implementation for Twilio."
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/twilio"
@@ -17,9 +17,9 @@ include = "source_twilio"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.55.0"
-pendulum = "==2.1.2"
+pendulum = "<3"
 requests = "==2.31.0"
+airbyte-cdk = "^0.63.2"
 
 [tool.poetry.scripts]
 source-twilio = "source_twilio.run:run"
@@ -29,3 +29,9 @@ pytest-mock = "^3.12.0"
 freezegun = "^1.4.0"
 requests-mock = "^1.9.3"
 pytest = "^6.1"
+
+[tool.pyright]
+reportMissingImports = true
+reportMissingTypeStubs = false
+venvPath = "."
+venv = ".venv"
