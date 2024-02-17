@@ -1,9 +1,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 
+from datetime import datetime, timedelta
 import os
 
 import toml
+
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
@@ -148,9 +150,70 @@ class CheckConnectorCDKTag(MetadataCheck):
             message=f"CDK tag {self.get_expected_cdk_tag(connector)} is present in the metadata file",
         )
 
+class ValidateBreakingChangesDeadlines(MetadataCheck):
+    """
+    Verify that _if_ the the most recent connector version has a breaking change,
+    it's deadline is at least a week in the future.
+    """
+    name = "Breaking change opt-in should be a week in the future"
+    description = f"If the connector version has a breaking change, the deadline field must be set to at least a week in the future."
+    runs_on_released_connectors = False
+    minimum_days_until_deadline = 7
+
+    def _run(self, connector: Connector) -> CheckResult:
+
+        # fetch the current branch version of the connector first.
+        # we'll try and see if there are any breaking changes associated
+        # with it next.
+        current_version = connector.version
+        if current_version is None:
+            return self.fail(
+                connector=connector,
+                message="Can't verify breaking changes deadline: connector version is not defined.",
+            )
+
+        breaking_changes = connector.metadata.get("releases", {}).get("breakingChanges")
+
+        if not breaking_changes:
+            return self.pass_(
+                connector=connector,
+                message="No breaking changes found on this connector.",
+            )
+
+        current_version_breaking_changes = breaking_changes.get(current_version)
+
+        if not current_version_breaking_changes:
+            return self.pass_(
+                connector=connector,
+                message="No breaking changes found for the current version.",
+            )
+
+        upgrade_deadline = current_version_breaking_changes.get('upgradeDeadline')
+
+        if not upgrade_deadline:
+            return self.fail(
+                connector=connector,
+                message=f"No upgrade deadline found for the breaking changes in {current_version}.",
+            )
+
+        upgrade_deadline_datetime = datetime.strptime(upgrade_deadline, "%Y-%m-%d")
+        one_week_from_now = datetime.utcnow() + timedelta(days=self.minimum_days_until_deadline)
+
+        if upgrade_deadline_datetime <= one_week_from_now:
+            return self.fail(
+                connector=connector,
+                message=f"The upgrade deadline for the breaking changes in {current_version} is less than {self.minimum_days_until_deadline} days from today. Please extend the deadline.",
+            )
+
+        return self.pass_(
+            connector=connector,
+            message="Breaking changes deadline is at least a week in the future.",
+        )
+
 
 ENABLED_CHECKS = [
     ValidateMetadata(),
     CheckConnectorLanguageTag(),
     CheckConnectorCDKTag(),
+    ValidateBreakingChangesDeadlines(),
 ]
