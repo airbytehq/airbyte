@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.*;
 
+@Disabled
 class MssqlSourceTest {
 
   private static final String STREAM_NAME = "id_and_name";

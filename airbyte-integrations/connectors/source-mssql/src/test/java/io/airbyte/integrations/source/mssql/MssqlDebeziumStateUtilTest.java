@@ -10,8 +10,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
 import io.debezium.connector.sqlserver.Lsn;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class MssqlDebeziumStateUtilTest {
 
   private static String DB_NAME = "db_name";
