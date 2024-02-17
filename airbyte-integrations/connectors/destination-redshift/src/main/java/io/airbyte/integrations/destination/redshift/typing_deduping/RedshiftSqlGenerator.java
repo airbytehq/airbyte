@@ -159,7 +159,6 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     }
 
     Field<?> result = arrays.get(0);
-    String renderedSql = getDslContext().render(result);
     for (int i = 1; i < arrays.size(); i++) {
       // We lose some nice indentation but thats ok. Queryparts
       // are intentionally rendered here to avoid deep stack for function sql rendering.
