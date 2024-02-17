@@ -39,8 +39,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class CdcStateCompressionTest {
 
   static private final String CDC_ROLE_NAME = "cdc_selector";

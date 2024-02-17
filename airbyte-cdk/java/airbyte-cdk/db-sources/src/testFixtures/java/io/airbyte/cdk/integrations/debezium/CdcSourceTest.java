@@ -325,8 +325,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertEquals(expectedRecords, actualData);
   }
 
-  //@Test
-  //On the first sync, produce returns records that exist in the database.
+  // @Test
+  // On the first sync, produce returns records that exist in the database.
   void testExistingData() throws Exception {
     final CdcTargetPosition targetPosition = cdcLatestTargetPosition();
     final AutoCloseableIterator<AirbyteMessage> read = source().read(config(), getConfiguredCatalog(), null);
@@ -349,8 +349,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertEquals(extractPosition(record.getData()), targetPosition);
   }
 
-  //@Test
-  //When a record is deleted, produces a deletion record.
+  // @Test
+  // When a record is deleted, produces a deletion record.
   void testDelete() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read1 = source()
         .read(config(), getConfiguredCatalog(), null);
@@ -377,8 +377,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertExpectedStateMessages(stateMessages);
   }
 
-  //@Test
-  //When a record is updated, produces an update record.
+  // @Test
+  // When a record is updated, produces an update record.
   void testUpdate() throws Exception {
     final String updatedModel = "Explorer";
     final AutoCloseableIterator<AirbyteMessage> read1 = source()
@@ -471,8 +471,9 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertExpectedStateMessages(stateAfterFirstBatch);
   }
 
-  //@Test
-  //When both incremental CDC and full refresh are configured for different streams in a sync, the data is replicated as expected.
+  // @Test
+  // When both incremental CDC and full refresh are configured for different streams in a sync, the
+  // data is replicated as expected.
   void testCdcAndFullRefreshInSameSync() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(getConfiguredCatalog());
 
@@ -544,8 +545,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
         modelsSchema());
   }
 
-  //@Test
-  //When no records exist, no records are returned.
+  // @Test
+  // When no records exist, no records are returned.
   void testNoData() throws Exception {
 
     deleteCommand(MODELS_STREAM_NAME);
@@ -562,8 +563,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertExpectedStateMessages(stateMessages);
   }
 
-  //@Test
-  //When no changes have been made to the database since the previous sync, no records are returned.
+  // @Test
+  // When no changes have been made to the database since the previous sync, no records are returned.
   void testNoDataOnSecondSync() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read1 = source()
         .read(config(), getConfiguredCatalog(), null);
@@ -587,7 +588,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
-  //@Test
+  // @Test
   void testDiscover() throws Exception {
     final AirbyteCatalog expectedCatalog = expectedCatalogForDiscover();
     final AirbyteCatalog actualCatalog = source().discover(config());
@@ -599,7 +600,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
             .collect(Collectors.toList()));
   }
 
-  //@Test
+  // @Test
   public void newTableSnapshotTest() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
         .read(config(), getConfiguredCatalog(), null);
