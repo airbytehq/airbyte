@@ -17,7 +17,10 @@ import static org.jooq.impl.DSL.selectOne;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.commons.concurrency.CompletableFutures;
 import io.airbyte.commons.exceptions.SQLRuntimeException;
+import io.airbyte.commons.functional.Either;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
@@ -39,6 +42,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.conf.ParamType;
@@ -47,7 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Slf4j
-public abstract class JdbcDestinationHandler implements DestinationHandler<TableDefinition> {
+public abstract class JdbcDestinationHandler implements DestinationHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDestinationHandler.class);
 
@@ -145,8 +149,16 @@ public abstract class JdbcDestinationHandler implements DestinationHandler<Table
   }
 
   @Override
-  public List<CompletableFuture<DestinationInitialState<TableDefinition>>> gatherInitialState(List<StreamConfig> streamConfigs) {
-    return streamConfigs.stream().map(streamConfig -> CompletableFuture.supplyAsync(() -> {
+  public List<DestinationInitialState> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
+    final List<CompletionStage<DestinationInitialState>> initialStates = streamConfigs.stream()
+        .map(this::retrieveState)
+        .toList();
+    final List<Either<? extends Exception, DestinationInitialState>> states = CompletableFutures.allOf(initialStates).toCompletableFuture().join();
+    return ConnectorExceptionUtil.returnOrLogAndThrowFirst("Failed to retrieve initial state", states);
+  }
+
+  private CompletionStage<DestinationInitialState> retrieveState(final StreamConfig streamConfig) {
+    return CompletableFuture.supplyAsync(() -> {
       try {
         final Optional<TableDefinition> finalTableDefinition = findExistingTable(streamConfig.id());
         // Only evaluate schema mismatch & final table emptiness if the final table exists.
@@ -157,12 +169,12 @@ public abstract class JdbcDestinationHandler implements DestinationHandler<Table
           isFinalTableEmpty = isFinalTableEmpty(streamConfig.id());
         }
         final InitialRawTableState initialRawTableState = getInitialRawTableState(streamConfig.id());
-        return (DestinationInitialState<TableDefinition>) new DestinationInitialStateImpl<>(streamConfig, finalTableDefinition, initialRawTableState,
+        return new DestinationInitialStateImpl(streamConfig, finalTableDefinition.isPresent(), initialRawTableState,
             isSchemaMismatch, isFinalTableEmpty);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-    })).toList();
+    });
   }
 
   public static Optional<TableDefinition> findExistingTable(final JdbcDatabase jdbcDatabase,
@@ -212,8 +224,7 @@ public abstract class JdbcDestinationHandler implements DestinationHandler<Table
         toJdbcTypeName(new Struct(new LinkedHashMap<>())).equals(existingTable.columns().get(COLUMN_NAME_AB_META).type());
   }
 
-  @Override
-  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
+  protected boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
     // Check that the columns match, with special handling for the metadata columns.
     if (!isAirbyteRawIdColumnMatch(existingTable) ||
         !isAirbyteExtractedAtColumnMatch(existingTable) ||
