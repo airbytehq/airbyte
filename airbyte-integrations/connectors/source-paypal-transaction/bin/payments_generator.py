@@ -18,8 +18,8 @@
 #
 # NOTE: This is version does not work for CREATE PAYMENT as the HEADER requires data I can't get
 #
-# Ypu may need to add a security context, but you need the proper set of permissions in your account to be able to send this context
-#security_context = '{"actor":{"account_number":"<ACCOUNT_ID>","party_id":"<PARTY_ID>","auth_claims":["AUTHORIZATION_CODE"],"auth_state":"ANONYMOUS","client_id":"zf3..4BQ0T9aw-ngFr9dm....Zx9D-Lf4"},"auth_token":"<YOUR_TOKEN>","auth_token_type":"ACCESS_TOKEN","last_validated":1393560555,"scopes":["https://api-m.sandbox.paypal.com/v1/payments/.*","https://api-m.sandbox.paypal.com/v1/vault/credit-card/.*","openid","https://uri.paypal.com/services/payments/futurepayments","https://api-m.sandbox.paypal.com/v1/vault/credit-card","https://api-m.sandbox.paypal.com/v1/payments/.*"],"subjects":[{"subject":{"account_number":"<ACCOUNT_ID>","party_id":"<PARTY_ID>","auth_claims":["PASSWORD"],"auth_state":"LOGGEDIN"}}]}'
+# You may need to add a security context, but you need the proper set of permissions in your account to be able to send this context
+# security_context = '{"actor":{"account_number":"<ACCOUNT_ID>","party_id":"<PARTY_ID>","auth_claims":["AUTHORIZATION_CODE"],"auth_state":"ANONYMOUS","client_id":"zf3..4BQ0T9aw-ngFr9dm....Zx9D-Lf4"},"auth_token":"<YOUR_TOKEN>","auth_token_type":"ACCESS_TOKEN","last_validated":1393560555,"scopes":["https://api-m.sandbox.paypal.com/v1/payments/.*","https://api-m.sandbox.paypal.com/v1/vault/credit-card/.*","openid","https://uri.paypal.com/services/payments/futurepayments","https://api-m.sandbox.paypal.com/v1/vault/credit-card","https://api-m.sandbox.paypal.com/v1/payments/.*"],"subjects":[{"subject":{"account_number":"<ACCOUNT_ID>","party_id":"<PARTY_ID>","auth_claims":["PASSWORD"],"auth_state":"LOGGEDIN"}}]}'
 
 
 import base64
