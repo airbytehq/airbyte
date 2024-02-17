@@ -16,8 +16,9 @@ following command from this directory:
 pipx install .
 ```
 
-This will make `connectors-qa` available in your `PATH`. Run `connectors-qa --help` to see the
-available commands and options.
+This will make `connectors-qa` available in your `PATH`.
+
+Feel free to run `connectors-qa --help` to see the available commands and options.
 
 ### Examples
 
@@ -63,7 +64,7 @@ connectors-qa generate-documentation qa_checks.md
 ## Development
 
 ```bash
-poetry install
+poetry install --with dev
 ```
 
 ### Dependencies

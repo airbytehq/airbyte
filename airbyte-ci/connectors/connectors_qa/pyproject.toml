@@ -9,9 +9,9 @@ packages = [
 ]
 [tool.poetry.dependencies]
 python = "^3.10"
-airbyte-connectors-base-images = {path = "../base_images", develop = false}
-connector-ops = {path = "../connector_ops", develop = false}
-metadata-service = {path = "../metadata_service/lib", develop = false}
+airbyte-connectors-base-images = { path = "../base_images", develop = false }
+connector-ops = { path = "../connector_ops", develop = false }
+metadata-service = { path = "../metadata_service/lib", develop = false }
 pydash = "^6.0.2"
 jinja2 = "^3.1.3"
 toml = "^0.10.2"
@@ -42,4 +42,11 @@ lint = "ruff check src"
 [tool.airbyte_ci]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["type_check", "lint", "test"]
-required_environment_variables = ["DOCKER_HUB_USERNAME", "DOCKER_HUB_PASSWORD",]
+required_environment_variables = ["DOCKER_HUB_USERNAME", "DOCKER_HUB_PASSWORD"]
+
+[tool.pyright]
+reportMissingImports = true
+reportMissingTypeStubs = false
+pythonVersion = "3.10"
+venvPath = "."
+venv = ".venv"
