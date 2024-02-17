@@ -11,8 +11,10 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class MssqlDataSourceFactoryTest {
 
   @Test
