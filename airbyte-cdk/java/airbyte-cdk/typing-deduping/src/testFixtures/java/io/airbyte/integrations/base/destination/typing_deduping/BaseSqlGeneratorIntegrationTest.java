@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * {@link #getDestinationHandler()} in a {@link org.junit.jupiter.api.BeforeEach} method.
  */
 @Execution(ExecutionMode.CONCURRENT)
-public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
+public abstract class BaseSqlGeneratorIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSqlGeneratorIntegrationTest.class);
   /**
