@@ -142,7 +142,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
                                 \t@source_name   = N'%s',
                                 \t@role_name     = N'%s',
                                 \t@supports_net_changes = 0""";
-    testdb
+    testdb.withCdc()
         .with(enableCdcSqlFmt, modelsSchema(), MODELS_STREAM_NAME, CDC_ROLE_NAME)
         .with(enableCdcSqlFmt, randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME)
         .withShortenedCapturePollingInterval();
