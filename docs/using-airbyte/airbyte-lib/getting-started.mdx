@@ -20,15 +20,18 @@ pip install 'git+https://www.github.com/airbytehq/airbyte.git@master#egg=airbyte
 
 Data can be extracted from sources and loaded into caches:
 
+<a href="https://colab.research.google.com/github/airbytehq/quickstarts/blob/master/airbyte_lib_notebooks/AirbyteLib_Basic_Features_Demo.ipynb" target="_parent"><img src="https://img.shields.io/badge/-Try%20with%20Colab-grey?logo=googlecolab" alt="Try with Colab"/></a>
+
 ```python
 import airbyte_lib as ab
 
-source = ab.get_connector(
+source = ab.get_source(
     "source-faker",
     config={"count": 5_000},
     install_if_missing=True,
 )
 source.check()
+source.select_all_streams()
 result = source.read()
 
 for name, records in result.streams.items():

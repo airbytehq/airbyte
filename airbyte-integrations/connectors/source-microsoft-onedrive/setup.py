@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[file-based]>=0.60.1",
+    "airbyte-cdk[file-based]>=0.61.0",
     "msal~=1.25.0",
     "Office365-REST-Python-Client~=2.5.2",
     "smart-open~=6.4.0",

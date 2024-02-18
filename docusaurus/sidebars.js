@@ -272,7 +272,8 @@ const connectorCatalog = {
       type: "category",
       label: "Sources",
       link: {
-        type: "generated-index",
+        type: "doc",
+        id: "integrations/sources/README",
       },
       items: [sourcePostgres, sourceMysql, ...getSourceConnectors()].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
@@ -280,7 +281,8 @@ const connectorCatalog = {
       type: "category",
       label: "Destinations",
       link: {
-        type: "generated-index",
+        type: "doc",
+        id: "integrations/destinations/README",
       },
       items: getDestinationConnectors(),
     },
@@ -562,10 +564,6 @@ module.exports = {
       type: "doc",
       id: "terraform-documentation",
     },
-    {
-      type: "doc",
-      id: "cli-documentation",
-    },
     understandingAirbyte,
     contributeToAirbyte,
     {
@@ -598,6 +596,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/january_2024",
         "release_notes/december_2023",
         "release_notes/november_2023",
         "release_notes/october_2023",

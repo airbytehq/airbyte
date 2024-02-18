@@ -4,8 +4,9 @@
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
-from textwrap import dedent
+from textwrap import dedent, indent
 from typing import cast
 
 from overrides import overrides
@@ -13,6 +14,14 @@ from overrides import overrides
 from airbyte_lib._file_writers import ParquetWriter, ParquetWriterConfig
 from airbyte_lib.caches.base import SQLCacheBase, SQLCacheConfigBase
 from airbyte_lib.telemetry import CacheTelemetryInfo
+
+
+# Suppress warnings from DuckDB about reflection on indices.
+# https://github.com/Mause/duckdb_engine/issues/905
+warnings.filterwarnings(
+    "ignore",
+    message="duckdb-engine doesn't yet support reflection on indices",
+)
 
 
 class DuckDBCacheConfig(SQLCacheConfigBase, ParquetWriterConfig):
@@ -172,12 +181,23 @@ class DuckDBCache(DuckDBCacheBase):
             stream_name=stream_name,
             batch_id=batch_id,
         )
+        columns_list = [
+            self._quote_identifier(c)
+            for c in list(self._get_sql_column_definitions(stream_name).keys())
+        ]
+        columns_list_str = indent("\n, ".join(columns_list), "    ")
         files_list = ", ".join([f"'{f!s}'" for f in files])
         insert_statement = dedent(
             f"""
             INSERT INTO {self.config.schema_name}.{temp_table_name}
-            SELECT * FROM read_parquet(
-                [{files_list}]
+            (
+                {columns_list_str}
+            )
+            SELECT
+                {columns_list_str}
+            FROM read_parquet(
+                [{files_list}],
+                union_by_name = true
             )
             """
         )

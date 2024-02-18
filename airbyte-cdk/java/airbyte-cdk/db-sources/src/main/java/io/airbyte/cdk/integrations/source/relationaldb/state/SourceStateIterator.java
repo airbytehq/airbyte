@@ -34,15 +34,19 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   @CheckForNull
   @Override
   protected AirbyteMessage computeNext() {
+
     boolean iteratorHasNextValue = false;
     try {
       iteratorHasNextValue = messageIterator.hasNext();
-    } catch (Exception ex) {
-      LOGGER.info("Caught exception while trying to get the next from message iterator. Treating hasNext to false. ", ex);
+    } catch (final Exception ex) {
+      // If the initial snapshot is incomplete for this stream, throw an exception failing the sync. This
+      // will ensure the platform retry logic
+      // kicks in and keeps retrying the sync until the initial snapshot is complete.
+      throw new RuntimeException(ex);
     }
     if (iteratorHasNextValue) {
       if (sourceStateIteratorManager.shouldEmitStateMessage(recordCount, lastCheckpoint)) {
-        AirbyteStateMessage stateMessage = sourceStateIteratorManager.generateStateMessageAtCheckpoint();
+        final AirbyteStateMessage stateMessage = sourceStateIteratorManager.generateStateMessageAtCheckpoint();
         stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
 
         recordCount = 0L;
@@ -62,12 +66,12 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      final AirbyteStateMessage finalStateMessage = sourceStateIteratorManager.createFinalStateMessage();
-      finalStateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
+      final AirbyteStateMessage finalStateMessageForStream = sourceStateIteratorManager.createFinalStateMessage();
+      finalStateMessageForStream.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
       recordCount = 0L;
       return new AirbyteMessage()
           .withType(Type.STATE)
-          .withState(finalStateMessage);
+          .withState(finalStateMessageForStream);
     } else {
       return endOfData();
     }

@@ -20,7 +20,7 @@ class ReleaseStage(BaseModel):
 
 
 class SupportLevel(BaseModel):
-    __root__: Literal["community", "certified"] = Field(
+    __root__: Literal["community", "certified", "archived"] = Field(
         ...,
         description="enum that describes a connector's release stage",
         title="SupportLevel",

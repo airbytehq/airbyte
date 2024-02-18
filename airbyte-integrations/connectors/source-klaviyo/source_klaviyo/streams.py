@@ -12,6 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 from .exceptions import KlaviyoBackoffError
@@ -165,7 +166,10 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
                 latest_cursor = pendulum.parse(latest_cursor)
                 if stream_state_cursor_value:
                     latest_cursor = max(latest_cursor, pendulum.parse(stream_state_cursor_value))
-                latest_cursor = min(latest_cursor, pendulum.now())
+                # Klaviyo API will throw an error if the request filter is set too close to the current time.
+                # Setting a minimum value of at least 3 seconds from the current time ensures this will never happen,
+                # and allows our 'abnormal_state' acceptance test to pass.
+                latest_cursor = min(latest_cursor, pendulum.now().subtract(seconds=3))
                 params["filter"] = f"greater-than({self.cursor_field},{latest_cursor.isoformat()})"
             params["sort"] = self.cursor_field
         return params
@@ -260,6 +264,8 @@ class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
 
 class Profiles(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles"""
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     cursor_field = "updated"
     api_revision = "2023-02-22"
