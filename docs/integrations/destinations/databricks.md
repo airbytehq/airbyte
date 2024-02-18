@@ -344,7 +344,8 @@ Delta Lake tables are created. You may want to consult the tutorial on
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                  |
-| :------ | :--------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.1.2   | 2024-02-18 | [#35396](https://github.com/airbytehq/airbyte/pull/35396)                                                           | Fix the S3 table location to use `schema` from the configured schema instead of the default                              |
 | 1.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)                                                           | (incompatible with CDK, do not use) Add new ap-southeast-3 AWS region                                                    |
 | 1.1.0   | 2023-06-02 | [\#26942](https://github.com/airbytehq/airbyte/pull/26942)                                                          | Support schema evolution                                                                                                 |
 | 1.0.2   | 2023-04-20 | [\#25366](https://github.com/airbytehq/airbyte/pull/25366)                                                          | Fix default catalog to be `hive_metastore`                                                                               |
