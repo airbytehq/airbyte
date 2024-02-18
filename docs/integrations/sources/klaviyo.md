@@ -65,6 +65,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 ## Changelog
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
+| :------- | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
 | `2.1.4`  | 2024-02-05 | [34902](https://github.com/airbytehq/airbyte/pull/34902)   | Add `Campaign Messages` `Flow Actions` `Flow Messages` streams                                                                |
 | `2.1.3`  | 2024-02-15 | [35336](https://github.com/airbytehq/airbyte/pull/35336)   | Added type transformer for the `profiles` stream.                                                                             |
 | `2.1.2`  | 2024-02-09 | [35088](https://github.com/airbytehq/airbyte/pull/35088)   | Manage dependencies with Poetry.                                                                                              |
