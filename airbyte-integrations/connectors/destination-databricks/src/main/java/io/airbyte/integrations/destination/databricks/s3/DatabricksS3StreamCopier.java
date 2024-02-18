@@ -101,7 +101,7 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
   @Override
   protected String getDestTableLocation() {
     return String.format("s3://%s/%s/%s/%s",
-        s3Config.getBucketName(), s3Config.getBucketPath(), databricksConfig.schema(), streamName);
+        s3Config.getBucketName(), s3Config.getBucketPath(), schemaName, streamName);
   }
 
   @Override
