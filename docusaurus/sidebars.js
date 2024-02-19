@@ -312,6 +312,7 @@ const contributeToAirbyte = {
         "contributing-to-airbyte/resources/pull-requests-handbook",
         "contributing-to-airbyte/resources/code-style",
         "contributing-to-airbyte/resources/code-formatting",
+        "contributing-to-airbyte/resources/qa-checks",
         "contributing-to-airbyte/resources/developing-locally",
         "contributing-to-airbyte/resources/developing-on-docker",
       ],

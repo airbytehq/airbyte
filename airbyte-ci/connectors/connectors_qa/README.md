@@ -75,7 +75,11 @@ This package uses two local dependencies:
 
 To add a new QA check, you have to create add new class in one of the `checks` module. This class must inherit from `models.Check` and implement the `_run` method. Then, you need to add an instance of this class to the `ENABLED_CHECKS` list of the module.
 
-**Please run the `generate-doumentation` command to update the documentation with the new check and commit it in your PR.**
+**Please run the `generate-documentation` command to update the documentation with the new check and commit it in your PR.**:
+```bash
+# From airbyte repo root
+connectors-qa generate-documentation docs/contributing-to-airbyte/resources/qa-checks.md
+```
 
 ### Running tests
 
