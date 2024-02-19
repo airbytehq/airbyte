@@ -39,6 +39,19 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         logger.info(str(exc))
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
+    def choose_strategy(details):
+        _, exc, _ = sys.exc_info()
+        tries = details.get("tries")
+        code = exc._error.get("code")
+        if code == 1 and tries >= 4:
+            switch_cursor(details)
+        else:
+            reduce_request_record_limit(details)
+
+    def switch_cursor(details):
+        _, exc, _ = sys.exc_info()
+        del details["kwargs"]["params"]["after"]
+
     def reduce_request_record_limit(details):
         _, exc, _ = sys.exc_info()
         # the list of error patterns to track,
@@ -97,7 +110,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         backoff_type,
         exception,
         jitter=None,
-        on_backoff=[log_retry_attempt, reduce_request_record_limit],
+        on_backoff=[log_retry_attempt, choose_strategy],
         on_success=[revert_request_record_limit],
         giveup=lambda exc: not should_retry_api_error(exc),
         **wait_gen_kwargs,

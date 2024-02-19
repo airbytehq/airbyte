@@ -137,7 +137,8 @@ class Activities(FBMarketingIncrementalStream):
 
     def list_objects(self, fields, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
         if stream_slice.get("account").get("dolead_type") != "GEOLOC":
-            yield from stream_slice.get("account").get_activities(fields=fields, params=params)
+            account = stream_slice.get("account")
+            yield from account.get_activities(fields=fields, params=params)
         else:
             logger.info("Account number {} is a geoloc account. Not parsing its Activities".
                         format(stream_slice.get("account").get("account_id")))
@@ -164,7 +165,6 @@ class Activities(FBMarketingIncrementalStream):
         """Additional filters associated with state if any set"""
 
         account_id = stream_slice.get("account", {}).get("account_id")
-        logger.info("stream_state : {}".format(stream_state))
 
         state_value = stream_state.get(account_id, {}).get(self.cursor_field)
         since = self._start_date if not state_value else pendulum.parse(state_value)
