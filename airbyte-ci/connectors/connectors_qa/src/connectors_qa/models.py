@@ -19,6 +19,8 @@ ALL_LANGUAGES = [
     ConnectorLanguage.PYTHON,
 ]
 
+ALL_TYPES = ["source", "destination"]
+
 
 class CheckCategory(Enum):
     """The category of a QA check"""
@@ -111,6 +113,15 @@ class Check(ABC):
         return ALL_LANGUAGES
 
     @property
+    def applies_to_connector_types(self) -> List[str]:
+        """The connector types that the QA check applies to
+
+        Returns:
+            List[str]: The connector types that the QA check applies to
+        """
+        return ALL_TYPES
+
+    @property
     @abstractmethod
     def category(self) -> CheckCategory:
         """The category of the QA check
@@ -135,6 +146,11 @@ class Check(ABC):
             return self.skip(
                 connector,
                 f"Check does not apply to {connector.language.value} connectors",
+            )
+        if connector.type not in self.applies_to_connector_types:
+            return self.skip(
+                connector,
+                f"Check does not apply to {connector.type} connectors",
             )
         return self._run(connector)
 
