@@ -46,6 +46,8 @@ This page contains the setup guide and reference information for the Amazon Sell
 
 ## Step 2: Set up the source connector in Airbyte
 
+To pass the check for Seller and Vendor accounts, you must have access to the [Orders endpoint](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) and the [Vendor Orders endpoint](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders), respectively.
+
 <!-- env:cloud -->
 
 **For Airbyte Cloud:**
