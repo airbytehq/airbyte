@@ -6,6 +6,7 @@
 import csv
 import gzip
 import json
+import logging
 import os
 import time
 from abc import ABC, abstractmethod
@@ -282,6 +283,15 @@ class ReportsAmazonSPStream(HttpStream, ABC):
 
         return report_payload
 
+    def _retrieve_report_result(self, report_document_id: str) -> requests.Response:
+        request_headers = self.request_headers()
+        request = self._create_prepared_request(
+            path=self.path(document_id=report_document_id),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=self.request_params(),
+        )
+        return self._send_request(request, {})
+
     @default_backoff_handler(factor=5, max_tries=5)
     def download_and_decompress_report_document(self, payload: dict) -> str:
         """
@@ -381,23 +391,29 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         if processing_status == ReportProcessingStatus.DONE:
             # retrieve and decrypt the report document
             document_id = report_payload["reportDocumentId"]
-            request_headers = self.request_headers()
-            request = self._create_prepared_request(
-                path=self.path(document_id=document_id),
-                headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                params=self.request_params(),
-            )
-            response = self._send_request(request, {})
+            response = self._retrieve_report_result(document_id)
+
             for record in self.parse_response(response, stream_state, stream_slice):
                 if report_end_date:
                     record["dataEndTime"] = report_end_date.strftime(DATE_FORMAT)
                 yield record
         elif processing_status == ReportProcessingStatus.FATAL:
+            # retrieve and decrypt the report document
+            try:
+                document_id = report_payload["reportDocumentId"]
+                response = self._retrieve_report_result(document_id)
+
+                document = self.download_and_decompress_report_document(response.json())
+                error_response = json.loads(document)
+            except Exception as e:
+                logging.error(f"Failed to retrieve the report result document for stream '{self.name}'. Exception: {e}")
+                error_response = "Failed to retrieve the report result document."
+
             raise AirbyteTracedException(
                 internal_message=(
                     f"Failed to retrieve the report '{self.name}' for period "
-                    f"{stream_slice['dataStartTime']}-{stream_slice['dataEndTime']} "
-                    "due to Amazon Seller Partner platform issues. This will be read during the next sync."
+                    f"{stream_slice['dataStartTime']}-{stream_slice['dataEndTime']}. "
+                    f"This will be read during the next sync. Error: {error_response}"
                 )
             )
         elif processing_status == ReportProcessingStatus.CANCELLED:
