@@ -54,15 +54,6 @@ public class MySQLTestDatabase extends
     return new MySQLTestDatabase(container).initialized();
   }
 
-  static public MySQLTestDatabase inWithDbName(BaseImage baseImage, String dbName, ContainerModifier... methods) {
-    String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
-    final var container = new MySQLContainerFactory().shared(baseImage.reference, methodNames);
-    MySQLTestDatabase db = new MySQLTestDatabase(container);
-    db.setDatabaseName(dbName);
-    db.initialized();
-    return db;
-  }
-
   public MySQLTestDatabase(MySQLContainer<?> container) {
     super(container);
   }
@@ -80,26 +71,6 @@ public class MySQLTestDatabase extends
   }
 
   static private final int MAX_CONNECTIONS = 1000;
-  private String databaseName = "";
-
-  @Override
-  public String getDatabaseName() {
-    if (databaseName.isBlank()) {
-      return super.getDatabaseName();
-    } else {
-      return databaseName;
-    }
-  }
-
-  @Override
-  public void close() {
-    super.close();
-    databaseName = "";
-  }
-
-  public void setDatabaseName(final String databaseName) {
-    this.databaseName = databaseName;
-  }
 
   @Override
   protected Stream<Stream<String>> inContainerBootstrapCmd() {

@@ -17,7 +17,7 @@ GitPython = "^3.1.29"
 pydantic = "^1.9"
 PyGithub = "^1.58.0"
 rich = "^13.0.0"
-pydash = "^7.0.4"
+pydash = "^6.0.2"
 google-cloud-storage = "^2.8.0"
 ci-credentials = {path = "../ci_credentials"}
 pandas = "^2.0.3"
