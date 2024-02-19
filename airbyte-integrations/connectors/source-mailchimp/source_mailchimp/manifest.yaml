@@ -87,15 +87,15 @@ definitions:
       - "#/definitions/transformer_remove_empty_fields"
     incremental_sync:
       type: DatetimeBasedCursor
-      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-      # TODO: check if needed
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       cursor_field: "{{ parameters['cursor_field'] }}"
-      #      cursor_datetime_formats: [ ]
       start_datetime:
         type: MinMaxDatetime
         # TODO: ref to use datetime as optional parameter if possible
-        datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S%z')) }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        datetime: "{{ config.get('start_date') or day_delta(-500, '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_time_option:
         inject_into: request_parameter
         field_name: "since_{{ parameters['cursor_field'] }}"
@@ -106,8 +106,8 @@ definitions:
         type: RequestOption
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       step: P1M
       cursor_granularity: PT1S
 
@@ -130,12 +130,7 @@ definitions:
       path: "/campaigns"
       data_field: "campaigns"
       cursor_field: "create_time"
-  #    incremental_sync:
-  #      $ref: "#/definitions/datetime_incremental_sync"
-  #      step: P1M
-  #      cursor_field: "date"
 
-  # TODO: check how works nested stream state
   list_members_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_incremental_stream"
@@ -153,9 +148,6 @@ definitions:
       path: "/lists/{{ stream_slice.id }}/members"
       data_field: "members"
       cursor_field: "last_changed"
-  #    incremental_sync:
-  #      $ref: "#/definitions/base_incremental_stream/incremental_sync"
-  #      cursor_field: "last_changed"
 
   lists_stream:
     type: DeclarativeStream
@@ -166,9 +158,6 @@ definitions:
       path: "lists"
       data_field: "lists"
       cursor_field: "date_created"
-  #    incremental_sync:
-  #      $ref: "#/definitions/base_incremental_stream/incremental_sync"
-  #      cursor_field: "date_created"
 
   tags_stream:
     type: DeclarativeStream
@@ -275,13 +264,24 @@ definitions:
         record_filter:
           type: CustomRecordFilter
           class_name: source_mailchimp.components.MailChimpRecordFilter
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      #      cursor_datetime_formats: [ ]
+      start_datetime:
+        type: MinMaxDatetime
+        # TODO: ref to use datetime as optional parameter if possible
+        datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S.%fZ')) }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     transformations:
       - type: AddFields
         fields:
           - path: ["segment_id"]
             value: "{{ stream_slice.id }}"
       - "#/definitions/transformer_remove_empty_fields"
-
     $parameters:
       name: "segment_members"
       primary_key: "id"
@@ -307,14 +307,16 @@ definitions:
           class_name: source_mailchimp.components.MailChimpRecordFilter
     incremental_sync:
       type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_field: "{{ parameters['cursor_field'] }}"
       #      cursor_datetime_formats: [ ]
       start_datetime:
         type: MinMaxDatetime
         # TODO: ref to use datetime as optional parameter if possible
-        datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S%z')) }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S.%fZ')) }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     $parameters:
       name: "unsubscribes"
       primary_key: ["campaign_id", "email_id", "timestamp"]
