@@ -248,8 +248,8 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        client_side_account_id = ACCOUNT_ID
-        server_side_account_id = ACCOUNT_ID
+        client_side_account_id = "123123123"
+        server_side_account_id = "321321321"
 
         start_date = pendulum.parse(START_DATE)
         end_date = start_date + timedelta(hours=23)
