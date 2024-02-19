@@ -13,30 +13,29 @@ pip install airbyte-lib
 Or during the beta, you may want to install the latest from from source with:
 
 ```bash
-pip install 'git+airbytehq/airbyte.git@master#egg=airbyte-lib&subdirectory=airbyte-lib'
+pip install 'git+https://www.github.com/airbytehq/airbyte.git@master#egg=airbyte-lib&subdirectory=airbyte-lib'
 ```
 
 ## Usage
 
 Data can be extracted from sources and loaded into caches:
 
+<a href="https://colab.research.google.com/github/airbytehq/quickstarts/blob/master/airbyte_lib_notebooks/AirbyteLib_Basic_Features_Demo.ipynb" target="_parent"><img src="https://img.shields.io/badge/-Try%20with%20Colab-grey?logo=googlecolab" alt="Try with Colab"/></a>
+
 ```python
 import airbyte_lib as ab
 
-source = ab.get_connector(
-    "source-spacex-api",
-    config={"id": "605b4b6aaa5433645e37d03f"},
+source = ab.get_source(
+    "source-faker",
+    config={"count": 5_000},
     install_if_missing=True,
 )
 source.check()
+source.select_all_streams()
+result = source.read()
 
-source.set_streams(["launches", "rockets", "capsules"])
-
-cache = ab.new_local_cache()
-result = source.read_all(cache)
-
-for name, records in result.cache.streams.items():
-    print(f"Stream {name}: {len(records)} records")
+for name, records in result.streams.items():
+    print(f"Stream {name}: {len(list(records))} records")
 ```
 
 ## API Reference

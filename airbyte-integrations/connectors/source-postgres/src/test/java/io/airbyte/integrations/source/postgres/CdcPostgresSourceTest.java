@@ -73,9 +73,16 @@ import org.junit.jupiter.api.Test;
 @Order(1)
 public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, PostgresTestDatabase> {
 
+  protected BaseImage postgresImage;
+
+  protected void setBaseImage() {
+    this.postgresImage = getServerImage();
+  }
+
   @Override
   protected PostgresTestDatabase createTestDatabase() {
-    return PostgresTestDatabase.in(getServerImage(), ContainerModifier.CONF).withReplicationSlot();
+    setBaseImage();
+    return PostgresTestDatabase.in(this.postgresImage, ContainerModifier.CONF).withReplicationSlot();
   }
 
   @Override
@@ -90,6 +97,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         .withoutSsl()
         .withCdcReplication("After loading Data in the destination")
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .with("heartbeat_action_query", "")
         .build();
   }
 
@@ -98,6 +106,15 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   protected void setup() {
     super.setup();
     testdb.withPublicationForAllTables();
+  }
+
+  // For legacy Postgres we will call advanceLsn() after we retrieved target LSN, so that debezium
+  // would not drop any record.
+  // However, that might cause unexpected state and cause failure in the test. Thus we need to bypass
+  // some check if they are on legacy postgres
+  // versions.
+  private boolean isOnLegacyPostgres() {
+    return postgresImage.majorVersion < 15;
   }
 
   @Test
@@ -195,7 +212,12 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        assertEquals(sharedState, global.getSharedState());
+        // This validation is only true for versions on or after postgres 15. We execute
+        // EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS for earlier versions of
+        // Postgres. See https://github.com/airbytehq/airbyte/pull/33605 for details.
+        if (!isOnLegacyPostgres()) {
+          assertEquals(sharedState, global.getSharedState());
+        }
       }
       assertEquals(1, global.getStreamStates().size());
       final AirbyteStreamState streamState = global.getStreamStates().get(0);
@@ -323,7 +345,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        assertEquals(sharedState, global.getSharedState());
+        // LSN will be advanced for postgres version before 15. See
+        // https://github.com/airbytehq/airbyte/pull/33605
+        if (!isOnLegacyPostgres()) {
+          assertEquals(sharedState, global.getSharedState());
+        }
       }
 
       if (Objects.isNull(firstStreamInState)) {
@@ -754,7 +780,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     if (syncNumber == 1) {
       assertEquals(1, lsnPosition2.compareTo(lsnPosition1));
     } else if (syncNumber == 2) {
-      assertEquals(0, lsnPosition2.compareTo(lsnPosition1));
+      // Earlier Postgres version will advance lsn even if there is no sync records. See
+      // https://github.com/airbytehq/airbyte/pull/33605.
+      if (!isOnLegacyPostgres()) {
+        assertEquals(0, lsnPosition2.compareTo(lsnPosition1));
+      }
     } else {
       throw new RuntimeException("Unknown sync number " + syncNumber);
     }
@@ -790,7 +820,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         .toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    if (!isOnLegacyPostgres()) {
+      assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    }
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
@@ -829,7 +861,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    if (!isOnLegacyPostgres()) {
+      assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    }
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
