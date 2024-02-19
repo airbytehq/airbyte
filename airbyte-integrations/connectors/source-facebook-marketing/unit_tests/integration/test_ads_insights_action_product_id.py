@@ -4,12 +4,13 @@
 
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import List, Optional, Union
 from unittest import TestCase
 
 import freezegun
+import pendulum
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -25,7 +26,7 @@ from airbyte_protocol.models import AirbyteStateMessage, SyncMode
 from source_facebook_marketing.streams.async_job import Status
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
-from .pagination import FacebookMarketingPaginationStrategy
+from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response
 from .utils import config, encode_request_body, read_output
@@ -36,11 +37,13 @@ _REPORT_RUN_ID = "1571860060019548"
 _JOB_ID = "1049937379601625"
 
 
-def _update_api_throttle_limit_request() -> RequestBuilder:
-    return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID)
+def _update_api_throttle_limit_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
+    return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
 
 
-def _job_start_request(since: Optional[datetime] = None, until: Optional[datetime] = None) -> RequestBuilder:
+def _job_start_request(
+    account_id: Optional[str] = ACCOUNT_ID, since: Optional[datetime] = None, until: Optional[datetime] = None
+) -> RequestBuilder:
     since = since.strftime(DATE_FORMAT) if since else START_DATE[:10]
     until = until.strftime(DATE_FORMAT) if until else END_DATE[:10]
     body = {
@@ -165,7 +168,7 @@ def _job_start_request(since: Optional[datetime] = None, until: Optional[datetim
         "action_attribution_windows": ["1d_click", "7d_click", "28d_click", "1d_view", "7d_view", "28d_view"],
         "time_range": {"since": since, "until": until},
     }
-    return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID).with_body(
+    return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id).with_body(
         encode_request_body(body)
     )
 
@@ -217,7 +220,9 @@ def _insights_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=find_template(_STREAM_NAME, __file__),
         records_path=FieldPath("data"),
-        pagination_strategy=FacebookMarketingPaginationStrategy(_get_insights_request(_JOB_ID).with_limit(100).build()),
+        pagination_strategy=FacebookMarketingPaginationStrategy(
+            request=_get_insights_request(_JOB_ID).with_limit(100).build(), next_page_token=NEXT_PAGE_TOKEN
+        ),
     )
 
 
@@ -243,16 +248,33 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(get_account_request().build(), get_account_response())
-        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
-        http_mocker.post(_job_start_request().build(), _job_start_response(_REPORT_RUN_ID))
+        client_side_account_id = ACCOUNT_ID
+        server_side_account_id = ACCOUNT_ID
+
+        start_date = pendulum.parse(START_DATE)
+        end_date = start_date + timedelta(hours=23)
+
+        http_mocker.get(
+            get_account_request(account_id=client_side_account_id).build(),
+            get_account_response(account_id=server_side_account_id),
+        )
+        http_mocker.get(
+            _update_api_throttle_limit_request(account_id=server_side_account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        http_mocker.post(
+            _job_start_request(account_id=server_side_account_id, since=start_date, until=end_date).build(),
+            _job_start_response(_REPORT_RUN_ID),
+        )
         http_mocker.post(_job_status_request(_REPORT_RUN_ID).build(), _job_status_response(_JOB_ID))
         http_mocker.get(
             _get_insights_request(_JOB_ID).build(),
             _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
         )
 
-        output = self._read(config())
+        output = self._read(
+            config().with_account_ids([client_side_account_id]).with_start_date(start_date).with_end_date(end_date)
+        )
         assert len(output.records) == 1
 
     @HttpMocker()
@@ -266,7 +288,7 @@ class TestFullRefresh(TestCase):
             _insights_response().with_pagination().with_record(_ads_insights_action_product_id_record()).build(),
         )
         http_mocker.get(
-            _get_insights_request(_JOB_ID).with_pagination_parameter().build(),
+            _get_insights_request(_JOB_ID).with_next_page_token(NEXT_PAGE_TOKEN).build(),
             _insights_response().with_record(_ads_insights_action_product_id_record()).with_record(
                 _ads_insights_action_product_id_record()
             ).build(),

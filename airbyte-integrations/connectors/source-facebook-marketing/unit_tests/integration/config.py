@@ -15,6 +15,7 @@ ACCOUNT_ID = "111111111111111"
 CLIENT_ID = "test_client_id"
 CLIENT_SECRET = "test_client_secret"
 DATE_FORMAT = "%Y-%m-%d"
+DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 END_DATE = "2023-01-01T23:59:59Z"
 NOW = pendulum.now(tz="utc")
 START_DATE = "2023-01-01T00:00:00Z"
@@ -43,11 +44,11 @@ class ConfigBuilder:
         return self
 
     def with_start_date(self, start_date: datetime) -> ConfigBuilder:
-        self._config["start_date"] = start_date.isoformat()[:-13] + "Z"
+        self._config["start_date"] = start_date.strftime(DATE_TIME_FORMAT)
         return self
 
     def with_end_date(self, end_date: datetime) -> ConfigBuilder:
-        self._config["end_date"] = end_date.isoformat()[:-13] + "Z"
+        self._config["end_date"] = end_date.strftime(DATE_TIME_FORMAT)
         return self
 
     def build(self) -> MutableMapping[str, Any]:

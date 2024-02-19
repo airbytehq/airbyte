@@ -21,7 +21,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStateMessage, SyncMode
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, NOW, ConfigBuilder
-from .pagination import FacebookMarketingPaginationStrategy
+from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import error_reduce_amount_of_data_response, get_account_response
 from .utils import config, read_output
@@ -61,9 +61,9 @@ _FIELDS = [
 ]
 
 
-def _get_videos_request() -> RequestBuilder:
+def _get_videos_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
     return RequestBuilder.get_videos_endpoint(
-        access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID
+        access_token=ACCESS_TOKEN, account_id=account_id
     ).with_limit(100).with_fields(_FIELDS).with_summary()
 
 
@@ -71,7 +71,9 @@ def _get_videos_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=find_template(_STREAM_NAME, __file__),
         records_path=FieldPath("data"),
-        pagination_strategy=FacebookMarketingPaginationStrategy(_get_videos_request().build()),
+        pagination_strategy=FacebookMarketingPaginationStrategy(
+            request=_get_videos_request().build(), next_page_token=NEXT_PAGE_TOKEN
+        ),
     )
 
 
@@ -98,10 +100,19 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(get_account_request().build(), get_account_response())
-        http_mocker.get(_get_videos_request().build(), _get_videos_response().with_record(_video_record()).build())
+        client_side_account_id = ACCOUNT_ID
+        server_side_account_id = ACCOUNT_ID
 
-        output = self._read(config())
+        http_mocker.get(
+            get_account_request(account_id=client_side_account_id).build(),
+            get_account_response(account_id=server_side_account_id),
+        )
+        http_mocker.get(
+            _get_videos_request(account_id=server_side_account_id).build(),
+            _get_videos_response().with_record(_video_record()).build(),
+        )
+
+        output = self._read(config().with_account_ids([client_side_account_id]))
         assert len(output.records) == 1
 
     @HttpMocker()
@@ -112,7 +123,7 @@ class TestFullRefresh(TestCase):
             _get_videos_response().with_pagination().with_record(_video_record()).build(),
         )
         http_mocker.get(
-            _get_videos_request().with_pagination_parameter().build(),
+            _get_videos_request().with_next_page_token(NEXT_PAGE_TOKEN).build(),
             _get_videos_response().with_record(_video_record()).with_record(_video_record()).build(),
         )
 

@@ -18,7 +18,7 @@ def build_response(
     headers: Optional[Mapping[str, str]] = None,
 ) -> HttpResponse:
     headers = headers or {}
-    return HttpResponse(body=json.dumps(body), status_code=status_code, headers=headers)
+    return HttpResponse(body=json.dumps(body), status_code=status_code.value, headers=headers)
 
 
 def get_account_response(account_id: Optional[str] = ACCOUNT_ID) -> HttpResponse:

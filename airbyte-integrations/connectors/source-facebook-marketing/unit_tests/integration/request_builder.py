@@ -10,11 +10,10 @@ from typing import Any, List, Mapping, Optional, Union
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID
-from .pagination import CURSOR_AFTER
 
 
-def get_account_request() -> RequestBuilder:
-    return RequestBuilder.get_account_endpoint(access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID)
+def get_account_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
+    return RequestBuilder.get_account_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
 
 
 class RequestBuilder:
@@ -61,8 +60,8 @@ class RequestBuilder:
         self._query_params["fields"] = self._get_formatted_fields(fields)
         return self
 
-    def with_pagination_parameter(self) -> RequestBuilder:
-        self._query_params["after"] = CURSOR_AFTER
+    def with_next_page_token(self, next_page_token: str) -> RequestBuilder:
+        self._query_params["after"] = next_page_token
         return self
 
     def with_body(self, body: Union[str, bytes, Mapping[str, Any]]) -> RequestBuilder:
