@@ -58,4 +58,4 @@ You may send support requests to: support@propeldata.com
 
 | Version | Date       | Pull Request                                                       | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------- | :-------------------------- |
-| 0.0.1   | 2024-02-13 | [GitHub](https://github.com/propeldata/airbyte-destination/pull/1) | Initial Propel destination. |
+| 0.0.1   | 2024-02-19 | [GitHub](https://github.com/propeldata/airbyte-destination/pull/1) | Initial Propel destination. |
