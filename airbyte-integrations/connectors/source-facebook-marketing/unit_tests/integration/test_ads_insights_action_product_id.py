@@ -184,11 +184,11 @@ def _get_insights_request(job_id: str) -> RequestBuilder:
     return RequestBuilder.get_insights_download_endpoint(access_token=ACCESS_TOKEN, job_id=job_id).with_limit(100)
 
 
-def _update_api_throttle_limit_response() -> HttpResponse:
+def _update_api_throttle_limit_response(api_throttle: Optional[int] = 0) -> HttpResponse:
     body = {}
     headers = {
         "x-fb-ads-insights-throttle": json.dumps(
-            {"app_id_util_pct": 0, "acc_id_util_pct": 0, "ads_api_access_tier": "standard_access"}
+            {"app_id_util_pct": api_throttle, "acc_id_util_pct": api_throttle, "ads_api_access_tier": "standard_access"}
         ),
     }
     return build_response(body=body, status_code=HTTPStatus.OK, headers=headers)
@@ -296,6 +296,28 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config())
         assert len(output.records) == 3
+
+    @HttpMocker()
+    def test_given_api_throttle_exceeds_limit_on_first_check_when_read_then_wait_throttle_down_and_return_records(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(
+            _update_api_throttle_limit_request().build(),
+            [
+                _update_api_throttle_limit_response(api_throttle=100),
+                _update_api_throttle_limit_response(api_throttle=0),
+            ],
+        )
+        http_mocker.post(_job_start_request().build(), _job_start_response(_REPORT_RUN_ID))
+        http_mocker.post(_job_status_request(_REPORT_RUN_ID).build(), _job_status_response(_JOB_ID))
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+
+        output = self._read(config())
+        assert len(output.records) == 1
 
     @HttpMocker()
     def test_given_multiple_days_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
