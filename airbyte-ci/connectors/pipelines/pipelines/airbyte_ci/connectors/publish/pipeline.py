@@ -13,7 +13,8 @@ from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
+from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks
+from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry, PythonRegistryPublishContext
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
@@ -273,11 +274,11 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
             results = []
 
-            metadata_validation_results = await MetadataValidation(context).run()
-            results.append(metadata_validation_results)
+            qa_check_results = await QaChecks(context).run()
+            results.append(qa_check_results)
 
-            # Exit early if the metadata file is invalid.
-            if metadata_validation_results.status is not StepStatus.SUCCESS:
+            # Exit early if the qa checks do not pass
+            if qa_check_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
