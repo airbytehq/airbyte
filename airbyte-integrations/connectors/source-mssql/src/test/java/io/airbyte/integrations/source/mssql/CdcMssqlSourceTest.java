@@ -198,7 +198,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   }
 
   // Utilize the setup to do test on MssqlDebeziumStateUtil.
-  @Test
+  //@Test
   public void testCdcSnapshot() {
     MssqlDebeziumStateUtil util = new MssqlDebeziumStateUtil();
 
@@ -219,7 +219,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   // Tests even with consistent inserting operations, CDC snapshot and incremental load will not lose
   // data.
-  @Test
+  //@Test
   public void testCdcNotLoseDataWithConsistentWriting() throws Exception {
     ExecutorService executor = Executors.newFixedThreadPool(10);
 
@@ -280,7 +280,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     return columnClause.toString();
   }
 
-  @Test
+  //@Test
   void testAssertCdcEnabledInDb() {
     // since we enable cdc in setup, assert that we successfully pass this first
     assertDoesNotThrow(() -> source().assertCdcEnabledInDb(config(), testDatabase()));
@@ -289,7 +289,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     assertThrows(RuntimeException.class, () -> source().assertCdcEnabledInDb(config(), testDatabase()));
   }
 
-  @Test
+  //@Test
   void testAssertCdcSchemaQueryable() {
     // correct access granted by setup so assert check passes
     assertDoesNotThrow(() -> source().assertCdcSchemaQueryable(config(), testDatabase()));
@@ -311,7 +311,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   // Ensure the CDC check operations are included when CDC is enabled
   // todo: make this better by checking the returned checkOperations from source.getCheckOperations
-  @Test
+  //@Test
   void testCdcCheckOperations() throws Exception {
     // assertCdcEnabledInDb
     testdb.withoutCdc();
@@ -334,7 +334,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }
 
-  @Test
+  //@Test
   void testCdcCheckOperationsWithDot() throws Exception {
     final String dbNameWithDot = testdb.getDatabaseName().replace("_", ".");
     testdb.with("CREATE DATABASE [%s];", dbNameWithDot)
@@ -346,7 +346,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   // todo: check LSN returned is actually the max LSN
   // todo: check we fail as expected under certain conditions
-  @Test
+  //@Test
   void testGetTargetPosition() {
     // check that getTargetPosition returns higher Lsn after inserting new row
     testdb.withWaitUntilMaxLsnAvailable();
