@@ -8,8 +8,8 @@ data:
   connectorType: destination
   definitionId: 938e4f36-ab42-4486-9a21-d43df92ed9e4
   dockerImageTag: 0.0.1
-  dockerRepository: propel/airbyte-propel-destination
-  githubIssueLabel: propel/airbyte-propel-destination
+  dockerRepository: propeldata/airbyte-propel-destination
+  githubIssueLabel: propeldata/airbyte-propel-destination
   icon: propel.svg
   license: MIT
   name: Propel
