@@ -191,7 +191,10 @@ cmd_publish() {
   _error_if_tag_exists "$versioned_image"
 
   # building the connector
-  cmd_build "$path" "$run_tests"
+  if [ "$path" != "airbyte-cdk/python"]
+    # The python CDK will already have been built and tested earlier in the github workflow.
+    cmd_build "$path" "$run_tests"
+  fi
 
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
