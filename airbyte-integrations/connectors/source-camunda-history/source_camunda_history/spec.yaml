@@ -7,27 +7,19 @@ connectionSpecification:
     - batchsize
     - baseurl
   properties:
-    baseurl:
-      type: string
-      order: 4
-      title: baseurl
-      description: http://localhost:8090
-    password:
-      type: string
-      order: 1
-      title: Password
-      always_show: true
-      airbyte_secret: true
     username:
       type: string
       order: 0
       title: Username
-    batchsize:
+      description: Username for connecting to Camunda rest-engine, can be anything if auth is not set
+      example: anonymous
+    password:
       type: string
-      order: 3
-      title: batchsize
-      default: '100'
-      description: Number of items to fetch at 1 rest call
+      order: 1
+      title: Password
+      description: Password for connecting to Camunda rest-engine API if auth is enabled
+      always_show: true
+      airbyte_secret: true
     start_date:
       type: string
       order: 2
@@ -37,4 +29,16 @@ connectionSpecification:
       description: >-
         Initial Start Date in format "2023-09-03T13:33:42.165+0100" from which
         we are ingesting events
+    batchsize:
+      type: string
+      order: 3
+      title: batchsize
+      default: '100'
+      description: Number of items to fetch at single rest call
+    baseurl:
+      type: string
+      order: 4
+      title: baseurl
+      description: Camunda rest-engine API endpoint
+      example: http://localhost:8090
   additionalProperties: true
