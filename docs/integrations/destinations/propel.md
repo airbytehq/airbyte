@@ -2,7 +2,7 @@
 
 ## Overview
 
-[Propel](https://propeldata.com) provides an easy way to power your analytic dashboards, reports, and workflows with low-latency data from any SaaS application or database. 
+[Propel](https://www.propeldata.com) is an Analytics Platform as a Service for developers. It provides serverless ClickHouse infrastructure, data-serving APIs, and React components to deliver embedded analytics, data-serving API, and usage metering use cases in record time.
 
 This Airbyte destination allows to sync data into a Propel Data Pool.
 
@@ -33,13 +33,14 @@ To connect Propel to Airbyte, you need the following:
 
 You must create a Propel Application. Propel Applications provide the API credentials, allowing the Airbyte destination to access the Propel API.
 
-1. Go to the **Applications** section and click **Create Application**.
-2. Enter the **Unique Name**. For example, 'Airbyte Destination'.
-3. Provide a **Description**. For example, 'The Airbyte Destination app'.
-4. In the API scopes section, in the **Scopes** drop-down menu, select the **ADMIN** scope.
-5. In the Propeller section, in the **Select Propeller** drop-down menu, select the processing power as per your requirements.
-6. Click **Create**.
-7. Make a note of the Application ID and secret. You will need them to configure Fivetran.
+1. Log in to the [Propel Console](https://console.propeldata.com/).
+2. Go to the **Applications** section and click **Create Application**.
+3. Enter the **Unique Name**. For example, "Airbyte Destination".
+4. Provide a **Description**. For example, "The Airbyte Destination app".
+5. In the API scopes section, in the **Scopes** drop-down menu, select the **ADMIN** scope.
+6. In the Propeller section, in the **Select Propeller** drop-down menu, select the processing power as per your requirements.
+7. Click **Create**.
+8. Make a note of the Application ID and secret. You will need them to configure Airbyte.
 
 ## Configuration
 
