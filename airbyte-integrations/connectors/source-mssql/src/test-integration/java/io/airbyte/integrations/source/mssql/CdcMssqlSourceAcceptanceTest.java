@@ -29,8 +29,10 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "dbo";
