@@ -10,8 +10,7 @@
       "type": ["string", "null"]
     },
     "type": {
-      "type": ["string", "null"],
-      "enum": ["increment", "decrement"]
+      "type": ["string", "null"]
     },
     "amount_in_decimal": {
       "type": ["string", "null"]
@@ -26,8 +25,7 @@
       "type": ["string", "null"]
     },
     "credit_type": {
-      "type": ["string", "null"],
-      "enum": ["loyalty_credits", "referral_rewards", "general"]
+      "type": ["string", "null"]
     },
     "reference": {
       "type": ["string", "null"]
@@ -45,18 +43,7 @@
       "type": ["string", "null"]
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }
