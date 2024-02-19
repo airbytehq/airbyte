@@ -1,11 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 
 
-class CatalogBuilder:
-    def __init__(self) -> None:
-        self._streams = []
+class BingAdsCatalogBuilder(CatalogBuilder):
 
     def with_stream(self, name: str, sync_mode: SyncMode, pk: list[str]) -> "CatalogBuilder":
         self._streams.append(
@@ -22,6 +21,3 @@ class CatalogBuilder:
             }
         )
         return self
-
-    def build(self) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog.parse_obj({"streams": self._streams})
