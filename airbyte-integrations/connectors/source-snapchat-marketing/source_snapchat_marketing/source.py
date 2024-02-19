@@ -178,7 +178,7 @@ class SnapchatMarketingStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return next_page_token or {}
+        return next_page_token or {"read_deleted_entities": True}
 
     @property
     def response_root_name(self):
