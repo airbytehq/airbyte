@@ -19,7 +19,6 @@ include = "source_mailchimp"
 python = "^3.9,<3.12"
 airbyte-cdk = "^0.62.1"
 pytest = "==6.2.5"
-freezegun = "^1.4.0"
 
 [tool.poetry.scripts]
 source-mailchimp = "source_mailchimp.run:run"
@@ -27,3 +26,4 @@ source-mailchimp = "source_mailchimp.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
+freezegun = "^1.4.0"
