@@ -142,7 +142,7 @@ generate.configure {
 }
 
 dependencies {
-    api platform('com.fasterxml.jackson:jackson-bom:2.15.2')
+    api platform('com.fasterxml.jackson:jackson-bom:2.16.1')
     api 'com.fasterxml.jackson.core:jackson-annotations'
     api 'com.fasterxml.jackson.core:jackson-databind'
     api 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'

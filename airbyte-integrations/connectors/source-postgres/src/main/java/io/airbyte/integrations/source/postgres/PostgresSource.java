@@ -215,7 +215,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
-
     configBuilder.putAll(sslParameters);
     return Jsons.jsonNode(configBuilder.build());
   }

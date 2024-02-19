@@ -138,7 +138,7 @@ allprojects {
 
         // JUnit dependencies.
         def vAssertJ = "3.21.0"
-        def vJUnit = "5.9.1"
+        def vJUnit = "5.10.2"
         def vJUnitJupiter = "5.10.0"
         def vJUnitPioneer = "1.7.1"
 
