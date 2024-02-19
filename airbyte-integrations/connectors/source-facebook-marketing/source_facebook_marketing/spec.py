@@ -108,6 +108,7 @@ class ConnectorConfig(BaseConfig):
     account_id: str = Field(
         title="Ad Account ID",
         order=0,
+        default="",
         description=(
             "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. "
             "The Ad account ID number is in the account dropdown menu or in your browser's address "

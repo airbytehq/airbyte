@@ -2,6 +2,18 @@
   "streams": [
     {
       "stream": {
+        "name": "activities",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "ads_insights",
         "json_schema": {},
         "supported_sync_modes": [
@@ -14,7 +26,7 @@
     },
     {
       "stream": {
-        "name": "activities",
+        "name": "ad_account",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
