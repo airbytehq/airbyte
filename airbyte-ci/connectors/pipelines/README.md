@@ -640,6 +640,10 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.2.4   | [#35325](https://github.com/airbytehq/airbyte/pull/35325)  | Use `connectors_qa` for QA checks and remove redundant checks.                                                             |
+| 4.2.3   | [#35322](https://github.com/airbytehq/airbyte/pull/35322)  | Declare `connectors_qa` as an internal package for testing.                                                                |
+| 4.2.2   | [#35364](https://github.com/airbytehq/airbyte/pull/35364)  | Fix connector tests following gradle changes in #35307.                                                                    |
+| 4.2.1   | [#35204](https://github.com/airbytehq/airbyte/pull/35204)  | Run `poetry check` before `poetry install` on poetry package install.                                                      |
 | 4.2.0   | [#35103](https://github.com/airbytehq/airbyte/pull/35103)  | Java 21 support.                                                                                                           |
 | 4.1.4   | [#35039](https://github.com/airbytehq/airbyte/pull/35039)  | Fix bug which prevented gradle test reports from being added.                                                              |
 | 4.1.3   | [#35010](https://github.com/airbytehq/airbyte/pull/35010)  | Use `poetry install --no-root` in the builder container.                                                                   |
