@@ -98,3 +98,12 @@ poe type_check
 ```bash
 poe lint
 ```
+
+## Changelog
+
+### 1.0.1
+* Add `applies_to_connector_types` attribute to `Check` class to specify the connector types that the check applies to.
+* Make `CheckPublishToPyPiIsEnabled` run on source connectors only.
+
+### 1.0.0
+Initial release of `connectors-qa` package.

@@ -49,6 +49,7 @@ class CheckPublishToPyPiIsEnabled(PackagingCheck):
         ConnectorLanguage.PYTHON,
         ConnectorLanguage.LOW_CODE,
     ]
+    applies_to_connector_types = ["source"]
 
     def _run(self, connector: Connector) -> CheckResult:
         publish_to_pypi_is_enabled = get(connector.metadata, "remoteRegistries.pypi.enabled", False)
