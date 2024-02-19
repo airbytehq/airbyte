@@ -13,6 +13,7 @@ from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookRequestError
+from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, ValidCampaignStatuses
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
@@ -41,7 +42,6 @@ class AdCreatives(FBMarketingStream):
     """
 
     entity_prefix = "adcreative"
-    status_field = "status"
 
     def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -100,6 +100,7 @@ class Ads(FBMarketingIncrementalStream):
 
     entity_prefix = "ad"
     status_field = "effective_status"
+    valid_statuses = [status.value for status in ValidAdStatuses]
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
@@ -110,6 +111,7 @@ class AdSets(FBMarketingIncrementalStream):
 
     entity_prefix = "adset"
     status_field = "effective_status"
+    valid_statuses = [status.value for status in ValidAdSetStatuses]
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ad_sets(params=params, fields=self.fields())
@@ -120,6 +122,7 @@ class Campaigns(FBMarketingIncrementalStream):
 
     entity_prefix = "campaign"
     status_field = "effective_status"
+    valid_statuses = [status.value for status in ValidCampaignStatuses]
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_campaigns(params=params, fields=self.fields())
@@ -229,7 +232,6 @@ class AdAccount(FBMarketingStream):
         """noop in case of AdAccount"""
         fields = self.fields(account_id=account_id)
         try:
-            print(f"{self._api.get_account(account_id=account_id).get_id()=} {account_id=}")
             return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]
         except FacebookRequestError as e:
             # This is a workaround for cases when account seem to have all the required permissions

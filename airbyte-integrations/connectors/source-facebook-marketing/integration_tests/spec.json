@@ -10,9 +10,7 @@
         "description": "The Facebook Ad account ID(s) to pull data from. The Ad account ID number is in the account dropdown menu or in your browser's address bar of your <a href=\"https://adsmanager.facebook.com/adsmanager/\">Meta Ads Manager</a>. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
         "order": 0,
         "pattern_descriptor": "The Ad Account ID must be a number.",
-        "examples": [
-          "111111111111111"
-        ],
+        "examples": ["111111111111111"],
         "type": "array",
         "minItems": 1,
         "items": {
@@ -33,9 +31,7 @@
         "description": "The date from which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and only last 2 years for insight streams.",
         "order": 2,
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": [
-          "2017-01-25T00:00:00Z"
-        ],
+        "examples": ["2017-01-25T00:00:00Z"],
         "type": "string",
         "format": "date-time"
       },
@@ -44,15 +40,13 @@
         "description": "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.",
         "order": 3,
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": [
-          "2017-01-26T00:00:00Z"
-        ],
+        "examples": ["2017-01-26T00:00:00Z"],
         "type": "string",
         "format": "date-time"
       },
       "campaign_statuses": {
         "title": "Campaign Statuses",
-        "description": "Select statuses you want to to be loaded in the stream. All means all available.",
+        "description": "Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
         "default": [],
         "order": 4,
         "type": "array",
@@ -60,7 +54,6 @@
           "title": "ValidCampaignStatuses",
           "description": "An enumeration.",
           "enum": [
-            "ALL",
             "ACTIVE",
             "ARCHIVED",
             "DELETED",
@@ -72,7 +65,7 @@
       },
       "adset_statuses": {
         "title": "AdSet Statuses",
-        "description": "Select statuses you want to to be loaded in the stream. All means all available.",
+        "description": "Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
         "default": [],
         "order": 5,
         "type": "array",
@@ -80,7 +73,6 @@
           "title": "ValidAdSetStatuses",
           "description": "An enumeration.",
           "enum": [
-            "ALL",
             "ACTIVE",
             "ARCHIVED",
             "CAMPAIGN_PAUSED",
@@ -93,7 +85,7 @@
       },
       "ad_statuses": {
         "title": "Ad Statuses",
-        "description": "Select statuses you want to to be loaded in the stream. All means all available.",
+        "description": "Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
         "default": [],
         "order": 6,
         "type": "array",
@@ -101,7 +93,6 @@
           "title": "ValidAdStatuses",
           "description": "An enumeration.",
           "enum": [
-            "ALL",
             "ACTIVE",
             "ADSET_PAUSED",
             "ARCHIVED",
@@ -117,35 +108,17 @@
           ]
         }
       },
-      "adcreative_statuses": {
-        "title": "AdCreative Statuses",
-        "description": "Select statuses you want to to be loaded in the stream. All means all available.",
-        "default": [],
-        "order": 7,
-        "type": "array",
-        "items": {
-          "title": "ValidAdCreativeStatuses",
-          "description": "An enumeration.",
-          "enum": [
-            "ALL",
-            "ACTIVE",
-            "DELETED",
-            "IN_PROCESS",
-            "WITH_ISSUES"
-          ]
-        }
-      },
       "fetch_thumbnail_images": {
         "title": "Fetch Thumbnail Images from Ad Creative",
         "description": "Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
         "default": false,
-        "order": 5,
+        "order": 7,
         "type": "boolean"
       },
       "custom_insights": {
         "title": "Custom Insights",
         "description": "A list which contains ad statistics entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns. Click on \"add\" to fill this field.",
-        "order": 6,
+        "order": 8,
         "type": "array",
         "items": {
           "title": "InsightConfig",
@@ -161,12 +134,7 @@
               "title": "Level",
               "description": "Chosen level for API",
               "default": "ad",
-              "enum": [
-                "ad",
-                "adset",
-                "campaign",
-                "account"
-              ],
+              "enum": ["ad", "adset", "campaign", "account"],
               "type": "string"
             },
             "fields": {
@@ -383,11 +351,7 @@
               "title": "Action Report Time",
               "description": "Determines the report time of action stats. For example, if a person saw the ad on Jan 1st but converted on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd.",
               "default": "mixed",
-              "enum": [
-                "conversion",
-                "impression",
-                "mixed"
-              ],
+              "enum": ["conversion", "impression", "mixed"],
               "type": "string"
             },
             "time_increment": {
@@ -402,9 +366,7 @@
               "title": "Start Date",
               "description": "The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z.",
               "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-              "examples": [
-                "2017-01-25T00:00:00Z"
-              ],
+              "examples": ["2017-01-25T00:00:00Z"],
               "type": "string",
               "format": "date-time"
             },
@@ -412,9 +374,7 @@
               "title": "End Date",
               "description": "The date until which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.",
               "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-              "examples": [
-                "2017-01-26T00:00:00Z"
-              ],
+              "examples": ["2017-01-26T00:00:00Z"],
               "type": "string",
               "format": "date-time"
             },
@@ -437,16 +397,14 @@
               "type": "integer"
             }
           },
-          "required": [
-            "name"
-          ]
+          "required": ["name"]
         }
       },
       "page_size": {
         "title": "Page Size of Requests",
         "description": "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
         "default": 100,
-        "order": 7,
+        "order": 10,
         "exclusiveMinimum": 0,
         "type": "integer"
       },
@@ -454,7 +412,7 @@
         "title": "Insights Lookback Window",
         "description": "The attribution window. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here.",
         "default": 28,
-        "order": 8,
+        "order": 11,
         "maximum": 28,
         "mininum": 1,
         "exclusiveMinimum": 0,
@@ -464,7 +422,7 @@
         "title": "Insights Job Timeout",
         "description": "Insights Job Timeout establishes the maximum amount of time (in minutes) of waiting for the report job to complete. When timeout is reached the job is considered failed and we are trying to request smaller amount of data by breaking the job to few smaller ones. If you definitely know that 60 minutes is not enough for your report to be processed then you can decrease the timeout value, so we start breaking job to smaller parts faster.",
         "default": 60,
-        "order": 9,
+        "order": 12,
         "maximum": 60,
         "mininum": 10,
         "exclusiveMinimum": 0,
@@ -492,15 +450,10 @@
         "type": "string"
       }
     },
-    "required": [
-      "account_ids",
-      "access_token"
-    ]
+    "required": ["account_ids", "access_token"]
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": [
-    "append"
-  ],
+  "supported_destination_sync_modes": ["append"],
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
     "oauth_config_specification": {
@@ -509,9 +462,7 @@
         "properties": {
           "access_token": {
             "type": "string",
-            "path_in_connector_config": [
-              "access_token"
-            ]
+            "path_in_connector_config": ["access_token"]
           }
         }
       },
@@ -532,15 +483,11 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": [
-              "client_id"
-            ]
+            "path_in_connector_config": ["client_id"]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": [
-              "client_secret"
-            ]
+            "path_in_connector_config": ["client_secret"]
           }
         }
       }

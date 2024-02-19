@@ -9,7 +9,6 @@ from typing import List, Optional, Set
 
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.ad import Ad
-from facebook_business.adobjects.adcreative import AdCreative
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
@@ -21,10 +20,9 @@ logger = logging.getLogger("airbyte")
 ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
-ValidCampaignStatuses = Enum("ValidCampaignStatuses", {"ALL": "ALL"} | Campaign.EffectiveStatus.__dict__)
-ValidAdSetStatuses = Enum("ValidAdSetStatuses", {"ALL": "ALL"} | AdSet.EffectiveStatus.__dict__)
-ValidAdStatuses = Enum("ValidAdStatuses", {"ALL": "ALL"} | Ad.EffectiveStatus.__dict__)
-ValidAdCreativeStatuses = Enum("ValidAdCreativeStatuses", {"ALL": "ALL"} | AdCreative.Status.__dict__)
+ValidCampaignStatuses = Enum("ValidCampaignStatuses", Campaign.EffectiveStatus.__dict__)
+ValidAdSetStatuses = Enum("ValidAdSetStatuses", AdSet.EffectiveStatus.__dict__)
+ValidAdStatuses = Enum("ValidAdStatuses", Ad.EffectiveStatus.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
 
@@ -40,7 +38,12 @@ class InsightConfig(BaseModel):
         description="The name value of insight",
     )
 
-    level: str = Field(title="Level", description="Chosen level for API", default="ad", enum=["ad", "adset", "campaign", "account"])
+    level: str = Field(
+        title="Level",
+        description="Chosen level for API",
+        default="ad",
+        enum=["ad", "adset", "campaign", "account"],
+    )
 
     fields: Optional[List[ValidFields]] = Field(
         title="Fields",
@@ -174,41 +177,34 @@ class ConnectorConfig(BaseConfig):
     campaign_statuses: Optional[List[ValidCampaignStatuses]] = Field(
         title="Campaign Statuses",
         order=4,
-        description="Select statuses you want to to be loaded in the stream. All means all available.",
-        default=["ALL"],
+        description="Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
+        default=[],
     )
 
     adset_statuses: Optional[List[ValidAdSetStatuses]] = Field(
         title="AdSet Statuses",
         order=5,
-        description="Select statuses you want to to be loaded in the stream. All means all available.",
-        default=["ALL"],
+        description="Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
+        default=[],
     )
 
     ad_statuses: Optional[List[ValidAdStatuses]] = Field(
         title="Ad Statuses",
         order=6,
-        description="Select statuses you want to to be loaded in the stream. All means all available.",
-        default=["ALL"],
-    )
-
-    adcreative_statuses: Optional[List[ValidAdCreativeStatuses]] = Field(
-        title="AdCreative Statuses",
-        order=7,
-        description="Select statuses you want to to be loaded in the stream. All means all available.",
-        default=["ALL"],
+        description="Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
+        default=[],
     )
 
     fetch_thumbnail_images: bool = Field(
         title="Fetch Thumbnail Images from Ad Creative",
-        order=8,
+        order=7,
         default=False,
         description="Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
     )
 
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
-        order=9,
+        order=8,
         description=(
             "A list which contains ad statistics entries, each entry must have a name and can contains fields, "
             'breakdowns or action_breakdowns. Click on "add" to fill this field.'
@@ -241,7 +237,7 @@ class ConnectorConfig(BaseConfig):
 
     insights_job_timeout: Optional[PositiveInt] = Field(
         title="Insights Job Timeout",
-        order=9,
+        order=12,
         description=(
             "Insights Job Timeout establishes the maximum amount of time (in minutes) of waiting for the report job to complete. "
             "When timeout is reached the job is considered failed and we are trying to request smaller amount of data by breaking the job to few smaller ones. "

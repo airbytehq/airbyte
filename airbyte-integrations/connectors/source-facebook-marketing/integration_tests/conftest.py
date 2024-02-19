@@ -31,8 +31,23 @@ def config_with_wrong_account_fixture(config):
 def config_with_include_deleted(config):
     new_config = {
         **config,
-        "campaign_statuses": ["ACTIVE", "ARCHIVED", "DELETED", "IN_PROCESS", "PAUSED", "WITH_ISSUES"],
-        "adset_statuses": ["ACTIVE", "ARCHIVED", "CAMPAIGN_PAUSED", "DELETED", "IN_PROCESS", "PAUSED", "WITH_ISSUES"],
+        "campaign_statuses": [
+            "ACTIVE",
+            "ARCHIVED",
+            "DELETED",
+            "IN_PROCESS",
+            "PAUSED",
+            "WITH_ISSUES",
+        ],
+        "adset_statuses": [
+            "ACTIVE",
+            "ARCHIVED",
+            "CAMPAIGN_PAUSED",
+            "DELETED",
+            "IN_PROCESS",
+            "PAUSED",
+            "WITH_ISSUES",
+        ],
         "ad_statuses": [
             "ACTIVE",
             "ADSET_PAUSED",
@@ -47,7 +62,6 @@ def config_with_include_deleted(config):
             "PREAPPROVED",
             "WITH_ISSUES",
         ],
-        "adcreative_statuses": ["ACTIVE", "DELETED", "IN_PROCESS", "WITH_ISSUES"],
     }
     new_config.pop("_limit", None)
     new_config.pop("end_date", None)

@@ -163,7 +163,6 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             AdCreatives(
                 api=api,
-                filter_statuses=config.adcreative_statuses,
                 account_ids=config.account_ids,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
@@ -256,14 +255,23 @@ class SourceFacebookMarketing(AbstractSource):
                     },
                     complete_oauth_server_input_specification={
                         "type": "object",
-                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                        "properties": {
+                            "client_id": {"type": "string"},
+                            "client_secret": {"type": "string"},
+                        },
                     },
                     complete_oauth_server_output_specification={
                         "type": "object",
                         "additionalProperties": True,
                         "properties": {
-                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
-                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                            "client_id": {
+                                "type": "string",
+                                "path_in_connector_config": ["client_id"],
+                            },
+                            "client_secret": {
+                                "type": "string",
+                                "path_in_connector_config": ["client_secret"],
+                            },
                         },
                     },
                 ),

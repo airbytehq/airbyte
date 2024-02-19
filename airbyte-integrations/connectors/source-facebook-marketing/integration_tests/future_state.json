@@ -16,9 +16,7 @@
     "stream": {
       "stream_state": {
         "updated_time": "2121-07-25T13:34:26Z",
-        "filter_statuses": [
-          "ARCHIVED"
-        ]
+        "filter_statuses": ["ARCHIVED"]
       },
       "stream_descriptor": {
         "name": "campaigns"
@@ -66,9 +64,7 @@
     "stream": {
       "stream_state": {
         "updated_time": "2121-07-25T13:34:26Z",
-        "filter_statuses": [
-          "ARCHIVED"
-        ]
+        "filter_statuses": ["ARCHIVED"]
       },
       "stream_descriptor": {
         "name": "ad_sets"
@@ -80,9 +76,7 @@
     "stream": {
       "stream_state": {
         "updated_time": "2121-07-25T13:34:26Z",
-        "filter_statuses": [
-          "ARCHIVED"
-        ]
+        "filter_statuses": ["ARCHIVED"]
       },
       "stream_descriptor": {
         "name": "ads"
