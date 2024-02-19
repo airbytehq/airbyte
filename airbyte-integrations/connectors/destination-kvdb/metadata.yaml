@@ -15,10 +15,6 @@ data:
   icon: kvdb.svg
   license: MIT
   name: KVdb
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-destination-kvdb
   releaseDate: 2023-07-15
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/kvdb
