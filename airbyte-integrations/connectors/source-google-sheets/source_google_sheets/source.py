@@ -148,6 +148,7 @@ class SourceGoogleSheets(Source):
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Generator[AirbyteMessage, None, None]:
         client = GoogleSheetsClient(self.get_credentials(config))
+        client.Backoff.row_batch_size = config["batch_size"]
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])

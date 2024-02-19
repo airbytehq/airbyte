@@ -8,6 +8,12 @@ connectionSpecification:
     - credentials
   additionalProperties: true
   properties:
+    batch_size:
+      type: integer
+      title: Row Batch Size
+      description: >-
+        An integer representing row batch size with each sent request to Google Sheets API. Defaults to 200.
+      default: 200
     spreadsheet_id:
       type: string
       title: Spreadsheet Link
