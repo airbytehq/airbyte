@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional
 
 import pendulum
@@ -8,18 +8,19 @@ import requests
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
     RequestInput,
 )
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamState
 
 
 @dataclass
 class MailChimpRequester(HttpRequester):
     """
-    Defines `get_data_center_location` method to define data_center and update config on the fly, as it depends on Authenticator implementation.
+    Introduce `get_data_center_location` method to define data_center based on Authenticator type and update config on the fly.
     """
 
     request_body_json: Optional[RequestInput] = None
@@ -71,7 +72,7 @@ class MailChimpRequester(HttpRequester):
 
         # Handle any other exceptions that may occur.
         except Exception as e:
-            raise Exception(f"An error occured while retrieving the data center for your account. \n {repr(e)}")
+            raise Exception(f"An error occurred while retrieving the data center for your account. \n {repr(e)}")
 
 
 class MailChimpRecordFilter(RecordFilter):
@@ -79,21 +80,42 @@ class MailChimpRecordFilter(RecordFilter):
     Filter applied on a list of Records.
     """
 
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self.parameters = parameters
+
     def filter_records(
         self,
         records: List[Mapping[str, Any]],
         stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: PerPartitionStreamSlice,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> List[Mapping[str, Any]]:
         current_state = [x for x in stream_state.get("states", []) if x["partition"]["id"] == stream_slice.partition["id"]]
         # TODO: REF what to do if no start_date mentioned (see manifest)
         #  implement the same logic
-        start_date = self.config.get("start_date", (pendulum.now() - pendulum.duration(days=700)).to_iso8601_string())
-        if current_state and start_date:
-            filter_value = max(start_date, current_state[0]["cursor"][self.parameters["cursor_field"]])
-            return [record for record in records if record[self.parameters["cursor_field"]] > filter_value]
+        cursor_value = self.get_filter_date(self.config.get("start_date"), current_state)
+        if cursor_value:
+            return [record for record in records if record[self.parameters["cursor_field"]] > cursor_value]
         return records
+
+    def get_filter_date(self, start_date: str, state_value: list) -> str:
+        """
+        Calculate the filter date to pass in the request parameters by comparing the start_date
+        with the value of state obtained from the stream_slice.
+        If only one value exists, use it by default. Otherwise, return None.
+        If no filter_date is provided, the API will fetch all available records.
+        """
+
+        start_date_parsed = pendulum.parse(start_date).to_iso8601_string() if start_date else None
+        state_date_parsed = (
+            pendulum.parse(state_value[0]["cursor"][self.parameters["cursor_field"]]).to_iso8601_string() if state_value else None
+        )
+
+        # Return the max of the two dates if both are present. Otherwise return whichever is present, or None.
+        if start_date_parsed or state_date_parsed:
+            return max(filter(None, [start_date_parsed, state_date_parsed]), default=None)
 
 
 class MailChimpRecordExtractorEmailActivity(DpathExtractor):
