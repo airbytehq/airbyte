@@ -181,7 +181,7 @@ class Titles(IronsourceStream):
 
 
 class Bids(IronsourceSubStream):
-    primary_key = "id"
+    primary_key = "bid"
     entity = "bids"
     send_fields = False
 
@@ -200,7 +200,7 @@ class Bids(IronsourceSubStream):
 
 
 class CampaignTargetings(IronsourceSubStream):
-    primary_key = "id"
+    primary_key = "campaignId"
     entity = "data"
     send_fields = False
     paginate = False
