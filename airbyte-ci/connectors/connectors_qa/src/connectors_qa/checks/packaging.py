@@ -86,7 +86,7 @@ class CheckConnectorLicense(PackagingCheck):
 
 class CheckConnectorLicenseMatchInPyproject(PackagingCheck):
     name = f"Connector license in {consts.METADATA_FILE_NAME} and {consts.PYPROJECT_FILE_NAME} file must match"
-    description = f"Connectors license in {consts.METADATA_FILE_NAME} and {consts.PYPROJECT_FILE_NAME} file must match. This is to ensure that all connectors are consistently licensed"
+    description = f"Connectors license in {consts.METADATA_FILE_NAME} and {consts.PYPROJECT_FILE_NAME} file must match. This is to ensure that all connectors are consistently licensed."
     applies_to_connector_languages = [
         ConnectorLanguage.PYTHON,
         ConnectorLanguage.LOW_CODE,

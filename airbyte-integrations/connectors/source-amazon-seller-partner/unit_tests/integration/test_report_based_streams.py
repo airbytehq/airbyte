@@ -118,11 +118,11 @@ def _check_report_status_response(
         "dataEndTime": CONFIG_END_DATE,
         "createdTime": CONFIG_START_DATE,
         "dataStartTime": CONFIG_START_DATE,
+        "reportDocumentId": report_document_id,
     }
     if processing_status == ReportProcessingStatus.DONE:
         response_body.update(
             {
-                "reportDocumentId": report_document_id,
                 "processingEndTime": CONFIG_START_DATE,
                 "processingStartTime": CONFIG_START_DATE,
             }
@@ -141,10 +141,15 @@ def _get_document_download_url_response(
     return build_response(response_body, status_code=HTTPStatus.OK)
 
 
-def _download_document_response(
-    stream_name: str, data_format: Optional[str] = "csv", compressed: Optional[bool] = False
-) -> HttpResponse:
+def _download_document_response(stream_name: str, data_format: Optional[str] = "csv", compressed: Optional[bool] = False) -> HttpResponse:
     response_body = find_template(stream_name, __file__, data_format)
+    if compressed:
+        response_body = gzip.compress(response_body.encode("iso-8859-1"))
+    return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
+
+
+def _download_document_error_response(compressed: Optional[bool] = False) -> HttpResponse:
+    response_body = '{"errorDetails":"Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again."}'
     if compressed:
         response_body = gzip.compress(response_body.encode("iso-8859-1"))
     return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
@@ -152,7 +157,6 @@ def _download_document_response(
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh:
-
     @staticmethod
     def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
@@ -164,9 +168,7 @@ class TestFullRefresh:
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
-    def test_given_report_when_read_then_return_records(
-        self, stream_name: str, data_format: str, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_report_when_read_then_return_records(self, stream_name: str, data_format: str, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
 
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
@@ -329,9 +331,7 @@ class TestFullRefresh:
     ) -> None:
         mock_auth(http_mocker)
 
-        http_mocker.post(
-            _create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.FORBIDDEN)
-        )
+        http_mocker.post(_create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.FORBIDDEN))
 
         output = self._read(stream_name, config())
         message_on_access_forbidden = (
@@ -354,9 +354,7 @@ class TestFullRefresh:
             _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
         )
 
-        message_on_report_cancelled = (
-            f"The report for stream '{stream_name}' was cancelled or there is no data to return."
-        )
+        message_on_report_cancelled = f"The report for stream '{stream_name}' was cancelled or there is no data to return."
 
         output = self._read(stream_name, config())
         assert_message_in_log_output(message_on_report_cancelled, output)
@@ -372,14 +370,27 @@ class TestFullRefresh:
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
-            _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.FATAL),
+            _check_report_status_response(
+                stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
+            ),
+        )
+
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _download_document_error_response(),
+            ],
         )
 
         output = self._read(stream_name, config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
         assert (
-            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{CONFIG_END_DATE} "
-            "due to Amazon Seller Partner platform issues. This will be read during the next sync."
+            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{CONFIG_END_DATE}. This will be read during the next sync. Error: {{'errorDetails': 'Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again.'}}"
         ) in output.errors[-1].trace.error.message
 
     @pytest.mark.parametrize(
@@ -405,9 +416,7 @@ class TestFullRefresh:
             _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
             _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
         )
-        http_mocker.get(
-            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(), _download_document_response(stream_name)
-        )
+        http_mocker.get(_download_document_request(_DOCUMENT_DOWNLOAD_URL).build(), _download_document_response(stream_name))
 
         output = self._read(stream_name, config())
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
@@ -425,9 +434,7 @@ class TestFullRefresh:
             response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
         )
 
-        message_on_backoff_exception = (
-            f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
-        )
+        message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
 
         output = self._read(stream_name, config())
         assert_message_in_log_output(message_on_backoff_exception, output)

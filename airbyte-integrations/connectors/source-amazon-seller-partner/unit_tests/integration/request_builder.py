@@ -14,17 +14,13 @@ from .config import ACCESS_TOKEN, LWA_APP_ID, LWA_CLIENT_SECRET, MARKETPLACE_ID,
 
 
 class RequestBuilder:
-
     @classmethod
     def auth_endpoint(cls) -> RequestBuilder:
         request_headers = {"Content-Type": "application/x-www-form-urlencoded"}
         request_body = (
-            f"grant_type=refresh_token&client_id={LWA_APP_ID}&"
-            f"client_secret={LWA_CLIENT_SECRET}&refresh_token={REFRESH_TOKEN}"
+            f"grant_type=refresh_token&client_id={LWA_APP_ID}&" f"client_secret={LWA_CLIENT_SECRET}&refresh_token={REFRESH_TOKEN}"
         )
-        return cls("auth/o2/token").with_base_url("https://api.amazon.com").with_headers(request_headers).with_body(
-            request_body
-        )
+        return cls("auth/o2/token").with_base_url("https://api.amazon.com").with_headers(request_headers).with_body(request_body)
 
     @classmethod
     def create_report_endpoint(cls, report_name: str) -> RequestBuilder:
