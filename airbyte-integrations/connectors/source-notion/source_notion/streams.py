@@ -253,12 +253,11 @@ class Users(NotionStream):
         return params
 
     def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        bot = record.get("bot")
-        if bot:
-            owner = bot.get("owner", {})
+        owner = record.get("bot", {}).get("owner")
+        if owner:
             owner_type = owner.get("type")
-            if owner_type:
-                owner_info = owner[owner_type]
+            owner_info = owner.get(owner_type)
+            if owner_type and owner_info:
                 record["bot"]["owner"]["info"] = owner_info
                 del record["bot"]["owner"][owner_type]
         return record
@@ -330,11 +329,11 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
             yield {"page_id": page_id}
 
-    def transform(self, record: Mapping[str, Any]):
-        transform_object_field = record["type"]
-        rich_text = record.get(transform_object_field, {}).get("rich_text", {})
+    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        transform_object_field = record.get("type")
 
-        if rich_text:
+        if transform_object_field:
+            rich_text = record.get(transform_object_field, {}).get("rich_text", [])
             for r in rich_text:
                 mention = r.get("mention")
                 if mention:
