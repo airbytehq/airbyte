@@ -48,6 +48,9 @@
     },
     "creation_state": {
       "type": ["null", "string"]
+    },
+    "deleted": {
+      "type": ["null", "string"]
     }
   }
 }
