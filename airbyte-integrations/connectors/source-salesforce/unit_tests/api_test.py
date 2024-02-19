@@ -161,9 +161,6 @@ def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
     assert result_uri.request_history[2].query == "locator=somelocator_2"
 
 
-
-
-
 def _prepare_mock(m, stream):
     job_id = "fake_job_1"
     m.register_uri("POST", stream.path(), json={"id": job_id})
@@ -883,13 +880,14 @@ def test_bulk_stream_slices(stream_config_date_format, stream_api, lookback, exp
             today = pendulum.today(tz="UTC")
             start_date = pendulum.parse(stream.start_date, tz="UTC") - timedelta(seconds=lookback)
             while start_date < today:
+                end_date = start_date + stream.stream_slice_step
                 expected_slices.append(
                     {
                         "start_date": start_date.isoformat(timespec="milliseconds"),
-                        "end_date": min(today, start_date.add(days=stream.STREAM_SLICE_STEP)).isoformat(timespec="milliseconds"),
+                        "end_date": min(today, end_date).isoformat(timespec="milliseconds"),
                     }
                 )
-                start_date = start_date.add(days=stream.STREAM_SLICE_STEP)
+                start_date += stream.stream_slice_step
             assert expected_slices == stream_slices
 
 
@@ -955,14 +953,14 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
 
 def test_request_params_incremental(stream_config_date_format, stream_api):
     stream = generate_stream("ContentDocument", stream_config_date_format, stream_api)
-    params = stream.request_params(stream_state={}, stream_slice={'start_date': '2020', 'end_date': '2021'})
+    params = stream.request_params(stream_state={}, stream_slice={"start_date": "2020", "end_date": "2021"})
 
-    assert params == {'q': 'SELECT LastModifiedDate, Id FROM ContentDocument WHERE LastModifiedDate >= 2020 AND LastModifiedDate < 2021'}
+    assert params == {"q": "SELECT LastModifiedDate, Id FROM ContentDocument WHERE LastModifiedDate >= 2020 AND LastModifiedDate < 2021"}
 
 
 def test_request_params_substream(stream_config_date_format, stream_api):
     stream = generate_stream("ContentDocumentLink", stream_config_date_format, stream_api)
-    params = stream.request_params(stream_state={}, stream_slice={'parents': [{'Id': 1}, {'Id': 2}]})
+    params = stream.request_params(stream_state={}, stream_slice={"parents": [{"Id": 1}, {"Id": 2}]})
 
     assert params == {"q": "SELECT LastModifiedDate, Id FROM ContentDocumentLink WHERE ContentDocumentId IN ('1','2')"}
 
@@ -977,20 +975,27 @@ def test_stream_slices_for_substream(stream_config, stream_api, requests_mock):
     ContentDocumentLink
     It means that ContentDocumentLink should have 2 slices, with 2 and 1 records in each
     """
-    stream_config['start_date'] = '2023-01-01'
+    stream_config["start_date"] = "2023-01-01"
     stream: BulkSalesforceSubStream = generate_stream("ContentDocumentLink", stream_config, stream_api)
     stream.SLICE_BATCH_SIZE = 2  # each ContentDocumentLink should contain 2 records from parent ContentDocument stream
 
     job_id = "fake_job"
     requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
     requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id}/results", [{"text": "Field1,LastModifiedDate,ID\ntest,2021-11-16,123", "headers": {"Sforce-Locator": "null"}}])
+    requests_mock.register_uri(
+        "GET",
+        stream.path() + f"/{job_id}/results",
+        [{"text": "Field1,LastModifiedDate,ID\ntest,2021-11-16,123", "headers": {"Sforce-Locator": "null"}}],
+    )
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
 
     stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
     assert stream_slices == [
-         {'parents': [{'Field1': 'test', 'ID': '123', 'LastModifiedDate': '2021-11-16'},
-                      {'Field1': 'test', 'ID': '123', 'LastModifiedDate': '2021-11-16'}]},
-         {'parents': [{'Field1': 'test', 'ID': '123', 'LastModifiedDate': '2021-11-16'}]}
+        {
+            "parents": [
+                {"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"},
+                {"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"},
+            ]
+        },
+        {"parents": [{"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"}]},
     ]
-

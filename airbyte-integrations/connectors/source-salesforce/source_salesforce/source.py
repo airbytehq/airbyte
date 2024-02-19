@@ -6,7 +6,6 @@ import logging
 from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-import pendulum
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.logger import AirbyteLogFormatter
@@ -147,6 +146,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
             stream_class = incremental
             stream_kwargs["replication_key"] = replication_key
+            stream_kwargs["stream_slice_step"] = config.get("stream_slice_step", "P30D")
         else:
             stream_class = full_refresh
 
