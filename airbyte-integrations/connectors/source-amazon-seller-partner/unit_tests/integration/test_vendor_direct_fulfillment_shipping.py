@@ -155,7 +155,7 @@ class TestFullRefresh:
         )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE), expecting_exception=True)
-        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
 
 @freezegun.freeze_time(NOW.isoformat())

@@ -34,7 +34,6 @@ class TestMigrateAccountType:
         assert control_msg["type"] == Type.CONTROL.value
         assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
         migrated_config = control_msg["control"]["connectorConfig"]["config"]
-        print(migrated_config)
         assert migrated_config["account_type"] == "Seller"
 
     def test_should_not_migrate(self):
