@@ -117,20 +117,3 @@ class AutomationsTest(TestCase):
             .build(),
         )
         assert actual_messages.state_messages[0].state.data == {'automations': {'create_time': '2220-11-23T05:42:11+00:00'}}
-    #
-    # def test_read_handles_expected_error_correctly_and_exits_with_complete_status(self):
-    #     """Ensure read() method does not raise an Exception and log message with error is in output"""
-    #     self.r_mock.get(
-    #         HttpRequest(
-    #             url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
-    #             query_params={"per_page": 100},
-    #         ),
-    #         HttpResponse('{"message":"some_error_message"}', 403),
-    #     )
-    #     source = SourceMailchimp()
-    #     actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
-    #
-    #     assert Level.ERROR in [x.log.level for x in actual_messages.logs]
-    #     events_stream_complete_message = [x for x in actual_messages.trace_messages if x.trace.type == TraceType.STREAM_STATUS][-1]
-    #     assert events_stream_complete_message.trace.stream_status.stream_descriptor.name == "events"
-    #     assert events_stream_complete_message.trace.stream_status.status == AirbyteStreamStatus.COMPLETE
