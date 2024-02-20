@@ -134,7 +134,7 @@ class InsightAsyncJobManager:
         """
         Get current ads insights throttle value based on app id and account id.
         It evaluated as minimum of those numbers cause when account id throttle
-        hit 100 it cool down very slowly (i.e. it still says 100 despite no jobs
+        hit 100 it cools down very slowly (i.e. it still says 100 despite no jobs
         running and it capable serve new requests). Because of this behaviour
         facebook throttle limit is not reliable metric to estimate async workload.
         """
@@ -144,7 +144,7 @@ class InsightAsyncJobManager:
 
     def _update_api_throttle_limit(self):
         """
-        Sends <ACCOUNT_ID>/insights GET request with no parameters so it would
+        Sends <ACCOUNT_ID>/insights GET request with no parameters, so it would
         respond with empty list of data so api use "x-fb-ads-insights-throttle"
         header to update current insights throttle limit.
         """
