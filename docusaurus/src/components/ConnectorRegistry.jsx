@@ -1,5 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
+import { archivedConnectors } from "./archivedConnectors";
 
 import styles from "./ConnectorRegistry.module.css";
 
@@ -42,7 +43,12 @@ export default function ConnectorRegistry({ type }) {
 
   const connectors = registry
     .filter((c) => c.connector_type === type)
-    .filter((c) => c.name_oss);
+    .filter((c) => c.name_oss)
+    .filter((c) => c.supportLevel_oss); // at lease one connector is missing a support level
+
+  archivedConnectors.forEach((archived) => {
+    connectors.push(archived);
+  });
 
   return (
     <div>
@@ -77,8 +83,14 @@ export default function ConnectorRegistry({ type }) {
                 {/* min width to prevent wrapping */}
                 <td style={{ minWidth: 75 }}>
                   <a href={docsLink}>📕</a>
-                  <a href={connector.github_url}>⚙️</a>
-                  <a href={connector.issue_url}>🐛</a>
+                  {connector.supportLevel_oss != "archived" ? (
+                    <a href={connector.github_url}>⚙️</a>
+                  ) : (
+                    ""
+                  )}
+                  {connector.supportLevel_oss != "archived" ? (
+                    <a href={connector.issue_url}>🐛</a>
+                  ) : null}
                 </td>
                 <td>
                   <small>{connector.supportLevel_oss}</small>
