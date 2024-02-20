@@ -18,6 +18,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jooq.Record;
+import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,23 +80,24 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       boolean wasRunning = false;
       while (!stop) {
         try {
-          final var r = query(ctx -> ctx.fetch(
-              "EXEC master.dbo.xp_servicecontrol 'QueryState', N'SQLServerAGENT';").get(0));
+          String agentStateSql = "EXEC master.dbo.xp_servicecontrol 'QueryState', N'SQLServerAGENT';";
+          LOGGER.info(formatLogLine("executing agentStateSql {}"), agentStateSql);
+          final var r = query(ctx -> ctx.fetch(agentStateSql).get(0));
           String agentState = r.getValue(0).toString();
           LOGGER.info(formatLogLine("agentState=" + agentState));
           if ("Running.".equals(agentState)) {
+            LOGGER.info(formatLogLine("agent is running. Executing more queries..."));
             wasRunning = true;
+            LOGGER.info(formatLogLine(String.format("sys.fn_cdc_get_max_lsn returned %s",
+                query(ctx -> ctx.fetch("SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;")).get(0).getValue(0))));
+            Result<Record> results = query(ctx -> ctx.fetch("SELECT start_lsn, tran_begin_time, tran_end_time, tran_id FROM cdc.lsn_time_mapping;"));
+            LOGGER.info(formatLogLine(String.format("lsn_time_mapping has %d rows: %s", results.size(), results.toString())));
           } else if (wasRunning && !"Running.".equals(agentState)) {
             LOGGER.info(formatLogLine("agent was running. agentState=" + agentState));
           }
         } catch (final Throwable t) {
           String exceptionAsString = StringUtils.join(ExceptionUtils.getStackFrames(t), "\n  ");
           LOGGER.info(formatLogLine("got exception " + exceptionAsString));
-        }
-        try {
-          Thread.sleep(5l);
-        } catch (InterruptedException e) {
-          LOGGER.info(formatLogLine("interrupted"));
         }
       }
     }
