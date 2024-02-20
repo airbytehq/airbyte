@@ -32,6 +32,8 @@ acceptance_tests:
             bypass_reason: "Unstable data. Test data is not persistent."
           - name: "site_migration_detail"
             bypass_reason: "Cannnot populate with test data."
+          - name: "hosted_page"
+            bypass_reason: "Test data is not persistent."
           - name: "customer"
             bypass_reason: "To be Tested with integration tests."
           - name: "subscription"
