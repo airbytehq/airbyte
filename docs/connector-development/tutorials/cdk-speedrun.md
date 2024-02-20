@@ -11,6 +11,7 @@ If you are a visual learner and want to see a video version of this guide going 
 ## Dependencies
 
 1. Python &gt;= 3.9
+2. [Poetry](https://python-poetry.org/)
 2. Docker
 3. NodeJS
 
@@ -30,9 +31,7 @@ Select the `Python HTTP API Source` and name it `python-http-example`.
 
 ```bash
 cd ../../connectors/source-python-http-example
-python -m venv .venv # Create a virtual environment in the .venv directory
-source .venv/bin/activate
-pip install -r requirements.txt
+poetry install
 ```
 
 ### Define Connector Inputs
@@ -169,7 +168,7 @@ This file defines your output schema for every endpoint that you want to impleme
 Test your discover function. You should receive a fairly large JSON object in return.
 
 ```bash
-python main.py discover --config sample_files/config.json
+poetry run source-python-http-example discover --config sample_files/config.json
 ```
 
 Note that our discover function is using the `pokemon_name` config variable passed in from the `Pokemon` stream when we set it in the `__init__` function.
@@ -226,7 +225,7 @@ We now need a catalog that defines all of our streams. We only have one stream: 
 Let's read some data.
 
 ```bash
-python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
+poetry run source-python-http-example read --config sample_files/config.json --catalog sample_files/configured_catalog.json
 ```
 
 If all goes well, containerize it so you can use it in the UI:

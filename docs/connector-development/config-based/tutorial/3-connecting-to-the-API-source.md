@@ -200,7 +200,7 @@ spec:
 We can now run the `check` operation, which verifies the connector can connect to the API source.
 
 ```bash
-python main.py check --config secrets/config.json
+poetry run source-exchange-rates-tutorial check --config secrets/config.json
 ```
 
 which should now succeed with logs similar to:
