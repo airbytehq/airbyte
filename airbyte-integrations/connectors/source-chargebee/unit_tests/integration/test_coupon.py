@@ -31,7 +31,7 @@ _SITE = "test-site"
 _SITE_API_KEY = "test-api-key"
 _PRODUCT_CATALOG = "2.0"
 _PRIMARY_KEY = "id"
-_CURSOR_FIELD = "created_at"
+_CURSOR_FIELD = "updated_at"
 _NO_STATE = {}
 _NOW = datetime.now(timezone.utc)
 
@@ -99,11 +99,11 @@ class FullRefreshTest(TestCase):
     def test_given_multiple_pages_of_records_read_and_returned(self, http_mocker: HttpMocker) -> None:
         # Tests pagination
         http_mocker.get(
-            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).build(),
+            _a_request().with_sort_by_asc("created_at").with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).build(),
             _a_response().with_pagination().with_record(_a_record()).build()
         )
         http_mocker.get(
-            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).with_offset('[1707076198000,57873868]').build(),
+            _a_request().with_sort_by_asc("created_at").with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).with_offset('[1707076198000,57873868]').build(),
             _a_response().with_record(_a_record()).with_record(_a_record()).build()
         )
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
@@ -205,7 +205,7 @@ class IncrementalTest(TestCase):
         state_cursor_value = int((self._start_date + timedelta(days=31)).timestamp())
         state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_cursor_value}).build()
         http_mocker.get(
-            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([state_cursor_value, self._now_in_seconds]).build(),
+            _a_request().with_sort_by_asc("created_at").with_include_deleted(True).with_updated_at_btw([state_cursor_value, self._now_in_seconds]).build(),
             _a_response().with_record(_a_record().with_cursor(self._now_in_seconds - 1)).build(),
         )
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), state)

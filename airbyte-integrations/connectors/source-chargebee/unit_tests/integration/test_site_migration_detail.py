@@ -96,7 +96,7 @@ class FullRefreshTest(TestCase):
             _a_request().with_any_query_params().build(),
             _a_response().with_record(_a_record()).with_record(_a_record()).build()
         )
-        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
+        output = self._read(_config().with_start_date(self._start_date))
         assert len(output.records) == 2
 
     @HttpMocker()
@@ -169,12 +169,12 @@ class FullRefreshTest(TestCase):
 @freezegun.freeze_time(datetime.now(timezone.utc))
 class IncrementalTest(TestCase):
 
-    # Site Migration Detail stream is a semi-incremental stream and therefore state acts differently than typical incremental implementation
+    # Site Migration Detail stream is a semi-incremental stream and therefore state acts differently than typical declarative incremental implementation -- state is updated to most recent cursor value read
 
-    def setUp(self):
-        self._now = datetime.now()
+    def setUp(self) -> None:
+        self._now = _NOW
         self._now_in_seconds = int(self._now.timestamp())
-        self._start_date = datetime.now(timezone(timedelta(hours=-8))) - timedelta(days=60)
+        self._start_date = _NOW - timedelta(days=60)
         self._start_date_in_seconds = int(self._start_date.timestamp())
 
     @staticmethod
@@ -183,11 +183,27 @@ class IncrementalTest(TestCase):
 
     @HttpMocker()
     def test_given_no_initial_state_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
-        # Tests initial state is generated properly
-        print("todo")
+        # Tests setting state when no initial state is provided
+        cursor_value = self._start_date_in_seconds + 1
+        http_mocker.get(
+            _a_request().with_any_query_params().build(),
+            _a_response().with_record(_a_record().with_cursor(cursor_value)).with_record(_a_record().with_cursor(cursor_value + 1)).build()
+        )
+        output = self._read(_config().with_start_date(self._start_date), _NO_STATE)
+        assert output.most_recent_state[_STREAM_NAME][_CURSOR_FIELD] == cursor_value + 1
+        assert len(output.state_messages) ==  1 # one state message per read
+        assert len(output.records) == 2 # two records generated
 
     @HttpMocker()
     def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
-        # Tests properly using state in future requests
-        print("todo")
-
+        # Tests updating query param with state
+        state_cursor_value = int((self._start_date + timedelta(days=31)).timestamp())
+        state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_cursor_value}).build()
+        http_mocker.get(
+            _a_request().with_any_query_params().build(),
+            _a_response().with_record(_a_record().with_cursor(self._now_in_seconds - 1)).with_record(_a_record().with_cursor(self._now_in_seconds - 2)).build(),
+        )
+        output = self._read(_config().with_start_date(self._start_date), state)
+        assert len(output.state_messages) == 1 # one state message per read
+        assert len(output.records) == 2 # two records generated
+        assert output.most_recent_state[_STREAM_NAME][_CURSOR_FIELD] == self._now_in_seconds - 1 # should be cursor value of more recent record
