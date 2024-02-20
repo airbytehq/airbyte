@@ -13,10 +13,8 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DAT
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
 import static io.airbyte.integrations.base.destination.typing_deduping.Sql.transactionally;
 import static java.util.stream.Collectors.toList;
-import static org.jooq.impl.DSL.alterTable;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.cast;
-import static org.jooq.impl.DSL.dropTableIfExists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.inline;
 import static org.jooq.impl.DSL.name;
@@ -24,7 +22,6 @@ import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.quotedName;
 import static org.jooq.impl.DSL.select;
 import static org.jooq.impl.DSL.table;
-import static org.jooq.impl.DSL.update;
 import static org.jooq.impl.DSL.with;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -44,7 +41,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -208,7 +204,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
    * @param includeMetaColumn
    * @return
    */
-  LinkedHashMap<String, DataType<?>> getFinalTableMetaColumns(final boolean includeMetaColumn) {
+  protected LinkedHashMap<String, DataType<?>> getFinalTableMetaColumns(final boolean includeMetaColumn) {
     final LinkedHashMap<String, DataType<?>> metaColumns = new LinkedHashMap<>();
     metaColumns.put(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false));
     metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false));
@@ -246,7 +242,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
       }
     }
     if (minRawTimestamp.isPresent()) {
-      condition = condition.and(field(name(COLUMN_NAME_AB_EXTRACTED_AT)).gt(minRawTimestamp.get().toString()));
+      condition = condition.and(field(name(COLUMN_NAME_AB_EXTRACTED_AT)).gt(formatTimestampLiteral(minRawTimestamp.get())));
     }
     return condition;
   }
@@ -261,15 +257,11 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
     final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
     if (!force) {
-      return transactionally(Stream.concat(
-          Stream.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
-          createIndexSql(stream, suffix).stream()).toList());
+      return Sql.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()));
     }
-    return transactionally(Stream.concat(
-        Stream.of(
-            dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
-            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
-        createIndexSql(stream, suffix).stream()).toList());
+    return transactionally(
+            getDslContext().dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
+            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()));
   }
 
   @Override
@@ -286,10 +278,14 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   @Override
   public Sql overwriteFinalTable(final StreamId stream, final String finalSuffix) {
     return transactionally(
-        dropTableIfExists(name(stream.finalNamespace(), stream.finalName())).getSQL(ParamType.INLINED),
-        alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
-            .renameTo(name(stream.finalName()))
-            .getSQL());
+        getDslContext().dropTableIfExists(name(stream.finalNamespace(), stream.finalName())).getSQL(ParamType.INLINED),
+        renameTable(stream, finalSuffix));
+  }
+
+  protected String renameTable(final StreamId stream, final String finalSuffix) {
+    return getDslContext().alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
+        .renameTo(name(stream.finalName()))
+        .getSQL();
   }
 
   @Override
@@ -299,7 +295,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     return transactionally(
         dsl.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
         dsl.dropTableIfExists(rawTableName).getSQL(),
-        DSL.createTable(rawTableName)
+        dsl.createTable(rawTableName)
             .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
             .column(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false))
             .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType().nullable(false))
@@ -314,7 +310,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
 
   @Override
   public Sql clearLoadedAt(final StreamId streamId) {
-    return Sql.of(update(table(name(streamId.rawNamespace(), streamId.rawName())))
+    return Sql.of(getDslContext().update(table(name(streamId.rawNamespace(), streamId.rawName())))
         .set(field(COLUMN_NAME_AB_LOADED_AT), inline((String) null))
         .getSQL());
   }
@@ -377,8 +373,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
                 .from(filteredRows)
                 .where(field(name(ROW_NUMBER_COLUMN_NAME), Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type
                                                                                  // them.
-            )
-            .getSQL(ParamType.INLINED);
+            ).getSQL(ParamType.INLINED);
 
     // Used for append and overwrite modes.
     final String insertStmt =
@@ -429,14 +424,6 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     return createTableSql.getSQL();
   }
 
-  /**
-   * Subclasses may override this method to add additional indexes after their CREATE TABLE statement.
-   * This is useful if the destination's CREATE TABLE statement does not accept an index definition.
-   */
-  protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
-    return Collections.emptyList();
-  }
-
   protected String beginTransaction() {
     return "BEGIN";
   }
@@ -477,7 +464,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     final DSLContext dsl = getDslContext();
     Condition extractedAtCondition = noCondition();
     if (minRawTimestamp.isPresent()) {
-      extractedAtCondition = extractedAtCondition.and(field(name(COLUMN_NAME_AB_EXTRACTED_AT)).gt(minRawTimestamp.get().toString()));
+      extractedAtCondition = extractedAtCondition.and(field(name(COLUMN_NAME_AB_EXTRACTED_AT)).gt(formatTimestampLiteral(minRawTimestamp.get())));
     }
     return dsl.update(table(quotedName(schemaName, tableName)))
         .set(field(quotedName(COLUMN_NAME_AB_LOADED_AT)), currentTimestamp())
@@ -488,18 +475,17 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   protected Field<?> castedField(
                                  final Field<?> field,
                                  final AirbyteType type,
-                                 final String alias,
                                  final boolean useExpensiveSaferCasting) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
-      return castedField(field, airbyteProtocolType, useExpensiveSaferCasting).as(quotedName(alias));
+      return castedField(field, airbyteProtocolType, useExpensiveSaferCasting);
     }
 
     // Redshift SUPER can silently cast an array type to struct and vice versa.
     return switch (type.getTypeName()) {
-      case Struct.TYPE, UnsupportedOneOf.TYPE -> cast(field, getStructType()).as(quotedName(alias));
-      case Array.TYPE -> cast(field, getArrayType()).as(quotedName(alias));
+      case Struct.TYPE, UnsupportedOneOf.TYPE -> cast(field, getStructType());
+      case Array.TYPE -> cast(field, getArrayType());
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias, useExpensiveSaferCasting);
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), useExpensiveSaferCasting);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
@@ -510,6 +496,14 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
 
   protected Field<Timestamp> currentTimestamp() {
     return DSL.currentTimestamp();
+  }
+
+  /**
+   * Some destinations (mysql) can't handle timestamps in ISO8601 format with 'Z' suffix.
+   * This method allows subclasses to format timestamps according to destination-specific needs.
+   */
+  protected String formatTimestampLiteral(final Instant instant) {
+    return instant.toString();
   }
 
 }

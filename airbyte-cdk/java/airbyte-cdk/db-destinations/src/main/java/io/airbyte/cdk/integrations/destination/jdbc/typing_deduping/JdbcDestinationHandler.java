@@ -32,6 +32,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
@@ -44,11 +47,14 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   protected final String databaseName;
   protected final JdbcDatabase jdbcDatabase;
+  private final SQLDialect dialect;
 
   public JdbcDestinationHandler(final String databaseName,
-                                final JdbcDatabase jdbcDatabase) {
+                                final JdbcDatabase jdbcDatabase,
+                                final SQLDialect dialect) {
     this.databaseName = databaseName;
     this.jdbcDatabase = jdbcDatabase;
+    this.dialect = dialect;
   }
 
   @Override
@@ -57,14 +63,14 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
   }
 
   @Override
-  public LinkedHashMap<String, TableDefinition> findExistingFinalTables(List<StreamId> streamIds) throws Exception {
+  public LinkedHashMap<String, TableDefinition> findExistingFinalTables(final List<StreamId> streamIds) throws Exception {
     return null;
   }
 
   @Override
   public boolean isFinalTableEmpty(final StreamId id) throws Exception {
     return !jdbcDatabase.queryBoolean(
-        select(
+        getDslContext().select(
             field(exists(
                 selectOne()
                     .from(name(id.finalNamespace(), id.finalName()))
@@ -74,11 +80,11 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   @Override
   public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
-    boolean tableExists = jdbcDatabase.executeMetadataQuery(dbmetadata -> {
+    final boolean tableExists = jdbcDatabase.executeMetadataQuery(dbmetadata -> {
       LOGGER.info("Retrieving table from Db metadata: {} {} {}", databaseName, id.rawNamespace(), id.rawName());
       try (final ResultSet table = dbmetadata.getTables(databaseName, id.rawNamespace(), id.rawName(), null)) {
         return table.next();
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         LOGGER.error("Failed to retrieve table info from metadata", e);
         throw new SQLRuntimeException(e);
       }
@@ -94,7 +100,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     // but it's also the only method in the JdbcDatabase interface to return non-string/int types
     try (final Stream<Timestamp> timestampStream = jdbcDatabase.unsafeQuery(
         conn -> conn.prepareStatement(
-            select(field("MIN(_airbyte_extracted_at)").as("min_timestamp"))
+            getDslContext().select(field("MIN(_airbyte_extracted_at)").as("min_timestamp"))
                 .from(name(id.rawNamespace(), id.rawName()))
                 .where(DSL.condition("_airbyte_loaded_at IS NULL"))
                 .getSQL()),
@@ -113,7 +119,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     // This second query just finds the newest raw record.
     try (final Stream<Timestamp> timestampStream = jdbcDatabase.unsafeQuery(
         conn -> conn.prepareStatement(
-            select(field("MAX(_airbyte_extracted_at)").as("min_timestamp"))
+            getDslContext().select(field("MAX(_airbyte_extracted_at)").as("min_timestamp"))
                 .from(name(id.rawNamespace(), id.rawName()))
                 .getSQL()),
         record -> record.getTimestamp("min_timestamp"))) {
@@ -182,6 +188,11 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     }
 
     return Optional.of(new TableDefinition(retrievedColumnDefns));
+  }
+
+  @NotNull
+  protected DSLContext getDslContext() {
+    return DSL.using(dialect);
   }
 
 }

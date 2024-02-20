@@ -50,6 +50,7 @@ import java.util.function.Consumer;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -249,9 +250,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
 
   protected abstract JdbcSqlGenerator getSqlGenerator();
 
-  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
-    return new JdbcDestinationHandler(databaseName, database);
-  }
+  protected abstract JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database);
 
   /**
    * "database" key at root of the config json, for any other variants in config, override this
