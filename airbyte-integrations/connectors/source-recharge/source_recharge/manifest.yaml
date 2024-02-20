@@ -136,9 +136,6 @@ definitions:
       $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever_api_deprecated"
-    # $parameters:
-    #     start_date: "{{ config['start_date'] }}"
-    #     raise_on_http_errors: true
   
   base_modern_api_stream:
     primary_key: "id"
@@ -150,26 +147,10 @@ definitions:
   # BASE INCREMENTAL STREAMS
   base_deprecated_api_incremental_stream:
     $ref: "#/definitions/base_deprecated_api_stream"
-    # incremental_sync:
-    #   type: CustomIncrementalSync
-    #   class_name: source_recharge.components.RechargeDateTimeBasedCursor
-    #   cursor_field: "updated_at"
-    #   cursor_datetime_formats:
-    #     - '%Y-%m-%dT%H:%M:%S%z'
-    #   datetime_format: '%Y-%m-%dT%H:%M:%S%z'
-    #   start_datetime:
-    #     type: MinMaxDatetime
-    #     datetime: '{{ config[''start_date''] }}'
-    #     datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-    #   start_time_option:
-    #     inject_into: request_parameter
-    #     type: RequestOption
-    #     field_name: 'updated_at_min'
   
   base_modern_api_incremental_stream:
     $ref: "#/definitions/base_modern_api_stream"
     incremental_sync:
-      # type: DatetimeBasedCursor
       # The custom incremental sync was applied because,
       # the cursor for the close_slice() method is determined as NOW(), 
       # instead of the real cursor field (updated_at) value from the record.
