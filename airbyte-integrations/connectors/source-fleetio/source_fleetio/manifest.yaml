@@ -44,6 +44,9 @@ streams:
       partition_router: []
     primary_key:
       - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/submitted_inspection_forms.json"
   - name: issues
     type: DeclarativeStream
     retriever:
@@ -83,6 +86,9 @@ streams:
       partition_router: []
     primary_key:
       - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/issues.json" 
   - name: service_entries
     type: DeclarativeStream
     retriever:
@@ -122,6 +128,9 @@ streams:
       partition_router: []
     primary_key:
       - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/service_entries.json" 
   - name: vehicles
     type: DeclarativeStream
     retriever:
@@ -161,6 +170,9 @@ streams:
       partition_router: []
     primary_key:
       - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/vehicles.json"
   - name: expense_entries
     type: DeclarativeStream
     retriever:
@@ -200,6 +212,9 @@ streams:
       partition_router: []
     primary_key:
       - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/expense_entries.json"
   - name: contacts
     type: DeclarativeStream
     retriever:
@@ -239,6 +254,9 @@ streams:
       partition_router: []
     primary_key:
       - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/contacts.json" 
   - name: fuel_entries
     type: DeclarativeStream
     retriever:
@@ -278,6 +296,9 @@ streams:
       partition_router: []
     primary_key:
       - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/fuel_entries.json"
   - name: parts
     type: DeclarativeStream
     retriever:
@@ -317,6 +338,9 @@ streams:
       partition_router: []
     primary_key:
       - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/parts.json"
   - name: purchase_orders
     type: DeclarativeStream
     retriever:
@@ -356,6 +380,9 @@ streams:
       partition_router: []
     primary_key:
       - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/purchase_orders.json"
   - name: vehicle_assignments
     type: DeclarativeStream
     retriever:
@@ -395,6 +422,9 @@ streams:
       partition_router: []
     primary_key:
       - id
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_fleetio/schemas/vehicle_assignments.json"
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
