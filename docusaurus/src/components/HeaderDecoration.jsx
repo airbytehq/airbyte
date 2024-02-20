@@ -38,6 +38,7 @@ export const HeaderDecoration = ({
   const isOss = isOssString.toUpperCase() === "TRUE";
   const isCloud = isCloudString.toUpperCase() === "TRUE";
   const isPypiPublished = isPypiPublishedString.toUpperCase() === "TRUE";
+  const isArchived = supportLevel.toUpperCase() === "ARCHIVED";
 
   return (
     <>
@@ -51,13 +52,17 @@ export const HeaderDecoration = ({
             <span className={isOss ? styles.available : styles.unavailable}>
               {isOss ? CHECK_ICON : CROSS_ICON} Airbyte OSS
             </span>
-            {isPypiPublished && <a href="#usage-with-airbyte-lib" className={styles.available}>{CHECK_ICON} airbyte_lib</a>}
+            {isPypiPublished && (
+              <a href="#usage-with-airbyte-lib" className={styles.available}>
+                {CHECK_ICON} airbyte_lib
+              </a>
+            )}
           </dd>
         </div>
         <div>
           <dt>Support Level</dt>
           <dd>
-            <a href="/project-overview/product-support-levels/">
+            <a href="/integrations/connector-support-levels/">
               {capitalizeFirstLetter(supportLevel)}
             </a>
           </dd>
@@ -74,9 +79,16 @@ export const HeaderDecoration = ({
 
       <div className={styles.header}>
         <img src={iconUrl} alt="" className={styles.connectorIcon} />
-        <h1 id={originalId}>{originalTitle}</h1>
+        <h1 id={originalId}>
+          {isArchived ? (
+            <span>
+              {originalTitle} <span style={{ color: "red" }}>[ARCHIVED]</span>
+            </span>
+          ) : (
+            originalTitle
+          )}
+        </h1>
       </div>
     </>
   );
 };
-
