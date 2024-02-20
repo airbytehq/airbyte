@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk==0.1.6",
-    "appstoreconnect==0.9.0",
+    "appstoreconnect==0.10.1",
     "asn1crypto==1.4.0",
     "certifi==2021.10.8",
     "cffi==1.15.0",
