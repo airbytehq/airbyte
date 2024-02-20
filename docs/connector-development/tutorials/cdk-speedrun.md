@@ -117,17 +117,17 @@ cd ..
 mkdir sample_files
 echo '{"pokemon_name": "pikachu"}'  > sample_files/config.json
 echo '{"pokemon_name": "chikapu"}'  > sample_files/invalid_config.json
-python main.py check --config sample_files/config.json
-python main.py check --config sample_files/invalid_config.json
+poetry run source-python-http-example check --config sample_files/config.json
+poetry run source-python-http-example check --config sample_files/invalid_config.json
 ```
 
 Expected output:
 
-```text
-> python main.py check --config sample_files/config.json
+```bash
+> poetry run source-python-http-example check --config sample_files/config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "SUCCEEDED"}}
 
-> python main.py check --config sample_files/invalid_config.json
+> poetry run source-python-http-example check --config sample_files/invalid_config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "FAILED", "message": "'Input Pokemon chikapu is invalid. Please check your spelling our input a valid Pokemon.'"}}
 ```
 
