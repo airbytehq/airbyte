@@ -384,7 +384,7 @@ class Stream(HttpStream, ABC):
         self._credentials = credentials
 
         self._start_date = start_date
-        if self._start_date and isinstance(self._start_date, str):
+        if isinstance(self._start_date, str):
             try:
                 self._start_date = pendulum.parse(self._start_date)
             except pendulum.parsing.exceptions.ParserError as e:
@@ -517,7 +517,6 @@ class Stream(HttpStream, ABC):
 
                 if self.filter_old_records:
                     records = self._filter_old_records(records)
-
                 yield from self.record_unnester.unnest(records)
 
                 next_page_token = self.next_page_token(response)
@@ -680,7 +679,7 @@ class Stream(HttpStream, ABC):
             updated_at = record[self.updated_at_field]
             if updated_at:
                 updated_at = self._field_to_datetime(updated_at)
-                if self._start_date and updated_at < self._start_date:
+                if updated_at < self._start_date:
                     continue
             yield record
 
@@ -873,16 +872,13 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
             state_value = (
                 self._start_date if str(state_value) == "" else pendulum.from_format(str(state_value), self.cursor_field_datetime_format)
             )
-        # if start date or state exists, else retrieve all records
-        if state_value:
-            # compare the state with record values and get the max value between of two
-            cursor_value = max(state_value, record_value)
-            max_state = max(str(self.state.get(self.cursor_field)), cursor_value.format(self.cursor_field_datetime_format))
-            # save the state
-            self.state = {self.cursor_field: int(max_state) if int_field_type else max_state}
-            # emmit record if it has bigger cursor value compare to the state (`True` only)
-            return record_value > state_value
-        return True
+        # compare the state with record values and get the max value between of two
+        cursor_value = max(state_value, record_value)
+        max_state = max(str(self.state.get(self.cursor_field)), cursor_value.format(self.cursor_field_datetime_format))
+        # save the state
+        self.state = {self.cursor_field: int(max_state) if int_field_type else max_state}
+        # emmit record if it has bigger cursor value compare to the state (`True` only)
+        return record_value > state_value
 
     def read_records(
         self,
@@ -970,7 +966,6 @@ class IncrementalStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
-
         latest_cursor = None
         for record in records:
             cursor = self._field_to_datetime(record[self.updated_at_field])
@@ -1030,26 +1025,13 @@ class IncrementalStream(Stream, ABC):
         if is_last_record:
             self._state = self._init_sync
 
-    def set_start_date(self):
-        # if start date is not defined stream gets date value from first record in updated at field
-        if not self._start_date:
-            records = self.read_records(sync_mode=SyncMode.full_refresh, stream_slice=None)
-            first_record = next(records)
-            created_at = first_record[self.created_at_field]
-            if isinstance(created_at, int):
-                self._start_date = pendulum.from_timestamp(created_at / 1000)
-            if isinstance(created_at, str):
-                self._start_date = pendulum.parse(created_at)
-
-            self.logger.info(f"Using {self._start_date} as start date for stream {self.name}.")
-
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self.set_start_date()
         self.set_sync(sync_mode)
         chunk_size = pendulum.duration(days=30)
         slices = []
+
         now_ts = int(pendulum.now().timestamp() * 1000)
         start_ts = int(self._start_date.timestamp() * 1000)
         max_delta = now_ts - start_ts
@@ -1085,7 +1067,6 @@ class CRMSearchStream(IncrementalStream, ABC):
     limit = 100  # This value is used only when state is None.
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
     last_modified_field: str = None
     associations: List[str] = None
     fully_qualified_name: str = None
@@ -1240,17 +1221,8 @@ class CRMSearchStream(IncrementalStream, ABC):
         self.set_sync(sync_mode, stream_state)
         return [None]
 
-    def set_start_date(self):
-        # if start date is not defined stream gets date value from first record in updated at field
-        if not self._start_date:
-            records = self.read_records(sync_mode=SyncMode.full_refresh, stream_slice=None)
-            first_record = next(records)
-            self._start_date = pendulum.parse(first_record[self.created_at_field])
-            self.logger.info(f"Using {self._start_date} as start date for stream {self.name}")
-
     def set_sync(self, sync_mode: SyncMode, stream_state):
         self._sync_mode = sync_mode
-        self.set_start_date()
         if self._sync_mode == SyncMode.incremental:
             if stream_state:
                 if not self._state:
@@ -1583,9 +1555,6 @@ class EngagementsRecent(EngagementsABC):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self._start_date:
-            self._start_date = pendulum.now().subtract(days=self.last_days_limit)
-
         if self._start_date < pendulum.now() - timedelta(days=self.last_days_limit):
             raise EngagementsRecentError(
                 '"Recent engagements" API returns records updated in the last 30 days only. '
@@ -1601,11 +1570,10 @@ class EngagementsRecent(EngagementsABC):
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params.update(
             {
+                "since": int(self._start_date.timestamp() * 1000),
                 "count": 100,
             }
         )
-        if self._start_date:
-            params.update({"since": int(self._start_date.timestamp() * 1000)})
         return params
 
     def parse_response(
@@ -2149,14 +2117,6 @@ class SubscriptionChanges(IncrementalStream):
     more_key = "hasMore"
     updated_at_field = "timestamp"
     scopes = {"content"}
-    # we use default time 3 year ago if start date was not provided,
-    # as behavior in base cass is not suitable as records are returned in desc order
-    default_subtract_years = 3
-
-    def set_start_date(self):
-        if not self._start_date:
-            self._start_date = pendulum.now().subtract(years=self.default_subtract_years)
-            self.logger.info(f"Using {self._start_date} as start date for stream {self.name}")
 
 
 class Workflows(ClientSideIncrementalStream):
@@ -2448,34 +2408,31 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
 
             object_id = parent_slice["parent"][self.object_id_field]
 
-            if self._start_date:
-                # Take the initial datetime either form config or from state depending whichever value is higher
-                # In case when state is detected add a 1 millisecond to avoid duplicates from previous sync
-                from_datetime = (
-                    max(
-                        self._start_date,
-                        self._field_to_datetime(self.state[object_id][self.cursor_field]) + timedelta(milliseconds=1),
-                    )
-                    if object_id in self.state
-                    else self._start_date
+            # Take the initial datetime either form config or from state depending whichever value is higher
+            # In case when state is detected add a 1 millisecond to avoid duplicates from previous sync
+            from_datetime = (
+                max(
+                    self._start_date,
+                    self._field_to_datetime(self.state[object_id][self.cursor_field]) + timedelta(milliseconds=1),
                 )
+                if object_id in self.state
+                else self._start_date
+            )
 
-                # Making slices of given slice period
-                while (
-                    (to_datetime := min(from_datetime.add(days=self.slicing_period), now)) <= now
-                    and from_datetime != now
-                    and from_datetime <= to_datetime
-                ):
-                    yield {
-                        "occurredAfter": from_datetime.to_iso8601_string(),
-                        "occurredBefore": to_datetime.to_iso8601_string(),
-                        "objectId": object_id,
-                        "objectType": self.object_type,
-                    }
-                    # Shift time window to the next checkpoint interval
-                    from_datetime = to_datetime
-            else:
-                yield {"objectId": object_id, "objectType": self.object_type}
+            # Making slices of given slice period
+            while (
+                (to_datetime := min(from_datetime.add(days=self.slicing_period), now)) <= now
+                and from_datetime != now
+                and from_datetime <= to_datetime
+            ):
+                yield {
+                    "occurredAfter": from_datetime.to_iso8601_string(),
+                    "occurredBefore": to_datetime.to_iso8601_string(),
+                    "objectId": object_id,
+                    "objectType": self.object_type,
+                }
+                # Shift time window to the next checkpoint interval
+                from_datetime = to_datetime
 
     @property
     def object_type(self) -> str:
