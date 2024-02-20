@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import pendulum
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.logger import AirbyteLogFormatter
@@ -21,7 +22,9 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from dateutil.relativedelta import relativedelta
+from pendulum.parsing.exceptions import ParserError
 from requests import codes, exceptions  # type: ignore[import]
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -70,7 +73,24 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         sf.login()
         return sf
 
+    @staticmethod
+    def _validate_stream_slice_step(stream_slice_step: str):
+        if stream_slice_step:
+            try:
+                duration = pendulum.parse(stream_slice_step)
+                if not isinstance(duration, pendulum.Duration):
+                    message = "Stream slice step Interval should be provided in ISO 8601 format."
+                elif duration < pendulum.Duration(seconds=1):
+                    message = "Stream slice step Interval is too small. It should be no less than 1 second. Please set higher value and try again."
+                else:
+                    return
+                raise ParserError(message)
+            except ParserError as e:
+                internal_message = "Incorrect stream slice step"
+                raise AirbyteTracedException(failure_type=FailureType.config_error, internal_message=internal_message, message=e.args[0])
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
+        self._validate_stream_slice_step(config.get("stream_slice_step"))
         try:
             salesforce = self._get_sf_object(config)
             salesforce.describe()

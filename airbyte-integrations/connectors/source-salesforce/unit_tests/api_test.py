@@ -41,6 +41,30 @@ _ANY_STATE = None
 
 
 @pytest.mark.parametrize(
+    "stream_slice_step, expected_error_message",
+    [
+        ("2023", "Stream slice step Interval should be provided in ISO 8601 format."),
+        ("PT0.1S", "Stream slice step Interval is too small. It should be no less than 1 second."),
+        ("PT1D", "Unable to parse string"),
+        ("P221S", "Unable to parse string"),
+    ],
+    ids=[
+        "incorrect_ISO_8601_format",
+        "too_small_duration_provided",
+        "incorrect_date_format",
+        "incorrect_time_format",
+    ],
+)
+def test_stream_slice_step_validation(stream_slice_step: str, expected_error_message):
+    _ANY_CONFIG.update({"stream_slice_step": stream_slice_step})
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    logger = logging.getLogger("airbyte")
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check_connection(logger, _ANY_CONFIG)
+    assert expected_error_message in e.value.message
+
+
+@pytest.mark.parametrize(
     "login_status_code, login_json_resp, expected_error_msg, is_config_error",
     [
         (
@@ -862,15 +886,11 @@ def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_
 @pytest.mark.parametrize(
     "lookback, stream_slice_step, expected_len_stream_slices, expect_error",
     [(None, "P30D", 0, True), (0, "P30D", 158, False), (10, "P1D", 4732, False), (10, "PT12H", 9463, False), (-1, "P30D", 0, True)],
-    ids=[
-        "lookback-is-none",
-        "lookback-is-0-step-30D",
-        "lookback-is-valid-step-1D",
-        "lookback-is-valid-step-12H",
-        "lookback-is-negative"
-    ],
+    ids=["lookback-is-none", "lookback-is-0-step-30D", "lookback-is-valid-step-1D", "lookback-is-valid-step-12H", "lookback-is-negative"],
 )
-def test_bulk_stream_slices(stream_config_date_format, stream_api, lookback, expect_error, stream_slice_step: str, expected_len_stream_slices: int):
+def test_bulk_stream_slices(
+    stream_config_date_format, stream_api, lookback, expect_error, stream_slice_step: str, expected_len_stream_slices: int
+):
     stream_config_date_format["stream_slice_step"] = stream_slice_step
     stream: BulkIncrementalSalesforceStream = generate_stream("FakeBulkStream", stream_config_date_format, stream_api)
     with patch("source_salesforce.streams.LOOKBACK_SECONDS", lookback):
