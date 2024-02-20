@@ -2,7 +2,7 @@
 <Configuration status="INFO">
     <Properties>
         <!-- Set the LOG_SCRUB_PATTERN env var to a regex pattern to scrub the log messages of secrets or any other unwanted content. -->
-        <Property name="jvm-log-pattern">%d{yyyy-MM-dd'T'HH:mm:ss,SSS}{GMT+0}`%highlight{%p}`%C{1.}(%M):%L - %replace{%m}{$${env:LOG_SCRUB_PATTERN:-\*\*\*\*\*}}{*****}%n</Property>
+        <Property name="jvm-log-pattern">%d{yyyy-MM-dd'T'HH:mm:ss,SSS}{GMT+0} %thread `%highlight{%p}`%C{1.}(%M):%L - %replace{%m}{$${env:LOG_SCRUB_PATTERN:-\*\*\*\*\*}}{*****}%n</Property>
         <!--Logs the timestamp and log_source/application name in the beginning of the line if it exists with a > separator, and then always the rest of the line.-->
         <Property name="container-log-pattern">%d{yyyy-MM-dd'T'HH:mm:ss,SSS}{GMT+0}`%replace{ %X{log_source}}{^ -}{} > %replace{%m}{$${env:LOG_SCRUB_PATTERN:-\*\*\*\*\*}}{*****}%n</Property>
         <!-- Always log INFO by default. -->
