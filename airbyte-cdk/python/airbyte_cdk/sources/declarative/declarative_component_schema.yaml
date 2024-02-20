@@ -1988,6 +1988,10 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
+      ignore_stream_slicer_parameters_on_paginated_requests:
+        description: If true, the stream slicer parameters will be ignored when paginating requests. This is useful when the stream slicer parameters are not needed for pagination.
+        type: boolean
+        default: false
       partition_router:
         title: Partition Router
         description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.
