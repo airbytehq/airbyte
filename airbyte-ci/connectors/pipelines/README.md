@@ -640,6 +640,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.2.5   | [#35437](https://github.com/airbytehq/airbyte/pull/35437)  | Do not run QA checks on publish, just MetadataValidation.                                                             |
 | 4.2.4   | [#35325](https://github.com/airbytehq/airbyte/pull/35325)  | Use `connectors_qa` for QA checks and remove redundant checks.                                                             |
 | 4.2.3   | [#35322](https://github.com/airbytehq/airbyte/pull/35322)  | Declare `connectors_qa` as an internal package for testing.                                                                |
 | 4.2.2   | [#35364](https://github.com/airbytehq/airbyte/pull/35364)  | Fix connector tests following gradle changes in #35307.                                                                    |
