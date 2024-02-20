@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
     "appstoreconnect==0.9.0",
     "pyjwt==1.6.4",
-    "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/v0.2.1-airbyte",
+    "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/v0.2.1",
 ]
 
 TEST_REQUIREMENTS = [
