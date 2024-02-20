@@ -221,7 +221,6 @@ class MongoDbCdcInitializerTest {
 
   @Test
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetFailOption() {
-    MongoDbSourceConfig resyncConfig = new MongoDbSourceConfig(createConfig(FAIL_SYNC_OPTION));
     when(changeStreamIterable.cursor())
         .thenReturn(mongoChangeStreamCursor)
         .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
