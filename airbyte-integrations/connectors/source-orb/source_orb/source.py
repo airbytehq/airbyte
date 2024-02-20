@@ -591,7 +591,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         # to enrich with event metadata.
         event_id_to_ledger_entries = {}
         min_created_at_timestamp = pendulum.now()
-        max_created_at_timestamp = pendulum.from_timestamp(0)
+        max_created_at_timestamp = pendulum.now()
 
         for entry in ledger_entries:
             maybe_event_id: Optional[str] = entry.get("event_id")
