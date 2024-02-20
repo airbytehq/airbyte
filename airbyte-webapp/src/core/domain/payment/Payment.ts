@@ -6,22 +6,22 @@ export const PlanItemTypeEnum = {
   Support: "Support",
 } as const;
 
-export type PlanItemType = typeof PlanItemTypeEnum[keyof typeof PlanItemTypeEnum];
+export type PlanItemType = (typeof PlanItemTypeEnum)[keyof typeof PlanItemTypeEnum];
 
 export interface PlanItem {
-  planItemid: string;
-  planItemType: PlanItemType;
-  planItemTypeLang: string;
-  planItemName: string;
-  planItemScope: string | boolean;
-  planItemScopeLang: string;
+  planItemid?: string;
+  planItemType?: PlanItemType;
+  planItemTypeLang?: string;
+  planItemName?: string;
+  planItemScope?: string | boolean;
+  planItemScopeLang?: string;
 }
 
 export interface PlanDetail {
-  name: string;
+  name?: string;
   expiresTime: number;
   selectedProduct?: ProductItem;
-  planDetail: PlanItem[];
+  planDetail?: PlanItem[];
 }
 
 export interface UserPlanDetail {
@@ -33,7 +33,7 @@ export interface CreateSunscriptionUrl {
 }
 
 export interface GetUpgradeSubscriptionParams {
-  productItemId: string;
+  cloudPackageId: string;
   testProrationDate?: number;
 }
 
@@ -43,6 +43,11 @@ export interface GetUpgradeSubscriptionDetail {
   productItemName: string;
   productItemPrice: number;
   expiresTime: number;
+  regions?: any;
+  cloudProviderName?: string;
+  region?: string;
+  instanceSizeName?: string;
+  paymentOrderId?: any;
 }
 
 export interface GetFailedPaymentDetail extends GetUpgradeSubscriptionDetail {
