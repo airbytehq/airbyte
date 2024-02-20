@@ -12,7 +12,8 @@ RUN apk --no-cache upgrade \
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
-RUN pip install --prefix=/install .
+RUN pip install pip==21.2.4 poetry==1.7.1
+RUN pip install --no-build-isolation --prefix=/install .
 
 # build a clean environment
 FROM base
@@ -34,5 +35,5 @@ COPY source_appstore_singer ./source_appstore_singer
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.7
+LABEL io.airbyte.version=0.3.0
 LABEL io.airbyte.name=airbyte/source-appstore-singer

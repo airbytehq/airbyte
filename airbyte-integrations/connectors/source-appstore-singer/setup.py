@@ -6,10 +6,15 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk==0.1.6",
     "appstoreconnect==0.9.0",
+    "asn1crypto==1.4.0",
+    "certifi==2021.10.8",
+    "cffi==1.15.0",
+    "cryptography==2.6.1",
+    "pendulum==2.1.2",
     "pyjwt==1.6.4",
-    "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/v0.2.1",
+    "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/v0.3.0",
 ]
 
 TEST_REQUIREMENTS = [
