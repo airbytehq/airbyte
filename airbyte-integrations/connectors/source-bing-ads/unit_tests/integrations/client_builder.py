@@ -11,7 +11,7 @@ def response_with_status(resource: str, status_code: int) -> HttpResponse:
     return HttpResponse(json.dumps(find_template(resource, __file__)), status_code)
 
 
-def build_request(config: Dict[str, Any]):
+def build_request(config: Dict[str, Any]) -> HttpRequest:
     body = (
         f"client_id={config['client_id']}"
         f"&client_secret={config['client_secret']}"

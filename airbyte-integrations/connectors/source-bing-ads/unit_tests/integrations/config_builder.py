@@ -23,8 +23,12 @@ class ConfigBuilder:
         self._refresh_token: str = REFRESH_TOKEN
         self._developer_token: str = DEVELOPER_TOKEN
         self._tenant_id: str = TENNANT_ID
-        self._report_start_date: str = "2020-12-18"
+        self._report_start_date: str = None
         self._lookback_window: int = LOOKBACK_WINDOW
+
+    def with_reports_start_date(self, start_date: str) -> "ConfigBuilder":
+        self._report_start_date = start_date
+        return self
 
     def build(self) -> Dict[str, Any]:
         config = {
