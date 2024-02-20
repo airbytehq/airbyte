@@ -37,12 +37,12 @@ spec:
         description: "A channel name list (without leading '#' char) which limit the channels from which you'd like to sync. Empty list means no filter."
         examples: ["channel_one", "channel_two"]
       lookback_window:
-        type: "integer",
-        title: "Threads Lookback window (Days)",
-        description: "How far into the past to look for messages in threads, default is 0 days",
-        examples: [7, 14],
-        minimum: 0,
-        default: 0,
+        type: "integer"
+        title: "Threads Lookback window (Days)"
+        description: "How far into the past to look for messages in threads, default is 0 days"
+        examples: [7, 14]
+        minimum: 0
+        default: 0
         maximum: 365
     additionalProperties: true
 
@@ -183,6 +183,7 @@ definitions:
       name: channel_messages
       path: conversations.history
       field_path: messages
+      use_lookback_window: false
     primary_key:
       - channel_id
       - ts
@@ -197,6 +198,7 @@ definitions:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: float_ts
+      lookback_window: "P{{ config['lookback_window'] if parameters.use_lookback_window else 0 }}D"
       cursor_datetime_formats:
         - '%s'
       datetime_format: '%s'
@@ -230,6 +232,14 @@ definitions:
               - channel_id
             value: '{{ stream_partition[''channel_id''] }}'
 
+  channel_messages_stream_lookback:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: channel_messages
+      path: conversations.history
+      field_path: messages
+      lookback_window: 0
+
   threads_stream:
     $ref: "#/definitions/stream_base"
     $parameters:
@@ -255,7 +265,13 @@ definitions:
         class_name: "source_slack.components.ThreadsPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/channel_messages_stream"
+            stream:
+              $ref: "#/definitions/channel_messages_stream"
+              $parameters:
+                name: channel_messages
+                path: conversations.history
+                field_path: messages
+                use_lookback_window: true
             parent_key: channel_id
             partition_field: channel
             request_option:
