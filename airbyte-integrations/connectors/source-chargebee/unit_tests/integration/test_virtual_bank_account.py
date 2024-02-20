@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 from unittest import TestCase
 
 import freezegun
-import isodate
+from isodate import Duration, parse_duration
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
@@ -89,38 +89,26 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_one_page_of_records_read_and_returned(self, http_mocker: HttpMocker) -> None:
-        # Tests simple read
-
-        # slices = []
-        # start_date = self._start_date
-        # while start_date <= self._now:
-        #     slice = { "start_date": start_date, "end_date": None }
-        #     if start_date + isodate.parse_duration("P1M").totimedelta(start=start_date) >= self._now:
-        #         slice["end_date"] = self._now
-        #     else:
-        #         slice["end_date"] = start_date + isodate.parse_duration("P1M").totimedelta(start=start_date)
-        #     slices.insert(0, slice)
-        #     start_date = slice["end_date"] + timedelta(seconds=1)
-
-        # for slice in slices:
-        #     slice_start_date_in_seconds = int(slice["start_date"].timestamp())
-        #     slice_end_date_in_seconds = int(slice["end_date"].timestamp())
-        #     print("\n", slice_start_date_in_seconds, slice_end_date_in_seconds)
-        #     http_mocker.get(
-        #         _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([slice_start_date_in_seconds, slice_end_date_in_seconds]).build(),
-        #         _a_response().with_record(_a_record()).build()
-        #     )
         http_mocker.get(
-            _a_request().with_any_query_params().build(),
+            _a_request().with_sort_by_asc("updated_at").with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).build(),
             _a_response().with_record(_a_record()).with_record(_a_record()).build()
         )
-        output = self._read(_config().with_start_date(self._start_date))
+        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
         assert len(output.records) == 2
 
     @HttpMocker()
     def test_given_multiple_pages_of_records_read_and_returned(self, http_mocker: HttpMocker) -> None:
         # Tests pagination
-        print("todo")
+        http_mocker.get(
+            _a_request().with_sort_by_asc("updated_at").with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).build(),
+            _a_response().with_pagination().with_record(_a_record()).build()
+        )
+        http_mocker.get(
+            _a_request().with_sort_by_asc("updated_at").with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).with_offset('[1707076198000,57873868]').build(),
+            _a_response().with_record(_a_record()).with_record(_a_record()).build()
+        )
+        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
+        assert len(output.records) == 3
 
     @HttpMocker()
     def test_given_http_status_400_when_read_then_stream_is_ignored(self, http_mocker: HttpMocker) -> None:
@@ -177,23 +165,13 @@ class FullRefreshTest(TestCase):
         output = self._read(_config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.system_error
 
-    @HttpMocker()
-    def test_when_read_then_validate_availability_for_full_refresh_and_incremental(self, http_mocker: HttpMocker) -> None:
-        request = _a_request().with_any_query_params().build()
-        http_mocker.get(
-            request,
-            _a_response().build(),
-        )
-        self._read(_config().with_start_date(self._start_date))
-        http_mocker.assert_number_of_calls(request, 3)  # one call for full_refresh availability, one call for incremental availability and one call for the actual read
-
-@freezegun.freeze_time(datetime.now())
+@freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):
 
     def setUp(self) -> None:
-        self._now = _NOW - timedelta(hours=8)
+        self._now = _NOW
         self._now_in_seconds = int(self._now.timestamp())
-        self._start_date = (_NOW - timedelta(days=90))
+        self._start_date = _NOW - timedelta(days=60)
         self._start_date_in_seconds = int(self._start_date.timestamp())
 
     @staticmethod
@@ -201,39 +179,28 @@ class IncrementalTest(TestCase):
         return _read(config, SyncMode.incremental, state, expecting_exception=expecting_exception)
 
     @HttpMocker()
-    def test_given_no_initial_state_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
+    def test_given_no_initial_state_when_read_then_return_state_based_on_most_recently_read_slice(self, http_mocker: HttpMocker) -> None:
         # Tests setting state when no initial state is provided
         cursor_value = self._start_date_in_seconds + 1
         http_mocker.get(
             _a_request().with_any_query_params().build(),
             _a_response().with_record(_a_record().with_cursor(cursor_value)).build()
         )
-        output = self._read(_config().with_start_date(self._start_date), _NO_STATE)
-        assert len(output.records) == 3 # one record for each slice
+        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), _NO_STATE)
         assert output.most_recent_state == { _STREAM_NAME: {_CURSOR_FIELD: str(self._now_in_seconds) }}
+        assert len(output.state_messages) == 2 # one state message for each slice, slice step duration is defined in manifest
+        assert len(output.records) == 2 # one record for each slice, slice step duration is defined in manifest
 
     @HttpMocker()
-    def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
-        # Tests updating query params with state
-        state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: self._start_date}).build()
+    def test_given_initial_state_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
+        # Tests updating query param with state
+        state_cursor_value = int((self._start_date + timedelta(days=31)).timestamp())
+        state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_cursor_value}).build()
         http_mocker.get(
-            _a_request().with_any_query_params().build(),
-            _a_response().with_record(_a_record()).build(),
+            _a_request().with_sort_by_asc("updated_at").with_include_deleted(True).with_updated_at_btw([state_cursor_value, self._now_in_seconds]).build(),
+            _a_response().with_record(_a_record().with_cursor(self._now_in_seconds - 1)).build(),
         )
-        output = self._read(_config().with_start_date(self._start_date), state)
-        assert len(output.records) == 3 # one record for each slice
+        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), state)
+        assert len(output.state_messages) == 1 # one state message for each slice, slice step duration is defined in manifest
+        assert len(output.records) == 1 # one record for each slice, slice step duration is defined in manifest
         assert output.most_recent_state == { _STREAM_NAME: {_CURSOR_FIELD: str(self._now_in_seconds) }}
-
-    @HttpMocker()
-    def test_given_state_more_recent_than_cursor_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
-        # Tests properly setting state with cursor field instead of more recent state
-        cursor_value = self._start_date_in_seconds + 1
-        more_recent_than_record_cursor = self._now_in_seconds - 1
-        more_recent_state = StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: more_recent_than_record_cursor }).build()
-        http_mocker.get(
-            _a_request().with_any_query_params().build(),
-            _a_response().with_record(_a_record().with_field(NestedPath([_STREAM_NAME, _CURSOR_FIELD]), cursor_value)).build()
-        )
-        output = self._read(_config().with_start_date(self._start_date), more_recent_state)
-        assert len(output.records) == 3 # one record for each slice
-        assert output.most_recent_state == { _STREAM_NAME: { _CURSOR_FIELD: str(self._now_in_seconds) }}
