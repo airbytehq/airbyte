@@ -99,7 +99,16 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_multiple_pages_of_records_read_and_returned(self, http_mocker: HttpMocker) -> None:
         # Tests pagination
-        print("todo")
+        http_mocker.get(
+            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).build(),
+            _a_response().with_pagination().with_record(_a_record()).build()
+        )
+        http_mocker.get(
+            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).with_offset('[1707076198000,57873868]').build(),
+            _a_response().with_record(_a_record()).with_record(_a_record()).build()
+        )
+        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
+        assert len(output.records) == 3
 
     @HttpMocker()
     def test_given_records_returned_with_custom_field_transformation(self, http_mocker: HttpMocker) -> None:
@@ -165,27 +174,42 @@ class FullRefreshTest(TestCase):
         output = self._read(_config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.system_error
 
-@freezegun.freeze_time(datetime.now(timezone.utc))
+@freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):
 
     def setUp(self) -> None:
-        print("todo")
+        self._now = _NOW
+        self._now_in_seconds = int(self._now.timestamp())
+        self._start_date = _NOW - timedelta(days=60)
+        self._start_date_in_seconds = int(self._start_date.timestamp())
 
     @staticmethod
     def _read(config: ConfigBuilder, state: Dict[str, Any], expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.incremental, state, expecting_exception=expecting_exception)
 
     @HttpMocker()
-    def test_given_no_initial_state_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
-        # Tests setting state
-        print("todo")
+    def test_given_no_initial_state_when_read_then_return_state_based_on_most_recently_read_slice(self, http_mocker: HttpMocker) -> None:
+        # Tests setting state when no initial state is provided
+        cursor_value = self._start_date_in_seconds + 1
+        http_mocker.get(
+            _a_request().with_any_query_params().build(),
+            _a_response().with_record(_a_record().with_cursor(cursor_value)).build()
+        )
+        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), _NO_STATE)
+        assert output.most_recent_state == { _STREAM_NAME: {_CURSOR_FIELD: str(self._now_in_seconds) }}
+        assert len(output.state_messages) == 2 # one state message for each slice, slice step duration is defined in manifest
+        assert len(output.records) == 2 # one record for each slice, slice step duration is defined in manifest
 
     @HttpMocker()
-    def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
-        # Tests updating query params with state
-        print("todo")
-
-    @HttpMocker()
-    def test_given_state_more_recent_than_cursor_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
-        # Tests properly setting state with cursor field instead of more recent state
-        print("todo")
+    def test_given_initial_state_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
+        # Tests updating query param with state
+        state_cursor_value = int((self._start_date + timedelta(days=31)).timestamp())
+        state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_cursor_value}).build()
+        http_mocker.get(
+            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([state_cursor_value, self._now_in_seconds]).build(),
+            _a_response().with_record(_a_record().with_cursor(self._now_in_seconds - 1)).build(),
+        )
+        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), state)
+        assert len(output.state_messages) == 1 # one state message for each slice, slice step duration is defined in manifest
+        assert len(output.records) == 1 # one record for each slice, slice step duration is defined in manifest
+        assert output.most_recent_state == { _STREAM_NAME: {_CURSOR_FIELD: str(self._now_in_seconds) }}

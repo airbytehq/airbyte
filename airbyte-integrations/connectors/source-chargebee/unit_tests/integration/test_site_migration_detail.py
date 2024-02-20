@@ -92,18 +92,26 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_one_page_of_records_read_and_returned(self, http_mocker: HttpMocker) -> None:
-        # Tests simple read
         http_mocker.get(
             _a_request().with_any_query_params().build(),
             _a_response().with_record(_a_record()).with_record(_a_record()).build()
         )
-        output = self._read(_config().with_start_date(self._start_date))
+        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
         assert len(output.records) == 2
 
     @HttpMocker()
     def test_given_multiple_pages_of_records_read_and_returned(self, http_mocker: HttpMocker) -> None:
         # Tests pagination
-        print("todo")
+        http_mocker.get(
+            _a_request().with_any_query_params().build(),
+            _a_response().with_pagination().with_record(_a_record()).build()
+        )
+        http_mocker.get(
+            _a_request().with_offset('[1707076198000,57873868]').build(),
+            _a_response().with_record(_a_record()).with_record(_a_record()).build()
+        )
+        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
+        assert len(output.records) == 3
 
     @HttpMocker()
     def test_given_http_status_400_when_read_then_stream_is_ignored(self, http_mocker: HttpMocker) -> None:
@@ -161,6 +169,8 @@ class FullRefreshTest(TestCase):
 @freezegun.freeze_time(datetime.now(timezone.utc))
 class IncrementalTest(TestCase):
 
+    # Site Migration Detail stream is a semi-incremental stream and therefore state acts differently than typical incremental implementation
+
     def setUp(self):
         self._now = datetime.now()
         self._now_in_seconds = int(self._now.timestamp())
@@ -179,10 +189,5 @@ class IncrementalTest(TestCase):
     @HttpMocker()
     def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
         # Tests properly using state in future requests
-        print("todo")
-
-    @HttpMocker()
-    def test_given_state_more_recent_than_cursor_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
-        # Tests properly setting state to most recent cursor
         print("todo")
 
