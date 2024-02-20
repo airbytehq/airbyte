@@ -101,6 +101,9 @@ poe lint
 
 ## Changelog
 
+### 1.0.2
+Fix access to connector types: it should be accessed from the `Connector.connector_type` attribute.
+
 ### 1.0.1
 * Add `applies_to_connector_types` attribute to `Check` class to specify the connector types that the check applies to.
 * Make `CheckPublishToPyPiIsEnabled` run on source connectors only.
