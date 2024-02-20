@@ -189,7 +189,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
   }
 
   private boolean isHeartbeatEvent(final ChangeEvent<String, String> event) {
-    return targetPosition.isHeartbeatSupported() && Objects.nonNull(event) && !event.value().contains("source");
+    return Objects.nonNull(event) && !event.value().contains("source");
   }
 
   private boolean heartbeatPosNotChanging() {

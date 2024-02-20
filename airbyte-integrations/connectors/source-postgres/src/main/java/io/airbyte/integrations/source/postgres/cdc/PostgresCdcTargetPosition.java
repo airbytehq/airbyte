@@ -88,11 +88,6 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
   }
 
   @Override
-  public boolean isHeartbeatSupported() {
-    return true;
-  }
-
-  @Override
   public Long extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
     return (long) sourceOffset.get("lsn");
   }

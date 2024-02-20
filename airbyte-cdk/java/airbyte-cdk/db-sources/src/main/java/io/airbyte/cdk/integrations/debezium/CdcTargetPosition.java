@@ -37,15 +37,6 @@ public interface CdcTargetPosition<T> {
   }
 
   /**
-   * Indicates whether the implementation supports heartbeat position.
-   *
-   * @return true if heartbeats are supported
-   */
-  default boolean isHeartbeatSupported() {
-    return false;
-  }
-
-  /**
    * Returns a position value from a heartbeat event offset.
    *
    * @param sourceOffset source offset params from heartbeat change event
