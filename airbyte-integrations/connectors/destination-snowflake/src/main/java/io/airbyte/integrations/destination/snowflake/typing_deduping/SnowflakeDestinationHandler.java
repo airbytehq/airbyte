@@ -4,24 +4,43 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
+
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
+import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
+import io.airbyte.integrations.base.destination.typing_deduping.Array;
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
+import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableState;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.Struct;
+import io.airbyte.integrations.base.destination.typing_deduping.Union;
+import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeDestinationHandler implements DestinationHandler<SnowflakeTableDefinition> {
+public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestinationHandler.class);
   public static final String EXCEPTION_COMMON_PREFIX = "JavaScript execution error: Uncaught Execution of multiple statements failed on statement";
@@ -30,60 +49,58 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   private final JdbcDatabase database;
 
   public SnowflakeDestinationHandler(final String databaseName, final JdbcDatabase database) {
+    super(databaseName, database);
     this.databaseName = databaseName;
     this.database = database;
   }
 
-  @Override
-  public Optional<SnowflakeTableDefinition> findExistingTable(final StreamId id) throws SQLException {
+  public Optional<TableDefinition> findExistingTable(final StreamId id) throws SQLException {
     // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
     // VARIANT as VARCHAR
-    final LinkedHashMap<String, SnowflakeColumnDefinition> columns = database.queryJsons(
-        """
-        SELECT column_name, data_type, is_nullable
-        FROM information_schema.columns
-        WHERE table_catalog = ?
-          AND table_schema = ?
-          AND table_name = ?
-        ORDER BY ordinal_position;
-        """,
-        databaseName.toUpperCase(),
-        id.finalNamespace().toUpperCase(),
-        id.finalName().toUpperCase()).stream()
+    final LinkedHashMap<String, ColumnDefinition> columns = database.queryJsons(
+            """
+                SELECT column_name, data_type, is_nullable
+                FROM information_schema.columns
+                WHERE table_catalog = ?
+                  AND table_schema = ?
+                  AND table_name = ?
+                ORDER BY ordinal_position;
+                """,
+            databaseName.toUpperCase(),
+            id.finalNamespace().toUpperCase(),
+            id.finalName().toUpperCase()).stream()
         .collect(LinkedHashMap::new,
-            (map, row) -> map.put(
-                row.get("COLUMN_NAME").asText(),
-                new SnowflakeColumnDefinition(row.get("DATA_TYPE").asText(), fromSnowflakeBoolean(row.get("IS_NULLABLE").asText()))),
-            LinkedHashMap::putAll);
+                 (map, row) -> map.put(
+                     row.get("COLUMN_NAME").asText(),
+                     new ColumnDefinition(
+                         row.get("COLUMN_NAME").asText(),
+                         row.get("DATA_TYPE").asText(),
+                         0, //unused
+                         fromIsNullableIsoString(row.get("IS_NULLABLE").asText()))),
+                 LinkedHashMap::putAll);
     if (columns.isEmpty()) {
       return Optional.empty();
     } else {
-      return Optional.of(new SnowflakeTableDefinition(columns));
+      return Optional.of(new TableDefinition(columns));
     }
   }
 
-  @Override
-  public LinkedHashMap<String, SnowflakeTableDefinition> findExistingFinalTables(final List<StreamId> list) throws Exception {
-    return null;
-  }
-
-  @Override
-  public boolean isFinalTableEmpty(final StreamId id) throws SQLException {
+  private boolean isFinalTableEmpty(final StreamId id) throws SQLException {
     final int rowCount = database.queryInt(
         """
-        SELECT row_count
-        FROM information_schema.tables
-        WHERE table_catalog = ?
-          AND table_schema = ?
-          AND table_name = ?
-        """,
+            SELECT row_count
+            FROM information_schema.tables
+            WHERE table_catalog = ?
+              AND table_schema = ?
+              AND table_name = ?
+            """,
         databaseName.toUpperCase(),
         id.finalNamespace().toUpperCase(),
         id.finalName().toUpperCase());
     return rowCount == 0;
   }
 
-  @Override
+
   public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
     final ResultSet tables = database.getMetaData().getTables(
         databaseName,
@@ -99,7 +116,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
     final Optional<String> minUnloadedTimestamp = Optional.ofNullable(database.queryStrings(
         conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
-                """
+            """
                 SELECT to_varchar(
                   TIMESTAMPADD(NANOSECOND, -1, MIN("_airbyte_extracted_at")),
                   'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
@@ -118,7 +135,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
     final Optional<String> maxTimestamp = Optional.ofNullable(database.queryStrings(
         conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
-                """
+            """
                 SELECT to_varchar(
                   MAX("_airbyte_extracted_at"),
                   'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
@@ -158,12 +175,61 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
     }
   }
 
-  /**
-   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
-   * know how to use
-   */
-  private boolean fromSnowflakeBoolean(final String input) {
-    return input.equalsIgnoreCase("yes");
+
+  private Set<String> getPks(final StreamConfig stream) {
+    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
+  @Override
+  protected boolean isAirbyteMetaColumnMatch(TableDefinition existingTable) {
+    return existingTable.columns().containsKey(COLUMN_NAME_AB_META) &&
+        "VARIANT".equals(existingTable.columns().get(COLUMN_NAME_AB_META).type());
+  }
+
+  protected boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
+    final Set<String> pks = getPks(stream);
+    // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
+    @SuppressWarnings("deprecation") final boolean hasPksWithNonNullConstraint = existingTable.columns().entrySet().stream()
+        .anyMatch(c -> pks.contains(c.getKey()) && !c.getValue().isNullable());
+
+    return !hasPksWithNonNullConstraint
+        && super.existingSchemaMatchesStreamConfig(stream, existingTable);
+
+  }
+
+  @Override
+  public List<DestinationInitialState> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
+    return null;
+  }
+
+  @Override
+  protected String toJdbcTypeName(AirbyteType airbyteType) {
+    if (airbyteType instanceof final AirbyteProtocolType p) {
+      return toJdbcTypeName(p);
+    }
+
+    return switch (airbyteType.getTypeName()) {
+      case Struct.TYPE -> "OBJECT";
+      case Array.TYPE -> "ARRAY";
+      case UnsupportedOneOf.TYPE -> "VARIANT";
+      case Union.TYPE -> toJdbcTypeName(((Union) airbyteType).chooseType());
+      default -> throw new IllegalArgumentException("Unrecognized type: " + airbyteType.getTypeName());
+    };
+  }
+
+  private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {
+    return switch (airbyteProtocolType) {
+      case STRING -> "TEXT";
+      case NUMBER -> "FLOAT";
+      case INTEGER -> "NUMBER";
+      case BOOLEAN -> "BOOLEAN";
+      case TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ";
+      case TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ";
+      // If you change this - also change the logic in extractAndCast
+      case TIME_WITH_TIMEZONE -> "TEXT";
+      case TIME_WITHOUT_TIMEZONE -> "TIME";
+      case DATE -> "DATE";
+      case UNKNOWN -> "VARIANT";
+    };
+  }
 }

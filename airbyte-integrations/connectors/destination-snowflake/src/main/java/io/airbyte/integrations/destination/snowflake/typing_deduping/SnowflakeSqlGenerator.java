@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
-public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinition> {
+public class SnowflakeSqlGenerator implements SqlGenerator {
 
   public static final String QUOTE = "\"";
 
@@ -132,36 +132,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
               ${column_declarations}
             );
             """));
-  }
-
-  @Override
-  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final SnowflakeTableDefinition existingTable)
-      throws TableNotMigratedException {
-    final Set<String> pks = getPks(stream);
-
-    // Check that the columns match, with special handling for the metadata columns.
-    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
-        .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
-            LinkedHashMap::putAll);
-    final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
-        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase)
-            .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
-        .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey(), column.getValue().type()),
-            LinkedHashMap::putAll);
-    // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
-    @SuppressWarnings("deprecation")
-    final boolean hasPksWithNonNullConstraint = existingTable.columns().entrySet().stream()
-        .anyMatch(c -> pks.contains(c.getKey()) && !c.getValue().isNullable());
-
-    final boolean sameColumns = actualColumns.equals(intendedColumns)
-        && !hasPksWithNonNullConstraint
-        && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()).type())
-        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()).type())
-        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()).type());
-
-    return sameColumns;
   }
 
   @Override
@@ -550,10 +520,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return str
         .replace("\\", "\\\\")
         .replace("'", "\\'");
-  }
-
-  private static Set<String> getPks(final StreamConfig stream) {
-    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
 }
