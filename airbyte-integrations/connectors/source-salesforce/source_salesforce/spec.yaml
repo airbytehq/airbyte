@@ -89,6 +89,12 @@ connectionSpecification:
             order: 2
       title: Filter Salesforce Objects
       description: Add filters to select only required stream based on `SObject` name. Use this field to filter which tables are displayed by this connector. This is useful if your Salesforce account has a large number of tables (>1000), in which case you may find it easier to navigate the UI and speed up the connector's performance if you restrict the tables displayed by this connector.
+    slice_duration:
+      title: Slice duration
+      description: Allows to chunk the jobs in a specific size. This is an optimization in case of very large or very sparse datasets.
+      type: string
+      airbyte_hidden: true
+      order: 8
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:

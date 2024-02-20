@@ -692,9 +692,10 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     STREAM_SLICE_STEP = 30
     _slice = None
 
-    def __init__(self, replication_key: str, **kwargs):
+    def __init__(self, replication_key: str, slice_duration: Optional[timedelta] = None, **kwargs):
         super().__init__(**kwargs)
         self.replication_key = replication_key
+        self._slice_duration = slice_duration if slice_duration else timedelta(days=self.STREAM_SLICE_STEP)
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -706,8 +707,8 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
 
         slice_number = 1
         while not end == now:
-            start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
-            end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
+            start = initial_date + (slice_number - 1) * self._slice_duration
+            end = min(now, initial_date + slice_number * self._slice_duration)
             self._slice = {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
             yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
             slice_number = slice_number + 1

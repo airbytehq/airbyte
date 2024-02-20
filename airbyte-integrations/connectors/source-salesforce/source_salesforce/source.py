@@ -6,7 +6,6 @@ import logging
 from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-import pendulum
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.logger import AirbyteLogFormatter
@@ -23,6 +22,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from dateutil.relativedelta import relativedelta
+from isodate import parse_duration
 from requests import codes, exceptions  # type: ignore[import]
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -147,6 +147,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
             stream_class = incremental
             stream_kwargs["replication_key"] = replication_key
+            stream_kwargs["slice_duration"] = parse_duration(config.get("slice_duration")) if "slice_duration" in config else None
         else:
             stream_class = full_refresh
 
