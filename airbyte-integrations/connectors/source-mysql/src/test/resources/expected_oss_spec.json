@@ -219,7 +219,7 @@
                 "enum": ["Fail sync", "Re-sync data"],
                 "default": "Fail sync",
                 "order": 3,
-                "always_show": true
+                "always_show": tru
               }
             }
           },
