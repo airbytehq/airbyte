@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
+import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.RESYNC_DATA_OPTION;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -174,10 +177,10 @@ public class PostgresTestDatabase extends
     }
 
     public PostgresConfigBuilder withCdcReplication() {
-      return withCdcReplication("While reading Data");
+      return withCdcReplication("While reading Data", RESYNC_DATA_OPTION);
     }
 
-    public PostgresConfigBuilder withCdcReplication(String LsnCommitBehaviour) {
+    public PostgresConfigBuilder withCdcReplication(String LsnCommitBehaviour, String cdcCursorFailBehaviour) {
       return this
           .with("is_test", true)
           .with("replication_method", Jsons.jsonNode(ImmutableMap.builder()
@@ -186,6 +189,7 @@ public class PostgresTestDatabase extends
               .put("publication", testDatabase.getPublicationName())
               .put("initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds())
               .put("lsn_commit_behaviour", LsnCommitBehaviour)
+              .put(INVALID_CDC_CURSOR_POSITION_PROPERTY, cdcCursorFailBehaviour)
               .build()));
     }
 
