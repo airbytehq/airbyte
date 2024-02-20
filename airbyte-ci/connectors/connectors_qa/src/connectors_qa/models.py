@@ -147,10 +147,10 @@ class Check(ABC):
                 connector,
                 f"Check does not apply to {connector.language.value} connectors",
             )
-        if connector.type not in self.applies_to_connector_types:
+        if connector.connector_type not in self.applies_to_connector_types:
             return self.skip(
                 connector,
-                f"Check does not apply to {connector.type} connectors",
+                f"Check does not apply to {connector.connector_type} connectors",
             )
         return self._run(connector)
 

@@ -53,12 +53,12 @@ class TestCheck:
 
     def test_skip_when_type_does_not_apply(self, mocker):
         # Arrange
-        connector = mocker.MagicMock(type="destination")
+        connector = mocker.MagicMock(connector_type="destination")
 
         # Act
         results = []
         for check in ENABLED_CHECKS:
-            if connector.type not in check.applies_to_connector_types:
+            if connector.connector_type not in check.applies_to_connector_types:
                 results.append(check.run(connector))
 
         # Assert
