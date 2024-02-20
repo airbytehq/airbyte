@@ -63,6 +63,11 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   }
 
   @Override
+  public LinkedHashMap<String, SnowflakeTableDefinition> findExistingFinalTables(final List<StreamId> list) throws Exception {
+    return null;
+  }
+
+  @Override
   public boolean isFinalTableEmpty(final StreamId id) throws SQLException {
     final int rowCount = database.queryInt(
         """

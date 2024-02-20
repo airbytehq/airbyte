@@ -207,7 +207,7 @@ test_cases = (
                 [{"id": "mr_1", "iid": "mr_1", "project_id": "p_1"}],
             ),
             (
-                "/api/v4/projects/p_1/merge_requests/mr_1",
+                "/api/v4/projects/p_1/merge_requests/mr_1/commits",
                 [
                     {
                         "id": "mrc_1",

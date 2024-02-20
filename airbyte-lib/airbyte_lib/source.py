@@ -426,6 +426,8 @@ class Source:
         """
         source_tracking_information = self.executor.get_telemetry_info()
         send_telemetry(source_tracking_information, cache_info, SyncState.STARTED)
+        sync_failed = False
+        self._processed_records = 0  # Reset the counter before we start
         try:
             with as_temp_files(
                 [self._config, catalog.json(), json.dumps(state) if state else "[]"]
@@ -449,14 +451,16 @@ class Source:
             send_telemetry(
                 source_tracking_information, cache_info, SyncState.FAILED, self._processed_records
             )
+            sync_failed = True
             raise
         finally:
-            send_telemetry(
-                source_tracking_information,
-                cache_info,
-                SyncState.SUCCEEDED,
-                self._processed_records,
-            )
+            if not sync_failed:
+                send_telemetry(
+                    source_tracking_information,
+                    cache_info,
+                    SyncState.SUCCEEDED,
+                    self._processed_records,
+                )
 
     def _add_to_logs(self, message: str) -> None:
         self._last_log_messages.append(message)
@@ -479,11 +483,13 @@ class Source:
             for line in self.executor.execute(args):
                 try:
                     message = AirbyteMessage.parse_raw(line)
-                    yield message
+                    if message.type is Type.RECORD:
+                        self._processed_records += 1
                     if message.type == Type.LOG:
                         self._add_to_logs(message.log.message)
                     if message.type == Type.TRACE and message.trace.type == TraceType.ERROR:
                         self._add_to_logs(message.trace.error.message)
+                    yield message
                 except Exception:
                     self._add_to_logs(line)
         except Exception as e:
@@ -500,8 +506,6 @@ class Source:
         progress.reset(len(self._selected_stream_names or []))
 
         for message in messages:
-            if message.type is Type.RECORD:
-                self._processed_records += 1
             yield message
             progress.log_records_read(self._processed_records)
 

@@ -1,0 +1,104 @@
+plugins {
+    id 'base'
+    id 'ru.vyarus.use-python' version '2.3.0'
+}
+
+// Pyenv support.
+try {
+    def pyenvRoot = "pyenv root".execute()
+    if (pyenvRoot.waitFor() == 0) {
+        ext.pyenvRoot = pyenvRoot.text.trim()
+    }
+} catch (IOException _) {
+    // Swallow exception if pyenv is not installed.
+}
+
+def pythonBin = layout.buildDirectory.file('.venv/bin/python').get().asFile.absolutePath
+
+// python is required by the connectors project to run airbyte-ci from source to build connector images.
+python {
+    envPath = layout.buildDirectory.file('.venv').get().asFile
+    minPythonVersion = '3.10' // should be 3.10 for local development
+
+    // Pyenv support.
+    try {
+        def pyenvRoot = "pyenv root".execute()
+        def pyenvLatest = "pyenv latest ${minPythonVersion}".execute()
+        // Pyenv definitely exists at this point: use 'python' instead of 'python3' in all cases.
+        pythonBinary "python"
+        if (pyenvRoot.waitFor() == 0 && pyenvLatest.waitFor() == 0) {
+            pythonPath "${pyenvRoot.text.trim()}/versions/${pyenvLatest.text.trim()}/bin"
+        }
+    } catch (IOException _) {
+        // Swallow exception if pyenv is not installed.
+    }
+
+    scope = 'VIRTUALENV'
+    installVirtualenv = true
+    // poetry is required for installing and running airbyte-ci
+    pip 'poetry:1.5.1'
+}
+
+def poetryInstallAirbyteCI = tasks.register('poetryInstallAirbyteCI', Exec) {
+    workingDir rootProject.file('airbyte-ci/connectors/pipelines')
+    commandLine pythonBin
+    args "-m", "poetry", "install", "--no-cache"
+}
+poetryInstallAirbyteCI.configure {
+    dependsOn tasks.named('pipInstall')
+}
+def poetryCleanVirtualenv = tasks.register('cleanPoetryVirtualenv', Exec) {
+    workingDir rootProject.file('airbyte-ci/connectors/pipelines')
+    commandLine pythonBin
+    args "-m", "poetry", "env", "remove", "--all"
+    onlyIf {
+        layout.buildDirectory.file('venv/bin/python').get().asFile.exists()
+    }
+}
+tasks.named('clean').configure {
+    dependsOn poetryCleanVirtualenv
+}
+
+allprojects {
+    // Evaluate CDK project before evaluating the connector.
+    evaluationDependsOn(':airbyte-cdk:java:airbyte-cdk')
+
+    // Adds airbyte-ci task.
+    def airbyteCIConnectorsTask = { String taskName, String... connectorsArgs ->
+        def task = tasks.register(taskName, Exec) {
+            workingDir rootDir
+            environment "CI", "1" // set to use more suitable logging format
+            commandLine pythonBin
+            args "-m", "poetry"
+            args "--directory", "${rootProject.file('airbyte-ci/connectors/pipelines').absolutePath}"
+            args "run"
+            args "airbyte-ci", "connectors", "--name=${project.name}"
+            args connectorsArgs
+            // Forbid these kinds of tasks from running concurrently.
+            // We can induce serial execution by giving them all a common output directory.
+            outputs.dir rootProject.file("${rootProject.buildDir}/airbyte-ci-lock")
+            outputs.upToDateWhen { false }
+        }
+        task.configure { dependsOn poetryInstallAirbyteCI }
+        return task
+    }
+
+    // Build connector image as part of 'assemble' task.
+    // This is required for local 'integrationTest' execution.
+    def buildConnectorImage = airbyteCIConnectorsTask(
+            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
+    buildConnectorImage.configure {
+        // Images for java projects always rely on the distribution tarball.
+        dependsOn tasks.matching { it.name == 'distTar' }
+        // Ensure that all files exist beforehand.
+        dependsOn tasks.matching { it.name == 'generate' }
+    }
+    tasks.named('assemble').configure {
+        // We may revisit the dependency on assemble but the dependency should always be on a base task.
+        dependsOn buildConnectorImage
+    }
+
+    // Convenience tasks for local airbyte-ci execution.
+    airbyteCIConnectorsTask('airbyteCIConnectorBuild', 'build')
+    airbyteCIConnectorsTask('airbyteCIConnectorTest', 'test')
+}
