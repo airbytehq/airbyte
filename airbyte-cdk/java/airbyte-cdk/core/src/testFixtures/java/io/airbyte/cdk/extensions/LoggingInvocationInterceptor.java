@@ -64,6 +64,9 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
       } else {
         logLineSuffix = "execution of unknown intercepted call %s".formatted(methodName);
       }
+      int sleepTimeMs = 5000;
+      LOGGER.info(String.format("Junit sleeping %d ms before %s", sleepTimeMs, logLineSuffix.toString()));
+      Thread.sleep(sleepTimeMs);
       LOGGER.info("Junit starting {}", logLineSuffix);
       try {
         Instant start = Instant.now();
