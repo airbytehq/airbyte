@@ -1,0 +1,210 @@
+#version: 0.61.2
+version: 0.58.7
+type: DeclarativeSource
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - api_token
+      - start_date
+    properties:
+      api_token:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+      join_channels:
+        type: boolean
+        default: true
+        title: Join all channels
+        description: Whether to join all channels or to sync data only from channels the bot is already in.  If false, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+    additionalProperties: true
+
+definitions:
+
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_slack/schemas/{{ parameters['name'] }}.json"
+
+  default_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 1000
+      cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
+      stop_condition: >-
+        {{ not response.get("response_metadata", {}).get("next_cursor", {})
+        }}
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://slack.com/api/
+      path: "{{ parameters['path'] }}"
+      http_method: GET
+      request_parameters: { }
+      request_headers: { }
+      authenticator:
+        type: BearerAuthenticator
+        api_token: '{{ config[''api_token''] }}'
+      request_body_json: { }
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "{{ parameters['field_path'] }}"
+    paginator:
+      $ref: "#/definitions/default_paginator"
+    partition_router: []
+
+  stream_base:
+    retriever:
+      $ref: "#/definitions/retriever"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    primary_key: "id"
+
+  users_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: users
+      path: users.list
+      field_path: members
+
+  channels_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: channels
+      path: conversations.list
+      field_path: channels
+
+  substream_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        parent_key: id
+        request_option:
+          type: RequestOption
+          field_name: channel
+          inject_into: request_parameter
+        partition_field: channel_id
+        stream: "#/definitions/channels_stream"
+
+  channel_join_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: channel_join
+      path: conversations.join
+      field_path: channel
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        http_method: POST
+      partition_router:
+        $ref: "#/definitions/substream_partition_router"
+
+
+  channel_members_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: channel_members
+      path: conversations.members
+      field_path: members
+    primary_key:
+      - member_id
+      - channel_id
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/substream_partition_router"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          class_name: "source_slack.components.ChannelMembersExtractor"
+          field_path: ['members']
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - channel_id
+            value: '{{ stream_partition[''channel_id''] }}'
+
+  channel_messages_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: channel_messages
+      path: conversations.history
+      field_path: messages
+    primary_key:
+      - channel_id
+      - ts
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/substream_partition_router"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: float_ts
+      cursor_datetime_formats:
+        - '%s'
+      datetime_format: '%s'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: oldest
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: latest
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P100D
+      cursor_granularity: PT0S
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - float_ts
+            value: '{{ record.ts|int }}'
+      - type: AddFields
+        fields:
+          - path:
+              - channel_id
+            value: '{{ stream_partition[''channel_id''] }}'
+
+streams:
+  - "#/definitions/users_stream"
+  - "#/definitions/channels_stream"
+  - "#/definitions/channel_members_stream"
+  - "#/definitions/channel_messages_stream"
+  - "#/definitions/channels_main_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - users

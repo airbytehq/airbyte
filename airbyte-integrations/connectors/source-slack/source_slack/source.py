@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
 
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -347,64 +349,68 @@ class Threads(IncrementalMessageStream):
             # yield an empty slice to checkpoint state later
             yield {}
 
+#
+# class SourceSlack(AbstractSource):
+#     def _get_authenticator(self, config: Mapping[str, Any]):
+#         # Added to maintain backward compatibility with previous versions
+#         if "api_token" in config:
+#             return TokenAuthenticator(config["api_token"])
+#
+#         credentials = config.get("credentials", {})
+#         credentials_title = credentials.get("option_title")
+#         if credentials_title == "Default OAuth2.0 authorization":
+#             return TokenAuthenticator(credentials["access_token"])
+#         elif credentials_title == "API Token Credentials":
+#             return TokenAuthenticator(credentials["api_token"])
+#         else:
+#             raise Exception(f"No supported option_title: {credentials_title} specified. See spec.json for references")
+#
+#     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+#         try:
+#             authenticator = self._get_authenticator(config)
+#             users_stream = Users(authenticator=authenticator)
+#             next(users_stream.read_records(SyncMode.full_refresh))
+#             return True, None
+#         except Exception as e:
+#             return (
+#                 False,
+#                 f"Got an exception while trying to set up the connection: {e}. "
+#                 f"Most probably, there are no users in the given Slack instance or your token is incorrect",
+#             )
+#
+#     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+#         authenticator = self._get_authenticator(config)
+#         default_start_date = pendulum.parse(config["start_date"])
+#         # this field is not exposed to spec, used only for testing purposes
+#         end_date = config.get("end_date")
+#         end_date = end_date and pendulum.parse(end_date)
+#         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
+#         channel_filter = config.get("channel_filter", [])
+#         should_join_to_channels = config.get("join_channels")
+#
+#         channels = Channels(authenticator=authenticator, join_channels=should_join_to_channels, channel_filter=channel_filter)
+#         streams = [
+#             channels,
+#             ChannelMembers(authenticator=authenticator, channel_filter=channel_filter),
+#             ChannelMessages(
+#                 parent=channels,
+#                 authenticator=authenticator,
+#                 default_start_date=default_start_date,
+#                 end_date=end_date,
+#                 channel_filter=channel_filter,
+#             ),
+#             Threads(
+#                 authenticator=authenticator,
+#                 default_start_date=default_start_date,
+#                 end_date=end_date,
+#                 lookback_window=threads_lookback_window,
+#                 channel_filter=channel_filter,
+#             ),
+#             Users(authenticator=authenticator),
+#         ]
+#
+#         return streams
 
-class SourceSlack(AbstractSource):
-    def _get_authenticator(self, config: Mapping[str, Any]):
-        # Added to maintain backward compatibility with previous versions
-        if "api_token" in config:
-            return TokenAuthenticator(config["api_token"])
-
-        credentials = config.get("credentials", {})
-        credentials_title = credentials.get("option_title")
-        if credentials_title == "Default OAuth2.0 authorization":
-            return TokenAuthenticator(credentials["access_token"])
-        elif credentials_title == "API Token Credentials":
-            return TokenAuthenticator(credentials["api_token"])
-        else:
-            raise Exception(f"No supported option_title: {credentials_title} specified. See spec.json for references")
-
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        try:
-            authenticator = self._get_authenticator(config)
-            users_stream = Users(authenticator=authenticator)
-            next(users_stream.read_records(SyncMode.full_refresh))
-            return True, None
-        except Exception as e:
-            return (
-                False,
-                f"Got an exception while trying to set up the connection: {e}. "
-                f"Most probably, there are no users in the given Slack instance or your token is incorrect",
-            )
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = self._get_authenticator(config)
-        default_start_date = pendulum.parse(config["start_date"])
-        # this field is not exposed to spec, used only for testing purposes
-        end_date = config.get("end_date")
-        end_date = end_date and pendulum.parse(end_date)
-        threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
-        channel_filter = config.get("channel_filter", [])
-        should_join_to_channels = config.get("join_channels")
-
-        channels = Channels(authenticator=authenticator, join_channels=should_join_to_channels, channel_filter=channel_filter)
-        streams = [
-            channels,
-            ChannelMembers(authenticator=authenticator, channel_filter=channel_filter),
-            ChannelMessages(
-                parent=channels,
-                authenticator=authenticator,
-                default_start_date=default_start_date,
-                end_date=end_date,
-                channel_filter=channel_filter,
-            ),
-            Threads(
-                authenticator=authenticator,
-                default_start_date=default_start_date,
-                end_date=end_date,
-                lookback_window=threads_lookback_window,
-                channel_filter=channel_filter,
-            ),
-            Users(authenticator=authenticator),
-        ]
-
-        return streams
+class SourceSlack(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
