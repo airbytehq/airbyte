@@ -36,6 +36,14 @@ spec:
         title": "Channel name filter"
         description: "A channel name list (without leading '#' char) which limit the channels from which you'd like to sync. Empty list means no filter."
         examples: ["channel_one", "channel_two"]
+      lookback_window:
+        type: "integer",
+        title: "Threads Lookback window (Days)",
+        description: "How far into the past to look for messages in threads, default is 0 days",
+        examples: [7, 14],
+        minimum: 0,
+        default: 0,
+        maximum: 365
     additionalProperties: true
 
 definitions:
@@ -180,6 +188,10 @@ definitions:
       - ts
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          inclusive: 'True'
       partition_router:
         $ref: "#/definitions/channels_partition_router"
     incremental_sync:
@@ -218,18 +230,6 @@ definitions:
               - channel_id
             value: '{{ stream_partition[''channel_id''] }}'
 
-  channel_messages_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - type: ParentStreamConfig
-        parent_key: id
-        request_option:
-          type: RequestOption
-          field_name: channel
-          inject_into: request_parameter
-        partition_field: channel_id
-        stream: "#/definitions/channel_messages_stream"
-
   threads_stream:
     $ref: "#/definitions/stream_base"
     $parameters:
@@ -251,20 +251,17 @@ definitions:
           - "{{ parameters['field_path'] }}"
       paginator:
         $ref: "#/definitions/default_paginator"
-
       partition_router:
         class_name: "source_slack.components.ThreadsPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/channel_messages_stream"
             parent_key: channel_id
-            partition_field: channel_id
+            partition_field: channel
             request_option:
               type: RequestOption
               field_name: channel
               inject_into: request_parameter
-
-
 
 streams:
   - "#/definitions/users_stream"
@@ -272,7 +269,6 @@ streams:
   - "#/definitions/channel_members_stream"
   - "#/definitions/channel_messages_stream"
   - "#/definitions/threads_stream"
-
 
 check:
   type: CheckStream
