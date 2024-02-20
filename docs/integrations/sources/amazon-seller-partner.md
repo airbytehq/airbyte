@@ -14,6 +14,7 @@ This page contains the setup guide and reference information for the Amazon Sell
 - AWS Region
 - AWS Seller Partner Account Type
 - Granted OAuth access
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -26,11 +27,14 @@ This page contains the setup guide and reference information for the Amazon Sell
 - LWA Client Id
 - LWA Client Secret
 - Refresh Token
+
 <!-- /env:oss -->
 
 ## Setup Guide
 
 ## Step 1: Set up Amazon Seller Partner
+
+[Register](https://sellercentral.amazon.com/) your Amazon Seller Partner account.
 
 <!-- env:oss -->
 
@@ -41,6 +45,10 @@ This page contains the setup guide and reference information for the Amazon Sell
 <!-- /env:oss -->
 
 ## Step 2: Set up the source connector in Airbyte
+
+To pass the check for Seller and Vendor accounts, you must have access to the [Orders endpoint](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) and the [Vendor Orders endpoint](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders), respectively.
+
+<!-- env:cloud -->
 
 **For Airbyte Cloud:**
 
@@ -55,6 +63,10 @@ This page contains the setup guide and reference information for the Amazon Sell
 9. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 10. Click `Set up source`.
 
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token. 
@@ -65,6 +77,8 @@ This page contains the setup guide and reference information for the Amazon Sell
 6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
 7. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 8. Click `Set up source`.
+
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -124,6 +138,7 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+- [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 
 ## Report options
 
@@ -153,6 +168,11 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version  | Date       | Pull Request                                                | Subject                                                                                                                                                                             |
 |:---------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `3.5.0`  | 2024-02-09 | [\#35331](https://github.com/airbytehq/airbyte/pull/35331)  | Fix check for Vendor accounts. Add failed report result message                                                                                                                     |
+| `3.4.0`  | 2024-02-15 | [\#35273](https://github.com/airbytehq/airbyte/pull/35273)  | Add `VendorOrders` stream                                                                                                                                                           |
+| `3.3.2`  | 2024-02-13 | [\#33996](https://github.com/airbytehq/airbyte/pull/33996)  | Add integration tests                                                                                                                                                               |
+| `3.3.1`  | 2024-02-09 | [\#35106](https://github.com/airbytehq/airbyte/pull/35106)  | Add logs for the failed check command                                                                                                                                               |
+| `3.3.0`  | 2024-02-09 | [\#35062](https://github.com/airbytehq/airbyte/pull/35062)  | Fix the check command for the `Vendor` account type                                                                                                                                 |
 | `3.2.2`  | 2024-02-07 | [\#34914](https://github.com/airbytehq/airbyte/pull/34914)  | Fix date formatting for ledger reports with aggregation by month                                                                                                                    |
 | `3.2.1`  | 2024-01-30 | [\#34654](https://github.com/airbytehq/airbyte/pull/34654)  | Fix date format in state message for streams with custom dates formatting                                                                                                           |
 | `3.2.0`  | 2024-01-26 | [\#34549](https://github.com/airbytehq/airbyte/pull/34549)  | Update schemas for vendor analytics streams                                                                                                                                         |

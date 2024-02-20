@@ -38,11 +38,16 @@ class IntegrationTests(GradleTask):
     gradle_task_name = "integrationTestJava"
     mount_connector_secrets = True
     bind_to_docker_host = True
+    with_test_report = True
 
     @property
     def default_params(self) -> STEP_PARAMS:
         return super().default_params | {
-            "-x": ["buildConnectorImage", "assemble"],  # Exclude the buildConnectorImage and assemble tasks
+            # Exclude the assemble task to avoid a circular dependency on airbyte-ci.
+            # The integrationTestJava gradle task depends on assemble, which in turns
+            # depends on buildConnectorImage to build the connector's docker image.
+            # At this point, the docker image has already been built.
+            "-x": ["assemble"],
         }
 
     async def _load_normalization_image(self, normalization_tar_file: File) -> None:
@@ -64,7 +69,7 @@ class IntegrationTests(GradleTask):
                     tg.start_soon(self._load_normalization_image, normalization_tar_file)
                 tg.start_soon(self._load_connector_image, connector_tar_file)
         except QueryError as e:
-            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
         # Run the gradle integration test task now that the required docker images have been loaded.
         return await super()._run()
 
@@ -75,6 +80,7 @@ class UnitTests(GradleTask):
     title = "Java Connector Unit Tests"
     gradle_task_name = "test"
     bind_to_docker_host = True
+    with_test_report = True
 
 
 def _create_integration_step_args_factory(context: ConnectorContext) -> Callable:

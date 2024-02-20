@@ -66,6 +66,10 @@ To clean the airbyte-ci install, run the following command:
 make tools.airbyte-ci.clean
 ```
 
+## Disabling telemetry
+
+We collect anonymous usage data to help improve the tool. If you would like to disable this, you can set the `AIRBYTE_CI_DISABLE_TELEMETRY` environment variable to `true`.
+
 ## Installation for development
 
 #### Pre-requisites
@@ -289,14 +293,14 @@ flowchart TD
 #### Options
 
 | Option                                                  | Multiple | Default value | Description                                                                                                                                                                                              |
-| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--skip-step/-x`                                        | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                                                                            |
 | `--only-step/-k`                                        | True     |               | Only run specific steps by id e.g. `-k unit -k acceptance`                                                                                                                                               |
 | `--fail-fast`                                           | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
 
 Note:
 
@@ -613,39 +617,45 @@ flowchart TD
 
 ### <a id="tests-command"></a>`tests` command
 
-This command runs the Python tests for a airbyte-ci poetry package.
+This command runs the poe tasks declared in the `[tool.airbyte-ci]` section of our internal poetry packages.
+Feel free to checkout this [Pydantic model](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/models.py#L9) to see the list of available options in `[tool.airbyte-ci]` section.
 
-#### Arguments
-
-| Option                | Required | Default | Mapped environment variable | Description                         |
-| --------------------- | -------- | ------- | --------------------------- | ----------------------------------- |
-| `poetry_package_path` | True     |         |                             | The path to poetry package to test. |
+You can find the list of internal packages [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/__init__.py#L1)
 
 #### Options
 
-| Option                    | Required | Default | Mapped environment variable | Description                                                                                 |
-| ------------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
-| `-c/--poetry-run-command` | True     | None    |                             | The command to run with `poetry run`                                                        |
-| `-e/--pass-env-var`       | False    | None    |                             | Host environment variable that is passed to the container running the poetry command        |
-| `--ci-requirements`       | False    |         |                             | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
+| Option                     | Required | Multiple | Description                                                                                 |
+| -------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------- |
+| `--poetry-package-path/-p` | False    | True     | Poetry packages path to run the poe tasks for.                                              |
+| `--modified`               | False    | False    | Run poe tasks of modified internal poetry packages.                                         |
+| `--ci-requirements`        | False    | False    | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 #### Examples
+You can pass multiple `--poetry-package-path` options to run poe tasks.
 
-You can pass multiple `-c/--poetry-run-command` options to run multiple commands.
+E.G.: running Poe tasks on `airbyte-lib` and `airbyte-ci/connectors/pipelines`:
+`airbyte-ci test --poetry-package-path=airbyte-ci/connectors/pipelines --poetry-package-path=airbyte-lib`
 
-E.G.: running `pytest` and `mypy`:
-`airbyte-ci test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines'`
+E.G.: running Poe tasks on the modified internal packages of the current branch:
+`airbyte-ci test --modified`
 
-E.G.: passing the environment variable `GCP_GSM_CREDENTIALS` environment variable to the container
-running the poetry command: `airbyte-ci test airbyte-lib --pass-env-var='GCP_GSM_CREDENTIALS'`
-
-E.G.: running `pytest` on a specific test folder:
-`airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest tests/unit_tests'`
 
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.3.0   | [#35438](https://github.com/airbytehq/airbyte/pull/35438)  | Optionally disable telemetry with environment variable.                                                                    |
+| 4.2.4   | [#35325](https://github.com/airbytehq/airbyte/pull/35325)  | Use `connectors_qa` for QA checks and remove redundant checks.                                                             |
+| 4.2.3   | [#35322](https://github.com/airbytehq/airbyte/pull/35322)  | Declare `connectors_qa` as an internal package for testing.                                                                |
+| 4.2.2   | [#35364](https://github.com/airbytehq/airbyte/pull/35364)  | Fix connector tests following gradle changes in #35307.                                                                    |
+| 4.2.1   | [#35204](https://github.com/airbytehq/airbyte/pull/35204)  | Run `poetry check` before `poetry install` on poetry package install.                                                      |
+| 4.2.0   | [#35103](https://github.com/airbytehq/airbyte/pull/35103)  | Java 21 support.                                                                                                           |
+| 4.1.4   | [#35039](https://github.com/airbytehq/airbyte/pull/35039)  | Fix bug which prevented gradle test reports from being added.                                                              |
+| 4.1.3   | [#35010](https://github.com/airbytehq/airbyte/pull/35010)  | Use `poetry install --no-root` in the builder container.                                                                   |
+| 4.1.2   | [#34945](https://github.com/airbytehq/airbyte/pull/34945)  | Only install main dependencies when running poetry install.                                                                |
+| 4.1.1   | [#34430](https://github.com/airbytehq/airbyte/pull/34430)  | Speed up airbyte-ci startup (and airbyte-ci format).                                                                       |
+| 4.1.0   | [#34923](https://github.com/airbytehq/airbyte/pull/34923)  | Include gradle test reports in HTML connector test report.                                                                 |
+| 4.0.0   | [#34736](https://github.com/airbytehq/airbyte/pull/34736)  | Run poe tasks declared in internal poetry packages.                                                                        |
 | 3.10.4  | [#34867](https://github.com/airbytehq/airbyte/pull/34867)  | Remove connector ops team                                                                                                  |
 | 3.10.3  | [#34836](https://github.com/airbytehq/airbyte/pull/34836)  | Add check for python registry publishing enabled for certified python sources.                                             |
 | 3.10.2  | [#34044](https://github.com/airbytehq/airbyte/pull/34044)  | Add pypi validation testing.                                                                                               |

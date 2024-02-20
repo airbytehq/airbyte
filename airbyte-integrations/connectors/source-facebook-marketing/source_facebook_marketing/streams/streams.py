@@ -36,7 +36,7 @@ def fetch_thumbnail_data_url(url: str) -> Optional[str]:
 
 
 class AdCreatives(FBMarketingStream):
-    """AdCreative is append only stream
+    """AdCreative is append-only stream
     doc: https://developers.facebook.com/docs/marketing-api/reference/ad-creative
     """
 
@@ -48,7 +48,7 @@ class AdCreatives(FBMarketingStream):
         self._fetch_thumbnail_images = fetch_thumbnail_images
 
     def fields(self, **kwargs) -> List[str]:
-        """Remove "thumbnail_data_url" field because it is computed field and it's not a field that we can request from Facebook"""
+        """Remove "thumbnail_data_url" field because it is a computed field, and it's not a field that we can request from Facebook"""
         if self._fields:
             return self._fields
 
@@ -231,7 +231,7 @@ class AdAccount(FBMarketingStream):
             return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]
         except FacebookRequestError as e:
             # This is a workaround for cases when account seem to have all the required permissions
-            # but despite of that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
+            # but despite that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
             if e.api_error_code() == 200 and e.api_error_message() == "(#200) Requires business_management permission to manage the object":
                 fields.remove("owner")
                 return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]

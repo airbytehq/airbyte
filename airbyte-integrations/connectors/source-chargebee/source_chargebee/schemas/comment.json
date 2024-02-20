@@ -28,7 +28,7 @@
       "type": ["string", "null"]
     },
     "custom_fields": {
-      "type": ["array", "null"]
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }
