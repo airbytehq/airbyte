@@ -14,7 +14,6 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     FailureType,
     OAuthConfigSpecification,
-    SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream

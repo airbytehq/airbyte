@@ -44,8 +44,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     ]
 
     # Facebook store metrics maximum of 37 months old. Any time range that
-    # older that 37 months from current date would result in 400 Bad request
-    # HTTP response.
+    # older than 37 months from current date would result in 400 Bad request HTTP response.
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
@@ -106,8 +105,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         Facebook freezes insight data 28 days after it was generated, which means that all data
         from the past 28 days may have changed since we last emitted it, so we retrieve it again.
-        But in some cases users my have define their own lookback window, thats
-        why the value for `insights_lookback_window` is set throught config.
+        But in some cases users my have define their own lookback window, that's
+        why the value for `insights_lookback_window` is set through the config.
         """
         return pendulum.duration(days=self._insights_lookback_window)
 
@@ -174,7 +173,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     def state(self, value: Mapping[str, Any]):
         """State setter, will ignore saved state if time_increment is different from previous."""
         # if the time increment configured for this stream is different from the one in the previous state
-        # then the previous state object is invalid and we should start replicating data from scratch
+        # then the previous state object is invalid, and we should start replicating data from scratch
         # to achieve this, we skip setting the state
         transformed_state = self._transform_state_from_old_format(value, ["time_increment"])
         if transformed_state.get("time_increment", 1) != self.time_increment:
