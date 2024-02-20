@@ -3,6 +3,9 @@
 This is the repository for the Fleetio configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/fleetio).
 
+## Overview
+View the Fleetio website [here](https://fleetio.com). For for information the Fleetio API, check out out [Fleetio API Portal](https://developer.fleetio.com).
+
 ## Local development
 
 #### Building via Gradle
