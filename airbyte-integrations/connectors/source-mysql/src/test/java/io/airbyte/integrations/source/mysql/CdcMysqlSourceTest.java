@@ -280,56 +280,12 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         dataFromSecondBatch);
     assertEquals((recordsToCreate * 2) + recordsCreatedBeforeTestCount, recordsFromSecondBatch.size(),
         "Expected 46 records to be replicated in the second sync.");
-  }
 
-  @Test
-  void testSyncShouldFailPurgedLogs() throws Exception {
-    JsonNode config = testdb.testConfigBuilder()
+    JsonNode failSyncConfig = testdb.testConfigBuilder()
         .withCdcReplication(FAIL_SYNC_OPTION)
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build();
-    final int recordsToCreate = 20;
-    // first batch of records. 20 created here and 6 created in setup method.
-    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
-      writeModelRecord(record);
-    }
-
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
-        .read(config, getConfiguredCatalog(), null);
-    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
-        .toListAndClose(firstBatchIterator);
-    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
-    assertStateForSyncShouldHandlePurgedLogsGracefully(stateAfterFirstBatch, 1);
-    final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
-        dataFromFirstBatch);
-
-    final int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
-    assertEquals((recordsCreatedBeforeTestCount + recordsToCreate), recordsFromFirstBatch.size());
-    // sometimes there can be more than one of these at the end of the snapshot and just before the
-    // first incremental.
-    final Set<AirbyteRecordMessage> recordsFromFirstBatchWithoutDuplicates = removeDuplicates(
-        recordsFromFirstBatch);
-
-    assertTrue(recordsCreatedBeforeTestCount < recordsFromFirstBatchWithoutDuplicates.size(),
-        "Expected first sync to include records created while the test was running.");
-
-    // second batch of records again 20 being created
-    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
-      writeModelRecord(record);
-    }
-
-    purgeAllBinaryLogs();
-
-    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
-    assertThrows(ConfigErrorException.class, () -> source().read(config, getConfiguredCatalog(), state));
+    assertThrows(ConfigErrorException.class, () -> source().read(failSyncConfig, getConfiguredCatalog(), state));
   }
 
   /**
