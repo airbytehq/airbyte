@@ -45,7 +45,7 @@ class TestSuiteReportStream(TestReportStream):
     @HttpMocker()
     def test_return_records_from_given_csv_file(self, http_mocker: HttpMocker):
         if self.stream_name:
-            self._get_client(http_mocker, self._config)
+            self.auth_client(http_mocker)
             output = self.read_stream(
                 self.stream_name,
                 SyncMode.full_refresh, self._config, [],
@@ -55,7 +55,7 @@ class TestSuiteReportStream(TestReportStream):
     @HttpMocker()
     def test_transform_records_from_given_csv_file(self, http_mocker: HttpMocker):
         if self.stream_name:
-            self._get_client(http_mocker, self._config)
+            self.auth_client(http_mocker)
             output = self.read_stream(
                 self.stream_name,
                 SyncMode.full_refresh, self._config, [],
@@ -68,7 +68,7 @@ class TestSuiteReportStream(TestReportStream):
     @HttpMocker()
     def test_incremental_read_returns_records(self, http_mocker: HttpMocker):
         if self.stream_name:
-            self._get_client(http_mocker, self._config)
+            self.auth_client(http_mocker)
             output = self.read_stream(
                 self.stream_name,
                 SyncMode.incremental, self._config, [],
@@ -80,7 +80,7 @@ class TestSuiteReportStream(TestReportStream):
     def test_incremental_read_with_state_returns_records(self, http_mocker: HttpMocker):
         if self.stream_name:
             state = self._state(self.state_file)
-            self._get_client(http_mocker, self._config)
+            self.auth_client(http_mocker)
             output = self.read_stream(self.stream_name,
                                       SyncMode.incremental, self._config, [],
                                       self.incremental_report_file,

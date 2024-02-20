@@ -7,18 +7,19 @@ from unittest.mock import patch
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.mock_http import HttpMocker
 from bingads.v13.bulk import BulkServiceManager
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from catalog_builder import BingAdsCatalogBuilder
 from client_builder import build_request, response_with_status
 from config_builder import ConfigBuilder
-from source_bing_ads.client import Client
 from source_bing_ads.source import SourceBingAds
 from suds.transport.https import HttpAuthenticated
 from suds_response_mock import mock_http_authenticated_send
 
 
 class BaseTest(TestCase):
+
     @property
     def service_manager(self) -> ReportingServiceManager | BulkServiceManager:
         pass
@@ -33,13 +34,11 @@ class BaseTest(TestCase):
     def _state(self, file: str) -> Path:
         Path(__file__).parent.parent / f"resource/state/{file}.json"
 
-    def _get_client(self, http_mocker, config: dict) -> Client:
+    def auth_client(self, http_mocker: HttpMocker) -> None:
         http_mocker.post(
             request=build_request(self._config),
             responses=response_with_status("oauth", 200)
         )
-        client = Client(**config)
-        return client
 
     def read_stream(
             self, stream_name: str,
