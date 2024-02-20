@@ -309,15 +309,8 @@ def test_ignore_stream_slicer_parameters_on_paginated_requests(test_name, pagina
     }
 
     for _, method in request_option_type_to_method.items():
-        if expected_mapping:
-            actual_mapping = method(None, None, next_page_token={"next_page_token": "1000"})
-            assert expected_mapping == actual_mapping
-        else:
-            try:
-                method(None, None, None)
-                assert False
-            except ValueError:
-                pass
+        actual_mapping = method(None, None, next_page_token={"next_page_token": "1000"})
+        assert expected_mapping == actual_mapping
 
 
 @pytest.mark.parametrize(
