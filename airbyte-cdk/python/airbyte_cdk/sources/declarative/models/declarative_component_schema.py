@@ -1328,6 +1328,10 @@ class SimpleRetriever(BaseModel):
         None,
         description="Paginator component that describes how to navigate through the API's pages.",
     )
+    ignore_stream_slicer_parameters_on_paginated_requests: Optional[bool] = Field(
+        False,
+        description='If true, the stream slicer parameters will be ignored when paginating requests. This is useful when the stream slicer parameters are not needed for pagination.',
+    )
     partition_router: Optional[
         Union[
             CustomPartitionRouter,
