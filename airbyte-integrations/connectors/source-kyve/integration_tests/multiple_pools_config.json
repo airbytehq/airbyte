@@ -2,6 +2,7 @@
   "pool_ids": "0,1",
   "start_ids": "0,0",
   "url_base": "https://api-eu-1.kyve.network",
+  "start_keys": "0,0",
   "page_size": 1,
   "max_pages": 2
 }

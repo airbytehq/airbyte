@@ -171,6 +171,7 @@ def test_parse_response(patch_base_class, monkeypatch):
                 },
             },
         },
+        "offset": "0"
     }
 
     assert next(stream.parse_response(**inputs)) == expected_parsed_object

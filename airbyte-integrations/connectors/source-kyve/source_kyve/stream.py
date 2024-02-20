@@ -39,7 +39,6 @@ class KYVEStream(HttpStream, IncrementalMixin):
     url_base = None
 
     cursor_field = "offset"
-    page_size = 100
 
     # Set this as a noop.
     primary_key = None
@@ -55,11 +54,17 @@ class KYVEStream(HttpStream, IncrementalMixin):
         self.runtime = pool_data.get("runtime")
 
         self.url_base = config["url_base"]
-        # this is an ugly solution but has to parsed by source to be a single item
+
         self._offset = int(config["start_ids"])
 
-        self.page_size = config["page_size"]
+        self._start_key = int(config["start_keys"])
+        self._end_key = int(config["end_keys"])
+
+        self._reached_end = False
+
+        self.page_size = 100
         self.max_pages = config.get("max_pages", None)
+
         # For incremental querying
         self._cursor_value = self._offset
 
@@ -68,22 +73,22 @@ class KYVEStream(HttpStream, IncrementalMixin):
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
-            "properties": {"key": {"type": "string"}, "value": {"type": "any"}},
+            "properties": {"key": {"type": "string"}, "value": {"type": "any"}, "offset": {"type": "string"}},
             "required": ["key", "value"],
         }
 
         return schema
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"/kyve/v1/bundles/{self.pool_id}"
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # Set the pagesize in the request parameters
         params = {"pagination.limit": self.page_size}
@@ -100,17 +105,17 @@ class KYVEStream(HttpStream, IncrementalMixin):
         return params
 
     def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         try:
             # set the state to store the latest bundle_id
             bundles = response.json().get("finalized_bundles")
             if not len(bundles):
-                self._offset = -float("inf")
+                self._reached_end = True
         except IndexError:
             bundles = []
 
@@ -154,20 +159,51 @@ class KYVEStream(HttpStream, IncrementalMixin):
                 assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
                 decompressed_as_json = json.loads(decompressed)
 
-                # Set cursor value to next bundle id
-                self._cursor_value = int(bundle.get("id")) + 1
+                # Add offset to each_data_item
+                for data_item in decompressed_as_json:
+                    data_item["offset"] = bundle.get("id")
+
+                # Skip bundle if start_key not reached
+                if int(bundle.get("to_key")) < self._start_key:
+                    self._cursor_value = int(bundle.get("id")) + 1
+                    continue
+
+                # If start_key reached, remove all data items of bundles that have a key
+                # smaller than start_key
+                if int(bundle.get("from_key")) <= self._start_key <= int(bundle.get("to_key")):
+                    decompressed_as_json = [data_item for data_item in decompressed_as_json if int(data_item.get("key")) >= self._start_key]
+                    yield from decompressed_as_json
+                    continue
+
+                # If end_key reached, remove all data items of bundles that have a key
+                # bigger than end_key and stop the stream
+                if int(bundle.get("from_key")) <= self._end_key <= int(bundle.get("to_key")):
+                    decompressed_as_json = [data_item for data_item in decompressed_as_json if int(data_item.get("key")) <= self._end_key]
+                    self._reached_end = True
+                    yield from decompressed_as_json
+                    return
+
+                # If end_key already reached, stop stream without syncing anything
+                if int(bundle.get("from_key")) > self._end_key:
+                    self._reached_end = True
+                    return
+
                 # extract the value from the key -> value mapping
                 yield from decompressed_as_json
+                # Set cursor value to next bundle id
+                self._cursor_value = int(bundle.get("id")) + 1
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # in case we set a max_pages parameter we need to abort
         if self.max_pages and self._cursor_value >= self.max_pages * self.page_size:
             return
 
-        if self._offset > -float("inf"):
-            self._offset = self._cursor_value
-            return str(self._offset)
         self._offset = self._cursor_value
+
+        if self._reached_end:
+            return
+        else:
+            return str(self._offset)
 
     @property
     def state(self) -> Mapping[str, Any]:

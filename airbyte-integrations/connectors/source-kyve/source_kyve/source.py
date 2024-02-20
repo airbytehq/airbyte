@@ -18,6 +18,16 @@ class SourceKyve(AbstractSource):
         pools = config.get("pool_ids").split(",")
         start_ids = config.get("start_ids").split(",")
 
+        if config.get("start_keys"):
+            start_keys = config.get("start_keys").split(",")
+            if not len(pools) == len(start_ids) == len(start_keys):
+                return False, "Please add a start_id and a start_key for every pool"
+
+        if config.get("end_keys"):
+            end_keys = config.get("end_keys").split(",")
+            if not len(pools) == len(start_ids) == len(end_keys):
+                return False, "Please add a start_id and a end_key for every pool"
+
         if not len(pools) == len(start_ids):
             return False, "Please add a start_id for every pool"
 
@@ -39,13 +49,21 @@ class SourceKyve(AbstractSource):
         pools = config.get("pool_ids").split(",")
         start_ids = config.get("start_ids").split(",")
 
-        for (pool_id, start_id) in zip(pools, start_ids):
+        for i, (pool_id, start_id) in enumerate(zip(pools, start_ids)):
             response = requests.get(f"{config['url_base']}/kyve/query/v1beta1/pool/{pool_id}")
             pool_data = response.json().get("pool").get("data")
 
             config_copy = dict(deepcopy(config))
             config_copy["start_ids"] = int(start_id)
-            # add a new stream based on the pool_data
+            config_copy["start_keys"] = int(-1e18)
+            config_copy["end_keys"] = int(1e18)
+
+            if config.get("start_keys"):
+                config_copy["start_keys"] = int(config.get("start_keys").split(",")[i])
+
+            if config.get("end_keys"):
+                config_copy["end_keys"] = int(config.get("end_keys").split(",")[i])
+
             streams.append(KYVEStream(config=config_copy, pool_data=pool_data))
 
         return streams

@@ -7,12 +7,12 @@ connectionSpecification:
     - pool_ids
     - start_ids
     - url_base
+  additionalProperties: true
   properties:
     pool_ids:
       type: string
       title: Pool-IDs
       description: The IDs of the KYVE storage pool you want to archive. (Comma separated)
-      order: 0
       examples:
         - "0"
         - "0,1"
@@ -22,31 +22,52 @@ connectionSpecification:
       description:
         The start-id defines, from which bundle id the pipeline should
         start to extract the data. (Comma separated)
-      order: 1
       examples:
         - "0"
         - "0,0"
+        - "100"
     url_base:
       type: string
       title: KYVE-API URL Base
       description: URL to the KYVE Chain API.
       default: https://api.kyve.network
-      order: 2
       examples:
         - https://api.kaon.kyve.network/
         - https://api.korellia.kyve.network/
+    start_keys:
+      type: string
+      title: Start keys
+      description:
+        The start key defines, from which key the pipeline should
+        start to extract the data. Only recommended when the sync should 
+        start at a specific key with a predefined Bundle-Start-ID to prevent 
+        inefficiency. Right now, this is only supported for pools using the 
+        kyvejs/tendermint or kyvejs/tendermint-bsync runtime. (Comma separated)
+      examples:
+        - "0"
+        - "50"
+        - "0,0"
+    end_keys:
+      type: string
+      title: End keys
+      description:
+        The end key defines, until which key the pipeline should
+        extract the data. Only recommended when the sync should
+        end at a specific key to prevent unnecessary data traffic. 
+        Right now, this is only supported for pools using the kyvejs/tendermint 
+        or kyvejs/tendermint-bsync runtime. (Comma separated)
+      examples:
+        - "100"
+        - "20,10"
     max_pages:
       type: integer
       description:
         The maximum amount of pages to go trough. Set to 'null' for all
         pages.
-      order: 3
       airbyte_hidden: true
     page_size:
       type: integer
       description:
         The pagesize for pagination, smaller numbers are used in integration
         tests.
-      default: 100
-      order: 4
       airbyte_hidden: true
