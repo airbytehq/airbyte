@@ -85,7 +85,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| 0.3.1   | 2024-02-20 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Upgrade Facebook API to v19.0                                                         |
+| 0.3.1   | 2024-02-20 | [35433](https://github.com/airbytehq/airbyte/pull/35433) | Upgrade Facebook API to v19.0                                                         |
 | 0.3.0   | 2023-06-26 | [27728](https://github.com/airbytehq/airbyte/pull/27728) | License Update: Elv2                                                      |
 | 0.2.5   | 2023-04-13 | [26939](https://github.com/airbytehq/airbyte/pull/26939) | Add advancedAuth to the connector spec                                    |
 | 0.2.4   | 2023-04-13 | [25143](https://github.com/airbytehq/airbyte/pull/25143) | Update insight metrics request params                                     |
