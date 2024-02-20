@@ -83,9 +83,9 @@ acceptance_tests:
               bypass_reason: is changeable
         empty_streams:
           - name: "ads_insights_action_product_id"
-            bypass_reason: "Data not permanent"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: "videos"
-            bypass_reason: "Cannot populate"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
         timeout_seconds: 4800
         expect_records:
           path: "integration_tests/expected_records.jsonl"

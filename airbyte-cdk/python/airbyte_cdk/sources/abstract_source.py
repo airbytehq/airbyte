@@ -14,6 +14,7 @@ from airbyte_cdk.models import (
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
+    FailureType,
     Status,
     StreamDescriptor,
     SyncMode,
@@ -101,7 +102,7 @@ class AbstractSource(Source, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
-        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
+        state_manager = ConnectorStateManager(stream_instance_map={s.stream.name: s.stream for s in catalog.streams}, state=state)
         self._stream_to_instance_map = stream_instances
 
         stream_name_to_exception: MutableMapping[str, AirbyteTracedException] = {}
@@ -170,9 +171,10 @@ class AbstractSource(Source, ABC):
         if len(stream_name_to_exception) > 0:
             error_message = self._generate_failed_streams_error_message(stream_name_to_exception)
             logger.info(error_message)
-            # We still raise at least one exception when a stream raises an exception because the platform
-            # currently relies on a non-zero exit code to determine if a sync attempt has failed
-            raise AirbyteTracedException(message=error_message)
+            # We still raise at least one exception when a stream raises an exception because the platform currently relies
+            # on a non-zero exit code to determine if a sync attempt has failed. We also raise the exception as a config_error
+            # type because this combined error isn't actionable, but rather the previously emitted individual errors.
+            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
         logger.info(f"Finished syncing {self.name}")
 
     @property
@@ -306,7 +308,7 @@ class AbstractSource(Source, ABC):
         WARNING: This function is in-development which means it is subject to change. Use at your own risk.
 
         By default, when a source encounters an exception while syncing a stream, it will emit an error trace message and then
-        continue syncing the next stream. This can be overwridden on a per-source basis so that the source will stop the sync
+        continue syncing the next stream. This can be overwritten on a per-source basis so that the source will stop the sync
         on the first error seen and emit a single error trace message for that stream.
         """
         return False

@@ -1184,7 +1184,13 @@ class TestIncrementalRead:
 def test_checkpoint_state_from_stream_instance():
     teams_stream = MockStreamOverridesStateMethod()
     managers_stream = StreamNoStateMethod()
-    state_manager = ConnectorStateManager({"teams": teams_stream, "managers": managers_stream}, [])
+    state_manager = ConnectorStateManager(
+        {
+            "teams": AirbyteStream(name="teams", namespace="", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]),
+            "managers": AirbyteStream(name="managers", namespace="", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental])
+        },
+        [],
+    )
 
     # The stream_state passed to checkpoint_state() should be ignored since stream implements state function
     teams_stream.state = {"updated_at": "2022-09-11"}
@@ -1250,6 +1256,7 @@ def test_continue_sync_with_failed_streams(mocker, exception_to_raise, expected_
         assert expected == messages
 
     assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
 
 
 def test_continue_sync_source_override_false(mocker):
@@ -1299,6 +1306,7 @@ def test_continue_sync_source_override_false(mocker):
         assert expected == messages
 
     assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
 
 
 def test_sync_error_trace_messages_obfuscate_secrets(mocker):
@@ -1347,6 +1355,7 @@ def test_sync_error_trace_messages_obfuscate_secrets(mocker):
         assert expected == messages
 
     assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
 
 
 def test_continue_sync_with_failed_streams_with_override_false(mocker):
@@ -1391,6 +1400,7 @@ def test_continue_sync_with_failed_streams_with_override_false(mocker):
         assert expected == messages
 
     assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
 
 
 def _remove_stack_trace(message: AirbyteMessage) -> AirbyteMessage:

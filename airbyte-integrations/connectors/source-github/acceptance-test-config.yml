@@ -32,7 +32,7 @@ acceptance_tests:
           extra_records: yes
         empty_streams:
           - name: "events"
-            bypass_reason: "Only events created within the past 90 days can be showed"
+            bypass_reason: "Only events created within the past 90 days can be showed. Stream is tested with integration tests."
         ignored_fields:
           contributor_activity:
             - name: weeks
