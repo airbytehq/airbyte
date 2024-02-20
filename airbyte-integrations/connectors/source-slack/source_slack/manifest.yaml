@@ -132,7 +132,7 @@ definitions:
       - type: CustomTransformation
         class_name: "source_slack.components.JoinChannels"
 
-  substream_partition_router:
+  channels_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
       - type: ParentStreamConfig
@@ -156,7 +156,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
-        $ref: "#/definitions/substream_partition_router"
+        $ref: "#/definitions/channels_partition_router"
       record_selector:
         type: RecordSelector
         extractor:
@@ -181,7 +181,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
-        $ref: "#/definitions/substream_partition_router"
+        $ref: "#/definitions/channels_partition_router"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: float_ts
@@ -218,11 +218,60 @@ definitions:
               - channel_id
             value: '{{ stream_partition[''channel_id''] }}'
 
+  channel_messages_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        parent_key: id
+        request_option:
+          type: RequestOption
+          field_name: channel
+          inject_into: request_parameter
+        partition_field: channel_id
+        stream: "#/definitions/channel_messages_stream"
+
+  threads_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: threads
+      path: conversations.replies
+      field_path: messages
+    primary_key:
+      - channel_id
+      - ts
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "{{ parameters['field_path'] }}"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+
+      partition_router:
+        class_name: "source_slack.components.ThreadsPartitionRouter"
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/channel_messages_stream"
+            parent_key: channel_id
+            partition_field: channel_id
+            request_option:
+              type: RequestOption
+              field_name: channel
+              inject_into: request_parameter
+
+
+
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/channels_stream"
   - "#/definitions/channel_members_stream"
   - "#/definitions/channel_messages_stream"
+  - "#/definitions/threads_stream"
 
 
 check:
