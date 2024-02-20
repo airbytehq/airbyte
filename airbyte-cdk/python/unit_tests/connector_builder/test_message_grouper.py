@@ -218,14 +218,14 @@ def test_get_grouped_messages_with_logs(mock_entrypoint_read: Mock) -> None:
 
 
 @pytest.mark.parametrize(
-    "request_record_limit, max_record_limit",
+    "request_record_limit, max_record_limit, should_fail",
     [
-        pytest.param(1, 3, id="test_create_request_with_record_limit"),
-        pytest.param(3, 1, id="test_create_request_record_limit_exceeds_max"),
+        pytest.param(1, 3, False, id="test_create_request_with_record_limit"),
+        pytest.param(3, 1, True, id="test_create_request_record_limit_exceeds_max"),
     ],
 )
 @patch("airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read")
-def test_get_grouped_messages_record_limit(mock_entrypoint_read: Mock, request_record_limit: int, max_record_limit: int) -> None:
+def test_get_grouped_messages_record_limit(mock_entrypoint_read: Mock, request_record_limit: int, max_record_limit: int, should_fail: bool) -> None:
     url = "https://demonslayers.com/api/v1/hashiras?era=taisho"
     request = {
         "headers": {"Content-Type": "application/json"},
@@ -249,16 +249,23 @@ def test_get_grouped_messages_record_limit(mock_entrypoint_read: Mock, request_r
     record_limit = min(request_record_limit, max_record_limit)
 
     api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
-    actual_response: StreamRead = api.get_message_groups(
-        mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras"), record_limit=request_record_limit
-    )
-    single_slice = actual_response.slices[0]
-    total_records = 0
-    for i, actual_page in enumerate(single_slice.pages):
-        total_records += len(actual_page.records)
-    assert total_records == min([record_limit, n_records])
+    # this is the call we expect to raise an exception
+    if should_fail:
+        with pytest.raises(ValueError):
+            api.get_message_groups(
+                mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras"), record_limit=request_record_limit
+            )
+    else:
+        actual_response: StreamRead = api.get_message_groups(
+            mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras"), record_limit=request_record_limit
+        )
+        single_slice = actual_response.slices[0]
+        total_records = 0
+        for i, actual_page in enumerate(single_slice.pages):
+            total_records += len(actual_page.records)
+        assert total_records == min([record_limit, n_records])
 
-    assert (total_records >= max_record_limit) == actual_response.test_read_limit_reached
+        assert (total_records >= max_record_limit) == actual_response.test_read_limit_reached
 
 
 @pytest.mark.parametrize(
