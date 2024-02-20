@@ -80,7 +80,13 @@ export const HeaderDecoration = ({
       <div className={styles.header}>
         <img src={iconUrl} alt="" className={styles.connectorIcon} />
         <h1 id={originalId}>
-          {isArchived ? `${originalTitle} [ARCHIVED]` : originalTitle}
+          {isArchived ? (
+            <span>
+              {originalTitle} <span style={{ color: "red" }}>[ARCHIVED]</span>
+            </span>
+          ) : (
+            originalTitle
+          )}
         </h1>
       </div>
     </>
