@@ -41,9 +41,10 @@ public class LoggingHelper {
 
   @VisibleForTesting
   public static final String RESET = "\u001B[0m";
+  public static final String PREPARE_COLOR_CHAR = "\u001b[m";
 
   public static String applyColor(final Color color, final String msg) {
-    return color.getCode() + msg + RESET;
+    return PREPARE_COLOR_CHAR + color.getCode() + msg + PREPARE_COLOR_CHAR + RESET;
   }
 
 }
