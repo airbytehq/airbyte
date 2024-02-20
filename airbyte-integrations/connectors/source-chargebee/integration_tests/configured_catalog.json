@@ -15,29 +15,6 @@
     },
     {
       "stream": {
-        "name": "customer",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["updated_at"]
-    },
-    {
-      "stream": {
-        "name": "contact",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "invoice",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -92,14 +69,11 @@
       "stream": {
         "name": "attached_item",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["updated_at"]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -145,12 +119,19 @@
         "name": "gift",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+<<<<<<< HEAD
         "source_defined_primary_key": [["id"]],
         "default_cursor_field": ["updated_at"]
+=======
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["id"]],
+        "default_cursor_field": ["created_at"]
+>>>>>>> master
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["created_at"]
+<<<<<<< HEAD
     },
     {
       "stream": {
@@ -164,6 +145,8 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["updated_at"]
+=======
+>>>>>>> master
     },
     {
       "stream": {
@@ -196,6 +179,10 @@
         "name": "unbilled_charge",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+<<<<<<< HEAD
+=======
+        "source_defined_cursor": true,
+>>>>>>> master
         "source_defined_primary_key": [["id"]],
         "default_cursor_field": ["updated_at"]
       },

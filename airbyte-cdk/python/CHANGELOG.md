@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.63.2
+Correct handling of custom max_records limits in connector_builder
+
+## 0.63.1
+File-based CDK:  fix record enqueuing
+
+## 0.63.0
+Per-stream error reporting and continue syncing on error by default
+
+## 0.62.2
+mask access key when logging refresh response
+
 ## 0.62.1
 [ISSUE #34910] add headers to HttpResponse for test framework
 
