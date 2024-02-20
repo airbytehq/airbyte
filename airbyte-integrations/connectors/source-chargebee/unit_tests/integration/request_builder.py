@@ -42,6 +42,10 @@ class ChargebeeRequestBuilder:
     def subscription_endpoint(cls, site: str, site_api_key: str) -> "ChargebeeRequestBuilder":
         return cls("subscriptions", site, site_api_key)
 
+    @classmethod
+    def hosted_page_endpoint(cls, site: str, site_api_key: str) -> "ChargebeeRequestBuilder":
+        return cls("hosted_pages", site, site_api_key)
+
     def __init__(self, resource: str, site: str, site_api_key: str) -> "ChargebeeRequestBuilder":
         self._resource: str = resource
         self._site: str = site
