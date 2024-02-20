@@ -430,4 +430,4 @@ streams:
 
 check:
   stream_names:
-    - "event"
+    - "customer"
