@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -21,7 +21,7 @@ from suds_response_mock import mock_http_authenticated_send
 class BaseTest(TestCase):
 
     @property
-    def service_manager(self) -> ReportingServiceManager | BulkServiceManager:
+    def service_manager(self) -> Union[ReportingServiceManager, BulkServiceManager]:
         pass
 
     def _download_file(self, file: Optional[str] = None) -> Path:
