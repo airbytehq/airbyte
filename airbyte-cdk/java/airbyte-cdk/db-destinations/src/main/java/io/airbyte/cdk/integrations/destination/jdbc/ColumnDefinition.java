@@ -11,6 +11,6 @@ package io.airbyte.cdk.integrations.destination.jdbc;
  * @param type
  * @param columnSize
  */
-public record ColumnDefinition(String name, String type, int columnSize) {
+public record ColumnDefinition(String name, String type, int columnSize, boolean isNullable) {
 
 }

@@ -193,7 +193,8 @@ public abstract class JdbcDestinationHandler implements DestinationHandler {
           final String columnName = columns.getString("COLUMN_NAME");
           final String typeName = columns.getString("TYPE_NAME");
           final int columnSize = columns.getInt("COLUMN_SIZE");
-          columnDefinitions.put(columnName, new ColumnDefinition(columnName, typeName, columnSize));
+          final String isNullable = columns.getString("IS_NULLABLE");
+          columnDefinitions.put(columnName, new ColumnDefinition(columnName, typeName, columnSize, fromIsNullableIsoString(isNullable)));
         }
       } catch (final SQLException e) {
         LOGGER.error("Failed to retrieve column info for {}.{}.{}", databaseName, schemaName, tableName, e);
@@ -209,6 +210,10 @@ public abstract class JdbcDestinationHandler implements DestinationHandler {
     return Optional.of(new TableDefinition(retrievedColumnDefns));
   }
 
+  public static boolean fromIsNullableIsoString(final String isNullable) {
+    return "YES".equalsIgnoreCase(isNullable);
+  }
+
   private boolean isAirbyteRawIdColumnMatch(final TableDefinition existingTable) {
     return existingTable.columns().containsKey(COLUMN_NAME_AB_RAW_ID) &&
         toJdbcTypeName(AirbyteProtocolType.STRING).equals(existingTable.columns().get(COLUMN_NAME_AB_RAW_ID).type());
@@ -219,7 +224,7 @@ public abstract class JdbcDestinationHandler implements DestinationHandler {
         toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE).equals(existingTable.columns().get(COLUMN_NAME_AB_EXTRACTED_AT).type());
   }
 
-  private boolean isAirbyteMetaColumnMatch(final TableDefinition existingTable) {
+  protected boolean isAirbyteMetaColumnMatch(final TableDefinition existingTable) {
     return existingTable.columns().containsKey(COLUMN_NAME_AB_META) &&
         toJdbcTypeName(new Struct(new LinkedHashMap<>())).equals(existingTable.columns().get(COLUMN_NAME_AB_META).type());
   }
