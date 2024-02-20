@@ -167,7 +167,7 @@ Before upgrading the chart update values.yaml as stated above and then run:
 - Perform upgrade of chart by running `helm upgrade %release_name% airbyte/airbyte --set auth.rootPassword=$ROOT_PASSWORD`
   - If you get an error about setting the auth.rootPassword, then you forgot to update the `values.yaml` file
 
-### External Logs
+### External Logs with S3
 
 ::info
 S3 logging was tested on [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13)
@@ -296,7 +296,7 @@ server:
 Than run:
 `helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.50.13`
 
-#### GCS Logging
+### External Logs with GCS
 
 
 :::Info
@@ -326,7 +326,6 @@ GCS logging was tested on [Airbyte Helm Chart Version 0.53.178](https://artifact
 #### Create an extra Volume where the GCSFS secret will be added in the values.yaml inside of the worker section
 ```
 worker:
- log:
   extraVolumes:
     - name: gcsfs-creds
       secret:
