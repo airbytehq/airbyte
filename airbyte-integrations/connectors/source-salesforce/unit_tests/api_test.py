@@ -860,11 +860,18 @@ def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_
 
 @freezegun.freeze_time("2023-01-01")
 @pytest.mark.parametrize(
-    "lookback, expect_error",
-    [(None, True), (0, False), (10, False), (-1, True)],
-    ids=["lookback-is-none", "lookback-is-0", "lookback-is-valid", "lookback-is-negative"],
+    "lookback, stream_slice_step, expected_len_stream_slices, expect_error",
+    [(None, "P30D", 0, True), (0, "P30D", 158, False), (10, "P1D", 4732, False), (10, "PT12H", 9463, False), (-1, "P30D", 0, True)],
+    ids=[
+        "lookback-is-none",
+        "lookback-is-0-step-30D",
+        "lookback-is-valid-step-1D",
+        "lookback-is-valid-step-12H",
+        "lookback-is-negative"
+    ],
 )
-def test_bulk_stream_slices(stream_config_date_format, stream_api, lookback, expect_error):
+def test_bulk_stream_slices(stream_config_date_format, stream_api, lookback, expect_error, stream_slice_step: str, expected_len_stream_slices: int):
+    stream_config_date_format["stream_slice_step"] = stream_slice_step
     stream: BulkIncrementalSalesforceStream = generate_stream("FakeBulkStream", stream_config_date_format, stream_api)
     with patch("source_salesforce.streams.LOOKBACK_SECONDS", lookback):
         if expect_error:
@@ -886,6 +893,7 @@ def test_bulk_stream_slices(stream_config_date_format, stream_api, lookback, exp
                 )
                 start_date += stream.stream_slice_step
             assert expected_slices == stream_slices
+            assert len(stream_slices) == expected_len_stream_slices
 
 
 @freezegun.freeze_time("2023-04-01")
