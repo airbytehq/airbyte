@@ -81,6 +81,7 @@ def test_should_not_migrate_new_config():
     migration_instance = MigrateAccountIdToArray()
     assert not migration_instance.should_migrate(new_config)
 
+
 def test_should_not_migrate_upgraded_config():
     new_config = load_config(UPGRADED_TEST_CONFIG_PATH)
     migration_instance = MigrateAccountIdToArray()
