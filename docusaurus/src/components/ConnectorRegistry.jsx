@@ -19,10 +19,12 @@ Sorts connectors by release stage and then name
 */
 function connectorSort(a, b) {
   if (a.supportLevel_oss !== b.supportLevel_oss) {
-    if (a.supportLevel_oss === "certified") return -2;
-    if (b.supportLevel_oss === "certified") return 2;
-    if (a.supportLevel_oss === "community") return -1;
-    if (b.supportLevel_oss === "community") return 1;
+    if (a.supportLevel_oss === "certified") return -3;
+    if (b.supportLevel_oss === "certified") return 3;
+    if (a.supportLevel_oss === "community") return -2;
+    if (b.supportLevel_oss === "community") return 2;
+    if (a.supportLevel_oss === "archived") return -1;
+    if (b.supportLevel_oss === "archived") return 1;
   }
 
   if (a.name_oss < b.name_oss) return -1;
