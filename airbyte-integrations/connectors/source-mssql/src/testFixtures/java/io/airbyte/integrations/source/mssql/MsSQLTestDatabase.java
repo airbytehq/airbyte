@@ -118,7 +118,17 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   public MsSQLTestDatabase withCdc() {
-    return with("EXEC sys.sp_cdc_enable_db;");
+    LOGGER.info("enabling CDC on database {} with id {}", getDatabaseName(), databaseId);
+    MsSQLTestDatabase retVal = with("EXEC sys.sp_cdc_enable_db;");
+    LOGGER.info("CDC enabled on database {} with id {}", getDatabaseName(), databaseId);
+    try {
+      LOGGER.info("Sleeping");
+      Thread.sleep(60_000);
+      LOGGER.info("Done sleeping");
+    } catch (InterruptedException e) {
+
+    }
+    return retVal;
   }
 
   public MsSQLTestDatabase withoutCdc() {
