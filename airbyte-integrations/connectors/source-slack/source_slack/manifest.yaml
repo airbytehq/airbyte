@@ -27,6 +27,15 @@ spec:
         default: true
         title: Join all channels
         description: Whether to join all channels or to sync data only from channels the bot is already in.  If false, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+      channel_filter:
+        type: array
+        default: []
+        items:
+          type: string
+          minLength: 0
+        title": "Channel name filter"
+        description: "A channel name list (without leading '#' char) which limit the channels from which you'd like to sync. Empty list means no filter."
+        examples: ["channel_one", "channel_two"]
     additionalProperties: true
 
 definitions:
@@ -53,19 +62,23 @@ definitions:
         {{ not response.get("response_metadata", {}).get("next_cursor", {})
         }}
 
+
+  requester:
+    type: HttpRequester
+    url_base: https://slack.com/api/
+    path: "{{ parameters['path'] }}"
+    http_method: GET
+    request_parameters: { }
+    request_headers: { }
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config[''api_token''] }}'
+    request_body_json: { }
+
   retriever:
     type: SimpleRetriever
     requester:
-      type: HttpRequester
-      url_base: https://slack.com/api/
-      path: "{{ parameters['path'] }}"
-      http_method: GET
-      request_parameters: { }
-      request_headers: { }
-      authenticator:
-        type: BearerAuthenticator
-        api_token: '{{ config[''api_token''] }}'
-      request_body_json: { }
+      $ref: "#/definitions/requester"
     record_selector:
       type: RecordSelector
       extractor:
@@ -76,12 +89,29 @@ definitions:
       $ref: "#/definitions/default_paginator"
     partition_router: []
 
+  retriever_filter:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "{{ parameters['field_path'] }}"
+      record_filter:
+        type: RecordFilter
+        condition: "{{ record.id in config.channel_filter or not config.channel_filter }}"
+    paginator:
+      $ref: "#/definitions/default_paginator"
+    partition_router: []
+
   stream_base:
+    primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
     schema_loader:
       $ref: "#/definitions/schema_loader"
-    primary_key: "id"
 
   users_stream:
     $ref: "#/definitions/stream_base"
@@ -96,6 +126,11 @@ definitions:
       name: channels
       path: conversations.list
       field_path: channels
+    retriever:
+      $ref: "#/definitions/retriever_filter"
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_slack.components.JoinChannels"
 
   substream_partition_router:
     type: SubstreamPartitionRouter
@@ -108,20 +143,6 @@ definitions:
           inject_into: request_parameter
         partition_field: channel_id
         stream: "#/definitions/channels_stream"
-
-  channel_join_stream:
-    $ref: "#/definitions/stream_base"
-    $parameters:
-      name: channel_join
-      path: conversations.join
-      field_path: channel
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        http_method: POST
-      partition_router:
-        $ref: "#/definitions/substream_partition_router"
-
 
   channel_members_stream:
     $ref: "#/definitions/stream_base"
@@ -202,7 +223,7 @@ streams:
   - "#/definitions/channels_stream"
   - "#/definitions/channel_members_stream"
   - "#/definitions/channel_messages_stream"
-  - "#/definitions/channels_main_stream"
+
 
 check:
   type: CheckStream
