@@ -48,7 +48,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
     MAX_WORKERS = 5
-
+    stop_sync_on_stream_failure = True
     message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[logger.level]))
 
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState], **kwargs):

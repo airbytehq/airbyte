@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import csv
 import io
 import logging
@@ -18,6 +17,7 @@ import requests_mock
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
@@ -383,7 +383,6 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
     source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     source.streams = Mock()
     source.streams.return_value = streams
-    logger = logging.getLogger("airbyte")
 
     json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
     with requests_mock.Mocker() as m:
@@ -407,17 +406,16 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
                 m.register_uri("DELETE", stream.path() + f"/{job_id}")
 
             m.register_uri("POST", stream.path(), creation_responses)
-
-        result = [i for i in source.read(logger=logger, config=stream_config, catalog=bulk_catalog, state=state)]
+        result = read(source=source, config=stream_config, catalog=bulk_catalog, state=state)
         assert stream_1.request_params.called
         assert (
             not stream_2.request_params.called
         ), "The second stream should not be executed, because the first stream finished with Rate Limit."
 
-        records = [item for item in result if item.type == Type.RECORD]
+        records = result.records
         assert len(records) == 6  # stream page size: 6
 
-        state_record = [item for item in result if item.type == Type.STATE][0]
+        state_record = result.state_messages[0]
         assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-10-05T00:00:00+00:00"  # state checkpoint interval is 5.
 
 
@@ -434,13 +432,12 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     stream_2: IncrementalRestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
 
     stream_1.state_checkpoint_interval = 3
+    streams = [stream_1, stream_2]
     configure_request_params_mock(stream_1, stream_2)
 
     source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     source.streams = Mock()
-    source.streams.return_value = [stream_1, stream_2]
-
-    logger = logging.getLogger("airbyte")
+    source.streams.return_value = streams
 
     next_page_url = "/services/data/v57.0/query/012345"
     response_1 = {
@@ -476,17 +473,17 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
         m.register_uri("GET", stream_1.path(), json=response_1, status_code=200)
         m.register_uri("GET", next_page_url, json=response_2, status_code=403)
 
-        result = [i for i in source.read(logger=logger, config=stream_config, catalog=rest_catalog, state=state)]
+        result = read(source=source, config=stream_config, catalog=rest_catalog, state=state)
 
         assert stream_1.request_params.called
         assert (
             not stream_2.request_params.called
         ), "The second stream should not be executed, because the first stream finished with Rate Limit."
 
-        records = [item for item in result if item.type == Type.RECORD]
+        records = result.records
         assert len(records) == 5
 
-        state_record = [item for item in result if item.type == Type.STATE][0]
+        state_record = result.state_messages[0]
         assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17T00:00:00+00:00"
 
 
