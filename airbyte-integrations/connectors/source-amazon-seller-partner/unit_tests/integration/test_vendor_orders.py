@@ -63,7 +63,6 @@ def _order_record() -> RecordBuilder:
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh:
-
     @staticmethod
     def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
@@ -76,9 +75,7 @@ class TestFullRefresh:
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
-        http_mocker.get(
-            _vendor_orders_request().build(), _vendor_orders_response().with_record(_order_record()).build()
-        )
+        http_mocker.get(_vendor_orders_request().build(), _vendor_orders_response().with_record(_order_record()).build())
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
         assert len(output.records) == 1
@@ -130,9 +127,7 @@ class TestFullRefresh:
         assert len(output.records) == 2
 
     @HttpMocker()
-    def test_given_http_status_500_then_200_when_read_then_retry_and_return_records(
-        self, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_http_status_500_then_200_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
             _vendor_orders_request().build(),
@@ -146,13 +141,9 @@ class TestFullRefresh:
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(
-        self, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
-        http_mocker.get(
-            _vendor_orders_request().build(), response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
-        )
+        http_mocker.get(_vendor_orders_request().build(), response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR))
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
@@ -160,7 +151,6 @@ class TestFullRefresh:
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestIncremental:
-
     @staticmethod
     def _read(
         config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
@@ -176,9 +166,7 @@ class TestIncremental:
     @HttpMocker()
     def test_when_read_then_add_cursor_field(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
-        http_mocker.get(
-            _vendor_orders_request().build(), _vendor_orders_response().with_record(_order_record()).build()
-        )
+        http_mocker.get(_vendor_orders_request().build(), _vendor_orders_response().with_record(_order_record()).build())
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
         expected_cursor_value = _END_DATE.strftime(TIME_FORMAT)
@@ -208,9 +196,7 @@ class TestIncremental:
             _REPLICATION_START_FIELD: _START_DATE.strftime(TIME_FORMAT),
             _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT),
         }
-        query_params_incremental_read = {
-            _REPLICATION_START_FIELD: state_value, _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT)
-        }
+        query_params_incremental_read = {_REPLICATION_START_FIELD: state_value, _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT)}
 
         http_mocker.get(
             _vendor_orders_request().with_query_params(query_params_first_read).build(),
