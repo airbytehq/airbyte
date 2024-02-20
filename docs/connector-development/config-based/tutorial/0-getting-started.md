@@ -44,7 +44,6 @@ This can be done by signing up for the Free tier plan on [Exchange Rates Data AP
 - Python >= 3.9
 - [Poetry](https://python-poetry.org/)
 - Docker must be running
-- NodeJS
 - [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1) CLI
 
 ## Next Steps
