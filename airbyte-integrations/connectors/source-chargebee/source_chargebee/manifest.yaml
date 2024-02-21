@@ -100,8 +100,7 @@ definitions:
       path: "/addons"
       stream_cursor_field: "updated_at"
   attached_item_stream:
-    $comment: "As of 2/8/24 this stream should be full refresh only as there is an issue with state being appended rather than replaced, causing duplicates. See GH Issue: https://github.com/airbytehq/airbyte/issues/33854"
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/base_incremental_stream"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -111,10 +110,21 @@ definitions:
             stream: "#/definitions/item_stream"
             parent_key: "id"
             partition_field: "item_id"
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [404]
+                  action: IGNORE
+                  error_message: "Entity unavailable. Item may have been deleted."
     $parameters:
       name: "attached_item"
       primary_key: "id"
       path: "/items/{{ stream_slice.item_id }}/attached_items"
+      stream_cursor_field: "updated_at"
   customer_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
