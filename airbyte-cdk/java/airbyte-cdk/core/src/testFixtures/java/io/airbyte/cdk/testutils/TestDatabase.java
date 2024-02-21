@@ -211,6 +211,10 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     }
   }
 
+  protected void execSQLNoLog(String sql) {
+    getDslContext().execute(sql);
+  }
+
   protected void execInContainer(List<String> cmd) {
     if (cmd.isEmpty()) {
       return;

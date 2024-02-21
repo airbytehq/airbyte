@@ -136,15 +136,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     super.setup();
 
     // Enables cdc on MODELS_SCHEMA.MODELS_STREAM_NAME, giving CDC_ROLE_NAME select access.
-    final var enableCdcSqlFmt = """
-                                EXEC sys.sp_cdc_enable_table
-                                \t@source_schema = N'%s',
-                                \t@source_name   = N'%s',
-                                \t@role_name     = N'%s',
-                                \t@supports_net_changes = 0""";
     testdb.withCdc()
-        .with(enableCdcSqlFmt, modelsSchema(), MODELS_STREAM_NAME, CDC_ROLE_NAME)
-        .with(enableCdcSqlFmt, randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME)
+        .withCdcForTable(modelsSchema(), MODELS_STREAM_NAME, CDC_ROLE_NAME)
+        .withCdcForTable(randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME)
         .withShortenedCapturePollingInterval();
 
     // Create a test user to be used by the source, with proper permissions.
