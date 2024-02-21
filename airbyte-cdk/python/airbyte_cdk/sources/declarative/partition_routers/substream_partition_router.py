@@ -113,10 +113,10 @@ class SubstreamPartitionRouter(StreamSlicer):
                 stream_state_field = parent_stream_config.partition_field.eval(self.config)
                 for parent_stream_slice in parent_stream.list_partitions():
                     empty_parent_slice = True
-                    parent_partition = parent_stream_slice
+                    parent_slice = parent_stream_slice
 
                     for parent_record in parent_stream.read_records(
-                            sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_partition, stream_state=None
+                            sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_slice, stream_state=None
                     ):
                         if isinstance(parent_record, AirbyteMessage):
                             if parent_record.type == Type.RECORD:
@@ -154,10 +154,10 @@ class SubstreamPartitionRouter(StreamSlicer):
                 stream_state_field = parent_stream_config.partition_field.eval(self.config)
                 for parent_stream_slice in parent_stream.list_partitions():
                     empty_parent_slice = True
-                    parent_partition = parent_stream_slice
+                    parent_slice = parent_stream_slice
 
                     for parent_record in parent_stream.read_records(
-                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_partition, stream_state=None
+                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_slice, stream_state=None
                     ):
                         # Skip non-records (eg AirbyteLogMessage)
                         if isinstance(parent_record, AirbyteMessage):
@@ -173,7 +173,7 @@ class SubstreamPartitionRouter(StreamSlicer):
                             pass
                         else:
                             empty_parent_slice = False
-                            yield {stream_state_field: stream_state_value, "parent_slice": parent_partition}
+                            yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
                     # If the parent slice contains no records,
                     if empty_parent_slice:
                         yield from []
