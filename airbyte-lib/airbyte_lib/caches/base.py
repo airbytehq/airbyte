@@ -809,13 +809,14 @@ class SQLCacheBase(RecordProcessor):
 
         _ = stream_name
         deletion_name = f"{final_table_name}_deleteme"
-        commands = [
-            f"ALTER TABLE {final_table_name} RENAME TO {deletion_name}",
-            f"ALTER TABLE {temp_table_name} RENAME TO {final_table_name}",
-            f"DROP TABLE {deletion_name}",
-        ]
-        for cmd in commands:
-            self._execute_sql(cmd)
+        commands = "\n".join(
+            [
+                f"ALTER TABLE {final_table_name} RENAME TO {deletion_name};",
+                f"ALTER TABLE {temp_table_name} RENAME TO {final_table_name};",
+                f"DROP TABLE {deletion_name};",
+            ]
+        )
+        self._execute_sql(commands)
 
     def _merge_temp_table_to_final_table(
         self,
