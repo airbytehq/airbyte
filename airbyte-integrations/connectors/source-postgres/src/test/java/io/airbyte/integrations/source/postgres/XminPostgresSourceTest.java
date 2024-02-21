@@ -178,6 +178,10 @@ class XminPostgresSourceTest {
     // Since the third state message would be the final, it should be of xmin type
     assertEquals("xmin", stateTypeFromThirdStateMessage);
 
+    assertEquals(firstStateMessage.getSourceStats().getRecordCount(), 1.0);
+    assertEquals(secondStateMessage.getSourceStats().getRecordCount(), 1.0);
+    assertEquals(thirdStateMessage.getSourceStats().getRecordCount(), 1.0);
+
     // The ctid value from second state message should be bigger than first state message
     assertEquals(1, ctidFromSecondStateMessage.compareTo(ctidFromFirstStateMessage));
 
@@ -213,6 +217,8 @@ class XminPostgresSourceTest {
     assertEquals(2, stateAfterSyncWithCtidState.size());
     assertEquals(secondStateMessage, stateAfterSyncWithCtidState.get(0));
     assertEquals(thirdStateMessage, stateAfterSyncWithCtidState.get(1));
+    assertEquals(stateAfterSyncWithCtidState.get(0).getSourceStats().getRecordCount(), 1.0);
+    assertEquals(stateAfterSyncWithCtidState.get(1).getSourceStats().getRecordCount(), 1.0);
 
     assertMessageSequence(recordsFromSyncRunningWithACtidState);
 

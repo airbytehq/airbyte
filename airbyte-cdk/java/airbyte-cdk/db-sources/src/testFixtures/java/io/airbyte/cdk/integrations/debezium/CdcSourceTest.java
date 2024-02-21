@@ -746,7 +746,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final Set<AirbyteRecordMessage> recordsForModelsStreamFromThirdBatch = recordsStreamWiseFromThirdBatch.get(MODELS_STREAM_NAME);
     final Set<AirbyteRecordMessage> recordsForModelsRandomStreamFromThirdBatch = recordsStreamWiseFromThirdBatch.get(RANDOM_TABLE_NAME);
 
-    assertEquals(20, recordsForModelsStreamFromThirdBatch.size(), "records: " + recordsForModelsStreamFromThirdBatch);
+    assertEquals(20, recordsForModelsStreamFromThirdBatch.size());
     assertEquals(20, recordsForModelsRandomStreamFromThirdBatch.size());
     assertExpectedRecords(recordsWritten, recordsForModelsStreamFromThirdBatch);
     assertExpectedRecords(recordsWrittenInRandomTable, recordsForModelsRandomStreamFromThirdBatch,
