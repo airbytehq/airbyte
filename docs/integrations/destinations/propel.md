@@ -2,7 +2,13 @@
 
 ## Overview
 
-[Propel](https://www.propeldata.com) is an Analytics Platform as a Service for developers. It provides serverless ClickHouse infrastructure, data-serving APIs, and React components to deliver embedded analytics, data-serving API, and usage metering use cases in record time.
+[Propel](https://www.propeldata.com) is an Analytics Platform as a Service for developers to effortlessly ship embedded analytics, data-serving APIs, and usage metering into their applications.
+
+It provides developers with:
+
+- [Serverless ClickHouse](https://www.propeldata.com/docs/connect-your-data) to serve data blazingly fast without managing any infrastructure.
+- [Data serving APIs](https://www.propeldata.com/docs/query-your-data) and [React UI components](https://storybook.propeldata.com/) to build customer-facing analytics experiences.
+- [Access Control policies](https://www.propeldata.com/docs/control-access/multi-tenancy) to securely serve data to authenticated users in multi-tenant environments.
 
 This Airbyte destination allows to sync data into a Propel Data Pool.
 
