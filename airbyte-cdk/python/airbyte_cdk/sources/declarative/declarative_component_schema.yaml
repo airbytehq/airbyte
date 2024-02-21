@@ -1857,6 +1857,9 @@ definitions:
           - parameters
         examples:
           - "{{ property|string == '' }}"
+          - "{{ property is integer }}"
+          - "{{ property|length > 5 }}"
+          - "{{ property == 'some_string_to_match' }}"
       field_pointers:
         title: Field Paths
         description: Array of paths defining the field to remove. Each item is an array whose field describe the path of a field to remove.

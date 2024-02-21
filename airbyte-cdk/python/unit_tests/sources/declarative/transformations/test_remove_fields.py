@@ -12,42 +12,43 @@ from airbyte_cdk.sources.declarative.types import FieldPointer
 @pytest.mark.parametrize(
     ["input_record", "field_pointers", "condition", "expected"],
     [
-        pytest.param({"k1": "v", "k2": "v"}, [["k1"]], None, {"k2": "v"}, id="remove a field that exists (flat dict)"),
-        pytest.param({"k1": "v", "k2": "v"}, [["k3"]], None, {"k1": "v", "k2": "v"}, id="remove a field that doesn't exist (flat dict)"),
-        pytest.param({"k1": "v", "k2": "v"}, [["k1"], ["k2"]], None, {}, id="remove multiple fields that exist (flat dict)"),
+        pytest.param({"k1": "v", "k2": "v"}, [["k1"]], None, {"k2": "v"}, id="remove a field that exists (flat dict), condition = None"),
+        pytest.param({"k1": "v", "k2": "v"}, [["k1"]], "", {"k2": "v"}, id="remove a field that exists (flat dict)"),
+        pytest.param({"k1": "v", "k2": "v"}, [["k3"]], "", {"k1": "v", "k2": "v"}, id="remove a field that doesn't exist (flat dict)"),
+        pytest.param({"k1": "v", "k2": "v"}, [["k1"], ["k2"]], "", {}, id="remove multiple fields that exist (flat dict)"),
         # TODO: should we instead splice the element out of the array? I think that's the more intuitive solution
         #  Otherwise one could just set the field's value to null.
-        pytest.param({"k1": [1, 2]}, [["k1", 0]], None, {"k1": [None, 2]}, id="remove field inside array (int index)"),
-        pytest.param({"k1": [1, 2]}, [["k1", "0"]], None, {"k1": [None, 2]}, id="remove field inside array (string index)"),
+        pytest.param({"k1": [1, 2]}, [["k1", 0]], "", {"k1": [None, 2]}, id="remove field inside array (int index)"),
+        pytest.param({"k1": [1, 2]}, [["k1", "0"]], "", {"k1": [None, 2]}, id="remove field inside array (string index)"),
         pytest.param(
             {"k1": "v", "k2": "v", "k3": [0, 1], "k4": "v"},
             [["k1"], ["k2"], ["k3", 0]],
-            None,
+            "",
             {"k3": [None, 1], "k4": "v"},
             id="test all cases (flat)",
         ),
-        pytest.param({"k1": [0, 1]}, [[".", "k1", 10]], None, {"k1": [0, 1]}, id="remove array index that doesn't exist (flat)"),
+        pytest.param({"k1": [0, 1]}, [[".", "k1", 10]], "", {"k1": [0, 1]}, id="remove array index that doesn't exist (flat)"),
         pytest.param(
-            {".": {"k1": [0, 1]}}, [[".", "k1", 10]], None, {".": {"k1": [0, 1]}}, id="remove array index that doesn't exist (nested)"
+            {".": {"k1": [0, 1]}}, [[".", "k1", 10]], "", {".": {"k1": [0, 1]}}, id="remove array index that doesn't exist (nested)"
         ),
-        pytest.param({".": {"k2": "v", "k1": "v"}}, [[".", "k1"]], None, {".": {"k2": "v"}}, id="remove nested field that exists"),
+        pytest.param({".": {"k2": "v", "k1": "v"}}, [[".", "k1"]], "", {".": {"k2": "v"}}, id="remove nested field that exists"),
         pytest.param(
-            {".": {"k2": "v", "k1": "v"}}, [[".", "k3"]], None, {".": {"k2": "v", "k1": "v"}}, id="remove field that doesn't exist (nested)"
+            {".": {"k2": "v", "k1": "v"}}, [[".", "k3"]], "", {".": {"k2": "v", "k1": "v"}}, id="remove field that doesn't exist (nested)"
         ),
         pytest.param(
-            {".": {"k2": "v", "k1": "v"}}, [[".", "k1"], [".", "k2"]], None, {".": {}}, id="remove multiple fields that exist (nested)"
+            {".": {"k2": "v", "k1": "v"}}, [[".", "k1"], [".", "k2"]], "", {".": {}}, id="remove multiple fields that exist (nested)"
         ),
         pytest.param(
             {".": {"k1": [0, 1]}},
             [[".", "k1", 0]],
-            None,
+            "",
             {".": {"k1": [None, 1]}},
             id="remove multiple fields that exist in arrays (nested)",
         ),
         pytest.param(
             {".": {"k1": [{"k2": "v", "k3": "v"}, {"k4": "v"}]}},
             [[".", "k1", 0, "k2"], [".", "k1", 1, "k4"]],
-            None,
+            "",
             {".": {"k1": [{"k3": "v"}, {}]}},
             id="remove fields that exist in arrays (deeply nested)",
         ),
@@ -65,6 +66,20 @@ from airbyte_cdk.sources.declarative.types import FieldPointer
             "{{ property == 'v1' }}",
             {"k1": "v", "k4": {"k_nested2": "v2"}},
             id="recursively remove any field that matches property condition and leave that does not",
+        ),
+        pytest.param(
+            {"k1": "v", "k2": "some_long_string", "k3": "some_long_string", "k4": {"k_nested": "v1", "k_nested2": "v2"}},
+            [["**"]],
+            "{{ property|length > 5 }}",
+            {"k1": "v", "k4": {"k_nested": "v1", "k_nested2": "v2"}},
+            id="remove any field that have length > 5 and leave that does not",
+        ),
+        pytest.param(
+            {"k1": 255, "k2": "some_string", "k3": "some_long_string", "k4": {"k_nested": 123123, "k_nested2": "v2"}},
+            [["**"]],
+            "{{ property is integer }}",
+            {"k2": "some_string", "k3": "some_long_string", "k4": {"k_nested2": "v2"}},
+            id="recursively remove any field that of type integer and leave that does not",
         ),
     ],
 )

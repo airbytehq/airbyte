@@ -582,7 +582,12 @@ class RemoveFields(BaseModel):
     condition: Optional[str] = Field(
         '',
         description="The predicate to filter a property by a property value. Property will be removed if evaluated to True.',",
-        examples=["{{ property|string == '' }}"],
+        examples=[
+            "{{ property|string == '' }}",
+            '{{ property is integer }}',
+            '{{ property|length > 5 }}',
+            "{{ property == 'some_string_to_match' }}",
+        ],
     )
     field_pointers: List[List[str]] = Field(
         ...,
