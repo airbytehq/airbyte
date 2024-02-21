@@ -958,11 +958,16 @@ class ModelToComponentFactory:
         cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (
             self._create_component_from_model(
-                model=model.paginator, config=config, url_base=url_base, cursor_used_for_stop_condition=cursor_used_for_stop_condition
+                model=model.paginator,
+                config=config,
+                url_base=url_base,
+                cursor_used_for_stop_condition=cursor_used_for_stop_condition,
             )
             if model.paginator
             else NoPagination(parameters={})
         )
+
+        ignore_stream_slicer_parameters_on_paginated_requests = model.ignore_stream_slicer_parameters_on_paginated_requests or False
 
         if self._limit_slices_fetched or self._emit_connector_builder_messages:
             return SimpleRetrieverTestReadDecorator(
@@ -975,6 +980,7 @@ class ModelToComponentFactory:
                 cursor=cursor,
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched or 5,
+                ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
                 parameters=model.parameters or {},
             )
         return SimpleRetriever(
@@ -986,6 +992,7 @@ class ModelToComponentFactory:
             stream_slicer=stream_slicer,
             cursor=cursor,
             config=config,
+            ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
             parameters=model.parameters or {},
         )
 

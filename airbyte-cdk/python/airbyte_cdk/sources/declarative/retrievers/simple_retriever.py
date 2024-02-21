@@ -59,6 +59,7 @@ class SimpleRetriever(Retriever):
     paginator: Optional[Paginator] = None
     stream_slicer: StreamSlicer = SinglePartitionRouter(parameters={})
     cursor: Optional[Cursor] = None
+    ignore_stream_slicer_parameters_on_paginated_requests: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._paginator = self.paginator or NoPagination(parameters=parameters)
@@ -105,12 +106,12 @@ class SimpleRetriever(Retriever):
         Returned merged mapping otherwise
         """
         # FIXME we should eventually remove the usage of stream_state as part of the interpolation
-        return combine_mappings(
-            [
-                paginator_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                stream_slicer_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            ]
-        )
+        mappings = [
+            paginator_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        ]
+        if not next_page_token or not self.ignore_stream_slicer_parameters_on_paginated_requests:
+            mappings.append(stream_slicer_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token))
+        return combine_mappings(mappings)
 
     def _request_headers(
         self,
