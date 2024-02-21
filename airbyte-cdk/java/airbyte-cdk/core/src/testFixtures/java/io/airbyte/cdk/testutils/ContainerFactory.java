@@ -12,12 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -65,10 +68,13 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
   }
 
   private static final ConcurrentMap<ContainerKey, ContainerOrException> SHARED_CONTAINERS = new ConcurrentHashMap<>();
+  private static final AtomicInteger containerId = new AtomicInteger(0);
 
-  private static final MdcScope.Builder TESTCONTAINER_LOG_MDC_BUILDER = new MdcScope.Builder()
-      .setLogPrefix("testcontainer")
-      .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND);
+  private static final MdcScope.Builder getTestContainerLogMdcBuilder(DockerImageName imageName, List<String> methods) {
+    return new MdcScope.Builder()
+        .setLogPrefix("testcontainer %s (%s[%s]):".formatted(containerId.incrementAndGet(), imageName, StringUtils.join(methods, ",")))
+        .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND);
+  }
 
   /**
    * Creates a new, unshared testcontainer instance. This usually wraps the default constructor for
@@ -108,8 +114,16 @@ public abstract class ContainerFactory<C extends JdbcDatabaseContainer<?>> {
       for (String methodName : methodNames) {
         methods.add(getClass().getMethod(methodName, container.getClass()));
       }
-      final var logConsumer = new Slf4jLogConsumer(LOGGER);
-      TESTCONTAINER_LOG_MDC_BUILDER.produceMappings(logConsumer::withMdc);
+      final var logConsumer = new Slf4jLogConsumer(LOGGER) {
+
+        public void accept(OutputFrame frame) {
+          if (frame.getUtf8StringWithoutLineEnding().trim().length() > 0) {
+            super.accept(frame);
+          }
+        }
+
+      };
+      getTestContainerLogMdcBuilder(imageName, methodNames).produceMappings(logConsumer::withMdc);
       container.withLogConsumer(logConsumer);
       for (Method method : methods) {
         LOGGER.info("Calling {} in {} on new shared container based on {}.",
