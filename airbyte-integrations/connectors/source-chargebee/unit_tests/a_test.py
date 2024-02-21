@@ -256,7 +256,8 @@ def test_partition_router_using_incremental_date_parent_cursor(
 
         # The last thing done in the AbstractSource is to call get_stream_state() and emit it to the platform
         state_to_emit = cursor_existing_state.get_stream_state()
-        print(state_to_emit)
+        import pprint
+        pprint.pprint(state_to_emit)
 
 
 def create_declarative_stream() -> DeclarativeStream:
