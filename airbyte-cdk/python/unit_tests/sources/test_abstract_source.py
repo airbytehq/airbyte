@@ -13,6 +13,7 @@ import pytest
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
+    AirbyteErrorTraceMessage,
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -27,6 +28,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     Level,
     Status,
     StreamDescriptor,
@@ -40,6 +42,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
+from airbyte_cdk.utils.airbyte_secrets_utils import update_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
 
@@ -54,12 +57,14 @@ class MockSource(AbstractSource):
         per_stream: bool = True,
         message_repository: MessageRepository = None,
         exception_on_missing_stream: bool = True,
+        stop_sync_on_stream_failure: bool = False,
     ):
         self._streams = streams
         self.check_lambda = check_lambda
         self.per_stream = per_stream
         self.exception_on_missing_stream = exception_on_missing_stream
         self._message_repository = message_repository
+        self._stop_sync_on_stream_failure = stop_sync_on_stream_failure
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         if self.check_lambda:
@@ -82,6 +87,12 @@ class MockSource(AbstractSource):
     @property
     def message_repository(self):
         return self._message_repository
+
+
+class MockSourceWithStopSyncFalseOverride(MockSource):
+    @property
+    def stop_sync_on_stream_failure(self) -> bool:
+        return False
 
 
 class StreamNoStateMethod(Stream):
@@ -115,8 +126,11 @@ class StreamRaisesException(Stream):
     name = "lamentations"
     primary_key = None
 
+    def __init__(self, exception_to_raise):
+        self._exception_to_raise = exception_to_raise
+
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        raise AirbyteTracedException(message="I was born only to crash like Icarus")
+        raise self._exception_to_raise
 
 
 MESSAGE_FROM_REPOSITORY = Mock()
@@ -291,7 +305,7 @@ def test_read_stream_emits_repository_message_on_error(mocker, message_repositor
 
     source = MockSource(streams=[stream], message_repository=message_repository)
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(AirbyteTracedException):
         messages = list(source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])))
         assert MESSAGE_FROM_REPOSITORY in messages
 
@@ -306,14 +320,14 @@ def test_read_stream_with_error_gets_display_message(mocker):
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])
 
     # without get_error_display_message
-    with pytest.raises(RuntimeError, match="oh no!"):
+    with pytest.raises(AirbyteTracedException):
         list(source.read(logger, {}, catalog))
 
     mocker.patch.object(MockStream, "get_error_display_message", return_value="my message")
 
-    with pytest.raises(AirbyteTracedException, match="oh no!") as exc:
+    with pytest.raises(AirbyteTracedException) as exc:
         list(source.read(logger, {}, catalog))
-    assert exc.value.message == "my message"
+    assert "oh no!" in exc.value.message
 
 
 GLOBAL_EMITTED_AT = 1
@@ -356,6 +370,22 @@ def _as_state(state_data: Dict[str, Any], stream_name: str = "", per_stream_stat
             ),
         )
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state_data))
+
+
+def _as_error_trace(stream: str, error_message: str,  internal_message: Optional[str], failure_type: Optional[FailureType], stack_trace: Optional[str]) -> AirbyteMessage:
+    trace_message = AirbyteTraceMessage(
+        emitted_at=datetime.datetime.now().timestamp() * 1000.0,
+        type=TraceType.ERROR,
+        error=AirbyteErrorTraceMessage(
+                stream_descriptor=StreamDescriptor(name=stream),
+                message=error_message,
+                internal_message=internal_message,
+                failure_type=failure_type,
+                stack_trace=stack_trace,
+            ),
+    )
+
+    return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
 
 
 def _configured_stream(stream: Stream, sync_mode: SyncMode):
@@ -1174,21 +1204,27 @@ def test_checkpoint_state_from_stream_instance():
     )
 
 
-def test_continue_sync_with_failed_streams(mocker):
+@pytest.mark.parametrize(
+    "exception_to_raise,expected_error_message,expected_internal_message",
+    [
+        pytest.param(AirbyteTracedException(message="I was born only to crash like Icarus"), "I was born only to crash like Icarus", None, id="test_raises_traced_exception"),
+        pytest.param(Exception("Generic connector error message"), "Something went wrong in the connector. See the logs for more details.", "Generic connector error message", id="test_raises_generic_exception"),
+    ]
+)
+def test_continue_sync_with_failed_streams(mocker, exception_to_raise, expected_error_message, expected_internal_message):
     """
-    Tests that running a sync for a connector with multiple streams and continue_sync_on_stream_failure enabled continues
-    syncing even when one stream fails with an error.
+    Tests that running a sync for a connector with multiple streams will continue syncing when one stream fails
+    with an error. This source does not override the default behavior defined in the AbstractSource class.
     """
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
     s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
-    s2 = StreamRaisesException()
+    s2 = StreamRaisesException(exception_to_raise=exception_to_raise)
     s3 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     mocker.patch.object(StreamRaisesException, "get_json_schema", return_value={})
 
     src = MockSource(streams=[s1, s2, s3])
-    mocker.patch.object(MockSource, "continue_sync_on_stream_failure", return_value=True)
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             _configured_stream(s1, SyncMode.full_refresh),
@@ -1205,6 +1241,7 @@ def test_continue_sync_with_failed_streams(mocker):
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("lamentations", AirbyteStreamStatus.STARTED),
             _as_stream_status("lamentations", AirbyteStreamStatus.INCOMPLETE),
+            _as_error_trace("lamentations", expected_error_message, expected_internal_message, FailureType.system_error, None),
             _as_stream_status("s3", AirbyteStreamStatus.STARTED),
             _as_stream_status("s3", AirbyteStreamStatus.RUNNING),
             *_as_records("s3", stream_output),
@@ -1212,26 +1249,75 @@ def test_continue_sync_with_failed_streams(mocker):
         ]
     )
 
-    messages = []
     with pytest.raises(AirbyteTracedException) as exc:
-        # We can't use list comprehension or list() here because we are still raising a final exception for the
-        # failed streams and that disrupts parsing the generator into the messages emitted before
-        for message in src.read(logger, {}, catalog):
-            messages.append(message)
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
 
-    messages = _fix_emitted_at(messages)
-    assert expected == messages
+        assert expected == messages
+
     assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
 
 
-def test_stop_sync_with_failed_streams(mocker):
+def test_continue_sync_source_override_false(mocker):
     """
-    Tests that running a sync for a connector with multiple streams and continue_sync_on_stream_failure disabled stops
-    syncing once a stream fails with an error.
+    Tests that running a sync for a connector explicitly overriding the default AbstractSource.stop_sync_on_stream_failure
+    property to be False which will continue syncing stream even if one encountered an exception.
     """
+    update_secrets(["API_KEY_VALUE"])
+
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
     s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
-    s2 = StreamRaisesException()
+    s2 = StreamRaisesException(exception_to_raise=AirbyteTracedException(message="I was born only to crash like Icarus"))
+    s3 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(StreamRaisesException, "get_json_schema", return_value={})
+
+    src = MockSourceWithStopSyncFalseOverride(streams=[s1, s2, s3])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(s1, SyncMode.full_refresh),
+            _configured_stream(s2, SyncMode.full_refresh),
+            _configured_stream(s3, SyncMode.full_refresh),
+        ]
+    )
+
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", stream_output),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("lamentations", AirbyteStreamStatus.STARTED),
+            _as_stream_status("lamentations", AirbyteStreamStatus.INCOMPLETE),
+            _as_error_trace("lamentations", "I was born only to crash like Icarus", None, FailureType.system_error, None),
+            _as_stream_status("s3", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s3", AirbyteStreamStatus.RUNNING),
+            *_as_records("s3", stream_output),
+            _as_stream_status("s3", AirbyteStreamStatus.COMPLETE),
+        ]
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
+
+        assert expected == messages
+
+    assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
+
+
+def test_sync_error_trace_messages_obfuscate_secrets(mocker):
+    """
+    Tests that exceptions emitted as trace messages by a source have secrets properly sanitized
+    """
+    update_secrets(["API_KEY_VALUE"])
+
+    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+    s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s2 = StreamRaisesException(exception_to_raise=AirbyteTracedException(message="My api_key value API_KEY_VALUE flew too close to the sun."))
     s3 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
@@ -1254,15 +1340,73 @@ def test_stop_sync_with_failed_streams(mocker):
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("lamentations", AirbyteStreamStatus.STARTED),
             _as_stream_status("lamentations", AirbyteStreamStatus.INCOMPLETE),
+            _as_error_trace("lamentations", "My api_key value **** flew too close to the sun.", None, FailureType.system_error, None),
+            _as_stream_status("s3", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s3", AirbyteStreamStatus.RUNNING),
+            *_as_records("s3", stream_output),
+            _as_stream_status("s3", AirbyteStreamStatus.COMPLETE),
         ]
     )
 
-    messages = []
-    with pytest.raises(AirbyteTracedException):
-        # We can't use list comprehension or list() here because we are still raising a final exception for the
-        # failed streams and that disrupts parsing the generator into the messages emitted before
-        for message in src.read(logger, {}, catalog):
-            messages.append(message)
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
 
-    messages = _fix_emitted_at(messages)
-    assert expected == messages
+        assert expected == messages
+
+    assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
+
+
+def test_continue_sync_with_failed_streams_with_override_false(mocker):
+    """
+    Tests that running a sync for a connector with multiple streams and stop_sync_on_stream_failure enabled stops
+    the sync when one stream fails with an error.
+    """
+    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+    s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s2 = StreamRaisesException(AirbyteTracedException(message="I was born only to crash like Icarus"))
+    s3 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(StreamRaisesException, "get_json_schema", return_value={})
+
+    src = MockSource(streams=[s1, s2, s3])
+    mocker.patch.object(MockSource, "stop_sync_on_stream_failure", return_value=True)
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(s1, SyncMode.full_refresh),
+            _configured_stream(s2, SyncMode.full_refresh),
+            _configured_stream(s3, SyncMode.full_refresh),
+        ]
+    )
+
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", stream_output),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("lamentations", AirbyteStreamStatus.STARTED),
+            _as_stream_status("lamentations", AirbyteStreamStatus.INCOMPLETE),
+            _as_error_trace("lamentations", "I was born only to crash like Icarus", None, FailureType.system_error, None),
+        ]
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
+
+        assert expected == messages
+
+    assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
+
+
+def _remove_stack_trace(message: AirbyteMessage) -> AirbyteMessage:
+    """
+    Helper method that removes the stack trace from Airbyte trace messages to make asserting against expected records easier
+    """
+    if message.trace and message.trace.error and message.trace.error.stack_trace:
+        message.trace.error.stack_trace = None
+    return message

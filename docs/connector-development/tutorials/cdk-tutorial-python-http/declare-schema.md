@@ -63,7 +63,7 @@ Having created this stream in code, we'll put a file `exchange_rates.json` in th
 With `.json` schema file in place, let's see if the connector can now find this schema and produce a valid catalog:
 
 ```text
-python main.py discover --config secrets/config.json # this is not a mistake, the schema file is found by naming snake_case naming convention as specified above
+poetry run source-python-http-example discover --config secrets/config.json # this is not a mistake, the schema file is found by naming snake_case naming convention as specified above
 ```
 
 you should see some output like:
