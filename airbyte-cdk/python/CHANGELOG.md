@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.64.0
+Low-code: Add filter to RemoveFields
+
 ## 0.63.2
 Correct handling of custom max_records limits in connector_builder
 
