@@ -909,7 +909,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs: Any) -> RemoveFields:
-        return RemoveFields(field_pointers=model.field_pointers, parameters={})
+        return RemoveFields(field_pointers=model.field_pointers, condition=model.condition or "", parameters={})
 
     def create_selective_authenticator(self, model: SelectiveAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeAuthenticator:
         authenticators = {name: self._create_component_from_model(model=auth, config=config) for name, auth in model.authenticators.items()}
