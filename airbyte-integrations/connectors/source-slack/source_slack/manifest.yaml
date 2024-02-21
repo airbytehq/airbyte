@@ -70,7 +70,6 @@ definitions:
         {{ not response.get("response_metadata", {}).get("next_cursor", {})
         }}
 
-
   requester:
     type: HttpRequester
     url_base: https://slack.com/api/
