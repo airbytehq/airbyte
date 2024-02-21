@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.core import Stream
-
+from airbyte_cdk.sources.declarative.per_partition_stream_slice import PerPartitionStreamSlice
 
 @dataclass
 class DeclarativeStream(Stream):
@@ -115,7 +115,7 @@ class DeclarativeStream(Stream):
     # @deprecated(reason="Use stream_slices instead")
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    ) -> Iterable[Optional[PerPartitionStreamSlice]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 

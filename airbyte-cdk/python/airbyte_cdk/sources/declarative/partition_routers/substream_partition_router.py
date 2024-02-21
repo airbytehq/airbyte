@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union, TYPE_CHECKING
 
 import dpath.util
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
@@ -11,7 +11,9 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import Stream
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
 @dataclass
@@ -25,7 +27,7 @@ class ParentStreamConfig:
     request_option: How to inject the slice value on an outgoing HTTP request
     """
 
-    stream: Stream
+    stream: "DeclarativeStream"
     parent_key: Union[InterpolatedString, str]
     partition_field: Union[InterpolatedString, str]
     config: Config
