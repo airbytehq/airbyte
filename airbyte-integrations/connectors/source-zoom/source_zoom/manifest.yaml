@@ -37,6 +37,7 @@ definitions:
     file_path: "./source_zoom/schemas/{{ parameters['name'] }}.json"
 
   users_stream:
+  # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/user/methods/#operation/users
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -53,6 +54,8 @@ definitions:
       path: "/users"
 
   meetings_list_tmp_stream:
+  # This stream is used to fetch parent_ids for the meetings stream and all its substreams. No data is synced from this stream.
+  # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetings
     schema_loader:
       $ref: "#/definitions/schema_loader"
     $parameters:
@@ -77,6 +80,7 @@ definitions:
             partition_field: "parent_id"
 
   meetings_stream:
+  # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meeting
     schema_loader:
       $ref: "#/definitions/schema_loader"
     $parameters:
@@ -101,6 +105,7 @@ definitions:
             partition_field: "parent_id"
 
   meeting_registrants_stream:
+  # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingRegistrants
     schema_loader:
       $ref: "#/definitions/schema_loader"
     $parameters:
@@ -139,6 +144,7 @@ definitions:
             value: "{{ stream_partition.parent_id }}"
 
   meeting_polls_stream:
+  # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingPolls
     schema_loader:
       $ref: "#/definitions/schema_loader"
     $parameters:
@@ -177,6 +183,7 @@ definitions:
             value: "{{ stream_partition.parent_id }}"
 
   meeting_poll_results_stream:
+  # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/listPastMeetingPolls
     schema_loader:
       $ref: "#/definitions/schema_loader"
     $parameters:
@@ -208,13 +215,9 @@ definitions:
           - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "id"
             partition_field: "parent_id"
-    transformations:
-      - type: AddFields
-        fields:
-          - path: ["meeting_id"]
-            value: "{{ stream_partition.parent_id }}"
 
   meeting_registration_questions_stream:
+  # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingRegistrantsQuestionsGet
     schema_loader:
       $ref: "#/definitions/schema_loader"
     $parameters:
@@ -618,9 +621,8 @@ definitions:
           - path: ["webinar_uuid"]
             value: "{{ stream_partition.parent_id }}"
 
-  # Report Meetings stream #
-  # Docs page: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/reportMeetingDetails
   report_meetings_stream:
+  # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/reportMeetingDetails
     schema_loader:
       $ref: "#/definitions/schema_loader"
     $parameters:
@@ -653,6 +655,7 @@ definitions:
             partition_field: "parent_id"
 
   report_meeting_participants_stream:
+  # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/reportMeetingParticipants
     schema_loader:
       $ref: "#/definitions/schema_loader"
     $parameters:
