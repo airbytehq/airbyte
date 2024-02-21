@@ -166,6 +166,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.23.4  | 2024-02-26 | [\#35507](https://github.com/airbytehq/airbyte/pull/35507) | Add more logs into TestDatabase.                                                                                                                               |
 | 0.23.3  | 2024-02-26 | [\#35495](https://github.com/airbytehq/airbyte/pull/35495) | Fix Junit Interceptor to print better stacktraces                                                                                                              |
 | 0.23.2  | 2024-02-22 | [\#35385](https://github.com/airbytehq/airbyte/pull/35342) | Bugfix: inverted logic of disableTypeDedupe flag                                                                                                               |
 | 0.23.1  | 2024-02-22 | [\#35527](https://github.com/airbytehq/airbyte/pull/35527) | reduce shutdow timeouts                                                                                                                                        |
