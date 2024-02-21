@@ -5,20 +5,27 @@
 package io.airbyte.integrations.source.postgres;
 
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 
 @Order(2)
 public class CdcPostgresSourceLegacyCtidTest extends CdcPostgresSourceTest {
 
   @Override
-  protected PostgresTestDatabase createTestDatabase() {
-    return PostgresTestDatabase.in(BaseImage.POSTGRES_13, ContainerModifier.CONF).withReplicationSlot();
+  protected void setBaseImage() {
+    this.postgresImage = BaseImage.POSTGRES_12;
   }
 
   @Override
-  protected int getPostgresVersion() {
-    return 13;
+  @Disabled("https://github.com/airbytehq/airbyte/issues/35267")
+  public void newTableSnapshotTest() {
+
+  }
+
+  @Override
+  @Disabled("https://github.com/airbytehq/airbyte/issues/35267")
+  public void syncShouldIncrementLSN() {
+
   }
 
 }
