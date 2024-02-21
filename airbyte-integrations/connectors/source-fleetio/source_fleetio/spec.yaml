@@ -1,0 +1,34 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/fleetio
+connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - api_token
+      - account_token
+    properties:
+      api_token:
+        type: string
+        order: 0
+        title: api_token
+        airbyte_secret: true
+      account_token:
+        type: string
+        order: 1
+        title: account_token
+        description: found in the url
+        airbyte_secret: true
+    additionalProperties: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/fleetio
+  type: Spec
+metadata:
+  autoImportSchema:
+    submitted_inspection_forms: false
+    issues: false
+    service_entries: false
+    vehicles: false
+    contacts: false
+    expense_entries: false
+    fuel_entries: false
+    parts: false
+    purchase_orders: false
+    vehicle_assignments: false

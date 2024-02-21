@@ -2,7 +2,7 @@
 # Also a failsafe against a dev writing a workflow that does not terminate build instances.
 # Though the average Airbyte build runtime as of this commit is ~20 mins, connector builds
 # can take up to 3 hours. Set this to 3 hours to include these longer runs.
-name: Terminate Zombie Build Instances
+- name: Terminate Zombie Build Instances
 
 on:
   workflow_dispatch:
