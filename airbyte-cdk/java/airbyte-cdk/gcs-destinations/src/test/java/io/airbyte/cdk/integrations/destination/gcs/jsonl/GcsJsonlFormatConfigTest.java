@@ -16,10 +16,9 @@ import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.commons.json.Jsons;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("GcsJsonlFormatConfig")
+// GcsJsonlFormatConfig
 public class GcsJsonlFormatConfigTest {
 
   @Test
