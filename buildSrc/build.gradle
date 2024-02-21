@@ -4,20 +4,7 @@ plugins {
 
 repositories {
     // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
-
-    // ## Prefer repos controlled by Airbyte.
-    // TODO: add airbyte-controlled proxy repos here
-
-    // ## Look into other, public repos.
-    // Gradle plugin portal.
     gradlePluginPortal()
-    // Maven Central has most of everything.
-    mavenCentral()
-}
-
-dependencies {
-    implementation 'ru.vyarus:gradle-use-python-plugin:2.3.0'
-    implementation 'org.apache.commons:commons-text:1.10.0'
 }
 
 tasks.withType(Jar).configureEach {
