@@ -39,7 +39,7 @@ Our source connector adheres to the standard rate limiting with the Airbyte low-
 - An active Fleetio account
 - A Fleetio `api_token` and `account_token`
 
-### Setup guide `API Key`:
+### Setup guide:
 
 1. Generate your Fleetio API Credentials, which is described [here](https://developer.fleetio.com/docs/overview/quick-start).
 2. In the left navigation bar, click **Sources**. in the top-right corner, click **New Source**
