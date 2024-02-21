@@ -80,11 +80,15 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
 
     sorted_expected_records = sorted(
         filter(lambda e: "data" in e, expected_records),
-        key=lambda record: ",".join(f"{k}={v}" for k, v in sorted(record["data"].items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"),
+        key=lambda record: ",".join(
+            f"{k}={v}" for k, v in sorted(record["data"].items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"
+        ),
     )
     sorted_records = sorted(
         filter(lambda r: r.record, records),
-        key=lambda record: ",".join(f"{k}={v}" for k, v in sorted(record.record.data.items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"),
+        key=lambda record: ",".join(
+            f"{k}={v}" for k, v in sorted(record.record.data.items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"
+        ),
     )
 
     assert len(sorted_records) == len(sorted_expected_records)

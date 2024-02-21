@@ -937,18 +937,20 @@ requester:
     }
 
 
-@pytest.mark.parametrize("input_config, expected_authenticator_class", [
-    pytest.param(
-        {"auth": {"type": "token"}, "credentials": {"api_key": "some_key"}},
-        ApiKeyAuthenticator,
-        id="test_create_requester_with_selective_authenticator_and_token_selected",
-    ),
-    pytest.param(
-        {"auth": {"type": "oauth"}, "credentials": {"client_id": "ABC"}},
-        DeclarativeOauth2Authenticator,
-        id="test_create_requester_with_selective_authenticator_and_oauth_selected",
-    ),
-]
+@pytest.mark.parametrize(
+    "input_config, expected_authenticator_class",
+    [
+        pytest.param(
+            {"auth": {"type": "token"}, "credentials": {"api_key": "some_key"}},
+            ApiKeyAuthenticator,
+            id="test_create_requester_with_selective_authenticator_and_token_selected",
+        ),
+        pytest.param(
+            {"auth": {"type": "oauth"}, "credentials": {"client_id": "ABC"}},
+            DeclarativeOauth2Authenticator,
+            id="test_create_requester_with_selective_authenticator_and_oauth_selected",
+        ),
+    ],
 )
 def test_create_requester_with_selective_authenticator(input_config, expected_authenticator_class):
     content = """
