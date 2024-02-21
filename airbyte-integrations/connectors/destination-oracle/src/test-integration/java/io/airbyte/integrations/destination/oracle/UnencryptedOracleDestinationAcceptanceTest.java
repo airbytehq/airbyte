@@ -125,17 +125,16 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
-    try (final DSLContext dslContext = getDSLContext(config)) {
-      final List<org.jooq.Record> result = getDatabase(dslContext)
-          .query(ctx -> new ArrayList<>(ctx.fetch(
-              String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                  upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)))));
-      return result
-          .stream()
-          .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-          .map(Jsons::deserialize)
-          .collect(Collectors.toList());
-    }
+    final DSLContext dslContext = getDSLContext(config);
+    final List<org.jooq.Record> result = getDatabase(dslContext)
+      .query(ctx -> new ArrayList<>(ctx.fetch(
+          String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+              upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)))));
+    return result
+      .stream()
+      .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+      .map(Jsons::deserialize)
+      .collect(Collectors.toList());
   }
 
   private static DSLContext getDSLContext(final JsonNode config) {
@@ -162,15 +161,13 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
     db.start();
 
     config = getConfig(db);
-
-    try (final DSLContext dslContext = getDSLContext(config)) {
+      final DSLContext dslContext = getDSLContext(config);
       final Database database = getDatabase(dslContext);
       database.query(
           ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
       database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
       ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
-    }
   }
 
   @Override

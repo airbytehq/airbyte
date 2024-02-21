@@ -22,7 +22,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
   public static final String NAME = "oracle";
   private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
 
-  static final String DEFAULT_TAG = "18.4.0-slim";
+  static final String DEFAULT_TAG = "21.3.0-slim";
   static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
   private static final int ORACLE_PORT = 1521;
