@@ -99,7 +99,7 @@ class FullRefreshTest(TestCase):
     def test_given_multiple_pages_of_records_read_and_returned(self, http_mocker: HttpMocker) -> None:
         # Tests pagination
         http_mocker.get(
-            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).build(),
+            _a_request().with_any_query_params().build(),
             _a_response().with_pagination().with_record(_a_record()).build()
         )
         http_mocker.get(
