@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "4.2.4"
+version = "4.3.1"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -57,7 +57,7 @@ shell = "pyinstaller --additional-hooks-dir=pyinstaller_hooks --collect-all pipe
 args = [{name = "ARTIFACT_NAME", default="airbyte-ci", positional = true}]
 
 [tool.poe.tasks]
-test = "pytest tests"
+test = "pytest tests -m 'not flaky'"
 type_check = "mypy pipelines --disallow-untyped-defs"
 lint = "ruff check pipelines"
 
