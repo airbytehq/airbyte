@@ -437,6 +437,9 @@
       },
       "required": []
     },
+    "registration_url": {
+      "type": "string"
+    },
     "resources": {
       "type": "array",
       "items": {

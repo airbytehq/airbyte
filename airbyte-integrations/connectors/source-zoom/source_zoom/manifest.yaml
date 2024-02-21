@@ -68,7 +68,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/users/{{ stream_slice.parent_id }}/meetings"
+        path: "/users/{{ stream_partition.parent_id }}/meetings"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -92,7 +92,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/meetings/{{ stream_slice.parent_id }}"
+        path: "/meetings/{{ stream_partition.parent_id }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -116,7 +116,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/meetings/{{ stream_slice.parent_id }}/registrants"
+        path: "/meetings/{{ stream_partition.parent_id }}/registrants"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -136,7 +136,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["meeting_id"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   meeting_polls_stream:
     schema_loader:
@@ -154,7 +154,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/meetings/{{ stream_slice.parent_id }}/polls"
+        path: "/meetings/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
           # ignore 400 error; We get this error if Meeting poll is not enabled for the meeting, or scheduling capabilities aren't in the account
@@ -174,7 +174,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["meeting_id"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   meeting_poll_results_stream:
     schema_loader:
@@ -191,7 +191,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/past_meetings/{{ stream_slice.parent_id }}/polls"
+        path: "/past_meetings/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -212,7 +212,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["meeting_uuid"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   meeting_registration_questions_stream:
     schema_loader:
@@ -229,7 +229,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/meetings/{{ stream_slice.parent_id }}/registrants/questions"
+        path: "/meetings/{{ stream_partition.parent_id }}/registrants/questions"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -249,7 +249,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["meeting_id"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   webinars_list_tmp_stream:
     schema_loader:
@@ -267,7 +267,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/users/{{ stream_slice.parent_id }}/webinars"
+        path: "/users/{{ stream_partition.parent_id }}/webinars"
         error_handler:
           type: CompositeErrorHandler
           # ignore 400 error; We get this error if Meeting is more than created an year ago
@@ -300,7 +300,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/webinars/{{ stream_slice.parent_id }}"
+        path: "/webinars/{{ stream_partition.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
           # ignore 400 error
@@ -334,7 +334,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/webinars/{{ stream_slice.parent_id }}/panelists"
+        path: "/webinars/{{ stream_partition.parent_id }}/panelists"
         error_handler:
           type: CompositeErrorHandler
           # ignore 400 error
@@ -355,7 +355,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["webinar_id"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   webinar_registrants_stream:
     schema_loader:
@@ -372,7 +372,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/webinars/{{ stream_slice.parent_id }}/registrants"
+        path: "/webinars/{{ stream_partition.parent_id }}/registrants"
         error_handler:
           type: CompositeErrorHandler
           # ignore 400 error
@@ -393,7 +393,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["webinar_id"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   webinar_absentees_stream:
     schema_loader:
@@ -411,7 +411,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/past_webinars/{{ stream_slice.parent_uuid }}/absentees"
+        path: "/past_webinars/{{ stream_partition.parent_uuid }}/absentees"
         error_handler:
           type: CompositeErrorHandler
           # ignore 400 error
@@ -432,7 +432,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["webinar_uuid"]
-            value: "{{ stream_slice.parent_uuid }}"
+            value: "{{ stream_partition.parent_uuid }}"
 
   webinar_polls_stream:
     schema_loader:
@@ -449,7 +449,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/webinars/{{ stream_slice.parent_id }}/polls"
+        path: "/webinars/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
           # ignore 400 error; We get this error if Webinar poll is disabled
@@ -470,7 +470,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["webinar_id"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   webinar_poll_results_stream:
     schema_loader:
@@ -487,7 +487,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/past_webinars/{{ stream_slice.parent_id }}/polls"
+        path: "/past_webinars/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -506,7 +506,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["webinar_uuid"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   webinar_registration_questions_stream:
     schema_loader:
@@ -523,7 +523,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/webinars/{{ stream_slice.parent_id }}/registrants/questions"
+        path: "/webinars/{{ stream_partition.parent_id }}/registrants/questions"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -543,7 +543,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["webinar_id"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   webinar_tracking_sources_stream:
     schema_loader:
@@ -561,7 +561,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/webinars/{{ stream_slice.parent_id }}/tracking_sources"
+        path: "/webinars/{{ stream_partition.parent_id }}/tracking_sources"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -580,7 +580,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["webinar_id"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   webinar_qna_results_stream:
     schema_loader:
@@ -597,7 +597,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/past_webinars/{{ stream_slice.parent_id }}/qa"
+        path: "/past_webinars/{{ stream_partition.parent_id }}/qa"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -616,7 +616,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["webinar_uuid"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   report_meetings_stream:
     schema_loader:
@@ -634,7 +634,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/report/meetings/{{ stream_slice.parent_id }}"
+        path: "/report/meetings/{{ stream_partition.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -653,7 +653,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["meeting_uuid"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   report_meeting_participants_stream:
     schema_loader:
@@ -671,7 +671,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/report/meetings/{{ stream_slice.parent_id }}/participants"
+        path: "/report/meetings/{{ stream_partition.parent_id }}/participants"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -690,7 +690,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["meeting_uuid"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   report_webinars_stream:
     schema_loader:
@@ -707,7 +707,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/report/webinars/{{ stream_slice.parent_id }}"
+        path: "/report/webinars/{{ stream_partition.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -726,7 +726,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["webinar_uuid"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
   report_webinar_participants_stream:
     schema_loader:
@@ -743,7 +743,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/report/webinars/{{ stream_slice.parent_id }}/participants"
+        path: "/report/webinars/{{ stream_partition.parent_id }}/participants"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -762,7 +762,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["webinar_uuid"]
-            value: "{{ stream_slice.parent_id }}"
+            value: "{{ stream_partition.parent_id }}"
 
 streams:
   - "#/definitions/users_stream"
