@@ -166,6 +166,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.21.4  | 2024-02-21 | [\#35511](https://github.com/airbytehq/airbyte/pull/35511) | Add Junit progress information to the test logs                                                                                                                                  |
 | 0.21.3  | 2024-02-20 | [\#35394](https://github.com/airbytehq/airbyte/pull/35394) | Add Junit progress information to the test logs                                                                                                                                  |
 | 0.21.2  | 2024-02-20 | [\#34978](https://github.com/airbytehq/airbyte/pull/34978) | Reduce log noise in NormalizationLogParser.                                                                                                                    |
 | 0.21.1  | 2024-02-20 | [\#35199](https://github.com/airbytehq/airbyte/pull/35199) | Add thread names to the logs.                                                                                                                                  |
