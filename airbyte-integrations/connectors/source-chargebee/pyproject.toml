@@ -19,7 +19,6 @@ include = "source_chargebee"
 python = "^3.9,<3.12"
 airbyte-cdk = "==0.58.1"
 freezegun = "^1.4.0"
-isodate = "^0.6.1"
 
 [tool.poetry.scripts]
 source-chargebee = "source_chargebee.run:run"
