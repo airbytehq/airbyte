@@ -74,7 +74,7 @@ class Result:
     stdout: Optional[str] = None
     report: Optional[str] = None
     exc_info: Optional[Exception] = None
-    output_artifact: Any = None
+    output: Any = None
     artifacts: List[Artifact] = field(default_factory=list)
 
     @property
@@ -406,7 +406,7 @@ class Step(ABC):
             status=self.get_step_status_from_exit_code(exit_code),
             stderr=stderr,
             stdout=stdout,
-            output_artifact=container,
+            output=container,
         )
 
     def _get_timed_out_step_result(self) -> StepResult:
