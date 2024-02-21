@@ -41,6 +41,7 @@ class TestSuiteReportStream(TestReportStream):
     first_read_state: dict
     second_read_state: dict
     transform_field: str = "AccountId"
+    account_id: str = "180535609"
 
     def setUp(self):
         if not self.stream_name:
@@ -53,7 +54,6 @@ class TestSuiteReportStream(TestReportStream):
             self.stream_name,
             SyncMode.full_refresh,
             self._config,
-            [],
             self.report_file
         )
         assert len(output.records) == self.records_number
@@ -65,7 +65,6 @@ class TestSuiteReportStream(TestReportStream):
             self.stream_name,
             SyncMode.full_refresh,
             self._config,
-            [],
             self.report_file
         )
 
@@ -80,7 +79,6 @@ class TestSuiteReportStream(TestReportStream):
             self.stream_name,
             SyncMode.incremental,
             self._config,
-            [],
             self.report_file
         )
         assert len(output.records) == self.records_number
@@ -88,15 +86,21 @@ class TestSuiteReportStream(TestReportStream):
 
     @HttpMocker()
     def test_incremental_read_with_state_returns_records(self, http_mocker: HttpMocker):
-        state = self._state(self.state_file)
+        state = self._state(self.state_file, self.stream_name)
         self.auth_client(http_mocker)
         output = self.read_stream(
             self.stream_name,
             SyncMode.incremental,
             self._config,
-            [],
             self.incremental_report_file,
             state
         )
         assert len(output.records) == self.records_number
-        assert output.most_recent_state == self.second_read_state
+
+        actual_cursor = output.most_recent_state.get(self.stream_name).get(self.account_id)
+        expected_cursor = self.second_read_state.get(self.stream_name).get(self.account_id)
+        assert actual_cursor == expected_cursor
+
+        used_state = output.state_messages[0].state.stream.stream_state.dict().get(self.stream_name)
+        provided_state = state[0].stream.stream_state.dict().get(self.stream_name)
+        assert used_state == provided_state
