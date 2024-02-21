@@ -185,29 +185,6 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     final DestinationInitialState initialState = initialStates.getFirst();
     assertTrue(initialState.isFinalTablePresent());
     assertFalse(initialState.isSchemaMismatch());
-
-    // final Optional<TableDefinition> existingTable = initialStates.getFirst().get().finalTableDefinition();
-
-//    assertTrue(existingTable.isPresent());
-//    assertAll(
-//        () -> assertEquals("varchar", existingTable.get().columns().get("_airbyte_raw_id").type()),
-//        () -> assertEquals("timestamptz", existingTable.get().columns().get("_airbyte_extracted_at").type()),
-//        () -> assertEquals("super", existingTable.get().columns().get("_airbyte_meta").type()),
-//        () -> assertEquals("int8", existingTable.get().columns().get("id1").type()),
-//        () -> assertEquals("int8", existingTable.get().columns().get("id2").type()),
-//        () -> assertEquals("timestamptz", existingTable.get().columns().get("updated_at").type()),
-//        () -> assertEquals("super", existingTable.get().columns().get("struct").type()),
-//        () -> assertEquals("super", existingTable.get().columns().get("array").type()),
-//        () -> assertEquals("varchar", existingTable.get().columns().get("string").type()),
-//        () -> assertEquals("numeric", existingTable.get().columns().get("number").type()),
-//        () -> assertEquals("int8", existingTable.get().columns().get("integer").type()),
-//        () -> assertEquals("bool", existingTable.get().columns().get("boolean").type()),
-//        () -> assertEquals("timestamptz", existingTable.get().columns().get("timestamp_with_timezone").type()),
-//        () -> assertEquals("timestamp", existingTable.get().columns().get("timestamp_without_timezone").type()),
-//        () -> assertEquals("timetz", existingTable.get().columns().get("time_with_timezone").type()),
-//        () -> assertEquals("time", existingTable.get().columns().get("time_without_timezone").type()),
-//        () -> assertEquals("date", existingTable.get().columns().get("date").type()),
-//        () -> assertEquals("super", existingTable.get().columns().get("unknown").type()));
     // TODO assert on table clustering, etc.
   }
 
