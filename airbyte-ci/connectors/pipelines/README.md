@@ -66,6 +66,10 @@ To clean the airbyte-ci install, run the following command:
 make tools.airbyte-ci.clean
 ```
 
+## Disabling telemetry
+
+We collect anonymous usage data to help improve the tool. If you would like to disable this, you can set the `AIRBYTE_CI_DISABLE_TELEMETRY` environment variable to `true`.
+
 ## Installation for development
 
 #### Pre-requisites
@@ -640,8 +644,15 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 4.1.3   | [#TBD](https://github.com/airbytehq/airbyte/pull/TBD)  | Use `poetry install --no-root` in the builder container.                                                                |
-
+| 4.3.1   | [#35437](https://github.com/airbytehq/airbyte/pull/35437)  | Do not run QA checks on publish, just MetadataValidation.                                                             |
+| 4.3.0   | [#35438](https://github.com/airbytehq/airbyte/pull/35438)  | Optionally disable telemetry with environment variable.                                                                    |
+| 4.2.4   | [#35325](https://github.com/airbytehq/airbyte/pull/35325)  | Use `connectors_qa` for QA checks and remove redundant checks.                                                             |
+| 4.2.3   | [#35322](https://github.com/airbytehq/airbyte/pull/35322)  | Declare `connectors_qa` as an internal package for testing.                                                                |
+| 4.2.2   | [#35364](https://github.com/airbytehq/airbyte/pull/35364)  | Fix connector tests following gradle changes in #35307.                                                                    |
+| 4.2.1   | [#35204](https://github.com/airbytehq/airbyte/pull/35204)  | Run `poetry check` before `poetry install` on poetry package install.                                                      |
+| 4.2.0   | [#35103](https://github.com/airbytehq/airbyte/pull/35103)  | Java 21 support.                                                                                                           |
+| 4.1.4   | [#35039](https://github.com/airbytehq/airbyte/pull/35039)  | Fix bug which prevented gradle test reports from being added.                                                              |
+| 4.1.3   | [#35010](https://github.com/airbytehq/airbyte/pull/35010)  | Use `poetry install --no-root` in the builder container.                                                                   |
 | 4.1.2   | [#34945](https://github.com/airbytehq/airbyte/pull/34945)  | Only install main dependencies when running poetry install.                                                                |
 | 4.1.1   | [#34430](https://github.com/airbytehq/airbyte/pull/34430)  | Speed up airbyte-ci startup (and airbyte-ci format).                                                                       |
 | 4.1.0   | [#34923](https://github.com/airbytehq/airbyte/pull/34923)  | Include gradle test reports in HTML connector test report.                                                                 |

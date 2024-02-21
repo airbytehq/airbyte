@@ -272,7 +272,8 @@ const connectorCatalog = {
       type: "category",
       label: "Sources",
       link: {
-        type: "generated-index",
+        type: "doc",
+        id: "integrations/sources/README",
       },
       items: [sourcePostgres, sourceMysql, ...getSourceConnectors()].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
@@ -280,7 +281,8 @@ const connectorCatalog = {
       type: "category",
       label: "Destinations",
       link: {
-        type: "generated-index",
+        type: "doc",
+        id: "integrations/destinations/README",
       },
       items: getDestinationConnectors(),
     },
@@ -310,6 +312,7 @@ const contributeToAirbyte = {
         "contributing-to-airbyte/resources/pull-requests-handbook",
         "contributing-to-airbyte/resources/code-style",
         "contributing-to-airbyte/resources/code-formatting",
+        "contributing-to-airbyte/resources/qa-checks",
         "contributing-to-airbyte/resources/developing-locally",
         "contributing-to-airbyte/resources/developing-on-docker",
       ],
@@ -562,10 +565,6 @@ module.exports = {
       type: "doc",
       id: "terraform-documentation",
     },
-    {
-      type: "doc",
-      id: "cli-documentation",
-    },
     understandingAirbyte,
     contributeToAirbyte,
     {
@@ -598,6 +597,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/january_2024",
         "release_notes/december_2023",
         "release_notes/november_2023",
         "release_notes/october_2023",

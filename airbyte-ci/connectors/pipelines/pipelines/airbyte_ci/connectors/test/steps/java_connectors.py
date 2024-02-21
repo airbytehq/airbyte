@@ -43,7 +43,11 @@ class IntegrationTests(GradleTask):
     @property
     def default_params(self) -> STEP_PARAMS:
         return super().default_params | {
-            "-x": ["buildConnectorImage", "assemble"],  # Exclude the buildConnectorImage and assemble tasks
+            # Exclude the assemble task to avoid a circular dependency on airbyte-ci.
+            # The integrationTestJava gradle task depends on assemble, which in turns
+            # depends on buildConnectorImage to build the connector's docker image.
+            # At this point, the docker image has already been built.
+            "-x": ["assemble"],
         }
 
     async def _load_normalization_image(self, normalization_tar_file: File) -> None:
