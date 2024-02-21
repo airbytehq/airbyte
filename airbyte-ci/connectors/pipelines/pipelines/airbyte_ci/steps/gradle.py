@@ -2,17 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from abc import ABC
-from datetime import datetime
-from pathlib import Path
-from typing import Any, ClassVar, List, Optional, Tuple, cast
+from typing import Any, ClassVar, List, Optional, Tuple
 
 import pipelines.dagger.actions.system.docker
-from dagger import CacheSharingMode, CacheVolume, Container, QueryError
+from dagger import CacheSharingMode, CacheVolume, Container, ExecError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.hacks import never_fail_exec
-from pipelines.helpers.utils import sh_dash_c
+from pipelines.helpers.utils import dagger_directory_as_zip_file, sh_dash_c
+from pipelines.models.artifacts import Artifact
 from pipelines.models.steps import Step, StepResult
 
 
@@ -37,15 +36,6 @@ class GradleTask(Step, ABC):
     mount_connector_secrets: ClassVar[bool] = False
     with_test_artifacts: ClassVar[bool] = False
     accept_extra_params = True
-
-    @property
-    def airbyte_logs_subdir(self) -> str:
-        return datetime.fromtimestamp(cast(float, self.context.pipeline_start_timestamp)).isoformat() + "-" + self.gradle_task_name
-
-    @property
-    def test_artifacts_path(self) -> Path:
-        test_artifacts_path = f"{self.context.connector.code_directory}/build/test-artifacts/{self.airbyte_logs_subdir}"
-        return Path(test_artifacts_path)
 
     @property
     def gradle_task_options(self) -> Tuple[str, ...]:
@@ -111,8 +101,6 @@ class GradleTask(Step, ABC):
             .with_env_variable("GRADLE_HOME", self.GRADLE_HOME_PATH)
             # Same for GRADLE_USER_HOME.
             .with_env_variable("GRADLE_USER_HOME", self.GRADLE_HOME_PATH)
-            # Set the AIRBYTE_LOG_SUBDIR for log4j
-            .with_env_variable("AIRBYTE_LOG_SUBDIR", self.airbyte_logs_subdir)
             # Install a bunch of packages as early as possible.
             .with_exec(
                 sh_dash_c(
@@ -203,11 +191,18 @@ class GradleTask(Step, ABC):
         connector_gradle_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
         gradle_command = self._get_gradle_command(connector_gradle_task, task_options=self.params_as_cli_options)
         gradle_container = gradle_container.with_(never_fail_exec([gradle_command]))
-        await self._collect_logs(gradle_container)
-        await self._collect_test_report(gradle_container)
-        return await self.get_step_result(gradle_container)
 
-    async def get_step_result(self, container: Container) -> StepResult:
+        # Collect the test artifacts, if applicable.
+        artifacts = []
+        if self.with_test_artifacts:
+            if test_logs := await self._collect_test_logs(gradle_container):
+                artifacts.append(test_logs)
+            if test_results := await self._collect_test_results(gradle_container):
+                artifacts.append(test_results)
+
+        return await self.get_step_result(gradle_container, artifacts)
+
+    async def get_step_result(self, container: Container, output_artifacts: List[Artifact]) -> StepResult:
         step_result = await super().get_step_result(container)
         # Decorate with test report, if applicable.
         return StepResult(
@@ -216,48 +211,62 @@ class GradleTask(Step, ABC):
             stdout=step_result.stdout,
             stderr=step_result.stderr,
             output_artifact=step_result.output_artifact,
-            test_artifacts_path=self.test_artifacts_path,
+            artifacts=output_artifacts,
         )
 
-    async def _collect_logs(self, gradle_container: Container) -> None:
+    async def _collect_test_logs(self, gradle_container: Container) -> Optional[Artifact]:
         """
         Exports the java docs from the container into the host filesystem.
         The docs in the container are expected to be in build/test-logs, and will end up test-artifact directory by default
-        One can change the destination directory by setting the test_artifacts_path
+        One can change the destination directory by setting the output_artifacts
         """
-        if not self.with_test_artifacts:
+        test_logs_dir_name = "test-logs"
+        if test_logs_dir_name not in await gradle_container.directory(f"{self.context.connector.code_directory}/build").entries():
+            self.context.logger.warn(f"No {test_logs_dir_name} found directory in the build folder")
             return None
-        logs_dir_path = f"{self.context.connector.code_directory}/build/test-logs/{self.airbyte_logs_subdir}"
         try:
-            container_logs_dir = await gradle_container.directory(logs_dir_path)
-            # the gradle task didn't create any logs.
-            if not container_logs_dir:
-                return None
-
-            self.test_artifacts_path.mkdir(parents=True, exist_ok=True)
-            if not await container_logs_dir.export(str(self.test_artifacts_path)):
-                self.context.logger.error("Error when trying to export log files from container")
-        except QueryError as e:
+            zip_file = await (
+                dagger_directory_as_zip_file(
+                    self.dagger_client,
+                    await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_logs_dir_name}"),
+                    test_logs_dir_name,
+                )
+            )
+            return Artifact(
+                name="test-logs.zip",
+                content=zip_file,
+                content_type="application/zip",
+                to_upload=True,
+            )
+        except ExecError as e:
             self.context.logger.error(str(e))
-            self.context.logger.warn(f"Failed to retrieve junit test results from {logs_dir_path} gradle container.")
-            return None
+        return None
 
-    async def _collect_test_report(self, gradle_container: Container) -> None:
+    async def _collect_test_results(self, gradle_container: Container) -> Optional[Artifact]:
         """
         Exports the junit test reports from the container into the host filesystem.
         The docs in the container are expected to be in build/test-results, and will end up test-artifact directory by default
         Only the XML files generated by junit are downloaded into the host filesystem
-        One can change the destination directory by setting the test_artifacts_path
+        One can change the destination directory by setting the output_artifacts
         """
-        if not self.with_test_artifacts:
+        test_results_dir_name = "test-results"
+        if test_results_dir_name not in await gradle_container.directory(f"{self.context.connector.code_directory}/build").entries():
+            self.context.logger.warn(f"No {test_results_dir_name} found directory in the build folder")
             return None
-
-        junit_xml_path = f"{self.context.connector.code_directory}/build/test-results/{self.gradle_task_name}"
         try:
-            junit_xml_dir = await gradle_container.directory(junit_xml_path)
-            for file_name in await junit_xml_dir.entries():
-                if file_name.endswith(".xml"):
-                    await junit_xml_dir.file(file_name).export(str(self.test_artifacts_path), allow_parent_dir_path=True)
-        except QueryError as e:
+            zip_file = await (
+                dagger_directory_as_zip_file(
+                    self.dagger_client,
+                    await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_results_dir_name}"),
+                    test_results_dir_name,
+                )
+            )
+            return Artifact(
+                name="test-results.zip",
+                content=zip_file,
+                content_type="application/zip",
+                to_upload=True,
+            )
+        except ExecError as e:
             self.context.logger.error(str(e))
             return None
