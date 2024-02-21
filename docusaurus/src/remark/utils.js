@@ -1,7 +1,4 @@
-const { archivedConnectors } = require("../components/archivedConnectors");
 const { catalog } = require("../connector_registry");
-
-const derivedArchivedConnectorsList = [];
 
 const isDocsPage = (vfile) => {
   if (
@@ -34,12 +31,32 @@ const getRegistryEntry = async (vfile) => {
   );
 
   if (!registryEntry) {
-    registryEntry = archivedConnectors.find(
-      (c) => c.dockerRepository_oss === dockerRepository
+    registryEntry = buildArchivedRegistryEntry(
+      connectorName,
+      dockerRepository,
+      connectorType
     );
-
-    list.push(dockerRepository);
   }
+
+  return registryEntry;
+};
+
+const buildArchivedRegistryEntry = (
+  connectorName,
+  dockerRepository,
+  connectorType
+) => {
+  const dockerName = dockerRepository.split("/")[1];
+  const registryEntry = {
+    connectorName,
+    name_oss: dockerName,
+    dockerRepository_oss: dockerRepository,
+    is_oss: false,
+    is_cloud: false,
+    iconUrl_oss: `https://connectors.airbyte.com/files/metadata/airbyte/${dockerName}/latest/icon.svg`,
+    supportLevel_oss: "archived",
+    documentationUrl_oss: `https://docs.airbyte.com/integrations/${connectorType}s/${connectorName}`,
+  };
 
   return registryEntry;
 };
@@ -47,5 +64,4 @@ const getRegistryEntry = async (vfile) => {
 module.exports = {
   isDocsPage,
   getRegistryEntry,
-  derivedArchivedConnectorsList,
 };

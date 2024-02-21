@@ -1,6 +1,5 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { archivedConnectors } from "./archivedConnectors";
 
 import styles from "./ConnectorRegistry.module.css";
 
@@ -45,10 +44,6 @@ export default function ConnectorRegistry({ type }) {
     .filter((c) => c.connector_type === type)
     .filter((c) => c.name_oss)
     .filter((c) => c.supportLevel_oss); // at lease one connector is missing a support level
-
-  archivedConnectors.forEach((archived) => {
-    connectors.push(archived);
-  });
 
   return (
     <div>
