@@ -171,7 +171,7 @@ function copyToClipBoard(htmlElement) {
       <h3>Artifacts</h3>
       <ul>
       {% for artifact in step_result_to_artifact_links[step_result.step.title] %}
-        <li><a href="{{ artifact.url }}">{{ artifact.name }}</a></li>
+        <li><a href="{{ artifact.url }}" download="{{ artifact.name }}">{{ artifact.name }}</a></li>
       {% endfor %}
       </ul>
       {% endif %}
