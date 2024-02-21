@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import static io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator.JSONB_TYPE;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,8 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
-import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
@@ -25,7 +22,6 @@ import io.airbyte.integrations.destination.postgres.PostgresDestination;
 import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
 import io.airbyte.integrations.destination.postgres.PostgresTestDatabase;
 import java.util.List;
-import java.util.Optional;
 import javax.sql.DataSource;
 import org.jooq.DataType;
 import org.jooq.Field;
