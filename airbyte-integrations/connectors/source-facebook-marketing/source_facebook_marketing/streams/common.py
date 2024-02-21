@@ -15,7 +15,20 @@ from facebook_business.exceptions import FacebookRequestError
 
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
-FACEBOOK_RATE_LIMIT_ERROR_CODES = (4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008)
+FACEBOOK_RATE_LIMIT_ERROR_CODES = (
+    4,
+    17,
+    32,
+    613,
+    80000,
+    80001,
+    80002,
+    80003,
+    80004,
+    80005,
+    80006,
+    80008,
+)
 FACEBOOK_TEMPORARY_OAUTH_ERROR_CODE = 2
 FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
@@ -158,4 +171,9 @@ def traced_exception(fb_exception: FacebookRequestError):
         failure_type = FailureType.system_error
         friendly_msg = f"Error: {fb_exception.api_error_code()}, {fb_exception.api_error_message()}."
 
-    return AirbyteTracedException(message=friendly_msg or msg, internal_message=msg, failure_type=failure_type, exception=fb_exception)
+    return AirbyteTracedException(
+        message=friendly_msg or msg,
+        internal_message=msg,
+        failure_type=failure_type,
+        exception=fb_exception,
+    )
