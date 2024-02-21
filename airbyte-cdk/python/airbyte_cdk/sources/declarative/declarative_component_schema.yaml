@@ -1989,7 +1989,7 @@ definitions:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
       ignore_stream_slicer_parameters_on_paginated_requests:
-        description: If true, the partition router and incremental parameters will be ignored when paginating requests.
+        description: If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.
         type: boolean
         default: false
       partition_router:

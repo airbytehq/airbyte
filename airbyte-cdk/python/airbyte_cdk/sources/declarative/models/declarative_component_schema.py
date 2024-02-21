@@ -1330,7 +1330,7 @@ class SimpleRetriever(BaseModel):
     )
     ignore_stream_slicer_parameters_on_paginated_requests: Optional[bool] = Field(
         False,
-        description='If true, the partition router and incremental parameters will be ignored when paginating requests.',
+        description='If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.',
     )
     partition_router: Optional[
         Union[
