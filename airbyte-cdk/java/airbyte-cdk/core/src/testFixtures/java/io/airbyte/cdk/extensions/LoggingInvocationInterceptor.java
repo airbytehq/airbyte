@@ -71,7 +71,7 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
         LOGGER.info("Junit completed {} in {} ms", logLineSuffix, elapsedMs);
         return retVal;
       } catch (Throwable t) {
-        String stackTrace = Arrays.stream(ExceptionUtils.getStackFrames(t)).takeWhile(s -> !s.startsWith("\tat org.junit")).collect(
+        String stackTrace = Arrays.stream(ExceptionUtils.getStackFrames(t)).takeWhile(s -> !s.contains(LoggingInvocationInterceptor.class.getCanonicalName())).collect(
             Collectors.joining("\n  "));
         LOGGER.warn("Junit exception throw during {}:\n{}", logLineSuffix, stackTrace);
         throw t;
