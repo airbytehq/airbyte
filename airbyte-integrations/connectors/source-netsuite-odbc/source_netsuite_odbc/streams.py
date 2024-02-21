@@ -404,7 +404,10 @@ class NetsuiteODBCStream(Stream):
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
-        return self.incremental_column
+        if self.incremental_column is None:
+          return []
+        else:     
+            return self.incremental_column
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
