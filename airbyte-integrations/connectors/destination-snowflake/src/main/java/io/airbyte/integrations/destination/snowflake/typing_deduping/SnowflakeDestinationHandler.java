@@ -66,8 +66,8 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
     final LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> existingTables = new LinkedHashMap<>();
     final String paramHolder = String.join(",", Collections.nCopies(streamIds.size(), "?"));
     // convert list stream to array
-    final String[] namespaces = streamIds.stream().map(streamId -> streamId.finalNamespace().toUpperCase()).toArray(String[]::new);
-    final String[] names = streamIds.stream().map(streamId -> streamId.finalName().toUpperCase()).toArray(String[]::new);
+    final String[] namespaces = streamIds.stream().map(StreamId::finalNamespace).toArray(String[]::new);
+    final String[] names = streamIds.stream().map(StreamId::finalName).toArray(String[]::new);
     final String query = """
         SELECT table_schema, table_name, column_name, data_type, is_nullable
         FROM information_schema.columns
@@ -99,8 +99,8 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
     final LinkedHashMap<String, LinkedHashMap<String, Integer>> tableRowCounts = new LinkedHashMap<>();
     final String paramHolder = String.join(",", Collections.nCopies(streamIds.size(), "?"));
     // convert list stream to array
-    final String[] namespaces = streamIds.stream().map(streamId -> streamId.finalNamespace().toUpperCase()).toArray(String[]::new);
-    final String[] names = streamIds.stream().map(streamId -> streamId.finalName().toUpperCase()).toArray(String[]::new);
+    final String[] namespaces = streamIds.stream().map(StreamId::finalNamespace).toArray(String[]::new);
+    final String[] names = streamIds.stream().map(StreamId::finalName).toArray(String[]::new);
     final String query = """
         SELECT table_schema, table_name, row_count
         FROM information_schema.tables
