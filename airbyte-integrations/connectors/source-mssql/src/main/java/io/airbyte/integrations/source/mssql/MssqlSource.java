@@ -108,7 +108,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       """;
   public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
       """
-        SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS %s
+        SELECT CASE WHEN (SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL)=1 then 1 else 0 end as %s
       """;
   public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
