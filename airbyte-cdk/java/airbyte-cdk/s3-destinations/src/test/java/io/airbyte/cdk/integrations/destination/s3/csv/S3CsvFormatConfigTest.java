@@ -23,11 +23,11 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("S3CsvFormatConfig")
+//S3CsvFormatConfig
 public class S3CsvFormatConfigTest {
 
   @Test
-  @DisplayName("Flattening enums can be created from value string")
+  //Flattening enums can be created from value string
   public void testFlatteningCreationFromString() {
     assertEquals(Flattening.NO, Flattening.fromValue("no flattening"));
     assertEquals(Flattening.ROOT_LEVEL, Flattening.fromValue("root level flattening"));

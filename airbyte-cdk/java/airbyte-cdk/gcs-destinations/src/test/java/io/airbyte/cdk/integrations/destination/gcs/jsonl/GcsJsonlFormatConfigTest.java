@@ -19,7 +19,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("GcsJsonlFormatConfig")
+//GcsJsonlFormatConfig
 public class GcsJsonlFormatConfigTest {
 
   @Test

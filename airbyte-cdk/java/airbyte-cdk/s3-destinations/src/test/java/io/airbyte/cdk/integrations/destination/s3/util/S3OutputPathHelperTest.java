@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class S3OutputPathHelperTest {
 
   @Test
-  @DisplayName("getOutputPrefix")
+  //getOutputPrefix
   public void testGetOutputPrefix() {
     // No namespace
     assertEquals("bucket_path/stream_name", S3OutputPathHelper

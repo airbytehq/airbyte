@@ -23,7 +23,7 @@ class MdcScopeTest {
   }
 
   @Test
-  @DisplayName("The MDC context is properly overrided")
+  //The MDC context is properly overrided
   void testMDCModified() {
     try (final MdcScope ignored = new MdcScope(modificationInMDC)) {
       final Map<String, String> mdcState = MDC.getCopyOfContextMap();
@@ -34,7 +34,7 @@ class MdcScopeTest {
   }
 
   @Test
-  @DisplayName("The MDC context is properly restored")
+  //The MDC context is properly restored
   void testMDCRestore() {
     try (final MdcScope ignored = new MdcScope(modificationInMDC)) {}
 
