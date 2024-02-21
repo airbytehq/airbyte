@@ -29,7 +29,7 @@ class Artifact:
             raise Exception(f"Failed to save artifact {self.name} to local path {path}")
 
     async def upload_to_gcs(self, dagger_client: dagger.Client, bucket: str, key: str, gcs_credentials: dagger.Secret) -> str:
-        gcs_cp_flags = [f"--content-disposition=attachment;filename='{self.name}'"]
+        gcs_cp_flags = [f"--content-disposition=filename=\"{self.name}\""]
         if self.content_type is not None:
             gcs_cp_flags = gcs_cp_flags + [f"--content-type={self.content_type}"]
 
