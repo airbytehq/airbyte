@@ -10,21 +10,17 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 class ChargebeeRequestBuilder:
 
     @classmethod
-    def accounts_endpoint(cls, account_id: str, client_secret: str) -> "ChargebeeRequestBuilder":
-        return cls("accounts", account_id, client_secret)
+    def items_endpoint(cls) -> "ChargebeeRequestBuilder":
+        return cls("items")
 
     @classmethod
-    def items_endpoint(cls, account_id: str, client_secret: str) -> "ChargebeeRequestBuilder":
-        return cls("v2/items", account_id, client_secret)
+    def _for_endpoint(cls, endpoint: str) -> "ChargebeeRequestBuilder":
+        return cls(endpoint)
 
-    @classmethod
-    def _for_endpoint(cls, endpoint: str, account_id: str, client_secret: str) -> "ChargebeeRequestBuilder":
-        return cls(endpoint, account_id, client_secret)
-
-    def __init__(self, resource: str, account_id: str, client_secret: str) -> None:
+    def __init__(self, resource: str) -> None:
         self._resource = resource
-        self._account_id = account_id
-        self._client_secret = client_secret
+        # self._account_id = account_id
+        # self._client_secret = client_secret
         self._any_query_params = False
         self._created_gte: Optional[datetime] = None
         self._created_lte: Optional[datetime] = None
@@ -68,20 +64,20 @@ class ChargebeeRequestBuilder:
 
     def build(self) -> HttpRequest:
         query_params = {}
-        if self._created_gte:
-            query_params["created[gte]"] = str(int(self._created_gte.timestamp()))
-        if self._created_lte:
-            query_params["created[lte]"] = str(int(self._created_lte.timestamp()))
-        if self._limit:
-            query_params["limit"] = str(self._limit)
-        if self._starting_after_id:
-            query_params["starting_after"] = self._starting_after_id
-        if self._types:
-            query_params["types[]"] = self._types
-        if self._object:
-            query_params["object"] = self._object
-        if self._expands:
-            query_params["expand[]"] = self._expands
+        # if self._created_gte:
+        #     query_params["created[gte]"] = str(int(self._created_gte.timestamp()))
+        # if self._created_lte:
+        #     query_params["created[lte]"] = str(int(self._created_lte.timestamp()))
+        # if self._limit:
+        #     query_params["limit"] = str(self._limit)
+        # if self._starting_after_id:
+        #     query_params["starting_after"] = self._starting_after_id
+        # if self._types:
+        #     query_params["types[]"] = self._types
+        # if self._object:
+        #     query_params["object"] = self._object
+        # if self._expands:
+        #     query_params["expand[]"] = self._expands
 
         if self._any_query_params:
             if query_params:
@@ -89,7 +85,6 @@ class ChargebeeRequestBuilder:
             query_params = ANY_QUERY_PARAMS
 
         return HttpRequest(
-            url=f"https://api.stripe.com/v1/{self._resource}",
-            query_params=query_params,
-            headers={"Stripe-Account": self._account_id, "Authorization": f"Bearer {self._client_secret}"},
+            url=f"https://config-builder-site.chargebee.com/api/v2/{self._resource}",
+            query_params=ANY_QUERY_PARAMS,
         )

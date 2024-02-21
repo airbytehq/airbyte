@@ -168,8 +168,8 @@ class PerPartitionCursor(Cursor):
             print(f"type partition_tuple: {type(partition_tuple)}")
             print(f"cursor: {cursor}")
             partition = self._to_dict(partition_tuple)
-            if "parent_slice" in partition:
-                partition.pop("parent_slice")
+            # if "parent_slice" in partition:
+            #     partition.pop("parent_slice")
             cursor_state = cursor.get_stream_state()
             if cursor_state:
                 states.append(
