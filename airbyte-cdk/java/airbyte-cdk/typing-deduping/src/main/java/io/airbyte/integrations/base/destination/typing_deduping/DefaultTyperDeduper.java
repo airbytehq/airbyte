@@ -5,8 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
-import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.getCountOfTypeAndDedupeThreads;
-import static io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.returnOrLogAndThrowFirst;
+import static io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtilKt.prepareAllSchemas;
 import static java.util.Collections.singleton;
@@ -128,11 +127,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     // final tables later again.
     final List<Either<? extends Exception, Void>> runMigrationsResult =
         CompletableFutures.allOf(parsedCatalog.streams().stream().map(this::runMigrationsAsync).toList()).toCompletableFuture().join();
-    returnOrLogAndThrowFirst("The following exceptions were thrown attempting to run migrations:\n", runMigrationsResult);
+    getResultsOrLogAndThrowFirst("The following exceptions were thrown attempting to run migrations:\n", runMigrationsResult);
     final List<DestinationInitialState> initialStates = destinationHandler.gatherInitialState(parsedCatalog.streams());
     final List<Either<? extends Exception, Void>> prepareTablesFutureResult = CompletableFutures.allOf(
         initialStates.stream().map(this::prepareTablesFuture).toList()).toCompletableFuture().join();
-    returnOrLogAndThrowFirst("The following exceptions were thrown attempting to prepare tables:\n", prepareTablesFutureResult);
+    getResultsOrLogAndThrowFirst("The following exceptions were thrown attempting to prepare tables:\n", prepareTablesFutureResult);
   }
 
   private CompletionStage<Void> runMigrationsAsync(StreamConfig streamConfig) {

@@ -86,8 +86,8 @@ public class ConnectorExceptionUtil {
     }
   }
 
-  public static <T extends Throwable, Result> List<Result> returnOrLogAndThrowFirst(final String initialMessage,
-                                                                                    final List<Either<? extends T, Result>> eithers)
+  public static <T extends Throwable, Result> List<Result> getResultsOrLogAndThrowFirst(final String initialMessage,
+                                                                                        final List<Either<? extends T, Result>> eithers)
       throws T {
     List<? extends T> throwables = eithers.stream().filter(Either::isLeft).map(Either::getLeft).toList();
     if (!throwables.isEmpty()) {

@@ -154,7 +154,7 @@ public abstract class JdbcDestinationHandler implements DestinationHandler {
         .map(this::retrieveState)
         .toList();
     final List<Either<? extends Exception, DestinationInitialState>> states = CompletableFutures.allOf(initialStates).toCompletableFuture().join();
-    return ConnectorExceptionUtil.returnOrLogAndThrowFirst("Failed to retrieve initial state", states);
+    return ConnectorExceptionUtil.getResultsOrLogAndThrowFirst("Failed to retrieve initial state", states);
   }
 
   private CompletionStage<DestinationInitialState> retrieveState(final StreamConfig streamConfig) {
