@@ -62,9 +62,12 @@ class SourceAmazonSqs(Source):
             logger.debug("Amazon SQS Source Config Check - access_key (ends with): " + access_key[-1])
             secret_key = config["secret_key"]
             logger.debug("Amazon SQS Source Config Check - secret_key (ends with): " + secret_key[-1])
+            session_token = config.get("session_token")
+            if session_token:
+                logger.debug("Amazon SQS Source Config Check - secret_key (ends with): " + session_token[-1])
 
             logger.debug("Amazon SQS Source Config Check - Starting connection test ---")
-            session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
+            session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, aws_session_token=session_token, region_name=queue_region)
             sqs = session.resource("sqs")
             queue = sqs.Queue(url=queue_url)
             if hasattr(queue, "attributes"):

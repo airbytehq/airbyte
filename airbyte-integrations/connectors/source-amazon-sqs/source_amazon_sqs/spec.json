@@ -107,6 +107,13 @@
         "examples": ["hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"],
         "airbyte_secret": true,
         "order": 8
+      },
+      "session_token": {
+        "title": "AWS IAM Session Token",
+        "description": "The Temporary Session Token of the AWS IAM Role to use for pulling messages",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 9
       }
     }
   }
