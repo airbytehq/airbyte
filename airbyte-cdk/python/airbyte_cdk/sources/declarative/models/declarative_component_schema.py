@@ -581,7 +581,7 @@ class RemoveFields(BaseModel):
     type: Literal['RemoveFields']
     condition: Optional[str] = Field(
         '',
-        description="The predicate to filter a property by a property value. Property will be removed if evaluated to True.',",
+        description="The predicate to filter a property by a property value. Property will be removed if it is empty OR expression is evaluated to True.",
         examples=[
             "{{ property|string == '' }}",
             '{{ property is integer }}',

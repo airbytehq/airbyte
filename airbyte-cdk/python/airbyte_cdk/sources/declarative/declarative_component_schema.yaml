@@ -1848,7 +1848,7 @@ definitions:
         type: string
         enum: [RemoveFields]
       condition:
-        description: The predicate to filter a property by a property value. Property will be removed if evaluated to True.',
+        description: The predicate to filter a property by a property value. Property will be removed if it is empty OR expression is evaluated to True.,
         type: string
         default: ""
         interpolation_context:
