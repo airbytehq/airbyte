@@ -16,8 +16,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,17 +109,17 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   private void waitForAgentState(final boolean running) {
     final String expectedValue = running ? "Running." : "Stopped.";
-    LOGGER.debug("Waiting for SQLServerAgent state to change to '{}'.", expectedValue);
+    LOGGER.info(formatLogLine("Waiting for SQLServerAgent state to change to '{}'."), expectedValue);
     for (int i = 0; i < MAX_RETRIES; i++) {
       try {
         final var r = query(ctx -> ctx.fetch("EXEC master.dbo.xp_servicecontrol 'QueryState', N'SQLServerAGENT';").get(0));
         if (expectedValue.equalsIgnoreCase(r.getValue(0).toString())) {
-          LOGGER.debug("SQLServerAgent state is '{}', as expected.", expectedValue);
+          LOGGER.info(formatLogLine("SQLServerAgent state is '{}', as expected."), expectedValue);
           return;
         }
-        LOGGER.debug("Retrying, SQLServerAgent state {} does not match expected '{}'.", r, expectedValue);
+        LOGGER.info(formatLogLine("Retrying, SQLServerAgent state {} does not match expected '{}'."), r, expectedValue);
       } catch (final SQLException e) {
-        LOGGER.debug("Retrying agent state query after catching exception {}.", e.getMessage());
+        LOGGER.info(formatLogLine("Retrying agent state query after catching exception {}."), e.getMessage());
       }
       try {
         Thread.sleep(1_000); // Wait one second between retries.
@@ -123,21 +127,21 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
         throw new RuntimeException(e);
       }
     }
-    throw new RuntimeException("Exhausted retry attempts while polling for agent state");
+    throw new RuntimeException(formatLogLine("Exhausted retry attempts while polling for agent state"));
   }
 
   public MsSQLTestDatabase withWaitUntilMaxLsnAvailable() {
-    LOGGER.debug("Waiting for max LSN to become available for database {}.", getDatabaseName());
+    LOGGER.info(formatLogLine("Waiting for max LSN to become available for database {}."), getDatabaseName());
     for (int i = 0; i < MAX_RETRIES; i++) {
       try {
         final var maxLSN = query(ctx -> ctx.fetch("SELECT sys.fn_cdc_get_max_lsn();").get(0).get(0, byte[].class));
         if (maxLSN != null) {
-          LOGGER.debug("Max LSN available for database {}: {}", getDatabaseName(), Lsn.valueOf(maxLSN));
+          LOGGER.info(formatLogLine("Max LSN available for database {}: {}"), getDatabaseName(), Lsn.valueOf(maxLSN));
           return self();
         }
-        LOGGER.debug("Retrying, max LSN still not available for database {}.", getDatabaseName());
+        LOGGER.info(formatLogLine("Retrying, max LSN still not available for database {}."), getDatabaseName());
       } catch (final SQLException e) {
-        LOGGER.warn("Retrying max LSN query after catching exception {}", e.getMessage());
+        LOGGER.info(formatLogLine("Retrying max LSN query after catching exception {}"), e.getMessage());
       }
       try {
         Thread.sleep(1_000); // Wait one second between retries.
