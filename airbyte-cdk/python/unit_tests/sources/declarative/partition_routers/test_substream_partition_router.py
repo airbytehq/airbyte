@@ -6,6 +6,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import pytest as pytest
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Record
@@ -18,8 +19,8 @@ data_first_parent_slice = [{"id": 0, "slice": "first", "data": "A"}, {"id": 1, "
 data_second_parent_slice = [{"id": 2, "slice": "second", "data": "C"}]
 data_third_parent_slice = []
 all_parent_data = data_first_parent_slice + data_second_parent_slice + data_third_parent_slice
-parent_slices = [{"slice": "first"}, {"slice": "second"}, {"slice": "third"}]
-second_parent_stream_slice = [{"slice": "second_parent"}]
+parent_slices = [PerPartitionStreamSlice({"slice": "first"}, {}), PerPartitionStreamSlice({"slice": "second"}, {}), PerPartitionStreamSlice({"slice": "third"}, {})]
+second_parent_stream_slice = [PerPartitionStreamSlice({"slice": "second_parent"}, {})]
 
 
 class MockStream(Stream):
@@ -39,7 +40,11 @@ class MockStream(Stream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from self._slices
+        for s in self._slices:
+            if isinstance(s, PerPartitionStreamSlice):
+                yield s
+            else:
+                yield PerPartitionStreamSlice(s, {})
 
     def read_records(
         self,
@@ -104,6 +109,23 @@ class MockStream(Stream):
             ],
         ),
         (
+                "test_cursor_values_are_removed_from_parent_slices",
+                [
+                    ParentStreamConfig(
+                        stream=MockStream([PerPartitionStreamSlice(p, {"start": 0, "end": 1}) for p in parent_slices], all_parent_data, "first_stream"),
+                        parent_key="id",
+                        partition_field="first_stream_id",
+                        parameters={},
+                        config={},
+                    )
+                ],
+                [
+                    {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
+                    {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
+                    {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
+                ],
+        ),
+        (
             "test_multiple_parent_streams",
             [
                 ParentStreamConfig(
@@ -125,8 +147,8 @@ class MockStream(Stream):
                 {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
                 {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
                 {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
-                {"parent_slice": {"slice": "second_parent"}, "second_stream_id": 10},
-                {"parent_slice": {"slice": "second_parent"}, "second_stream_id": 20},
+                {"parent_slice": PerPartitionStreamSlice({"slice": "second_parent"}, {}), "second_stream_id": 10},
+                {"parent_slice": PerPartitionStreamSlice({"slice": "second_parent"}, {}), "second_stream_id": 20},
             ],
         ),
         (

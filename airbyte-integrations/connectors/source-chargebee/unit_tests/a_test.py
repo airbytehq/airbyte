@@ -3,40 +3,40 @@
 #
 
 from collections import OrderedDict
-from typing import Optional, Mapping, Any, Iterable, List
+from typing import Any, Iterable, List, Mapping, Optional
 from unittest.mock import Mock, patch
 
 import pytest
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import (
-    PerPartitionCursor,
-    PerPartitionKeySerializer,
-    PerPartitionStreamSlice, CursorFactory,
-)
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
-from airbyte_cdk.sources.declarative.requesters import RequestOption
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
-from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
-from airbyte_cdk.sources.declarative.decoders import JsonDecoder
-from airbyte_cdk.sources.declarative.extractors import RecordSelector, DpathExtractor
-from airbyte_cdk.sources.declarative.interpolation import InterpolatedString, InterpolatedBoolean
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
-from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
-from airbyte_cdk.sources.utils.transform import TypeTransformer, TransformConfig
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import PageIncrement
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
+from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder
+from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import (
+    CursorFactory,
+    PerPartitionCursor,
+    PerPartitionKeySerializer,
+    PerPartitionStreamSlice,
+)
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedBoolean, InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
+from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
+from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import PageIncrement
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
+from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 PARTITION = {
     "partition_key string": "partition value",

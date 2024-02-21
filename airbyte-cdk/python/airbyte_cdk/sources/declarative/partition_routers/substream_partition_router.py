@@ -103,33 +103,6 @@ class SubstreamPartitionRouter(StreamSlicer):
                         params.update({parent_config.request_option.field_name: value})
         return params
 
-    def list_partitions(self):
-        if not self.parent_stream_configs:
-            yield from []
-        else:
-            for parent_stream_config in self.parent_stream_configs:
-                parent_stream = parent_stream_config.stream
-                parent_field = parent_stream_config.parent_key.eval(self.config)
-                stream_state_field = parent_stream_config.partition_field.eval(self.config)
-                for parent_stream_slice in parent_stream.list_partitions():
-                    empty_parent_slice = True
-                    parent_slice = parent_stream_slice
-
-                    for parent_record in parent_stream.read_records(
-                            sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_slice, stream_state=None
-                    ):
-                        if isinstance(parent_record, AirbyteMessage):
-                            if parent_record.type == Type.RECORD:
-                                parent_record = parent_record.record.data
-                            else:
-                                continue
-                        elif isinstance(parent_record, Record):
-                            parent_record = parent_record.data
-                        yield {stream_state_field: parent_record[parent_field]}
-                    # If the parent slice contains no records,
-                    if empty_parent_slice:
-                        yield from []
-
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Iterate over each parent stream's record and create a StreamSlice for each record.
@@ -152,12 +125,17 @@ class SubstreamPartitionRouter(StreamSlicer):
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key.eval(self.config)
                 stream_state_field = parent_stream_config.partition_field.eval(self.config)
-                for parent_stream_slice in parent_stream.list_partitions():
+                for parent_stream_slice in parent_stream.stream_slices(
+                    sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
+                ):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice
+                    print(f"parent_stream_slice: {parent_stream_slice.cursor_slice.keys()}")
+                    parent_partition = {k: v for k, v in parent_slice.items() if k not in parent_slice.cursor_slice.keys()}
+                    print(parent_partition)
 
                     for parent_record in parent_stream.read_records(
-                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_slice, stream_state=None
+                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
                         # Skip non-records (eg AirbyteLogMessage)
                         if isinstance(parent_record, AirbyteMessage):
@@ -173,7 +151,7 @@ class SubstreamPartitionRouter(StreamSlicer):
                             pass
                         else:
                             empty_parent_slice = False
-                            yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
+                            yield {stream_state_field: stream_state_value, "parent_slice": parent_partition}
                     # If the parent slice contains no records,
                     if empty_parent_slice:
                         yield from []

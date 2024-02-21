@@ -531,9 +531,6 @@ class HttpRequester(Requester):
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
-        print(
-            f"Making outbound API request: extra='headers': {request.headers}, 'url': {request.url}, 'request_body': {request.body}"
-        )
         response: requests.Response = self._session.send(request)
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
         if log_formatter:

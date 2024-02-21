@@ -6,7 +6,7 @@ import json
 from typing import Any, Callable, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import DeclarativeStreamSlice, StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
@@ -28,7 +28,7 @@ class PerPartitionKeySerializer:
         return json.loads(to_deserialize)
 
 
-class PerPartitionStreamSlice(StreamSlice):
+class PerPartitionStreamSlice(StreamSlice, DeclarativeStreamSlice):
     def __init__(self, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]):
         self._partition = partition
         self._cursor_slice = cursor_slice
@@ -71,7 +71,7 @@ class PerPartitionStreamSlice(StreamSlice):
     def values(self):
         return self._stream_slice.values()
 
-    def get(self, key: str, default: Any) -> Any:
+    def get(self, key: str, default: Any = None) -> Any:
         return self._stream_slice.get(key, default)
 
     def __eq__(self, other):
@@ -127,7 +127,7 @@ class PerPartitionCursor(Cursor):
         self._partition_serializer = PerPartitionKeySerializer()
 
     def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
-        slices = self._partition_router.list_partitions()
+        slices = self._partition_router.stream_slices()
         for partition in slices:
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition))
             if not cursor:
@@ -136,10 +136,6 @@ class PerPartitionCursor(Cursor):
 
             for cursor_slice in cursor.stream_slices():
                 yield PerPartitionStreamSlice(partition, cursor_slice)
-
-    def list_partitions(self) -> Iterable[StreamSlice]:
-        for partition in self._partition_router.list_partitions():
-            yield partition
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         if not stream_state:

@@ -366,17 +366,6 @@ class SimpleRetriever(Retriever):
         """
         return self.stream_slicer.stream_slices()
 
-    def list_partitions(self) -> Iterable[Optional[Mapping[str, Any]]]:  # type: ignore
-        """
-        Specifies the slices for this stream. See the stream slicing section of the docs for more information.
-
-        :param sync_mode:
-        :param cursor_field:
-        :param stream_state:
-        :return:
-        """
-        return self.stream_slicer.list_partitions()
-
     @property
     def state(self) -> Mapping[str, Any]:
         return self.cursor.get_stream_state() if self.cursor else {}

@@ -112,6 +112,7 @@ class DeclarativeStream(Stream):
         """
         return self._schema_loader.get_json_schema()
 
+    # @deprecated(reason="Use stream_slices instead")
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -124,11 +125,6 @@ class DeclarativeStream(Stream):
         :return:
         """
         return self.retriever.stream_slices()
-
-    def list_partitions(
-            self
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return self.retriever.list_partitions()
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:

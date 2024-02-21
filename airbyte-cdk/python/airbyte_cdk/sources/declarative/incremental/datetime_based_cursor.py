@@ -10,6 +10,7 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -141,10 +142,6 @@ class DatetimeBasedCursor(Cursor):
         start_datetime = self._calculate_earliest_possible_value(self._select_best_end_datetime())
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
-    def list_partitions(self) -> Iterable[StreamSlice]:
-        # No partitions for datetime based cursor?
-        yield from [None]
-
     def _calculate_earliest_possible_value(self, end_datetime: datetime.datetime) -> datetime.datetime:
         lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config) if self.lookback_window else "P0D")
         earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config), end_datetime)
@@ -172,7 +169,11 @@ class DatetimeBasedCursor(Cursor):
         while start <= end:
             next_start = self._evaluate_next_start_date_safely(start, step)
             end_date = self._get_date(next_start - self._cursor_granularity, end, min)
-            dates.append({start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)})
+            dates.append(
+                PerPartitionStreamSlice(
+                    partition={}, cursor_slice={start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)}
+                )
+            )
             start = next_start
         return dates
 
