@@ -120,36 +120,6 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
     return tableRowCounts;
   }
 
-  public Optional<TableDefinition> findExistingTable(final StreamId id) throws SQLException {
-    // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
-    // VARIANT as VARCHAR
-    final LinkedHashMap<String, ColumnDefinition> columns = database.queryJsons(
-        """
-        SELECT column_name, data_type, is_nullable
-        FROM information_schema.columns
-        WHERE table_catalog = ?
-          AND table_schema = ?
-          AND table_name = ?
-        ORDER BY ordinal_position;
-        """,
-        databaseName.toUpperCase(),
-        id.finalNamespace().toUpperCase(),
-        id.finalName().toUpperCase()).stream().collect(LinkedHashMap::new,
-            (map, row) -> map.put(
-                row.get("COLUMN_NAME").asText(),
-                new ColumnDefinition(
-                    row.get("COLUMN_NAME").asText(),
-                    row.get("DATA_TYPE").asText(),
-                    0, // unused
-                    fromIsNullableIsoString(row.get("IS_NULLABLE").asText()))),
-            LinkedHashMap::putAll);
-    if (columns.isEmpty()) {
-      return Optional.empty();
-    } else {
-      return Optional.of(new TableDefinition(columns));
-    }
-  }
-
   public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
     final ResultSet tables = database.getMetaData().getTables(
         databaseName,
