@@ -259,8 +259,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
         toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE).equals(existingTable.columns().get(abExtractedAtColumnName).type());
   }
 
-  @Override
-  protected boolean isAirbyteMetaColumnMatch(TableDefinition existingTable) {
+  private boolean isAirbyteMetaColumnMatch(TableDefinition existingTable) {
     final String abMetaColumnName = COLUMN_NAME_AB_META.toUpperCase();
     return existingTable.columns().containsKey(abMetaColumnName) &&
         "VARIANT".equals(existingTable.columns().get(abMetaColumnName).type());
