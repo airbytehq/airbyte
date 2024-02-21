@@ -53,7 +53,7 @@ public class NormalizationLogParser {
     if (Strings.isEmpty(line)) {
       return Stream.of(logMessage(Level.INFO, ""));
     }
-    final Optional<JsonNode> json = Jsons.tryDeserialize(line);
+    final Optional<JsonNode> json = Jsons.tryDeserializeWithoutWarn(line);
     if (json.isPresent()) {
       return jsonToMessage(json.get());
     } else {
@@ -96,7 +96,7 @@ public class NormalizationLogParser {
        */
       final String logLevel = (jsonLine.hasNonNull("level")) ? jsonLine.get("level").asText() : "";
       String logMsg = jsonLine.hasNonNull("msg") ? jsonLine.get("msg").asText() : "";
-      Level level;
+      final Level level;
       switch (logLevel) {
         case "debug" -> level = Level.DEBUG;
         case "info" -> level = Level.INFO;
@@ -117,7 +117,7 @@ public class NormalizationLogParser {
     }
   }
 
-  private static AirbyteMessage logMessage(Level level, String message) {
+  private static AirbyteMessage logMessage(final Level level, final String message) {
     return new AirbyteMessage()
         .withType(Type.LOG)
         .withLog(new AirbyteLogMessage()
@@ -125,7 +125,7 @@ public class NormalizationLogParser {
             .withMessage(message));
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     final NormalizationLogParser normalizationLogParser = new NormalizationLogParser();
     final Stream<AirbyteMessage> airbyteMessageStream =
         normalizationLogParser.create(new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8)));
@@ -135,8 +135,8 @@ public class NormalizationLogParser {
     final String dbtErrorStack = String.join("\n", errors);
     if (!"".equals(dbtErrorStack)) {
       final Map<ErrorMapKeys, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
-      String internalMessage = errorMap.get(ErrorMapKeys.ERROR_MAP_MESSAGE_KEY);
-      AirbyteMessage traceMessage = new AirbyteMessage()
+      final String internalMessage = errorMap.get(ErrorMapKeys.ERROR_MAP_MESSAGE_KEY);
+      final AirbyteMessage traceMessage = new AirbyteMessage()
           .withType(Type.TRACE)
           .withTrace(new AirbyteTraceMessage()
               .withType(AirbyteTraceMessage.Type.ERROR)

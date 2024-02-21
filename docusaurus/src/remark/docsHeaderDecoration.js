@@ -1,5 +1,4 @@
 const visit = require("unist-util-visit").visit;
-const { isPypiConnector } = require("../connector_registry");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const toAttributes = (props) =>

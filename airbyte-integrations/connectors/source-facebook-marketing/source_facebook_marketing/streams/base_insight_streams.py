@@ -25,7 +25,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
     cursor_field = "date_start"
-    enable_deleted = False
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
         "1d_click",
@@ -44,8 +43,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     ]
 
     # Facebook store metrics maximum of 37 months old. Any time range that
-    # older that 37 months from current date would result in 400 Bad request
-    # HTTP response.
+    # older than 37 months from current date would result in 400 Bad request HTTP response.
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
@@ -106,8 +104,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         Facebook freezes insight data 28 days after it was generated, which means that all data
         from the past 28 days may have changed since we last emitted it, so we retrieve it again.
-        But in some cases users my have define their own lookback window, thats
-        why the value for `insights_lookback_window` is set throught config.
+        But in some cases users my have define their own lookback window, that's
+        why the value for `insights_lookback_window` is set through the config.
         """
         return pendulum.duration(days=self._insights_lookback_window)
 
@@ -174,9 +172,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     def state(self, value: Mapping[str, Any]):
         """State setter, will ignore saved state if time_increment is different from previous."""
         # if the time increment configured for this stream is different from the one in the previous state
-        # then the previous state object is invalid and we should start replicating data from scratch
+        # then the previous state object is invalid, and we should start replicating data from scratch
         # to achieve this, we skip setting the state
-        transformed_state = self._transform_state_from_old_format(value, ["time_increment"])
+        transformed_state = self._transform_state_from_one_account_format(value, ["time_increment"])
         if transformed_state.get("time_increment", 1) != self.time_increment:
             logger.info(f"Ignoring bookmark for {self.name} because of different `time_increment` option.")
             return
@@ -194,7 +192,11 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         self._next_cursor_values = self._get_start_date()
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ):
         """Update stream state from latest record
 
         :param current_stream_state: latest state returned
@@ -261,7 +263,10 @@ class AdsInsights(FBMarketingIncrementalStream):
         return all([breakdown in data for breakdown in self.breakdowns])
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
         This solution for Async was chosen because:
