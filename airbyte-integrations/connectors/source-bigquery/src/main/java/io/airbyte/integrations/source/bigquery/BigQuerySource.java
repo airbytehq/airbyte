@@ -128,7 +128,13 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
         .name(table.getTableId().getTable())
         .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
             .map(f -> {
-              final StandardSQLTypeName standardType = f.getType().getStandardType();
+              final StandardSQLTypeName standardType;
+              if (f.getType().getStandardType() == StandardSQLTypeName.STRUCT && f.getMode() == Field.Mode.REPEATED) {
+                standardType = StandardSQLTypeName.ARRAY;
+              }
+              else
+                standardType = f.getType().getStandardType();
+              
               return new CommonField<>(f.getName(), standardType);
             })
             .collect(Collectors.toList()))
