@@ -19,7 +19,7 @@ data_first_parent_slice = [{"id": 0, "slice": "first", "data": "A"}, {"id": 1, "
 data_second_parent_slice = [{"id": 2, "slice": "second", "data": "C"}]
 data_third_parent_slice = []
 all_parent_data = data_first_parent_slice + data_second_parent_slice + data_third_parent_slice
-parent_slices = [PerPartitionStreamSlice({"slice": "first"}, {}), PerPartitionStreamSlice({"slice": "second"}, {}), PerPartitionStreamSlice({"slice": "third"}, {})]
+parent_slices = [{"slice": "first"}, {"slice": "second"}, {"slice": "third"}]
 second_parent_stream_slice = [PerPartitionStreamSlice({"slice": "second_parent"}, {})]
 
 
@@ -147,8 +147,8 @@ class MockStream(Stream):
                 {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
                 {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
                 {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
-                {"parent_slice": PerPartitionStreamSlice({"slice": "second_parent"}, {}), "second_stream_id": 10},
-                {"parent_slice": PerPartitionStreamSlice({"slice": "second_parent"}, {}), "second_stream_id": 20},
+                {"parent_slice": {"slice": "second_parent"}, "second_stream_id": 10},
+                {"parent_slice": {"slice": "second_parent"}, "second_stream_id": 20},
             ],
         ),
         (
