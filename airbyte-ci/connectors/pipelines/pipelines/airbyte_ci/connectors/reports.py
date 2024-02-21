@@ -4,18 +4,17 @@
 from __future__ import annotations
 
 import json
-import os
 import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Optional
-from zipfile import ZIP_DEFLATED, ZipFile
+from typing import TYPE_CHECKING, Dict
 
 from connector_ops.utils import console  # type: ignore
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 from pipelines.helpers.utils import format_duration
+from pipelines.models.artifacts import Artifact
 from pipelines.models.reports import Report
 from pipelines.models.steps import StepStatus
 from rich.console import Group
@@ -90,7 +89,7 @@ class ConnectorReport(Report):
             }
         )
 
-    async def to_html(self) -> str:
+    def to_html(self) -> str:
         env = Environment(
             loader=PackageLoader("pipelines.airbyte_ci.connectors.test.steps"),
             autoescape=select_autoescape(),
@@ -101,10 +100,17 @@ class ConnectorReport(Report):
         template.globals["StepStatus"] = StepStatus
         template.globals["format_duration"] = format_duration
         local_icon_path = Path(f"{self.pipeline_context.connector.code_directory}/icon.svg").resolve()
-        step_result_to_artifact_link = {}
+        step_result_to_artifact_links: Dict[str, List[Dict]] = {}
         for step_result in self.steps_results:
-            if test_artifacts_link := await self.upload_path(step_result.test_artifacts_path):
-                step_result_to_artifact_link[step_result.step.title] = test_artifacts_link
+            for artifact in step_result.artifacts:
+                if artifact.gcs_url:
+                    url = artifact.gcs_url
+                elif artifact.local_path:
+                    url = artifact.local_path.resolve().as_uri()
+                else:
+                    continue
+                step_result_to_artifact_links.setdefault(step_result.step.title, []).append({"name": artifact.name, "url": url})
+
         template_context = {
             "connector_name": self.pipeline_context.connector.technical_name,
             "step_results": self.steps_results,
@@ -118,7 +124,7 @@ class ConnectorReport(Report):
             "commit_url": None,
             "icon_url": local_icon_path.as_uri(),
             "report": self,
-            "step_result_to_artifact_link": MappingProxyType(step_result_to_artifact_link),
+            "step_result_to_artifact_links": MappingProxyType(step_result_to_artifact_links),
         }
 
         if self.pipeline_context.is_ci:
@@ -131,17 +137,32 @@ class ConnectorReport(Report):
             ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
         return template.render(template_context)
 
+    async def save_html_report(self) -> None:
+        """Save the report as HTML, upload it to GCS if the pipeline is running in CI"""
+
+        html_report_path = self.report_dir_path / self.html_report_file_name
+        report_dir = self.pipeline_context.dagger_client.host().directory(str(self.report_dir_path))
+        local_html_report_file = report_dir.with_new_file(self.html_report_file_name, self.to_html()).file(self.html_report_file_name)
+        html_report_artifact = Artifact(name="HTML Report", content_type="text/html", content=local_html_report_file)
+        await html_report_artifact.save_to_local_path(html_report_path)
+        absolute_path = html_report_path.absolute()
+        self.pipeline_context.logger.info(f"Report saved locally at {absolute_path}")
+        if self.remote_storage_enabled and self.pipeline_context.ci_gcs_credentials_secret and self.pipeline_context.ci_report_bucket:
+            gcs_url = await html_report_artifact.upload_to_gcs(
+                dagger_client=self.pipeline_context.dagger_client,
+                bucket=self.pipeline_context.ci_report_bucket,
+                key=self.html_report_remote_storage_key,
+                gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
+            )
+            self.pipeline_context.logger.info(f"HTML report uploaded to {gcs_url}")
+
+        elif self.pipeline_context.enable_report_auto_open:
+            self.pipeline_context.logger.info("Opening HTML report in browser.")
+            webbrowser.open(absolute_path.as_uri())
+
     async def save(self) -> None:
-        local_html_path = await self.save_local(self.html_report_file_name, await self.to_html())
-        absolute_path = local_html_path.resolve()
-        if self.pipeline_context.enable_report_auto_open:
-            self.pipeline_context.logger.info(f"HTML report saved locally: {absolute_path}")
-            if self.pipeline_context.enable_report_auto_open:
-                self.pipeline_context.logger.info("Opening HTML report in browser.")
-                webbrowser.open(absolute_path.as_uri())
-        if self.remote_storage_enabled:
-            await self.save_remote(local_html_path, self.html_report_remote_storage_key, "text/html")
         await super().save()
+        await self.save_html_report()
 
     def print(self) -> None:
         """Print the test report to the console in a nice way."""
@@ -169,31 +190,3 @@ class ConnectorReport(Report):
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
         console.print(main_panel)
-
-    async def upload_path(self, path: Optional[Path]) -> Optional[str]:
-        if not path or not path.exists():
-            return None
-        if self.pipeline_context.is_local:
-            return str(path.resolve())
-
-        zip_file_path = Path(str(path) + ".zip")
-        with ZipFile(zip_file_path, mode="w") as zip_file:
-            # lifted from https://github.com/python/cpython/blob/3.12/Lib/zipfile/__init__.py#L2277C9-L2295C44
-            def add_to_zip(zf: ZipFile, path_to_zip: str, zippath: str) -> None:
-                if os.path.isfile(path_to_zip):
-                    zf.write(path_to_zip, zippath, ZIP_DEFLATED)
-                elif os.path.isdir(path_to_zip):
-                    if zippath:
-                        zf.write(path_to_zip, zippath)
-                    for nm in sorted(os.listdir(path_to_zip)):
-                        add_to_zip(zf, os.path.join(path_to_zip, nm), os.path.join(zippath, nm))
-
-            add_to_zip(zip_file, str(path), "")
-
-        if not self.remote_storage_enabled:
-            self.pipeline_context.logger.info(f"remote storage is disable. zip file is at {zip_file_path.resolve()}")
-            return str(zip_file_path.resolve())
-        else:
-            await self.save_remote(zip_file_path, self.file_remote_storage_key(zip_file_path.name), "application/zip")
-            self.pipeline_context.logger.info(f"zip file uploaded to {self.file_url(str(zip_file_path))}")
-            return self.file_url(zip_file_path.name)

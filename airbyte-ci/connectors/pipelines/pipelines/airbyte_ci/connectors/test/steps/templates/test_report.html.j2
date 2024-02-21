@@ -167,8 +167,13 @@ function copyToClipBoard(htmlElement) {
       <label for="{{ step_result.step.title }}" class="lbl-toggle">{{ step_result.step.title }} | {{ format_duration(step_result.step.run_duration) }}</label>
     {% endif %}
     <div class="collapsible-content">
-      {% if step_result_to_artifact_link[step_result.step.title] %}
-        <div><a href="{{ step_result_to_artifact_link[step_result.step.title] }}">Test Artifacts</a></div>
+      {% if step_result_to_artifact_links[step_result.step.title] %}
+      <h3>Artifacts</h3>
+      <ul>
+      {% for artifact in step_result_to_artifact_links[step_result.step.title] %}
+        <li><a href="{{ artifact.url }}">{{ artifact.name }}</a></li>
+      {% endfor %}
+      </ul>
       {% endif %}
       <div class="content-inner">
         {% if step_result.stdout %}
