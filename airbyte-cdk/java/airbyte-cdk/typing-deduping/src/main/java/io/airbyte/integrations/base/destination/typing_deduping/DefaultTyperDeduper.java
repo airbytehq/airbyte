@@ -121,10 +121,27 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     // This is intentionally not done in parallel to avoid rate limits in some destinations.
     prepareSchemas(parsedCatalog);
 
+    // TODO: Either the migrations run the soft reset and create v2 tables or the actual prepare tables. unify the logic
+    // with current state of raw tables & final tables. This is done first before gather initial state to avoid recreating
+    // final tables later again.
+    final List<Either<? extends Exception, Void>> runMigrationsResult =
+        CompletableFutures.allOf(parsedCatalog.streams().stream().map(this::runMigrationsAsync).toList()).toCompletableFuture().join();
+    returnOrLogAndThrowFirst("The following exceptions were thrown attempting to run migrations:\n", runMigrationsResult);
     final List<DestinationInitialState> initialStates = destinationHandler.gatherInitialState(parsedCatalog.streams());
     final List<Either<? extends Exception, Void>> prepareTablesFutureResult = CompletableFutures.allOf(
         initialStates.stream().map(this::prepareTablesFuture).toList()).toCompletableFuture().join();
     returnOrLogAndThrowFirst("The following exceptions were thrown attempting to prepare tables:\n", prepareTablesFutureResult);
+  }
+
+  private CompletionStage<Void> runMigrationsAsync(StreamConfig streamConfig) {
+    return CompletableFuture.runAsync(() -> {
+      try {
+        v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, streamConfig);
+        v2TableMigrator.migrateIfNecessary(streamConfig);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }, this.executorService);
   }
 
   private CompletionStage<Void> prepareTablesFuture(final DestinationInitialState initialState) {

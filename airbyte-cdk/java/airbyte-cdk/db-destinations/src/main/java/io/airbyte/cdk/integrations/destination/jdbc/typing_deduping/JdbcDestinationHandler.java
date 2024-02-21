@@ -224,7 +224,7 @@ public abstract class JdbcDestinationHandler implements DestinationHandler {
         toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE).equals(existingTable.columns().get(COLUMN_NAME_AB_EXTRACTED_AT).type());
   }
 
-  protected boolean isAirbyteMetaColumnMatch(final TableDefinition existingTable) {
+  private boolean isAirbyteMetaColumnMatch(final TableDefinition existingTable) {
     return existingTable.columns().containsKey(COLUMN_NAME_AB_META) &&
         toJdbcTypeName(new Struct(new LinkedHashMap<>())).equals(existingTable.columns().get(COLUMN_NAME_AB_META).type());
   }
