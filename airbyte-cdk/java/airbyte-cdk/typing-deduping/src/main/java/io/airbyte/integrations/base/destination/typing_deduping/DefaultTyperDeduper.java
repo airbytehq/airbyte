@@ -121,10 +121,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     prepareSchemas(parsedCatalog);
 
     // TODO: Either the migrations run the soft reset and create v2 tables or the actual prepare tables.
-    // unify the logic
-    // with current state of raw tables & final tables. This is done first before gather initial state
-    // to avoid recreating
-    // final tables later again.
+    // unify the logic with current state of raw tables & final tables. This is done first before gather
+    // initial state to avoid recreating final tables later again.
     final List<Either<? extends Exception, Void>> runMigrationsResult =
         CompletableFutures.allOf(parsedCatalog.streams().stream().map(this::runMigrationsAsync).toList()).toCompletableFuture().join();
     getResultsOrLogAndThrowFirst("The following exceptions were thrown attempting to run migrations:\n", runMigrationsResult);
@@ -137,6 +135,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private CompletionStage<Void> runMigrationsAsync(StreamConfig streamConfig) {
     return CompletableFuture.runAsync(() -> {
       try {
+        // Migrate the Raw Tables if this is the first v2 sync after a v1 sync
         v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, streamConfig);
         v2TableMigrator.migrateIfNecessary(streamConfig);
       } catch (Exception e) {
@@ -152,9 +151,6 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     return CompletableFuture.supplyAsync(() -> {
       final var stream = initialState.streamConfig();
       try {
-        // Migrate the Raw Tables if this is the first v2 sync after a v1 sync
-        v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, initialState.streamConfig());
-        v2TableMigrator.migrateIfNecessary(initialState.streamConfig());
         if (initialState.isFinalTablePresent()) {
           LOGGER.info("Final Table exists for stream {}", stream.id().finalName());
           // The table already exists. Decide whether we're writing to it directly, or using a tmp table.
