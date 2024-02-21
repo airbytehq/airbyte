@@ -111,6 +111,8 @@ definitions:
             stream: "#/definitions/item_stream"
             parent_key: "id"
             partition_field: "item_id"
+    incremental_sync:
+      $ref: "#/definitions/date_stream_slicer"
     $parameters:
       name: "attached_item"
       primary_key: "id"

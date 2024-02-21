@@ -17,7 +17,7 @@ include = "source_chargebee"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.58.1"
+airbyte-cdk = "==0.62.3"
 
 [tool.poetry.scripts]
 source-chargebee = "source_chargebee.run:run"

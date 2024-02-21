@@ -160,12 +160,21 @@ class PerPartitionCursor(Cursor):
 
     def get_stream_state(self) -> StreamState:
         states = []
+        print(f"parent slice in self._cursor_per_partition: {self._cursor_per_partition}")
+        if "parent_slice" in self._cursor_per_partition:
+            self._cursor_per_partition = self._cursor_per_partition.pop("parent_slice")
         for partition_tuple, cursor in self._cursor_per_partition.items():
+            print(f"partition_tuple: {partition_tuple}")
+            print(f"type partition_tuple: {type(partition_tuple)}")
+            print(f"cursor: {cursor}")
+            partition = self._to_dict(partition_tuple)
+            if "parent_slice" in partition:
+                partition.pop("parent_slice")
             cursor_state = cursor.get_stream_state()
             if cursor_state:
                 states.append(
                     {
-                        "partition": self._to_dict(partition_tuple),
+                        "partition": partition,
                         "cursor": cursor_state,
                     }
                 )

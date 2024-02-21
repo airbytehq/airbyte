@@ -207,7 +207,7 @@ class AbstractSource(Source, ABC):
         stream_instance.log_stream_sync_configuration()
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
-        if use_incremental:
+        if use_incremental or True:
             record_iterator = self._read_incremental(
                 logger,
                 stream_instance,

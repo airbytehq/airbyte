@@ -528,6 +528,7 @@ class HttpRequester(Requester):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
+        self.logger.setLevel("debug")
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
