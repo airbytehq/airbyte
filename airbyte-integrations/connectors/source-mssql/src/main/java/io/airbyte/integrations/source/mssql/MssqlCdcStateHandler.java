@@ -46,7 +46,7 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
 
     final JsonNode asJson = Jsons.jsonNode(state);
 
-    LOGGER.info("debezium state: {}", asJson);
+    LOGGER.debug("debezium state: {}", asJson);
 
     final CdcState cdcState = new CdcState().withState(asJson);
     stateManager.getCdcStateManager().setCdcState(cdcState);
