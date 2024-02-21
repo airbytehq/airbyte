@@ -21,11 +21,10 @@ import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInj
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Instant;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MongoDbSource extends BaseConnector implements Source {
 
