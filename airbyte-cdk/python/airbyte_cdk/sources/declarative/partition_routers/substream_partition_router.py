@@ -125,7 +125,7 @@ class SubstreamPartitionRouter(StreamSlicer):
                                 continue
                         elif isinstance(parent_record, Record):
                             parent_record = parent_record.data
-                        yield {"parent_id": parent_record["id"]}
+                        yield {stream_state_field: parent_record[parent_field]}
                     # If the parent slice contains no records,
                     if empty_parent_slice:
                         yield from []
@@ -174,10 +174,6 @@ class SubstreamPartitionRouter(StreamSlicer):
                         else:
                             empty_parent_slice = False
                             print(f"parent_slice: {parent_partition}")
-                            # if "start_time" in parent_partition:
-                            #     yield {stream_state_field: stream_state_value}
-                            # else:
-                            #     yield {stream_state_field: stream_state_value, "parent_slice": parent_partition}
                             yield {stream_state_field: stream_state_value, "parent_slice": parent_partition}
                     # If the parent slice contains no records,
                     if empty_parent_slice:
