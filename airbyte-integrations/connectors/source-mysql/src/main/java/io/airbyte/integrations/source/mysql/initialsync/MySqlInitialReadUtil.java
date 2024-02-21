@@ -73,6 +73,116 @@ public class MySqlInitialReadUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialReadUtil.class);
 
+  public static List<AutoCloseableIterator<AirbyteMessage>> getInitialLoadIterators(final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt,
+      final String quoteString,
+      final boolean isCdc) {
+    final JsonNode sourceConfig = database.getSourceConfig();
+    // Determine the streams that need to be loaded via primary key sync.
+    final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
+
+    // Construct the initial state for MySQL. If there is already existing state, we use that instead
+    // since that is associated with the debezium
+    // state associated with the initial sync.
+    final MySqlDebeziumStateUtil mySqlDebeziumStateUtil = new MySqlDebeziumStateUtil();
+    final JsonNode initialDebeziumState = mySqlDebeziumStateUtil.constructInitialDebeziumState(
+        MySqlCdcProperties.getDebeziumProperties(database), catalog, database);
+
+    final JsonNode state =
+        (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
+            ? initialDebeziumState
+            : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
+
+    final Optional<MysqlDebeziumStateAttributes> savedOffset = mySqlDebeziumStateUtil.savedOffset(
+        MySqlCdcProperties.getDebeziumProperties(database), catalog, state.get(MYSQL_CDC_OFFSET), sourceConfig);
+
+    final boolean savedOffsetStillPresentOnServer =
+        savedOffset.isPresent() && mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
+
+    if (!savedOffsetStillPresentOnServer) {
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
+      if (!sourceConfig.get("replication_method").has(INVALID_CDC_CURSOR_POSITION_PROPERTY) || sourceConfig.get("replication_method").get(
+          INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(FAIL_SYNC_OPTION)) {
+        throw new ConfigErrorException(
+            "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention or reduce sync frequency. See https://docs.airbyte.com/integrations/sources/mysql/mysql-troubleshooting#under-cdc-incremental-mode-there-are-still-full-refresh-syncs for more details.");
+      }
+      LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
+    }
+
+    final InitialLoadStreams initialLoadStreams = cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog,
+        savedOffsetStillPresentOnServer);
+
+    final CdcState stateToBeUsed = (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
+        || stateManager.getCdcStateManager().getCdcState().getState() == null)) ? new CdcState().withState(initialDebeziumState)
+        : stateManager.getCdcStateManager().getCdcState();
+
+    final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
+
+    // If there are streams to sync via primary key load, build the relevant iterators.
+    if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
+      LOGGER.info("Streams to be synced via primary key : {}", initialLoadStreams.streamsForInitialLoad().size());
+      LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(initialLoadStreams.streamsForInitialLoad()));
+      final MySqlInitialLoadStateManager initialLoadStateManager =
+          new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
+              initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
+              stateToBeUsed, catalog);
+      final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
+
+      final MySqlInitialLoadSourceOperations sourceOperations =
+          new MySqlInitialLoadSourceOperations(
+              Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
+      final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
+          sourceOperations,
+          quoteString,
+          initialLoadStateManager,
+          namespacePair -> Jsons.emptyObject(),
+          getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
+
+      initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
+          new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
+          tableNameToTable,
+          emittedAt));
+    } else {
+      LOGGER.info("No streams will be synced via primary key");
+    }
+
+    if (isCdc) {
+      final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+      final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
+      LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
+      // Build the incremental CDC iterators.
+      final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<>(
+          sourceConfig,
+          MySqlCdcTargetPosition.targetPosition(database),
+          true,
+          firstRecordWaitTime,
+          subsequentRecordWaitTime,
+          AirbyteDebeziumHandler.QUEUE_CAPACITY,
+          false);
+      final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
+          MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog);
+      final var eventConverter = new RelationalDbDebeziumEventConverter(metadataInjector, emittedAt);
+
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+          propertiesManager, eventConverter, new MySqlCdcSavedInfoFetcher(stateToBeUsed), new MySqlCdcStateHandler(stateManager));
+
+      // This starts processing the binglogs as soon as initial sync is complete, this is a bit different
+      // from the current cdc syncs.
+      // We finish the current CDC once the initial snapshot is complete and the next sync starts
+      // processing the binlogs
+      return Collections.singletonList(
+          AutoCloseableIterators.concatWithEagerClose(
+              Stream
+                  .of(initialLoadIterator, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
+                  .flatMap(Collection::stream)
+                  .collect(Collectors.toList()),
+              AirbyteTraceMessageUtility::emitStreamStatusTrace));
+    }
+  }
+
   /*
    * Returns the read iterators associated with : 1. Initial cdc read snapshot via primary key
    * queries. 2. Incremental cdc reads via debezium.
