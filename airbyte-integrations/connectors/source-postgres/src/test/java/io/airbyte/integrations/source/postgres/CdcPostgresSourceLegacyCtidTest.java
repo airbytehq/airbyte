@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.postgres.PostgresTestDatabase.BaseImage;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 

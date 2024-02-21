@@ -29,8 +29,9 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import io.airbyte.integrations.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;

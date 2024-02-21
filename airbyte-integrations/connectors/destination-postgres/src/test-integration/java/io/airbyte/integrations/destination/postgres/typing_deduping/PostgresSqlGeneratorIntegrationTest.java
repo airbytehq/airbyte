@@ -21,7 +21,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandl
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.destination.postgres.PostgresDestination;
 import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
-import io.airbyte.integrations.destination.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.postgres.PostgresTestDatabase;
 import java.util.Optional;
 import javax.sql.DataSource;
 import org.jooq.DataType;

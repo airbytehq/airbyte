@@ -11,6 +11,7 @@ import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.postgres.PostgresTestDatabase;
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -14,5 +14,4 @@ application {
 }
 
 dependencies {
-    testFixturesApi 'org.testcontainers:postgresql:1.19.0'
 }

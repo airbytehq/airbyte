@@ -5,7 +5,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.postgres.PostgresTestDatabase.BaseImage;
 import java.util.Map;
 
 public class CDCPostgresSourceFullCertificateSslAcceptanceTest extends AbstractCdcPostgresSourceSslAcceptanceTest {

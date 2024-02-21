@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.postgres.PostgresTestDatabase.BaseImage;
 
 public class CdcPostgresSourceAcceptanceLegacyCtidTest extends CdcPostgresSourceAcceptanceTest {
 

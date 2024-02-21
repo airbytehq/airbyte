@@ -2,10 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres;
-
-import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
-import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.RESYNC_DATA_OPTION;
+package io.airbyte.integrations.postgres;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
@@ -25,6 +22,7 @@ public class PostgresTestDatabase extends
   public static enum BaseImage {
 
     POSTGRES_16("postgres:16-bullseye", 16),
+    POSTGRES_13("postgres:13-bullseye", 13),
     POSTGRES_12("postgres:12-bullseye", 12),
     POSTGRES_9("postgres:9-alpine", 9),
     POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev", 16);
@@ -177,7 +175,7 @@ public class PostgresTestDatabase extends
     }
 
     public PostgresConfigBuilder withCdcReplication() {
-      return withCdcReplication("While reading Data", RESYNC_DATA_OPTION);
+      return withCdcReplication("While reading Data", "Re-sync data");
     }
 
     public PostgresConfigBuilder withCdcReplication(String LsnCommitBehaviour, String cdcCursorFailBehaviour) {
@@ -189,7 +187,7 @@ public class PostgresTestDatabase extends
               .put("publication", testDatabase.getPublicationName())
               .put("initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds())
               .put("lsn_commit_behaviour", LsnCommitBehaviour)
-              .put(INVALID_CDC_CURSOR_POSITION_PROPERTY, cdcCursorFailBehaviour)
+              .put("invalid_cdc_cursor_position_behavior", cdcCursorFailBehaviour)
               .build()));
     }
 

@@ -7,9 +7,9 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import io.airbyte.integrations.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.JsonSchemaType;
 
 public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {

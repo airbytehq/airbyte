@@ -6,7 +6,8 @@ package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.integrations.destination.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.postgres.PostgresTestDatabase.BaseImage;
 import java.util.HashSet;
 import org.junit.jupiter.api.Disabled;
 

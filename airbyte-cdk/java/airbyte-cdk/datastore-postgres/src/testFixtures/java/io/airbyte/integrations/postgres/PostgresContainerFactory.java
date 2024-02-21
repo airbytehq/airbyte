@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.postgres;
+package io.airbyte.integrations.postgres;
 
 import io.airbyte.cdk.testutils.ContainerFactory;
 import java.io.IOException;
@@ -12,15 +12,12 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-/**
- * TODO: This class is a copy from source-postgres:testFixtures. Eventually merge into a common
- * fixtures module.
- */
 public class PostgresContainerFactory extends ContainerFactory<PostgreSQLContainer<?>> {
 
   @Override
   protected PostgreSQLContainer<?> createNewContainer(DockerImageName imageName) {
     return new PostgreSQLContainer<>(imageName.asCompatibleSubstituteFor("postgres"));
+
   }
 
   /**

@@ -13,7 +13,7 @@ import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITH_TIMEZON
 import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.postgres.PostgresTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.Set;
