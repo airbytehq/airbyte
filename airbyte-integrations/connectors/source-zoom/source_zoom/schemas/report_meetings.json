@@ -29,6 +29,9 @@
     "end_time": {
       "type": "string"
     },
+    "host_id": {
+      "type": "string"
+    },
     "id": {
       "type": "number"
     },

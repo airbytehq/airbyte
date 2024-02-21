@@ -206,12 +206,12 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
-            parent_key: "uuid"
+            parent_key: "id"
             partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
-          - path: ["meeting_uuid"]
+          - path: ["meeting_id"]
             value: "{{ stream_partition.parent_id }}"
 
   meeting_registration_questions_stream:
@@ -618,6 +618,8 @@ definitions:
           - path: ["webinar_uuid"]
             value: "{{ stream_partition.parent_id }}"
 
+  # Report Meetings stream #
+  # Docs page: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/reportMeetingDetails
   report_meetings_stream:
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -630,7 +632,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_path: ["tracking_sources"]
+          field_path: []
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -640,20 +642,15 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                - http_codes: [400]
+                - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
-            parent_key: "uuid"
+            parent_key: "id"
             partition_field: "parent_id"
-    transformations:
-      - type: AddFields
-        fields:
-          - path: ["meeting_uuid"]
-            value: "{{ stream_partition.parent_id }}"
 
   report_meeting_participants_stream:
     schema_loader:
@@ -677,19 +674,19 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                - http_codes: [400]
+                - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
-            parent_key: "uuid"
+            parent_key: "id"
             partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
-          - path: ["meeting_uuid"]
+          - path: ["meeting_id"]
             value: "{{ stream_partition.parent_id }}"
 
   report_webinars_stream:

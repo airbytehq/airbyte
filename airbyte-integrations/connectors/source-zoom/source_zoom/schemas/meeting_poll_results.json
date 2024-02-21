@@ -2,13 +2,19 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "meeting_uuid": {
-      "type": "string"
+    "meeting_id": {
+      "type": "integer"
     },
     "email": {
       "type": "string"
     },
     "name": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
       "type": "string"
     },
     "question_details": {
