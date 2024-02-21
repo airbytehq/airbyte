@@ -28,7 +28,7 @@ public class AirbyteApiClientTest {
   class RetryWithJitter {
 
     @Test
-    @DisplayName("Should not retry on success")
+    //Should not retry on success
     void ifSucceedShouldNotRetry() throws Exception {
       mockCallable = mock(Callable.class);
       when(mockCallable.call()).thenReturn("Success!");
@@ -39,7 +39,7 @@ public class AirbyteApiClientTest {
     }
 
     @Test
-    @DisplayName("Should retry up to the configured max retries on continued errors")
+    //Should retry up to the configured max retries on continued errors
     void onlyRetryTillMaxRetries() throws Exception {
       mockCallable = mock(Callable.class);
       when(mockCallable.call()).thenThrow(new RuntimeException("Bomb!"));
@@ -51,7 +51,7 @@ public class AirbyteApiClientTest {
     }
 
     @Test
-    @DisplayName("Should retry only if there are errors")
+    //Should retry only if there are errors
     void onlyRetryOnErrors() throws Exception {
       mockCallable = mock(Callable.class);
       // Because we succeed on the second try, we should only call the method twice.

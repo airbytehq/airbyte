@@ -289,7 +289,7 @@ class StateDecoratingIteratorTest {
   }
 
   @Test
-  @DisplayName("When initial cursor is null, and emit state for every record")
+  //When initial cursor is null, and emit state for every record
   void testStateEmissionFrequency1() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5);
     final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
@@ -320,7 +320,7 @@ class StateDecoratingIteratorTest {
   }
 
   @Test
-  @DisplayName("When initial cursor is null, and emit state for every 2 records")
+  //When initial cursor is null, and emit state for every 2 records
   void testStateEmissionFrequency2() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5);
     final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
@@ -346,7 +346,7 @@ class StateDecoratingIteratorTest {
   }
 
   @Test
-  @DisplayName("When initial cursor is not null")
+  //When initial cursor is not null
   void testStateEmissionWhenInitialCursorIsNotNull() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5);
     final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
@@ -396,7 +396,7 @@ class StateDecoratingIteratorTest {
    * <a href="https://github.com/airbytehq/airbyte/issues/15427">link</a>
    */
   @Test
-  @DisplayName("When there are multiple records with the same cursor value")
+  //When there are multiple records with the same cursor value
   void testStateEmissionForRecordsSharingSameCursorValue() {
 
     messageIterator = MoreIterators.of(

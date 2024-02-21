@@ -65,7 +65,7 @@ class TestHarnessUtilsTest {
     }
 
     @SuppressWarnings("BusyWait")
-    @DisplayName("Verify that shutdown waits indefinitely when heartbeat and process are healthy.")
+    //Verify that shutdown waits indefinitely when heartbeat and process are healthy.
     @Test
     void testStartsWait() throws InterruptedException {
       when(process.isAlive()).thenReturn(true);
@@ -86,7 +86,7 @@ class TestHarnessUtilsTest {
     }
 
     @Test
-    @DisplayName("Test heartbeat ends and graceful shutdown.")
+    //Test heartbeat ends and graceful shutdown.
     void testGracefulShutdown() {
       when(heartbeatMonitor.isBeating()).thenReturn(false);
       when(process.isAlive()).thenReturn(false);
@@ -97,7 +97,7 @@ class TestHarnessUtilsTest {
     }
 
     @Test
-    @DisplayName("Test heartbeat ends and shutdown is forced.")
+    //Test heartbeat ends and shutdown is forced.
     void testForcedShutdown() {
       when(heartbeatMonitor.isBeating()).thenReturn(false);
       when(process.isAlive()).thenReturn(true);
@@ -108,7 +108,7 @@ class TestHarnessUtilsTest {
     }
 
     @Test
-    @DisplayName("Test process dies.")
+    //Test process dies.
     void testProcessDies() {
       when(heartbeatMonitor.isBeating()).thenReturn(true);
       when(process.isAlive()).thenReturn(false);

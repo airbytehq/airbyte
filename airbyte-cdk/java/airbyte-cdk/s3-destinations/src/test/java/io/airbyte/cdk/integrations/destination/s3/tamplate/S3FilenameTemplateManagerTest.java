@@ -26,7 +26,7 @@ class S3FilenameTemplateManagerTest {
   private final S3FilenameTemplateManager s3FilenameTemplateManager = new S3FilenameTemplateManager();
 
   @Test
-  @DisplayName("Should replace the date placeholder with the current date in the format YYYY-MM-DD")
+  //Should replace the date placeholder with the current date in the format YYYY-MM-DD
   void testDatePlaceholder()
       throws IOException {
     final String fileNamePattern = "test-{date}";
@@ -51,7 +51,7 @@ class S3FilenameTemplateManagerTest {
   }
 
   @Test
-  @DisplayName("Should replace the timestamp placeholder with the current timestamp in milliseconds")
+  //Should replace the timestamp placeholder with the current timestamp in milliseconds
   void testTimestampPlaceholder()
       throws IOException {
     final String fileNamePattern = "test-{timestamp}.csv";
@@ -74,7 +74,7 @@ class S3FilenameTemplateManagerTest {
   }
 
   @Test
-  @DisplayName("Should sanitize the string and adapt it to applicable S3 format")
+  //Should sanitize the string and adapt it to applicable S3 format
   void testIfFilenameTemplateStringWasSanitized() throws IOException {
     final String fileNamePattern = "  te  st.csv  ";
     final String actual = s3FilenameTemplateManager
