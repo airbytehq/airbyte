@@ -2,15 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional, Union
 
+import requests
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 
+IS_TESTING = os.environ.get("DEPLOYMENT_MODE") == "testing"
 
 @dataclass
 class CustomFieldTransformation(RecordTransformation):
@@ -143,3 +147,12 @@ class IncrementalSingleSliceCursor(Cursor):
             return True
         else:
             return False
+
+class CustomBackoffStrategy(WaitTimeFromHeaderBackoffStrategy):
+
+    def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
+        """
+        Sets backoff time to 0.00001 if testing environment, otherwise uses default backoff time from header.
+        Note: DefaultErrorHandler _backoff_time method skips falsy values, therefore returmed value cannot be equal to zero here.
+        """
+        return 0.00001 if IS_TESTING else super().backoff(response, attempt_count)

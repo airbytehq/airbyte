@@ -9,6 +9,9 @@ definitions:
   custom_field_transformation:
     type: CustomTransformation
     class_name: source_chargebee.components.CustomFieldTransformation
+  custom_backoff_strategy:
+    type: CustomBackoffStrategy
+    class_name: source_chargebee.components.CustomIntegrationTestingBackoffStrategy
   requester:
     type: HttpRequester
     url_base: "https://{{ config['site'] }}.chargebee.com/api/v2"
@@ -26,7 +29,8 @@ definitions:
               error_message: "Stream is available only for Product Catalog 1.0"
         - type: DefaultErrorHandler
           backoff_strategies:
-            - type: WaitTimeFromHeader
+            - type: CustomBackoffStrategy
+              class_name: source_chargebee.components.CustomBackoffStrategy
               header: "Retry-After"
   date_stream_slicer:
     type: DatetimeBasedCursor

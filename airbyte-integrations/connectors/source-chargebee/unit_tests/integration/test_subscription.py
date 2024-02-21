@@ -79,7 +79,7 @@ class FullRefreshTest(TestCase):
     def setUp(self) -> None:
         self._now = _NOW
         self._now_in_seconds = int(self._now.timestamp())
-        self._start_date = _NOW - timedelta(days=60)
+        self._start_date = _NOW - timedelta(days=28)
         self._start_date_in_seconds = int(self._start_date.timestamp())
 
     @staticmethod
