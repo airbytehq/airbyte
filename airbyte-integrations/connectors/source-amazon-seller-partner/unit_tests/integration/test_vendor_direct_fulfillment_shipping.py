@@ -63,7 +63,6 @@ def _shipping_label_record() -> RecordBuilder:
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh:
-
     @staticmethod
     def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
@@ -89,9 +88,7 @@ class TestFullRefresh:
         mock_auth(http_mocker)
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().build(),
-            _vendor_direct_fulfillment_shipping_response().with_pagination().with_record(
-                _shipping_label_record()
-            ).build(),
+            _vendor_direct_fulfillment_shipping_response().with_pagination().with_record(_shipping_label_record()).build(),
         )
         query_params_with_next_page_token = {
             _REPLICATION_START_FIELD: _START_DATE.strftime(TIME_FORMAT),
@@ -100,9 +97,10 @@ class TestFullRefresh:
         }
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().with_query_params(query_params_with_next_page_token).build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).with_record(
-                _shipping_label_record()
-            ).build(),
+            _vendor_direct_fulfillment_shipping_response()
+            .with_record(_shipping_label_record())
+            .with_record(_shipping_label_record())
+            .build(),
         )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
@@ -135,9 +133,7 @@ class TestFullRefresh:
         assert len(output.records) == 2
 
     @HttpMocker()
-    def test_given_http_status_500_then_200_when_read_then_retry_and_return_records(
-        self, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_http_status_500_then_200_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().build(),
@@ -151,9 +147,7 @@ class TestFullRefresh:
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(
-        self, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().build(),
@@ -166,7 +160,6 @@ class TestFullRefresh:
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestIncremental:
-
     @staticmethod
     def _read(
         config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
@@ -196,9 +189,10 @@ class TestIncremental:
         mock_auth(http_mocker)
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).with_record(
-                _shipping_label_record()
-            ).build(),
+            _vendor_direct_fulfillment_shipping_response()
+            .with_record(_shipping_label_record())
+            .with_record(_shipping_label_record())
+            .build(),
         )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
@@ -217,21 +211,21 @@ class TestIncremental:
             _REPLICATION_START_FIELD: _START_DATE.strftime(TIME_FORMAT),
             _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT),
         }
-        query_params_incremental_read = {
-            _REPLICATION_START_FIELD: state_value, _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT)
-        }
+        query_params_incremental_read = {_REPLICATION_START_FIELD: state_value, _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT)}
 
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().with_query_params(query_params_first_read).build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).with_record(
-                _shipping_label_record()
-            ).build(),
+            _vendor_direct_fulfillment_shipping_response()
+            .with_record(_shipping_label_record())
+            .with_record(_shipping_label_record())
+            .build(),
         )
         http_mocker.get(
             _vendor_direct_fulfillment_shipping_request().with_query_params(query_params_incremental_read).build(),
-            _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).with_record(
-                _shipping_label_record()
-            ).build(),
+            _vendor_direct_fulfillment_shipping_response()
+            .with_record(_shipping_label_record())
+            .with_record(_shipping_label_record())
+            .build(),
         )
 
         output = self._read(
