@@ -6,9 +6,10 @@ import json
 from typing import Any, Callable, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.per_partition_stream_slice import PerPartitionStreamSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.per_partition_stream_slice import PerPartitionStreamSlice
+
 
 class PerPartitionKeySerializer:
     """
@@ -26,8 +27,6 @@ class PerPartitionKeySerializer:
     @staticmethod
     def to_partition(to_deserialize: Any):
         return json.loads(to_deserialize)
-
-
 
 
 class CursorFactory:

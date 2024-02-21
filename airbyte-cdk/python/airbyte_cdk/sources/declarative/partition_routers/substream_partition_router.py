@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
 
 import dpath.util
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type

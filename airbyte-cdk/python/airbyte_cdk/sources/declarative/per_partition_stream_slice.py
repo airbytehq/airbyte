@@ -1,6 +1,9 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from typing import Any, Callable, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+
 
 class PerPartitionStreamSlice(StreamSlice):
     def __init__(self, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]):
