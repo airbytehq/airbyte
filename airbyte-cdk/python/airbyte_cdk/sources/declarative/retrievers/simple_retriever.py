@@ -375,7 +375,7 @@ class SimpleRetriever(Retriever):
         :param stream_state:
         :return:
         """
-        return self.stream_slicer.stream_slices()
+        return self.stream_slicer.list_partitions()
 
     @property
     def state(self) -> Mapping[str, Any]:

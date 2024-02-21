@@ -143,7 +143,7 @@ class DatetimeBasedCursor(Cursor):
 
     def list_partitions(self) -> Iterable[StreamSlice]:
         # No partitions for datetime based cursor?
-        yield from []
+        yield from [None]
 
     def _calculate_earliest_possible_value(self, end_datetime: datetime.datetime) -> datetime.datetime:
         lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config) if self.lookback_window else "P0D")

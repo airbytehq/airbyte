@@ -166,7 +166,7 @@ def test_partition_router_using_incremental_date_parent_cursor(
         mocked_cursor_factory, mocked_partition_router
 ):
     partition = {"partition_field_1": "a value", "partition_field_2": "another value"}
-    mocked_partition_router.stream_slices.return_value = [partition]
+    mocked_partition_router.list_partitions.return_value = [partition]
     cursor_slices = [{"start_datetime": 1}]
     mocked_cursor_factory.create.return_value = MockedCursorBuilder().with_stream_slices(cursor_slices).build()
 
