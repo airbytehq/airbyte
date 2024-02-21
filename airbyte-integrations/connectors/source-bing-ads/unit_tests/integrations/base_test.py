@@ -41,7 +41,8 @@ class BaseTest(TestCase):
         )
 
     def read_stream(
-            self, stream_name: str,
+            self,
+            stream_name: str,
             sync_mode: SyncMode,
             config: Dict[str, Any],
             pk: list[str],
