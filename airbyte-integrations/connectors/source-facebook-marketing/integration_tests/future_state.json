@@ -75,8 +75,12 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
-        "filter_statuses": ["ARCHIVED"]
+        "212551616838260": {
+          "updated_time": "2121-07-25T13:34:26Z",
+          "filter_statuses": ["ARCHIVED"],
+          "include_deleted": true
+        },
+        "include_deleted": true
       },
       "stream_descriptor": {
         "name": "ads"
