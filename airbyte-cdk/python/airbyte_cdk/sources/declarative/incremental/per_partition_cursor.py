@@ -138,9 +138,7 @@ class PerPartitionCursor(Cursor):
                 yield PerPartitionStreamSlice(partition, cursor_slice)
 
     def list_partitions(self) -> Iterable[StreamSlice]:
-        raise ValueError(f"type of partition router: {type(self._partition_router)}")
         for partition in self._partition_router.list_partitions():
-            print(f"partition: {partition}")
             yield partition
 
     def set_initial_state(self, stream_state: StreamState) -> None:
@@ -166,21 +164,12 @@ class PerPartitionCursor(Cursor):
 
     def get_stream_state(self) -> StreamState:
         states = []
-        print(f"parent slice in self._cursor_per_partition: {self._cursor_per_partition}")
-        if "parent_slice" in self._cursor_per_partition:
-            self._cursor_per_partition = self._cursor_per_partition.pop("parent_slice")
         for partition_tuple, cursor in self._cursor_per_partition.items():
-            print(f"partition_tuple: {partition_tuple}")
-            print(f"type partition_tuple: {type(partition_tuple)}")
-            print(f"cursor: {cursor}")
-            partition = self._to_dict(partition_tuple)
-            # if "parent_slice" in partition:
-            #     partition.pop("parent_slice")
             cursor_state = cursor.get_stream_state()
             if cursor_state:
                 states.append(
                     {
-                        "partition": partition,
+                        "partition": self._to_dict(partition_tuple),
                         "cursor": cursor_state,
                     }
                 )
