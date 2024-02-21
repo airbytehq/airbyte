@@ -26,11 +26,6 @@ def build_request(config: Dict[str, Any]) -> HttpRequest:
         query_params={},
         body=body,
         headers={
-            "User-Agent": "python-requests/2.31.0",
-            "Accept-Encoding": "gzip, deflate",
-            "Accept": "*/*",
-            "Connection": "keep-alive",
-            "Content-Length": "245",
             "Content-Type": "application/x-www-form-urlencoded"
         },
     )
