@@ -6,7 +6,6 @@ import json
 import logging
 from dataclasses import dataclass
 from time import sleep
-from typing import List
 
 import backoff
 import pendulum
@@ -35,7 +34,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
     # see `_should_restore_page_size` method docstring for more info.
     # attribute to handle the reduced request limit
     request_record_limit_is_reduced: bool = False
-    # attribute to save the status of last successfull call
+    # attribute to save the status of the last successful call
     last_api_call_is_successful: bool = False
 
     @dataclass
@@ -109,7 +108,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
             if "headers" not in record:
                 continue
             headers = {header["name"].lower(): header["value"] for header in record["headers"]}
-            usage_from_response, pause_interval_from_response = self._parse_call_rate_header(headers)
+            (
+                usage_from_response,
+                pause_interval_from_response,
+            ) = self._parse_call_rate_header(headers)
             usage = max(usage, usage_from_response)
             pause_interval = max(pause_interval_from_response, pause_interval)
         return usage, pause_interval
@@ -144,7 +146,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
     def _should_restore_default_page_size(self, params):
         """
-        Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successfull`,
+        Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successful`,
         based on the logic from `@backoff_policy` (common.py > `reduce_request_record_limit` and `revert_request_record_limit`)
         """
         params = True if params else False
