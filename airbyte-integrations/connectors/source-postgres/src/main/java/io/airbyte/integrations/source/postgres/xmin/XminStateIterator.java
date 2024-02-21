@@ -61,4 +61,5 @@ public class XminStateIterator extends SourceStateIterator<AirbyteMessage> {
       return endOfData();
     }
   }
+
 }

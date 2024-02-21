@@ -143,7 +143,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
   protected abstract void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages);
 
-  // TODO: this assertion should be added into test cases in this class, we will need to implement corresponding iterator for other connectors before
+  // TODO: this assertion should be added into test cases in this class, we will need to implement
+  // corresponding iterator for other connectors before
   // doing so.
   protected void assertExpectedStateMessageCountMatches(final List<AirbyteStateMessage> stateMessages, long totalCount) {
     AtomicLong count = new AtomicLong(0L);

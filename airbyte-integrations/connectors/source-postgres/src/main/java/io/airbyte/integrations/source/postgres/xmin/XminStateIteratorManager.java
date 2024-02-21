@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.xmin;
 
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
@@ -6,7 +10,6 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import java.time.Instant;
-import java.util.Iterator;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +28,12 @@ public class XminStateIteratorManager implements SourceStateIteratorManager<Airb
    * @param pair Stream Name and Namespace (e.g. public.users)
    */
   public XminStateIteratorManager(
-      final AirbyteStreamNameNamespacePair pair,
-      final XminStatus xminStatus) {
+                                  final AirbyteStreamNameNamespacePair pair,
+                                  final XminStatus xminStatus) {
     this.pair = pair;
     this.xminStatus = xminStatus;
   }
+
   @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint() {
     // This is not expected to be called.

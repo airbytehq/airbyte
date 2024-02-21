@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_VERSION;
@@ -29,11 +33,11 @@ public class CtidStateIteratorManager implements SourceStateIteratorManager<Airb
   private final Long syncCheckpointRecords;
 
   public CtidStateIteratorManager(final AirbyteStreamNameNamespacePair pair,
-                                    final FileNodeHandler fileNodeHandler,
-                                    final CtidStateManager stateManager,
-                                    final JsonNode streamStateForIncrementalRun,
-                                    final Duration checkpointDuration,
-                                    final Long checkpointRecords) {
+                                  final FileNodeHandler fileNodeHandler,
+                                  final CtidStateManager stateManager,
+                                  final JsonNode streamStateForIncrementalRun,
+                                  final Duration checkpointDuration,
+                                  final Long checkpointRecords) {
     this.pair = pair;
     this.fileNodeHandler = fileNodeHandler;
     this.stateManager = stateManager;
@@ -91,4 +95,5 @@ public class CtidStateIteratorManager implements SourceStateIteratorManager<Airb
         && Objects.nonNull(lastCtid)
         && StringUtils.isNotBlank(lastCtid);
   }
+
 }

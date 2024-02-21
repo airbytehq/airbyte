@@ -72,7 +72,8 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest 
     // Even though no records were emitted, a state message is still expected
     final List<AirbyteStateMessage> stateAfterXminSync = extractStateMessage(syncWithXminStateType);
     assertEquals(1, stateAfterXminSync.size());
-    // Since no records were returned so the state should be the same as before; just without the counts.
+    // Since no records were returned so the state should be the same as before; just without the
+    // counts.
     firstSyncStateMessage.setSourceStats(new AirbyteStateStats().withRecordCount(0.0));
     assertEquals(firstSyncStateMessage, stateAfterXminSync.get(0));
 

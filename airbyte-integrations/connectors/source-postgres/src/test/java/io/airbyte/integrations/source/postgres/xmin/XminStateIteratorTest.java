@@ -58,7 +58,8 @@ public class XminStateIteratorTest {
         PAIR1,
         XMIN_STATUS1);
 
-    var expectedStateMessage = XMIN_STATE_MESSAGE_1.withState(XMIN_STATE_MESSAGE_1.getState().withSourceStats(new AirbyteStateStats().withRecordCount(2.0)));
+    var expectedStateMessage =
+        XMIN_STATE_MESSAGE_1.withState(XMIN_STATE_MESSAGE_1.getState().withSourceStats(new AirbyteStateStats().withRecordCount(2.0)));
 
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
