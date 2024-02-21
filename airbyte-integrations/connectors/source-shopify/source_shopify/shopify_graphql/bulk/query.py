@@ -7,7 +7,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from string import Template
-from typing import Any, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from attr import dataclass
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
@@ -815,11 +815,14 @@ class CustomerAddresses(ShopifyBulkQuery):
     }
 
     def set_default_address(self, record: MutableMapping[str, Any], address_record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        if address_record.get("id") == record.get("defaultAddress", {}).get("id"):
-            address_record["default"] = True
+        default_address = record.get("defaultAddress", {})
+        # the default_address could be literal `None`, additional check is required
+        if default_address:
+            if address_record.get("id") == record.get("defaultAddress", {}).get("id"):
+                address_record["default"] = True
         return address_record
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[MutableMapping[str, Any]]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
         """
         Defines how to process collected components.
         """

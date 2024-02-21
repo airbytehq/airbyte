@@ -702,7 +702,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # for the streams that don't support filtering
             yield {"query": self.query.get()}
 
-    def process_bulk_results(self, response: requests.Response, stream_state: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def process_bulk_results(
+        self, response: requests.Response, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
         # get results fetched from COMPLETED BULK Job or `None`
         filename = self.job_manager.job_check(response)
         # the `filename` could be `None`, meaning there are no data available for the slice period.
