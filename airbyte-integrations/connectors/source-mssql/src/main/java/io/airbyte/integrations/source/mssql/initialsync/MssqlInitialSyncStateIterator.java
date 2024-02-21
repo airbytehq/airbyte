@@ -92,7 +92,7 @@ public class MssqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
       final AirbyteStateMessage finalStateMessage = stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
-      LOGGER.info("Finished initial sync of stream {}, Emitting final state, state is {}", pair, finalStateMessage);
+      LOGGER.info("Finished initial sync of stream {}, Emitting final state. Offset={}", pair);
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(finalStateMessage);
