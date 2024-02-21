@@ -65,7 +65,7 @@ pip install -e ".[dev]" # [dev] installs development-only dependencies
 If the iteration you are working on includes changes to the models, you might want to regenerate them. In order to do that, you can run:
 
 ```bash
-./gradlew :airbyte-cdk:python:format
+./gradlew :airbyte-cdk:python:build
 ```
 
 This will generate the files based on the schemas, add the license information and format the code. If you want to only do the former and rely on
