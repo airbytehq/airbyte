@@ -1898,6 +1898,9 @@ definitions:
         type: string
         examples:
           - segment_id
+        interpolation_context:
+          - config
+          - parameters
       inject_into:
         title: Inject Into
         description: Configures where the descriptor should be set on the HTTP requests. Note that request parameters that are already encoded in the URL path will not be duplicated.
