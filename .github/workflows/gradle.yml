@@ -45,13 +45,19 @@ jobs:
         uses: tj-actions/changed-files@v39
         id: changes
         with:
+          # Include java connectors and java CDK.
+          # Adding all *.java and *.gradle files gets us most of the way there.
+          # We're take a bit more strict for the java CDK, to make sure that
+          # the tests run when they should, for instance when changing the contents
+          # of a text file used as a resource.
           files_yaml: |
             gradlecheck:
-              - '**/*'
-              - '!**/*.md'
-              - '!.github/*'
+              - '**/*.java'
+              - '**/*.gradle'
+              - 'airbyte-cdk/java/**/*'
 
       - uses: actions/setup-java@v3
+        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         with:
           distribution: "zulu"
           java-version: "21"
@@ -62,6 +68,7 @@ jobs:
         if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         run: python3 -m pip install virtualenv --user
       - name: Docker login
+        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         # Some tests use testcontainers which pull images from DockerHub.
         uses: docker/login-action@v1
         with:
