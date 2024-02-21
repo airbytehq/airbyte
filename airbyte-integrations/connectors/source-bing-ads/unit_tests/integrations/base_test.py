@@ -1,16 +1,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
+import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 from unittest import TestCase
 from unittest.mock import patch
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_protocol.models import AirbyteStateMessage
 from bingads.v13.bulk import BulkServiceManager
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
-from catalog_builder import BingAdsCatalogBuilder
 from client_builder import build_request, response_with_status
 from config_builder import ConfigBuilder
 from source_bing_ads.source import SourceBingAds
@@ -31,8 +33,11 @@ class BaseTest(TestCase):
     def _config(self) -> dict[str, Any]:
         return ConfigBuilder().build()
 
-    def _state(self, file: str) -> Path:
-        Path(__file__).parent.parent / f"resource/state/{file}.json"
+    def _state(self, file: str, stream_name: str) -> list[AirbyteStateMessage]:
+        state_file = Path(__file__).parent.parent / f"resource/state/{file}.json"
+        with open(state_file, "r") as f:
+            state = json.loads(f.read())
+            return StateBuilder().with_stream_state(stream_name, state).build()
 
     def auth_client(self, http_mocker: HttpMocker) -> None:
         http_mocker.post(
@@ -45,12 +50,11 @@ class BaseTest(TestCase):
             stream_name: str,
             sync_mode: SyncMode,
             config: Dict[str, Any],
-            pk: list[str],
             stream_data_file: str = None,
             state: Optional[Dict[str, Any]] = None,
             expecting_exception: bool = False,
     ) -> EntrypointOutput:
         with patch.object(HttpAuthenticated, "send", mock_http_authenticated_send):
             with patch.object(self.service_manager, "download_file", return_value=self._download_file(stream_data_file)):
-                catalog = BingAdsCatalogBuilder().with_stream(stream_name, sync_mode, pk).build()
+                catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
                 return read(SourceBingAds(), config, catalog, state, expecting_exception)
