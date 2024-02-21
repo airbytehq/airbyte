@@ -164,27 +164,29 @@ class TestFBMarketingIncrementalStreamSliceAndState:
         [
             # Test case 1: State date is used because fewer filters are used
             (
-                {"123": {"date": "2021-01-30T00:00:00+00:00", "include_deleted": True}},
+                {"123": {"date": "2021-01-30T00:00:00+00:00", "include_deleted": True}, "include_deleted": True},
                 {"account_id": "123", "date": "2021-01-20T00:00:00+00:00"},
                 {
                     "123": {
                         "date": "2021-01-30T00:00:00+00:00",
                         "filter_statuses": ["ACTIVE"],
                         "include_deleted": True,
-                    }
+                    },
+                    "include_deleted": True,
                 },
                 ["ACTIVE"],
             ),
             # Test case 2: State date is used because filter_statuses is the same as include_deleted
             (
-                {"123": {"date": "2021-01-30T00:00:00+00:00", "include_deleted": True}},
+                {"123": {"date": "2021-01-30T00:00:00+00:00", "include_deleted": True}, "include_deleted": True},
                 {"account_id": "123", "date": "2021-01-20T00:00:00+00:00"},
                 {
                     "123": {
                         "date": "2021-01-30T00:00:00+00:00",
                         "filter_statuses": ["ACTIVE", "PAUSED", "DELETED"],
                         "include_deleted": True,
-                    }
+                    },
+                    "include_deleted": True,
                 },
                 ["ACTIVE", "PAUSED", "DELETED"],
             ),
