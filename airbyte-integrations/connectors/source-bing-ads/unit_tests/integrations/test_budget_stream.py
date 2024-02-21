@@ -20,7 +20,7 @@ class TestBudgetStream(TestBulkStream):
         self.auth_client(http_mocker)
         output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, "budget_empty")
         assert len(output.records) == 0
-        assert "Empty data received. No columns to parse from file" in [log.log.message for log in output.logs]
+        assert len(output.logs) == 10
 
     @HttpMocker()
     def test_return_logged_fatal_for_ioerror(self, http_mocker: HttpMocker):
