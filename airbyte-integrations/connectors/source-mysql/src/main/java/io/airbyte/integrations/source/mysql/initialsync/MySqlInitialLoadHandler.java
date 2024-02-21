@@ -187,12 +187,13 @@ public class MySqlInitialLoadHandler {
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
-    final SourceStateIteratorManager<AirbyteMessage> processor =
-        new MySqlInitialSyncStateIteratorManager(pair, initialLoadStateManager, incrementalState,
-            syncCheckpointDuration, syncCheckpointRecords);
+    initialLoadStateManager.setStreamNameNamespacePair(pair);
+    initialLoadStateManager.setStreamStateForIncrementalRun(incrementalState);
+    initialLoadStateManager.setSyncCheckpointDuration(syncCheckpointDuration);
+    initialLoadStateManager.setSyncCheckpointRecords(syncCheckpointRecords);
 
     return AutoCloseableIterators.transformIterator(
-        r -> new SourceStateIterator<>(r, processor),
+        r -> new SourceStateIterator<>(r, initialLoadStateManager),
         recordIterator, pair);
   }
 

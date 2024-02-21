@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadStateManager {
+public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateManager {
 
   private final Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPrimaryKeyLoadStatus;
   // Map of pair to the primary key info (field name & data type) associated with it.
@@ -63,14 +63,14 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
   }
 
   @Override
-  public AirbyteStateMessage createIntermediateStateMessage(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus) {
+  public AirbyteStateMessage generateStateMessageAtCheckpoint() {
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
 
     });
-    streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkLoadStatus))));
+    streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkStatus))));
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);
@@ -86,8 +86,7 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
   }
 
   @Override
-  public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair,
-                                                     final JsonNode streamStateForIncrementalRun) {
+  public AirbyteStateMessage createFinalStateMessage() {
     streamsThatHaveCompletedSnapshot.add(pair);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
