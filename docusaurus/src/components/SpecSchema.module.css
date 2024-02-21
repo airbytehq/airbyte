@@ -39,19 +39,16 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-
-  background: var(--ifm-table-border-color);
-  gap: 1px;
-  border: 1px solid var(--ifm-table-border-color);
+  border-top: 1px solid var(--ifm-table-border-color);
+  border-right: 1px solid var(--ifm-table-border-color);
 }
 
 .headerItem {
   grid-row: span 1;
   grid-column: span 1;
-  background-color: white;
+  background-color: var(--ifm-table-cell-color);
   text-align: left;
   align-items: center;
-
   display: flex;
   flex-direction: row;
   gap: 10px;
@@ -59,26 +56,30 @@
   padding: 0;
   font-size: inherit;
   padding: 7px;
+  border-left: 1px solid var(--ifm-table-border-color);
+  border-bottom: 1px solid var(--ifm-table-border-color);
 }
 
 .tableHeader {
-  background-color: #eee;
+  background-color: var(--ifm-table-stripe-background);
   font-weight: bold;
-  border-bottom: 1px solid var(--ifm-table-border-color);
+  border-bottom: 2px solid var(--ifm-table-border-color);
   padding: 7px;
 }
 
 .contentItem {
   grid-row: span 1;
   grid-column: span 1;
-  background-color: white;
+  background-color:var(--ifm-table-cell-color);
   padding: 7px;
 }
 
 .descriptionItem {
   grid-row: span 1;
   grid-column: span 3;
-  background-color: white;
+  background-color:var(--ifm-table-cell-color);
   margin: 0;
   padding: 7px;
+  border-left: 1px solid var(--ifm-table-border-color);
+  border-bottom: 1px solid var(--ifm-table-border-color);
 }
