@@ -579,6 +579,16 @@ class SchemaNormalization(Enum):
 
 class RemoveFields(BaseModel):
     type: Literal['RemoveFields']
+    condition: Optional[str] = Field(
+        '',
+        description="The predicate to filter a property by a property value. Property will be removed if it is empty OR expression is evaluated to True.",
+        examples=[
+            "{{ property|string == '' }}",
+            '{{ property is integer }}',
+            '{{ property|length > 5 }}',
+            "{{ property == 'some_string_to_match' }}",
+        ],
+    )
     field_pointers: List[List[str]] = Field(
         ...,
         description='Array of paths defining the field to remove. Each item is an array whose field describe the path of a field to remove.',
