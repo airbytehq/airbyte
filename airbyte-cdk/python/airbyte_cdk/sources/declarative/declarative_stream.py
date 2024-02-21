@@ -125,6 +125,11 @@ class DeclarativeStream(Stream):
         """
         return self.retriever.stream_slices()
 
+    def list_partitions(
+            self
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return self.retriever.list_partitions()
+
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         """

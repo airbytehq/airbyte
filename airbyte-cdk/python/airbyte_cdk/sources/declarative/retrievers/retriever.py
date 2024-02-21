@@ -34,6 +34,10 @@ class Retriever:
     def stream_slices(self) -> Iterable[Optional[StreamSlice]]:
         """Returns the stream slices"""
 
+    @abstractmethod
+    def list_partitions(self) -> Iterable[Optional[StreamSlice]]:
+        """Returns the stream partitions"""
+
     @property
     @abstractmethod
     def state(self) -> StreamState:

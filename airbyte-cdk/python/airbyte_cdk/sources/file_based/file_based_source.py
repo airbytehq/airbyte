@@ -123,7 +123,11 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
 
         errors = []
         for stream in streams:
+<<<<<<< Updated upstream
             if not isinstance(stream, AbstractFileBasedStream):
+=======
+            if not isinstance(stream, (AbstractFileBasedStream)):
+>>>>>>> Stashed changes
                 raise ValueError(f"Stream {stream} is not a file-based stream.")
             try:
                 (

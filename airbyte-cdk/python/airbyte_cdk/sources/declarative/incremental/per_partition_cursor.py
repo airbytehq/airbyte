@@ -127,7 +127,7 @@ class PerPartitionCursor(Cursor):
         self._partition_serializer = PerPartitionKeySerializer()
 
     def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
-        slices = self._partition_router.stream_slices()
+        slices = self._partition_router.list_partitions()
         for partition in slices:
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition))
             if not cursor:
@@ -136,6 +136,12 @@ class PerPartitionCursor(Cursor):
 
             for cursor_slice in cursor.stream_slices():
                 yield PerPartitionStreamSlice(partition, cursor_slice)
+
+    def list_partitions(self) -> Iterable[StreamSlice]:
+        raise ValueError(f"type of partition router: {type(self._partition_router)}")
+        for partition in self._partition_router.list_partitions():
+            print(f"partition: {partition}")
+            yield partition
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         if not stream_state:

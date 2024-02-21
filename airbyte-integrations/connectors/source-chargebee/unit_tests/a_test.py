@@ -226,10 +226,6 @@ def test_partition_router_using_incremental_date_parent_cursor(
         },
         "partition": {
             "parent_id": "7628838",
-            "parent_slice": {
-                "end_time": "2024-01-10+06:13:29",
-                "start_time": "2024-01-01+00:00:00"
-            }
         }
     }
     cursor_existing_state = PerPartitionCursor(datetime_cursor_factory, substream_partition_router)

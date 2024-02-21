@@ -28,3 +28,9 @@ class StreamSlicer(RequestOptionsProvider):
 
         :return: List of stream slices
         """
+
+    @abstractmethod
+    def list_partitions(self) -> Iterable[StreamSlice]:
+        """
+        :return: List of stream partitions
+        """

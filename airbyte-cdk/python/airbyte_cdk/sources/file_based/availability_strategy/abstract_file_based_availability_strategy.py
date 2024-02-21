@@ -32,7 +32,11 @@ class AbstractFileBasedAvailabilityStrategy(AvailabilityStrategy):
 
     @abstractmethod
     def check_availability_and_parsability(
+<<<<<<< Updated upstream
         self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]
+=======
+        self, stream: Union["AbstractFileBasedStream"], logger: logging.Logger, _: Optional[Source]
+>>>>>>> Stashed changes
     ) -> Tuple[bool, Optional[str]]:
         """
         Performs a connection check for the stream, as well as additional checks that
