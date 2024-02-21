@@ -155,9 +155,21 @@ cdkPath.eachDir { dir ->
 def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
 integrationsPath.eachDir { dir ->
     def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
-    if (buildFiles.length == 1) {
-        include ":airbyte-integrations:connectors:${dir.getFileName()}"
+    if (buildFiles.length != 1) {
+        // Ignore python and other non-gradle connectors.
+        return
     }
+    File metadataFile = dir.resolve("metadata.yaml").toFile()
+    if (!metadataFile.exists()) {
+        // Don't support connectors without metadata.
+        return
+    }
+    String metadataYaml = metadataFile.getText("UTF-8")
+    if (metadataYaml =~ /(?m)^\s+supportLevel:\s*["']?archived["']?\s*$/) {
+        // Ignore archived connectors.
+        return
+    }
+    include ":airbyte-integrations:connectors:${dir.getFileName()}"
 }
 
 // Include miscellaneous modules.
