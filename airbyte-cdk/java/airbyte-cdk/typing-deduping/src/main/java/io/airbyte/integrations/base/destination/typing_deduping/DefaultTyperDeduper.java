@@ -121,8 +121,10 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     // This is intentionally not done in parallel to avoid rate limits in some destinations.
     prepareSchemas(parsedCatalog);
 
-    // TODO: Either the migrations run the soft reset and create v2 tables or the actual prepare tables. unify the logic
-    // with current state of raw tables & final tables. This is done first before gather initial state to avoid recreating
+    // TODO: Either the migrations run the soft reset and create v2 tables or the actual prepare tables.
+    // unify the logic
+    // with current state of raw tables & final tables. This is done first before gather initial state
+    // to avoid recreating
     // final tables later again.
     final List<Either<? extends Exception, Void>> runMigrationsResult =
         CompletableFutures.allOf(parsedCatalog.streams().stream().map(this::runMigrationsAsync).toList()).toCompletableFuture().join();
