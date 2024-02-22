@@ -65,8 +65,7 @@ jobs:
           read-only: ${{ github.ref != 'refs/heads/master' }}
           gradle-distribution-sha-256-sum-warning: false
           concurrent: true
-          # TODO: be able to remove the skipSlowTests property
-          arguments: --scan check -DskipSlowTests=true
+          arguments: --scan build
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
