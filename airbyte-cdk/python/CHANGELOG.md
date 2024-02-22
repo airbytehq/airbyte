@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.66.0
+Low-code: Add interpolation for request options
+
 ## 0.65.0
 low-code: Allow connectors to ignore stream slicer request options on paginated requests
 
