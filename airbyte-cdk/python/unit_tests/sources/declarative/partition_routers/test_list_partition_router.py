@@ -88,6 +88,21 @@ def test_request_option(test_name, request_option, expected_req_params, expected
     assert expected_body_json == partition_router.get_request_body_json(stream_slice=stream_slice)
     assert expected_body_data == partition_router.get_request_body_data(stream_slice=stream_slice)
 
+@pytest.mark.parametrize(
+    "stream_slice",
+    [
+        pytest.param({}, id="test_request_option_is_empty_if_empty_stream_slice"),
+        pytest.param({"not the cursor": "value"}, id="test_request_option_is_empty_if_the_stream_slice_does_not_have_cursor_field"),
+        pytest.param(None, id="test_request_option_is_empty_if_no_stream_slice")
+    ]
+)
+def test_request_option_is_empty_if_no_stream_slice(stream_slice):
+    request_option = RequestOption(inject_into=RequestOptionType.body_data, parameters={}, field_name="owner_resource")
+    partition_router = ListPartitionRouter(
+        values=partition_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={}
+    )
+    assert {} == partition_router.get_request_body_data(stream_slice=stream_slice)
+
 
 def test_request_option_before_updating_cursor():
     request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="owner_resource")

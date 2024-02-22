@@ -46,10 +46,7 @@ class ListPartitionRouter(StreamSlicer):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        if stream_slice:
-            return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
-        else:
-            return {}
+        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
 
     def get_request_headers(
         self,
@@ -58,10 +55,7 @@ class ListPartitionRouter(StreamSlicer):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        if stream_slice:
-            return self._get_request_option(RequestOptionType.header, stream_slice)
-        else:
-            return {}
+        return self._get_request_option(RequestOptionType.header, stream_slice)
 
     def get_request_body_data(
         self,
@@ -70,10 +64,7 @@ class ListPartitionRouter(StreamSlicer):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        if stream_slice:
-            return self._get_request_option(RequestOptionType.body_data, stream_slice)
-        else:
-            return {}
+        return self._get_request_option(RequestOptionType.body_data, stream_slice)
 
     def get_request_body_json(
         self,
@@ -82,15 +73,12 @@ class ListPartitionRouter(StreamSlicer):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        if stream_slice:
-            return self._get_request_option(RequestOptionType.body_json, stream_slice)
-        else:
-            return {}
+        return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
     def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
         return [PerPartitionStreamSlice({self._cursor_field.eval(self.config): slice_value}, {}) for slice_value in self.values]
 
-    def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: StreamSlice) -> Mapping[str, Any]:
+    def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: Optional[StreamSlice]) -> Mapping[str, Any]:
         if self.request_option and self.request_option.inject_into == request_option_type and stream_slice:
             slice_value = stream_slice.get(self._cursor_field.eval(self.config))
             if slice_value:
