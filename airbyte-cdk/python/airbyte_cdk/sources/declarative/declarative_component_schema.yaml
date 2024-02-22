@@ -1898,6 +1898,9 @@ definitions:
         type: string
         examples:
           - segment_id
+        interpolation_context:
+          - config
+          - parameters
       inject_into:
         title: Inject Into
         description: Configures where the descriptor should be set on the HTTP requests. Note that request parameters that are already encoded in the URL path will not be duplicated.
@@ -2154,6 +2157,13 @@ interpolation:
       examples:
         - start_date: 2010-01-01
           api_key: "*****"
+    - title: parameters
+      description: Additional runtime parameters, to be used for string interpolation. Parameters can be passed down from a parent component to its subcomponents using the $parameters key. This can be used to avoid repetitions.
+      type: object
+      examples:
+        - path: "automations"
+          data_export_path: "automations"
+          cursor_field: "updated_at"
     - title: headers
       description: The HTTP headers from the last response received from the API. The object's keys are the header names from the response.
       type: object
