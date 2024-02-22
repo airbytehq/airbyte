@@ -21,6 +21,7 @@ import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTyp
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.HashSet;
@@ -111,7 +112,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+    return retrieveRecordsFromTable(StreamId.concatenateRawTableName(namespace, streamName), "airbyte_internal")
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
@@ -119,7 +120,9 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
-    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    final var nameTransformer = new StandardNameTransformer();
+    final String query = String.format("SELECT * FROM `%s`.`%s` ORDER BY %s ASC", schemaName, nameTransformer.convertStreamName(tableName),
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
     return jdbcDB.queryJsons(query);
   }
 
