@@ -39,7 +39,7 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
   public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final JsonNode asJson = serialize(offset, dbHistory);
 
-    LOGGER.info("debezium state: {}", asJson);
+    LOGGER.debug("debezium state: {}", asJson);
 
     final CdcState cdcState = new CdcState().withState(asJson);
     stateManager.getCdcStateManager().setCdcState(cdcState);
