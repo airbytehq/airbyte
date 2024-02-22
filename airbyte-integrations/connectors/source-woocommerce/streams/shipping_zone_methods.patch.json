@@ -1,0 +1,13 @@
+{  
+"properties": {
+    "settings": {
+        "properties": {
+            "type": [
+                "null",
+                "object", 
+                "string"
+            ]
+            }
+        }
+    }
+}
