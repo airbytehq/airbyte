@@ -12,7 +12,7 @@ from logging import Logger
 from os.path import splitext
 from pathlib import Path
 from threading import Thread
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple, Iterable
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 from xmlrpc.client import Boolean
 
 import connector_acceptance_test.utils.docs as docs_utils
@@ -1168,20 +1168,19 @@ class TestBasicRead(BaseTest):
             expected_primary_keys = list(_extract_primary_keys(expected, configured_stream.stream.source_defined_primary_key))
             actual_primary_keys = list(_extract_primary_keys(actual, configured_stream.stream.source_defined_primary_key))
             if exact_order:
-                assert actual_primary_keys[:len(expected_primary_keys)] == expected_primary_keys, f"Expected to see those primary keys in order in the actual response for stream {stream_name}."
+                assert (
+                    actual_primary_keys[: len(expected_primary_keys)] == expected_primary_keys
+                ), f"Expected to see those primary keys in order in the actual response for stream {stream_name}."
             else:
-                expected_but_not_found = set(map(make_hashable, expected_primary_keys)).difference(set(map(make_hashable, actual_primary_keys)))
-                assert not expected_but_not_found, f"Expected to see those primary keys in the actual response for stream {stream_name} but they were not found."
+                expected_but_not_found = set(map(make_hashable, expected_primary_keys)).difference(
+                    set(map(make_hashable, actual_primary_keys))
+                )
+                assert (
+                    not expected_but_not_found
+                ), f"Expected to see those primary keys in the actual response for stream {stream_name} but they were not found."
         else:
             TestBasicRead.legacy_compare_records(
-                stream_name,
-                actual,
-                expected,
-                extra_fields,
-                exact_order,
-                extra_records,
-                ignored_fields,
-                detailed_logger
+                stream_name, actual, expected, extra_fields, exact_order, extra_records, ignored_fields, detailed_logger
             )
 
     @staticmethod
