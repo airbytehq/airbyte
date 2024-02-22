@@ -163,10 +163,17 @@ test_incremental_stream_with_slice_boundaries_with_legacy_state = (
 )
 
 
-CONCURRENT_STATE = StateBuilder().with_stream_state("stream1", {
-    "slices": [{"start": 0, "end": 0}],
-    "state_type": ConcurrencyCompatibleStateType.date_range.value,
-}).build()
+CONCURRENT_STATE = (
+    StateBuilder()
+    .with_stream_state(
+        "stream1",
+        {
+            "slices": [{"start": 0, "end": 0}],
+            "state_type": ConcurrencyCompatibleStateType.date_range.value,
+        },
+    )
+    .build()
+)
 test_incremental_stream_without_slice_boundaries_with_concurrent_state = (
     TestScenarioBuilder()
     .set_name("test_incremental_stream_without_slice_boundaries_with_concurrent_state")
