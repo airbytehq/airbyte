@@ -14,7 +14,7 @@ black = "~22.3.0"
 [tool.black]
 line-length = 140
 target-version = ["py37"]
-extend-exclude = "(build|integration_tests|unit_tests|generated|airbyte-lib)"
+extend-exclude = "(build|generated|airbyte-lib)"
 
 [tool.coverage.report]
 fail_under = 0
