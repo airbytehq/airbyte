@@ -3,7 +3,7 @@
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": false,
-  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "supported_destination_sync_modes": ["overwrite", "append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ClickHouse Destination Spec",
@@ -58,6 +58,12 @@
         "type": "boolean",
         "default": false,
         "order": 6
+      },
+      "raw_data_schema": {
+        "type": "string",
+        "description": "The schema to write raw tables into (default: airbyte_internal)",
+        "title": "Raw Table Schema Name",
+        "order": 7
       }
     }
   }

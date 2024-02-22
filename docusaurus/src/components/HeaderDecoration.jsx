@@ -67,14 +67,17 @@ export const HeaderDecoration = ({
             </a>
           </dd>
         </div>
-        <div>
-          <dt>Latest Version</dt>
-          <dd>
-            <a href={github_url} target="_blank">
-              {dockerImageTag}
-            </a>
-          </dd>
-        </div>
+        {supportLevel !== "archived" && (
+          <div>
+            <dt>Latest Version</dt>
+
+            <dd>
+              <a href={github_url} target="_blank">
+                {dockerImageTag}
+              </a>
+            </dd>
+          </div>
+        )}
       </dl>
 
       <div className={styles.header}>
