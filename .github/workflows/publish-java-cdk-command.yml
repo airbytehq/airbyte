@@ -44,6 +44,8 @@ env:
   FORCE: "${{ github.event.inputs.force == null && 'false' || github.event.inputs.force }}"
   DRY_RUN: "${{ github.event.inputs.dry-run == null && 'true' || github.event.inputs.dry-run }}"
   CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
+  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 
 jobs:
   publish-cdk:
@@ -80,15 +82,6 @@ jobs:
           distribution: "zulu"
           java-version: "21"
 
-      - name: Check for already-published version (${{ env.CDK_VERSION }}, FORCE=${{ env.FORCE }})
-        if: ${{ !(env.FORCE == 'true') }}
-        uses: burrunan/gradle-cache-action@v1
-        env:
-          CI: true
-        with:
-          read-only: true
-          arguments: --scan :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
-
       - name: Docker login
         # Some tests use testcontainers which pull images from DockerHub.
         uses: docker/login-action@v1
@@ -101,8 +94,23 @@ jobs:
         env:
           CI: true
         with:
+          job-id: cdk-build
           read-only: ${{ !(env.DRY_RUN == 'false') }}
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
           arguments: --scan :airbyte-cdk:java:airbyte-cdk:cdkBuild
+
+      - name: Check for already-published version (${{ env.CDK_VERSION }}, FORCE=${{ env.FORCE }})
+        if: ${{ !(env.FORCE == 'true') }}
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          job-id: cdk-assert
+          read-only: true
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
 
       - name: Publish Java Modules to CloudRepo
         if: ${{ env.DRY_RUN == 'false' }}
@@ -112,7 +120,11 @@ jobs:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         with:
+          job-id: cdk-publish
           read-only: true
+          concurrent: true
+          execution-only-caches: true
+          gradle-distribution-sha-256-sum-warning: false
           arguments: --scan :airbyte-cdk:java:airbyte-cdk:cdkPublish
 
       - name: Add Success Comment
