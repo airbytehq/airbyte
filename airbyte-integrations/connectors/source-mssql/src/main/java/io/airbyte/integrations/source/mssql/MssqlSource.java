@@ -417,18 +417,27 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   // todo: ensure this works for Azure managed SQL (since it uses different sql server agent)
   protected void assertSqlServerAgentRunning(final JdbcDatabase database) throws SQLException {
     try {
-      final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-        final String sql =
-            "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%' OR [servicename] LIKE 'SQL Server 代理%' ";
-        final PreparedStatement ps = connection.prepareStatement(sql);
-        LOGGER.info(String.format("Checking that the SQL Server Agent is running using the query: '%s'", sql));
-        return ps;
-      }, sourceOperations::rowToJson);
+      // EngineEdition property values can be found at
+      // https://learn.microsoft.com/en-us/sql/t-sql/functions/serverproperty-transact-sql?view=sql-server-ver16
+      // SQL Server Agent is always running on SQL Managed Instance:
+      // https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/transact-sql-tsql-differences-sql-server?view=azuresql#sql-server-agent
+      final Integer engineEdition = database.queryInt("SELECT ServerProperty('EngineEdition')");
+      if (engineEdition == 8) {
+        LOGGER.info(String.format("SQL Server Agent is assumed to be running when EngineEdition == '%s'", engineEdition));
+      } else {
+        final List<JsonNode> queryResponse = database.queryJsons(connection -> {
+          final String sql =
+              "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%' OR [servicename] LIKE 'SQL Server 代理%' ";
+          final PreparedStatement ps = connection.prepareStatement(sql);
+          LOGGER.info(String.format("Checking that the SQL Server Agent is running using the query: '%s'", sql));
+          return ps;
+        }, sourceOperations::rowToJson);
 
-      if (!(queryResponse.get(0).get("status_desc").toString().contains("Running"))) {
-        throw new RuntimeException(String.format(
-            "The SQL Server Agent is not running. Current state: '%s'. Please check the documentation on ensuring SQL Server Agent is running.",
-            queryResponse.get(0).get("status_desc").toString()));
+        if (!(queryResponse.get(0).get("status_desc").toString().contains("Running"))) {
+          throw new RuntimeException(String.format(
+              "The SQL Server Agent is not running. Current state: '%s'. Please check the documentation on ensuring SQL Server Agent is running.",
+              queryResponse.get(0).get("status_desc").toString()));
+        }
       }
     } catch (final Exception e) {
       if (e.getCause() != null && e.getCause().getClass().equals(com.microsoft.sqlserver.jdbc.SQLServerException.class)) {
