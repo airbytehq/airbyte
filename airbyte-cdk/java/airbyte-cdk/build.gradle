@@ -46,6 +46,12 @@ allprojects {
 
 description = "Airbyte Connector Development Kit (CDK) for Java."
 
+tasks.register('cdkBuild').configure {
+    dependsOn subprojects.collect { it.tasks.named('build') }
+}
+tasks.register('cdkPublish').configure {
+    dependsOn subprojects.collect { it.tasks.named('publish') }
+}
 tasks.register('assertCdkVersionNotPublished') {
     doLast {
         var props = new Properties()

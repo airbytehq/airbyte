@@ -121,7 +121,7 @@ jobs:
         if: ${{ !(env.FORCE == 'true') }}
         run: ./gradlew :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
       - name: Build Java CDK
-        run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:build
+        run: ./gradlew --scan :airbyte-cdk:java:airbyte-cdk:cdkBuild
       - name: Upload jars as artifacts
         if: ${{ !(env.DRY_RUN == 'false') }}
         uses: actions/upload-artifact@v2
@@ -130,7 +130,7 @@ jobs:
           path: ~/.m2/repository/io/airbyte/
       - name: Publish Java Modules to CloudRepo
         if: ${{ env.DRY_RUN == 'false' }}
-        run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:publish
+        run: ./gradlew --scan :airbyte-cdk:java:airbyte-cdk:cdkPublish
         env:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
