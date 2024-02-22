@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.67.0
+Low-code: Add CustomRecordFilter
+
 ## 0.66.0
 Low-code: Add interpolation for request options
 
