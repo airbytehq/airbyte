@@ -399,6 +399,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream,
           cursorField);
 
+      StateDecoratingIteratorManager manager = new StateDecoratingIteratorManager();
+
       iterator = AutoCloseableIterators.transform(
           autoCloseableIterator -> new StateDecoratingIterator(
               autoCloseableIterator,
