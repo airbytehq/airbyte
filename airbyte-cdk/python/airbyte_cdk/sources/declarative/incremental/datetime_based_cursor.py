@@ -83,7 +83,7 @@ class DatetimeBasedCursor(Cursor):
         )
 
         self._timezone = datetime.timezone.utc
-        self._interpolation: JinjaInterpolation = JinjaInterpolation()
+        self._interpolation = JinjaInterpolation()
 
         self._step = (
             self._parse_timedelta(InterpolatedString.create(self.step, parameters=parameters).eval(self.config))

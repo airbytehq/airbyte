@@ -21,8 +21,6 @@ class PerPartitionKeySerializer:
     @staticmethod
     def to_partition_key(to_serialize: Any) -> str:
         # separators have changed in Python 3.4. To avoid being impacted by further change, we explicitly specify our own value
-        print(f"to_serialize: {to_serialize}")
-        print(f"to_serialize type: {type(to_serialize)}")
         return json.dumps(to_serialize, indent=None, separators=(",", ":"), sort_keys=True)
 
     @staticmethod
@@ -73,7 +71,6 @@ class PerPartitionCursor(Cursor):
     def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
         slices = self._partition_router.stream_slices()
         for partition in slices:
-            print(f"partition: {partition}")
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
             if not cursor:
                 cursor = self._create_cursor(self._NO_CURSOR_STATE)
