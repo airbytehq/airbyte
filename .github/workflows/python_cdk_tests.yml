@@ -54,12 +54,6 @@ jobs:
         run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3
       - name: Install Pyenv
         run: python3 -m pip install virtualenv --user
-      - name: Docker login
-        # Some tests use testcontainers which pull images from DockerHub.
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: cd airbyte-cdk/python
         run: cd airbyte-cdk/python
       - name: Run Gradle Check on Python CDK
