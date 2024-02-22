@@ -39,8 +39,7 @@ jobs:
               - '**/*.java'
               - '**/*.gradle'
               - 'airbyte-cdk/java/**/*'
-            python_cdk:
-              - 'airbyte-cdk/python/**/*'
+
   run-check:
     needs:
       - changes
