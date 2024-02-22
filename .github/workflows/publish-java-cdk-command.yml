@@ -8,12 +8,6 @@
 #    /publish-java-cdk force=true     # Force-publish if needing to replace an already published version
 name: Publish Java CDK
 on:
-  # Temporarily run on commits to the 'java-cdk/publish-workflow' branch.
-  # TODO: Remove this 'push' trigger before merging to master.
-  push:
-    branches:
-      - java-cdk/publish-workflow
-
   workflow_dispatch:
     inputs:
       repo:
@@ -30,7 +24,7 @@ on:
         type: boolean
         default: false
       force:
-        description: "Force release (ignore existing)"
+        description: "Force release (overwrite existing)"
         required: true
         type: boolean
         default: false
@@ -40,9 +34,6 @@ on:
       comment-id:
         description: "Optional comment-id of the slash command. Ignore if not applicable."
         required: false
-      # uuid:
-      #   description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
-      #   required: false
 
 concurrency:
   group: publish-airbyte-cdk
@@ -69,11 +60,13 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
           repository: ${{ env.REPO }}
           ref: ${{ env.GITREF }}
+
       - name: Read Target Java CDK version
         id: read-target-java-cdk-version
         run: |
@@ -83,22 +76,20 @@ jobs:
             exit 1
           fi
           echo "CDK_VERSION=${cdk_version}" >> $GITHUB_ENV
+
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: "zulu"
           java-version: "21"
+
       - name: Check for already-published version (${{ env.CDK_VERSION }}, FORCE=${{ env.FORCE }})
         if: ${{ !(env.FORCE == 'true') }}
         run: ./gradlew :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
+
       - name: Build Java CDK
         run: ./gradlew --scan :airbyte-cdk:java:airbyte-cdk:cdkBuild
-      - name: Upload jars as artifacts
-        if: ${{ !(env.DRY_RUN == 'false') }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: mavenlocal-jars
-          path: ~/.m2/repository/io/airbyte/
+
       - name: Publish Java Modules to CloudRepo
         if: ${{ env.DRY_RUN == 'false' }}
         run: ./gradlew --scan :airbyte-cdk:java:airbyte-cdk:cdkPublish
@@ -114,6 +105,7 @@ jobs:
           edit-mode: append
           body: |
             > :white_check_mark: Successfully published Java CDK ${{ env.CDK_VERSION }}!
+
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && failure()
         uses: peter-evans/create-or-update-comment@v1
@@ -122,7 +114,8 @@ jobs:
           edit-mode: append
           body: |
             > :x: Publish Java CDK ${{ env.CDK_VERSION }} failed!
-      - name: "Post failure to Slack channel `#dev-connectors-extensibility-releases`"
+
+      - name: "Post failure to Slack channel"
         if: ${{ env.DRY_RUN == 'false' && failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
@@ -150,7 +143,8 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-      - name: "Post success to Slack channel `#dev-connectors-extensibility-releases`"
+
+      - name: "Post success to Slack channel"
         if: ${{ env.DRY_RUN == 'false' && !failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
