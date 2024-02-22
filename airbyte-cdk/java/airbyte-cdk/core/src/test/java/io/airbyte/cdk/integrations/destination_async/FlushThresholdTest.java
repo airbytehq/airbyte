@@ -10,17 +10,26 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferDequeue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class FlushThresholdTest {
 
   private static final long SIZE_10MB = 10 * 1024 * 1024;
 
+  private DestinationFlushFunction flusher;
+
+  @BeforeEach
+  void setup() {
+    flusher = mock(DestinationFlushFunction.class);
+    when(flusher.getQueueFlushThresholdBytes()).thenReturn(SIZE_10MB);
+  }
+
   @Test
   void testBaseThreshold() {
     final AtomicBoolean isClosing = new AtomicBoolean(false);
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, flusher);
     assertEquals(SIZE_10MB, detect.computeQueueThreshold());
   }
 
@@ -28,7 +37,7 @@ public class FlushThresholdTest {
   void testClosingThreshold() {
     final AtomicBoolean isClosing = new AtomicBoolean(true);
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, flusher);
     assertEquals(0, detect.computeQueueThreshold());
   }
 
@@ -38,7 +47,7 @@ public class FlushThresholdTest {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getTotalGlobalQueueSizeBytes()).thenReturn(8L);
     when(bufferDequeue.getMaxQueueSizeBytes()).thenReturn(10L);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, flusher);
     assertEquals(SIZE_10MB, detect.computeQueueThreshold());
   }
 
@@ -48,7 +57,7 @@ public class FlushThresholdTest {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getTotalGlobalQueueSizeBytes()).thenReturn(9L);
     when(bufferDequeue.getMaxQueueSizeBytes()).thenReturn(10L);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, flusher);
     assertEquals(0, detect.computeQueueThreshold());
   }
 

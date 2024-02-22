@@ -11,6 +11,9 @@
     "url": {
       "type": ["string", "null"]
     },
+    "counts_as": {
+      "type": ["string", "null"]
+    },
     "company": {
       "type": "object",
       "properties": {

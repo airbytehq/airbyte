@@ -6,12 +6,18 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
+import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,12 +55,16 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
                 row.get("COLUMN_NAME").asText(),
                 new SnowflakeColumnDefinition(row.get("DATA_TYPE").asText(), fromSnowflakeBoolean(row.get("IS_NULLABLE").asText()))),
             LinkedHashMap::putAll);
-
     if (columns.isEmpty()) {
       return Optional.empty();
     } else {
       return Optional.of(new SnowflakeTableDefinition(columns));
     }
+  }
+
+  @Override
+  public LinkedHashMap<String, SnowflakeTableDefinition> findExistingFinalTables(final List<StreamId> list) throws Exception {
+    return null;
   }
 
   @Override
@@ -74,38 +84,85 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   }
 
   @Override
-  public void execute(final String sql) throws Exception {
-    if ("".equals(sql)) {
-      return;
+  public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
+    final ResultSet tables = database.getMetaData().getTables(
+        databaseName,
+        id.rawNamespace(),
+        id.rawName(),
+        null);
+    if (!tables.next()) {
+      return new InitialRawTableState(false, Optional.empty());
     }
+    // Snowflake timestamps have nanosecond precision, so decrement by 1ns
+    // And use two explicit queries because COALESCE doesn't short-circuit.
+    // This first query tries to find the oldest raw record with loaded_at = NULL
+    final Optional<String> minUnloadedTimestamp = Optional.ofNullable(database.queryStrings(
+        conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
+            "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
+                """
+                SELECT to_varchar(
+                  TIMESTAMPADD(NANOSECOND, -1, MIN("_airbyte_extracted_at")),
+                  'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
+                ) AS MIN_TIMESTAMP
+                FROM ${raw_table}
+                WHERE "_airbyte_loaded_at" IS NULL
+                """)),
+        // The query will always return exactly one record, so use .get(0)
+        record -> record.getString("MIN_TIMESTAMP")).get(0));
+    if (minUnloadedTimestamp.isPresent()) {
+      return new InitialRawTableState(true, minUnloadedTimestamp.map(Instant::parse));
+    }
+
+    // If there are no unloaded raw records, then we can safely skip all existing raw records.
+    // This second query just finds the newest raw record.
+    final Optional<String> maxTimestamp = Optional.ofNullable(database.queryStrings(
+        conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
+            "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
+                """
+                SELECT to_varchar(
+                  MAX("_airbyte_extracted_at"),
+                  'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
+                ) AS MIN_TIMESTAMP
+                FROM ${raw_table}
+                """)),
+        record -> record.getString("MIN_TIMESTAMP")).get(0));
+    return new InitialRawTableState(false, maxTimestamp.map(Instant::parse));
+  }
+
+  @Override
+  public void execute(final Sql sql) throws Exception {
+    final List<String> transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT");
     final UUID queryId = UUID.randomUUID();
-    LOGGER.info("Executing sql {}: {}", queryId, sql);
-    final long startTime = System.currentTimeMillis();
+    for (final String transaction : transactions) {
+      final UUID transactionId = UUID.randomUUID();
+      LOGGER.debug("Executing sql {}-{}: {}", queryId, transactionId, transaction);
+      final long startTime = System.currentTimeMillis();
 
-    try {
-      database.execute(sql);
-    } catch (final SnowflakeSQLException e) {
-      LOGGER.error("Sql {} failed", queryId, e);
-      // Snowflake SQL exceptions by default may not be super helpful, so we try to extract the relevant
-      // part of the message.
-      final String trimmedMessage;
-      if (e.getMessage().startsWith(EXCEPTION_COMMON_PREFIX)) {
-        // The first line is a pretty generic message, so just remove it
-        trimmedMessage = e.getMessage().substring(e.getMessage().indexOf("\n") + 1);
-      } else {
-        trimmedMessage = e.getMessage();
+      try {
+        database.execute(transaction);
+      } catch (final SnowflakeSQLException e) {
+        LOGGER.error("Sql {} failed", queryId, e);
+        // Snowflake SQL exceptions by default may not be super helpful, so we try to extract the relevant
+        // part of the message.
+        final String trimmedMessage;
+        if (e.getMessage().startsWith(EXCEPTION_COMMON_PREFIX)) {
+          // The first line is a pretty generic message, so just remove it
+          trimmedMessage = e.getMessage().substring(e.getMessage().indexOf("\n") + 1);
+        } else {
+          trimmedMessage = e.getMessage();
+        }
+        throw new RuntimeException(trimmedMessage, e);
       }
-      throw new RuntimeException(trimmedMessage, e);
-    }
 
-    LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
+      LOGGER.debug("Sql {}-{} completed in {} ms", queryId, transactionId, System.currentTimeMillis() - startTime);
+    }
   }
 
   /**
    * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
    * know how to use
    */
-  private boolean fromSnowflakeBoolean(String input) {
+  private boolean fromSnowflakeBoolean(final String input) {
     return input.equalsIgnoreCase("yes");
   }
 

@@ -20,7 +20,7 @@ acceptance_tests:
     tests:
       - config_path: secrets/config_oauth.json
         backward_compatibility_tests_config:
-          disable_for_version: 1.4.1
+          disable_for_version: 1.9.0
   basic_read:
     tests:
       - config_path: secrets/config_oauth.json
@@ -29,22 +29,36 @@ acceptance_tests:
           extra_records: yes
         timeout_seconds: 3600
         empty_streams:
-          - name: form_submissions
-            bypass_reason: Unable to populate
-          - name: ticket_pipelines
-            bypass_reason: Unable to populate
-          - name: engagements_meetings
-            bypass_reason: Unable to populate
-          - name: engagements_emails
-            bypass_reason: Unable to populate
           - name: engagements_calls
-            bypass_reason: Unable to populate
-          - name: quotes
-            bypass_reason: Unable to populate
-          - name: deals_archived
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate cost $20/month
           - name: owners_archived
             bypass_reason: unable to populate
+          - name: tickets_web_analytics
+            bypass_reason: Unable to populate
+          - name: deals_web_analytics
+            bypass_reason: Unable to populate
+          - name: companies_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_calls_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_emails_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_meetings_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_notes_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_tasks_web_analytics
+            bypass_reason: Unable to populate
+          - name: goals_web_analytics
+            bypass_reason: Unable to populate
+          - name: line_items_web_analytics
+            bypass_reason: Unable to populate
+          - name: products_web_analytics
+            bypass_reason: Unable to populate
+          - name: pets_web_analytics
+            bypass_reason: Unable to populate
+          - name: cars_web_analytics
+            bypass_reason: Unable to populate
         ignored_fields:
           contact_lists:
             - name: ilsFilterBranch
@@ -92,6 +106,14 @@ acceptance_tests:
             - name: properties/hs_was_imported
               bypass_reason: attribute is not stable
             - name: updatedAt
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_v2_cumulative_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_v2_latest_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_v2_cumulative_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_v2_latest_time_*
               bypass_reason: Hubspot time depend on current time
           deals:
             - name: properties_hs_time_*
@@ -183,6 +205,14 @@ acceptance_tests:
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_v2_cumulative_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_v2_latest_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_v2_cumulative_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_v2_latest_time_*
+              bypass_reason: Hubspot time depend on current time
           deals:
             - name: properties_hs_time_*
               bypass_reason: Hubspot time depend on current time
@@ -199,3 +229,4 @@ acceptance_tests:
         configured_catalog_path: sample_files/incremental_catalog.json
         future_state:
           future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 7200

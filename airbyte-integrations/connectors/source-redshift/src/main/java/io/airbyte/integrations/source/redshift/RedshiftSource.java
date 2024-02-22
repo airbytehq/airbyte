@@ -47,10 +47,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
     final ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-            redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
-            redshiftConfig.get(JdbcUtils.PORT_KEY).asInt(),
-            redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()));
+        .put(JdbcUtils.JDBC_URL_KEY, getJdbcUrl(redshiftConfig));
 
     if (redshiftConfig.has(JdbcUtils.SCHEMAS_KEY) && redshiftConfig.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
@@ -73,6 +70,13 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
 
     return Jsons.jsonNode(builder
         .build());
+  }
+
+  public static String getJdbcUrl(final JsonNode redshiftConfig) {
+    return String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+        redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
+        redshiftConfig.get(JdbcUtils.PORT_KEY).asInt(),
+        redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText());
   }
 
   private void addSsl(final List<String> additionalProperties) {
@@ -105,6 +109,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return new HashSet<>(database.bufferedResultSetQuery(
         connection -> {

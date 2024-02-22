@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+
+    api 'com.google.cloud:google-cloud-bigquery:2.37.0'
+
+}

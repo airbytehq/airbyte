@@ -1,1 +1,2 @@
 -e .
+-e ../../bases/connector-acceptance-test

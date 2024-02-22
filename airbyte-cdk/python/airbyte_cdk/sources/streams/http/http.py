@@ -14,7 +14,9 @@ from urllib.parse import urljoin
 import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.types import JsonType
@@ -38,12 +40,12 @@ class HttpStream(Stream, ABC):
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     # TODO: remove legacy HttpAuthenticator authenticator references
-    def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None):
-        if self.use_cache:
-            self._session = self.request_cache()
-        else:
-            self._session = requests.Session()
-
+    def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
+        self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
+        self._session = self.request_session()
+        self._session.mount(
+            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+        )
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
@@ -54,6 +56,7 @@ class HttpStream(Stream, ABC):
     def cache_filename(self) -> str:
         """
         Override if needed. Return the name of cache file
+        Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
         """
         return f"{self.name}.sqlite"
 
@@ -61,19 +64,33 @@ class HttpStream(Stream, ABC):
     def use_cache(self) -> bool:
         """
         Override if needed. If True, all records will be cached.
+        Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
         """
         return False
 
-    def request_cache(self) -> requests.Session:
-        cache_dir = Path(os.getenv(ENV_REQUEST_CACHE_PATH))
-        return requests_cache.CachedSession(str(cache_dir / self.cache_filename), backend="sqlite")
+    def request_session(self) -> requests.Session:
+        """
+        Session factory based on use_cache property and call rate limits (api_budget parameter)
+        :return: instance of request-based session
+        """
+        if self.use_cache:
+            cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
+            # Use in-memory cache if cache_dir is not set
+            # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
+            if cache_dir:
+                sqlite_path = str(Path(cache_dir) / self.cache_filename)
+            else:
+                sqlite_path = "file::memory:?cache=shared"
+            return CachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
+        else:
+            return LimiterSession(api_budget=self._api_budget)
 
     def clear_cache(self) -> None:
         """
-        clear cached requests for current session, can be called any time
+        Clear cached requests for current session, can be called any time
         """
         if isinstance(self._session, requests_cache.CachedSession):
-            self._session.cache.clear()
+            self._session.cache.clear()  # type: ignore # cache.clear is not typed
 
     @property
     @abstractmethod
@@ -102,6 +119,13 @@ class HttpStream(Stream, ABC):
         Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
         """
         return 5
+
+    @property
+    def max_time(self) -> Union[int, None]:
+        """
+        Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
+        """
+        return 60 * 10
 
     @property
     def retry_factor(self) -> float:
@@ -301,7 +325,9 @@ class HttpStream(Stream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
-        return self._session.prepare_request(requests.Request(**args))
+        prepared_request: requests.PreparedRequest = self._session.prepare_request(requests.Request(**args))
+
+        return prepared_request
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:
@@ -380,11 +406,19 @@ class HttpStream(Stream, ABC):
         Add this condition to avoid an endless loop if it hasn't been set
         explicitly (i.e. max_retries is not None).
         """
+        max_time = self.max_time
+        """
+        According to backoff max_time docstring:
+            max_time: The maximum total amount of time to try for before
+                giving up. Once expired, the exception will be allowed to
+                escape. If a callable is passed, it will be
+                evaluated at runtime and its return value used.
+        """
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
 
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
+        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self.retry_factor)
         return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     @classmethod
@@ -434,7 +468,7 @@ class HttpStream(Stream, ABC):
         :param exception: The exception that was raised
         :return: A user-friendly message that indicates the cause of the error
         """
-        if isinstance(exception, requests.HTTPError):
+        if isinstance(exception, requests.HTTPError) and exception.response is not None:
             return self.parse_response_error_message(exception.response)
         return None
 

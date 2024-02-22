@@ -29,7 +29,8 @@
           "type": "string"
         },
         "expiry_time": {
-          "type": "string"
+          "type": "string",
+          "format": "date-time"
         }
       }
     }

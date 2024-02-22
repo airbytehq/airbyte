@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "type": ["null", "string"]
+    },
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "CampaignStatus": {
+      "type": ["null", "string"]
+    },
+    "CampaignName": {
+      "type": ["null", "string"]
+    },
+    "CampaignId": {
+      "type": ["null", "integer"]
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "AdDistribution": {
+      "type": ["null", "string"]
+    },
+    "Impressions": {
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "type": ["null", "number"]
+    },
+    "AveragePosition": {
+      "type": ["null", "number"]
+    },
+    "Conversions": {
+      "type": ["null", "integer"]
+    },
+    "ConversionRate": {
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "LowQualityClicks": {
+      "type": ["null", "integer"]
+    },
+    "LowQualityClicksPercent": {
+      "type": ["null", "number"]
+    },
+    "LowQualityImpressions": {
+      "type": ["null", "integer"]
+    },
+    "LowQualityImpressionsPercent": {
+      "type": ["null", "number"]
+    },
+    "LowQualityConversions": {
+      "type": ["null", "integer"]
+    },
+    "LowQualityConversionRate": {
+      "type": ["null", "number"]
+    },
+    "DeviceType": {
+      "type": ["null", "string"]
+    },
+    "QualityScore": {
+      "type": ["null", "number"]
+    },
+    "ExpectedCtr": {
+      "type": ["null", "string"]
+    },
+    "AdRelevance": {
+      "type": ["null", "number"]
+    },
+    "LandingPageExperience": {
+      "type": ["null", "number"]
+    },
+    "PhoneImpressions": {
+      "type": ["null", "integer"]
+    },
+    "PhoneCalls": {
+      "type": ["null", "integer"]
+    },
+    "Ptr": {
+      "type": ["null", "number"]
+    },
+    "Network": {
+      "type": ["null", "string"]
+    },
+    "Assists": {
+      "type": ["null", "integer"]
+    },
+    "Revenue": {
+      "type": ["null", "number"]
+    },
+    "ReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "CostPerAssist": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerAssist": {
+      "type": ["null", "number"]
+    },
+    "TrackingTemplate": {
+      "type": ["null", "string"]
+    },
+    "CustomParameters": {
+      "type": ["null", "string"]
+    },
+    "AccountStatus": {
+      "type": ["null", "string"]
+    },
+    "LowQualityGeneralClicks": {
+      "type": ["null", "integer"]
+    },
+    "LowQualitySophisticatedClicks": {
+      "type": ["null", "integer"]
+    },
+    "CampaignLabels": {
+      "type": ["null", "string"]
+    },
+    "FinalUrlSuffix": {
+      "type": ["null", "string"]
+    },
+    "CampaignType": {
+      "type": ["null", "string"]
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "type": ["null", "number"]
+    },
+    "TopImpressionRatePercent": {
+      "type": ["null", "number"]
+    },
+    "BaseCampaignId": {
+      "type": ["null", "integer"]
+    },
+    "AllConversions": {
+      "type": ["null", "integer"]
+    },
+    "AllRevenue": {
+      "type": ["null", "number"]
+    },
+    "AllConversionRate": {
+      "type": ["null", "number"]
+    },
+    "AllCostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "AllReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversions": {
+      "type": ["null", "integer"]
+    },
+    "AverageCpm": {
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "LowQualityConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "AllConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "ViewThroughRevenue": {
+      "type": ["null", "number"]
+    },
+    "VideoViews": {
+      "type": ["null", "integer"]
+    },
+    "ViewThroughRate": {
+      "type": ["null", "number"]
+    },
+    "AverageCPV": {
+      "type": ["null", "number"]
+    },
+    "VideoViewsAt25Percent": {
+      "type": ["null", "integer"]
+    },
+    "VideoViewsAt50Percent": {
+      "type": ["null", "integer"]
+    },
+    "VideoViewsAt75Percent": {
+      "type": ["null", "integer"]
+    },
+    "CompletedVideoViews": {
+      "type": ["null", "integer"]
+    },
+    "VideoCompletionRate": {
+      "type": ["null", "number"]
+    },
+    "TotalWatchTimeInMS": {
+      "type": ["null", "integer"]
+    },
+    "AverageWatchTimePerVideoView": {
+      "type": ["null", "number"]
+    },
+    "AverageWatchTimePerImpression": {
+      "type": ["null", "number"]
+    },
+    "Sales": {
+      "type": ["null", "integer"]
+    },
+    "CostPerSale": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerSale": {
+      "type": ["null", "number"]
+    },
+    "Installs": {
+      "type": ["null", "integer"]
+    },
+    "CostPerInstall": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerInstall": {
+      "type": ["null", "number"]
+    }
+  }
+}

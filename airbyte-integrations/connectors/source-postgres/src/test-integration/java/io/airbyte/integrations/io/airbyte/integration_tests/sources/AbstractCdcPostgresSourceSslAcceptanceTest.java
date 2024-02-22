@@ -4,81 +4,39 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.cdk.db.PostgresUtils.getCertificate;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.PostgresUtils;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.json.Jsons;
-import java.util.List;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import java.util.Map;
 
 public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPostgresSourceAcceptanceTest {
 
   protected static final String PASSWORD = "Passw0rd";
-  protected static PostgresUtils.Certificate certs;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new PostgreSQLContainer<>(DockerImageName.parse(getServerImageName())
-        .asCompatibleSubstituteFor("postgres"))
-            .withCommand("postgres -c wal_level=logical");
-    container.start();
-
-    certs = getCertificate(container);
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "CDC")
-        .put("replication_slot", SLOT_NAME_BASE)
-        .put("publication", PUBLICATION)
-        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .build());
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(NAMESPACE))
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", replicationMethod)
-        .put(JdbcUtils.SSL_KEY, true)
-        .put("ssl_mode", getCertificateConfiguration())
-        .put("is_test", true)
-        .build());
-
-    try (final DSLContext dslContext = DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            container.getHost(),
-            container.getFirstMappedPort(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
-        SQLDialect.POSTGRES)) {
-      final Database database = new Database(dslContext);
-
-      database.query(ctx -> {
-        ctx.execute("CREATE TABLE id_and_name(id INTEGER primary key, name VARCHAR(200));");
-        ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-        ctx.execute("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));");
-        ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-        ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
-        ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
-        return null;
-      });
-    }
+    testdb = PostgresTestDatabase.in(getServerImage(), ContainerModifier.WAL_LEVEL_LOGICAL, ContainerModifier.CERT)
+        .with("CREATE TABLE id_and_name(id INTEGER primary key, name VARCHAR(200));")
+        .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
+        .with("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));")
+        .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');")
+        .withReplicationSlot()
+        .withPublicationForAllTables();
   }
 
-  protected abstract String getServerImageName();
+  @Override
+  protected JsonNode getConfig() {
+    return testdb.integrationTestConfigBuilder()
+        .withSchemas(NAMESPACE)
+        .withSsl(getCertificateConfiguration())
+        .withCdcReplication()
+        .build();
+  }
 
-  public abstract ImmutableMap getCertificateConfiguration();
+  protected abstract BaseImage getServerImage();
+
+  public abstract Map<Object, Object> getCertificateConfiguration();
 
 }

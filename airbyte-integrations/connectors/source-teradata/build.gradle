@@ -1,24 +1,20 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.20.4'
     features = ['db-sources']
     useLocalCdk = false
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.teradata.TeradataSource'
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'com.teradata.jdbc:terajdbc:20.00.00.06'
 
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation 'org.testcontainers:jdbc:1.19.4'
 }

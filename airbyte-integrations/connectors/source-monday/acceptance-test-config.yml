@@ -22,13 +22,13 @@ acceptance_tests:
         # `boards`, `items`, `updates` streams schemas were modified. PR: https://github.com/airbytehq/airbyte/pull/27410
         # Changes applies to all configs
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.6"
+          disable_for_version: "2.0.0"
       - config_path: "secrets/config_api_token.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.6"
+          disable_for_version: "2.0.0"
       - config_path: "secrets/config_oauth.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.6"
+          disable_for_version: "2.0.0"
   basic_read:
     tests:
       - config_path: "secrets/config_api_token.json"
@@ -39,7 +39,7 @@ acceptance_tests:
           extra_records: yes
         empty_streams:
           - name: teams
-            bypass_reason: "unable to populate"
+            bypass_reason: "The stream has no test data and tested with integration tests"
         ignored_fields:
           items:
             - name: assets/*/public_url
@@ -55,7 +55,7 @@ acceptance_tests:
           extra_records: yes
         empty_streams:
           - name: teams
-            bypass_reason: "unable to populate"
+            bypass_reason: "The stream has no test data and tested with integration tests"
         ignored_fields:
           items:
             - name: assets/*/public_url

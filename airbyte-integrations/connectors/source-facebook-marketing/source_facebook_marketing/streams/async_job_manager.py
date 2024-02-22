@@ -32,13 +32,14 @@ class InsightAsyncJobManager:
     # limit is not reliable indicator of async workload capability we still have to use this parameter.
     MAX_JOBS_IN_QUEUE = 100
 
-    def __init__(self, api: "API", jobs: Iterator[AsyncJob]):
+    def __init__(self, api: "API", jobs: Iterator[AsyncJob], account_id: str):
         """Init
 
         :param api:
         :param jobs:
         """
         self._api = api
+        self._account_id = account_id
         self._jobs = iter(jobs)
         self._running_jobs = []
 
@@ -103,7 +104,10 @@ class InsightAsyncJobManager:
                 if job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
                     raise JobException(f"{job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
                 elif job.attempt_number == 2:
-                    logger.info("%s: failed second time, trying to split job into smaller jobs.", job)
+                    logger.info(
+                        "%s: failed second time, trying to split job into smaller jobs.",
+                        job,
+                    )
                     smaller_jobs = job.split_job()
                     grouped_jobs = ParentAsyncJob(api=self._api.api, jobs=smaller_jobs, interval=job.interval)
                     running_jobs.append(grouped_jobs)
@@ -133,7 +137,7 @@ class InsightAsyncJobManager:
         """
         Get current ads insights throttle value based on app id and account id.
         It evaluated as minimum of those numbers cause when account id throttle
-        hit 100 it cool down very slowly (i.e. it still says 100 despite no jobs
+        hit 100 it cools down very slowly (i.e. it still says 100 despite no jobs
         running and it capable serve new requests). Because of this behaviour
         facebook throttle limit is not reliable metric to estimate async workload.
         """
@@ -143,8 +147,8 @@ class InsightAsyncJobManager:
 
     def _update_api_throttle_limit(self):
         """
-        Sends <ACCOUNT_ID>/insights GET request with no parameters so it would
+        Sends <ACCOUNT_ID>/insights GET request with no parameters, so it would
         respond with empty list of data so api use "x-fb-ads-insights-throttle"
         header to update current insights throttle limit.
         """
-        self._api.account.get_insights()
+        self._api.get_account(account_id=self._account_id).get_insights()

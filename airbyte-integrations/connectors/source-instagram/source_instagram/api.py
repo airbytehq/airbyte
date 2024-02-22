@@ -17,7 +17,7 @@ from facebook_business.adobjects.page import Page
 from facebook_business.exceptions import FacebookRequestError
 from source_instagram.common import InstagramAPIException, retry_pattern
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5, max_time=600)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
@@ -65,7 +65,6 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
 class InstagramAPI:
     def __init__(self, access_token: str):
-        self._api = FacebookAdsApi.init(access_token=access_token)
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)

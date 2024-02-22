@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Portfolio Memberships Schema",
+  "additionalProperties": true,
+  "type": ["object", "null"],
+  "properties": {
+    "gid": {
+      "type": ["string", "null"]
+    },
+    "resource_type": {
+      "type": ["string", "null"]
+    },
+    "portfolio": {
+      "type": ["object", "null"],
+      "properties": {
+        "gid": {
+          "type": ["string", "null"]
+        },
+        "resource_type": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "user": {
+      "type": ["object", "null"],
+      "properties": {
+        "gid": {
+          "type": ["string", "null"]
+        },
+        "resource_type": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

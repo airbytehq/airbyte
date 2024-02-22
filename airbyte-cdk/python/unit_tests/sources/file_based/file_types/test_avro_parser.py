@@ -11,6 +11,7 @@ from airbyte_cdk.sources.file_based.file_types import AvroParser
 
 _default_avro_format = AvroFormat()
 _double_as_string_avro_format = AvroFormat(double_as_string=True)
+_uuid_value = uuid.uuid4()
 
 
 @pytest.mark.parametrize(
@@ -217,9 +218,7 @@ def test_convert_primitive_avro_type_to_json(avro_format, avro_type, expected_js
         pytest.param(_default_avro_format, "bytes", b"hello world", b"hello world", id="test_bytes"),
         pytest.param(_default_avro_format, "string", "hello world", "hello world", id="test_string"),
         pytest.param(_default_avro_format, {"logicalType": "decimal"}, 3.1415, "3.1415", id="test_decimal"),
-        pytest.param(
-            _default_avro_format, {"logicalType": "uuid"}, b"abcdefghijklmnop", uuid.UUID(bytes=b"abcdefghijklmnop"), id="test_uuid"
-        ),
+        pytest.param(_default_avro_format, {"logicalType": "uuid"}, _uuid_value, str(_uuid_value), id="test_uuid"),
         pytest.param(_default_avro_format, {"logicalType": "date"}, datetime.date(2023, 8, 7), "2023-08-07", id="test_date"),
         pytest.param(_default_avro_format, {"logicalType": "time-millis"}, 70267068, 70267068, id="test_time_millis"),
         pytest.param(_default_avro_format, {"logicalType": "time-micros"}, 70267068, 70267068, id="test_time_micros"),

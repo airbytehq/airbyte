@@ -31,6 +31,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
@@ -274,10 +275,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         new StringSubstitutor(Map.of(
             "raw_table_id", streamId.rawTableId(BigQuerySqlGenerator.QUOTE),
             "records", recordsText)).replace(
-                // Note the parse_json call, and that _airbyte_data is declared as a string.
-                // This is needed because you can't insert a string literal into a JSON column
-                // so we build a struct literal with a string field, and then parse the field when inserting to the
-                // table.
+                // TODO: Perform a normal insert - edward
                 """
                 INSERT INTO ${raw_table_id} (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data)
                 SELECT _airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data FROM UNNEST([
@@ -344,8 +342,8 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
             Field.newBuilder("_airbyte_raw_id", legacySQLTypeName(StandardSQLTypeName.STRING)).setMode(Field.Mode.REQUIRED).build(),
             Field.newBuilder("_airbyte_extracted_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)).setMode(Field.Mode.REQUIRED).build(),
             Field.newBuilder("_airbyte_meta", legacySQLTypeName(StandardSQLTypeName.JSON)).setMode(Field.Mode.REQUIRED).build(),
-            Field.newBuilder("id1", legacySQLTypeName(StandardSQLTypeName.INT64)).setMode(Field.Mode.REQUIRED).build(),
-            Field.newBuilder("id2", legacySQLTypeName(StandardSQLTypeName.INT64)).setMode(Field.Mode.REQUIRED).build(),
+            Field.of("id1", legacySQLTypeName(StandardSQLTypeName.INT64)),
+            Field.of("id2", legacySQLTypeName(StandardSQLTypeName.INT64)),
             Field.of("updated_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)),
             Field.of("struct", legacySQLTypeName(StandardSQLTypeName.JSON)),
             Field.of("array", legacySQLTypeName(StandardSQLTypeName.JSON)),
@@ -368,8 +366,9 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
     // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
     bq.getDataset(namespace).delete();
-
-    destinationHandler.execute(new BigQuerySqlGenerator(projectId, "asia-east1").createTable(incrementalDedupStream, "", false));
+    final var sqlGenerator = new BigQuerySqlGenerator(projectId, "asia-east1");
+    destinationHandler.execute(sqlGenerator.createSchema(namespace));
+    destinationHandler.execute(sqlGenerator.createTable(incrementalDedupStream, "", false));
 
     // Empirically, it sometimes takes Bigquery nearly 30 seconds to propagate the dataset's existence.
     // Give ourselves 2 minutes just in case.
@@ -414,7 +413,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
         });
 
-    final String createTable = generator.createTable(stream, "", false);
+    final Sql createTable = generator.createTable(stream, "", false);
     assertThrows(
         BigQueryException.class,
         () -> destinationHandler.execute(createTable));

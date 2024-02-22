@@ -71,6 +71,7 @@ The Braintree connector should not run into Braintree API limitations under norm
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.1 | 2023-11-08 | [31489](https://github.com/airbytehq/airbyte/pull/31489) | Fix transaction stream custom fields |
 | 0.2.0 | 2023-07-17 | [29200](https://github.com/airbytehq/airbyte/pull/29200) | Migrate connector to low-code framework |
 | 0.1.5 | 2023-05-24 | [26340](https://github.com/airbytehq/airbyte/pull/26340) | Fix error in `check_connection` in integration tests |
 | 0.1.4 | 2023-03-13 | [23548](https://github.com/airbytehq/airbyte/pull/23548) | Update braintree python library version to 4.18.1 |

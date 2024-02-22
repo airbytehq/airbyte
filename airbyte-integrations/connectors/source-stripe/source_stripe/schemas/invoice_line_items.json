@@ -38,6 +38,12 @@
     "livemode": {
       "type": ["null", "boolean"]
     },
+    "margins": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "proration": {
       "type": ["null", "boolean"]
     },

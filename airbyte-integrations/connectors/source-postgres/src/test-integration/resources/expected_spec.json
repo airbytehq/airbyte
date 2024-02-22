@@ -264,11 +264,11 @@
               "initial_waiting_seconds": {
                 "type": "integer",
                 "title": "Initial Waiting Time in Seconds (Advanced)",
-                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\">initial waiting time</a>.",
-                "default": 300,
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 1200 seconds. Valid range: 120 seconds to 2400 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\">initial waiting time</a>.",
+                "default": 1200,
                 "order": 5,
                 "min": 120,
-                "max": 1200
+                "max": 2400
               },
               "queue_size": {
                 "type": "integer",
@@ -282,13 +282,28 @@
               "lsn_commit_behaviour": {
                 "type": "string",
                 "title": "LSN commit behaviour",
-                "description": "Determines when Airbtye should flush the LSN of processed WAL logs in the source database. `After loading Data in the destination` is default. If `While reading Data` is selected, in case of a downstream failure (while loading data into the destination), next sync would result in a full sync.",
+                "description": "Determines when Airbyte should flush the LSN of processed WAL logs in the source database. `After loading Data in the destination` is default. If `While reading Data` is selected, in case of a downstream failure (while loading data into the destination), next sync would result in a full sync.",
                 "enum": [
                   "While reading Data",
                   "After loading Data in the destination"
                 ],
                 "default": "After loading Data in the destination",
                 "order": 7
+              },
+              "heartbeat_action_query": {
+                "type": "string",
+                "title": "Debezium heartbeat query (Advanced)",
+                "description": "Specifies a query that the connector executes on the source database when the connector sends a heartbeat message. Please see the <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-wal-disk-consumption-and-heartbeat-action-query\">setup guide</a> for how and when to configure this setting.",
+                "default": "",
+                "order": 8
+              },
+              "invalid_cdc_cursor_position_behavior": {
+                "type": "string",
+                "title": "Invalid CDC position behavior (Advanced)",
+                "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
+                "enum": ["Fail sync", "Re-sync data"],
+                "default": "Fail sync",
+                "order": 9
               }
             }
           },

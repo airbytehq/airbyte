@@ -1,0 +1,8 @@
+{
+  "error": {
+    "message": "Request rate limit exceeded. Learn more about rate limits here https://stripe.com/docs/rate-limits.",
+    "type": "invalid_request_error",
+    "code": "rate_limit",
+    "doc_url": "https://stripe.com/docs/error-codes/rate-limit"
+  }
+}

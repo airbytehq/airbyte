@@ -12,9 +12,11 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
+from airbyte_cdk.models import Type as MessageType
 
 # list of all possible HTTP methods which can be used for sending of request bodies
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
 
@@ -104,6 +106,74 @@ class Stream(ABC):
         :return: A user-friendly message that indicates the cause of the error
         """
         return None
+
+    def read_full_refresh(
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+    ) -> Iterable[StreamData]:
+        slices = self.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
+        logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)", extra={"stream_slices": slices})
+        for _slice in slices:
+            if slice_logger.should_log_slice_message(logger):
+                yield slice_logger.create_slice_log_message(_slice)
+            yield from self.read_records(
+                stream_slice=_slice,
+                sync_mode=SyncMode.full_refresh,
+                cursor_field=cursor_field,
+            )
+
+    def read_incremental(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        stream_state: MutableMapping[str, Any],
+        state_manager,
+        per_stream_state_enabled: bool,
+        internal_config: InternalConfig,
+    ) -> Iterable[StreamData]:
+        slices = self.stream_slices(
+            cursor_field=cursor_field,
+            sync_mode=SyncMode.incremental,
+            stream_state=stream_state,
+        )
+        logger.debug(f"Processing stream slices for {self.name} (sync_mode: incremental)", extra={"stream_slices": slices})
+
+        has_slices = False
+        record_counter = 0
+        for _slice in slices:
+            has_slices = True
+            if slice_logger.should_log_slice_message(logger):
+                yield slice_logger.create_slice_log_message(_slice)
+            records = self.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice=_slice,
+                stream_state=stream_state,
+                cursor_field=cursor_field or None,
+            )
+            for record_data_or_message in records:
+                yield record_data_or_message
+                if isinstance(record_data_or_message, Mapping) or (
+                    hasattr(record_data_or_message, "type") and record_data_or_message.type == MessageType.RECORD
+                ):
+                    record_data = record_data_or_message if isinstance(record_data_or_message, Mapping) else record_data_or_message.record
+                    stream_state = self.get_updated_state(stream_state, record_data)
+                    checkpoint_interval = self.state_checkpoint_interval
+                    record_counter += 1
+                    if checkpoint_interval and record_counter % checkpoint_interval == 0:
+                        yield self._checkpoint_state(stream_state, state_manager, per_stream_state_enabled)
+
+                    if internal_config.is_limit_reached(record_counter):
+                        break
+
+            yield self._checkpoint_state(stream_state, state_manager, per_stream_state_enabled)
+
+        if not has_slices:
+            # Safety net to ensure we always emit at least one state message even if there are no slices
+            checkpoint = self._checkpoint_state(stream_state, state_manager, per_stream_state_enabled)
+            yield checkpoint
 
     @abstractmethod
     def read_records(
@@ -252,6 +322,18 @@ class Stream(ABC):
         """
         return {}
 
+    def log_stream_sync_configuration(self) -> None:
+        """
+        Logs the configuration of this stream.
+        """
+        self.logger.debug(
+            f"Syncing stream instance: {self.name}",
+            extra={
+                "primary_key": self.primary_key,
+                "cursor_field": self.cursor_field,
+            },
+        )
+
     @staticmethod
     def _wrapped_primary_key(keys: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[List[List[str]]]:
         """
@@ -274,3 +356,21 @@ class Stream(ABC):
             return wrapped_keys
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
+
+    def _checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
+        self,
+        stream_state: Mapping[str, Any],
+        state_manager,
+        per_stream_state_enabled: bool,
+    ) -> AirbyteMessage:
+        # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
+        # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
+        # instance's deprecated get_updated_state() method.
+        try:
+            state_manager.update_state_for_stream(
+                self.name, self.namespace, self.state  # type: ignore # we know the field might not exist...
+            )
+
+        except AttributeError:
+            state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
+        return state_manager.create_state_message(self.name, self.namespace, send_per_stream_state=per_stream_state_enabled)

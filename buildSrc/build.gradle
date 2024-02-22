@@ -3,12 +3,8 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation 'ru.vyarus:gradle-use-python-plugin:2.3.0'
-    implementation 'org.apache.commons:commons-text:1.10.0'
+    // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+    gradlePluginPortal()
 }
 
 tasks.withType(Jar).configureEach {

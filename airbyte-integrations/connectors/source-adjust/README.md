@@ -30,14 +30,6 @@ used for editable installs (`pip install -e`) to pull in Python dependencies fro
 If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
 should work as you expect.
 
-#### Building via Gradle
-You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
-
-To build using Gradle, from the Airbyte repository root, run:
-```
-./gradlew :airbyte-integrations:connectors:source-adjust:build
-```
-
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/adjust)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_adjust/spec.yaml` file.
@@ -57,18 +49,19 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 
 ### Locally running the connector docker image
 
+
 #### Build
-First, make sure you build the latest Docker image:
-```
-docker build . -t airbyte/source-adjust:dev
+**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
+```bash
+airbyte-ci connectors --name source-adjust build
 ```
 
-You can also build the connector image via Gradle:
+An image will be built with the tag `airbyte/source-adjust:dev`.
+
+**Via `docker build`:**
+```bash
+docker build -t airbyte/source-adjust:dev .
 ```
-./gradlew :airbyte-integrations:connectors:source-adjust:airbyteDocker
-```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
 
 #### Run
 Then run any of the connector commands as follows:
@@ -78,44 +71,16 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-adjust:dev check --con
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-adjust:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-adjust:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
+
 ## Testing
-Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
-First install test dependencies into your virtual environment:
-```
-pip install .[tests]
-```
-### Unit Tests
-To run unit tests locally, from the connector directory run:
-```
-python -m pytest unit_tests
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+```bash
+airbyte-ci connectors --name=source-adjust test
 ```
 
-### Integration Tests
-There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all source connectors) and custom integration tests (which are specific to this connector).
-#### Custom Integration tests
-Place custom tests inside `integration_tests/` folder, then, from the connector root, run
-```
-python -m pytest integration_tests
-```
-#### Acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+### Customizing acceptance Tests
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-To run your integration tests with acceptance tests, from the connector root, run
-```
-python -m pytest integration_tests -p integration_tests.acceptance
-```
-To run your integration tests with docker
-
-### Using gradle to run tests
-All commands should be run from airbyte project root.
-To run unit tests:
-```
-./gradlew :airbyte-integrations:connectors:source-adjust:unitTest
-```
-To run acceptance and custom integration tests:
-```
-./gradlew :airbyte-integrations:connectors:source-adjust:integrationTest
-```
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.

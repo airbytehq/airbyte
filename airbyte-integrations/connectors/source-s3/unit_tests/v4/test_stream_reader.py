@@ -5,7 +5,7 @@
 
 import io
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
 from unittest.mock import patch
@@ -16,13 +16,14 @@ from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBas
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.stub import Stubber
+from moto import mock_sts
 from pydantic import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
 logger = logging.Logger("")
 
-endpoint_values = ["http://fake.com", None]
+endpoint_values = ["https://fake.com", None]
 _get_matching_files_cases = [
     pytest.param([], [], False, set(), id="no-files-match-if-no-globs"),
     pytest.param(
@@ -238,3 +239,68 @@ def set_stub(reader: SourceS3StreamReader, contents: List[Dict[str, Any]], multi
         )
     s3_stub.activate()
     return s3_stub
+
+
+@mock_sts
+@patch("source_s3.v4.stream_reader.boto3.client")
+def test_get_iam_s3_client(boto3_client_mock):
+    # Mock the STS client assume_role method
+    boto3_client_mock.return_value.assume_role.return_value = {
+        "Credentials": {
+            "AccessKeyId": "assumed_access_key_id",
+            "SecretAccessKey": "assumed_secret_access_key",
+            "SessionToken": "assumed_session_token",
+            "Expiration": datetime.now(),
+        }
+    }
+
+    # Instantiate your stream reader and set the config
+    reader = SourceS3StreamReader()
+    reader.config = Config(
+        bucket="test",
+        role_arn="arn:aws:iam::123456789012:role/my-role",
+        streams=[],
+        endpoint=None,
+    )
+
+    # Call _get_iam_s3_client
+    with Stubber(reader.s3_client):
+        s3_client = reader._get_iam_s3_client({})
+
+    # Assertions to validate the s3 client
+    assert s3_client is not None
+
+@pytest.mark.parametrize(
+    "start_date, last_modified_date, expected_result",
+    (
+        # True when file is new or modified after given start_date
+        (
+            datetime.now() - timedelta(days=180),
+            datetime.now(),
+            True
+        ),
+        (
+            datetime.strptime("2024-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+            datetime.strptime("2024-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+            True
+        ),
+        # False when file is older than given start_date
+        (
+            datetime.now(),
+            datetime.now() - timedelta(days=180),
+            False
+        )
+    )
+)
+def test_filter_file_by_start_date(start_date: datetime, last_modified_date: datetime, expected_result: bool) -> None:
+    reader = SourceS3StreamReader()
+
+    reader.config = Config(
+        bucket="test",
+        aws_access_key_id="test",
+        aws_secret_access_key="test",
+        streams=[],
+        start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
+
+    assert expected_result == reader.is_modified_after_start_date(last_modified_date)

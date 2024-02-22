@@ -1,15 +1,12 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.20.4'
     features = ['db-sources']
     useLocalCdk = false
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.tidb.TiDBSource'
@@ -17,15 +14,9 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
+    implementation 'mysql:mysql-connector-java:8.0.33'
 
-    //TODO Add jdbc driver import here. Ex: implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
-    implementation 'mysql:mysql-connector-java:8.0.22'
+    testFixturesApi 'org.testcontainers:tidb:1.19.4'
 
-    // Add testcontainers and use GenericContainer for TiDB
-    testImplementation libs.testcontainers.tidb
-
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-
-    integrationTestJavaImplementation libs.testcontainers.tidb
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }

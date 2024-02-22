@@ -11,6 +11,7 @@ If you are a visual learner and want to see a video version of this guide going 
 ## Dependencies
 
 1. Python &gt;= 3.9
+2. [Poetry](https://python-poetry.org/)
 2. Docker
 3. NodeJS
 
@@ -30,9 +31,7 @@ Select the `Python HTTP API Source` and name it `python-http-example`.
 
 ```bash
 cd ../../connectors/source-python-http-example
-python -m venv .venv # Create a virtual environment in the .venv directory
-source .venv/bin/activate
-pip install -r requirements.txt
+poetry install
 ```
 
 ### Define Connector Inputs
@@ -118,17 +117,17 @@ cd ..
 mkdir sample_files
 echo '{"pokemon_name": "pikachu"}'  > sample_files/config.json
 echo '{"pokemon_name": "chikapu"}'  > sample_files/invalid_config.json
-python main.py check --config sample_files/config.json
-python main.py check --config sample_files/invalid_config.json
+poetry run source-python-http-example check --config sample_files/config.json
+poetry run source-python-http-example check --config sample_files/invalid_config.json
 ```
 
 Expected output:
 
-```text
-> python main.py check --config sample_files/config.json
+```bash
+> poetry run source-python-http-example check --config sample_files/config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "SUCCEEDED"}}
 
-> python main.py check --config sample_files/invalid_config.json
+> poetry run source-python-http-example check --config sample_files/invalid_config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "FAILED", "message": "'Input Pokemon chikapu is invalid. Please check your spelling our input a valid Pokemon.'"}}
 ```
 
@@ -169,7 +168,7 @@ This file defines your output schema for every endpoint that you want to impleme
 Test your discover function. You should receive a fairly large JSON object in return.
 
 ```bash
-python main.py discover --config sample_files/config.json
+poetry run source-python-http-example discover --config sample_files/config.json
 ```
 
 Note that our discover function is using the `pokemon_name` config variable passed in from the `Pokemon` stream when we set it in the `__init__` function.
@@ -226,14 +225,48 @@ We now need a catalog that defines all of our streams. We only have one stream: 
 Let's read some data.
 
 ```bash
-python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
+poetry run source-python-http-example read --config sample_files/config.json --catalog sample_files/configured_catalog.json
 ```
 
 If all goes well, containerize it so you can use it in the UI:
 
-```bash
-docker build . -t airbyte/source-python-http-example:dev
+
+**Option A: Building the docker image with `airbyte-ci`**
+
+This is the preferred method for building and testing connectors.
+
+If you want to open source your connector we encourage you to use our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector. 
+It will not use a Dockerfile but will build the connector image from our [base image](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/README.md) and use our internal build logic to build an image from your Python connector code.
+
+Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
+Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
+
+
+
+**Option B: Building the docker image with a Dockerfile**
+
+If you don't want to rely on `airbyte-ci` to build your connector, you can build the docker image using your own Dockerfile. This method is not preferred, and is not supported for certified connectors.
+
+Create a `Dockerfile` in the root of your connector directory. The `Dockerfile` should look something like this:
+```Dockerfile
+
+FROM airbyte/python-connector-base:1.1.0
+
+COPY . ./airbyte/integration_code
+RUN pip install ./airbyte/integration_code
+
+# The entrypoint and default env vars are already set in the base image
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 ```
+
+Please use this as an example. This is not optimized.
+
+Build your image:
+```bash
+docker build . -t airbyte/source-example-python:dev
+```
+
 
 You're done. Stop the clock :\)
 

@@ -3,9 +3,8 @@
 #
 
 import pytest
-from connector_ops.utils import Connector
-from pipelines.actions import environments
-from pipelines.contexts import PipelineContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.dagger.actions.python import common
 
 pytestmark = [
     pytest.mark.anyio,
@@ -13,31 +12,31 @@ pytestmark = [
 
 
 @pytest.fixture
-def python_connectors() -> Connector:
-    return [
-        Connector("source-openweather"),  # setup.py based
-        Connector("destination-duckdb"),  # pyproject.toml based
-    ]
-
-
-@pytest.fixture
-def context(dagger_client):
-    context = PipelineContext(
+def connector_context(dagger_client):
+    context = ConnectorContext(
         pipeline_name="test",
-        is_local=True,
+        connector="source-faker",
         git_branch="test",
         git_revision="test",
+        report_output_prefix="test",
+        is_local=True,
+        use_remote_secrets=True,
     )
     context.dagger_client = dagger_client
     return context
 
 
-async def test_with_installed_python_package(context, python_connectors):
-    for python_connector in python_connectors:
-        python_environment = context.dagger_client.container().from_("python:3.10")
-        installed_connector_package = await environments.with_installed_python_package(
-            context,
-            python_environment,
-            str(python_connector.code_directory),
-        )
-        await installed_connector_package.with_exec(["python", "main.py", "spec"])
+@pytest.mark.parametrize("use_local_cdk", [True, False])
+async def test_apply_python_development_overrides(connector_context, use_local_cdk):
+    connector_context.use_local_cdk = use_local_cdk
+    fake_connector_container = connector_context.dagger_client.container().from_("airbyte/python-connector-base:1.0.0")
+    before_override_pip_freeze = await fake_connector_container.with_exec(["pip", "freeze"]).stdout()
+
+    assert "airbyte-cdk" not in before_override_pip_freeze.splitlines(), "The base image should not have the airbyte-cdk installed."
+    connector_with_overrides = await common.apply_python_development_overrides(connector_context, fake_connector_container)
+
+    after_override_pip_freeze = await connector_with_overrides.with_exec(["pip", "freeze"]).stdout()
+    if use_local_cdk:
+        assert "airbyte-cdk" not in after_override_pip_freeze.splitlines(), "The override should not install the airbyte-cdk package."
+    else:
+        assert "airbyte-cdk" not in after_override_pip_freeze.splitlines(), "The override should install the airbyte-cdk package."

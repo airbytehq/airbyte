@@ -1,21 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Item collection",
   "type": ["null", "object"],
-  "title": "Item collection schema",
   "additionalProperties": true,
   "properties": {
-    "url": {
-      "type": ["null", "string"]
-    },
-    "#debug": {
-      "type": ["null", "object"],
-      "additionalProperties": true
-    },
-    "pageTitle": {
-      "type": ["null", "string"]
-    },
-    "#error": {
-      "type": ["null", "boolean"]
+    "data": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
     }
   }
 }

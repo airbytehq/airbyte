@@ -1,4 +1,4 @@
-# Monorepo Python Development
+# (DEPRECATED) Monorepo Python Development 
 
 This guide contains instructions on how to setup Python with Gradle within the Airbyte Monorepo. If you are a contributor working on one or two connectors, this page is most likely not relevant to you. Instead, you should use your standard Python development flow.
 
@@ -30,21 +30,7 @@ python tools/bin/update_intellij_venv.py --all-modules --install-venv
 
 This will create a `virtualenv` and install dependencies for the connector you want to work on as well as any internal Airbyte python packages it depends on.
 
-When iterating on a single connector, you will often iterate by running
 
-```text
-./gradlew :airbyte-integrations:connectors:your-connector-dir:build
-```
-
-This command will:
-
-1. Install a virtual environment at `airbyte-integrations/connectors/<your-connector-dir>/.venv`
-2. Install local development dependencies specified in `airbyte-integrations/connectors/your-connector-dir/requirements.txt`
-3. Runs the following pip modules:
-    1. [Black](https://pypi.org/project/black/) to lint the code
-    2. [isort](https://pypi.org/project/isort/) to sort imports
-    3. [Flake8](https://pypi.org/project/flake8/) to check formatting
-    4. [MyPy](https://pypi.org/project/mypy/) to check type usage
 
 ## Formatting/linting
 

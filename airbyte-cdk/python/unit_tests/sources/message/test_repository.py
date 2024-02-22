@@ -5,15 +5,7 @@
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import (
-    AirbyteControlConnectorConfigMessage,
-    AirbyteControlMessage,
-    AirbyteMessage,
-    AirbyteStateMessage,
-    Level,
-    OrchestratorType,
-    Type,
-)
+from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, Level, OrchestratorType, Type
 from airbyte_cdk.sources.message import (
     InMemoryMessageRepository,
     LogAppenderMessageRepositoryDecorator,
@@ -74,14 +66,9 @@ class TestInMemoryMessageRepository:
         second_message_generator = repo.consume_queue()
         assert list(second_message_generator) == [second_message]
 
-    def test_given_message_is_not_control_nor_log_message_when_emit_message_then_raise_error(self):
-        repo = InMemoryMessageRepository()
-        with pytest.raises(ValueError):
-            repo.emit_message(AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": "state value"})))
-
     def test_given_log_level_is_severe_enough_when_log_message_then_allow_message_to_be_consumed(self):
         repo = InMemoryMessageRepository(Level.DEBUG)
-        repo.log_message(Level.INFO, lambda: "this is a log message")
+        repo.log_message(Level.INFO, lambda: {"message": "this is a log message"})
         assert list(repo.consume_queue())
 
     def test_given_log_level_is_severe_enough_when_log_message_then_filter_secrets(self, mocker):
@@ -89,18 +76,18 @@ class TestInMemoryMessageRepository:
         mocker.patch("airbyte_cdk.sources.message.repository.filter_secrets", return_value=filtered_message)
         repo = InMemoryMessageRepository(Level.DEBUG)
 
-        repo.log_message(Level.INFO, lambda: "this is a log message")
+        repo.log_message(Level.INFO, lambda: {"message": "this is a log message"})
 
         assert list(repo.consume_queue())[0].log.message == filtered_message
 
     def test_given_log_level_not_severe_enough_when_log_message_then_do_not_allow_message_to_be_consumed(self):
         repo = InMemoryMessageRepository(Level.ERROR)
-        repo.log_message(Level.INFO, lambda: "this is a log message")
+        repo.log_message(Level.INFO, lambda: {"message": "this is a log message"})
         assert not list(repo.consume_queue())
 
     def test_given_unknown_log_level_as_threshold_when_log_message_then_allow_message_to_be_consumed(self):
         repo = InMemoryMessageRepository(UNKNOWN_LEVEL)
-        repo.log_message(Level.DEBUG, lambda: "this is a log message")
+        repo.log_message(Level.DEBUG, lambda: {"message": "this is a log message"})
         assert list(repo.consume_queue())
 
     def test_given_unknown_log_level_for_log_when_log_message_then_raise_error(self):
@@ -109,14 +96,14 @@ class TestInMemoryMessageRepository:
         """
         repo = InMemoryMessageRepository(Level.ERROR)
         with pytest.raises(ValidationError):
-            repo.log_message(UNKNOWN_LEVEL, lambda: "this is a log message")
+            repo.log_message(UNKNOWN_LEVEL, lambda: {"message": "this is a log message"})
 
 
 class TestNoopMessageRepository:
     def test_given_message_emitted_when_consume_queue_then_return_empty(self):
         repo = NoopMessageRepository()
         repo.emit_message(AirbyteMessage(type=Type.CONTROL, control=A_CONTROL))
-        repo.log_message(Level.INFO, lambda: "this is a log message")
+        repo.log_message(Level.INFO, lambda: {"message": "this is a log message"})
 
         assert not list(repo.consume_queue())
 

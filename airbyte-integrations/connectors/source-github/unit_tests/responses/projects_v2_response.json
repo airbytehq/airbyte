@@ -1,0 +1,45 @@
+{
+  "data": {
+    "repository": {
+      "name": "integration-test",
+      "owner": {
+        "login": "airbytehq"
+      },
+      "projectsV2": {
+        "nodes": [
+          {
+            "closed": false,
+            "created_at": "2023-09-25T18:34:52Z",
+            "closed_at": null,
+            "updated_at": "2023-09-25T18:35:45Z",
+            "creator": {
+              "avatarUrl": "https://avatars.githubusercontent.com/u/92915184?u=e53c87d81ec6fb0596bc0f75e12e84e8f0df8d83&v=4",
+              "login": "airbyteio",
+              "resourcePath": "/airbyteio",
+              "url": "https://github.com/airbyteio"
+            },
+            "node_id": "PVT_kwDOA4_XW84AV7NS",
+            "id": 5747538,
+            "number": 58,
+            "public": false,
+            "readme": "# Title\nintegration test project",
+            "short_description": "integration test project description",
+            "template": false,
+            "title": "integration test project",
+            "url": "https://github.com/orgs/airbytehq/projects/58",
+            "viewerCanClose": true,
+            "viewerCanReopen": true,
+            "viewerCanUpdate": true,
+            "owner": {
+              "id": "MDEyOk9yZ2FuaXphdGlvbjU5NzU4NDI3"
+            }
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": false,
+          "endCursor": "MQ"
+        }
+      }
+    }
+  }
+}

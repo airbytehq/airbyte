@@ -43,7 +43,7 @@ class PostgresStressTest extends JdbcStressTest {
 
   @BeforeAll
   static void init() {
-    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
+    PSQL_DB = new PostgreSQLContainer<>("postgres:16-bullseye");
     PSQL_DB.start();
   }
 

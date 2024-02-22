@@ -1,6 +1,6 @@
 # Snowflake
 
-Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console, setting up the data loading method (internal stage, AWS S3, or Google Cloud Storage bucket), and configuring the Snowflake destination connector using the Airbyte UI.
+Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console and configuring the Snowflake destination connector using the Airbyte UI.
 
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
@@ -19,11 +19,15 @@ To determine whether a network policy is set on your account or for a specific u
 
 **Account**
 
-        SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+```
+SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+```
 
 **User**
 
-        SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+```
+SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+```
 
 To read more please check official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
 
@@ -113,42 +117,9 @@ You can use the following script in a new [Snowflake worksheet](https://docs.sno
 
 ### Step 2: Set up a data loading method
 
-By default, Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data. You can also load data using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), or [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction).
+Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data.
 
 Make sure the database and schema have the `USAGE` privilege.
-
-#### Using an Amazon S3 bucket
-
-To use an Amazon S3 bucket, [create a new Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) with read/write access for Airbyte to stage data to Snowflake.
-
-#### Using a Google Cloud Storage bucket
-
-To use a Google Cloud Storage bucket:
-
-1. Navigate to the Google Cloud Console and [create a new bucket](https://cloud.google.com/storage/docs/creating-buckets) with read/write access for Airbyte to stage data to Snowflake.
-2. [Generate a JSON key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) for your service account.
-3. Edit the following script to replace `AIRBYTE_ROLE` with the role you used for Airbyte's Snowflake configuration and `YOURBUCKETNAME` with your bucket name.
-
-   ```text
-   create storage INTEGRATION gcs_airbyte_integration
-     TYPE = EXTERNAL_STAGE
-     STORAGE_PROVIDER = GCS
-     ENABLED = TRUE
-     STORAGE_ALLOWED_LOCATIONS = ('gcs://YOURBUCKETNAME');
-
-   create stage gcs_airbyte_stage
-     url = 'gcs://YOURBUCKETNAME'
-     storage_integration = gcs_airbyte_integration;
-
-   GRANT USAGE ON integration gcs_airbyte_integration TO ROLE AIRBYTE_ROLE;
-   GRANT USAGE ON stage gcs_airbyte_stage TO ROLE AIRBYTE_ROLE;
-
-   DESC STORAGE INTEGRATION gcs_airbyte_integration;
-   ```
-
-   The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as the property value. Add read/write permissions to your bucket with that email.
-
-4. Navigate to the Snowflake UI and run the script as a [Snowflake account admin](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
 
 ### Step 3: Set up Snowflake as a destination in Airbyte
 
@@ -156,21 +127,22 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 
 ### Login and Password
 
-| Field                                                                                                 | Description                                                                                                                                                                                       |
-| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
-| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
-| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
-| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                     |
-| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.                                                          |
-| Username                                                                                              | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                               |
-| Password                                                                                              | The password associated with the username.                                                                                                                                                        |
-| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`   |
+| Field                                                                                                 | Description                                                                                                                                                                                                                          |
+|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com`                                    |
+| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                                                              |
+| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                                                      |
+| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                                                        |
+| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.                                                                                             |
+| Username                                                                                              | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                                                                  |
+| Password                                                                                              | The password associated with the username.                                                                                                                                                                                           |
+| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`                                      |
+| Disable Final Tables (Optional)                                                                       | Disables writing final Typed tables See [output schema](#output-schema). WARNING! The data format in \_airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions |
 
 ### OAuth 2.0
 
 | Field                                                                                                 | Description                                                                                                                                                                                       |
-| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|:------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
@@ -202,40 +174,43 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 
       `alter user <user_name> set rsa_public_key=<public_key_value>;`
 
-    and replace <user_name> with your user name and <public_key_value> with your public key.
-
-To use AWS S3 as the cloud storage, enter the information for the S3 bucket you created in Step 2:
-
-| Field                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S3 Bucket Name                 | The name of the staging S3 bucket (Example: `airbyte.staging`). Airbyte will write files to this bucket and read them via statements on Snowflake.                                                                                                                                                                                                                                                                                                                                                                                                      |
-| S3 Bucket Region               | The S3 staging bucket region used.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| S3 Key Id \*                   | The Access Key ID granting access to the S3 staging bucket. Airbyte requires Read and Write permissions for the bucket.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| S3 Access Key \*               | The corresponding secret to the S3 Key ID.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Stream Part Size (Optional)    | Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 5MB by default, resulting in a default limit of 100GB tables. <br/>Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care. (e.g. 5)                                                                     |
-| Purge Staging Files and Tables | Determines whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after sync; if you want to keep them for other purposes, set `purge_staging_data` to false.                                                                                                                                                  |
-| Encryption                     | Whether files on S3 are encrypted. You probably don't need to enable this, but it can provide an additional layer of security if you are sharing your data storage with other applications. If you do use encryption, you must choose between ephemeral keys (Airbyte will automatically generate a new key for each sync, and nobody but Airbyte and Snowflake will be able to read the data on S3) or providing your own key (if you have the "Purge staging files and tables" option disabled, and you want to be able to decrypt the data yourself) |
-| S3 Filename pattern (Optional) | The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.                                                                                                                                                                                             |
-
-To use a Google Cloud Storage bucket, enter the information for the bucket you created in Step 2:
-
-| Field                          | Description                                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GCP Project ID                 | The name of the GCP project ID for your credentials. (Example: `my-project`)                                                                                                                                                                                                                                                                                                                         |
-| GCP Bucket Name                | The name of the staging bucket. Airbyte will write files to this bucket and read them via statements on Snowflake. (Example: `airbyte-staging`)                                                                                                                                                                                                                                                      |
-| Google Application Credentials | The contents of the JSON key file that has read/write permissions to the staging GCS bucket. You will separately need to grant bucket access to your Snowflake GCP service account. See the [Google Cloud docs](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) for more information on how to generate a JSON key for your service account. |
+    and replace `<user_name>` with your user name and `<public_key_value>` with your public key.
 
 ## Output schema
 
-Airbyte outputs each stream into its own table with the following columns in Snowflake:
+Airbyte outputs each stream into its own raw table in `airbyte_internal` schema by default (can be overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_ deduplicated.
 
-| Airbyte field        | Description                                                    | Column type              |
-| -------------------- | -------------------------------------------------------------- | ------------------------ |
-| \_airbyte_ab_id      | A UUID assigned to each processed event                        | VARCHAR                  |
-| \_airbyte_emitted_at | A timestamp for when the event was pulled from the data source | TIMESTAMP WITH TIME ZONE |
-| \_airbyte_data       | A JSON blob with the event data.                               | VARIANT                  |
+### Raw Table schema
+
+| Airbyte field          | Description                                                        | Column type              |
+|------------------------|--------------------------------------------------------------------|--------------------------|
+| \_airbyte_raw_id       | A UUID assigned to each processed event                            | VARCHAR                  |
+| \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP WITH TIME ZONE |
+| \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP WITH TIME ZONE |
+| \_airbyte_data         | A JSON blob with the event data.                                   | VARIANT                  |
+
+**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table could be subject to change in future versions.
 
 **Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a dedicated transient database for Airbyte. For more information, refer to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+
+## Data type map
+
+| Airbyte type                        | Snowflake type |
+|:------------------------------------|:---------------|
+| STRING                              | TEXT           |
+| STRING (BASE64)                     | TEXT           |
+| STRING (BIG_NUMBER)                 | TEXT           |
+| STRING (BIG_INTEGER)                | TEXT           |
+| NUMBER                              | FLOAT          |
+| INTEGER                             | NUMBER         |
+| BOOLEAN                             | BOOLEAN        |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP_TZ   |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP_NTZ  |
+| STRING (TIME_WITH_TIMEZONE)         | TEXT           |
+| STRING (TIME_WITHOUT_TIMEZONE)      | TIME           |
+| DATE                                | DATE           |
+| OBJECT                              | OBJECT         |
+| ARRAY                               | ARRAY          |
 
 ## Supported sync modes
 
@@ -271,6 +246,51 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.12          | 2024-02-15 | [35240](https://github.com/airbytehq/airbyte/pull/35240)   | Adopt CDK 0.20.9                                                                                                                                                |
+| 3.5.11          | 2024-02-12 | [35194](https://github.com/airbytehq/airbyte/pull/35194)   | Reorder auth options                                                                                                                                            |
+| 3.5.10          | 2024-02-12 | [35144](https://github.com/airbytehq/airbyte/pull/35144)   | Adopt CDK 0.20.2                                                                                                                                                |
+| 3.5.9           | 2024-02-12 | [35111](https://github.com/airbytehq/airbyte/pull/35111)   | Adopt CDK 0.20.1                                                                                                                                                |
+| 3.5.8           | 2024-02-09 | [34574](https://github.com/airbytehq/airbyte/pull/34574)   | Adopt CDK 0.20.0                                                                                                                                                |
+| 3.5.7           | 2024-02-08 | [34747](https://github.com/airbytehq/airbyte/pull/34747)   | Adopt CDK 0.19.0                                                                                                                                                |
+| 3.5.6           | 2024-02-08 | [\#35027](https://github.com/airbytehq/airbyte/pull/35027) | Upgrade CDK to version 0.17.1                                                                                                                                   |
+| 3.5.5           | 2024-02-08 | [\#34502](https://github.com/airbytehq/airbyte/pull/34502) | Reduce COPY frequency                                                                                                                                           |
+| 3.5.4           | 2024-01-24 | [\#34451](https://github.com/airbytehq/airbyte/pull/34451) | Improve logging for unparseable input                                                                                                                           |
+| 3.5.3           | 2024-01-25 | [\#34528](https://github.com/airbytehq/airbyte/pull/34528) | Fix spurious `check` failure (`UnsupportedOperationException: Snowflake does not use the native JDBC DV2 interface`)                                            |
+| 3.5.2           | 2024-01-24 | [\#34458](https://github.com/airbytehq/airbyte/pull/34458) | Improve error reporting                                                                                                                                         |
+| 3.5.1           | 2024-01-24 | [\#34501](https://github.com/airbytehq/airbyte/pull/34501) | Internal code changes for Destinations V2                                                                                                                       |
+| 3.5.0           | 2024-01-24 | [\#34462](https://github.com/airbytehq/airbyte/pull/34462) | Upgrade CDK to 0.14.0                                                                                                                                           |
+| 3.4.22          | 2024-01-12 | [\#34227](https://github.com/airbytehq/airbyte/pull/34227) | Upgrade CDK to 0.12.0; Cleanup unused dependencies                                                                                                              |
+| 3.4.21          | 2024-01-10 | [\#34083](https://github.com/airbytehq/airbyte/pull/34083) | Emit destination stats as part of the state message                                                                                                             |
+| 3.4.20          | 2024-01-05 | [\#33948](https://github.com/airbytehq/airbyte/pull/33948) | Skip retrieving initial table state when setup fails                                                                                                            |
+| 3.4.19          | 2024-01-04 | [\#33730](https://github.com/airbytehq/airbyte/pull/33730) | Internal code structure changes                                                                                                                                 |
+| 3.4.18          | 2024-01-02 | [\#33728](https://github.com/airbytehq/airbyte/pull/33728) | Add option to only type and dedupe at the end of the sync                                                                                                       |
+| 3.4.17          | 2023-12-20 | [\#33704](https://github.com/airbytehq/airbyte/pull/33704) | Update to java CDK 0.10.0 (no changes)                                                                                                                          |
+| 3.4.16          | 2023-12-18 | [\#33124](https://github.com/airbytehq/airbyte/pull/33124) | Make Schema Creation Seperate from Table Creation                                                                                                               |
+| 3.4.15          | 2023-12-13 | [\#33232](https://github.com/airbytehq/airbyte/pull/33232) | Only run typing+deduping for a stream if the stream had any records                                                                                             |
+| 3.4.14          | 2023-12-08 | [\#33263](https://github.com/airbytehq/airbyte/pull/33263) | Adopt java CDK version 0.7.0                                                                                                                                    |
+| 3.4.13          | 2023-12-05 | [\#32326](https://github.com/airbytehq/airbyte/pull/32326) | Use jdbc metadata for table existence check                                                                                                                     |
+| 3.4.12          | 2023-12-04 | [\#33084](https://github.com/airbytehq/airbyte/pull/33084) | T&D SQL statements moved to debug log level                                                                                                                     |
+| 3.4.11          | 2023-11-14 | [\#32526](https://github.com/airbytehq/airbyte/pull/32526) | Clean up memory manager logs.                                                                                                                                   |
+| 3.4.10          | 2023-11-08 | [\#32125](https://github.com/airbytehq/airbyte/pull/32125) | Fix compilation warnings.                                                                                                                                       |
+| 3.4.9           | 2023-11-06 | [\#32026](https://github.com/airbytehq/airbyte/pull/32026) | Add separate TRY_CAST transaction to reduce compute usage                                                                                                       |
+| 3.4.8           | 2023-11-06 | [\#32190](https://github.com/airbytehq/airbyte/pull/32190) | Further improve error reporting                                                                                                                                 |
+| 3.4.7           | 2023-11-06 | [\#32193](https://github.com/airbytehq/airbyte/pull/32193) | Adopt java CDK version 0.4.1.                                                                                                                                   |
+| 3.4.6           | 2023-11-02 | [\#32124](https://github.com/airbytehq/airbyte/pull/32124) | Revert `merge` statement                                                                                                                                        |
+| 3.4.5           | 2023-11-02 | [\#31983](https://github.com/airbytehq/airbyte/pull/31983) | Improve error reporting                                                                                                                                         |
+| 3.4.4           | 2023-10-30 | [\#31985](https://github.com/airbytehq/airbyte/pull/31985) | Delay upgrade deadline to Nov 7                                                                                                                                 |
+| 3.4.3           | 2023-10-30 | [\#31960](https://github.com/airbytehq/airbyte/pull/31960) | Adopt java CDK version 0.2.0.                                                                                                                                   |
+| 3.4.2           | 2023-10-27 | [\#31897](https://github.com/airbytehq/airbyte/pull/31897) | Further filtering on extracted_at                                                                                                                               |
+| 3.4.1           | 2023-10-27 | [\#31683](https://github.com/airbytehq/airbyte/pull/31683) | Performance enhancement (switch to a `merge` statement for incremental-dedup syncs)                                                                             |
+| 3.4.0           | 2023-10-25 | [\#31686](https://github.com/airbytehq/airbyte/pull/31686) | Opt out flag for typed and deduped tables                                                                                                                       |
+| 3.3.0           | 2023-10-25 | [\#31520](https://github.com/airbytehq/airbyte/pull/31520) | Stop deduping raw table                                                                                                                                         |
+| 3.2.3           | 2023-10-17 | [\#31191](https://github.com/airbytehq/airbyte/pull/31191) | Improve typing+deduping performance by filtering new raw records on extracted_at                                                                                |
+| 3.2.2           | 2023-10-10 | [\#31194](https://github.com/airbytehq/airbyte/pull/31194) | Deallocate unused per stream buffer memory when empty                                                                                                           |
+| 3.2.1           | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083) | Fix precision of numeric values in async destinations                                                                                                           |
+| 3.2.0           | 2023-10-09 | [\#31149](https://github.com/airbytehq/airbyte/pull/31149) | No longer fail syncs when PKs are null - try do dedupe anyway                                                                                                   |
+| 3.1.22          | 2023-10-06 | [\#31153](https://github.com/airbytehq/airbyte/pull/31153) | Increase jvm GC retries                                                                                                                                         |
+| 3.1.21          | 2023-10-06 | [\#31139](https://github.com/airbytehq/airbyte/pull/31139) | Bump CDK version                                                                                                                                                |
+| 3.1.20          | 2023-10-06 | [\#31129](https://github.com/airbytehq/airbyte/pull/31129) | Reduce async buffer size                                                                                                                                        |
+| 3.1.19          | 2023-10-04 | [\#31082](https://github.com/airbytehq/airbyte/pull/31082) | Revert null PK checks                                                                                                                                           |
 | 3.1.18          | 2023-10-01 | [\#30779](https://github.com/airbytehq/airbyte/pull/30779) | Final table PK columns become non-null and skip check for null PKs in raw records (performance)                                                                 |
 | 3.1.17          | 2023-09-29 | [\#30938](https://github.com/airbytehq/airbyte/pull/30938) | Upgrade snowflake-jdbc driver                                                                                                                                   |
 | 3.1.16          | 2023-09-28 | [\#30835](https://github.com/airbytehq/airbyte/pull/30835) | Fix regression from 3.1.15 in supporting concurrent syncs with identical stream name but different namespace                                                    |

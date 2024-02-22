@@ -3,7 +3,7 @@
 #
 
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from .common import CatalogModel, Targeting
 
@@ -48,15 +48,29 @@ class DisplayTargeting(Targeting):
     resolvedExpression: List[Dict[str, str]]
 
 
+class DisplayCreatives(CatalogModel):
+    adGroupId: Decimal
+    creativeId: Decimal
+    creativeType: str
+    properties: Dict[str, Any]
+    moderationStatus: str
+
+
 class DisplayBudgetRuleDetailsPerformanceMeasureCondition(CatalogModel):
     metricName: str
     comparisonOperator: str
     threshold: Decimal
 
 
+class DisplayBudgetRuleDetailsRecurrenceIntraDaySchedule(CatalogModel):
+    startTime: str
+    endTime: str
+
+
 class DisplayBudgetRuleDetailsRecurrence(CatalogModel):
     type: str
     daysOfWeek: List[str] = None
+    intraDaySchedule: List[DisplayBudgetRuleDetailsRecurrenceIntraDaySchedule] = None
     threshold: Decimal
 
 

@@ -74,8 +74,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
             tableName)
             .stream()
             .collect(LinkedHashMap::new,
-                (map, row) -> map.put(
-                    row.get("COLUMN_NAME").asText(),
+                (map, row) -> map.put(row.get("COLUMN_NAME").asText(),
                     new SnowflakeColumnDefinition(row.get("DATA_TYPE").asText(), fromSnowflakeBoolean(row.get("IS_NULLABLE").asText()))),
                 LinkedHashMap::putAll);
     if (columns.isEmpty()) {
@@ -88,9 +87,11 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
   @Override
   protected NamespacedTableName convertToV1RawName(final StreamConfig streamConfig) {
     // The implicit upper-casing happens for this in the SqlGenerator
+    @SuppressWarnings("deprecation")
+    String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName());
     return new NamespacedTableName(
         this.namingConventionTransformer.getIdentifier(streamConfig.id().originalNamespace()),
-        this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName()));
+        tableName);
   }
 
   @Override

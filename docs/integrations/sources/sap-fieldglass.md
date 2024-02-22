@@ -1,4 +1,4 @@
-## SAP Fieldglass Active Worker Download Source
+# SAP Fieldglass
 
 This page contains the setup guide and reference information for the SAP Fieldglass Active Worker Download source connector built in `low-code cdk`.
 

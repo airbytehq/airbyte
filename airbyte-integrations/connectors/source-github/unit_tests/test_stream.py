@@ -10,11 +10,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import responses
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException, UserDefinedBackoffException
 from requests import HTTPError
 from responses import matchers
-from source_github import constants
+from source_github import SourceGithub, constants
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -214,6 +214,12 @@ def test_stream_teams_502(sleep_mock):
     assert set(call.request.url for call in responses.calls).symmetric_difference({f"{url}?per_page=100"}) == set()
 
 
+def test_stream_organizations_availability_report():
+    organization_args = {"organizations": ["org1", "org2"]}
+    stream = Organizations(**organization_args)
+    assert stream.availability_strategy is None
+
+
 @responses.activate
 def test_stream_organizations_read():
     organization_args = {"organizations": ["org1", "org2"]}
@@ -228,6 +234,7 @@ def test_stream_organizations_read():
 def test_stream_teams_read():
     organization_args = {"organizations": ["org1", "org2"]}
     stream = Teams(**organization_args)
+    stream._session.cache.clear()
     responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
     records = list(read_full_refresh(stream))
@@ -527,7 +534,8 @@ def test_stream_project_columns():
 
     projects_stream = Projects(**repository_args_with_start_date)
     stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
-
+    projects_stream._session.cache.clear()
+    stream._session.cache.clear()
     stream_state = {}
 
     records = read_incremental(stream, stream_state=stream_state)
@@ -885,7 +893,7 @@ def test_stream_reviews_incremental_read():
     stream = Reviews(**repository_args_with_start_date)
     stream.page_size = 2
 
-    f = Path(__file__).parent / "graphql_reviews_responses.json"
+    f = Path(__file__).parent / "responses/graphql_reviews_responses.json"
     response_objects = json.load(open(f))
 
     def request_callback(request):
@@ -912,7 +920,7 @@ def test_stream_reviews_incremental_read():
 
 
 @responses.activate
-def test_stream_team_members_full_refresh(caplog):
+def test_stream_team_members_full_refresh(caplog, rate_limit_mock_response):
     organization_args = {"organizations": ["org1"]}
     repository_args = {"repositories": [], "page_size_for_large_streams": 100}
 
@@ -953,6 +961,7 @@ def test_stream_commit_comment_reactions_incremental_read():
 
     repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
     stream = CommitCommentReactions(**repository_args)
+    stream._parent_stream._session.cache.clear()
 
     responses.add(
         "GET",
@@ -1259,7 +1268,7 @@ def test_stream_pull_request_comment_reactions_read():
     stream = PullRequestCommentReactions(**repository_args_with_start_date)
     stream.page_size = 2
 
-    f = Path(__file__).parent / "pull_request_comment_reactions.json"
+    f = Path(__file__).parent / "responses/pull_request_comment_reactions.json"
     response_objects = json.load(open(f))
 
     def request_callback(request):
@@ -1299,7 +1308,7 @@ def test_stream_pull_request_comment_reactions_read():
 
 
 @responses.activate
-def test_stream_projects_v2_graphql_retry():
+def test_stream_projects_v2_graphql_retry(rate_limit_mock_response):
     repository_args_with_start_date = {
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 20,
@@ -1318,6 +1327,7 @@ def test_stream_projects_v2_graphql_retry():
     assert resp.call_count == stream.max_retries + 1
 
 
+@responses.activate
 def test_stream_projects_v2_graphql_query():
     repository_args_with_start_date = {
         "start_date": "2022-01-01T00:00:00Z",
@@ -1326,11 +1336,18 @@ def test_stream_projects_v2_graphql_query():
     }
     stream = ProjectsV2(**repository_args_with_start_date)
     query = stream.request_body_json(stream_state={}, stream_slice={"repository": "airbytehq/airbyte"})
-
+    responses.add(
+        responses.POST,
+        "https://api.github.com/graphql",
+        json=json.load(open(Path(__file__).parent / "responses/projects_v2_response.json")),
+    )
     f = Path(__file__).parent / "projects_v2_pull_requests_query.json"
     expected_query = json.load(open(f))
 
+    records = list(read_full_refresh(stream))
     assert query == expected_query
+    assert records[0].get("owner_id")
+    assert records[0].get("repository")
 
 
 @responses.activate
@@ -1354,6 +1371,75 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
 
 
 @responses.activate
+def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_response):
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte"},
+        status=200,
+    )
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
+        status=200,
+    )
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        json={},
+        status=200,
+    )
+    resp = responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte/stats/contributors?per_page=100",
+        body="",
+        status=202,
+    )
+
+    source = SourceGithub()
+    configured_catalog = {
+        "streams": [
+            {
+                "stream": {
+                    "name": "contributor_activity",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_primary_key": [["id"]],
+                },
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            }
+        ]
+    }
+    catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+    logger_mock = MagicMock()
+
+    with patch("time.sleep", return_value=0):
+        records = list(source.read(config=config, logger=logger_mock, catalog=catalog, state={}))
+
+    assert records[2].log.message == "Syncing `ContributorActivity` stream isn't available for repository `airbytehq/test_airbyte`."
+    assert resp.call_count == 6
+
+
+@responses.activate
+def test_stream_contributor_activity_parse_response():
+    repository_args = {
+        "page_size_for_large_streams": 20,
+        "repositories": ["airbytehq/airbyte"],
+    }
+    stream = ContributorActivity(**repository_args)
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/airbyte/stats/contributors",
+        json=json.load(open(Path(__file__).parent / "responses/contributor_activity_response.json")),
+    )
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+
+
+@responses.activate
 def test_issues_timeline_events():
     repository_args = {
         "repositories": ["airbytehq/airbyte"],
@@ -1368,3 +1454,23 @@ def test_issues_timeline_events():
     stream = IssueTimelineEvents(**repository_args)
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"repository": "airbytehq/airbyte", "number": 1}))
     assert expected_records == records
+
+
+@responses.activate
+def test_pull_request_stats():
+    repository_args = {
+        "page_size_for_large_streams": 10,
+        "repositories": ["airbytehq/airbyte"],
+    }
+    stream = PullRequestStats(**repository_args)
+    query = stream.request_body_json(stream_state={}, stream_slice={"repository": "airbytehq/airbyte"})
+    responses.add(
+        responses.POST,
+        "https://api.github.com/graphql",
+        json=json.load(open(Path(__file__).parent / "responses/pull_request_stats_response.json")),
+    )
+    f = Path(__file__).parent / "pull_request_stats_query.json"
+    expected_query = json.load(open(f))
+
+    list(read_full_refresh(stream))
+    assert query == expected_query

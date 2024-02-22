@@ -10,37 +10,6 @@ from pydantic import BaseModel, Extra, Field
 from typing_extensions import Literal
 
 
-class AddedFieldDefinition(BaseModel):
-    type: Literal['AddedFieldDefinition']
-    path: List[str] = Field(
-        ...,
-        description='List of strings defining the path where to add the value on the record.',
-        examples=[['segment_id'], ['metadata', 'segment_id']],
-        title='Path',
-    )
-    value: str = Field(
-        ...,
-        description="Value of the new field. Use {{ record['existing_field'] }} syntax to refer to other fields in the record.",
-        examples=[
-            "{{ record['updates'] }}",
-            "{{ record['MetaData']['LastUpdatedTime'] }}",
-            "{{ stream_partition['segment_id'] }}",
-        ],
-        title='Value',
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
-
-
-class AddFields(BaseModel):
-    type: Literal['AddFields']
-    fields: List[AddedFieldDefinition] = Field(
-        ...,
-        description='List of transformations (path and corresponding value) that will be added to the record.',
-        title='Fields',
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
-
-
 class AuthFlowType(Enum):
     oauth2_0 = 'oauth2.0'
     oauth1_0 = 'oauth1.0'
@@ -371,7 +340,7 @@ class SessionTokenRequestBearerAuthenticator(BaseModel):
     type: Literal['Bearer']
 
 
-class HttpMethodEnum(Enum):
+class HttpMethod(Enum):
     GET = 'GET'
     POST = 'POST'
 
@@ -551,6 +520,11 @@ class OffsetIncrement(BaseModel):
         examples=[100, "{{ config['page_size'] }}"],
         title='Limit',
     )
+    inject_on_first_request: Optional[bool] = Field(
+        False,
+        description='Using the `offset` with value `0` during the first request',
+        title='Inject Offset',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -567,6 +541,11 @@ class PageIncrement(BaseModel):
         description='Index of the first page to request.',
         examples=[0, 1],
         title='Start From Page',
+    )
+    inject_on_first_request: Optional[bool] = Field(
+        False,
+        description='Using the `page number` with value defined by `start_from_page` during the first request',
+        title='Inject Page Number',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -593,8 +572,23 @@ class RecordFilter(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class SchemaNormalization(Enum):
+    None_ = 'None'
+    Default = 'Default'
+
+
 class RemoveFields(BaseModel):
     type: Literal['RemoveFields']
+    condition: Optional[str] = Field(
+        '',
+        description="The predicate to filter a property by a property value. Property will be removed if it is empty OR expression is evaluated to True.",
+        examples=[
+            "{{ property|string == '' }}",
+            '{{ property is integer }}',
+            '{{ property|length > 5 }}',
+            "{{ property == 'some_string_to_match' }}",
+        ],
+    )
     field_pointers: List[List[str]] = Field(
         ...,
         description='Array of paths defining the field to remove. Each item is an array whose field describe the path of a field to remove.',
@@ -684,6 +678,13 @@ class LegacySessionTokenAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class ValueType(Enum):
+    string = 'string'
+    number = 'number'
+    integer = 'integer'
+    boolean = 'boolean'
+
+
 class WaitTimeFromHeader(BaseModel):
     type: Literal['WaitTimeFromHeader']
     header: str = Field(
@@ -720,6 +721,42 @@ class WaitUntilTimeFromHeader(BaseModel):
         description='Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time.',
         examples=['([-+]?\\d+)'],
         title='Extraction Regex',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class AddedFieldDefinition(BaseModel):
+    type: Literal['AddedFieldDefinition']
+    path: List[str] = Field(
+        ...,
+        description='List of strings defining the path where to add the value on the record.',
+        examples=[['segment_id'], ['metadata', 'segment_id']],
+        title='Path',
+    )
+    value: str = Field(
+        ...,
+        description="Value of the new field. Use {{ record['existing_field'] }} syntax to refer to other fields in the record.",
+        examples=[
+            "{{ record['updates'] }}",
+            "{{ record['MetaData']['LastUpdatedTime'] }}",
+            "{{ stream_partition['segment_id'] }}",
+        ],
+        title='Value',
+    )
+    value_type: Optional[ValueType] = Field(
+        None,
+        description='Type of the value. If not specified, the type will be inferred from the value.',
+        title='Value Type',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class AddFields(BaseModel):
+    type: Literal['AddFields']
+    fields: List[AddedFieldDefinition] = Field(
+        ...,
+        description='List of transformations (path and corresponding value) that will be added to the record.',
+        title='Fields',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -997,6 +1034,7 @@ class RecordSelector(BaseModel):
         description='Responsible for filtering records to be emitted by the Source.',
         title='Record Filter',
     )
+    schema_normalization: Optional[SchemaNormalization] = SchemaNormalization.None_
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -1045,6 +1083,45 @@ class DeclarativeSource(BaseModel):
         None,
         description='For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.',
     )
+
+
+class SelectiveAuthenticator(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['SelectiveAuthenticator']
+    authenticator_selection_path: List[str] = Field(
+        ...,
+        description='Path of the field in config with selected authenticator name',
+        examples=[['auth'], ['auth', 'type']],
+        title='Authenticator Selection Path',
+    )
+    authenticators: Dict[
+        str,
+        Union[
+            ApiKeyAuthenticator,
+            BasicHttpAuthenticator,
+            BearerAuthenticator,
+            CustomAuthenticator,
+            OAuthAuthenticator,
+            NoAuth,
+            SessionTokenAuthenticator,
+            LegacySessionTokenAuthenticator,
+        ],
+    ] = Field(
+        ...,
+        description='Authenticators to select from.',
+        examples=[
+            {
+                'authenticators': {
+                    'token': '#/definitions/ApiKeyAuthenticator',
+                    'oauth': '#/definitions/OAuthAuthenticator',
+                }
+            }
+        ],
+        title='Authenticators',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class DeclarativeStream(BaseModel):
@@ -1157,6 +1234,7 @@ class HttpRequester(BaseModel):
             NoAuth,
             SessionTokenAuthenticator,
             LegacySessionTokenAuthenticator,
+            SelectiveAuthenticator,
         ]
     ] = Field(
         None,
@@ -1170,8 +1248,8 @@ class HttpRequester(BaseModel):
         description='Error handler component that defines how to handle errors.',
         title='Error Handler',
     )
-    http_method: Optional[Union[str, HttpMethodEnum]] = Field(
-        'GET',
+    http_method: Optional[HttpMethod] = Field(
+        HttpMethod.GET,
         description='The HTTP method used to fetch data from the source (can be GET or POST).',
         examples=['GET', 'POST'],
         title='HTTP Method',
@@ -1212,6 +1290,11 @@ class HttpRequester(BaseModel):
             {'sort_by[asc]': 'updated_at'},
         ],
         title='Query Parameters',
+    )
+    use_cache: Optional[bool] = Field(
+        False,
+        description='Enables stream requests caching. This field is automatically set by the CDK.',
+        title='Use Cache',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1255,6 +1338,10 @@ class SimpleRetriever(BaseModel):
         None,
         description="Paginator component that describes how to navigate through the API's pages.",
     )
+    ignore_stream_slicer_parameters_on_paginated_requests: Optional[bool] = Field(
+        False,
+        description='If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.',
+    )
     partition_router: Optional[
         Union[
             CustomPartitionRouter,
@@ -1286,6 +1373,7 @@ class SubstreamPartitionRouter(BaseModel):
 
 CompositeErrorHandler.update_forward_refs()
 DeclarativeSource.update_forward_refs()
+SelectiveAuthenticator.update_forward_refs()
 DeclarativeStream.update_forward_refs()
 SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()

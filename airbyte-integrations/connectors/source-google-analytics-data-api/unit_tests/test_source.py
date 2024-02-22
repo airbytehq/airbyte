@@ -8,6 +8,7 @@ import pytest
 from airbyte_cdk.models import AirbyteConnectionStatus, FailureType, Status
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
+from source_google_analytics_data_api.source import MetadataDescriptor
 from source_google_analytics_data_api.utils import NO_DIMENSIONS, NO_METRICS, NO_NAME, WRONG_JSON_SYNTAX
 
 
@@ -84,17 +85,78 @@ def test_check(requests_mock, config_gen, config_values, is_successful, message)
             "rows": [],
         },
     )
-    requests_mock.register_uri(
-        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=403
-    )
 
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
     assert source.check(logger, config_gen(**config_values)) == AirbyteConnectionStatus(status=is_successful, message=message)
-    if not is_successful:
-        with pytest.raises(AirbyteTracedException) as e:
-            source.check(logger, config_gen(property_ids=["UA-11111111"]))
-        assert e.value.failure_type == FailureType.config_error
+
+
+def test_check_failure(requests_mock, config_gen):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    requests_mock.register_uri(
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=403
+    )
+    source = SourceGoogleAnalyticsDataApi()
+    logger = MagicMock()
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check(logger, config_gen(property_ids=["UA-11111111"]))
+    assert e.value.failure_type == FailureType.config_error
+    assert "Access was denied to the property ID entered." in e.value.message
+
+
+@pytest.mark.parametrize(
+    ("status_code", "expected_message"),
+    (
+        (403, "Please check configuration for custom report cohort_report. "),
+        (400, "Please check configuration for custom report cohort_report. Granularity in the cohortsRange is required."),
+    ),
+)
+def test_check_incorrect_custom_reports_config(requests_mock, config_gen, status_code, expected_message):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata",
+        json={
+            "dimensions": [{"apiName": "date"}, {"apiName": "country"}, {"apiName": "language"}, {"apiName": "browser"}],
+            "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
+        },
+    )
+    requests_mock.register_uri(
+        "POST",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
+        status_code=status_code,
+        json={"error": {"message": "Granularity in the cohortsRange is required."}},
+    )
+    config = {"custom_reports_array": '[{"name": "cohort_report", "dimensions": ["date"], "metrics": ["totalUsers"]}]'}
+    source = SourceGoogleAnalyticsDataApi()
+    logger = MagicMock()
+    status, message = source.check_connection(logger, config_gen(**config))
+    assert status is False
+    assert message == expected_message
+
+
+@pytest.mark.parametrize("status_code", (403, 401))
+def test_missing_metadata(requests_mock, status_code):
+    # required for MetadataDescriptor $instance input
+    class TestConfig:
+        config = {
+            "authenticator": None,
+            "property_id": 123,
+        }
+
+    # mocking the url for metadata
+    requests_mock.register_uri(
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/123/metadata", json={}, status_code=status_code
+    )
+
+    metadata_descriptor = MetadataDescriptor()
+    with pytest.raises(AirbyteTracedException) as e:
+        metadata_descriptor.__get__(TestConfig(), None)
+    assert e.value.failure_type == FailureType.config_error
 
 
 def test_streams(patch_base_class, config_gen):

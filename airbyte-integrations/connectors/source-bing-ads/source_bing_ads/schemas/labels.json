@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Account Id": {
+      "type": ["null", "integer"]
+    },
+    "Color": {
+      "type": ["null", "string"]
+    },
+    "Client Id": {
+      "type": ["null", "string"]
+    },
+    "Description": {
+      "type": ["null", "string"]
+    },
+    "Id": {
+      "type": ["null", "integer"]
+    },
+    "Label": {
+      "type": ["null", "string"]
+    },
+    "Modified Time": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "Status": {
+      "type": ["null", "string"]
+    }
+  }
+}

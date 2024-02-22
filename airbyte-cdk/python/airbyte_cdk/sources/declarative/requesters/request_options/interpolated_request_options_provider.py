@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.request_options_
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 RequestInput = Union[str, Mapping[str, str]]
+ValidRequestTypes = (str, list)
 
 
 @dataclass
@@ -69,7 +70,9 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        interpolated_value = self._parameter_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        interpolated_value = self._parameter_interpolator.eval_request_inputs(
+            stream_state, stream_slice, next_page_token, valid_key_types=(str,), valid_value_types=ValidRequestTypes
+        )
         if isinstance(interpolated_value, dict):
             return interpolated_value
         return {}
@@ -90,7 +93,13 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping, str]]:
-        return self._body_data_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        return self._body_data_interpolator.eval_request_inputs(
+            stream_state,
+            stream_slice,
+            next_page_token,
+            valid_key_types=(str,),
+            valid_value_types=ValidRequestTypes,
+        )
 
     def get_request_body_json(
         self,

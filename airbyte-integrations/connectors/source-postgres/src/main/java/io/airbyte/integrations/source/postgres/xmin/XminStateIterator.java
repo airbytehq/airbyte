@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.xmin;
 
-import autovalue.shaded.com.google.common.collect.AbstractIterator;
+import com.google.common.collect.AbstractIterator;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;

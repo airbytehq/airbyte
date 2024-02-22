@@ -1,15 +1,23 @@
 {
-  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Generated schema for Root",
+  "type": ["null", "object"],
   "required": ["base", "rates"],
   "properties": {
     "base": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "disclaimer": {
+      "type": ["null", "string"]
+    },
+    "license": {
+      "type": ["null", "string"]
     },
     "timestamp": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "rates": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "AED": {
           "type": ["null", "number"]

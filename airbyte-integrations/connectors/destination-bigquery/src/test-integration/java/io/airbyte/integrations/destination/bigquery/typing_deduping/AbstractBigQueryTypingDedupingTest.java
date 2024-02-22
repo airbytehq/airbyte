@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
@@ -12,6 +15,7 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
@@ -25,6 +29,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.workers.exception.TestHarnessException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -104,23 +109,57 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
-    runSync(catalog, messages1, "airbyte/destination-bigquery:1.9.0");
+    runSync(catalog, messages1, "airbyte/destination-bigquery:1.9.0", config -> {
+      // Defensive to avoid weird behaviors or test failures if the original config is being altered by
+      // another thread, thanks jackson for a mutable JsonNode
+      JsonNode copiedConfig = Jsons.clone(config);
+      if (config instanceof ObjectNode) {
+        // Add opt-in T+D flag for older version. this is removed in newer version of the spec.
+        ((ObjectNode) copiedConfig).put("use_1s1t_format", true);
+      }
+      return copiedConfig;
+    });
 
     // 1.9.0 is known-good, but we might as well check that we're in good shape before continuing.
     // If this starts erroring out because we added more test records and 1.9.0 had a latent bug,
     // just delete these three lines :P
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
 
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+  }
+
+  @Test
+  public void testRemovingPKNonNullIndexes() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    // First sync
+    final List<AirbyteMessage> messages = readMessages("dat/sync_null_pk.jsonl");
+    final TestHarnessException e = assertThrows(
+        TestHarnessException.class,
+        () -> runSync(catalog, messages, "airbyte/destination-bigquery:2.0.20")); // this version introduced non-null PKs to the final tables
+    // ideally we would assert on the logged content of the original exception within e, but that is
+    // proving to be tricky
+
+    // Second sync
+    runSync(catalog, messages); // does not throw with latest version
+    assertEquals(1, dumpFinalTableRecords(streamNamespace, streamName).toArray().length);
   }
 
   /**

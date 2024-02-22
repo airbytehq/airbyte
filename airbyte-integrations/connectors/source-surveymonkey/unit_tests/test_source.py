@@ -42,6 +42,22 @@ def test_source_check_connection_failed_missing_scopes(requests_mock):
     results = SourceSurveymonkey().check_connection(logger=None, config=new_source_config)
     assert results == (False, "missed required scopes: responses_read_detail")
 
+def test_source_check_connection_config_with_survey_id_errors(requests_mock):
+    mock_status_code = 404
+    mock_survey_id = "1234567890"
+    mock_msg = f"{mock_status_code} None: {mock_survey_id}"
+
+    new_source_config['survey_ids'] = [mock_survey_id]
+    requests_mock.get(
+        "https://api.surveymonkey.com/v3/users/me", json={"scopes": {"granted": ["responses_read_detail", "surveys_read", "users_read"]}}
+    )
+
+    requests_mock.head(
+        f"https://api.surveymonkey.com/v3/surveys/{mock_survey_id}/details", status_code=mock_status_code
+    )
+
+    results = SourceSurveymonkey().check_connection(logger=None, config=new_source_config)
+    assert results == (False, mock_msg)
 
 @pytest.mark.parametrize(
     "config, err_msg",

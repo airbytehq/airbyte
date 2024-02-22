@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.integrations.base.ssh;
 
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
@@ -18,6 +20,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,8 +67,8 @@ public class SshWrappedDestination implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     try {
-      return (endPointKey != null) ? SshTunnel.sshWrap(config, endPointKey, delegate::check)
-          : SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
+      return (endPointKey != null) ? sshWrap(config, endPointKey, delegate::check)
+          : sshWrap(config, hostKey, portKey, delegate::check);
     } catch (final RuntimeException e) {
       final String sshErrorMessage = "Could not connect with provided SSH configuration. Error: " + e.getMessage();
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, sshErrorMessage);
@@ -98,7 +101,17 @@ public class SshWrappedDestination implements Destination {
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    final SshTunnel tunnel = getTunnelInstance(config);
+    final JsonNode clone = Jsons.clone(config);
+    Optional<JsonNode> connectionOptionsConfig = Jsons.getOptional(clone, CONNECTION_OPTIONS_KEY);
+    if (connectionOptionsConfig.isEmpty()) {
+      LOGGER.info("No SSH connection options found, using defaults");
+      if (clone instanceof ObjectNode) { // Defensive check, it will always be object node
+        ObjectNode connectionOptions = ((ObjectNode) clone).putObject(CONNECTION_OPTIONS_KEY);
+        connectionOptions.put(SESSION_HEARTBEAT_INTERVAL_KEY, SESSION_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS);
+        connectionOptions.put(GLOBAL_HEARTBEAT_INTERVAL_KEY, GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS);
+      }
+    }
+    final SshTunnel tunnel = getTunnelInstance(clone);
     final SerializedAirbyteMessageConsumer delegateConsumer;
     try {
       delegateConsumer = delegate.getSerializedMessageConsumer(tunnel.getConfigInTunnel(), catalog, outputRecordCollector);
@@ -112,8 +125,13 @@ public class SshWrappedDestination implements Destination {
 
   protected SshTunnel getTunnelInstance(final JsonNode config) throws Exception {
     return (endPointKey != null)
-        ? SshTunnel.getInstance(config, endPointKey)
-        : SshTunnel.getInstance(config, hostKey, portKey);
+        ? getInstance(config, endPointKey)
+        : getInstance(config, hostKey, portKey);
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return delegate.isV2Destination();
   }
 
 }

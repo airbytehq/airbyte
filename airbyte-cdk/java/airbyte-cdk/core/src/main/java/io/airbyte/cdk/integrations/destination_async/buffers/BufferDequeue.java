@@ -74,7 +74,19 @@ public class BufferDequeue {
         }
       }
 
-      queue.addMaxMemory(-bytesRead.get());
+      if (queue.isEmpty()) {
+        final var batchSizeBytes = bytesRead.get();
+        final var allocatedBytes = queue.getMaxMemoryUsage();
+
+        // Free unused allocation for the queue.
+        // When the batch flushes it will flush its allocation.
+        memoryManager.free(allocatedBytes - batchSizeBytes);
+
+        // Shrink queue to 0 — any new messages will reallocate.
+        queue.addMaxMemory(-allocatedBytes);
+      } else {
+        queue.addMaxMemory(-bytesRead.get());
+      }
 
       return new MemoryAwareMessageBatch(
           output,

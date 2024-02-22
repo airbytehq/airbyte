@@ -23,7 +23,8 @@
       "type": ["null", "string"]
     },
     "open-date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "image-url": {
       "type": ["null", "string"]
@@ -90,6 +91,10 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

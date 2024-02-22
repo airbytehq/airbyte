@@ -5,12 +5,13 @@
     "title": "Pivotal Tracker Spec",
     "type": "object",
     "required": ["api_token"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_token": {
         "type": "string",
         "description": "Pivotal Tracker API token",
-        "examples": ["5c054d0de3440452190fdc5d5a04d871"]
+        "examples": ["5c054d0de3440452190fdc5d5a04d871"],
+        "airbyte_secret": true
       }
     }
   }

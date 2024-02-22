@@ -30,17 +30,17 @@ class TestConnector:
         "connector, exists",
         [
             (utils.Connector("source-faker"), True),
-            (utils.Connector("source-notpublished"), False),
+            (utils.Connector("source-doesnotexist"), False),
         ],
     )
     def test_init(self, connector, exists, mocker, tmp_path):
         assert str(connector) == connector.technical_name
-        assert connector.connector_type, connector.name == connector._get_type_and_name_from_technical_name()
         assert connector.code_directory == Path(f"./airbyte-integrations/connectors/{connector.technical_name}")
         assert connector.acceptance_test_config_path == connector.code_directory / utils.ACCEPTANCE_TEST_CONFIG_FILE_NAME
-        assert connector.documentation_file_path == Path(f"./docs/integrations/{connector.connector_type}s/{connector.name}.md")
 
         if exists:
+            assert connector.connector_type, connector.name == connector._get_type_and_name_from_technical_name()
+            assert connector.documentation_file_path == Path(f"./docs/integrations/{connector.connector_type}s/{connector.name}.md")
             assert isinstance(connector.metadata, dict)
             assert isinstance(connector.support_level, str)
             assert isinstance(connector.acceptance_test_config, dict)
@@ -51,8 +51,7 @@ class TestConnector:
             assert connector.support_level is None
             assert connector.acceptance_test_config is None
             assert connector.icon_path == Path(f"./airbyte-integrations/connectors/{connector.technical_name}/icon.svg")
-            with pytest.raises(FileNotFoundError):
-                connector.version
+            assert connector.version is None
             with pytest.raises(utils.ConnectorVersionNotFound):
                 Path(tmp_path / "Dockerfile").touch()
                 mocker.patch.object(utils.Connector, "code_directory", tmp_path)
@@ -72,6 +71,25 @@ class TestConnector:
         assert not connector.metadata_query_match("data.ab_internal.ql >= 101")
         assert not connector.metadata_query_match("data.ab_internal.ql > 101")
         assert not connector.metadata_query_match("data.ab_internal == whatever")
+
+    @pytest.fixture
+    def connector_without_dockerfile(self, mocker, tmp_path):
+        mocker.patch.object(utils.Connector, "code_directory", tmp_path)
+        connector = utils.Connector("source-faker")
+        return connector
+
+    def test_has_dockerfile_without_dockerfile(self, connector_without_dockerfile):
+        assert not connector_without_dockerfile.has_dockerfile
+
+    @pytest.fixture
+    def connector_with_dockerfile(self, mocker, tmp_path):
+        mocker.patch.object(utils.Connector, "code_directory", tmp_path)
+        connector = utils.Connector("source-faker")
+        tmp_path.joinpath("Dockerfile").touch()
+        return connector
+
+    def test_has_dockerfile_with_dockerfile(self, connector_with_dockerfile):
+        assert connector_with_dockerfile.has_dockerfile
 
 
 @pytest.fixture()
@@ -128,9 +146,6 @@ def gradle_file_with_local_cdk_dependencies(tmpdir) -> tuple[Path, list[Path], l
     expected_dependencies = [
         Path("path/to/dependency1"),
         Path("path/to/dependency2"),
-        Path("airbyte-cdk/java/airbyte-cdk"),
-        Path("airbyte-commons"),
-        Path("airbyte-commons-cli"),
     ]
     expected_test_dependencies = [
         Path("path/to/test/dependency"),
@@ -158,39 +173,11 @@ def test_parse_dependencies_with_cdk(gradle_file_with_local_cdk_dependencies):
     assert all([test_dependency in expected_test_dependencies for test_dependency in test_dependencies])
 
 
-@pytest.mark.parametrize("with_test_dependencies", [True, False])
-def test_get_all_gradle_dependencies(with_test_dependencies):
-    build_file = Path("airbyte-integrations/connectors/source-postgres-strict-encrypt/build.gradle")
-    if with_test_dependencies:
-        all_dependencies = sorted(utils.get_all_gradle_dependencies(build_file))
-        expected_dependencies = [
-            Path("airbyte-api"),
-            Path("airbyte-cdk/java/airbyte-cdk/core"),
-            Path("airbyte-cdk/java/airbyte-cdk/db-sources"),
-            Path("airbyte-commons"),
-            Path("airbyte-commons-cli"),
-            Path("airbyte-commons-protocol"),
-            Path("airbyte-config-oss/config-models-oss"),
-            Path("airbyte-config-oss/init-oss"),
-            Path("airbyte-connector-test-harnesses/acceptance-test-harness"),
-            Path("airbyte-integrations/bases/base-typing-deduping"),
-            Path("airbyte-integrations/connectors/source-postgres"),
-            Path("airbyte-json-validation"),
-        ]
-        assert set(all_dependencies) == set(expected_dependencies)
-    else:
-        all_dependencies = sorted(utils.get_all_gradle_dependencies(build_file, with_test_dependencies=False))
-        expected_dependencies = [
-            Path("airbyte-api"),
-            Path("airbyte-cdk/java/airbyte-cdk/core"),
-            Path("airbyte-commons"),
-            Path("airbyte-commons-cli"),
-            Path("airbyte-commons-protocol"),
-            Path("airbyte-config-oss/config-models-oss"),
-            Path("airbyte-config-oss/init-oss"),
-            Path("airbyte-connector-test-harnesses/acceptance-test-harness"),
-            Path("airbyte-integrations/bases/base-typing-deduping"),
-            Path("airbyte-integrations/connectors/source-postgres"),
-            Path("airbyte-json-validation"),
-        ]
-        assert set(all_dependencies) == set(expected_dependencies)
+def test_get_all_connectors_in_repo():
+    all_connectors = utils.get_all_connectors_in_repo()
+    assert len(all_connectors) > 0
+    for connector in all_connectors:
+        assert isinstance(connector, utils.Connector)
+        assert connector.metadata is not None
+        if connector.has_airbyte_docs:
+            assert connector.documentation_file_path.exists()

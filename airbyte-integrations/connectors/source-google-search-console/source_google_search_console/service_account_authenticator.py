@@ -14,14 +14,18 @@ DEFAULT_SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly"]
 class ServiceAccountAuthenticator(AuthBase):
     def __init__(self, service_account_info: str, email: str, scopes=None):
         self.scopes = scopes or DEFAULT_SCOPES
-        self.credentials: Credentials = Credentials.from_service_account_info(service_account_info, scopes=self.scopes).with_subject(email)
+        self.service_account_info = service_account_info
+        self.email = email
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         try:
-            if not self.credentials.valid:
+            credentials: Credentials = Credentials.from_service_account_info(self.service_account_info, scopes=self.scopes).with_subject(
+                self.email
+            )
+            if not credentials.valid:
                 # We pass a dummy request because the refresh iface requires it
-                self.credentials.refresh(Request())
-            self.credentials.apply(request.headers)
+                credentials.refresh(Request())
+            credentials.apply(request.headers)
             return request
         except Exception:
             raise UnauthorizedServiceAccountError

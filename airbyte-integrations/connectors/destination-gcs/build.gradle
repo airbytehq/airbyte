@@ -1,15 +1,12 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.20.8'
+    features = ['db-destinations', 'gcs-destinations']
     useLocalCdk = false
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.gcs.GcsDestination'
@@ -17,41 +14,4 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation libs.airbyte.protocol
-
-    implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.14')
-    implementation 'com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.1'
-
-    // csv
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
-    implementation 'org.apache.commons:commons-csv:1.4'
-    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
-
-    // parquet
-    implementation ('org.apache.hadoop:hadoop-common:3.3.3') {
-        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
-    }
-    implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {
-        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
-    }
-    implementation ('org.apache.parquet:parquet-avro:1.12.0') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
-
-    integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 }
-
-
-
-
-
-
-
-
-

@@ -55,6 +55,10 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   private JsonNode dbConfig;
   private final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
+  protected BigQuerySource() {
+    super(null);
+  }
+
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final var conf = ImmutableMap.builder()

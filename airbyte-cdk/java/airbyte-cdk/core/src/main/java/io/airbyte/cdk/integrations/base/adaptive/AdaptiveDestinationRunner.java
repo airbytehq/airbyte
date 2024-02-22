@@ -4,13 +4,9 @@
 
 package io.airbyte.cdk.integrations.base.adaptive;
 
-import io.airbyte.cdk.integrations.base.Command;
 import io.airbyte.cdk.integrations.base.Destination;
-import io.airbyte.cdk.integrations.base.DestinationConfig;
-import io.airbyte.cdk.integrations.base.IntegrationCliParser;
-import io.airbyte.cdk.integrations.base.IntegrationConfig;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +19,7 @@ public class AdaptiveDestinationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdaptiveDestinationRunner.class);
 
-  private static final String DEPLOYMENT_MODE_KEY = "DEPLOYMENT_MODE";
+  private static final String DEPLOYMENT_MODE_KEY = EnvVariableFeatureFlags.DEPLOYMENT_MODE;
   private static final String CLOUD_MODE = "CLOUD";
 
   public static OssDestinationBuilder baseOnEnv() {
@@ -87,15 +83,6 @@ public class AdaptiveDestinationRunner {
     }
 
     public void run(final String[] args) throws Exception {
-      // getDestination() sometimes depends on the singleton being initialized.
-      // Parse the CLI args just so we can accomplish that.
-      IntegrationConfig parsedArgs = new IntegrationCliParser().parse(args);
-      if (parsedArgs.getCommand() != Command.SPEC) {
-        DestinationConfig.initialize(IntegrationRunner.parseConfig(parsedArgs.getConfigPath()));
-      } else {
-        DestinationConfig.initialize(Jsons.emptyObject());
-      }
-
       final Destination destination = getDestination();
       LOGGER.info("Starting destination: {}", destination.getClass().getName());
       new IntegrationRunner(destination).run(args);

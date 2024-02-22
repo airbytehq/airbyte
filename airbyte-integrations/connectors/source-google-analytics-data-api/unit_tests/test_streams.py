@@ -16,13 +16,39 @@ from .utils import read_incremental
 
 
 @pytest.fixture
-def patch_base_class(mocker, config):
+def patch_base_class(mocker, config, config_without_date_range):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(GoogleAnalyticsDataApiBaseStream, "path", f"{random.randint(100000000, 999999999)}:runReport")
     mocker.patch.object(GoogleAnalyticsDataApiBaseStream, "primary_key", "test_primary_key")
     mocker.patch.object(GoogleAnalyticsDataApiBaseStream, "__abstractmethods__", set())
 
-    return {"config": config}
+    return {"config": config, "config_without_date_range": config_without_date_range}
+
+
+def test_json_schema(requests_mock, patch_base_class):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata",
+        json={
+            "dimensions": [{"apiName": "date"}, {"apiName": "country"}, {"apiName": "language"}, {"apiName": "browser"}],
+            "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
+        },
+    )
+    schema = GoogleAnalyticsDataApiBaseStream(
+        authenticator=MagicMock(), config={"authenticator": MagicMock(), **patch_base_class["config_without_date_range"]}
+    ).get_json_schema()
+
+    for d in patch_base_class["config_without_date_range"]["dimensions"]:
+        assert d in schema["properties"]
+
+    for p in patch_base_class["config_without_date_range"]["metrics"]:
+        assert p in schema["properties"]
+
+    assert "startDate" in schema["properties"]
+    assert "endDate" in schema["properties"]
 
 
 def test_request_params(patch_base_class):
@@ -54,6 +80,7 @@ def test_request_body_json(patch_base_class):
             {"name": "operatingSystem"},
             {"name": "browser"},
         ],
+        "keepEmptyRows": True,
         "dateRanges": [request_body_params["stream_slice"]],
         "returnPropertyQuota": True,
         "offset": str(0),
@@ -137,8 +164,8 @@ def test_parse_response(patch_base_class):
             {
                 "dimensionValues": [{"value": "20220731"}, {"value": "desktop"}, {"value": "Macintosh"}, {"value": "Chrome"}],
                 "metricValues": [
-                    {"value": "344"},
-                    {"value": "169"},
+                    {"value": "344.234"},  # This is a float will be converted to int
+                    {"value": "169.345345"},  # This is a float will be converted to int
                     {"value": "420"},
                     {"value": "1.2209302325581395"},
                     {"value": "194.76313766428572"},

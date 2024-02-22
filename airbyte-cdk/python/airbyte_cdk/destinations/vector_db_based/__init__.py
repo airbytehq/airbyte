@@ -2,25 +2,37 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from .batcher import Batcher
-from .config import CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel, ProcessingConfigModel
+from .config import (
+    AzureOpenAIEmbeddingConfigModel,
+    CohereEmbeddingConfigModel,
+    FakeEmbeddingConfigModel,
+    FromFieldEmbeddingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
+    OpenAIEmbeddingConfigModel,
+    ProcessingConfigModel,
+)
 from .document_processor import Chunk, DocumentProcessor
 from .embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
 from .indexer import Indexer
 from .writer import Writer
 
 __all__ = [
-    "Batcher",
-    "CohereEmbeddingConfigModel",
-    "FakeEmbeddingConfigModel",
-    "OpenAIEmbeddingConfigModel",
-    "ProcessingConfigModel",
-    "DocumentProcessor",
+    "AzureOpenAIEmbedder",
+    "AzureOpenAIEmbeddingConfigModel",
     "Chunk",
+    "CohereEmbedder",
+    "CohereEmbeddingConfigModel",
+    "DocumentProcessor",
     "Embedder",
     "FakeEmbedder",
-    "OpenAIEmbedder",
-    "CohereEmbedder",
+    "FakeEmbeddingConfigModel",
+    "FromFieldEmbedder",
+    "FromFieldEmbeddingConfigModel",
     "Indexer",
+    "OpenAICompatibleEmbedder",
+    "OpenAICompatibleEmbeddingConfigModel",
+    "OpenAIEmbedder",
+    "OpenAIEmbeddingConfigModel",
+    "ProcessingConfigModel",
     "Writer",
 ]

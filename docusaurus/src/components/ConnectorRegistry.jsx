@@ -1,6 +1,8 @@
 import React from "react";
 import { useEffect, useState } from "react";
 
+import styles from "./ConnectorRegistry.module.css";
+
 const registry_url =
   "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
 
@@ -17,10 +19,12 @@ Sorts connectors by release stage and then name
 */
 function connectorSort(a, b) {
   if (a.supportLevel_oss !== b.supportLevel_oss) {
-    if (a.supportLevel_oss === "certified") return -2;
-    if (b.supportLevel_oss === "certified") return 2;
-    if (a.supportLevel_oss === "community") return -1;
-    if (b.supportLevel_oss === "community") return 1;
+    if (a.supportLevel_oss === "certified") return -3;
+    if (b.supportLevel_oss === "certified") return 3;
+    if (a.supportLevel_oss === "community") return -2;
+    if (b.supportLevel_oss === "community") return 2;
+    if (a.supportLevel_oss === "archived") return -1;
+    if (b.supportLevel_oss === "archived") return 1;
   }
 
   if (a.name_oss < b.name_oss) return -1;
@@ -38,7 +42,8 @@ export default function ConnectorRegistry({ type }) {
 
   const connectors = registry
     .filter((c) => c.connector_type === type)
-    .filter((c) => c.name_oss);
+    .filter((c) => c.name_oss)
+    .filter((c) => c.supportLevel_oss); // at lease one connector is missing a support level
 
   return (
     <div>
@@ -46,7 +51,6 @@ export default function ConnectorRegistry({ type }) {
         <thead>
           <tr>
             <th>Connector Name</th>
-            <th>Icon</th>
             <th>Links</th>
             <th>Support Level</th>
             <th>OSS</th>
@@ -64,20 +68,24 @@ export default function ConnectorRegistry({ type }) {
             return (
               <tr key={`${connector.definitionId}`}>
                 <td>
-                  <strong>
+                  <div className={styles.connectorName}>
+                    {connector.iconUrl_oss && (
+                      <img src={connector.iconUrl_oss} style={iconStyle} />
+                    )}
                     <a href={docsLink}>{connector.name_oss}</a>
-                  </strong>
-                </td>
-                <td>
-                  {connector.iconUrl_oss ? (
-                    <img src={connector.iconUrl_oss} style={iconStyle} />
-                  ) : null}
+                  </div>
                 </td>
                 {/* min width to prevent wrapping */}
                 <td style={{ minWidth: 75 }}>
                   <a href={docsLink}>📕</a>
-                  <a href={connector.github_url}>⚙️</a>
-                  <a href={connector.issue_url}>🐛</a>
+                  {connector.supportLevel_oss != "archived" ? (
+                    <a href={connector.github_url}>⚙️</a>
+                  ) : (
+                    ""
+                  )}
+                  {connector.supportLevel_oss != "archived" ? (
+                    <a href={connector.issue_url}>🐛</a>
+                  ) : null}
                 </td>
                 <td>
                   <small>{connector.supportLevel_oss}</small>

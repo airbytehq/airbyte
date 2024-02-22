@@ -5,12 +5,14 @@
 package io.airbyte.cdk.integrations.base;
 
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
+import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
+import java.time.Instant;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -26,6 +28,15 @@ public final class AirbyteTraceMessageUtility {
     emitErrorTrace(e, displayMessage, FailureType.CONFIG_ERROR);
   }
 
+  public static void emitCustomErrorTrace(final String displayMessage, final String internalMessage) {
+    emitMessage(makeAirbyteMessageFromTraceMessage(
+        makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
+            .withError(new AirbyteErrorTraceMessage()
+                .withFailureType(FailureType.SYSTEM_ERROR)
+                .withMessage(displayMessage)
+                .withInternalMessage(internalMessage))));
+  }
+
   public static void emitEstimateTrace(final long byteEstimate,
                                        final AirbyteEstimateTraceMessage.Type type,
                                        final long rowEstimate,
@@ -39,6 +50,10 @@ public final class AirbyteTraceMessageUtility {
                 .withRowEstimate(rowEstimate)
                 .withName(streamName)
                 .withNamespace(streamNamespace))));
+  }
+
+  public static void emitAnalyticsTrace(final AirbyteAnalyticsTraceMessage airbyteAnalyticsTraceMessage) {
+    emitMessage(makeAnalyticsTraceAirbyteMessage(airbyteAnalyticsTraceMessage));
   }
 
   public static void emitErrorTrace(final Throwable e, final String displayMessage, final FailureType failureType) {
@@ -75,6 +90,14 @@ public final class AirbyteTraceMessageUtility {
                 .withMessage(displayMessage)
                 .withInternalMessage(e.toString())
                 .withStackTrace(ExceptionUtils.getStackTrace(e))));
+  }
+
+  private static AirbyteMessage makeAnalyticsTraceAirbyteMessage(final AirbyteAnalyticsTraceMessage airbyteAnalyticsTraceMessage) {
+    return new AirbyteMessage().withType(Type.TRACE)
+        .withTrace(new AirbyteTraceMessage()
+            .withAnalytics(airbyteAnalyticsTraceMessage)
+            .withType(AirbyteTraceMessage.Type.ANALYTICS)
+            .withEmittedAt((double) Instant.now().toEpochMilli()));
   }
 
   private static AirbyteMessage makeStreamStatusTraceAirbyteMessage(final AirbyteStreamStatusHolder airbyteStreamStatusHolder) {

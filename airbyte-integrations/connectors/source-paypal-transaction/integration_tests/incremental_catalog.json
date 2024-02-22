@@ -1,0 +1,47 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "transactions",
+        "json_schema": {},
+        "source_defined_cursor": true,
+        "default_cursor_field": ["transaction_updated_date"],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "balances",
+        "json_schema": {},
+        "default_cursor_field": ["as_of_time"],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "list_disputes",
+        "json_schema": {},
+        "source_defined_cursor": true,
+        "default_cursor_field": ["update_time_cut"],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "list_payments",
+        "json_schema": {},
+        "source_defined_cursor": true,
+        "default_cursor_field": ["update_time"],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

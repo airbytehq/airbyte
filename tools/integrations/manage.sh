@@ -71,7 +71,7 @@ cmd_build() {
 
     if test "$path" == "airbyte-integrations/bases/base-normalization"; then
       export RANDOM_TEST_SCHEMA="true"
-      ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:airbyteDocker
+      ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:assemble
     fi
 
     ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" integrationTest)"
@@ -191,7 +191,10 @@ cmd_publish() {
   _error_if_tag_exists "$versioned_image"
 
   # building the connector
-  cmd_build "$path" "$run_tests"
+  if [ "$path" != "airbyte-cdk/python" ]; then
+    # The python CDK will already have been built and tested earlier in the github workflow.
+    cmd_build "$path" "$run_tests"
+  fi
 
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"

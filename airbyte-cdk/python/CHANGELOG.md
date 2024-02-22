@@ -1,5 +1,268 @@
 # Changelog
 
+## 0.65.0
+low-code: Allow connectors to ignore stream slicer request options on paginated requests
+
+## 0.64.1
+
+
+## 0.64.0
+Low-code: Add filter to RemoveFields
+
+## 0.63.2
+Correct handling of custom max_records limits in connector_builder
+
+## 0.63.1
+File-based CDK:  fix record enqueuing
+
+## 0.63.0
+Per-stream error reporting and continue syncing on error by default
+
+## 0.62.2
+mask access key when logging refresh response
+
+## 0.62.1
+[ISSUE #34910] add headers to HttpResponse for test framework
+
+## 0.62.0
+File-based CDK: functionality to make incremental syncs concurrent
+
+## 0.61.2
+[ISSUE #34755] do not propagate parameters on JSON schemas
+
+## 0.61.1
+Align version in CDK Dockerfile to be consistent. Before this change, the docker images was mistakenly pinned to version 0.58.5.
+
+## 0.61.0
+File-based CDK: log warning on no sync mode instead of raising exception
+
+## 0.60.2
+Improve error messages for concurrent CDK
+
+## 0.60.1
+Emit state when no partitions are generated for ccdk and update StateBuilder
+
+## 0.60.0
+File-based CDK: run full refresh syncs with concurrency
+
+## 0.59.2
+Fix CCDK overlapping message due to print in entrypoint
+
+## 0.59.1
+Fix concurrent CDK deadlock
+
+## 0.59.0
+Fix state message handling when running concurrent syncs
+
+## 0.58.9
+concurrent-cdk: improve resource usage when reading from substreams
+
+## 0.58.8
+CDK: HttpRequester can accept http_method in str format, which is required by custom low code components
+
+## 0.58.7
+
+
+## 0.58.6
+File CDK: Added logic to emit logged `RecordParseError` errors and raise the single `AirbyteTracebackException` in the end of the sync, instead of silent skipping the parsing errors. PR: https://github.com/airbytehq/airbyte/pull/32589
+
+## 0.58.5
+Handle private network exception as config error
+
+## 0.58.4
+Add POST method to HttpMocker
+
+## 0.58.3
+fix declarative oauth initialization
+
+## 0.58.2
+Integration tests: adding debug mode to improve logging
+
+## 0.58.1
+Add schema normalization to declarative stream
+
+## 0.58.0
+Concurrent CDK: add state converter for ISO timestamps with millisecond granularity
+
+## 0.57.8
+add SelectiveAuthenticator
+
+## 0.57.7
+File CDK: Support raw txt file
+
+## 0.57.6
+Adding more tooling to cover source-stripe events stream
+
+## 0.57.5
+Raise error on passing unsupported value formats as query parameters
+
+## 0.57.4
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.3
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.2
+Update airbyte-protocol
+
+## 0.57.1
+Improve integration tests tooling
+
+## 0.57.0
+low-code: cache requests sent for parent streams
+File-based CDK: Add support for automatic primary key for document file type format
+File-based CDK: Add support for remote parsing of document file type format via API
+Vector DB CDK: Fix bug with embedding tokens with special meaning like `<|endoftext|>`
+
+## 0.56.1
+no-op to verify pypi publish flow
+
+## 0.56.0
+Allow for connectors to continue syncing when a stream fails
+
+## 0.55.5
+File-based CDK: hide source-defined primary key; users can define primary keys in the connection's configuration
+
+## 0.55.4
+Source Integration tests: decoupling entrypoint wrapper from pytest
+
+## 0.55.3
+First iteration of integration tests tooling (http mocker and response builder)
+
+## 0.55.2
+concurrent-cdk: factory method initializes concurrent source with default number of max tasks
+
+## 0.55.1
+Vector DB CDK: Add omit_raw_text flag
+
+## 0.55.0
+concurrent cdk: read multiple streams concurrently
+
+## 0.54.0
+low-code: fix injection of page token if first request
+
+## 0.53.9
+Fix of generate the error message using _try_get_error based on list of errors
+
+## 0.53.8
+Vector DB CDK: Remove CDC records, File CDK: Update unstructured parser
+
+## 0.53.7
+low-code: fix debug logging when using --debug flag
+
+## 0.53.6
+Increase maximum_attempts_to_acquire to avoid crashing in acquire_call
+
+## 0.53.5
+File CDK: Improve stream config appearance
+
+## 0.53.4
+Concurrent CDK: fix futures pruning
+
+## 0.53.3
+Fix spec schema generation for File CDK and Vector DB CDK and allow skipping invalid files in document file parser
+
+## 0.53.2
+Concurrent CDK: Increase connection pool size to allow for 20 max workers
+
+## 0.53.1
+Concurrent CDK: Improve handling of future to avoid memory leak and improve performances
+
+## 0.53.0
+Add call rate functionality
+
+## 0.52.10
+Fix class SessionTokenAuthenticator for CLASS_TYPES_REGISTRY mapper
+
+## 0.52.9
+File CDK: Improve file type detection in document file type parser
+
+## 0.52.8
+Concurrent CDK: incremental (missing state conversion). Outside of concurrent specific work, this includes the following changes:
+* Checkpointing state was acting on the number of records per slice. This has been changed to consider the number of records per syncs
+* `Source.read_state` and `Source._emit_legacy_state_format` are now classmethods to allow for developers to have access to the state before instantiating the source
+
+## 0.52.7
+File CDK: Add pptx support
+
+## 0.52.6
+make  parameter as not required for default backoff handler
+
+## 0.52.5
+use in-memory cache if no file path is provided
+
+## 0.52.4
+File CDK: Add unstructured parser
+
+## 0.52.3
+Update source-declarative-manifest base image to update Linux alpine and Python
+
+## 0.52.2
+
+
+## 0.52.1
+Add max time for backoff handler
+
+## 0.52.0
+File CDK: Add CustomFileBasedException for custom errors
+
+## 0.51.44
+low-code: Allow connector developers to specify the type of an added field
+
+## 0.51.43
+concurrent cdk: fail fast if a partition raises an exception
+
+## 0.51.42
+File CDK: Avoid listing all files for check command
+
+## 0.51.41
+Vector DB CDK: Expose stream identifier logic, add field remapping to processing | File CDK: Emit analytics message for used streams
+
+## 0.51.40
+Add filters for base64 encode and decode in Jinja Interpolation 
+
+## 0.51.39
+Few bug fixes for concurrent cdk
+
+## 0.51.38
+Add ability to wrap HTTP errors with specific status codes occurred during access token refresh into AirbyteTracedException
+
+## 0.51.37
+Enable debug logging when running availability check
+
+## 0.51.36
+Enable debug logging when running availability check
+
+## 0.51.35
+File CDK: Allow configuring number of tested files for schema inference and parsability check
+
+## 0.51.34
+Vector DB CDK: Fix OpenAI compatible embedder when used without api key
+
+## 0.51.33
+Vector DB CDK: Improve batching process
+
+## 0.51.32
+Introduce experimental ThreadBasedConcurrentStream
+
+## 0.51.31
+Fix initialize of token_expiry_is_time_of_expiration field
+
+## 0.51.30
+Add new token_expiry_is_time_of_expiration property for AbstractOauth2Authenticator for indicate that token's expiry_in is a time of expiration
+
+## 0.51.29
+Coerce read_records to iterable in http availabilty strategy
+
+## 0.51.28
+Add functionality enabling Page Number/Offset to be set on the first request
+
+## 0.51.27
+Fix parsing of UUID fields in avro files
+
+## 0.51.26
+Vector DB CDK: Fix OpenAI embedder batch size
+
 ## 0.51.25
 Add  configurable OpenAI embedder to cdk and add cloud environment helper
 

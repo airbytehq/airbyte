@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -18,7 +18,7 @@ class RechargeStream(HttpStream, ABC):
 
     limit = 250
     page_num = 1
-    period_in_months = 1  # Slice data request for 1 month
+    period_in_days = 30  # Slice data request for 1 month
     raise_on_http_errors = True
 
     # registering the default schema transformation
@@ -89,7 +89,7 @@ class RechargeStream(HttpStream, ABC):
         start_date = pendulum.parse(start_date).add(seconds=1)
 
         while start_date <= now:
-            end_date = start_date.add(months=self.period_in_months)
+            end_date = start_date.add(days=self.period_in_days)
             yield {"start_date": start_date.strftime("%Y-%m-%d %H:%M:%S"), "end_date": end_date.strftime("%Y-%m-%d %H:%M:%S")}
             start_date = end_date.add(seconds=1)
 
@@ -212,11 +212,22 @@ class Onetimes(RechargeStreamModernAPI, IncrementalRechargeStream):
     """
 
 
-class Orders(RechargeStreamDeprecatedAPI, IncrementalRechargeStream):
+class OrdersDeprecatedApi(RechargeStreamDeprecatedAPI, IncrementalRechargeStream):
     """
     Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
     Using old API version to avoid schema changes and loosing email, first_name, last_name columns, because in new version it not present
     """
+
+    name = "orders"
+
+
+class OrdersModernApi(RechargeStreamModernAPI, IncrementalRechargeStream):
+    """
+    Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
+    Using newer API version to fetch all the data, based on the Customer's UI toggle `use_deprecated_api: FALSE`.
+    """
+
+    name = "orders"
 
 
 class Products(RechargeStreamDeprecatedAPI):
@@ -250,3 +261,8 @@ class Subscriptions(RechargeStreamModernAPI, IncrementalRechargeStream):
     """
     Subscriptions Stream: https://developer.rechargepayments.com/v1-shopify?python#list-subscriptions
     """
+
+    # reduce the slice date range to avoid 504 - Gateway Timeout on the Server side,
+    # since this stream could contain lots of data, causing the server to timeout.
+    # related issue: https://github.com/airbytehq/oncall/issues/3424
+    period_in_days = 14
