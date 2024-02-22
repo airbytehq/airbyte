@@ -94,7 +94,7 @@ jobs:
         env:
           CI: true
         with:
-          job-id: cdk-publish
+          job-id: cdk-assert
           read-only: ${{ !(env.DRY_RUN == 'false') }}
           concurrent: true
           gradle-distribution-sha-256-sum-warning: false
@@ -106,7 +106,7 @@ jobs:
         env:
           CI: true
         with:
-          job-id: cdk-publish
+          job-id: cdk-assert
           read-only: true
           concurrent: true
           gradle-distribution-sha-256-sum-warning: false
@@ -120,7 +120,7 @@ jobs:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         with:
-          job-id: cdk-publish
+          job-id: cdk-assert
           read-only: true
           concurrent: true
           execution-only-caches: true
