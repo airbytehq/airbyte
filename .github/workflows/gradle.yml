@@ -25,7 +25,7 @@ jobs:
     # We therefore run this on a machine with a maximum number of cores.
     # We pay per time and per core, so there should be little difference in total cost.
     # The latency overhead of setting up gradle prior to running the actual task adds up to about a minute.
-    runs-on: connector-test-xxlarge
+    runs-on: connector-test-large
     name: Gradle Check
     timeout-minutes: 30
     steps:
@@ -80,9 +80,12 @@ jobs:
         env:
           CI: true
         with:
+          job-id: gradle-check
           read-only: ${{ github.ref != 'refs/heads/master' }}
+          gradle-distribution-sha-256-sum-warning: false
+          concurrent: true
           # TODO: be able to remove the skipSlowTests property
-          arguments: --scan --no-daemon --no-watch-fs check -DskipSlowTests=true
+          arguments: --scan check -DskipSlowTests=true
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
