@@ -22,25 +22,26 @@ on:
 jobs:
   changes:
     runs-on: ubuntu-latest
+    outputs:
+      java: ${{ steps.changes.outputs.java }}
+      python_cdk: ${{ steps.changes.outputs.python_cdk }}
+
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Get changed files
-        uses: tj-actions/changed-files@v39
-        id: changes
+      - id: changes
+        uses: dorny/paths-filter@v2
         with:
-          files_yaml: |
-            gradlecheck:
+          # Note: expressions within a filter are OR'ed
+          filters: |
+            java:
               - '**/*.java'
               - '**/*.gradle'
               - 'airbyte-cdk/java/**/*'
-    outputs:
-      gradle: ${{ steps.changes.outputs.gradlecheck_any_changed }}
-
+            python_cdk:
+              - 'airbyte-cdk/python/**/*'
   run-check:
     needs:
       - changes
-    if: needs.changes.outputs.gradle == 'true'
+    if: needs.changes.outputs.java == 'true'
     # The gradle check task which we will run is embarrassingly parallelizable.
     # We therefore run this on a machine with a maximum number of cores.
     # We pay per time and per core, so there should be little difference in total cost.
