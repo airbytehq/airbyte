@@ -373,6 +373,11 @@ public abstract class BaseSqlGeneratorIntegrationTest {
     verifyRecordCounts(1, rawRecords, 1, finalRecords);
   }
 
+  private DestinationInitialState getOnly(final List<DestinationInitialState> initialStates) {
+    assertEquals(1, initialStates.size());
+    return initialStates.getFirst();
+  }
+
   /**
    * Run a full T+D update for an incremental-dedup stream, writing to a final table with "_foo"
    * suffix, with values for all data types. Verifies all behaviors for all types:
@@ -398,10 +403,7 @@ public abstract class BaseSqlGeneratorIntegrationTest {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
 
-    List<DestinationInitialState> initialStates =
-        destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
-    assertEquals(1, initialStates.size());
-    DestinationInitialState initialState = initialStates.getFirst();
+    DestinationInitialState initialState = getOnly(destinationHandler.gatherInitialState(List.of(incrementalDedupStream)));
     assertTrue(initialState.isFinalTableEmpty(), "Final table should be empty before T+D");
 
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), "");
@@ -411,9 +413,7 @@ public abstract class BaseSqlGeneratorIntegrationTest {
         dumpRawTableRecords(streamId),
         "sqlgenerator/alltypes_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, ""));
-    initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
-    assertEquals(1, initialStates.size());
-    initialState = initialStates.getFirst();
+    initialState = getOnly(destinationHandler.gatherInitialState(List.of(incrementalDedupStream)));
     assertFalse(initialState.isFinalTableEmpty(), "Final table should not be empty after T+D");
   }
 
@@ -428,19 +428,14 @@ public abstract class BaseSqlGeneratorIntegrationTest {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_unsafe_inputrecords.jsonl"));
 
-    List<DestinationInitialState> initialStates =
-        destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
-    assertEquals(1, initialStates.size());
-    DestinationInitialState initialState = initialStates.getFirst();
+    DestinationInitialState initialState = getOnly(destinationHandler.gatherInitialState(List.of(incrementalDedupStream)));
     assertTrue(initialState.isFinalTableEmpty(), "Final table should be empty before T+D");
 
     // Instead of using the full T+D transaction, explicitly run with useSafeCasting=false.
     final Sql unsafeSql = generator.updateTable(incrementalDedupStream, "", Optional.empty(), false);
     destinationHandler.execute(unsafeSql);
 
-    initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
-    assertEquals(1, initialStates.size());
-    initialState = initialStates.getFirst();
+    initialState = getOnly(destinationHandler.gatherInitialState(List.of(incrementalDedupStream)));
     assertFalse(initialState.isFinalTableEmpty(), "Final table should not be empty after T+D");
   }
 
