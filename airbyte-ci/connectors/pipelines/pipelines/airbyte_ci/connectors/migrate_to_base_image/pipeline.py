@@ -64,7 +64,7 @@ class UpgradeBaseImageMetadata(Step):
                 step=self,
                 status=StepStatus.SKIPPED,
                 stdout="Could not find a base image for this connector language.",
-                output_artifact=self.repo_dir,
+                output=self.repo_dir,
             )
 
         metadata_path = self.context.connector.metadata_file_path
@@ -76,7 +76,7 @@ class UpgradeBaseImageMetadata(Step):
                 step=self,
                 status=StepStatus.SKIPPED,
                 stdout="Connector does not have a base image metadata field.",
-                output_artifact=self.repo_dir,
+                output=self.repo_dir,
             )
 
         if current_base_image_address == latest_base_image_address:
@@ -84,7 +84,7 @@ class UpgradeBaseImageMetadata(Step):
                 step=self,
                 status=StepStatus.SKIPPED,
                 stdout="Connector already uses latest base image",
-                output_artifact=self.repo_dir,
+                output=self.repo_dir,
             )
         updated_metadata = self.update_base_image_in_metadata(current_metadata, latest_base_image_address)
         updated_repo_dir = metadata_change_helpers.get_repo_dir_with_updated_metadata(self.repo_dir, metadata_path, updated_metadata)
@@ -93,7 +93,7 @@ class UpgradeBaseImageMetadata(Step):
             step=self,
             status=StepStatus.SUCCESS,
             stdout=f"Updated base image to {latest_base_image_address} in {metadata_path}",
-            output_artifact=updated_repo_dir,
+            output=updated_repo_dir,
         )
 
 
@@ -146,7 +146,7 @@ class AddBuildInstructionsToReadme(Step):
                 step=self,
                 status=StepStatus.SKIPPED,
                 stdout="Connector does not have a documentation file.",
-                output_artifact=self.repo_dir,
+                output=self.repo_dir,
             )
         current_readme = await (await self.context.get_connector_dir(include=["README.md"])).file("README.md").contents()
         try:
@@ -156,14 +156,14 @@ class AddBuildInstructionsToReadme(Step):
                 step=self,
                 status=StepStatus.FAILURE,
                 stdout=str(e),
-                output_artifact=self.repo_dir,
+                output=self.repo_dir,
             )
         updated_repo_dir = await self.repo_dir.with_new_file(str(readme_path), contents=updated_readme)
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,
             stdout=f"Added build instructions to {readme_path}",
-            output_artifact=updated_repo_dir,
+            output=updated_repo_dir,
         )
 
     def add_build_instructions(self, og_doc_content: str) -> str:
@@ -276,7 +276,7 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
             )
             update_base_image_in_metadata_result = await update_base_image_in_metadata.run()
             steps_results.append(update_base_image_in_metadata_result)
-            final_repo_dir = update_base_image_in_metadata_result.output_artifact
+            final_repo_dir = update_base_image_in_metadata_result.output
             await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
             report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
             context.report = report
@@ -324,7 +324,7 @@ async def run_connector_migration_to_base_image_pipeline(
             new_version = get_bumped_version(context.connector.version, "patch")
             bump_version_in_metadata = BumpDockerImageTagInMetadata(
                 context,
-                update_base_image_in_metadata_result.output_artifact,
+                update_base_image_in_metadata_result.output,
                 new_version,
             )
             bump_version_in_metadata_result = await bump_version_in_metadata.run()
@@ -333,7 +333,7 @@ async def run_connector_migration_to_base_image_pipeline(
             # ADD CHANGELOG ENTRY
             add_changelog_entry = AddChangelogEntry(
                 context,
-                bump_version_in_metadata_result.output_artifact,
+                bump_version_in_metadata_result.output,
                 new_version,
                 "Base image migration: remove Dockerfile and use the python-connector-base image",
                 pull_request_number,
@@ -344,13 +344,13 @@ async def run_connector_migration_to_base_image_pipeline(
             # UPDATE DOC
             add_build_instructions_to_doc = AddBuildInstructionsToReadme(
                 context,
-                add_changelog_entry_result.output_artifact,
+                add_changelog_entry_result.output,
             )
             add_build_instructions_to_doc_results = await add_build_instructions_to_doc.run()
             steps_results.append(add_build_instructions_to_doc_results)
 
             # EXPORT MODIFIED FILES BACK TO HOST
-            final_repo_dir = add_build_instructions_to_doc_results.output_artifact
+            final_repo_dir = add_build_instructions_to_doc_results.output
             await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
             report = ConnectorReport(context, steps_results, name="MIGRATE TO BASE IMAGE RESULTS")
             context.report = report
