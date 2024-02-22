@@ -85,7 +85,7 @@ export const HeaderDecoration = ({
         <h1 id={originalId}>
           {isArchived ? (
             <span>
-              {originalTitle} <span style={{ color: "red" }}>[ARCHIVED]</span>
+              {originalTitle} <span style={{ color: "gray" }}>[ARCHIVED]</span>
             </span>
           ) : (
             originalTitle
