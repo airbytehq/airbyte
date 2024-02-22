@@ -80,12 +80,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      - name: Run Gradle Check
+      - name: Run Gradle Check for Python CDK
         uses: burrunan/gradle-cache-action@v1
         env:
           CI: true
         with:
-          job-id: gradle-check
+          job-id: python-gradle-check
           read-only: ${{ github.ref != 'refs/heads/master' }}
           gradle-distribution-sha-256-sum-warning: false
           concurrent: true
