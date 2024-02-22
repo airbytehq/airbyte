@@ -1,6 +1,10 @@
 {  
 "properties": {
     "settings": {
+        "type": [
+            "null",
+            "object"
+        ],
         "properties": {
             "type": [
                 "null",
