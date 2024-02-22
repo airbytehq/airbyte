@@ -83,7 +83,7 @@ public class DefaultTyperDeduperTest {
         appendStreamConfig,
         dedupeStreamConfig));
 
-    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, 1);
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator);
   }
 
   /**

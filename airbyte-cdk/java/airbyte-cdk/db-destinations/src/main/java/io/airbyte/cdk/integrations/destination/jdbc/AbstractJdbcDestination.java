@@ -316,11 +316,11 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     final String databaseName = getDatabaseName(config);
     final var migrator = new JdbcV1V2Migrator(namingResolver, database, databaseName);
     final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
-    final DestinationHandler<TableDefinition> destinationHandler = getDestinationHandler(databaseName, database);
+    final DestinationHandler destinationHandler = getDestinationHandler(databaseName, database);
     final boolean disableTypeDedupe = !config.has(DISABLE_TYPE_DEDUPE) || config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
     final TyperDeduper typerDeduper;
     if (disableTypeDedupe) {
-      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator);
+      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator);
     } else {
       typerDeduper =
           new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator);

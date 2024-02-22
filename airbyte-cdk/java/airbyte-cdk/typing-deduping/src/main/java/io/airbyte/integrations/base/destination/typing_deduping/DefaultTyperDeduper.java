@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
 import static io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst;
+import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.*;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtilKt.prepareAllSchemas;
 import static java.util.Collections.singleton;
@@ -96,12 +97,10 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
-  public DefaultTyperDeduper(
-                             final SqlGenerator sqlGenerator,
+  public DefaultTyperDeduper(final SqlGenerator sqlGenerator,
                              final DestinationHandler destinationHandler,
                              final ParsedCatalog parsedCatalog,
-                             final DestinationV1V2Migrator v1V2Migrator,
-                             final int defaultThreadCount) {
+                             final DestinationV1V2Migrator v1V2Migrator) {
     this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator());
   }
 
