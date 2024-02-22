@@ -152,6 +152,20 @@ class CustomRecordExtractor(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class CustomRecordFilter(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['CustomRecordFilter']
+    class_name: str = Field(
+        ...,
+        description='Fully-qualified name of the class that will be implementing the custom record filtering. The format is `source_<name>.<package>.<class_name>`.',
+        examples=['source_railz.components.MyCustomRecordFilter'],
+        title='Class Name',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class CustomRequester(BaseModel):
     class Config:
         extra = Extra.allow
@@ -1019,7 +1033,7 @@ class ListPartitionRouter(BaseModel):
 class RecordSelector(BaseModel):
     type: Literal["RecordSelector"]
     extractor: Union[CustomRecordExtractor, DpathExtractor]
-    record_filter: Optional[RecordFilter] = Field(
+    record_filter: Optional[Union[RecordFilter, CustomRecordFilter]] = Field(
         None,
         description="Responsible for filtering records to be emitted by the Source.",
         title="Record Filter",
