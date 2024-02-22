@@ -170,7 +170,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.7.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                        |
 | 0.6.8   | 2024-02-09 | [35086](https://github.com/airbytehq/airbyte/pull/35086) | Manage dependencies with Poetry.                                                                                |
 | 0.6.7   | 2024-01-11 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | prepare for airbyte-lib                                                                                         |
 | 0.6.6   | 2024-01-15 | [34222](https://github.com/airbytehq/airbyte/pull/34222) | Use stream slices for Analytics streams                                                                         |
