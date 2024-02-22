@@ -11,6 +11,10 @@ data:
   icon: polygon.svg
   license: MIT
   name: Polygon Stock API
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-polygon-stock-api
   registries:
     cloud:
       enabled: true

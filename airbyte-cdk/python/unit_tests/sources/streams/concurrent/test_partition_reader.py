@@ -63,4 +63,5 @@ class PartitionReaderTest(unittest.TestCase):
         def mocked_function() -> Iterable[Record]:
             yield from records
             raise exception
+
         return mocked_function

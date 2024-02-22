@@ -34,6 +34,12 @@ public class MongoConstants {
   public static final String USERNAME_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
   public static final String SCHEMA_ENFORCED_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY;
   public static final String SCHEMALESS_MODE_DATA_FIELD = Configuration.SCHEMALESS_MODE_DATA_FIELD;
+  public static final String INITIAL_RECORD_WAITING_TIME_SEC = "initial_waiting_seconds";
+  public static final Integer DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC = 300;
+
+  public static final String INVALID_CDC_CURSOR_POSITION_PROPERTY = "invalid_cdc_cursor_position_behavior";
+  public static final String FAIL_SYNC_OPTION = "Fail sync";
+  public static final String RESYNC_DATA_OPTION = "Re-sync data";
 
   private MongoConstants() {}
 

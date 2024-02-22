@@ -167,40 +167,273 @@ Before upgrading the chart update values.yaml as stated above and then run:
 - Perform upgrade of chart by running `helm upgrade %release_name% airbyte/airbyte --set auth.rootPassword=$ROOT_PASSWORD`
   - If you get an error about setting the auth.rootPassword, then you forgot to update the `values.yaml` file
 
-### Custom logging and jobs configuration
+### External Logs with S3
 
-Starting from `0.39.37-alpha` if you've configured logging yourself using `logging or jobs` section of `values.yaml` file, you need to update your configuration so you can continue to use your custom logging and jobs configuration.
+::info
+S3 logging was tested on [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13)
+:::
 
-Simply declare global value in `values.yaml` file and move everything related to logging and jobs under that section like in the example bellow:
+Create a file called `airbyte-logs-secrets.yaml` to store the AWS Keys and other informations:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-logs-secrets
+type: Opaque
+stringData:
+  AWS_KEY: <AWS_KEY>
+  AWS_SECRET_KEY: <AWS_SECRET_KEY>
+  S3_LOG_BUCKET: <BUCKET_NAME>
+  S3_LOG_BUCKET_REGION: <REGION>
+```
+Run `kubectl apply -f airbyte-logs-secrets.yaml -n <NAMESPACE>` to create the secret in the namespace you're using Airbyte.
+This file contains more than just the keys but it needs for now. Future updates will make the configuration easier.
 
-```text
+Change the global section to use `S3` external logs.
+```yaml
 global:
-    logging:
-        %your_logging_options_here%
-    jobs:
-        %your_jobs_options_here%
+  # <...>
+  state:
+    # -- Determines which state storage will be utilized; "MINIO", "S3", or "GCS"
+    storage:
+      type: "S3"
+  # <...>
+  logs:
+    accessKey:
+      password: ""
+      existingSecret: "airbyte-logs-secrets"
+      existingSecretKey: "AWS_KEY"
+    secretKey:
+      password: ""
+      existingSecret: "airbyte-logs-secrets"
+      existingSecretKey: "AWS_SECRET_KEY"
+  # <...>
+  storage:
+      type: "S3"
+
+  minio:
+    # Change from true to false
+    enabled: false
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+```
+GCS Logging information is below but you can try to use `External Minio` as well but it was not tested yet. Feel free to run tests and update the documentation.
+
+Add extra env variables to the following blocks:
+```yaml
+worker:
+  extraEnv:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: STATE_STORAGE_S3_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_BUCKET_NAME
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET
+    - name: STATE_STORAGE_S3_REGION
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET_REGION
 ```
 
-After updating `values.yaml` simply upgrade your chart by running command:
+and also edit the server block:
 
-```shell
-helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
+```yaml
+server:
+  extraEnv:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_KEY
+    - name: STATE_STORAGE_S3_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: AWS_SECRET_KEY
+    - name: STATE_STORAGE_S3_BUCKET_NAME
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET
+    - name: STATE_STORAGE_S3_REGION
+      valueFrom:
+        secretKeyRef:
+          name: airbyte-logs-secrets
+          key: S3_LOG_BUCKET_REGION
 ```
 
-### Database external secrets
+Than run:
+`helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.50.13`
 
-If you're using external DB secrets, then provide them in `values.yaml` under global.database section in the following format:
+### External Logs with GCS
 
-```text
+
+:::Info
+GCS Logging is similar to the approach taken for S3 above, with a few small differences
+GCS logging was tested on [Airbyte Helm Chart Version 0.53.178](https://artifacthub.io/packages/helm/airbyte/airbyte/0.53.178)
+:::
+
+#### Create Google Cloud Storage Bucket
+
+1. **Access Google Cloud Console**: Go to the Google Cloud Console and select or create a project where you want to create the bucket.
+2. **Open Cloud Storage**: Navigate to "Storage" > "Browser" in the left-side menu.
+3. **Create Bucket**: Click on "Create bucket". Give your bucket a unique name, select a region for the bucket, and configure other settings such as storage class and access control according to your requirements. Finally, click "Create".
+
+#### Create Google Cloud Service Account
+
+1. **Open IAM & Admin**: In the Cloud Console, navigate to "IAM & Admin" > "Service Accounts".
+2. **Create Service Account**: Click "Create Service Account", enter a name, description, and then click "Create".
+3. **Grant Permissions**: Assign the role of "Storage Object Admin" to the service account by selecting it from the role list.
+4. **Create Key**: After creating the service account, click on it, go to the "Keys" tab, and then click "Add Key" > "Create new key". Choose JSON as the key type and click "Create". The key file will be downloaded automatically to your computer.
+
+#### Create a Kubernetes Secret
+
+- Use the **`kubectl create secret`** command to create a Kubernetes secret from the JSON key file. Replace **`<secret-name>`** with the desired name for your secret, **`<path-to-json-key-file>`** with the path to the JSON key file you downloaded, and **`<namespace>`** with the namespace where your deployment will be running.
+
+```kubectl create secret generic <mysecret>  --from-file=gcp.json=</location/to/secret.json> --namespace=<namespace>```
+
+#### Create an extra Volume where the GCSFS secret will be added in the values.yaml inside of the worker section
+```
+worker:
+  extraVolumes:
+    - name: gcsfs-creds
+      secret:
+        secretName: <secret name>
+  extraVolumeMounts:
+    - name: gcsfs-creds
+      mountPath: "/etc/secrets"
+      readOnly: true
+```
+
+#### Update the values.yaml with the GCS Logging Information below
+Update the following Environment Variables in the global section:
+```
+global:
+ state:
+   storage:
+     type: "GCS"
+
+ logs:
+   storage:
+     type: "GCS"
+   gcs:
+     bucket: "<bucket name>"
+     credentials: "/etc/secrets/gcp.json"
+ 
+ extraEnv:
+   - name: STATE_STORAGE_GCS_BUCKET_NAME
+     value: <bucket name>
+   - name: STATE_STORAGE_GCS_APPLICATION_CREDENTIALS
+     value: /etc/secrets/gcp.json
+   - name: CONTAINER_ORCHESTRATOR_SECRET_NAME
+     value: <name of secret>
+   - name: CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH
+     value: /etc/secrets/
+```
+
+Than run:
+`helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.53.178`
+
+### External Airbyte Database
+
+
+
+:::info
+This was tested using [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13).
+Previous or newer version can change how the external database can be configured.
+:::
+
+
+The Airbyte Database only works with Postgres 13.
+Make sure the database is accessible inside the cluster using `busy-box` service using `telnet` or `ping` command.
+
+:::warning
+If you're using the external database for the first time you must ensure the database you're going to use exists. The default database Airbyte will try to use is `airbyte` but you can modified it in the `values.yaml`.
+:::
+
+:::warning
+You can use only one database to a one Airbyte Helm deployment. If you try to use the same database for a different deployment it will have conflict with Temporal internal databases.
+:::
+
+Create a Kubernetes secret to store the database password.
+Save the file as `db-secrets.yaml`.
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secrets
+type: Opaque
+stringData:
+  DATABASE_PASSWORD: <PASSWORD>
+```
+
+Run `kubectl apply -f db-secrets.yaml -n <NAMESPACE>` to create the secret in the namespace you're using Airbyte.
+
+Afterward, modify the following blocks in the Helm Chart `values.yaml` file:
+```yaml
+postgresql:
+  # Change the value from true to false.
+  enabled: false
+```
+Then:
+```yaml
+externalDatabase:
+  # Add the host, username and database name you're using.
+  host: <HOST>
+  user: <USERNAME>
+  database: <DATABASE_NAME>
+  password: ""
+  existingSecret: "db-secrets"
+  existingSecretPasswordKey: "DATABASE_PASSWORD"
+  port: 5432
+  jdbcUrl: ""
+```
+Keep password empty as the Chart will use the `db-secrets` value.
+Edit only the host, username, and database name. If your database is using a differnet `port` or need an special `jdbcUrl` you can edit here.
+This wasn't fully tested yet.
+
+Next, reference the secret in the global section:
+```yaml
+global:
   database:
-    secretName: "myOctaviaSecret"
-    secretValue: "postgresql-password"
-    host: "example.com"
-    port: "5432"
+    secretName: "db-secrets"
+    secretValue: "DATABASE_PASSWORD"
 ```
 
-And upgrade the chart by running:
+Unfortunately, the `airbyte-bootloader` configuration uses this variable. Future improvements are planned.
 
+Upgrade the chart by running:
 ```shell
-helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
+helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.50.13
 ```

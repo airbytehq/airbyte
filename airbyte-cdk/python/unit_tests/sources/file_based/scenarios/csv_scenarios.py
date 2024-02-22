@@ -324,9 +324,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                 "processing": {
                                                     "title": "Processing",
                                                     "description": "Processing configuration",
-                                                    "default": {
-                                                        "mode": "local"
-                                                    },
+                                                    "default": {"mode": "local"},
                                                     "type": "object",
                                                     "oneOf": [
                                                         {
@@ -337,16 +335,12 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                                     "title": "Mode",
                                                                     "default": "local",
                                                                     "const": "local",
-                                                                    "enum": [
-                                                                        "local"
-                                                                    ],
-                                                                    "type": "string"
+                                                                    "enum": ["local"],
+                                                                    "type": "string",
                                                                 }
                                                             },
                                                             "description": "Process files locally, supporting `fast` and `ocr` modes. This is the default option.",
-                                                            "required": [
-                                                                "mode"
-                                                            ]
+                                                            "required": ["mode"],
                                                         },
                                                         {
                                                             "title": "via API",
@@ -356,10 +350,8 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                                     "title": "Mode",
                                                                     "default": "api",
                                                                     "const": "api",
-                                                                    "enum": [
-                                                                        "api"
-                                                                    ],
-                                                                    "type": "string"
+                                                                    "enum": ["api"],
+                                                                    "type": "string",
                                                                 },
                                                                 "api_key": {
                                                                     "title": "API Key",
@@ -367,17 +359,15 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                                     "default": "",
                                                                     "always_show": True,
                                                                     "airbyte_secret": True,
-                                                                    "type": "string"
+                                                                    "type": "string",
                                                                 },
                                                                 "api_url": {
                                                                     "title": "API URL",
                                                                     "description": "The URL of the unstructured API to use",
                                                                     "default": "https://api.unstructured.io",
                                                                     "always_show": True,
-                                                                    "examples": [
-                                                                        "https://api.unstructured.com"
-                                                                    ],
-                                                                    "type": "string"
+                                                                    "examples": ["https://api.unstructured.com"],
+                                                                    "type": "string",
                                                                 },
                                                                 "parameters": {
                                                                     "title": "Additional URL Parameters",
@@ -392,35 +382,24 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                                             "name": {
                                                                                 "title": "Parameter name",
                                                                                 "description": "The name of the unstructured API parameter to use",
-                                                                                "examples": [
-                                                                                    "combine_under_n_chars",
-                                                                                    "languages"
-                                                                                ],
-                                                                                "type": "string"
+                                                                                "examples": ["combine_under_n_chars", "languages"],
+                                                                                "type": "string",
                                                                             },
                                                                             "value": {
                                                                                 "title": "Value",
                                                                                 "description": "The value of the parameter",
-                                                                                "examples": [
-                                                                                    "true",
-                                                                                    "hi_res"
-                                                                                ],
-                                                                                "type": "string"
-                                                                            }
+                                                                                "examples": ["true", "hi_res"],
+                                                                                "type": "string",
+                                                                            },
                                                                         },
-                                                                        "required": [
-                                                                            "name",
-                                                                            "value"
-                                                                        ]
-                                                                    }
-                                                                }
+                                                                        "required": ["name", "value"],
+                                                                    },
+                                                                },
                                                             },
                                                             "description": "Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured.",
-                                                            "required": [
-                                                                "mode"
-                                                            ]
-                                                        }
-                                                    ]
+                                                            "required": ["mode"],
+                                                        },
+                                                    ],
                                                 },
                                             },
                                             "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
@@ -847,7 +826,7 @@ invalid_csv_scenario: TestScenario[InMemoryFilesSource] = (
             "read": [
                 {
                     "level": "ERROR",
-                    "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
+                    "message": f"{FileBasedSourceError.INVALID_SCHEMA_ERROR.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
                 },
             ]
         }
@@ -1471,28 +1450,7 @@ empty_schema_inference_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
-    .set_expected_records(
-        [
-            {
-                "data": {
-                    "col1": "val11",
-                    "col2": "val12",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.csv",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val21",
-                    "col2": "val22",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.csv",
-                },
-                "stream": "stream1",
-            },
-        ]
-    )
+    .set_expected_records([])
 ).build()
 
 schemaless_csv_scenario: TestScenario[InMemoryFilesSource] = (
@@ -1766,7 +1724,7 @@ schemaless_with_user_input_schema_fails_connection_check_scenario: TestScenario[
         }
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
@@ -1854,7 +1812,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario: 
         }
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
@@ -3029,6 +2987,7 @@ earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
         .set_file_type("csv")
     )
     .set_expected_check_status("FAILED")
+    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.EMPTY_STREAM.value)
     .set_expected_catalog(
         {
             "streams": [

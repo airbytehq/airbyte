@@ -27,3 +27,10 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 ci_credentials = "ci_credentials.main:ci_credentials"
+
+[tool.poe.tasks]
+test = "pytest tests"
+
+[tool.airbyte_ci]
+extra_poetry_groups = ["dev"]
+poe_tasks = ["test"]

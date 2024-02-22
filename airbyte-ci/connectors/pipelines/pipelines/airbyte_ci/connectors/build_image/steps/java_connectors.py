@@ -36,10 +36,10 @@ class BuildConnectorImages(BuildConnectorImagesBase):
                     if num_files == 0
                     else "More than one distribution tar file was built for the current java connector."
                 )
-                return StepResult(self, StepStatus.FAILURE, stderr=error_message)
+                return StepResult(step=self, status=StepStatus.FAILURE, stderr=error_message)
             dist_tar = dist_dir.file(tar_files[0])
         except QueryError as e:
-            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
         return await super()._run(dist_tar)
 
     async def _build_connector(self, platform: Platform, dist_tar: File) -> Container:
@@ -59,7 +59,7 @@ async def run_connector_build(context: ConnectorContext) -> StepResult:
     build_connector_tar_result = await BuildConnectorDistributionTar(context).run()
     if build_connector_tar_result.status is not StepStatus.SUCCESS:
         return build_connector_tar_result
-    dist_dir = await build_connector_tar_result.output_artifact.directory(dist_tar_directory_path(context))
+    dist_dir = await build_connector_tar_result.output.directory(dist_tar_directory_path(context))
     return await BuildConnectorImages(context).run(dist_dir)
 
 

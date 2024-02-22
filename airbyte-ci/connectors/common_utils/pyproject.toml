@@ -22,3 +22,11 @@ pytest = "^7.2.2"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+test = "pytest tests"
+
+[tool.airbyte_ci]
+extra_poetry_groups = ["dev"]
+# Disable poe tasks as tests are not passing ATM
+poe_tasks = []

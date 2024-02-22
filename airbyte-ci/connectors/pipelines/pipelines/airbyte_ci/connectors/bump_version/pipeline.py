@@ -52,26 +52,26 @@ class AddChangelogEntry(Step):
         doc_path = self.context.connector.documentation_file_path
         if not doc_path.exists():
             return StepResult(
-                self,
-                StepStatus.SKIPPED,
+                step=self,
+                status=StepStatus.SKIPPED,
                 stdout="Connector does not have a documentation file.",
-                output_artifact=self.repo_dir,
+                output=self.repo_dir,
             )
         try:
             updated_doc = self.add_changelog_entry(doc_path.read_text())
         except Exception as e:
             return StepResult(
-                self,
-                StepStatus.FAILURE,
+                step=self,
+                status=StepStatus.FAILURE,
                 stdout=f"Could not add changelog entry: {e}",
-                output_artifact=self.repo_dir,
+                output=self.repo_dir,
             )
         updated_repo_dir = self.repo_dir.with_new_file(str(doc_path), contents=updated_doc)
         return StepResult(
-            self,
-            StepStatus.SUCCESS,
+            step=self,
+            status=StepStatus.SUCCESS,
             stdout=f"Added changelog entry to {doc_path}",
-            output_artifact=updated_repo_dir,
+            output=updated_repo_dir,
         )
 
     def find_line_index_for_new_entry(self, markdown_text: str) -> int:
@@ -115,10 +115,10 @@ class BumpDockerImageTagInMetadata(Step):
         current_version = metadata_change_helpers.get_current_version(current_metadata)
         if current_version is None:
             return StepResult(
-                self,
-                StepStatus.SKIPPED,
+                step=self,
+                status=StepStatus.SKIPPED,
                 stdout="Can't retrieve the connector current version.",
-                output_artifact=self.repo_dir,
+                output=self.repo_dir,
             )
         updated_metadata_str = self.get_metadata_with_bumped_version(current_version, self.new_version, current_metadata_str)
         repo_dir_with_updated_metadata = metadata_change_helpers.get_repo_dir_with_updated_metadata_str(
@@ -131,10 +131,10 @@ class BumpDockerImageTagInMetadata(Step):
             return metadata_validation_results
 
         return StepResult(
-            self,
-            StepStatus.SUCCESS,
+            step=self,
+            status=StepStatus.SUCCESS,
             stdout=f"Updated dockerImageTag from {current_version} to {self.new_version} in {metadata_path}",
-            output_artifact=repo_dir_with_updated_metadata,
+            output=repo_dir_with_updated_metadata,
         )
 
 
@@ -164,7 +164,7 @@ async def run_connector_version_bump_pipeline(
                 new_version,
             )
             update_docker_image_tag_in_metadata_result = await update_docker_image_tag_in_metadata.run()
-            repo_dir_with_updated_metadata = update_docker_image_tag_in_metadata_result.output_artifact
+            repo_dir_with_updated_metadata = update_docker_image_tag_in_metadata_result.output
             steps_results.append(update_docker_image_tag_in_metadata_result)
 
             add_changelog_entry = AddChangelogEntry(
@@ -176,7 +176,7 @@ async def run_connector_version_bump_pipeline(
             )
             add_changelog_entry_result = await add_changelog_entry.run()
             steps_results.append(add_changelog_entry_result)
-            final_repo_dir = add_changelog_entry_result.output_artifact
+            final_repo_dir = add_changelog_entry_result.output
             await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
             report = ConnectorReport(context, steps_results, name="CONNECTOR VERSION BUMP RESULTS")
             context.report = report

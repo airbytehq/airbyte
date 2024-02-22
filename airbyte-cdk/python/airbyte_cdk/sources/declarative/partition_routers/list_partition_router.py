@@ -81,7 +81,7 @@ class ListPartitionRouter(StreamSlicer):
         if self.request_option and self.request_option.inject_into == request_option_type and stream_slice:
             slice_value = stream_slice.get(self.cursor_field.eval(self.config))
             if slice_value:
-                return {self.request_option.field_name: slice_value}
+                return {self.request_option.field_name.eval(self.config): slice_value}
             else:
                 return {}
         else:

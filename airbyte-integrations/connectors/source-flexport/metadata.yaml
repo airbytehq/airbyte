@@ -3,6 +3,10 @@ data:
     hosts:
       - api.flexport.com
       - flexport.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-flexport
   registries:
     oss:
       enabled: true

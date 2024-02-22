@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -508,21 +509,16 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
-    // Re-run the sync to prove that an initial snapshot is initiated due to invalid resume token
-    final List<AirbyteMessage> messages2 = runRead(configuredCatalog, state);
-
-    final List<AirbyteRecordMessage> recordMessages2 = filterRecords(messages2);
-    final List<AirbyteStateMessage> stateMessages2 = filterStateMessages(messages2);
-
-    assertEquals(recordCount, recordMessages2.size());
-    assertEquals(recordCount + 1, stateMessages2.size());
+    // Re-run the sync to prove that a config error is thrown due to invalid resume token
+    assertThrows(Exception.class, () -> runRead(configuredCatalog, state));
   }
 
   @Test
   void testReachedTargetPosition() {
     final long eventTimestamp = Long.MAX_VALUE;
     final Integer order = 0;
-    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
+    final MongoDbCdcTargetPosition targetPosition =
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
     final ChangeEventWithMetadata changeEventWithMetadata = mock(ChangeEventWithMetadata.class);
 
     when(changeEventWithMetadata.isSnapshotEvent()).thenReturn(true);
@@ -549,8 +545,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Test
   void testIsSameOffset() {
-    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition =
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog());
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
     final String replicaSet = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final Map<String, String> emptyOffsetA = Map.of();
