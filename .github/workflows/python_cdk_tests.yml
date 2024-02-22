@@ -62,7 +62,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: cd airbyte-cdk/python
         run: cd airbyte-cdk/python
-      - name: Run Gradle Check
+      - name: Run Gradle Check on Python CDK
         uses: burrunan/gradle-cache-action@v1
         env:
           CI: true
