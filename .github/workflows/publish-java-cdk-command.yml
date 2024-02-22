@@ -12,7 +12,6 @@ on:
     inputs:
       repo:
         description: "Repo to check out code from. Defaults to the main airbyte repo."
-        # TODO: If publishing from forks is needed, we'll need to revert type to `string` of `choice`.
         type: choice
         required: true
         default: airbytehq/airbyte
@@ -83,17 +82,38 @@ jobs:
 
       - name: Check for already-published version (${{ env.CDK_VERSION }}, FORCE=${{ env.FORCE }})
         if: ${{ !(env.FORCE == 'true') }}
-        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          read-only: true
+          arguments: --scan :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
+
+      - name: Docker login
+        # Some tests use testcontainers which pull images from DockerHub.
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Build Java CDK
-        run: ./gradlew --scan :airbyte-cdk:java:airbyte-cdk:cdkBuild
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          read-only: ${{ !(env.DRY_RUN == 'false') }}
+          arguments: --scan :airbyte-cdk:java:airbyte-cdk:cdkBuild
 
       - name: Publish Java Modules to CloudRepo
         if: ${{ env.DRY_RUN == 'false' }}
-        run: ./gradlew --scan :airbyte-cdk:java:airbyte-cdk:cdkPublish
+        uses: burrunan/gradle-cache-action@v1
         env:
+          CI: true
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        with:
+          read-only: true
+          arguments: --scan :airbyte-cdk:java:airbyte-cdk:cdkPublish
 
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
