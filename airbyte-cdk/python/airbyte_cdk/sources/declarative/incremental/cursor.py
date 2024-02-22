@@ -6,9 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
-
-from airbyte_cdk.sources.declarative.per_partition_stream_slice import PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState, PerPartitionStreamSlice
 
 
 class Cursor(ABC, StreamSlicer):

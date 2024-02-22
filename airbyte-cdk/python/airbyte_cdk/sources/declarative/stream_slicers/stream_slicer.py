@@ -7,9 +7,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from airbyte_cdk.sources.declarative.types import StreamSlice
-
-from airbyte_cdk.sources.declarative.per_partition_stream_slice import PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice, PerPartitionStreamSlice
 
 
 @dataclass

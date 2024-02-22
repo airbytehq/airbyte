@@ -8,7 +8,7 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
-from airbyte_cdk.sources.declarative.per_partition_stream_slice import PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.types import PerPartitionStreamSlice
 
 
 @dataclass

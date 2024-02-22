@@ -6,9 +6,8 @@ import json
 from typing import Any, Callable, Iterable, Mapping, Optional, MutableMapping, Union
 
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
-from airbyte_cdk.sources.declarative.per_partition_stream_slice import PerPartitionStreamSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState, PerPartitionStreamSlice
 
 
 class PerPartitionKeySerializer:
