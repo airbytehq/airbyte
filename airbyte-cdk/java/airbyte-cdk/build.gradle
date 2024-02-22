@@ -73,7 +73,7 @@ tasks.register('assertCdkVersionNotPublished') {
         if (responseCode == 200) {
             throw new GradleException("Java CDK '${checkVersion}' already published at ${groupIdUrl}")
         } else if (responseCode == 404) {
-            logger.lifecycle("Java CDK '${checkVersion}' not yet published at ${groupIdUrl}.")
+            logger.lifecycle("Java CDK '${checkVersion}' not yet published at ${groupIdUrl}")
         } else {
             throw new GradleException("Unexpected HTTP response code ${responseCode} from ${artifactUrl}, expected either 200 or 404.")
         }
