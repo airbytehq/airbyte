@@ -46,16 +46,12 @@ jobs:
         uses: tj-actions/changed-files@v39
         id: python-cdk-changes
         with:
-          files_yaml: |
-            gradlecheck:
-              - 'airbyte-cdk/python/**/*'
-    outputs:
-      gradle: ${{ steps.python-cdk-changes.outputs.gradlecheck_any_changed }}
+          files: "airbyte-cdk/python/**/*"
 
   run-python-cdk-check:
     needs:
       - python-cdk-changes
-    if: needs.changes.outputs.gradle == 'true'
+    if: needs.changes.outputs.any_changed == 'true'
     # The gradle check task which we will run is embarrassingly parallelizable.
     # We therefore run this on a machine with a maximum number of cores.
     # We pay per time and per core, so there should be little difference in total cost.
