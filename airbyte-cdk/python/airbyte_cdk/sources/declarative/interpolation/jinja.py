@@ -88,25 +88,25 @@ class JinjaInterpolation(Interpolation):
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
-        return self._literal_eval(self._eval(default if default is not None else "", context), valid_types)
+        return self._literal_eval(self._eval(default, context), valid_types)
 
-    def _literal_eval(self, result: str, valid_types: Optional[Tuple[Type[Any]]]) -> Any:
+    def _literal_eval(self, result: Optional[str], valid_types: Optional[Tuple[Type[Any]]]) -> Any:
         try:
-            evaluated = ast.literal_eval(result)
+            evaluated = ast.literal_eval(result) # type: ignore # literal_eval is able to handle None
         except (ValueError, SyntaxError):
             return result
         if not valid_types or (valid_types and isinstance(evaluated, valid_types)):
             return evaluated
         return result
 
-    def _eval(self, s: str, context: Mapping[str, Any]) -> str:
+    def _eval(self, s: Optional[str], context: Mapping[str, Any]) -> Optional[str]:
         try:
-            ast = self._environment.parse(s)
+            ast = self._environment.parse(s) # type: ignore # parse is able to handle None
             undeclared = meta.find_undeclared_variables(ast)
             undeclared_not_in_context = {var for var in undeclared if var not in context}
             if undeclared_not_in_context:
                 raise ValueError(f"Jinja macro has undeclared variables: {undeclared_not_in_context}. Context: {context}")
-            return self._environment.from_string(s).render(context)
+            return self._environment.from_string(s).render(context) # type: ignore # from_string is able to handle None
         except TypeError:
             # The string is a static value, not a jinja template
             # It can be returned as is
