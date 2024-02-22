@@ -158,7 +158,10 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, H
 def test_initialize_state_manager(input_stream_state, expected_stream_state, expected_error):
     stream_to_instance_map = {
         "actors": AirbyteStream(
-            name="actors", namespace="public", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+            name="actors",
+            namespace="public",
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
         )
     }
 
@@ -268,7 +271,8 @@ def test_initialize_state_manager(input_stream_state, expected_stream_state, exp
     ],
 )
 def test_get_stream_state(input_state, stream_name, namespace, expected_state):
-    stream_to_instance_map = {stream_name: AirbyteStream(
+    stream_to_instance_map = {
+        stream_name: AirbyteStream(
             name=stream_name, namespace=namespace, json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
         )
     }

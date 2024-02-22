@@ -2,17 +2,17 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.53.9"
+version = "0.63.2"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte-cdk-0.53.9.tar.gz", hash = "sha256:22251a4306b516fa5665e79d4db25203cd6a95cc95d23f3e712ec89e0995e7f0"},
-    {file = "airbyte_cdk-0.53.9-py3-none-any.whl", hash = "sha256:0730e33bfde63a817fa5fc9115c22c6ba847e73fcf1a7c955e33840942394386"},
+    {file = "airbyte-cdk-0.63.2.tar.gz", hash = "sha256:b2edc160f560352a816f3a266b5dfa6dfe37868add1e3a0a2628eb19ba771ed1"},
+    {file = "airbyte_cdk-0.63.2-py3-none-any.whl", hash = "sha256:8698cb94514f35577123520954503cb2da407423af109dffd03644ba8b0093cd"},
 ]
 
 [package.dependencies]
-airbyte-protocol-models = "0.4.2"
+airbyte-protocol-models = "0.5.1"
 backoff = "*"
 cachetools = "*"
 Deprecated = ">=1.2,<2.0"
@@ -22,7 +22,7 @@ isodate = ">=0.6.1,<0.7.0"
 Jinja2 = ">=3.1.2,<3.2.0"
 jsonref = ">=0.2,<1.0"
 jsonschema = ">=3.2.0,<3.3.0"
-pendulum = "*"
+pendulum = "<3.0.0"
 pydantic = ">=1.10.8,<2.0.0"
 pyrate-limiter = ">=3.1.0,<3.2.0"
 python-dateutil = "*"
@@ -39,13 +39,13 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.0.271)", "openai[embedding
 
 [[package]]
 name = "airbyte-protocol-models"
-version = "0.4.2"
+version = "0.5.1"
 description = "Declares the Airbyte Protocol."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte_protocol_models-0.4.2-py3-none-any.whl", hash = "sha256:d3bbb14d4af9483bd7b08f5eb06f87e7113553bf4baed3998af95be873a0d821"},
-    {file = "airbyte_protocol_models-0.4.2.tar.gz", hash = "sha256:67b149d4812f8fdb88396b161274aa73cf0e16f22e35ce44f2bfc4d47e51915c"},
+    {file = "airbyte_protocol_models-0.5.1-py3-none-any.whl", hash = "sha256:dfe84e130e51ce2ae81a06d5aa36f6c5ce3152b9e36e6f0195fad6c3dab0927e"},
+    {file = "airbyte_protocol_models-0.5.1.tar.gz", hash = "sha256:7c8b16c7c1c7956b1996052e40585a3a93b1e44cb509c4e97c1ee4fe507ea086"},
 ]
 
 [package.dependencies]
@@ -808,13 +808,13 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "requests-cache"
-version = "1.1.1"
+version = "1.2.0"
 description = "A persistent cache for python requests"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.8"
 files = [
-    {file = "requests_cache-1.1.1-py3-none-any.whl", hash = "sha256:c8420cf096f3aafde13c374979c21844752e2694ffd8710e6764685bb577ac90"},
-    {file = "requests_cache-1.1.1.tar.gz", hash = "sha256:764f93d3fa860be72125a568c2cc8eafb151cf29b4dc2515433a56ee657e1c60"},
+    {file = "requests_cache-1.2.0-py3-none-any.whl", hash = "sha256:490324301bf0cb924ff4e6324bd2613453e7e1f847353928b08adb0fdfb7f722"},
+    {file = "requests_cache-1.2.0.tar.gz", hash = "sha256:db1c709ca343cc1cd5b6c8b1a5387298eceed02306a6040760db538c885e3838"},
 ]
 
 [package.dependencies]
@@ -826,15 +826,15 @@ url-normalize = ">=1.4"
 urllib3 = ">=1.25.5"
 
 [package.extras]
-all = ["boto3 (>=1.15)", "botocore (>=1.18)", "itsdangerous (>=2.0)", "pymongo (>=3)", "pyyaml (>=5.4)", "redis (>=3)", "ujson (>=5.4)"]
+all = ["boto3 (>=1.15)", "botocore (>=1.18)", "itsdangerous (>=2.0)", "pymongo (>=3)", "pyyaml (>=6.0.1)", "redis (>=3)", "ujson (>=5.4)"]
 bson = ["bson (>=0.5)"]
-docs = ["furo (>=2023.3,<2024.0)", "linkify-it-py (>=2.0,<3.0)", "myst-parser (>=1.0,<2.0)", "sphinx (>=5.0.2,<6.0.0)", "sphinx-autodoc-typehints (>=1.19)", "sphinx-automodapi (>=0.14)", "sphinx-copybutton (>=0.5)", "sphinx-design (>=0.2)", "sphinx-notfound-page (>=0.8)", "sphinxcontrib-apidoc (>=0.3)", "sphinxext-opengraph (>=0.6)"]
+docs = ["furo (>=2023.3,<2024.0)", "linkify-it-py (>=2.0,<3.0)", "myst-parser (>=1.0,<2.0)", "sphinx (>=5.0.2,<6.0.0)", "sphinx-autodoc-typehints (>=1.19)", "sphinx-automodapi (>=0.14)", "sphinx-copybutton (>=0.5)", "sphinx-design (>=0.2)", "sphinx-notfound-page (>=0.8)", "sphinxcontrib-apidoc (>=0.3)", "sphinxext-opengraph (>=0.9)"]
 dynamodb = ["boto3 (>=1.15)", "botocore (>=1.18)"]
 json = ["ujson (>=5.4)"]
 mongodb = ["pymongo (>=3)"]
 redis = ["redis (>=3)"]
 security = ["itsdangerous (>=2.0)"]
-yaml = ["pyyaml (>=5.4)"]
+yaml = ["pyyaml (>=6.0.1)"]
 
 [[package]]
 name = "requests-mock"
@@ -939,13 +939,13 @@ six = "*"
 
 [[package]]
 name = "urllib3"
-version = "2.2.0"
+version = "2.2.1"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "urllib3-2.2.0-py3-none-any.whl", hash = "sha256:ce3711610ddce217e6d113a2732fafad960a03fd0318c91faa79481e35c11224"},
-    {file = "urllib3-2.2.0.tar.gz", hash = "sha256:051d961ad0c62a94e50ecf1af379c3aba230c66c710493493560c0c223c49f20"},
+    {file = "urllib3-2.2.1-py3-none-any.whl", hash = "sha256:450b20ec296a467077128bff42b73080516e71b56ff59a60a02bef2232c4fa9d"},
+    {file = "urllib3-2.2.1.tar.gz", hash = "sha256:d0570876c61ab9e520d776c38acbbb5b05a776d3f9ff98a5c8fd5162a444cf19"},
 ]
 
 [package.extras]
@@ -1050,4 +1050,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "01f0e9a1bc8ef6c022c261ef26e7902b999fd72c9bb233793438b719ce9f22f7"
+content-hash = "07657dff3674cca2f376658bfa717048c9caff7fa3b6f23144133f1d6dbac33a"

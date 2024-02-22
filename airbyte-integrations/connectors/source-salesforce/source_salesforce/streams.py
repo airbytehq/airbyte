@@ -11,7 +11,6 @@ import urllib.parse
 import uuid
 from abc import ABC
 from contextlib import closing
-from datetime import datetime, timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import pandas as pd
@@ -112,7 +111,7 @@ class SalesforceStream(HttpStream, ABC):
             return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
         return super().get_error_display_message(exception)
 
-    def get_start_date_from_state(self, stream_state: Mapping[str, Any] = None) -> datetime:
+    def get_start_date_from_state(self, stream_state: Mapping[str, Any] = None) -> pendulum.DateTime:
         if self.state_converter.is_state_message_compatible(stream_state):
             # stream_state is in the concurrent format
             if stream_state.get("slices", []):
@@ -689,28 +688,34 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
 
 class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
-    STREAM_SLICE_STEP = 30
     _slice = None
 
-    def __init__(self, replication_key: str, **kwargs):
+    def __init__(self, replication_key: str, stream_slice_step: str = "P30D", **kwargs):
         super().__init__(**kwargs)
         self.replication_key = replication_key
+        self._stream_slice_step = stream_slice_step
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        start, end = (None, None)
         now = pendulum.now(tz="UTC")
         assert LOOKBACK_SECONDS is not None and LOOKBACK_SECONDS >= 0
-        initial_date = self.get_start_date_from_state(stream_state) - timedelta(seconds=LOOKBACK_SECONDS)
 
-        slice_number = 1
-        while not end == now:
-            start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
-            end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
-            self._slice = {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
-            yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
-            slice_number = slice_number + 1
+        initial_date = self.get_start_date_from_state(stream_state) - pendulum.Duration(seconds=LOOKBACK_SECONDS)
+        slice_start = initial_date
+        while slice_start < now:
+            slice_end = slice_start + self.stream_slice_step
+            self._slice = {
+                "start_date": slice_start.isoformat(timespec="milliseconds"),
+                "end_date": min(slice_end, now).isoformat(timespec="milliseconds"),
+            }
+            yield self._slice
+
+            slice_start += self.stream_slice_step
+
+    @property
+    def stream_slice_step(self) -> pendulum.Duration:
+        return pendulum.parse(self._stream_slice_step)
 
     def request_params(
         self,

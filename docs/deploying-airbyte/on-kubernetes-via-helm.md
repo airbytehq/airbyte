@@ -167,11 +167,10 @@ Before upgrading the chart update values.yaml as stated above and then run:
 - Perform upgrade of chart by running `helm upgrade %release_name% airbyte/airbyte --set auth.rootPassword=$ROOT_PASSWORD`
   - If you get an error about setting the auth.rootPassword, then you forgot to update the `values.yaml` file
 
-### External Logs
+### External Logs with S3
 
 ::info
-This was tested using [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13) and S3 logs only.
-Previous or newer version can change how to setup the external logs.
+S3 logging was tested on [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13)
 :::
 
 Create a file called `airbyte-logs-secrets.yaml` to store the AWS Keys and other informations:
@@ -219,7 +218,7 @@ global:
     tolerations: []
     affinity: {}
 ```
-You can try to use `GCS` or `External Minio` but both weren't tested yet. Feel free to run tests and update the documentation.
+GCS Logging information is below but you can try to use `External Minio` as well but it was not tested yet. Feel free to run tests and update the documentation.
 
 Add extra env variables to the following blocks:
 ```yaml
@@ -297,13 +296,84 @@ server:
 Than run:
 `helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.50.13`
 
+### External Logs with GCS
+
+
+:::Info
+GCS Logging is similar to the approach taken for S3 above, with a few small differences
+GCS logging was tested on [Airbyte Helm Chart Version 0.53.178](https://artifacthub.io/packages/helm/airbyte/airbyte/0.53.178)
+:::
+
+#### Create Google Cloud Storage Bucket
+
+1. **Access Google Cloud Console**: Go to the Google Cloud Console and select or create a project where you want to create the bucket.
+2. **Open Cloud Storage**: Navigate to "Storage" > "Browser" in the left-side menu.
+3. **Create Bucket**: Click on "Create bucket". Give your bucket a unique name, select a region for the bucket, and configure other settings such as storage class and access control according to your requirements. Finally, click "Create".
+
+#### Create Google Cloud Service Account
+
+1. **Open IAM & Admin**: In the Cloud Console, navigate to "IAM & Admin" > "Service Accounts".
+2. **Create Service Account**: Click "Create Service Account", enter a name, description, and then click "Create".
+3. **Grant Permissions**: Assign the role of "Storage Object Admin" to the service account by selecting it from the role list.
+4. **Create Key**: After creating the service account, click on it, go to the "Keys" tab, and then click "Add Key" > "Create new key". Choose JSON as the key type and click "Create". The key file will be downloaded automatically to your computer.
+
+#### Create a Kubernetes Secret
+
+- Use the **`kubectl create secret`** command to create a Kubernetes secret from the JSON key file. Replace **`<secret-name>`** with the desired name for your secret, **`<path-to-json-key-file>`** with the path to the JSON key file you downloaded, and **`<namespace>`** with the namespace where your deployment will be running.
+
+```kubectl create secret generic <mysecret>  --from-file=gcp.json=</location/to/secret.json> --namespace=<namespace>```
+
+#### Create an extra Volume where the GCSFS secret will be added in the values.yaml inside of the worker section
+```
+worker:
+  extraVolumes:
+    - name: gcsfs-creds
+      secret:
+        secretName: <secret name>
+  extraVolumeMounts:
+    - name: gcsfs-creds
+      mountPath: "/etc/secrets"
+      readOnly: true
+```
+
+#### Update the values.yaml with the GCS Logging Information below
+Update the following Environment Variables in the global section:
+```
+global:
+ state:
+   storage:
+     type: "GCS"
+
+ logs:
+   storage:
+     type: "GCS"
+   gcs:
+     bucket: "<bucket name>"
+     credentials: "/etc/secrets/gcp.json"
+ 
+ extraEnv:
+   - name: STATE_STORAGE_GCS_BUCKET_NAME
+     value: <bucket name>
+   - name: STATE_STORAGE_GCS_APPLICATION_CREDENTIALS
+     value: /etc/secrets/gcp.json
+   - name: CONTAINER_ORCHESTRATOR_SECRET_NAME
+     value: <name of secret>
+   - name: CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH
+     value: /etc/secrets/
+```
+
+Than run:
+`helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.53.178`
+
 ### External Airbyte Database
 
 
-::info
+
+:::info
 This was tested using [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13).
 Previous or newer version can change how the external database can be configured.
 :::
+
 
 The Airbyte Database only works with Postgres 13.
 Make sure the database is accessible inside the cluster using `busy-box` service using `telnet` or `ping` command.
