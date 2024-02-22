@@ -88,7 +88,10 @@ def verify_records_schema(
     stream_validators = {}
     for stream in catalog.streams:
         schema_to_validate_against = stream.stream.json_schema
-        validator = NoAdditionalPropertiesValidator if fail_on_extra_columns else Draft7ValidatorWithStrictInteger
+        # We will be disabling strict `NoAdditionalPropertiesValidator` until we have a better plan for schema validation. The consequence
+        # is that we will lack visibility on new fields that are not added on the root level (root level is validated by Datadog)
+        #   validator = NoAdditionalPropertiesValidator if fail_on_extra_columns else Draft7ValidatorWithStrictInteger
+        validator = Draft7ValidatorWithStrictInteger
         stream_validators[stream.stream.name] = validator(schema_to_validate_against, format_checker=CustomFormatChecker())
     stream_errors = defaultdict(dict)
     for record in records:

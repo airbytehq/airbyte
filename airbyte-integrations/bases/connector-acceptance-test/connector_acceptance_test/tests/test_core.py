@@ -1171,7 +1171,7 @@ class TestBasicRead(BaseTest):
                 assert actual_primary_keys[:len(expected_primary_keys)] == expected_primary_keys
             else:
                 expected_but_not_found = set(map(make_hashable, expected_primary_keys)).difference(set(map(make_hashable, actual_primary_keys)))
-                assert not expected_but_not_found, "Expected to see those primary keys in the actual response but they were not found."
+                assert not expected_but_not_found, f"Expected to see those primary keys in the actual response for stream {stream_name} but they were not found."
         else:
             TestBasicRead.legacy_compare_records(
                 stream_name,
