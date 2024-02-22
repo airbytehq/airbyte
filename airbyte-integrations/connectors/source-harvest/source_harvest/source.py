@@ -8,7 +8,9 @@ import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_harvest.availability_strategy import HarvestAvailabilityStrategy
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
+
 from source_harvest.streams import (
     BillableRates,
     Clients,
@@ -45,6 +47,7 @@ from source_harvest.streams import (
 )
 
 from .auth import HarvestOauth2Authenticator, HarvestTokenAuthenticator
+from source_harvest.availability_strategy import HarvestAvailabilityStrategy
 
 
 class SourceHarvest(AbstractSource):
@@ -52,6 +55,11 @@ class SourceHarvest(AbstractSource):
     def get_authenticator(config):
         credentials = config.get("credentials", {})
         if credentials and "client_id" in credentials:
+            if "account_id" not in config:
+                raise AirbyteTracedException(
+                    "Config validation error: 'account_id' is a required property",
+                    failure_type=FailureType.config_error,
+                )
             return HarvestOauth2Authenticator(
                 token_refresh_endpoint="https://id.getharvest.com/api/v2/oauth2/token",
                 client_id=credentials.get("client_id"),
@@ -62,7 +70,10 @@ class SourceHarvest(AbstractSource):
 
         api_token = credentials.get("api_token", config.get("api_token"))
         if not api_token:
-            raise Exception("Config validation error: 'api_token' is a required property")
+            raise AirbyteTracedException(
+                "Config validation error: 'api_token' is a required property",
+                failure_type=FailureType.config_error,
+            )
         return HarvestTokenAuthenticator(token=api_token, account_id=config["account_id"])
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
