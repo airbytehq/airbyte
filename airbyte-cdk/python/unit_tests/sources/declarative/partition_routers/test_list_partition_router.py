@@ -96,8 +96,8 @@ def test_request_option(request_option, expected_req_params, expected_headers, e
 @pytest.mark.parametrize(
     "field_name_interpolation, expected_request_params",
     [
-        ("{{parameters['partition_name']}}", {"config_partition": "customer"}),
-        ("{{config['partition_name']}}", {"parameters_partition": "customer"}),
+        ("{{parameters['partition_name']}}", {"parameters_partition": "customer"}),
+        ("{{config['partition_name']}}", {"config_partition": "customer"}),
     ],
     ids=[
         "parameters_interpolation",
