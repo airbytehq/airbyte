@@ -94,7 +94,7 @@ jobs:
         env:
           CI: true
         with:
-          job-id: cdk-build
+          job-id: cdk-publish
           read-only: ${{ !(env.DRY_RUN == 'false') }}
           concurrent: true
           gradle-distribution-sha-256-sum-warning: false
@@ -106,7 +106,7 @@ jobs:
         env:
           CI: true
         with:
-          job-id: cdk-assert
+          job-id: cdk-publish
           read-only: true
           concurrent: true
           gradle-distribution-sha-256-sum-warning: false
