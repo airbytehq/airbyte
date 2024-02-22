@@ -646,7 +646,7 @@ list_stream:
     list_stream_slicer = stream.retriever.stream_slicer._partition_router
     assert isinstance(list_stream_slicer, ListPartitionRouter)
     assert list_stream_slicer.values == ["airbyte", "airbyte-cloud"]
-    assert list_stream_slicer.cursor_field.string == "a_key"
+    assert list_stream_slicer._cursor_field.string == "a_key"
 
 
 def test_incremental_data_feed():

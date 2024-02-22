@@ -8,7 +8,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, PerPartitionStreamSlice, StreamSlice, StreamState
 
 
 @dataclass
@@ -30,11 +30,12 @@ class ListPartitionRouter(StreamSlicer):
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if isinstance(self.values, str):
             self.values = InterpolatedString.create(self.values, parameters=parameters).eval(self.config)
-        if isinstance(self.cursor_field, str):
-            self.cursor_field = InterpolatedString(string=self.cursor_field, parameters=parameters)
+        self._cursor_field = (
+            InterpolatedString(string=self.cursor_field, parameters=parameters) if isinstance(self.cursor_field, str) else self.cursor_field
+        )
 
         self._cursor = None
 
@@ -45,7 +46,10 @@ class ListPartitionRouter(StreamSlicer):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
+        if stream_slice:
+            return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
+        else:
+            return {}
 
     def get_request_headers(
         self,
@@ -54,7 +58,10 @@ class ListPartitionRouter(StreamSlicer):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        return self._get_request_option(RequestOptionType.header, stream_slice)
+        if stream_slice:
+            return self._get_request_option(RequestOptionType.header, stream_slice)
+        else:
+            return {}
 
     def get_request_body_data(
         self,
@@ -63,7 +70,10 @@ class ListPartitionRouter(StreamSlicer):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        return self._get_request_option(RequestOptionType.body_data, stream_slice)
+        if stream_slice:
+            return self._get_request_option(RequestOptionType.body_data, stream_slice)
+        else:
+            return {}
 
     def get_request_body_json(
         self,
@@ -72,14 +82,17 @@ class ListPartitionRouter(StreamSlicer):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
-        return self._get_request_option(RequestOptionType.body_json, stream_slice)
+        if stream_slice:
+            return self._get_request_option(RequestOptionType.body_json, stream_slice)
+        else:
+            return {}
 
-    def stream_slices(self) -> Iterable[StreamSlice]:
-        return [{self.cursor_field.eval(self.config): slice_value} for slice_value in self.values]
+    def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
+        return [PerPartitionStreamSlice({self._cursor_field.eval(self.config): slice_value}, {}) for slice_value in self.values]
 
-    def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: StreamSlice):
+    def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: StreamSlice) -> Mapping[str, Any]:
         if self.request_option and self.request_option.inject_into == request_option_type and stream_slice:
-            slice_value = stream_slice.get(self.cursor_field.eval(self.config))
+            slice_value = stream_slice.get(self._cursor_field.eval(self.config))
             if slice_value:
                 return {self.request_option.field_name: slice_value}
             else:

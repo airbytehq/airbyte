@@ -63,11 +63,17 @@ class PerPartitionStreamSlice(StreamSlice):
 
     @property
     def partition(self) -> Mapping[str, Any]:
-        return self._partition
+        p = self._partition
+        while isinstance(p, PerPartitionStreamSlice):
+            p = p.partition
+        return p
 
     @property
     def cursor_slice(self) -> Mapping[str, Any]:
-        return self._cursor_slice
+        c = self._cursor_slice
+        while isinstance(c, PerPartitionStreamSlice):
+            c = c.cursor_slice
+        return c
 
     def __repr__(self) -> str:
         return repr(self._stream_slice)
