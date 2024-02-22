@@ -18,6 +18,7 @@ def test_partition(stream_slice, expected_partition):
 
     assert partition == expected_partition
 
+
 @pytest.mark.parametrize(
     "stream_slice, expected_cursor_slice",
     [
