@@ -42,15 +42,15 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-      - name: Get changed Python CKD files
+      - name: Get changed Python CKD tfiles
         uses: tj-actions/changed-files@v39
-        id: changes
+        id: python-cdk-changes
         with:
           files_yaml: |
             gradlecheck:
               - 'airbyte-cdk/python/**/*'
     outputs:
-      gradle: ${{ steps.changes.outputs.gradlecheck_any_changed }}
+      gradle: ${{ steps.python-cdk-changes.outputs.gradlecheck_any_changed }}
 
   run-python-cdk-check:
     needs:
