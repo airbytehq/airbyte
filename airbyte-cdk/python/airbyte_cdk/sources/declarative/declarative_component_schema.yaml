@@ -517,8 +517,8 @@ definitions:
         type: object
         additionalProperties: true
   CustomRecordFilter:
-    title: Custom Record Extractor
-    description: Record extractor component whose behavior is derived from a custom code implementation of the connector.
+    title: Custom Record Filter
+    description: Record filter component whose behavior is derived from a custom code implementation of the connector.
     type: object
     additionalProperties: true
     required:
