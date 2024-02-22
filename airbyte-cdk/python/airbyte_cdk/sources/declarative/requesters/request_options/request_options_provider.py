@@ -8,6 +8,8 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
+from airbyte_cdk.sources.declarative.per_partition_stream_slice import PerPartitionStreamSlice
+
 
 @dataclass
 class RequestOptionsProvider:
@@ -26,9 +28,9 @@ class RequestOptionsProvider:
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[PerPartitionStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
+    ) -> Mapping[str, Any]:
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
@@ -41,7 +43,7 @@ class RequestOptionsProvider:
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[PerPartitionStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method."""
@@ -51,9 +53,9 @@ class RequestOptionsProvider:
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[PerPartitionStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Union[Mapping[str, Any], str]]:
+    ) -> Union[Mapping[str, Any], str]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
 
@@ -69,9 +71,9 @@ class RequestOptionsProvider:
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[PerPartitionStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         """
         Specifies how to populate the body of the request with a JSON payload.
 

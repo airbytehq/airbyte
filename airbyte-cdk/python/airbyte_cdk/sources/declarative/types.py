@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from typing import Any, List, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.per_partition_stream_slice import PerPartitionStreamSlice
+
 # A FieldPointer designates a path to a field inside a mapping. For example, retrieving ["k1", "k1.2"] in the object {"k1" :{"k1.2":
 # "hello"}] returns "hello"
 FieldPointer = List[str]
@@ -16,7 +18,7 @@ StreamState = Mapping[str, Any]
 
 
 class Record(Mapping[str, Any]):
-    def __init__(self, data: Mapping[str, Any], associated_slice: Optional[StreamSlice]):
+    def __init__(self, data: Mapping[str, Any], associated_slice: Optional[PerPartitionStreamSlice]):
         self._data = data
         self._associated_slice = associated_slice
 
@@ -25,7 +27,7 @@ class Record(Mapping[str, Any]):
         return self._data
 
     @property
-    def associated_slice(self) -> Optional[StreamSlice]:
+    def associated_slice(self) -> Optional[PerPartitionStreamSlice]:
         return self._associated_slice
 
     def __repr__(self) -> str:
