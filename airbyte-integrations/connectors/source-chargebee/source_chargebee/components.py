@@ -154,6 +154,6 @@ class CustomBackoffStrategy(WaitTimeFromHeaderBackoffStrategy):
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         """
         Sets backoff time to 0.00001 if testing environment, otherwise uses default backoff time from header.
-        Note: DefaultErrorHandler _backoff_time method skips falsy values, therefore returmed value cannot be equal to zero here.
+        Note: DefaultErrorHandler _backoff_time method skips falsy values, therefore returned value cannot be equal to zero here.
         """
         return 0.00001 if IS_TESTING else super().backoff(response, attempt_count)
