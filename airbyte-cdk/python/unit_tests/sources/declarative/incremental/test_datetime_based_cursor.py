@@ -488,6 +488,31 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
     assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
     assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
 
+@pytest.mark.parametrize(
+    "stream_slice", [
+        pytest.param(None, id="test_none_stream_slice"),
+        pytest.param({}, id="test_none_stream_slice"),
+    ]
+)
+def test_request_option_with_empty_stream_slice(stream_slice):
+    start_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="starttime")
+    end_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="endtime")
+    slicer = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
+        step="P1D",
+        cursor_field=InterpolatedString(string=cursor_field, parameters={}),
+        datetime_format=datetime_format,
+        cursor_granularity=cursor_granularity,
+        lookback_window=InterpolatedString(string="P0D", parameters={}),
+        start_time_option=start_request_option,
+        end_time_option=end_request_option,
+        config=config,
+        parameters={},
+    )
+    assert {} == slicer.get_request_params(stream_slice=stream_slice)
+
+
 
 @pytest.mark.parametrize(
     "test_name, input_date, date_format, date_format_granularity, expected_output_date",
