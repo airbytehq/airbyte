@@ -138,7 +138,7 @@ def test_parse_response_expected_response(applications_stream):
         ]
     """
     response._content = response_content
-    parsed_response = applications_stream.retriever._parse_response(response, stream_state={})
+    parsed_response = applications_stream.retriever._parse_response(response, stream_state={}, records_schema={})
     records = [dict(record) for record in parsed_response]
 
     assert records == json.loads(response_content)
@@ -148,7 +148,7 @@ def test_parse_response_empty_content(applications_stream):
     response = requests.Response()
     response.status_code = 200
     response._content = b"[]"
-    parsed_response = applications_stream.retriever._parse_response(response, stream_state={})
+    parsed_response = applications_stream.retriever._parse_response(response, stream_state={}, records_schema={})
     records = [record for record in parsed_response]
 
     assert records == []
@@ -164,7 +164,7 @@ def test_ignore_403(applications_stream):
     response = requests.Response()
     response.status_code = 403
     response._content = b""
-    parsed_response = applications_stream.retriever._parse_response(response, stream_state={})
+    parsed_response = applications_stream.retriever._parse_response(response, stream_state={}, records_schema={})
     records = [record for record in parsed_response]
     assert records == []
 
