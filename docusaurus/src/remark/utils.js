@@ -8,6 +8,11 @@ const isDocsPage = (vfile) => {
     return false;
   }
 
+  // skip the root files in integrations/source and integrations/destinations
+  if (vfile.path.includes("README.md")) {
+    return false;
+  }
+
   if (vfile.path.includes("-migrations.md")) {
     return false;
   }
