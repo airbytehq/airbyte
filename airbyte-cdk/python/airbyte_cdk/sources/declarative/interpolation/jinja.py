@@ -92,7 +92,7 @@ class JinjaInterpolation(Interpolation):
 
     def _literal_eval(self, result: Optional[str], valid_types: Optional[Tuple[Type[Any]]]) -> Any:
         try:
-            evaluated = ast.literal_eval(result) # type: ignore # literal_eval is able to handle None
+            evaluated = ast.literal_eval(result)  # type: ignore # literal_eval is able to handle None
         except (ValueError, SyntaxError):
             return result
         if not valid_types or (valid_types and isinstance(evaluated, valid_types)):
@@ -101,12 +101,12 @@ class JinjaInterpolation(Interpolation):
 
     def _eval(self, s: Optional[str], context: Mapping[str, Any]) -> Optional[str]:
         try:
-            ast = self._environment.parse(s) # type: ignore # parse is able to handle None
+            ast = self._environment.parse(s)  # type: ignore # parse is able to handle None
             undeclared = meta.find_undeclared_variables(ast)
             undeclared_not_in_context = {var for var in undeclared if var not in context}
             if undeclared_not_in_context:
                 raise ValueError(f"Jinja macro has undeclared variables: {undeclared_not_in_context}. Context: {context}")
-            return self._environment.from_string(s).render(context) # type: ignore # from_string is able to handle None
+            return self._environment.from_string(s).render(context)  # type: ignore # from_string is able to handle None
         except TypeError:
             # The string is a static value, not a jinja template
             # It can be returned as is
