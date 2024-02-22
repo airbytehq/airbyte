@@ -41,7 +41,6 @@ concurrency:
 
 env:
   # Use the provided GITREF or default to the branch triggering the workflow.
-  REPO: ${{ github.event.inputs.repo }}
   GITREF: ${{ github.event.inputs.gitref || github.ref }}
   FORCE: "${{ github.event.inputs.force == null && 'false' || github.event.inputs.force }}"
   DRY_RUN: "${{ github.event.inputs.dry-run == null && 'true' || github.event.inputs.dry-run }}"
@@ -64,7 +63,6 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          repository: ${{ env.REPO }}
           ref: ${{ env.GITREF }}
 
       - name: Read Target Java CDK version
