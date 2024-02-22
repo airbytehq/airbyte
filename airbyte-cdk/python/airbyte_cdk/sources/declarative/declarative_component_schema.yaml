@@ -516,6 +516,27 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  CustomRecordFilter:
+    title: Custom Record Filter
+    description: Record filter component whose behavior is derived from a custom code implementation of the connector.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomRecordFilter]
+      class_name:
+        title: Class Name
+        description: Fully-qualified name of the class that will be implementing the custom record filter strategy. The format is `source_<name>.<package>.<class_name>`.
+        type: string
+        examples:
+          - "source_railz.components.MyCustomCustomRecordFilter"
+      $parameters:
+        type: object
+        additionalProperties: true
   CustomRequester:
     title: Custom Requester
     description: Requester component whose behavior is derived from a custom code implementation of the connector.
@@ -1819,7 +1840,9 @@ definitions:
       record_filter:
         title: Record Filter
         description: Responsible for filtering records to be emitted by the Source.
-        "$ref": "#/definitions/RecordFilter"
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordFilter"
+          - "$ref": "#/definitions/RecordFilter"
       schema_normalization:
         "$ref": "#/definitions/SchemaNormalization"
         default: None
