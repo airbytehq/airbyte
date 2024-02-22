@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * Note that #prepareTables() initializes some internal state. The other methods will throw an
  * exception if that method was not called.
  */
-public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper {
+public class DefaultTyperDeduper implements TyperDeduper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TyperDeduper.class);
 
