@@ -1,3 +1,9 @@
+final var cdkVersion = {
+    var props = new Properties()
+    file("core/src/main/resources/version.properties").withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
@@ -8,9 +14,7 @@ allprojects {
     def artifactBaseName = 'airbyte-cdk-' + project.name
     // E.g. airbyte-cdk-core, airbyte-cdk-db-sources, airbyte-cdk-db-destinations, etc.
 
-    var props = new Properties()
-    file("core/src/main/resources/version.properties").withInputStream(props::load)
-    project.version =  props.getProperty('version', 'undefined')
+    project.version = cdkVersion
 
     publishing {
         publications {
