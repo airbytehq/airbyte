@@ -3,15 +3,15 @@
 #
 
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 setup(
-    name="source_test",
+    name="airbyte-source-test",
     version="0.0.1",
     description="Test Soutce",
     author="Airbyte",
     author_email="contact@airbyte.io",
-    packages=find_packages(),
+    packages=["source_test"],
     entry_points={
         "console_scripts": [
             "source-test=source_test.run:run",

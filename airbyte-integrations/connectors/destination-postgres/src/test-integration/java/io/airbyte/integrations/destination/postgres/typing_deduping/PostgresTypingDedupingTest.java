@@ -6,17 +6,13 @@ package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
-import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.postgres.PostgresDestination;
-import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
 import io.airbyte.integrations.destination.postgres.PostgresTestDatabase;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
-public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
+public class PostgresTypingDedupingTest extends AbstractPostgresTypingDedupingTest {
 
   protected static PostgresTestDatabase testContainer;
 
@@ -32,14 +28,13 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
 
   @Override
   protected ObjectNode getBaseConfig() {
-    final ObjectNode config = (ObjectNode) testContainer.configBuilder()
+    return (ObjectNode) testContainer.configBuilder()
         .with("schema", "public")
         .withDatabase()
         .withResolvedHostAndPort()
         .withCredentials()
         .withoutSsl()
         .build();
-    return config.put("use_1s1t_format", true);
   }
 
   @Override
@@ -60,16 +55,6 @@ public class PostgresTypingDedupingTest extends JdbcTypingDedupingTest {
   @Override
   protected String getImageName() {
     return "airbyte/destination-postgres:dev";
-  }
-
-  @Override
-  protected SqlGenerator<?> getSqlGenerator() {
-    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
-  }
-
-  @Override
-  protected JdbcCompatibleSourceOperations<?> getSourceOperations() {
-    return new PostgresSqlGeneratorIntegrationTest.PostgresSourceOperations();
   }
 
 }

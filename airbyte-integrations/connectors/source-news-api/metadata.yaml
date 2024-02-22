@@ -8,6 +8,10 @@ data:
   icon: newsapi.svg
   license: MIT
   name: News API
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-news-api
   registries:
     cloud:
       enabled: false

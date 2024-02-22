@@ -42,21 +42,21 @@ Note: in a real implementation you should write code to connect to the API to va
 
 Let's test out this implementation by creating two objects: a valid and an invalid config and attempt to give them as input to the connector. For this section, you will need to take the API access key generated earlier and add it to both configs. Because these configs contain secrets, we recommend storing configs which contain secrets in `secrets/config.json` because the `secrets` directory is gitignored by default.
 
-```text
+```bash
 mkdir sample_files
 echo '{"start_date": "2022-04-01", "base": "USD", "apikey": <your_apikey>}'  > secrets/config.json
 echo '{"start_date": "2022-04-01", "base": "BTC", "apikey": <your_apikey>}'  > secrets/invalid_config.json
-python main.py check --config secrets/config.json
-python main.py check --config secrets/invalid_config.json
+poetry run source-python-http-example check --config secrets/config.json
+poetry run source-python-http-example check --config secrets/invalid_config.json
 ```
 
 You should see output like the following:
 
-```text
-> python main.py check --config secrets/config.json
+```bash
+> poetry run source-python-http-example check --config secrets/config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "SUCCEEDED"}}
 
-> python main.py check --config secrets/invalid_config.json
+> poetry run source-python-http-example check --config secrets/invalid_config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "FAILED", "message": "Input currency BTC is invalid. Please input one of the following currencies: {'DKK', 'USD', 'CZK', 'BGN', 'JPY'}"}}
 ```
 

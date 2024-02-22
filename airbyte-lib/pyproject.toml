@@ -28,6 +28,9 @@ pyarrow = "^14.0.2"
 
 # Psycopg3 is not supported in SQLAlchemy 1.x:
 # psycopg = {extras = ["binary", "pool"], version = "^3.1.16"}
+rich = "^13.7.0"
+pendulum = "<=3.0.0"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -44,16 +47,24 @@ ruff = "^0.1.11"
 types-jsonschema = "^4.20.0.0"
 google-cloud-secret-manager = "^2.17.0"
 types-requests = "2.31.0.4"
+freezegun = "^1.4.0"
+airbyte-source-faker = "^6.0.0"
+viztracer = "^0.16.2"
+tomli = "^2.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-# addopts = "--mypy"  # FIXME: This sometimes blocks test discovery and execution
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "requires_creds: marks a test as requiring credentials (skip when secrets unavailable)"
+]
 
 [tool.ruff.pylint]
 max-args = 8  # Relaxed from default of 5
+max-branches = 15 # Relaxed from default of 12
 
 [tool.ruff]
 target-version = "py39"
@@ -130,6 +141,7 @@ ignore = [
     "PIE790", # Allow unnecssary 'pass' (sometimes useful for readability)
     "PERF203",  # exception handling in loop
     "S", # flake8-bandit (noisy, security related)
+    "SIM910", # Allow "None" as second argument to Dict.get(). "Explicit is better than implicit."
     "TD002", # Require author for TODOs
     "TRIO", # flake8-trio (opinionated, noisy)
     "INP001", # Dir 'examples' is part of an implicit namespace package. Add an __init__.py.
@@ -238,3 +250,12 @@ ignore_missing_imports = true  # No stubs yet (😢)
 [tool.poetry.scripts]
 generate-docs = "docs:run"
 airbyte-lib-validate-source = "airbyte_lib.validate:run"
+
+[tool.poe.tasks]
+test = "pytest tests"
+
+[tool.airbyte_ci]
+extra_poetry_groups = ["dev"]
+poe_tasks = ["test"]
+required_environment_variables = ["GCP_GSM_CREDENTIALS"]
+side_car_docker_engine = true

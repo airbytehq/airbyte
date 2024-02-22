@@ -11,6 +11,7 @@ import os
 import re
 import sys
 import unicodedata
+import xml.sax.saxutils
 from io import TextIOWrapper
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -326,3 +327,29 @@ def fail_if_missing_docker_hub_creds(ctx: click.Context) -> None:
         raise click.UsageError(
             "You need to be logged to DockerHub registry to run this command. Please set DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables."
         )
+
+
+def java_log_scrub_pattern(secrets_to_mask: List[str]) -> str:
+    """Transforms a list of secrets into a LOG_SCRUB_PATTERN env var value for our log4j test configuration."""
+    # Build a regex pattern that matches any of the secrets to mask.
+    regex_pattern = "|".join(map(re.escape, secrets_to_mask))
+    # Now, make this string safe to consume by the log4j configuration.
+    # Its parser is XML-based so the pattern needs to be escaped again, and carefully.
+    return xml.sax.saxutils.escape(
+        regex_pattern,
+        # Annoyingly, the log4j properties file parser is quite brittle when it comes to
+        # handling log message patterns. In our case the env var is injected like this:
+        #
+        #     ${env:LOG_SCRUB_PATTERN:-defaultvalue}
+        #
+        # We must avoid confusing the parser with curly braces or colons otherwise the
+        # printed log messages will just consist of `%replace`.
+        {
+            "\t": "&#9;",
+            "'": "&apos;",
+            '"': "&quot;",
+            "{": "&#123;",
+            "}": "&#125;",
+            ":": "&#58;",
+        },
+    )

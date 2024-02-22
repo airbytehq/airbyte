@@ -7,10 +7,12 @@ package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
+import io.airbyte.commons.exceptions.SQLRuntimeException;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV1V2Migrator;
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Optional;
 import lombok.SneakyThrows;
@@ -33,15 +35,21 @@ public class JdbcV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinitio
 
   @SneakyThrows
   @Override
-  protected boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) throws Exception {
-    String retrievedSchema = "";
-    try (ResultSet columns = database.getMetaData().getSchemas(databaseName, streamConfig.id().rawNamespace())) {
-      while (columns.next()) {
-        retrievedSchema = columns.getString("TABLE_SCHEM");
-        // Catalog can be null, so don't do anything with it.
-        String catalog = columns.getString("TABLE_CATALOG");
+  protected boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) {
+    final String retrievedSchema = database.executeMetadataQuery(dbMetadata -> {
+      try (ResultSet columns = dbMetadata.getSchemas(databaseName, streamConfig.id().rawNamespace())) {
+        String schema = "";
+        while (columns.next()) {
+          // Catalog can be null, so don't do anything with it.
+          // columns.getString("TABLE_CATALOG");
+          schema = columns.getString("TABLE_SCHEM");
+        }
+        return schema;
+      } catch (SQLException e) {
+        throw new SQLRuntimeException(e);
       }
-    }
+    });
+
     return !retrievedSchema.isEmpty();
   }
 
