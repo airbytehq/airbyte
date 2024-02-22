@@ -161,24 +161,32 @@ def test_default_paginator_with_cursor(
 
 
 @pytest.mark.parametrize(
-    "field_name_interpolation, expected_request_params",
+    "field_name_page_size_interpolation, field_name_page_token_interpolation, expected_request_params",
     [
-        ("{{parameters['page_limit']}}", {"parameters_limit": 50}),
-        ("{{config['page_limit']}}", {"config_limit": 50}),
+        (
+            "{{parameters['page_limit']}}",
+            "{{parameters['page_token']}}",
+            {"parameters_limit": 50, "parameters_token": "https://airbyte.io/next_url"},
+        ),
+        ("{{config['page_limit']}}", "{{config['page_token']}}", {"config_limit": 50, "config_token": "https://airbyte.io/next_url"}),
     ],
     ids=[
         "parameters_interpolation",
         "config_interpolation",
     ],
 )
-def test_paginator_request_param_interpolation(field_name_interpolation: str, expected_request_params: dict):
+def test_paginator_request_param_interpolation(
+    field_name_page_size_interpolation: str, field_name_page_token_interpolation: str, expected_request_params: dict
+):
+    config = {"page_limit": "config_limit", "page_token": "config_token"}
+    parameters = {"page_limit": "parameters_limit", "page_token": "parameters_token"}
     page_size_request_option = RequestOption(
-        inject_into=RequestOptionType.request_parameter, field_name=field_name_interpolation, parameters={"page_limit": "parameters_limit"}
+        inject_into=RequestOptionType.request_parameter,
+        field_name=field_name_page_size_interpolation,
+        parameters=parameters,
     )
     cursor_value = "{{ response.next }}"
     url_base = "https://airbyte.io"
-    config = {"page_limit": "config_limit"}
-    parameters = {}
     limit = 50
     strategy = CursorPaginationStrategy(
         page_size=limit,
@@ -190,12 +198,20 @@ def test_paginator_request_param_interpolation(field_name_interpolation: str, ex
     )
     paginator = DefaultPaginator(
         page_size_option=page_size_request_option,
-        page_token_option=RequestOption(inject_into=RequestOptionType.request_parameter, field_name="from", parameters={}),
+        page_token_option=RequestOption(
+            inject_into=RequestOptionType.request_parameter, field_name=field_name_page_token_interpolation, parameters=parameters
+        ),
         pagination_strategy=strategy,
         config=config,
         url_base=url_base,
-        parameters={},
+        parameters=parameters,
     )
+    response = requests.Response()
+    response.headers = {"A_HEADER": "HEADER_VALUE"}
+    response_body = {"next": "https://airbyte.io/next_url"}
+    response._content = json.dumps(response_body).encode("utf-8")
+    last_records = [{"id": 0}, {"id": 1}]
+    paginator.next_page_token(response, last_records)
     actual_request_params = paginator.get_request_params()
     assert actual_request_params == expected_request_params
 
