@@ -59,6 +59,20 @@ connectionSpecification:
       examples:
         - "100"
         - "20,10"
+    data_item_size_limit:
+      type: integer
+      title: Data item size limit (MB)
+      description:
+        The data item size limit enables the chunking of data item's value
+        into smaller pieces to ensure that you can load it into your data destination
+        even when the data item can be bigger than the destination size limit. It's disabled
+        by default and reduces the loading speed of the connector significantly and it's enabled
+        by setting a value. The values are chunked into (data_size_limit / 20) MB big chunks. 
+        (It is recommended to keep the limit smaller than the actual limit. Example -> The 
+        BigQuery row limit is 100MB, which is why it would be set to 80MB here.)
+      examples:
+        - "100"
+        - "50"
     max_pages:
       type: integer
       description:

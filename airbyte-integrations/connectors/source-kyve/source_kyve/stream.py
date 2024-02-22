@@ -5,12 +5,14 @@ import gzip
 import hashlib
 import json
 import logging
+import math
+import sys
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_kyve.utils import query_endpoint
+from source_kyve.utils import query_endpoint, split_data_item_in_chunks
 
 logger = logging.getLogger("airbyte")
 
@@ -60,6 +62,8 @@ class KYVEStream(HttpStream, IncrementalMixin):
         self._start_key = int(config["start_keys"])
         self._end_key = int(config["end_keys"])
 
+        self._data_item_size_limit = config["data_item_size_limit"]
+
         self._reached_end = False
 
         self.page_size = 100
@@ -73,7 +77,7 @@ class KYVEStream(HttpStream, IncrementalMixin):
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
-            "properties": {"key": {"type": "string"}, "value": {"type": "any"}, "offset": {"type": "string"}},
+            "properties": {"key": {"type": "string"}, "value": {"type": "any"}, "offset": {"type": "string"}, "chunk_index": {"type": "number"}},
             "required": ["key", "value"],
         }
 
@@ -160,8 +164,23 @@ class KYVEStream(HttpStream, IncrementalMixin):
                 decompressed_as_json = json.loads(decompressed)
 
                 # Add offset to each_data_item
-                for data_item in decompressed_as_json:
+                for index, data_item in enumerate(decompressed_as_json):
+                    # Add offset and gt100
                     data_item["offset"] = bundle.get("id")
+
+                    if self._data_item_size_limit > 0:
+                        # Get size of data_item in MB
+                        size_of_data_item = sys.getsizeof(str(data_item)) / (1000*1000)
+
+                        # Split if data_item > 80MB
+                        if size_of_data_item > self._data_item_size_limit:
+                            print("Data item with key", data_item["key"], "> than", self._data_item_size_limit, "MB with ",
+                                  size_of_data_item, "MB; start chunking")
+                            chunks_amount = math.ceil(size_of_data_item / (self._data_item_size_limit / 20))
+                            chunks = split_data_item_in_chunks(data_item, chunks_amount)
+                            decompressed_as_json.pop(index)
+                            decompressed_as_json.extend(chunks)
+                            print("Chunked successfully")
 
                 # Skip bundle if start_key not reached
                 if int(bundle.get("to_key")) < self._start_key:
@@ -171,14 +190,16 @@ class KYVEStream(HttpStream, IncrementalMixin):
                 # If start_key reached, remove all data items of bundles that have a key
                 # smaller than start_key
                 if int(bundle.get("from_key")) <= self._start_key <= int(bundle.get("to_key")):
-                    decompressed_as_json = [data_item for data_item in decompressed_as_json if int(data_item.get("key")) >= self._start_key]
+                    decompressed_as_json = [data_item for data_item in decompressed_as_json if self._start_key <= int(data_item.get("key"))
+                                            <= self._end_key]
                     yield from decompressed_as_json
                     continue
 
                 # If end_key reached, remove all data items of bundles that have a key
                 # bigger than end_key and stop the stream
                 if int(bundle.get("from_key")) <= self._end_key <= int(bundle.get("to_key")):
-                    decompressed_as_json = [data_item for data_item in decompressed_as_json if int(data_item.get("key")) <= self._end_key]
+                    decompressed_as_json = [data_item for data_item in decompressed_as_json if self._start_key <= int(data_item.get("key"))
+                                            <= self._end_key]
                     self._reached_end = True
                     yield from decompressed_as_json
                     return
