@@ -24,7 +24,6 @@ data:
       packageName: airbyte-source-github
   registries:
     cloud:
-      dockerImageTag: 1.5.7
       enabled: true
     oss:
       enabled: true
