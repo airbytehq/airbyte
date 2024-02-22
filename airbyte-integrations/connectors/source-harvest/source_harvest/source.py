@@ -1,15 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
-from typing import Any, List, Mapping, Tuple
+import logging
+from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+
 from source_harvest.streams import (
     BillableRates,
     Clients,
@@ -46,6 +45,7 @@ from source_harvest.streams import (
 )
 
 from .auth import HarvestOauth2Authenticator, HarvestTokenAuthenticator
+from source_harvest.availability_strategy import HarvestAvailabilityStrategy
 
 
 class SourceHarvest(AbstractSource):
@@ -66,17 +66,11 @@ class SourceHarvest(AbstractSource):
             raise Exception("Config validation error: 'api_token' is a required property")
         return HarvestTokenAuthenticator(token=api_token, account_id=config["account_id"])
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        try:
-            auth = self.get_authenticator(config)
-            replication_start_date = pendulum.parse(config["replication_start_date"])
-            users_gen = Users(authenticator=auth, replication_start_date=replication_start_date).read_records(
-                sync_mode=SyncMode.full_refresh
-            )
-            next(users_gen)
-            return True, None
-        except Exception as error:
-            return False, f"Unable to connect to Harvest API with the provided credentials - {repr(error)}"
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
+        auth = self.get_authenticator(config)
+        replication_start_date = pendulum.parse(config["replication_start_date"])
+        users_stream = Users(authenticator=auth, replication_start_date=replication_start_date)
+        return HarvestAvailabilityStrategy().check_availability(users_stream, logger, self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
