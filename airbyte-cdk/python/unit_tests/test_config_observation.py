@@ -12,6 +12,7 @@ from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, Orchestrato
 
 class TestObservedDict:
     def test_update_called_on_set_item(self, mocker):
+        assert False
         mock_observer = mocker.Mock()
         my_observed_dict = ObservedDict(
             {"key": "value", "nested_dict": {"key": "value"}, "list_of_dict": [{"key": "value"}, {"key": "value"}]}, mock_observer
