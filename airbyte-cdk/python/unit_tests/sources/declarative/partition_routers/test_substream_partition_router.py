@@ -166,7 +166,7 @@ class MockStream(Stream):
         "test_multiple_parent_streams",
         "test_missed_parent_key",
         "test_dpath_extraction",
-    ]
+    ],
 )
 def test_substream_slicer(parent_stream_configs, expected_slices):
     if expected_slices is None:
@@ -235,12 +235,12 @@ def test_substream_slicer(parent_stream_configs, expected_slices):
         ),
     ],
     ids=[
-            "test_request_option_in_request_param",
-            "test_request_option_in_header",
-            "test_request_option_in_param_and_header",
-            "test_request_option_in_body_json",
-            "test_request_option_in_body_data",
-    ]
+        "test_request_option_in_request_param",
+        "test_request_option_in_header",
+        "test_request_option_in_param_and_header",
+        "test_request_option_in_body_json",
+        "test_request_option_in_body_data",
+    ],
 )
 def test_request_option(
     parent_stream_request_parameters,
@@ -277,6 +277,61 @@ def test_request_option(
     assert expected_headers == partition_router.get_request_headers(stream_slice=stream_slice)
     assert expected_body_json == partition_router.get_request_body_json(stream_slice=stream_slice)
     assert expected_body_data == partition_router.get_request_body_data(stream_slice=stream_slice)
+
+
+@pytest.mark.parametrize(
+    "field_name_first_stream, field_name_second_stream, expected_request_params",
+    [
+        (
+            "{{parameters['field_name_first_stream']}}",
+            "{{parameters['field_name_second_stream']}}",
+            {"parameter_first_stream_id": "1234", "parameter_second_stream_id": "4567"},
+        ),
+        (
+            "{{config['field_name_first_stream']}}",
+            "{{config['field_name_second_stream']}}",
+            {"config_first_stream_id": "1234", "config_second_stream_id": "4567"},
+        ),
+    ],
+    ids=[
+        "parameters_interpolation",
+        "config_interpolation",
+    ],
+)
+def test_request_params_interpolation_for_parent_stream(
+    field_name_first_stream: str, field_name_second_stream: str, expected_request_params: dict
+):
+    config = {"field_name_first_stream": "config_first_stream_id", "field_name_second_stream": "config_second_stream_id"}
+    parameters = {"field_name_first_stream": "parameter_first_stream_id", "field_name_second_stream": "parameter_second_stream_id"}
+    partition_router = SubstreamPartitionRouter(
+        parent_stream_configs=[
+            ParentStreamConfig(
+                stream=MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
+                parent_key="id",
+                partition_field="first_stream_id",
+                parameters=parameters,
+                config=config,
+                request_option=RequestOption(
+                    inject_into=RequestOptionType.request_parameter, parameters=parameters, field_name=field_name_first_stream
+                ),
+            ),
+            ParentStreamConfig(
+                stream=MockStream(second_parent_stream_slice, more_records, "second_stream"),
+                parent_key="id",
+                partition_field="second_stream_id",
+                parameters=parameters,
+                config=config,
+                request_option=RequestOption(
+                    inject_into=RequestOptionType.request_parameter, parameters=parameters, field_name=field_name_second_stream
+                ),
+            ),
+        ],
+        parameters=parameters,
+        config=config,
+    )
+    stream_slice = {"first_stream_id": "1234", "second_stream_id": "4567"}
+
+    assert expected_request_params == partition_router.get_request_params(stream_slice=stream_slice)
 
 
 def test_given_record_is_airbyte_message_when_stream_slices_then_use_record_data():
