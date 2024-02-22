@@ -96,8 +96,7 @@ def test_load_dataframes_xlsx(config, absolute_path, test_files, file_name, shou
         assert read_file.equals(expected)
 
 
-@pytest.mark.parametrize("file_format, file_path", [("json", "formats/json/demo.json"),
-                                                    ("jsonl", "formats/jsonl/jsonl_nested.jsonl")])
+@pytest.mark.parametrize("file_format, file_path", [("json", "formats/json/demo.json"), ("jsonl", "formats/jsonl/jsonl_nested.jsonl")])
 def test_load_nested_json(client, config, absolute_path, test_files, file_format, file_path):
     if file_format == "jsonl":
         config["format"] = file_format
@@ -128,7 +127,8 @@ def test_cache_stream(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/test.csv"
     with open(f, mode="rb") as file:
         assert client._cache_stream(file)
-        
+
+
 def test_unzip_stream(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/test.csv.zip"
     with open(f, mode="rb") as file:
@@ -220,6 +220,6 @@ def test_urlfile_open_backoff_sftp(monkeypatch, mocker):
 def test_backoff_handler(caplog):
     details = {"tries": 1, "wait": 1}
     backoff_handler(details)
-    expected = [('airbyte', 20, 'Caught retryable error after 1 tries. Waiting 1 seconds then retrying...')]
+    expected = [("airbyte", 20, "Caught retryable error after 1 tries. Waiting 1 seconds then retrying...")]
 
     assert caplog.record_tuples == expected

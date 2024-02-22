@@ -107,12 +107,9 @@ def test_parse_date():
             False,
             "Unable to read organisations stream. The endpoint https://api.xero.com/api.xro/2.0/Organisation returned 403: None. This is most likely due to insufficient permissions on the credentials in use.",
         ),
-
     ],
 )
-def test_403_error_handling(
-    requests_mock, stream, url, status_code, response_content, expected_availability, expected_reason_substring
-):
+def test_403_error_handling(requests_mock, stream, url, status_code, response_content, expected_availability, expected_reason_substring):
     """
     Test that availability strategy flags streams with 403 error as unavailable
     and returns custom Notion integration message.
@@ -120,7 +117,7 @@ def test_403_error_handling(
 
     requests_mock.get(url=url, status_code=status_code, content=response_content)
 
-    stream = stream(tenant_id='tenant_id')
+    stream = stream(tenant_id="tenant_id")
 
     is_available, reason = stream.check_availability(logger=logging.Logger, source=MagicMock())
 

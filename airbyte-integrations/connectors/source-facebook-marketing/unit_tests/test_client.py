@@ -28,11 +28,7 @@ def fb_call_rate_response_fixture():
         "fbtrace_id": "this_is_fake_response",
     }
 
-    headers = {
-        "x-app-usage": json.dumps(
-            {"call_count": 28, "total_time": 25, "total_cputime": 25}
-        )
-    }
+    headers = {"x-app-usage": json.dumps({"call_count": 28, "total_time": 25, "total_cputime": 25})}
 
     return {
         "json": {
@@ -59,9 +55,7 @@ def fb_call_amount_data_response_fixture():
 
 
 class TestBackoff:
-    def test_limit_reached(
-        self, mocker, requests_mock, api, fb_call_rate_response, account_id, some_config
-    ):
+    def test_limit_reached(self, mocker, requests_mock, api, fb_call_rate_response, account_id, some_config):
         """Error once, check that we retry and not fail"""
         # turn Campaigns into non batch mode to test non batch logic
         campaign_responses = [
@@ -111,9 +105,7 @@ class TestBackoff:
         except FacebookRequestError:
             pytest.fail("Call rate error has not being handled")
 
-    def test_batch_limit_reached(
-        self, requests_mock, api, fb_call_rate_response, account_id
-    ):
+    def test_batch_limit_reached(self, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
         responses = [
             fb_call_rate_response,
@@ -164,9 +156,7 @@ class TestBackoff:
             FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/",
             responses,
         )
-        requests_mock.register_uri(
-            "POST", FacebookSession.GRAPH + f"/{FB_API_VERSION}/", batch_responses
-        )
+        requests_mock.register_uri("POST", FacebookSession.GRAPH + f"/{FB_API_VERSION}/", batch_responses)
 
         stream = AdCreatives(api=api, account_ids=[account_id])
         records = list(
@@ -244,9 +234,7 @@ class TestBackoff:
 
         assert accounts == [account_data]
 
-    def test_limit_error_retry(
-        self, fb_call_amount_data_response, requests_mock, api, account_id
-    ):
+    def test_limit_error_retry(self, fb_call_amount_data_response, requests_mock, api, account_id):
         """Error every time, check limit parameter decreases by 2 times every new call"""
 
         res = requests_mock.register_uri(
@@ -368,13 +356,9 @@ class TestBackoff:
             )
         )
 
-    def test_limit_error_retry_next_page(
-        self, fb_call_amount_data_response, requests_mock, api, account_id
-    ):
+    def test_limit_error_retry_next_page(self, fb_call_amount_data_response, requests_mock, api, account_id):
         """Unlike the previous test, this one tests the API call fail on the second or more page of a request."""
-        base_url = (
-            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/advideos"
-        )
+        base_url = FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/advideos"
 
         res = requests_mock.register_uri(
             "GET",

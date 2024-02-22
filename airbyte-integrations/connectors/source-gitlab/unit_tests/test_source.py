@@ -147,14 +147,18 @@ def test_try_refresh_access_token(oauth_config, requests_mock):
     }
     requests_mock.post("https://gitlab.com/oauth/token", status_code=200, json=test_response)
 
-    expected = {"api_url": "gitlab.com",
-                "credentials": {"access_token": "new_access_token",
-                                "auth_type": "oauth2.0",
-                                "client_id": "client_id",
-                                "client_secret": "client_secret",
-                                "refresh_token": "new_refresh_token",
-                                "token_expiry_date": "2025-01-01T02:00:00+00:00"},
-                "start_date": "2021-01-01T00:00:00Z"}
+    expected = {
+        "api_url": "gitlab.com",
+        "credentials": {
+            "access_token": "new_access_token",
+            "auth_type": "oauth2.0",
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "refresh_token": "new_refresh_token",
+            "token_expiry_date": "2025-01-01T02:00:00+00:00",
+        },
+        "start_date": "2021-01-01T00:00:00Z",
+    }
 
     source = SourceGitlab()
     source._auth_params(oauth_config)

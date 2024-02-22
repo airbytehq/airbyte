@@ -94,18 +94,11 @@ def test_discovery_uniquely_named_streams():
                 "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
                 "properties": {
-                    "amount": {
-                        "type": ["null", "integer"]
-                    },
-                    "amount_details": {
-                        "type": ["null", "object"],
-                        "properties": {
-                            "atm_fee": ["null", "integer"]
-                        }
-                    }
-                }
+                    "amount": {"type": ["null", "integer"]},
+                    "amount_details": {"type": ["null", "object"], "properties": {"atm_fee": ["null", "integer"]}},
+                },
             },
-            True
+            True,
         ),
         (
             {
@@ -113,38 +106,22 @@ def test_discovery_uniquely_named_streams():
                 "type": ["null", "object"],
                 "properties": {
                     "amount": "integer",
-                    "amount_details": {
-                        "type": ["null", "object"],
-                        "properties": {
-                            "atm_fee": {
-                                "type": ["null", "integer"]
-                            }
-                        }
-                    }
-                }
+                    "amount_details": {"type": ["null", "object"], "properties": {"atm_fee": {"type": ["null", "integer"]}}},
+                },
             },
-            True
+            True,
         ),
         (
             {
                 "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
                 "properties": {
-                    "amount": {
-                        "type": ["null", "integer"]
-                    },
-                    "amount_details": {
-                        "type": ["null", "object"],
-                        "properties": {
-                            "atm_fee": {
-                                "type": ["null", "integer"]
-                            }
-                        }
-                    }
-                }
+                    "amount": {"type": ["null", "integer"]},
+                    "amount_details": {"type": ["null", "object"], "properties": {"atm_fee": {"type": ["null", "integer"]}}},
+                },
             },
-            False
-        )
+            False,
+        ),
     ],
 )
 def test_streams_have_valid_json_schemas(schema, should_fail):

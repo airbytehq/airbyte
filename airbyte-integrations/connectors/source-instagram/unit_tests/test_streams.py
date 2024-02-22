@@ -188,7 +188,9 @@ def test_user_lifetime_insights_read(api, config, user_lifetime_insight_data, re
 
     stream = UserLifetimeInsights(api=api)
 
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", [{"json": user_lifetime_insight_data}])
+    requests_mock.register_uri(
+        "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", [{"json": user_lifetime_insight_data}]
+    )
 
     records = read_full_refresh(stream)
     expected_record = {
@@ -196,7 +198,7 @@ def test_user_lifetime_insights_read(api, config, user_lifetime_insight_data, re
         "business_account_id": "test_id",
         "metric": "impressions",
         "page_id": "act_unknown_account",
-        "value": {"London, England": 22, "Sydney, New South Wales": 33}
+        "value": {"London, England": 22, "Sydney, New South Wales": 33},
     }
     assert expected_record in records
 

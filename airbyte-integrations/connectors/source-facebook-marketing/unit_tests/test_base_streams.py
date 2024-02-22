@@ -112,15 +112,11 @@ class ConcreteFBMarketingIncrementalStream(FBMarketingIncrementalStream):
 
 @pytest.fixture
 def incremental_class_instance(api):
-    return ConcreteFBMarketingIncrementalStream(
-        api=api, account_ids=["123", "456", "789"], start_date=None, end_date=None
-    )
+    return ConcreteFBMarketingIncrementalStream(api=api, account_ids=["123", "456", "789"], start_date=None, end_date=None)
 
 
 class TestFBMarketingIncrementalStreamSliceAndState:
-    def test_stream_slices_multiple_accounts_with_state(
-        self, incremental_class_instance
-    ):
+    def test_stream_slices_multiple_accounts_with_state(self, incremental_class_instance):
         stream_state = {
             "123": {"state_key": "state_value"},
             "456": {"state_key": "another_state_value"},
@@ -130,14 +126,9 @@ class TestFBMarketingIncrementalStreamSliceAndState:
             {"account_id": "456", "stream_state": {"state_key": "another_state_value"}},
             {"account_id": "789", "stream_state": {}},
         ]
-        assert (
-            list(incremental_class_instance.stream_slices(stream_state))
-            == expected_slices
-        )
+        assert list(incremental_class_instance.stream_slices(stream_state)) == expected_slices
 
-    def test_stream_slices_multiple_accounts_empty_state(
-        self, incremental_class_instance
-    ):
+    def test_stream_slices_multiple_accounts_empty_state(self, incremental_class_instance):
         expected_slices = [
             {"account_id": "123", "stream_state": {}},
             {"account_id": "456", "stream_state": {}},
@@ -149,10 +140,7 @@ class TestFBMarketingIncrementalStreamSliceAndState:
         incremental_class_instance._account_ids = ["123"]
         stream_state = {"state_key": "state_value"}
         expected_slices = [{"account_id": "123", "stream_state": stream_state}]
-        assert (
-            list(incremental_class_instance.stream_slices(stream_state))
-            == expected_slices
-        )
+        assert list(incremental_class_instance.stream_slices(stream_state)) == expected_slices
 
     def test_stream_slices_single_account_empty_state(self, incremental_class_instance):
         incremental_class_instance._account_ids = ["123"]
@@ -270,7 +258,5 @@ class TestFBMarketingIncrementalStreamSliceAndState:
         # Set the instance's filter_statuses
         incremental_class_instance._filter_statuses = instance_filter_statuses
 
-        new_state = incremental_class_instance.get_updated_state(
-            current_stream_state, latest_record
-        )
+        new_state = incremental_class_instance.get_updated_state(current_stream_state, latest_record)
         assert new_state == expected_state

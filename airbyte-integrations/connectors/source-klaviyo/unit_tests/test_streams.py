@@ -474,16 +474,43 @@ class TestCampaignsStream:
 
 
 class TestArchivedRecordsStream:
-
     @pytest.mark.parametrize(
         "stream_state, next_page_token, expected_params",
         [
             ({}, None, {"filter": "equals(archived,true)", "sort": "updated_at"}),
-            ({"archived": {"updated_at": "2023-10-10 00:00:00"}}, None, {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))", "sort": "updated_at"}),
-            ({"archived": {"updated_at": "2023-10-10 00:00:00"}}, {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))", "sort": "updated_at", "page[cursor]": "next_page_cursor"}, {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))", "sort": "updated_at", "page[cursor]": "next_page_cursor"}),
-            ({}, {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))", "sort": "updated_at", "page[cursor]": "next_page_cursor"}, {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))", "sort": "updated_at", "page[cursor]": "next_page_cursor"})
+            (
+                {"archived": {"updated_at": "2023-10-10 00:00:00"}},
+                None,
+                {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))", "sort": "updated_at"},
+            ),
+            (
+                {"archived": {"updated_at": "2023-10-10 00:00:00"}},
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+            ),
+            (
+                {},
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+            ),
         ],
     )
     def test_request_params(self, stream_state, next_page_token, expected_params):
-        archived_stream = ArchivedRecordsStream(api_key='API_KEY', cursor_field='updated_at', path='path')
+        archived_stream = ArchivedRecordsStream(api_key="API_KEY", cursor_field="updated_at", path="path")
         assert archived_stream.request_params(stream_state=stream_state, next_page_token=next_page_token) == expected_params

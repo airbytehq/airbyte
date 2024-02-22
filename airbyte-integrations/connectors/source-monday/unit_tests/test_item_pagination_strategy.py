@@ -41,19 +41,20 @@ def test_item_pagination_strategy(response_json, last_records, expected):
 
     assert strategy.next_page_token(response, last_records) == expected
 
+
 @pytest.mark.parametrize(
     ("response_json", "last_records", "expected"),
     [
         pytest.param(
-            {"data": {"boards": [{"items_page": {"cursor": "bla", "items":[{"id": "1"}]}}]}},
+            {"data": {"boards": [{"items_page": {"cursor": "bla", "items": [{"id": "1"}]}}]}},
             [],
-            (1, 'bla'),
+            (1, "bla"),
             id="test_cursor_in_first_request",
         ),
         pytest.param(
-            {"data": {"next_items_page": {"cursor": "bla2", "items":[{"id": "1"}]}}},
+            {"data": {"next_items_page": {"cursor": "bla2", "items": [{"id": "1"}]}}},
             [],
-            (1, 'bla2'),
+            (1, "bla2"),
             id="test_cursor_in_next_page",
         ),
         pytest.param(

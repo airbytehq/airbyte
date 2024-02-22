@@ -350,12 +350,11 @@ class TestIncrementalStreams:
         stream = stream_cls(config, authenticator=None)
         result = stream.get_updated_state(current_state, latest_record)
         assert result == expected
-        
-        
+
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (Addresses, {'start_date': '2021-08-15 00:00:01', 'end_date': '2021-09-14 00:00:01'}),
+            (Addresses, {"start_date": "2021-08-15 00:00:01", "end_date": "2021-09-14 00:00:01"}),
         ],
     )
     def test_stream_slices(self, config, stream_cls, expected):

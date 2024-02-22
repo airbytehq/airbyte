@@ -9,9 +9,7 @@ class ConfigBuilder:
         self._config: Dict[str, Any] = {
             "account_id": "an account id",
             "replication_start_date": "2021-01-01T00:00:00Z",
-            "credentials": {
-                "api_token": "an api key"
-            }
+            "credentials": {"api_token": "an api key"},
         }
 
     def with_account_id(self, account_id: str) -> "ConfigBuilder":
@@ -19,7 +17,7 @@ class ConfigBuilder:
         return self
 
     def with_replication_start_date(self, replication_start_date: datetime) -> "ConfigBuilder":
-        self._config["start_date"] = replication_start_date.isoformat()[:-13]+"Z"
+        self._config["start_date"] = replication_start_date.isoformat()[:-13] + "Z"
         return self
 
     def with_api_token(self, api_token: str) -> "ConfigBuilder":

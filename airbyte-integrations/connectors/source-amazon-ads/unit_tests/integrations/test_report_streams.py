@@ -51,12 +51,14 @@ class TestDisplayReportStreams(TestCase):
         Authenticate and get profiles
         """
         http_mocker.post(
-            OAuthRequestBuilder.oauth_endpoint(client_id=config["client_id"], client_secred=config["client_secret"], refresh_token=config["refresh_token"]).build(),
-            OAuthResponseBuilder.token_response().build()
+            OAuthRequestBuilder.oauth_endpoint(
+                client_id=config["client_id"], client_secred=config["client_secret"], refresh_token=config["refresh_token"]
+            ).build(),
+            OAuthResponseBuilder.token_response().build(),
         )
         http_mocker.get(
             ProfilesRequestBuilder.profiles_endpoint(client_id=config["client_id"], client_access_token=config["access_token"]).build(),
-            ProfilesResponseBuilder.profiles_response().with_record(ProfilesRecordBuilder.profiles_record()).build()
+            ProfilesResponseBuilder.profiles_response().with_record(ProfilesRecordBuilder.profiles_record()).build(),
         )
 
     @HttpMocker()
@@ -79,24 +81,35 @@ class TestDisplayReportStreams(TestCase):
                 report_id = str(uuid.uuid4())
                 http_mocker.post(
                     SponsoredDisplayReportRequestBuilder._init_report_endpoint(
-                        self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_type, tactic, metrics, start_date
+                        self._config["client_id"],
+                        self._config["access_token"],
+                        self._config["profiles"][0],
+                        report_type,
+                        tactic,
+                        metrics,
+                        start_date,
                     ).build(),
-                    ReportInitResponseBuilder.report_init_response().with_record(
-                        ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id)
-                    ).with_status_code(202).build()
+                    ReportInitResponseBuilder.report_init_response()
+                    .with_record(ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id))
+                    .with_status_code(202)
+                    .build(),
                 )
                 download_request_builder = ReportDownloadRequestBuilder.download_endpoint(report_id)
                 http_mocker.get(
                     ReportCheckStatusRequestBuilder.check_sponsored_display_report_status_endpoint(
                         self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_id
                     ).build(),
-                    ReportCheckStatusResponseBuilder.check_status_response().with_record(
+                    ReportCheckStatusResponseBuilder.check_status_response()
+                    .with_record(
                         ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url)
-                    ).build()
+                    )
+                    .build(),
                 )
 
                 # a workaround to pass compressed document to the mocked response
-                gzip_file_report_response = ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
+                gzip_file_report_response = (
+                    ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
+                )
                 request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
                 http_mocker._matchers.append(request_matcher)
 
@@ -131,24 +144,25 @@ class TestDisplayReportStreams(TestCase):
                 SponsoredProductsReportRequestBuilder._init_report_endpoint(
                     self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_type, metrics, start_date
                 ).build(),
-                ReportInitResponseBuilder.report_init_response().with_record(
-                    ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id)
-                ).with_status_code(200).build()
+                ReportInitResponseBuilder.report_init_response()
+                .with_record(ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id))
+                .with_status_code(200)
+                .build(),
             )
             download_request_builder = ReportDownloadRequestBuilder.download_endpoint(report_id)
             http_mocker.get(
                 ReportCheckStatusRequestBuilder.check_sponsored_products_report_status_endpoint(
                     self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_id
                 ).build(),
-                ReportCheckStatusResponseBuilder.check_status_response().with_record(
-                    ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url)
-                ).build()
+                ReportCheckStatusResponseBuilder.check_status_response()
+                .with_record(ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url))
+                .build(),
             )
 
             # a workaround to pass compressed document to the mocked response
-            gzip_file_report_response = ReportDownloadResponseBuilder.download_report().with_record(
-                ReportFileRecordBuilder.report_file_record()
-            ).build()
+            gzip_file_report_response = (
+                ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
+            )
             request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
             http_mocker._matchers.append(request_matcher)
 
@@ -183,24 +197,25 @@ class TestDisplayReportStreams(TestCase):
                 SponsoredBrandsVideoReportRequestBuilder._init_report_endpoint(
                     self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_type, metrics, start_date
                 ).build(),
-                ReportInitResponseBuilder.report_init_response().with_record(
-                    ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id)
-                ).with_status_code(202).build()
+                ReportInitResponseBuilder.report_init_response()
+                .with_record(ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id))
+                .with_status_code(202)
+                .build(),
             )
             download_request_builder = ReportDownloadRequestBuilder.download_endpoint(report_id)
             http_mocker.get(
                 ReportCheckStatusRequestBuilder.check_sponsored_brands_video_report_status_endpoint(
                     self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_id
                 ).build(),
-                ReportCheckStatusResponseBuilder.check_status_response().with_record(
-                    ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url)
-                ).build()
+                ReportCheckStatusResponseBuilder.check_status_response()
+                .with_record(ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url))
+                .build(),
             )
 
             # a workaround to pass compressed document to the mocked response
-            gzip_file_report_response = ReportDownloadResponseBuilder.download_report().with_record(
-                ReportFileRecordBuilder.report_file_record()
-            ).build()
+            gzip_file_report_response = (
+                ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
+            )
             request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
             http_mocker._matchers.append(request_matcher)
 
@@ -235,24 +250,25 @@ class TestDisplayReportStreams(TestCase):
                 SponsoredBrandsReportRequestBuilder._init_report_endpoint(
                     self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_type, metrics, start_date
                 ).build(),
-                ReportInitResponseBuilder.report_init_response().with_record(
-                    ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id)
-                ).with_status_code(202).build()
+                ReportInitResponseBuilder.report_init_response()
+                .with_record(ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id))
+                .with_status_code(202)
+                .build(),
             )
             download_request_builder = ReportDownloadRequestBuilder.download_endpoint(report_id)
             http_mocker.get(
                 ReportCheckStatusRequestBuilder.check_sponsored_brands_report_status_endpoint(
                     self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_id
                 ).build(),
-                ReportCheckStatusResponseBuilder.check_status_response().with_record(
-                    ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url)
-                ).build()
+                ReportCheckStatusResponseBuilder.check_status_response()
+                .with_record(ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url))
+                .build(),
             )
 
             # a workaround to pass compressed document to the mocked response
-            gzip_file_report_response = ReportDownloadResponseBuilder.download_report().with_record(
-                ReportFileRecordBuilder.report_file_record()
-            ).build()
+            gzip_file_report_response = (
+                ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
+            )
             request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
             http_mocker._matchers.append(request_matcher)
 
@@ -287,24 +303,25 @@ class TestDisplayReportStreams(TestCase):
                 SponsoredBrandsV3ReportRequestBuilder._init_report_endpoint(
                     self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_type, metrics, start_date
                 ).build(),
-                ReportInitResponseBuilder.report_init_response().with_record(
-                    ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id)
-                ).with_status_code(200).build()
+                ReportInitResponseBuilder.report_init_response()
+                .with_record(ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id))
+                .with_status_code(200)
+                .build(),
             )
             download_request_builder = ReportDownloadRequestBuilder.download_endpoint(report_id)
             http_mocker.get(
                 ReportCheckStatusRequestBuilder.check_sponsored_brands_v3_report_status_endpoint(
                     self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_id
                 ).build(),
-                ReportCheckStatusResponseBuilder.check_status_response().with_record(
-                    ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url)
-                ).build()
+                ReportCheckStatusResponseBuilder.check_status_response()
+                .with_record(ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url))
+                .build(),
             )
 
             # a workaround to pass compressed document to the mocked response
-            gzip_file_report_response = ReportDownloadResponseBuilder.download_report().with_record(
-                ReportFileRecordBuilder.report_file_record()
-            ).build()
+            gzip_file_report_response = (
+                ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
+            )
             request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
             http_mocker._matchers.append(request_matcher)
 
@@ -340,9 +357,17 @@ class TestDisplayReportStreams(TestCase):
             for report_type, metrics in brands_report.METRICS_MAP_V3.items():
                 http_mocker.post(
                     SponsoredBrandsV3ReportRequestBuilder._init_report_endpoint(
-                        self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_type, metrics, start_date
+                        self._config["client_id"],
+                        self._config["access_token"],
+                        self._config["profiles"][0],
+                        report_type,
+                        metrics,
+                        start_date,
                     ).build(),
-                    ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(status_code).build(),
+                    ErrorResponseBuilder.non_breaking_error_response()
+                    .with_record(non_breaking_error)
+                    .with_status_code(status_code)
+                    .build(),
                 )
 
             output = read_stream("sponsored_brands_v3_report_stream", SyncMode.full_refresh, self._config)
@@ -372,30 +397,41 @@ class TestDisplayReportStreams(TestCase):
             profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
             start_date = pendulum.today(tz=profile_timezone).date()
             non_breaking_error = ErrorRecordBuilder.non_breaking_error().with_error_message(msg)
-            
+
             for report_type, metrics in display_report.METRICS_MAP.items():
                 report_id = str(uuid.uuid4())
                 tactic = display_report.TACTICS[0]
                 http_mocker.post(
                     SponsoredDisplayReportRequestBuilder._init_report_endpoint(
-                        self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_type, tactic, metrics, start_date
+                        self._config["client_id"],
+                        self._config["access_token"],
+                        self._config["profiles"][0],
+                        report_type,
+                        tactic,
+                        metrics,
+                        start_date,
                     ).build(),
-                    ReportInitResponseBuilder.report_init_response().with_record(
-                        ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id)
-                    ).with_status_code(202).build()
+                    ReportInitResponseBuilder.report_init_response()
+                    .with_record(ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id))
+                    .with_status_code(202)
+                    .build(),
                 )
                 download_request_builder = ReportDownloadRequestBuilder.download_endpoint(report_id)
                 http_mocker.get(
                     ReportCheckStatusRequestBuilder.check_sponsored_display_report_status_endpoint(
                         self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_id
                     ).build(),
-                    ReportCheckStatusResponseBuilder.check_status_response().with_record(
+                    ReportCheckStatusResponseBuilder.check_status_response()
+                    .with_record(
                         ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url)
-                    ).build()
+                    )
+                    .build(),
                 )
 
                 # a workaround to pass compressed document to the mocked response
-                gzip_file_report_response = ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
+                gzip_file_report_response = (
+                    ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
+                )
                 request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
                 http_mocker._matchers.append(request_matcher)
 
@@ -409,9 +445,18 @@ class TestDisplayReportStreams(TestCase):
                 tactic = display_report.TACTICS[1]
                 http_mocker.post(
                     SponsoredDisplayReportRequestBuilder._init_report_endpoint(
-                        self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_type, tactic, metrics, start_date
+                        self._config["client_id"],
+                        self._config["access_token"],
+                        self._config["profiles"][0],
+                        report_type,
+                        tactic,
+                        metrics,
+                        start_date,
                     ).build(),
-                    ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(status_code).build(),
+                    ErrorResponseBuilder.non_breaking_error_response()
+                    .with_record(non_breaking_error)
+                    .with_status_code(status_code)
+                    .build(),
                 )
 
             output = read_stream("sponsored_display_report_stream", SyncMode.full_refresh, self._config)
@@ -421,12 +466,8 @@ class TestDisplayReportStreams(TestCase):
                 (
                     f"Unexpected HTTP status code {status_code} when registering {report_type}, "
                     f"SponsoredDisplayReportStream for 1 profile: {json.dumps(non_breaking_error.build())}"
-                ) for report_type in display_report.METRICS_MAP.keys()
+                )
+                for report_type in display_report.METRICS_MAP.keys()
             ]
             for expected_warning_log in expected_warning_logs:
-                assert any(
-                    [
-                        expected_warning_log in warn 
-                        for warn in get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-                    ]
-                )
+                assert any([expected_warning_log in warn for warn in get_log_messages_by_log_level(output.logs, LogLevel.WARN)])

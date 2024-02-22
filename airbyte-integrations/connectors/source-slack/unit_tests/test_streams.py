@@ -100,11 +100,10 @@ def test_channels_stream_with_autojoin(authenticator) -> None:
     The test uses the `conversations_list` fixture(autouse=true) as API mocker.
     """
     expected = [
-        {'name': 'advice-data-architecture', 'id': 1, 'is_member': False},
-        {'name': 'advice-data-orchestration', 'id': 2, 'is_member': True},
-        {'name': 'airbyte-for-beginners', 'id': 3, 'is_member': False},
-        {'name': 'good-reads', 'id': 4, 'is_member': True},
+        {"name": "advice-data-architecture", "id": 1, "is_member": False},
+        {"name": "advice-data-orchestration", "id": 2, "is_member": True},
+        {"name": "airbyte-for-beginners", "id": 3, "is_member": False},
+        {"name": "good-reads", "id": 4, "is_member": True},
     ]
     stream = Channels(channel_filter=[], join_channels=True, authenticator=authenticator)
     assert list(stream.read_records(None)) == expected
-    

@@ -60,14 +60,14 @@ class TestTwilioStream:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (Accounts, ['name']),
+            (Accounts, ["name"]),
         ],
     )
     def test_changeable_fields(self, stream_cls, expected):
-        with patch.object(Accounts, "changeable_fields", ['name']):
-          stream = stream_cls(**self.CONFIG)
-          result = stream.changeable_fields
-          assert result == expected
+        with patch.object(Accounts, "changeable_fields", ["name"]):
+            stream = stream_cls(**self.CONFIG)
+            result = stream.changeable_fields
+            assert result == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -108,12 +108,12 @@ class TestTwilioStream:
     )
     def test_parse_response(self, requests_mock, stream_cls, test_response, expected):
         with patch.object(TwilioStream, "changeable_fields", ["name"]):
-          stream = stream_cls(**self.CONFIG)
-          url = f"{stream.url_base}{stream.path()}"
-          requests_mock.get(url, json=test_response)
-          response = requests.get(url)
-          result = list(stream.parse_response(response))
-          assert result[0]['id'] == expected[0]['id']
+            stream = stream_cls(**self.CONFIG)
+            url = f"{stream.url_base}{stream.path()}"
+            requests_mock.get(url, json=test_response)
+            response = requests.get(url)
+            result = list(stream.parse_response(response))
+            assert result[0]["id"] == expected[0]["id"]
 
     @pytest.mark.parametrize(
         "stream_cls, expected",

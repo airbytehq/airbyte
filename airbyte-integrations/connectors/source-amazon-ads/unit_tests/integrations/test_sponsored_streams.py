@@ -25,12 +25,14 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         Authenticate and get profiles
         """
         http_mocker.post(
-            OAuthRequestBuilder.oauth_endpoint(client_id=config["client_id"], client_secred=config["client_secret"], refresh_token=config["refresh_token"]).build(),
-            OAuthResponseBuilder.token_response().build()
+            OAuthRequestBuilder.oauth_endpoint(
+                client_id=config["client_id"], client_secred=config["client_secret"], refresh_token=config["refresh_token"]
+            ).build(),
+            OAuthResponseBuilder.token_response().build(),
         )
         http_mocker.get(
             ProfilesRequestBuilder.profiles_endpoint(client_id=config["client_id"], client_access_token=config["access_token"]).build(),
-            ProfilesResponseBuilder.profiles_response().with_record(ProfilesRecordBuilder.profiles_record()).build()
+            ProfilesResponseBuilder.profiles_response().with_record(ProfilesRecordBuilder.profiles_record()).build(),
         )
 
     @HttpMocker()
@@ -43,8 +45,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         non_breaking_error = ErrorRecordBuilder.non_breaking_error()
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.ad_groups_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
+            SponsoredBrandsRequestBuilder.ad_groups_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build(),
         )
         output = read_stream("sponsored_brands_ad_groups", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
@@ -61,10 +65,12 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         breaking_error = ErrorRecordBuilder.breaking_error()
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.ad_groups_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build()
+            SponsoredBrandsRequestBuilder.ad_groups_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
         )
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("sponsored_brands_ad_groups", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
@@ -79,8 +85,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.ad_groups_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            SponsoredBrandsResponseBuilder.ad_groups_response().with_record(SponsoredBrandsRecordBuilder.ad_groups_record()).build()
+            SponsoredBrandsRequestBuilder.ad_groups_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            SponsoredBrandsResponseBuilder.ad_groups_response().with_record(SponsoredBrandsRecordBuilder.ad_groups_record()).build(),
         )
 
         output = read_stream("sponsored_brands_ad_groups", SyncMode.full_refresh, self._config)
@@ -94,16 +102,28 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.ad_groups_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            SponsoredBrandsResponseBuilder.ad_groups_response(CountBasedPaginationStrategy()).with_record(SponsoredBrandsRecordBuilder.ad_groups_record()).with_pagination().build()
+            SponsoredBrandsRequestBuilder.ad_groups_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            SponsoredBrandsResponseBuilder.ad_groups_response(CountBasedPaginationStrategy())
+            .with_record(SponsoredBrandsRecordBuilder.ad_groups_record())
+            .with_pagination()
+            .build(),
         )
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.ad_groups_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=100).build(),
-            SponsoredBrandsResponseBuilder.ad_groups_response(CountBasedPaginationStrategy()).with_record(SponsoredBrandsRecordBuilder.ad_groups_record()).with_pagination().build()
+            SponsoredBrandsRequestBuilder.ad_groups_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=100
+            ).build(),
+            SponsoredBrandsResponseBuilder.ad_groups_response(CountBasedPaginationStrategy())
+            .with_record(SponsoredBrandsRecordBuilder.ad_groups_record())
+            .with_pagination()
+            .build(),
         )
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.ad_groups_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=200).build(),
-            SponsoredBrandsResponseBuilder.ad_groups_response().with_record(SponsoredBrandsRecordBuilder.ad_groups_record()).build()
+            SponsoredBrandsRequestBuilder.ad_groups_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=200
+            ).build(),
+            SponsoredBrandsResponseBuilder.ad_groups_response().with_record(SponsoredBrandsRecordBuilder.ad_groups_record()).build(),
         )
 
         output = read_stream("sponsored_brands_ad_groups", SyncMode.full_refresh, self._config)
@@ -119,8 +139,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         non_breaking_error = ErrorRecordBuilder.non_breaking_error()
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
+            SponsoredBrandsRequestBuilder.campaigns_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build(),
         )
         output = read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
@@ -137,10 +159,12 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         breaking_error = ErrorRecordBuilder.breaking_error()
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build()
+            SponsoredBrandsRequestBuilder.campaigns_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
         )
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
@@ -155,8 +179,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            SponsoredBrandsResponseBuilder.campaigns_response().with_record(SponsoredBrandsRecordBuilder.campaigns_record()).build()
+            SponsoredBrandsRequestBuilder.campaigns_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            SponsoredBrandsResponseBuilder.campaigns_response().with_record(SponsoredBrandsRecordBuilder.campaigns_record()).build(),
         )
 
         output = read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, self._config)
@@ -170,16 +196,28 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            SponsoredBrandsResponseBuilder.campaigns_response(CountBasedPaginationStrategy()).with_record(SponsoredBrandsRecordBuilder.campaigns_record()).with_pagination().build()
+            SponsoredBrandsRequestBuilder.campaigns_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            SponsoredBrandsResponseBuilder.campaigns_response(CountBasedPaginationStrategy())
+            .with_record(SponsoredBrandsRecordBuilder.campaigns_record())
+            .with_pagination()
+            .build(),
         )
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=100).build(),
-            SponsoredBrandsResponseBuilder.campaigns_response(CountBasedPaginationStrategy()).with_record(SponsoredBrandsRecordBuilder.campaigns_record()).with_pagination().build()
+            SponsoredBrandsRequestBuilder.campaigns_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=100
+            ).build(),
+            SponsoredBrandsResponseBuilder.campaigns_response(CountBasedPaginationStrategy())
+            .with_record(SponsoredBrandsRecordBuilder.campaigns_record())
+            .with_pagination()
+            .build(),
         )
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=200).build(),
-            SponsoredBrandsResponseBuilder.campaigns_response().with_record(SponsoredBrandsRecordBuilder.campaigns_record()).build()
+            SponsoredBrandsRequestBuilder.campaigns_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=200
+            ).build(),
+            SponsoredBrandsResponseBuilder.campaigns_response().with_record(SponsoredBrandsRecordBuilder.campaigns_record()).build(),
         )
 
         output = read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, self._config)
@@ -195,8 +233,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         non_breaking_error = ErrorRecordBuilder.non_breaking_error()
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.keywords_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
+            SponsoredBrandsRequestBuilder.keywords_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build(),
         )
         output = read_stream("sponsored_brands_keywords", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
@@ -213,10 +253,12 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         breaking_error = ErrorRecordBuilder.breaking_error()
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.keywords_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build()
+            SponsoredBrandsRequestBuilder.keywords_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
         )
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("sponsored_brands_keywords", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
@@ -231,8 +273,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.keywords_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            SponsoredBrandsResponseBuilder.keywords_response().with_record(SponsoredBrandsRecordBuilder.keywords_record()).build()
+            SponsoredBrandsRequestBuilder.keywords_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            SponsoredBrandsResponseBuilder.keywords_response().with_record(SponsoredBrandsRecordBuilder.keywords_record()).build(),
         )
 
         output = read_stream("sponsored_brands_keywords", SyncMode.full_refresh, self._config)
@@ -246,16 +290,28 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         self._given_oauth_and_profiles(http_mocker, self._config)
 
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.keywords_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100).build(),
-            SponsoredBrandsResponseBuilder.keywords_response(CountBasedPaginationStrategy()).with_record(SponsoredBrandsRecordBuilder.keywords_record()).with_pagination().build()
+            SponsoredBrandsRequestBuilder.keywords_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
+            ).build(),
+            SponsoredBrandsResponseBuilder.keywords_response(CountBasedPaginationStrategy())
+            .with_record(SponsoredBrandsRecordBuilder.keywords_record())
+            .with_pagination()
+            .build(),
         )
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.keywords_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=100).build(),
-            SponsoredBrandsResponseBuilder.keywords_response(CountBasedPaginationStrategy()).with_record(SponsoredBrandsRecordBuilder.keywords_record()).with_pagination().build()
+            SponsoredBrandsRequestBuilder.keywords_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=100
+            ).build(),
+            SponsoredBrandsResponseBuilder.keywords_response(CountBasedPaginationStrategy())
+            .with_record(SponsoredBrandsRecordBuilder.keywords_record())
+            .with_pagination()
+            .build(),
         )
         http_mocker.get(
-            SponsoredBrandsRequestBuilder.keywords_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=200).build(),
-            SponsoredBrandsResponseBuilder.keywords_response().with_record(SponsoredBrandsRecordBuilder.keywords_record()).build()
+            SponsoredBrandsRequestBuilder.keywords_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100, start_index=200
+            ).build(),
+            SponsoredBrandsResponseBuilder.keywords_response().with_record(SponsoredBrandsRecordBuilder.keywords_record()).build(),
         )
 
         output = read_stream("sponsored_brands_keywords", SyncMode.full_refresh, self._config)

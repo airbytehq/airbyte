@@ -23,6 +23,7 @@ def session_mock():
         response_mock.status_code = 200
         yield session_mock
 
+
 @responses.activate
 def test_stream_correct():
     stream_slice = StreamSlice(start_date=pendulum.parse("2020"), end_date=pendulum.parse("2021"))

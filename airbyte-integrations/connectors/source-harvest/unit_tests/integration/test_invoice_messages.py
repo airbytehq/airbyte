@@ -61,17 +61,13 @@ def _invoices_response() -> HttpResponseBuilder:
     )
 
 
-def _read(
-    config_builder: ConfigBuilder,
-    state: Optional[Dict[str, Any]] = None,
-    expecting_exception: bool = False
-) -> EntrypointOutput:
+def _read(config_builder: ConfigBuilder, state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False) -> EntrypointOutput:
     return read(
         SourceHarvest(),
         config_builder.build(),
         CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
         state,
-        expecting_exception
+        expecting_exception,
     )
 
 
@@ -85,7 +81,7 @@ class InvoicesTest(TestCase):
                     "per_page": "50",
                 },
             ),
-            _invoices_response().with_record(_an_invoice().with_id(_AN_INVOICE_ID)).build()
+            _invoices_response().with_record(_an_invoice().with_id(_AN_INVOICE_ID)).build(),
         )
         http_mocker.get(
             HttpRequest(
@@ -95,9 +91,14 @@ class InvoicesTest(TestCase):
                     "updated_since": _A_REPLICATION_START_DATE,
                 },
             ),
-            _invoices_response().with_record(_a_message()).build()
+            _invoices_response().with_record(_a_message()).build(),
         )
 
-        _read(ConfigBuilder().with_account_id(_AN_ACCOUNT_ID).with_api_token(_AN_API_KEY).with_replication_start_date(datetime.fromisoformat(_A_REPLICATION_START_DATE)))
+        _read(
+            ConfigBuilder()
+            .with_account_id(_AN_ACCOUNT_ID)
+            .with_api_token(_AN_API_KEY)
+            .with_replication_start_date(datetime.fromisoformat(_A_REPLICATION_START_DATE))
+        )
 
         # endpoint is called

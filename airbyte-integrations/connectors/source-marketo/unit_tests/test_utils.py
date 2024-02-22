@@ -59,6 +59,7 @@ def test_clean_string(value, expected):
 
     assert test == expected
 
+
 def test_to_datetime_str():
     input = datetime(2023, 1, 1)
     expected = "2023-01-01T00:00:00Z"

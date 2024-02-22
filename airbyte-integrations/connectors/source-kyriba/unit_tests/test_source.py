@@ -13,6 +13,7 @@ config = {
     "start_date": "2022-01-01",
 }
 
+
 def test_check_connection(mocker):
     source = SourceKyriba()
     KyribaClient.login = MagicMock()

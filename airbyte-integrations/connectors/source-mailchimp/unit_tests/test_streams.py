@@ -228,14 +228,14 @@ def test_list_child_request_params(auth, stream_class, stream_slice, stream_stat
             {"segment_1": {"last_changed": "2023-10-15T00:00:00Z"}},
             {"segment_id": "segment_2", "last_changed": "2023-10-16T00:00:00Z"},
             {"segment_1": {"last_changed": "2023-10-15T00:00:00Z"}, "segment_2": {"last_changed": "2023-10-16T00:00:00Z"}},
-        )
+        ),
     ],
     ids=[
         "Segments: no current_stream_state",
         "Segments: latest_record's cursor > than current_stream_state for list_1",
         "ListMembers: latest_record's cursor < current_stream_state for list_2",
         "SegmentMembers: latest_record's cursor > current_stream_state for segment_1",
-        "SegmentMembers: no stream_state for current slice, new slice added to state"
+        "SegmentMembers: no stream_state for current slice, new slice added to state",
     ],
 )
 def test_list_child_get_updated_state(auth, stream_class, current_stream_state, latest_record, expected_state):
@@ -253,42 +253,46 @@ def test_list_child_get_updated_state(auth, stream_class, current_stream_state, 
     [
         # Test case 1: No stream state, all records should be yielded
         (
-          {},
-          {"members": [
-            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
-            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"}
-          ]},
-          [
-            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
-            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"}
-          ]
+            {},
+            {
+                "members": [
+                    {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+                    {"id": 2, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"},
+                ]
+            },
+            [
+                {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+                {"id": 2, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"},
+            ],
         ),
-        
         # Test case 2: Records older than stream state should be filtered out
         (
-          {"segment_1": {"last_changed": "2021-02-01T00:00:00Z"}},
-          {"members": [
-            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
-            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}
-          ]},
-          [{"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}]
+            {"segment_1": {"last_changed": "2021-02-01T00:00:00Z"}},
+            {
+                "members": [
+                    {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+                    {"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"},
+                ]
+            },
+            [{"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}],
         ),
-        
         # Test case 3: Two lists in stream state, only state for segment_id_1 determines filtering
         (
-          {"segment_1": {"last_changed": "2021-01-02T00:00:00Z"}, "segment_2": {"last_changed": "2022-01-01T00:00:00Z"}},
-          {"members": [            
-            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
-            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}
-          ]}, 
-          [{"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}]
+            {"segment_1": {"last_changed": "2021-01-02T00:00:00Z"}, "segment_2": {"last_changed": "2022-01-01T00:00:00Z"}},
+            {
+                "members": [
+                    {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+                    {"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"},
+                ]
+            },
+            [{"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}],
         ),
     ],
     ids=[
         "No stream state, all records should be yielded",
         "Record < stream state, should be filtered out",
         "Record >= stream state, should be yielded",
-    ]
+    ],
 )
 def test_segment_members_parse_response(auth, stream_state, records, expected):
     segment_members_stream = SegmentMembers(authenticator=auth)
@@ -304,36 +308,58 @@ def test_segment_members_parse_response(auth, stream_state, records, expected):
         (
             SegmentMembers,
             {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": ""},
-            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": None}
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": None},
         ),
         (
             SegmentMembers,
-            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": "", "ADDRESS": "", "PHONE": ""}},
-            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": None, "ADDRESS": None, "PHONE": None}}
+            {
+                "id": 1,
+                "email_address": "a@gmail.com",
+                "email_type": "html",
+                "opt_timestamp": "2022-01-01T00:00:00.000Z",
+                "merge_fields": {"FNAME": "Bob", "LNAME": "", "ADDRESS": "", "PHONE": ""},
+            },
+            {
+                "id": 1,
+                "email_address": "a@gmail.com",
+                "email_type": "html",
+                "opt_timestamp": "2022-01-01T00:00:00.000Z",
+                "merge_fields": {"FNAME": "Bob", "LNAME": None, "ADDRESS": None, "PHONE": None},
+            },
         ),
         (
-            Campaigns,            
+            Campaigns,
             {"id": "1", "web_id": 2, "email_type": "html", "create_time": "2022-01-01T00:00:00.000Z", "send_time": ""},
-            {"id": "1", "web_id": 2, "email_type": "html", "create_time": "2022-01-01T00:00:00.000Z", "send_time": None}
+            {"id": "1", "web_id": 2, "email_type": "html", "create_time": "2022-01-01T00:00:00.000Z", "send_time": None},
         ),
         (
             Reports,
-            {"id": "1", "type": "rss", "clicks": {"clicks_total": 1, "last_click": "2022-01-01T00:00:00Z"}, "opens": {"opens_total": 0, "last_open": ""}},
-            {"id": "1", "type": "rss", "clicks": {"clicks_total": 1, "last_click": "2022-01-01T00:00:00Z"}, "opens": {"opens_total": 0, "last_open": None}}
+            {
+                "id": "1",
+                "type": "rss",
+                "clicks": {"clicks_total": 1, "last_click": "2022-01-01T00:00:00Z"},
+                "opens": {"opens_total": 0, "last_open": ""},
+            },
+            {
+                "id": "1",
+                "type": "rss",
+                "clicks": {"clicks_total": 1, "last_click": "2022-01-01T00:00:00Z"},
+                "opens": {"opens_total": 0, "last_open": None},
+            },
         ),
         (
             Lists,
             {"id": "1", "name": "Santa's List", "stats": {"last_sub_date": "2022-01-01T00:00:00Z", "last_unsub_date": ""}},
-            {"id": "1", "name": "Santa's List", "stats": {"last_sub_date": "2022-01-01T00:00:00Z", "last_unsub_date": None}}            
-        )
+            {"id": "1", "name": "Santa's List", "stats": {"last_sub_date": "2022-01-01T00:00:00Z", "last_unsub_date": None}},
+        ),
     ],
     ids=[
         "segment_members: opt_timestamp nullified",
         "segment_members: nested merge_fields nullified",
         "campaigns: send_time nullified",
         "reports: nested opens.last_open nullified",
-        "lists: stats.last_unsub_date nullified"
-    ]
+        "lists: stats.last_unsub_date nullified",
+    ],
 )
 def test_filter_empty_fields(auth, stream, record, expected_record):
     """
@@ -612,32 +638,12 @@ def test_path(auth, stream, stream_slice, expected_endpoint):
 @pytest.mark.parametrize(
     "start_date, state_date, expected_return_value",
     [
-        (
-            "2021-01-01T00:00:00.000Z",
-            "2020-01-01T00:00:00+00:00",
-            "2021-01-01T00:00:00Z"
-        ),
-        (
-            "2021-01-01T00:00:00.000Z",
-            "2023-10-05T00:00:00+00:00",
-            "2023-10-05T00:00:00+00:00"
-        ),
-        (
-            None,
-            "2022-01-01T00:00:00+00:00",
-            "2022-01-01T00:00:00+00:00"
-        ),
-        (
-            "2020-01-01T00:00:00.000Z",
-            None,
-            "2020-01-01T00:00:00Z"
-        ),
-        (
-            None,
-            None,
-            None
-        )
-    ]
+        ("2021-01-01T00:00:00.000Z", "2020-01-01T00:00:00+00:00", "2021-01-01T00:00:00Z"),
+        ("2021-01-01T00:00:00.000Z", "2023-10-05T00:00:00+00:00", "2023-10-05T00:00:00+00:00"),
+        (None, "2022-01-01T00:00:00+00:00", "2022-01-01T00:00:00+00:00"),
+        ("2020-01-01T00:00:00.000Z", None, "2020-01-01T00:00:00Z"),
+        (None, None, None),
+    ],
 )
 def test_get_filter_date(auth, start_date, state_date, expected_return_value):
     """
@@ -680,12 +686,9 @@ def test_get_filter_date(auth, start_date, state_date, expected_return_value):
                 {"id": 3, "segment_id": "segment_1", "last_changed": "2021-01-03T00:00:00Z"},
                 {"id": 4, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"},
             ],
-        )
+        ),
     ],
-    ids=[
-        "Unsubscribes: filter_date is set, records filtered",
-        "SegmentMembers: filter_date is None, all records returned"
-    ]
+    ids=["Unsubscribes: filter_date is set, records filtered", "SegmentMembers: filter_date is None, all records returned"],
 )
 def test_filter_old_records(auth, stream_class, records, filter_date, expected_return_value):
     """

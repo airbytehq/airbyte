@@ -142,7 +142,9 @@ def test_astra_pre_sync():
         ("other_collection", None, 3, False, "mycollection collection does not exist."),
         (
             ["mycollection"],
-            urllib3.exceptions.MaxRetryError(None, "", reason=Exception("Failed to resolve environment, please check whether the credential is correct.")),
+            urllib3.exceptions.MaxRetryError(
+                None, "", reason=Exception("Failed to resolve environment, please check whether the credential is correct.")
+            ),
             3,
             False,
             "Failed to resolve environment",
@@ -157,12 +159,16 @@ def test_astra_check(collection_name, describe_throws, reported_dimensions, chec
 
     indexer.client.create_collection = MagicMock()
     indexer.client.find_collections = MagicMock()
-    indexer.client.find_collections.return_value = [create_index_description(collection_name=collection_name, dimensions=reported_dimensions)]
+    indexer.client.find_collections.return_value = [
+        create_index_description(collection_name=collection_name, dimensions=reported_dimensions)
+    ]
 
     if describe_throws:
         indexer.client.find_collections.side_effect = describe_throws
     else:
-        indexer.client.find_collections.return_value = [create_index_description(collection_name=collection_name, dimensions=reported_dimensions)]
+        indexer.client.find_collections.return_value = [
+            create_index_description(collection_name=collection_name, dimensions=reported_dimensions)
+        ]
 
     result = indexer.check()
     if check_succeeds:

@@ -11,19 +11,7 @@ def test_extract_records():
     # Mock the response
     response = MagicMock()
     response_body = {
-        "data": {
-            "boards": [
-                {
-                    "activity_logs": [
-                        {
-                            "data": "{\"pulse_id\": 123}",
-                            "entity": "pulse",
-                            "created_at": "16367386880000000"
-                        }
-                    ]
-                }
-            ]
-        }
+        "data": {"boards": [{"activity_logs": [{"data": '{"pulse_id": 123}', "entity": "pulse", "created_at": "16367386880000000"}]}]}
     }
 
     response.json.return_value = response_body
@@ -39,15 +27,7 @@ def test_extract_records():
 def test_extract_records_incremental():
     # Mock the response
     response = MagicMock()
-    response_body = {
-        "data": {
-            "boards": [
-                {
-                    "id": 1
-                }
-            ]
-        }
-    }
+    response_body = {"data": {"boards": [{"id": 1}]}}
 
     response.json.return_value = response_body
     extractor = MondayIncrementalItemsExtractor(
@@ -55,9 +35,9 @@ def test_extract_records_incremental():
         field_path=["data", "ccccc"],
         config=MagicMock(),
         field_path_pagination=["data", "bbbb"],
-        field_path_incremental=["data", "boards", "*"]
+        field_path_incremental=["data", "boards", "*"],
     )
     records = extractor.extract_records(response)
 
     # Assertions
-    assert records == [{'id': 1}]
+    assert records == [{"id": 1}]

@@ -18,7 +18,7 @@ from source_google_drive.utils import get_folder_id
         ("https://drive.google.com/drive/my-drive", None, True),
         ("http://drive.google.com/drive/u/0/folders/1q2w3e4r5t6y7u8i9o0p/", None, True),
         ("https://drive.google.com/", None, True),
-    ]
+    ],
 )
 def test_get_folder_id(input, output, raises):
     if raises:

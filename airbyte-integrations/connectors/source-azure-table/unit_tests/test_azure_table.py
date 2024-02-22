@@ -23,14 +23,11 @@ def test_get_table_service_client_handles_exception(mocker, reader):
     """
     Test that get_table_service_client method handles exceptions correctly.
     """
-    mocker.patch(
-        "source_azure_table.azure_table.TableServiceClient.from_connection_string",
-        side_effect=Exception("Connection error")
-    )
+    mocker.patch("source_azure_table.azure_table.TableServiceClient.from_connection_string", side_effect=Exception("Connection error"))
 
     with pytest.raises(Exception) as exc_info:
         reader.get_table_service_client()
-    
+
     assert "Connection error" in str(exc_info.value)
 
 
@@ -58,10 +55,7 @@ def test_get_table_client_handles_exception(mocker, reader):
         reader.get_table_client("")
     assert "table name is not valid." in str(exc_info.value)
 
-    mocker.patch(
-        "source_azure_table.azure_table.TableClient.from_connection_string",
-        side_effect=Exception("Connection error")
-    )
+    mocker.patch("source_azure_table.azure_table.TableClient.from_connection_string", side_effect=Exception("Connection error"))
 
     with pytest.raises(Exception) as exc_info:
         reader.get_table_client("valid_table_name")
@@ -74,10 +68,7 @@ def test_get_tables_return(mocker, reader, tables):
     """
     mock_client = mocker.MagicMock()
     mock_client.list_tables.return_value = tables.__iter__()
-    mocker.patch(
-        "azure.data.tables.TableServiceClient.from_connection_string",
-        return_value=mock_client
-    )
+    mocker.patch("azure.data.tables.TableServiceClient.from_connection_string", return_value=mock_client)
 
     result = reader.get_tables()
     result_table_names = [table.name for table in result]
@@ -92,10 +83,7 @@ def test_get_tables_handles_exception(mocker, reader):
     """
     mock_client = mocker.MagicMock()
     mock_client.list_tables.side_effect = Exception("Failed to list tables")
-    mocker.patch(
-        "azure.data.tables.TableServiceClient.from_connection_string",
-        return_value=mock_client
-    )
+    mocker.patch("azure.data.tables.TableServiceClient.from_connection_string", return_value=mock_client)
 
     with pytest.raises(Exception) as exc_info:
         reader.get_tables()

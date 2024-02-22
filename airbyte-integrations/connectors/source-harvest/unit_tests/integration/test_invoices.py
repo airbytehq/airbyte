@@ -43,17 +43,13 @@ def _invoices_response() -> HttpResponseBuilder:
     )
 
 
-def _read(
-    config_builder: ConfigBuilder,
-    state: Optional[Dict[str, Any]] = None,
-    expecting_exception: bool = False
-) -> EntrypointOutput:
+def _read(config_builder: ConfigBuilder, state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False) -> EntrypointOutput:
     return read(
         SourceHarvest(),
         config_builder.build(),
         CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
         state,
-        expecting_exception
+        expecting_exception,
     )
 
 
@@ -70,11 +66,16 @@ class InvoicesTest(TestCase):
                 headers={
                     "Authorization": f"Bearer {_AN_API_KEY}",
                     "Harvest-Account-ID": _AN_ACCOUNT_ID,
-                }
+                },
             ),
-            _invoices_response().build()
+            _invoices_response().build(),
         )
 
-        _read(ConfigBuilder().with_account_id(_AN_ACCOUNT_ID).with_api_token(_AN_API_KEY).with_replication_start_date(datetime.fromisoformat(_A_REPLICATION_START_DATE)))
+        _read(
+            ConfigBuilder()
+            .with_account_id(_AN_ACCOUNT_ID)
+            .with_api_token(_AN_API_KEY)
+            .with_replication_start_date(datetime.fromisoformat(_A_REPLICATION_START_DATE))
+        )
 
         # endpoint is called

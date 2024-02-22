@@ -283,6 +283,7 @@ def test_updated_state(stream, current_state, latest_record, new_state, request)
 def test_parse_response_unsuported_response_type(request, caplog):
     stream = request.getfixturevalue("pipelines")
     from unittest.mock import MagicMock
+
     response = MagicMock()
     response.status_code = 200
     response.json = MagicMock(return_value="")
@@ -292,10 +293,14 @@ def test_parse_response_unsuported_response_type(request, caplog):
 
 def test_stream_slices_child_stream(request, requests_mock):
     commits = request.getfixturevalue("commits")
-    requests_mock.get("https://gitlab.com/api/v4/projects/p_1?per_page=50&statistics=1",
-                      json=[{"id": 13082000, "description": "", "name": "New CI Test Project"}])
+    requests_mock.get(
+        "https://gitlab.com/api/v4/projects/p_1?per_page=50&statistics=1",
+        json=[{"id": 13082000, "description": "", "name": "New CI Test Project"}],
+    )
 
-    slices = list(commits.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={"13082000": {""'created_at': "2021-03-10T23:58:1213"}}))
+    slices = list(
+        commits.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={"13082000": {"" "created_at": "2021-03-10T23:58:1213"}})
+    )
     assert slices
 
 
@@ -307,7 +312,7 @@ def test_next_page_token(request):
     assert not commits.next_page_token(response)
     data = ["some data" for x in range(0, 50)]
     response.json = MagicMock(return_value=data)
-    assert commits.next_page_token(response) == {'page': 2}
+    assert commits.next_page_token(response) == {"page": 2}
     response.json = MagicMock(return_value={"data": "some data"})
     assert not commits.next_page_token(response)
 
@@ -319,8 +324,8 @@ def test_availability_strategy(request):
 
 def test_request_params(request):
     commits = request.getfixturevalue("commits")
-    expected = {'per_page': 50, 'page': 2, 'with_stats': True}
-    assert commits.request_params(stream_slice={"updated_after": "2021-03-10T23:58:1213"}, next_page_token={'page': 2}) == expected
+    expected = {"per_page": 50, "page": 2, "with_stats": True}
+    assert commits.request_params(stream_slice={"updated_after": "2021-03-10T23:58:1213"}, next_page_token={"page": 2}) == expected
 
 
 def test_chunk_date_range(request):
