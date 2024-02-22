@@ -162,9 +162,7 @@ class PerPartitionCursor(Cursor):
                 next_page_token=next_page_token,
             )
         else:
-            return self._partition_router.get_request_params(  # type: ignore # this always returns a mapping
-                stream_state=stream_state, stream_slice=None, next_page_token=next_page_token
-            )
+            raise ValueError("A partition needs to be provided in order to get request params")
 
     def get_request_headers(
         self,
@@ -182,9 +180,7 @@ class PerPartitionCursor(Cursor):
                 next_page_token=next_page_token,
             )
         else:
-            return self._partition_router.get_request_headers(  # type: ignore # this always returns a mapping
-                stream_state=stream_state, stream_slice=None, next_page_token=next_page_token
-            )
+            raise ValueError("A partition needs to be provided in order to get request headers")
 
     def get_request_body_data(
         self,
@@ -202,9 +198,7 @@ class PerPartitionCursor(Cursor):
                 next_page_token=next_page_token,
             )
         else:
-            return self._partition_router.get_request_body_data(
-                stream_state=stream_state, stream_slice=None, next_page_token=next_page_token
-            )
+            raise ValueError("A partition needs to be provided in order to get request body data")
 
     def get_request_body_json(
         self,
@@ -222,9 +216,7 @@ class PerPartitionCursor(Cursor):
                 next_page_token=next_page_token,
             )
         else:
-            return self._partition_router.get_request_body_json(
-                stream_state=stream_state, stream_slice=None, next_page_token=next_page_token
-            )
+            raise ValueError("A partition needs to be provided in order to get request body json")
 
     def should_be_synced(self, record: Record) -> bool:
         return self._get_cursor(record).should_be_synced(self._convert_record_to_cursor_record(record))
