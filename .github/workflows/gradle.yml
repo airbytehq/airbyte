@@ -42,7 +42,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-      - name: Get changed files
+      - name: Get changed Python CKD files
         uses: tj-actions/changed-files@v39
         id: changes
         with:
@@ -61,7 +61,7 @@ jobs:
     # We pay per time and per core, so there should be little difference in total cost.
     # The latency overhead of setting up gradle prior to running the actual task adds up to about a minute.
     runs-on: connector-test-xxlarge
-    name: Gradle Check
+    name: Gradle Check for Python CDK
     timeout-minutes: 30
     steps:
       - name: Checkout Airbyte
