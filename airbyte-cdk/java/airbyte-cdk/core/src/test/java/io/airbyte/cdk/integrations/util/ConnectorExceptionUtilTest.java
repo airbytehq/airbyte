@@ -26,6 +26,7 @@ class ConnectorExceptionUtilTest {
   void isConfigErrorForConfigException() {
     ConfigErrorException configErrorException = new ConfigErrorException(CONFIG_EXCEPTION_MESSAGE);
     assertTrue(ConnectorExceptionUtil.isConfigError(configErrorException));
+    assertFalse(true);
 
   }
 
