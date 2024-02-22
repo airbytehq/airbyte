@@ -72,6 +72,35 @@ acceptance_tests:
               bypass_reason: "can be changed"
             - name: "created_timestamp"
               bypass_reason: "can be changed"
+          ad_account_analytics:
+            - name: "DATE"
+              bypass_reason: "can be changed"
+          ad_analytics:
+            - name: "DATE"
+              bypass_reason: "can be changed"
+          user_account_analytics:
+            - name: "date"
+              bypass_reason: "can be changed"
+            - name: metrics/SAVE_RATE
+              bypass_reason: "can be changed"
+            - name: metrics/IMPRESSION
+              bypass_reason: "can be changed"
+            - name: metrics/SAVE
+              bypass_reason: "can be changed"
+            - name: metrics/ENGAGEMENT
+              bypass_reason: "can be changed"
+            - name: metrics/ENGAGEMENT_RATE
+              bypass_reason: "can be changed"
+            - name: metrics/PIN_CLICK
+              bypass_reason: "can be changed"
+            - name: metrics/CLOSEUP_RATE
+              bypass_reason: "can be changed"
+            - name: metrics/CLICKTHROUGH
+              bypass_reason: "can be changed"
+            - name: metrics/CLICKTHROUGH_RATE
+              bypass_reason: "can be changed"
+            - name: metrics/PIN_CLICK_RATE
+              bypass_reason: "can be changed"
   incremental:
     tests:
       - config_path: secrets/config.json
