@@ -5,11 +5,10 @@
 import logging
 import os
 from datetime import timedelta
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 import stripe
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -24,7 +23,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import Comparable, Concurrent
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import SyncMode
+from airbyte_protocol.models import SyncMode  # type: ignore
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
@@ -61,7 +60,13 @@ class SourceStripe(ConcurrentSourceAdapter):
         CreatedCursorIncrementalStripeStream: ("created[gte]", "created[lte]"),
     }
 
-    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+    def __init__(
+        self,
+        catalog: Optional[ConfiguredAirbyteCatalog],
+        config: Optional[Mapping[str, Any]],
+        state: Union[list[Any], MutableMapping[str, Any], None],
+        **kwargs: Any,
+    ):
         if config:
             concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
         else:
@@ -83,13 +88,14 @@ class SourceStripe(ConcurrentSourceAdapter):
             self._streams_configured_as_full_refresh = set()
 
     @staticmethod
-    def validate_and_fill_with_defaults(config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def validate_and_fill_with_defaults(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        mutable_config = dict(config)
         lookback_window_days, slice_range = (
             config.get("lookback_window_days"),
             config.get("slice_range"),
         )
         if lookback_window_days is None:
-            config["lookback_window_days"] = 0
+            mutable_config["lookback_window_days"] = 0
         elif not isinstance(lookback_window_days, int) or lookback_window_days < 0:
             message = f"Invalid lookback window {lookback_window_days}. Please use only positive integer values or 0."
             raise AirbyteTracedException(
@@ -99,9 +105,9 @@ class SourceStripe(ConcurrentSourceAdapter):
             )
 
         # verifies the start_date in the config is valid
-        SourceStripe._start_date_to_timestamp(config)
+        SourceStripe._start_date_to_timestamp(mutable_config)
         if slice_range is None:
-            config["slice_range"] = 365
+            mutable_config["slice_range"] = 365
         elif not isinstance(slice_range, int) or slice_range < 1:
             message = f"Invalid slice range value {slice_range}. Please use positive integer values only."
             raise AirbyteTracedException(
@@ -109,10 +115,10 @@ class SourceStripe(ConcurrentSourceAdapter):
                 internal_message=message,
                 failure_type=FailureType.config_error,
             )
-        return config
+        return mutable_config
 
-    def check_connection(self, logger: AirbyteLogger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
-        self.validate_and_fill_with_defaults(config)
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        config = self.validate_and_fill_with_defaults(config)
         stripe.api_key = config["client_secret"]
         try:
             stripe.Account.retrieve(config["account_id"])
@@ -121,7 +127,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         return True, None
 
     @staticmethod
-    def customers(**args):
+    def customers(**args: Any) -> IncrementalStripeStream:
         # The Customers stream is instantiated in a dedicated method to allow parametrization and avoid duplicated code.
         # It can be used with and without expanded items (as an independent stream or as a parent stream for other streams).
         return IncrementalStripeStream(
@@ -178,7 +184,7 @@ class SourceStripe(ConcurrentSourceAdapter):
 
         return HttpAPIBudget(policies=policies)
 
-    def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.validate_and_fill_with_defaults(config)
         authenticator = TokenAuthenticator(config["client_secret"])
 
@@ -522,7 +528,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
         return [self._to_concurrent(stream, self._start_date_to_timestamp(config), state_manager) for stream in streams]
 
-    def _to_concurrent(self, stream: Stream, fallback_start, state_manager: ConnectorStateManager) -> Stream:
+    def _to_concurrent(self, stream: Stream, fallback_start: Any, state_manager: ConnectorStateManager) -> Stream:
         if stream.name in self._streams_configured_as_full_refresh:
             return StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._create_empty_state(), NoopCursor())
 

@@ -6,14 +6,14 @@
 import sys
 import traceback
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 from source_stripe import SourceStripe
 
 
-def _get_source(args: List[str]):
+def _get_source(args: List[str]) -> Optional[SourceStripe]:
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     config_path = AirbyteEntrypoint.extract_config(args)
     state_path = AirbyteEntrypoint.extract_state(args)
@@ -40,7 +40,7 @@ def _get_source(args: List[str]):
         return None
 
 
-def run():
+def run() -> None:
     _args = sys.argv[1:]
     source = _get_source(_args)
     if source:
