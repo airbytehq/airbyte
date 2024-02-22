@@ -1,4 +1,5 @@
-name: Connector Ops CI - Gradle Check
+# THIS WORKFLOW SHOULD BE REPLACED BY A CLEANER ONE ONCE THE PYTHON CDK TESTS CAN BE RUN WITH POETRY
+name: Python CDK Tests
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,8 +24,7 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      java: ${{ steps.changes.outputs.java }}
-
+      python_cdk: ${{ steps.changes.outputs.python_cdk }}
     steps:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
@@ -34,21 +34,14 @@ jobs:
         with:
           # Note: expressions within a filter are OR'ed
           filters: |
-            java:
-              - '**/*.java'
-              - '**/*.gradle'
-              - 'airbyte-cdk/java/**/*'
-
-  run-check:
+            python_cdk:
+              - 'airbyte-cdk/python/**/*'
+  run-python-cdk-check:
     needs:
       - changes
-    if: needs.changes.outputs.java == 'true'
-    # The gradle check task which we will run is embarrassingly parallelizable.
-    # We therefore run this on a machine with a maximum number of cores.
-    # We pay per time and per core, so there should be little difference in total cost.
-    # The latency overhead of setting up gradle prior to running the actual task adds up to about a minute.
-    runs-on: connector-test-xxlarge
-    name: Gradle Check
+    if: needs.changes.outputs.python_cdk == 'true'
+    runs-on: connector-test-large
+    name: Python CDK Tests
     timeout-minutes: 30
     steps:
       - name: Checkout Airbyte
@@ -61,29 +54,24 @@ jobs:
         run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3
       - name: Install Pyenv
         run: python3 -m pip install virtualenv --user
-      - name: Docker login
-        # Some tests use testcontainers which pull images from DockerHub.
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      - name: Run Gradle Check
+      - name: cd airbyte-cdk/python
+        run: cd airbyte-cdk/python
+      - name: Run Gradle Check on Python CDK
         uses: burrunan/gradle-cache-action@v1
         env:
           CI: true
         with:
-          job-id: gradle-check
+          job-id: python-cdk-check
           read-only: ${{ github.ref != 'refs/heads/master' }}
           gradle-distribution-sha-256-sum-warning: false
           concurrent: true
-          # TODO: be able to remove the skipSlowTests property
-          arguments: --scan check -DskipSlowTests=true
+          arguments: --scan build
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
     runs-on: ubuntu-latest
     needs:
-      - run-check
+      - run-python-cdk-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Call Instatus Webhook
@@ -96,7 +84,7 @@ jobs:
     name: Create Instatus Incident on Success
     runs-on: ubuntu-latest
     needs:
-      - run-check
+      - run-python-cdk-check
     if: ${{ success() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Call Instatus Webhook
@@ -109,7 +97,7 @@ jobs:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-latest
     needs:
-      - run-check
+      - run-python-cdk-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
@@ -138,7 +126,7 @@ jobs:
     name: "Notify Slack Channel on Build Fixes"
     runs-on: ubuntu-latest
     needs:
-      - run-check
+      - run-python-cdk-check
     if: success()
     steps:
       - name: Get Previous Workflow Status
