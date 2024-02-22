@@ -519,7 +519,7 @@ def test_datetime_based_cursor():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["incremental"], {"cursor_field": 'created_at'})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["incremental"], {"cursor_field": "created_at"})
 
     stream_slicer = factory.create_component(model_type=DatetimeBasedCursorModel, component_definition=slicer_manifest, config=input_config)
 
@@ -529,7 +529,7 @@ def test_datetime_based_cursor():
     assert stream_slicer.cursor_granularity == "PT0.000001S"
     assert stream_slicer.lookback_window.string == "P5D"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
-    assert stream_slicer.start_time_option.field_name.eval(config=input_config | {'cursor_field': 'updated_at'}) == "since_updated_at"
+    assert stream_slicer.start_time_option.field_name.eval(config=input_config | {"cursor_field": "updated_at"}) == "since_updated_at"
     assert stream_slicer.end_time_option.inject_into == RequestOptionType.body_json
     assert stream_slicer.end_time_option.field_name.eval({}) == "before_created_at"
     assert stream_slicer.partition_field_start.eval({}) == "star"
