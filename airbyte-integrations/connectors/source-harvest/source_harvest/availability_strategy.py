@@ -19,7 +19,7 @@ class HarvestAvailabilityStrategy(HttpAvailabilityStrategy):
         self, stream: Stream, logger: logging.Logger, source: Source, error: HTTPError
     ) -> Dict[int, str]:
         reasons_for_codes: Dict[int, str] = {
-            requests.codes.UNAUTHORIZED: "Please ensure your credentials as valid.",
+            requests.codes.UNAUTHORIZED: "Please ensure your credentials are valid.",
             requests.codes.FORBIDDEN: "This is most likely due to insufficient permissions on the credentials in use.",
             requests.codes.NOT_FOUND: "Please ensure that your account ID is properly set. If it is the case and you are still seeing this error, please contact Airbyte support.",
         }
