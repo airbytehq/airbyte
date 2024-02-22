@@ -55,14 +55,15 @@ The following variables are relevant to both Docker and Kubernetes.
     AWS_SECRET_MANAGER | Set to use AWS Secret Manager
     GOOGLE_SECRET_MANAGER | Set to use Google Secret Manager
     VAULT | Set to use Hashicorp Vault, currently only the token based authentication is supported
-3. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
-4. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
-5. `VAULT_ADDRESS` - Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
-6. `VAULT_PREFIX` - Define the vault path prefix. Empty by default. Alpha Support.
-7. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
-8. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
-9. `AWS_ACCESS_KEY` - Defines the aws_access_key_id from the AWS credentials to use for AWS Secret Manager.
-10. `AWS_SECRET_ACCESS_KEY`- Defines aws_secret_access_key to use for the AWS Secret Manager.
+2. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
+3. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
+4. `VAULT_ADDRESS` - Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
+5. `VAULT_PREFIX` - Define the vault path prefix. Empty by default. Alpha Support.
+6. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
+7. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
+8. `AWS_ACCESS_KEY` - Defines the aws_access_key_id from the AWS credentials to use for AWS Secret Manager. AWS access keys are required if not using IAM roles for Amazon EC2 instances.
+9. `AWS_SECRET_ACCESS_KEY`- Defines aws_secret_access_key to use for the AWS Secret Manager.
+10. `AWS_REGION` - Defines the AWS region to use for AWS Secret Manager.
 11. `AWS_KMS_KEY_ARN` - Optional param that defines the KMS Encryption key used for the AWS Secret Manager.
 12. `AWS_SECRET_MANAGER_SECRET_TAGS` - Defines the tags that will be included to all writes to the AWS Secret Manager. The format should be "key1=value1,key2=value2".
 
