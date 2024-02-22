@@ -31,24 +31,14 @@ class GoogleAdsStream(Stream, ABC):
         self.customers = customers
 
     def get_query(self, stream_slice: Mapping[str, Any]) -> str:
-        # The following construction excludes "user_interest.availabilities" and "user_interest.launched_to_all" fields
-        # from the query because they are a cause of "500 Internal server error" on the google side.
-        # The oncall issue: https://github.com/airbytehq/oncall/issues/4306
-        # TODO: replace with fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
-        fields = [
-            field
-            for field in GoogleAds.get_fields_from_schema(self.get_json_schema())
-            if not (field == "user_interest.availabilities" or field == "user_interest.launched_to_all")
-        ]
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
         table_name = get_resource_name(self.name)
         query = GoogleAds.convert_schema_into_query(fields=fields, table_name=table_name)
         return query
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
         for result in response:
-            yield self.google_ads_client.parse_single_result(
-                self.get_json_schema(), result, nullable=["user_interest.availabilities", "user_interest.launched_to_all"]
-            )
+            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
