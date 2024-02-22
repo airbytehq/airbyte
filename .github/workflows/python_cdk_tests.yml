@@ -67,7 +67,7 @@ jobs:
         env:
           CI: true
         with:
-          job-id: gradle-check
+          job-id: python-cdk-check
           read-only: ${{ github.ref != 'refs/heads/master' }}
           gradle-distribution-sha-256-sum-warning: false
           concurrent: true
