@@ -3,7 +3,7 @@
 #
 
 import ast
-from typing import Any, Optional, Tuple, Type
+from typing import Any, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
@@ -48,7 +48,7 @@ class JinjaInterpolation(Interpolation):
     # Please add a unit test to test_jinja.py when adding a restriction.
     RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._environment = Environment()
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
@@ -64,8 +64,8 @@ class JinjaInterpolation(Interpolation):
         config: Config,
         default: Optional[str] = None,
         valid_types: Optional[Tuple[Type[Any]]] = None,
-        **additional_parameters,
-    ):
+        **additional_parameters: Any,
+    ) -> Any:
         context = {"config": config, **additional_parameters}
 
         for alias, equivalent in self.ALIASES.items():
@@ -88,9 +88,9 @@ class JinjaInterpolation(Interpolation):
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
-        return self._literal_eval(self._eval(default, context), valid_types)
+        return self._literal_eval(self._eval(default if default is not None else "", context), valid_types)
 
-    def _literal_eval(self, result, valid_types: Optional[Tuple[Type[Any]]]):
+    def _literal_eval(self, result: str, valid_types: Optional[Tuple[Type[Any]]]) -> Any:
         try:
             evaluated = ast.literal_eval(result)
         except (ValueError, SyntaxError):
@@ -99,7 +99,7 @@ class JinjaInterpolation(Interpolation):
             return evaluated
         return result
 
-    def _eval(self, s: str, context):
+    def _eval(self, s: str, context: Mapping[str, Any]) -> str:
         try:
             ast = self._environment.parse(s)
             undeclared = meta.find_undeclared_variables(ast)

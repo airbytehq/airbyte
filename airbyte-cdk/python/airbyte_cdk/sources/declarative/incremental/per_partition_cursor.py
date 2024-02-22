@@ -71,10 +71,10 @@ class PerPartitionCursor(Cursor):
     def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
         slices = self._partition_router.stream_slices()
         for partition in slices:
-            cursor = self._cursor_per_partition.get(self._to_partition_key(partition))
+            cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
             if not cursor:
                 cursor = self._create_cursor(self._NO_CURSOR_STATE)
-                self._cursor_per_partition[self._to_partition_key(partition)] = cursor
+                self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
 
             for cursor_slice in cursor.stream_slices():
                 yield PerPartitionStreamSlice(partition, cursor_slice)
