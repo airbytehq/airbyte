@@ -10,7 +10,7 @@ from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, PerPartitionStreamSlice, Record, StreamSlice, StreamState
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -34,7 +34,7 @@ class ParentStreamConfig:
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.parent_key = InterpolatedString.create(self.parent_key, parameters=parameters)
         self.partition_field = InterpolatedString.create(self.partition_field, parameters=parameters)
 
@@ -53,7 +53,7 @@ class SubstreamPartitionRouter(StreamSlicer):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not self.parent_stream_configs:
             raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
         self._parameters = parameters
@@ -61,7 +61,7 @@ class SubstreamPartitionRouter(StreamSlicer):
     def get_request_params(
         self,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[PerPartitionStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
@@ -70,7 +70,7 @@ class SubstreamPartitionRouter(StreamSlicer):
     def get_request_headers(
         self,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[PerPartitionStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
@@ -79,7 +79,7 @@ class SubstreamPartitionRouter(StreamSlicer):
     def get_request_body_data(
         self,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[PerPartitionStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
@@ -88,24 +88,24 @@ class SubstreamPartitionRouter(StreamSlicer):
     def get_request_body_json(
         self,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[PerPartitionStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
+    ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
         return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
-    def _get_request_option(self, option_type: RequestOptionType, stream_slice: StreamSlice):
+    def _get_request_option(self, option_type: RequestOptionType, stream_slice: Optional[PerPartitionStreamSlice]) -> Mapping[str, Any]:
         params = {}
         if stream_slice:
             for parent_config in self.parent_stream_configs:
                 if parent_config.request_option and parent_config.request_option.inject_into == option_type:
-                    key = parent_config.partition_field.eval(self.config)
+                    key = parent_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
                     value = stream_slice.get(key)
                     if value:
                         params.update({parent_config.request_option.field_name: value})
         return params
 
-    def stream_slices(self) -> Iterable[StreamSlice]:
+    def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
         """
         Iterate over each parent stream's record and create a StreamSlice for each record.
 
@@ -125,14 +125,17 @@ class SubstreamPartitionRouter(StreamSlicer):
         else:
             for parent_stream_config in self.parent_stream_configs:
                 parent_stream = parent_stream_config.stream
-                parent_field = parent_stream_config.parent_key.eval(self.config)
-                stream_state_field = parent_stream_config.partition_field.eval(self.config)
+                parent_field = parent_stream_config.parent_key.eval(self.config)  # type: ignore # parent_key is always casted to an interpolated string
+                stream_state_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
                 for parent_stream_slice in parent_stream.stream_slices(
                     sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
                 ):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice
-                    parent_partition = {k: v for k, v in parent_slice.items() if k in parent_slice.partition.keys()}
+                    if parent_slice:
+                        parent_partition = {k: v for k, v in parent_slice.items() if k in parent_slice.partition.keys()}
+                    else:
+                        parent_partition = {}
 
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
@@ -151,7 +154,7 @@ class SubstreamPartitionRouter(StreamSlicer):
                             pass
                         else:
                             empty_parent_slice = False
-                            yield {stream_state_field: stream_state_value, "parent_slice": parent_partition}
+                            yield PerPartitionStreamSlice({stream_state_field: stream_state_value, "parent_slice": parent_partition}, {})
                     # If the parent slice contains no records,
                     if empty_parent_slice:
                         yield from []

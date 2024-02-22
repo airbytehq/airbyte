@@ -3,11 +3,11 @@
 #
 
 import json
-from typing import Any, Callable, Iterable, Mapping, Optional, MutableMapping, Union
+from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState, PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.types import PerPartitionStreamSlice, Record, StreamSlice, StreamState
 
 
 class PerPartitionKeySerializer:
@@ -89,7 +89,9 @@ class PerPartitionCursor(Cursor):
     def close_slice(self, stream_slice: PerPartitionStreamSlice, most_recent_record: Optional[Record]) -> None:
         try:
             cursor_most_recent_record = (
-                Record(most_recent_record.data, PerPartitionStreamSlice({}, stream_slice.cursor_slice)) if most_recent_record else most_recent_record
+                Record(most_recent_record.data, PerPartitionStreamSlice({}, stream_slice.cursor_slice))
+                if most_recent_record
+                else most_recent_record
             )
             self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].close_slice(
                 PerPartitionStreamSlice({}, stream_slice.cursor_slice), cursor_most_recent_record
@@ -152,13 +154,15 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         if stream_slice:
-            return self._partition_router.get_request_params( # type: ignore # this always returns a mapping
+            return self._partition_router.get_request_params(  # type: ignore # this always returns a mapping
                 stream_state=stream_state, stream_slice=PerPartitionStreamSlice(stream_slice.partition, {}), next_page_token=next_page_token
             ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_params(
-                stream_state=stream_state, stream_slice=PerPartitionStreamSlice({}, stream_slice.cursor_slice), next_page_token=next_page_token
+                stream_state=stream_state,
+                stream_slice=PerPartitionStreamSlice({}, stream_slice.cursor_slice),
+                next_page_token=next_page_token,
             )
         else:
-            return self._partition_router.get_request_params( # type: ignore # this always returns a mapping
+            return self._partition_router.get_request_params(  # type: ignore # this always returns a mapping
                 stream_state=stream_state, stream_slice=None, next_page_token=next_page_token
             )
 
@@ -170,13 +174,15 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         if stream_slice:
-            return self._partition_router.get_request_headers( # type: ignore # this always returns a mapping
+            return self._partition_router.get_request_headers(  # type: ignore # this always returns a mapping
                 stream_state=stream_state, stream_slice=PerPartitionStreamSlice(stream_slice.partition, {}), next_page_token=next_page_token
             ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_headers(
-                stream_state=stream_state, stream_slice=PerPartitionStreamSlice({}, stream_slice.cursor_slice), next_page_token=next_page_token
+                stream_state=stream_state,
+                stream_slice=PerPartitionStreamSlice({}, stream_slice.cursor_slice),
+                next_page_token=next_page_token,
             )
         else:
-            return self._partition_router.get_request_headers( # type: ignore # this always returns a mapping
+            return self._partition_router.get_request_headers(  # type: ignore # this always returns a mapping
                 stream_state=stream_state, stream_slice=None, next_page_token=next_page_token
             )
 
@@ -188,10 +194,12 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Union[Mapping[str, Any], str]:
         if stream_slice:
-            return self._partition_router.get_request_body_data( # type: ignore # this always returns a mapping
+            return self._partition_router.get_request_body_data(  # type: ignore # this always returns a mapping
                 stream_state=stream_state, stream_slice=PerPartitionStreamSlice(stream_slice.partition, {}), next_page_token=next_page_token
             ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_data(
-                stream_state=stream_state, stream_slice=PerPartitionStreamSlice({}, stream_slice.cursor_slice), next_page_token=next_page_token
+                stream_state=stream_state,
+                stream_slice=PerPartitionStreamSlice({}, stream_slice.cursor_slice),
+                next_page_token=next_page_token,
             )
         else:
             return self._partition_router.get_request_body_data(
@@ -206,10 +214,12 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         if stream_slice:
-            return self._partition_router.get_request_body_json( # type: ignore # this always returns a mapping
+            return self._partition_router.get_request_body_json(  # type: ignore # this always returns a mapping
                 stream_state=stream_state, stream_slice=PerPartitionStreamSlice(stream_slice.partition, {}), next_page_token=next_page_token
             ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_json(
-                stream_state=stream_state, stream_slice=PerPartitionStreamSlice({}, stream_slice.cursor_slice), next_page_token=next_page_token
+                stream_state=stream_state,
+                stream_slice=PerPartitionStreamSlice({}, stream_slice.cursor_slice),
+                next_page_token=next_page_token,
             )
         else:
             return self._partition_router.get_request_body_json(

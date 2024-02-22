@@ -6,9 +6,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-
-from airbyte_cdk.sources.declarative.types import PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.types import PerPartitionStreamSlice, StreamSlice, StreamState
 
 
 @dataclass

@@ -4,7 +4,7 @@
 
 import datetime
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Optional, Union, Callable, MutableMapping
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
@@ -71,8 +71,16 @@ class DatetimeBasedCursor(Cursor):
                 f"If step is defined, cursor_granularity should be as well and vice-versa. "
                 f"Right now, step is `{self.step}` and cursor_granularity is `{self.cursor_granularity}`"
             )
-        self._start_datetime = MinMaxDatetime(self.start_datetime, parameters) if not isinstance(self.start_datetime, MinMaxDatetime) else self.start_datetime
-        self._end_datetime = None if not self.end_datetime else MinMaxDatetime(self.end_datetime, parameters) if not isinstance(self.end_datetime, MinMaxDatetime) else self.end_datetime
+        self._start_datetime = (
+            MinMaxDatetime(self.start_datetime, parameters) if not isinstance(self.start_datetime, MinMaxDatetime) else self.start_datetime
+        )
+        self._end_datetime = (
+            None
+            if not self.end_datetime
+            else MinMaxDatetime(self.end_datetime, parameters)
+            if not isinstance(self.end_datetime, MinMaxDatetime)
+            else self.end_datetime
+        )
 
         self._timezone = datetime.timezone.utc
         self._interpolation: JinjaInterpolation = JinjaInterpolation()
@@ -113,7 +121,9 @@ class DatetimeBasedCursor(Cursor):
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         last_record_cursor_value = most_recent_record.get(self._cursor_field.eval(self.config)) if most_recent_record else None
         stream_slice_value_end = stream_slice.get(self._partition_field_end.eval(self.config))
-        potential_cursor_values = [cursor_value for cursor_value in [self._cursor, last_record_cursor_value, stream_slice_value_end] if cursor_value]
+        potential_cursor_values = [
+            cursor_value for cursor_value in [self._cursor, last_record_cursor_value, stream_slice_value_end] if cursor_value
+        ]
         cursor_value_str_by_cursor_value_datetime = dict(
             map(
                 # we need to ensure the cursor value is preserved as is in the state else the CATs might complain of something like
@@ -161,7 +171,9 @@ class DatetimeBasedCursor(Cursor):
     def _format_datetime(self, dt: datetime.datetime) -> str:
         return self._parser.format(dt, self.datetime_format)
 
-    def _partition_daterange(self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]) -> List[PerPartitionStreamSlice]:
+    def _partition_daterange(
+        self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]
+    ) -> List[PerPartitionStreamSlice]:
         start_field = self._partition_field_start.eval(self.config)
         end_field = self._partition_field_end.eval(self.config)
         dates = []
@@ -187,7 +199,12 @@ class DatetimeBasedCursor(Cursor):
         except OverflowError:
             return datetime.datetime.max.replace(tzinfo=datetime.timezone.utc)
 
-    def _get_date(self, cursor_value: datetime.datetime, default_date: datetime.datetime, comparator: Callable[[datetime.datetime, datetime.datetime], datetime.datetime]) -> datetime.datetime:
+    def _get_date(
+        self,
+        cursor_value: datetime.datetime,
+        default_date: datetime.datetime,
+        comparator: Callable[[datetime.datetime, datetime.datetime], datetime.datetime],
+    ) -> datetime.datetime:
         cursor_date = cursor_value or default_date
         return comparator(cursor_date, default_date)
 

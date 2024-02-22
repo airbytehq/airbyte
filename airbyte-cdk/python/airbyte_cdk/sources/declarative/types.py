@@ -4,8 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional
-from typing import Any, Callable, Iterable, Mapping, Optional, Iterator, KeysView, ItemsView, ValuesView
+from typing import Any, Callable, ItemsView, Iterable, Iterator, KeysView, List, Mapping, Optional, ValuesView
 
 # A FieldPointer designates a path to a field inside a mapping. For example, retrieving ["k1", "k1.2"] in the object {"k1" :{"k1.2":
 # "hello"}] returns "hello"
@@ -52,6 +51,7 @@ class Record(Mapping[str, Any]):
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
+
 
 class PerPartitionStreamSlice(StreamSlice):
     def __init__(self, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]) -> None:
