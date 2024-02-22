@@ -346,6 +346,14 @@ spec:
               number: 8180
         path: /auth
         pathType: Prefix
+      - backend:
+          service:
+            # format is ${RELEASE_NAME}-airbyte-api-server-svc
+            name: airbyte-pro-airbyte-api-server-svc
+            port:
+              number: # service port, example: 8180
+        path: /v1
+        pathType: Prefix
 ```
 
 The ALB controller will use a `ServiceAccount` that requires the [following IAM policy](https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json) to be attached.
