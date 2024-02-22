@@ -72,7 +72,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @Override
   protected SnowflakeDestinationHandler getDestinationHandler() {
-    return new SnowflakeDestinationHandler(databaseName, database);
+    return new SnowflakeDestinationHandler(databaseName, database, namespace.toUpperCase());
   }
 
   @Override
@@ -413,7 +413,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     // should be OK with new tables
     destinationHandler.execute(createTable);
-    List<DestinationInitialState> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    List<DestinationInitialState<SnowflakeState>> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
     assertEquals(1, initialStates.size());
     assertFalse(initialStates.get(0).isSchemaMismatch());
     destinationHandler.execute(Sql.of("DROP TABLE " + streamId.finalTableId("")));

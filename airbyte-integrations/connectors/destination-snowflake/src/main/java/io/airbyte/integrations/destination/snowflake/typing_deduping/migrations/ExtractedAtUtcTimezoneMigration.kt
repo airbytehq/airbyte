@@ -77,6 +77,7 @@ class ExtractedAtUtcTimezoneMigration(private val database: JdbcDatabase) : Migr
             ).getSQL(ParamType.INLINED))
     )
 
+    // We've executed the migration. Update the state and trigger a soft reset.
     // Invalidate the initial state - we've modified all the extracted_at timestamps, so need to refetch them.
     return Migration.MigrationResult(state.destinationState.copy(needsSoftReset = true, extractedAtInUtc = true), true)
   }
