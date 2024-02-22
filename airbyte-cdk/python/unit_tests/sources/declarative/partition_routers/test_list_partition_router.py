@@ -34,7 +34,7 @@ parameters = {"cursor_field": "owner_resource"}
         "test_single_element",
         "test_input_list_is_string",
         "test_using_cursor_from_parameters",
-    ]
+    ],
 )
 def test_list_partition_router(partition_values, cursor_field, expected_slices):
     slicer = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, parameters=parameters)
@@ -79,7 +79,7 @@ def test_list_partition_router(partition_values, cursor_field, expected_slices):
         "test_pass_by_header",
         "test_inject_into_body_json",
         "test_inject_into_body_data",
-    ]
+    ],
 )
 def test_request_option(request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data):
     partition_router = ListPartitionRouter(
@@ -96,8 +96,8 @@ def test_request_option(request_option, expected_req_params, expected_headers, e
 @pytest.mark.parametrize(
     "field_name_interpolation, expected_request_params",
     [
-        ("{{parameters['partition_name']}}", {'config_partition': 'customer'}),
-        ("{{config['partition_name']}}", {'parameters_partition': 'customer'}),
+        ("{{parameters['partition_name']}}", {"config_partition": "customer"}),
+        ("{{config['partition_name']}}", {"parameters_partition": "customer"}),
     ],
     ids=[
         "parameters_interpolation",
@@ -107,7 +107,9 @@ def test_request_option(request_option, expected_req_params, expected_headers, e
 def test_request_options_interpolation(field_name_interpolation: str, expected_request_params: dict):
     config = {"partition_name": "config_partition"}
     parameters = {"partition_name": "parameters_partition"}
-    request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters=parameters, field_name=field_name_interpolation)
+    request_option = RequestOption(
+        inject_into=RequestOptionType.request_parameter, parameters=parameters, field_name=field_name_interpolation
+    )
     partition_router = ListPartitionRouter(
         values=partition_values, cursor_field=cursor_field, config=config, request_option=request_option, parameters=parameters
     )
