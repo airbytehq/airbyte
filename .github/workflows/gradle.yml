@@ -96,8 +96,7 @@ jobs:
     name: Create Instatus Incident on Success
     runs-on: ubuntu-latest
     needs:
-      - run-java-check
-      - run-python-cdk-check
+      - run-check
     if: ${{ success() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Call Instatus Webhook
@@ -110,8 +109,7 @@ jobs:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-latest
     needs:
-      - run-java-check
-      - run-python-cdk-check
+      - run-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
@@ -140,8 +138,7 @@ jobs:
     name: "Notify Slack Channel on Build Fixes"
     runs-on: ubuntu-latest
     needs:
-      - run-java-check
-      - run-python-cdk-check
+      - run-check
     if: success()
     steps:
       - name: Get Previous Workflow Status
