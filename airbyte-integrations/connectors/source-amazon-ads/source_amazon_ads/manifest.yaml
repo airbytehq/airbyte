@@ -166,4 +166,3 @@ spec:
             type: string
             path_in_connector_config:
               - client_secret
-streams:
