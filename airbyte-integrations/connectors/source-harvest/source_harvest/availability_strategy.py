@@ -1,8 +1,9 @@
-from typing import Dict
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import logging
-import requests
+from typing import Dict
 
+import requests
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
@@ -13,7 +14,10 @@ class HarvestAvailabilityStrategy(HttpAvailabilityStrategy):
     """
     This class is tested as part of test_source.check_connection
     """
-    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: logging.Logger, source: Source, error: HTTPError) -> Dict[int, str]:
+
+    def reasons_for_unavailable_status_codes(
+        self, stream: Stream, logger: logging.Logger, source: Source, error: HTTPError
+    ) -> Dict[int, str]:
         reasons_for_codes: Dict[int, str] = {
             requests.codes.UNAUTHORIZED: "Please ensure your credentials as valid.",
             requests.codes.FORBIDDEN: "This is most likely due to insufficient permissions on the credentials in use.",

@@ -8,7 +8,7 @@ import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-
+from source_harvest.availability_strategy import HarvestAvailabilityStrategy
 from source_harvest.streams import (
     BillableRates,
     Clients,
@@ -45,7 +45,6 @@ from source_harvest.streams import (
 )
 
 from .auth import HarvestOauth2Authenticator, HarvestTokenAuthenticator
-from source_harvest.availability_strategy import HarvestAvailabilityStrategy
 
 
 class SourceHarvest(AbstractSource):

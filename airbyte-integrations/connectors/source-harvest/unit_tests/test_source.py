@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import unittest
 from unittest.mock import Mock, patch
 
@@ -6,10 +8,9 @@ import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from requests import HTTPError
-
-from source_harvest.source import SourceHarvest
 from config import ConfigBuilder
+from requests import HTTPError
+from source_harvest.source import SourceHarvest
 
 
 def _a_response(status_code: int) -> requests.Response:
