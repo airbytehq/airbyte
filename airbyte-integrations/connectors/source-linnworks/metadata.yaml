@@ -16,13 +16,13 @@ data:
   name: Linnworks
   registries: # Removed from registries due to LEGACY STATE
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: false
+      enabled: true
       packageName: airbyte-source-linnworks
   supportLevel: community
   tags:
