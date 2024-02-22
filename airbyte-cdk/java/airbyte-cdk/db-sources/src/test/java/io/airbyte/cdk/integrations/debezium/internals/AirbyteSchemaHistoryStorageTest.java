@@ -19,8 +19,8 @@ import org.junit.jupiter.api.Test;
 public class AirbyteSchemaHistoryStorageTest {
 
   @Test
-  public void testForContentBiggerThan3MBLimit() throws IOException {
-    final String contentReadDirectlyFromFile = MoreResources.readResource("dbhistory_greater_than_3_mb.dat");
+  public void testForContentBiggerThan1MBLimit() throws IOException {
+    final String contentReadDirectlyFromFile = MoreResources.readResource("dbhistory_greater_than_1_mb.dat");
 
     final AirbyteSchemaHistoryStorage schemaHistoryStorageFromUncompressedContent = AirbyteSchemaHistoryStorage.initializeDBHistory(
         new SchemaHistory<>(Optional.of(Jsons.jsonNode(contentReadDirectlyFromFile)),
@@ -46,14 +46,14 @@ public class AirbyteSchemaHistoryStorageTest {
   @Test
   public void sizeTest() throws IOException {
     assertEquals(5.881045341491699,
-        AirbyteSchemaHistoryStorage.calculateSizeOfStringInMB(MoreResources.readResource("dbhistory_greater_than_3_mb.dat")));
+        AirbyteSchemaHistoryStorage.calculateSizeOfStringInMB(MoreResources.readResource("dbhistory_greater_than_1_mb.dat")));
     assertEquals(0.0038671493530273438,
-        AirbyteSchemaHistoryStorage.calculateSizeOfStringInMB(MoreResources.readResource("dbhistory_less_than_3_mb.dat")));
+        AirbyteSchemaHistoryStorage.calculateSizeOfStringInMB(MoreResources.readResource("dbhistory_less_than_1_mb.dat")));
   }
 
   @Test
-  public void testForContentLessThan3MBLimit() throws IOException {
-    final String contentReadDirectlyFromFile = MoreResources.readResource("dbhistory_less_than_3_mb.dat");
+  public void testForContentLessThan1MBLimit() throws IOException {
+    final String contentReadDirectlyFromFile = MoreResources.readResource("dbhistory_less_than_1_mb.dat");
 
     final AirbyteSchemaHistoryStorage schemaHistoryStorageFromUncompressedContent = AirbyteSchemaHistoryStorage.initializeDBHistory(
         new SchemaHistory<>(Optional.of(Jsons.jsonNode(contentReadDirectlyFromFile)),

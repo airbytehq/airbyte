@@ -1,3 +1,9 @@
+final var cdkVersion = {
+    var props = new Properties()
+    file("core/src/main/resources/version.properties").withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
@@ -8,11 +14,14 @@ allprojects {
     def artifactBaseName = 'airbyte-cdk-' + project.name
     // E.g. airbyte-cdk-core, airbyte-cdk-db-sources, airbyte-cdk-db-destinations, etc.
 
+    project.version = cdkVersion
+
     publishing {
         publications {
             main(MavenPublication) {
                 groupId = 'io.airbyte.cdk'
                 artifactId = artifactBaseName
+                version = project.version
                 from components.java
             }
             testFixtures(MavenPublication) {
@@ -46,17 +55,18 @@ allprojects {
 
 description = "Airbyte Connector Development Kit (CDK) for Java."
 
+tasks.register('cdkBuild').configure {
+    dependsOn subprojects.collect { it.tasks.named('build') }
+}
+tasks.register('cdkPublish').configure {
+    dependsOn subprojects.collect { it.tasks.named('publish') }
+}
 tasks.register('assertCdkVersionNotPublished') {
     doLast {
-        var props = new Properties()
-        file("core/src/main/resources/version.properties").withInputStream(props::load)
 
-        var checkGroupId = "io.airbyte.cdk"
-        var checkArtifactId = "airbyte-cdk-core"
-        var checkVersion = props.getProperty('version') ?: 'undefined'
         var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
-        var groupIdUrl = "${repoUrl}/${checkGroupId.replace('.', '/')}"
-        var artifactUrl = "${groupIdUrl}/${checkArtifactId}/${checkVersion}/${checkArtifactId}-${checkVersion}.pom"
+        var groupIdUrl = "${repoUrl}/io/airbyte/cdk"
+        var artifactUrl = "${groupIdUrl}/airbyte-cdk-core/${project.version}/airbyte-cdk-core-${project.version}.pom"
 
         var connection = artifactUrl.toURL().openConnection() as HttpURLConnection
         connection.setRequestMethod("HEAD")
@@ -65,11 +75,11 @@ tasks.register('assertCdkVersionNotPublished') {
         var responseCode = connection.getResponseCode()
 
         if (responseCode == 200) {
-            throw new GradleException("Java CDK '${checkVersion}' already published at ${groupIdUrl}")
+            throw new GradleException("Java CDK '${project.version}' already published at ${groupIdUrl}")
         } else if (responseCode == 404) {
-            logger.lifecycle("Java CDK '${checkVersion}' not yet published at ${groupIdUrl}.")
+            logger.lifecycle("Java CDK '${project.version}' not yet published at ${groupIdUrl}")
         } else {
-            throw new GradleException("Unexpected HTTP response code ${responseCode} from ${artifactUrl}, expected either 200 or 404.")
+            throw new GradleException("Unexpected HTTP response code ${responseCode} from ${artifactUrl} : expected either 200 or 404.")
         }
     }
 }

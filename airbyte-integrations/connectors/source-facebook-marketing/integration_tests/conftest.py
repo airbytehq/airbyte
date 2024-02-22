@@ -28,8 +28,41 @@ def config_with_wrong_account_fixture(config):
 
 
 @pytest.fixture(scope="session", name="config_with_include_deleted")
-def config_with_include_deleted_fixture(config):
-    new_config = {**config, "include_deleted": True}
+def config_with_include_deleted(config):
+    new_config = {
+        **config,
+        "campaign_statuses": [
+            "ACTIVE",
+            "ARCHIVED",
+            "DELETED",
+            "IN_PROCESS",
+            "PAUSED",
+            "WITH_ISSUES",
+        ],
+        "adset_statuses": [
+            "ACTIVE",
+            "ARCHIVED",
+            "CAMPAIGN_PAUSED",
+            "DELETED",
+            "IN_PROCESS",
+            "PAUSED",
+            "WITH_ISSUES",
+        ],
+        "ad_statuses": [
+            "ACTIVE",
+            "ADSET_PAUSED",
+            "ARCHIVED",
+            "CAMPAIGN_PAUSED",
+            "DELETED",
+            "DISAPPROVED",
+            "IN_PROCESS",
+            "PAUSED",
+            "PENDING_BILLING_INFO",
+            "PENDING_REVIEW",
+            "PREAPPROVED",
+            "WITH_ISSUES",
+        ],
+    }
     new_config.pop("_limit", None)
     new_config.pop("end_date", None)
     return new_config
