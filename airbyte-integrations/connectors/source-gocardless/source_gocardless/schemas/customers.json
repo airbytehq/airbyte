@@ -1,0 +1,20 @@
+{
+    "type": ["null", "object"],
+    "properties": {
+      "email": { "type": ["null", "string"], "format": "email" },
+      "given_name": { "type": ["null", "string"] },
+      "family_name": { "type": ["null", "string"] },
+      "address_line1": { "type": ["null", "string"] },
+      "address_line2": { "type": ["null", "string"] },
+      "city": { "type": ["null", "string"] },
+      "postal_code": { "type": ["null", "string"] },
+      "country_code": { "type": ["null", "string"] },
+      "metadata": {
+        "type": ["null", "object"],
+        "properties": {
+          "salesforce_id": { "type": ["null", "string"] }
+        }
+      }
+    }
+  }
+  

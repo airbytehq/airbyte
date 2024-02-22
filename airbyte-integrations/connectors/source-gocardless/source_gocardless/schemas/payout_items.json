@@ -1,0 +1,21 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "amount": { "type": ["null", "string"] },
+    "type": { "type": ["null", "string"] },
+    "taxes": {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "amount": { "type": ["null", "string"] },
+          "currency": { "type": ["null", "string"] },
+          "destination_amount": { "type": ["null", "string"] },
+          "destination_currency": { "type": ["null", "string"] },
+          "exchange_rate": { "type": ["null", "string"] },
+          "tax_rate_id": { "type": ["null", "string"] }
+        }
+      }
+    }
+  }
+}

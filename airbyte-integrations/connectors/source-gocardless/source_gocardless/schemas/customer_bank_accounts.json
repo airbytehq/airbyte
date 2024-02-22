@@ -1,0 +1,15 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "account_number": { "type": ["null", "string"] },
+    "branch_code": { "type": ["null", "string"] },
+    "account_holder_name": { "type": ["null", "string"] },
+    "country_code": { "type": ["null", "string"] },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "customer": { "type": ["null", "string"] }
+      }
+    }
+  }
+}
