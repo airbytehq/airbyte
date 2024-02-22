@@ -113,7 +113,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
     def test_handle_last_stream_partition_done(self):
         in_order_validation_mock = Mock()
         in_order_validation_mock.attach_mock(self._another_stream, "_another_stream")
-        in_order_validation_mock.attach_mock(self._message_repository, '_message_repository')
+        in_order_validation_mock.attach_mock(self._message_repository, "_message_repository")
         self._message_repository.consume_queue.return_value = iter([_ANY_AIRBYTE_MESSAGE])
         stream_instances_to_read_from = [self._another_stream]
 
@@ -143,10 +143,12 @@ class TestConcurrentReadProcessor(unittest.TestCase):
                         status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE),
                     ),
                 ),
-            )
+            ),
         ]
         assert expected_messages == messages
-        assert in_order_validation_mock.mock_calls.index(call._another_stream.cursor.ensure_at_least_one_state_emitted) < in_order_validation_mock.mock_calls.index(call._message_repository.consume_queue)
+        assert in_order_validation_mock.mock_calls.index(
+            call._another_stream.cursor.ensure_at_least_one_state_emitted
+        ) < in_order_validation_mock.mock_calls.index(call._message_repository.consume_queue)
 
     def test_handle_partition(self):
         stream_instances_to_read_from = [self._another_stream]
@@ -525,10 +527,11 @@ class TestConcurrentReadProcessor(unittest.TestCase):
                     type=TraceType.STREAM_STATUS,
                     emitted_at=1577836800000.0,
                     stream_status=AirbyteStreamStatusTraceMessage(
-                        stream_descriptor=StreamDescriptor(name=_ANOTHER_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
+                        stream_descriptor=StreamDescriptor(name=_ANOTHER_STREAM_NAME),
+                        status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE),
                     ),
                 ),
-            )
+            ),
         ]
 
         assert messages == expected_message

@@ -12,39 +12,40 @@ parameters = {"cursor_field": "owner_resource"}
 
 
 @pytest.mark.parametrize(
-    "test_name, partition_values, cursor_field, expected_slices",
+    "partition_values, cursor_field, expected_slices",
     [
         (
-            "test_single_element",
             ["customer", "store", "subscription"],
             "owner_resource",
             [{"owner_resource": "customer"}, {"owner_resource": "store"}, {"owner_resource": "subscription"}],
         ),
         (
-            "test_input_list_is_string",
             '["customer", "store", "subscription"]',
             "owner_resource",
             [{"owner_resource": "customer"}, {"owner_resource": "store"}, {"owner_resource": "subscription"}],
         ),
         (
-            "test_using_cursor_from_parameters",
             '["customer", "store", "subscription"]',
             "{{ parameters['cursor_field'] }}",
             [{"owner_resource": "customer"}, {"owner_resource": "store"}, {"owner_resource": "subscription"}],
         ),
     ],
+    ids=[
+        "test_single_element",
+        "test_input_list_is_string",
+        "test_using_cursor_from_parameters",
+    ],
 )
-def test_list_partition_router(test_name, partition_values, cursor_field, expected_slices):
+def test_list_partition_router(partition_values, cursor_field, expected_slices):
     slicer = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, parameters=parameters)
     slices = [s for s in slicer.stream_slices()]
     assert slices == expected_slices
 
 
 @pytest.mark.parametrize(
-    "test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data",
+    "request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data",
     [
         (
-            "test_inject_into_req_param",
             RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="owner_resource"),
             {"owner_resource": "customer"},
             {},
@@ -52,7 +53,6 @@ def test_list_partition_router(test_name, partition_values, cursor_field, expect
             {},
         ),
         (
-            "test_pass_by_header",
             RequestOption(inject_into=RequestOptionType.header, parameters={}, field_name="owner_resource"),
             {},
             {"owner_resource": "customer"},
@@ -60,7 +60,6 @@ def test_list_partition_router(test_name, partition_values, cursor_field, expect
             {},
         ),
         (
-            "test_inject_into_body_json",
             RequestOption(inject_into=RequestOptionType.body_json, parameters={}, field_name="owner_resource"),
             {},
             {},
@@ -68,7 +67,6 @@ def test_list_partition_router(test_name, partition_values, cursor_field, expect
             {},
         ),
         (
-            "test_inject_into_body_data",
             RequestOption(inject_into=RequestOptionType.body_data, parameters={}, field_name="owner_resource"),
             {},
             {},
@@ -76,8 +74,14 @@ def test_list_partition_router(test_name, partition_values, cursor_field, expect
             {"owner_resource": "customer"},
         ),
     ],
+    ids=[
+        "test_inject_into_req_param",
+        "test_pass_by_header",
+        "test_inject_into_body_json",
+        "test_inject_into_body_data",
+    ],
 )
-def test_request_option(test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data):
+def test_request_option(request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data):
     partition_router = ListPartitionRouter(
         values=partition_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={}
     )
@@ -87,6 +91,31 @@ def test_request_option(test_name, request_option, expected_req_params, expected
     assert expected_headers == partition_router.get_request_headers(stream_slice=stream_slice)
     assert expected_body_json == partition_router.get_request_body_json(stream_slice=stream_slice)
     assert expected_body_data == partition_router.get_request_body_data(stream_slice=stream_slice)
+
+
+@pytest.mark.parametrize(
+    "field_name_interpolation, expected_request_params",
+    [
+        ("{{parameters['partition_name']}}", {"parameters_partition": "customer"}),
+        ("{{config['partition_name']}}", {"config_partition": "customer"}),
+    ],
+    ids=[
+        "parameters_interpolation",
+        "config_interpolation",
+    ],
+)
+def test_request_options_interpolation(field_name_interpolation: str, expected_request_params: dict):
+    config = {"partition_name": "config_partition"}
+    parameters = {"partition_name": "parameters_partition"}
+    request_option = RequestOption(
+        inject_into=RequestOptionType.request_parameter, parameters=parameters, field_name=field_name_interpolation
+    )
+    partition_router = ListPartitionRouter(
+        values=partition_values, cursor_field=cursor_field, config=config, request_option=request_option, parameters=parameters
+    )
+    stream_slice = {cursor_field: "customer"}
+
+    assert expected_request_params == partition_router.get_request_params(stream_slice=stream_slice)
 
 
 def test_request_option_before_updating_cursor():
