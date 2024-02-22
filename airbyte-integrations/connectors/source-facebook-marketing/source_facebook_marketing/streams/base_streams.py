@@ -152,10 +152,6 @@ class FBMarketingStream(Stream, ABC):
         return {}
 
     def _transform_state_from_old_deleted_format(self, state: Mapping[str, Any]):
-        if all("filter_statuses" in account_state for account_state in state.values()):
-            # state is already in the new format
-            return state
-
         # transform from the old format with `include_deleted`
         for account_id in self._account_ids:
             account_state = state.get(account_id, {})
