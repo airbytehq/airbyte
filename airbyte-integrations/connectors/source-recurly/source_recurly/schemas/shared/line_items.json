@@ -270,7 +270,7 @@
         "properties": {
           "name": {
             "type": ["null", "string"]
-          },  
+          },
           "value": {
             "type": ["null", "string"]
           }
