@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.66.0
+Low-code: Add interpolation for request options
+
+## 0.65.0
+low-code: Allow connectors to ignore stream slicer request options on paginated requests
+
+## 0.64.1
+
+
+## 0.64.0
+Low-code: Add filter to RemoveFields
+
+## 0.63.2
+Correct handling of custom max_records limits in connector_builder
+
+## 0.63.1
+File-based CDK:  fix record enqueuing
+
+## 0.63.0
+Per-stream error reporting and continue syncing on error by default
+
+## 0.62.2
+mask access key when logging refresh response
+
 ## 0.62.1
 [ISSUE #34910] add headers to HttpResponse for test framework
 

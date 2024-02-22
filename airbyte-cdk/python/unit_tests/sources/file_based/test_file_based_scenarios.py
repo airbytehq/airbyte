@@ -258,7 +258,6 @@ discover_scenarios = [
     single_csv_input_state_is_earlier_scenario_concurrent,
     single_csv_input_state_is_later_scenario_concurrent,
     single_csv_no_input_state_scenario_concurrent,
-
 ]
 
 read_scenarios = discover_scenarios + [

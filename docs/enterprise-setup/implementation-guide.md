@@ -293,6 +293,14 @@ spec:
               number: # service port, example: 8180
         path: /auth
         pathType: Prefix
+      - backend:
+          service:
+            # format is ${RELEASE_NAME}-airbyte-api-server-svc
+            name: airbyte-pro-airbyte-api-server-svc
+            port:
+              number: # service port, example: 8180
+        path: /v1
+        pathType: Prefix
 ```
 
 </TabItem>
@@ -337,6 +345,14 @@ spec:
             port:
               number: 8180
         path: /auth
+        pathType: Prefix
+      - backend:
+          service:
+            # format is ${RELEASE_NAME}-airbyte-api-server-svc
+            name: airbyte-pro-airbyte-api-server-svc
+            port:
+              number: # service port, example: 8180
+        path: /v1
         pathType: Prefix
 ```
 

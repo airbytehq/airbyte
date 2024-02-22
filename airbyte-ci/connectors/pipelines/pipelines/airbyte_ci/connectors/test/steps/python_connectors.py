@@ -15,7 +15,7 @@ from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed, CheckPythonRegistryPublishConfiguration
+from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
@@ -253,7 +253,7 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.UNIT,
                 step=UnitTests(context),
-                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             )
         ],
@@ -261,29 +261,20 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
                 step=IntegrationTests(context),
-                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LIB_VALIDATION,
                 step=AirbyteLibValidation(context),
-                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
                 step=AcceptanceTests(context, context.concurrent_cat),
-                args=lambda results: {
-                    "connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]
-                },
+                args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-            ),
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.CHECK_BASE_IMAGE, step=CheckBaseImageIsUsed(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD]
-            ),
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.CHECK_PYTHON_REGISTRY_PUBLISH_CONFIGURATION,
-                step=CheckPythonRegistryPublishConfiguration(context),
             ),
         ],
     ]

@@ -71,6 +71,7 @@ class PartitionEnqueuerTest(unittest.TestCase):
             for partition in partitions:
                 yield partition
             raise exception
+
         return inner_function
 
     @staticmethod

@@ -46,7 +46,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPartitionRouter as CustomPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordFilter as CustomRecordFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRequester as CustomRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomTransformation as CustomTransformationModel
@@ -162,7 +161,6 @@ class ModelToComponentFactory:
             CustomErrorHandlerModel: self.create_custom_component,
             CustomIncrementalSyncModel: self.create_custom_component,
             CustomRecordExtractorModel: self.create_custom_component,
-            CustomRecordFilterModel: self.create_custom_component,
             CustomRequesterModel: self.create_custom_component,
             CustomRetrieverModel: self.create_custom_component,
             CustomPaginationStrategyModel: self.create_custom_component,
@@ -911,7 +909,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs: Any) -> RemoveFields:
-        return RemoveFields(field_pointers=model.field_pointers, condition=model.condition, parameters={})
+        return RemoveFields(field_pointers=model.field_pointers, condition=model.condition or "", parameters={})
 
     def create_selective_authenticator(self, model: SelectiveAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeAuthenticator:
         authenticators = {name: self._create_component_from_model(model=auth, config=config) for name, auth in model.authenticators.items()}
@@ -960,11 +958,16 @@ class ModelToComponentFactory:
         cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (
             self._create_component_from_model(
-                model=model.paginator, config=config, url_base=url_base, cursor_used_for_stop_condition=cursor_used_for_stop_condition
+                model=model.paginator,
+                config=config,
+                url_base=url_base,
+                cursor_used_for_stop_condition=cursor_used_for_stop_condition,
             )
             if model.paginator
             else NoPagination(parameters={})
         )
+
+        ignore_stream_slicer_parameters_on_paginated_requests = model.ignore_stream_slicer_parameters_on_paginated_requests or False
 
         if self._limit_slices_fetched or self._emit_connector_builder_messages:
             return SimpleRetrieverTestReadDecorator(
@@ -977,6 +980,7 @@ class ModelToComponentFactory:
                 cursor=cursor,
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched or 5,
+                ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
                 parameters=model.parameters or {},
             )
         return SimpleRetriever(
@@ -988,6 +992,7 @@ class ModelToComponentFactory:
             stream_slicer=stream_slicer,
             cursor=cursor,
             config=config,
+            ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
             parameters=model.parameters or {},
         )
 
