@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.Field;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.cdk.db.bigquery.BigQueryDatabase;
