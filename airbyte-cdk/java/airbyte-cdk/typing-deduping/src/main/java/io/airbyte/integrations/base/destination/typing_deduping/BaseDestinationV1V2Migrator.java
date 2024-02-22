@@ -13,14 +13,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator<DialectTableDefinition> {
+public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseDestinationV1V2Migrator.class);
 
   @Override
   public void migrateIfNecessary(
-                                 final SqlGenerator<DialectTableDefinition> sqlGenerator,
-                                 final DestinationHandler<DialectTableDefinition> destinationHandler,
+                                 final SqlGenerator sqlGenerator,
+                                 final DestinationHandler destinationHandler,
                                  final StreamConfig streamConfig)
       throws Exception {
     LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
@@ -59,8 +59,8 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param destinationHandler the class which executes the sql statements
    * @param streamConfig the stream to migrate the raw table of
    */
-  public void migrate(final SqlGenerator<DialectTableDefinition> sqlGenerator,
-                      final DestinationHandler<DialectTableDefinition> destinationHandler,
+  public void migrate(final SqlGenerator sqlGenerator,
+                      final DestinationHandler destinationHandler,
                       final StreamConfig streamConfig)
       throws TableNotMigratedException {
     final var namespacedTableName = convertToV1RawName(streamConfig);

@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 class CatalogParserTest {
 
-  private SqlGenerator<String> sqlGenerator;
+  private SqlGenerator sqlGenerator;
   private CatalogParser parser;
 
   @BeforeEach
