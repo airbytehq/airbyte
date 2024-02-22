@@ -1,92 +1,159 @@
-# Amazon Seller-Partner Source
+# Recurly Source
 
-This is the repository for the Amazon Seller-Partner source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/amazon-seller-partner).
+This is the repository for the Recurly source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/recurly).
 
 ## Local development
 
 ### Prerequisites
-**To iterate on this connector, make sure to complete this prerequisites section.**
 
-#### Build & Activate Virtual Environment and install dependencies
-From this connector directory, create a virtual environment:
-```
-python -m venv .venv
-```
+* Python (~=3.9)
+* Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-```
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
+### Installing the connector
 
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
+From this connector directory, run:
+
+```bash
+poetry install --with dev
+```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/amazon-seller-partner)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_amazon_seller-partner/integration_tests/spec.json` file.
+
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/recurly)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_recurly/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source amazon-seller-partner test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source recurly test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
+
+```bash
+poetry run source-recurly spec
+poetry run source-recurly check --config secrets/config.json
+poetry run source-recurly discover --config secrets/config.json
+poetry run source-recurly read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+
+### Running unit tests
+
+To run unit tests locally, from the connector directory run:
+
+```bash
+poetry run pytest unit_tests
 ```
 
 ### Locally running the connector docker image
 
+#### Use `airbyte-ci` to build your connector
 
-#### Build
-**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
+The Airbyte way of building this connector is to use our `airbyte-ci` tool.
+You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
+Then running the following command will build your connector:
+
 ```bash
-airbyte-ci connectors --name source-amazon-seller-partner build
+airbyte-ci connectors --name source-recurly build
 ```
 
-An image will be built with the tag `airbyte/source-amazon-seller-partner:dev`.
+Once the command is done, you will find your connector image in your local docker registry: `airbyte/source-recurly:dev`.
 
-**Via `docker build`:**
+##### Customizing our build process
+
+When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
+You can customize our build process by adding a `build_customization.py` module to your connector.
+This module should contain a `pre_connector_install` and `post_connector_install` async function that will mutate the base image and the connector container respectively.
+It will be imported at runtime by our build process and the functions will be called if they exist.
+
+Here is an example of a `build_customization.py` module:
+
+```python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Feel free to check the dagger documentation for more information on the Container object and its methods.
+    # https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/
+    from dagger import Container
+
+
+async def pre_connector_install(base_image_container: Container) -> Container:
+    return await base_image_container.with_env_variable("MY_PRE_BUILD_ENV_VAR", "my_pre_build_env_var_value")
+
+async def post_connector_install(connector_container: Container) -> Container:
+    return await connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
+```
+
+#### Build your own connector image
+
+This connector is built using our dynamic built process in `airbyte-ci`.
+The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
+The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
+It does not rely on a Dockerfile.
+
+If you would like to patch our connector and build your own a simple approach would be to:
+
+1. Create your own Dockerfile based on the latest version of the connector image.
+
+```Dockerfile
+FROM airbyte/source-recurly:latest
+
+COPY . ./airbyte/integration_code
+RUN pip install ./airbyte/integration_code
+
+# The entrypoint and default env vars are already set in the base image
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+```
+
+Please use this as an example. This is not optimized.
+
+2. Build your image:
+
 ```bash
-docker build -t airbyte/source-amazon-seller-partner:dev .
+docker build -t airbyte/source-recurly:dev .
+# Running the spec command against your patched connector
+docker run airbyte/source-recurly:dev spec
 ```
 
 #### Run
+
 Then run any of the connector commands as follows:
-```
-docker run --rm airbyte/source-amazon-seller-partner:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-amazon-seller-partner:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-amazon-seller-partner:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-amazon-seller-partner:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+
+```bash
+docker run --rm airbyte/source-recurly:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-recurly:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-recurly:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-recurly:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ## Testing
+
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
 ```bash
 airbyte-ci connectors --name=source-recurly test
 ```
 
 ### Customizing acceptance Tests
+
 Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 ## Dependency Management
+
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
 We split dependencies between two groups, dependencies that are:
+
 * required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
 * required for the testing need to go to `TEST_REQUIREMENTS` list
 
 ### Publishing a new version of the connector
+
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-recurly test`
 2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
 3. Make sure the `metadata.yaml` content is up to date.
@@ -94,4 +161,3 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
-
