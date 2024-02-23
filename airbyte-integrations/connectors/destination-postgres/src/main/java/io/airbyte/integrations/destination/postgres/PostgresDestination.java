@@ -27,7 +27,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDestinationHandler;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresState;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
