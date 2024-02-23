@@ -4,7 +4,7 @@
 
 Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` now has updated schema, which matches Amazon Seller Partner [docs](https://developer-docs.amazon.com/sp-api/docs/fba-inventory-reports-attributes#get_fba_storage_fee_charges_data).
 
-Users will need to refresh the source schemas and reset these streams after upgrading.
+Users will need to refresh the source schema and reset this stream after upgrading.
 
 ### Refresh affected schemas and reset data
 

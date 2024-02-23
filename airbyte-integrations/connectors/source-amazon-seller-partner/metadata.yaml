@@ -52,8 +52,8 @@ data:
         upgradeDeadline: "2024-01-12"
       4.0.0:
         message:
-          Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` now has updated schema, which matches Amazon Seller Partner docs.
-          Users will need to refresh the source schemas and reset these streams after upgrading.
+          Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` schema has been updated to match Amazon Seller Partner.
+          Users will need to refresh the source schema and reset this stream after upgrading.
         upgradeDeadline: "2024-03-11"
   supportLevel: community
   tags:
