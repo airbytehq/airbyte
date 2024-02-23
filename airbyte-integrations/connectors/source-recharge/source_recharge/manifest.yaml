@@ -1,4 +1,4 @@
-version: 0.58.4
+version: 0.65.0
 
 definitions:
   # API VERSION REFERENCE
@@ -6,7 +6,7 @@ definitions:
     x-recharge-version: "2021-01"
   modern_api_version:
     x-recharge-version: "2021-11"
-  
+    
   # COMMON PARTS
   schema_loader:
     type: JsonFileSchemaLoader
@@ -20,7 +20,6 @@ definitions:
       field_path: ["{{ parameters.get('data_path')}}"]
     # apply default schema normalization
     schema_normalization: Default
-
   authenticator:
     type: ApiKeyAuthenticator
     api_token: "{{ config['access_token'] }}"
@@ -57,46 +56,40 @@ definitions:
       field_name: limit
     pagination_strategy:
       type: CursorPagination
-      page_size: 1
+      page_size: 250
       cursor_value: '{{ response.get("next_cursor", {}) }}'
       stop_condition: '{{ not response.get("next_cursor", {}) }}'
-  
-  # REQUESTERS
-  requester_deprecated_api:
-    description: >-
-      Default Base Requester for Full Refresh streams
-    type: HttpRequester
-    url_base: https://api.rechargeapps.com/
-    path: "{{ parameters['name'] }}"
-    http_method: GET
-    authenticator:
-      $ref: "#/definitions/authenticator"
-    request_headers:
-      # for deprecated retriever we should use `2021-01` api version
-      $ref: "#/definitions/deprecated_api_version"
-    error_handler:
-      type: "DefaultErrorHandler"
 
-  requester_modern_api:
+  # REQUESTERS
+  requester_base:
     description: >-
       Default Base Requester for Full Refresh streams
-    # TODO:
-    # WHEN the default HttpRequester is used, there is no option to omit passing additional 
-    # query params along with `next_page_token`, the fix should be probably be made on the CDK lvl.
     type: HttpRequester
     url_base: https://api.rechargeapps.com/
     path: "{{ parameters['name'] }}"
     http_method: GET
     authenticator:
       $ref: "#/definitions/authenticator"
-    request_headers:
-      # for modern retriever we should use >= `2021-11` api version
-      $ref: "#/definitions/modern_api_version"
     error_handler:
-      type: "DefaultErrorHandler"
-    request_parameters:
-      updated_at_min: '{{ stream_state.get(''updated_at'') if stream_state else config[''start_date''] }}'
-  
+      type: DefaultErrorHandler
+      description: >-
+          We should retry the SUCCESSFULL request (200), with incomplete response.content
+          Case when: `data declared to receive` less than `actually received`
+      response_filters:
+        - action: RETRY
+          predicate: "{{ response.content|length > 0 and headers.get('Content-Length', 0)|int > response.content|length }}"
+
+  requester_deprecated_api:
+    $ref: "#/definitions/requester_base"
+    # for deprecated retriever we should use `2021-01` api version
+    request_headers:
+      $ref: "#/definitions/deprecated_api_version"
+  requester_modern_api:
+    $ref: "#/definitions/requester_base"
+    # for modern retriever we should use >= `2021-11` api version
+    request_headers:
+      $ref: "#/definitions/modern_api_version"
+
   # RETRIEVER FOR `DEPRECATED API`
   retriever_api_deprecated:
     description: >-
@@ -107,7 +100,6 @@ definitions:
       $ref: "#/definitions/requester_deprecated_api"
     paginator:
       $ref: "#/definitions/paginator_deprecated_api"
-
   # RETRIEVER FOR `MODERN API`
   retriever_api_modern:
     description: >-
@@ -118,42 +110,49 @@ definitions:
       $ref: "#/definitions/requester_modern_api"
     paginator:
       $ref: "#/definitions/paginator_modern_api"
-    
-  # RETRIEVER FOR `SHOP` STREAM
-  retriever_shop_stream:
-    $ref: "#/definitions/retriever_api_deprecated"
-    # Override the selector to provide the default value
-    record_selector:
-      $ref: "#/definitions/selector"
-      extractor:
-        type: DpathExtractor
-        field_path: []
-
-  # BASE FULL-REFRESH STREAMS
-  base_deprecated_api_stream:
+    # we should ignore all other req.params once we have the `next_page_token` in response
+    # for pagination in `2021-11` - modern api.
+    ignore_stream_slicer_parameters_on_paginated_requests: true
+  # RETRIEVER FOR `METAFIELDS` STREAM
+  retriever_metafields:
+    $ref: "#/definitions/retriever_api_modern"
+    partition_router:
+      type: ListPartitionRouter
+      cursor_field: owner_resource
+      values:
+        - address
+        - order
+        - charge
+        - customer
+        - store
+        - subscription
+      request_option:
+        inject_into: request_parameter
+        type: RequestOption
+        field_name: owner_resource
+    # requester:
+    #   $ref: "#/definitions/requester_modern_api"
+    #   request_parameters:
+    #     owner_resource: "{{ stream_partition['owner_resource'] }}"
+  
+  # BASE STREAMS
+  # FULL-REFRESH
+  base_stream:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+  base_deprecated_api_stream:
+    $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever_api_deprecated"
-  
   base_modern_api_stream:
-    primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
+    $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever_api_modern"
-  
-  # BASE INCREMENTAL STREAMS
-  base_deprecated_api_incremental_stream:
-    $ref: "#/definitions/base_deprecated_api_stream"
-  
-  base_modern_api_incremental_stream:
+  # INCREMENTAL
+  base_incremental_stream:
     $ref: "#/definitions/base_modern_api_stream"
     incremental_sync:
-      # The custom incremental sync was applied because,
-      # the cursor for the close_slice() method is determined as NOW(), 
-      # instead of the real cursor field (updated_at) value from the record.
       type: CustomIncrementalSync
       class_name: source_recharge.components.datetime_based_cursor.RechargeDateTimeBasedCursor
       cursor_field: "updated_at"
@@ -164,35 +163,120 @@ definitions:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: "updated_at_min"
+        inject_into: request_parameter
 
   # FULL-REFRESH STREAMS
+  # COLLECTIONS
+  collections_stream:
+    description: >-
+      Collections Stream: https://developer.rechargepayments.com/2021-11/collections/collections_list
+    $ref: "#/definitions/base_modern_api_stream"
+    $parameters:
+      name: "collections"
+      data_path: "collections"
+  # METAFIELDS
+  metafields_stream:
+    description: >-
+      Metafields Stream: https://developer.rechargepayments.com/2021-11/metafields
+    $ref: "#/definitions/base_modern_api_stream"
+    retriever:
+      $ref: "#/definitions/retriever_metafields"
+    $parameters:
+      name: "metafields"
+      data_path: "metafields"  
+  # PRODUCTS
+  products_stream:
+    description: >-
+      Products Stream: https://developer.rechargepayments.com/2021-11/products/products_list
+      Products endpoint has 422 error with 2021-11 API version
+    $ref: "#/definitions/base_deprecated_api_stream"
+    $parameters:
+      name: "products"
+      data_path: "products"
   # SHOP
   shop_stream:
+    description: >-
+      Shop Stream: https://developer.rechargepayments.com/v1-shopify?python#shop
+      Shop endpoint is not available in 2021-11 API version
     $ref: "#/definitions/base_deprecated_api_stream"
     retriever:
-      $ref: "#/definitions/retriever_shop_stream"
+      $ref: "#/definitions/retriever_api_deprecated"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: []
     primary_key: ["shop", "store"]
     $parameters:
         name: "shop"
-  # PRODUCTS
-  products_stream:
-    $ref: "#/definitions/base_deprecated_api_stream"
-    $parameters:
-        name: "products"
-        data_path: "products"
   
   # INCREMENTAL STREAMS
-  # ORDERS
-  orders_stream:
-    $ref: "#/definitions/base_modern_api_incremental_stream"
+  # ADDRESSES
+  addresses_stream:
+    description: >-
+      Addresses Stream: https://developer.rechargepayments.com/2021-11/addresses/list_addresses
+    $ref: "#/definitions/base_incremental_stream"
     $parameters:
-      name: "orders"
-      data_path: "orders"
+      name: "addresses"
+      data_path: "addresses"
+  # CHARGES
+  charges_stream:
+    description: >-
+      Charges Stream: https://developer.rechargepayments.com/2021-11/charges/charge_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "charges"
+      data_path: "charges"
+  # CUSTOMERS
+  customers_stream:
+    description: >-
+      Customers Stream: https://developer.rechargepayments.com/2021-11/customers/customers_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "customers"
+      data_path: "customers"
+  # DISCOUNTS
+  discounts_stream:
+    description: >-
+      Discounts Stream: https://developer.rechargepayments.com/2021-11/discounts/discounts_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "discounts"
+      data_path: "discounts"
+  # ONETIMES
+  onetimes_stream:
+    description: >-
+      Onetimes Stream: https://developer.rechargepayments.com/2021-11/onetimes/onetimes_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "onetimes"
+      data_path: "onetimes"
+  # SUBSCRIPTIONS
+  subscriptions_stream:
+    # description: >-
+    #   Subscriptions Stream: https://developer.rechargepayments.com/2021-11/subscriptions/subscriptions_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "subscriptions"
+      data_path: "subscriptions"
 
 streams:
-  - "#/definitions/shop_stream"
+  - "#/definitions/addresses_stream"
+  - "#/definitions/charges_stream"
+  - "#/definitions/collections_stream"
+  - "#/definitions/customers_stream"
+  - "#/definitions/discounts_stream"
+  - "#/definitions/metafields_stream"
+  - "#/definitions/onetimes_stream"
   - "#/definitions/products_stream"
-  - "#/definitions/orders_stream"
+  - "#/definitions/shop_stream"
+  - "#/definitions/subscriptions_stream"
+  # The `orders` stream remains implemented in `streams.py` due to:
+  # 1. Inability to resolve `$ref` conditionally
+  # 2. Inability to dynamically switch between paginators (diff api versions, require diff pagination approach) (or create the CustomPaginator component)
 
 check:
   type: CheckStream
