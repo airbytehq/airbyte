@@ -37,7 +37,7 @@ data:
         upgradeDeadline: "2023-09-17"
       2.0.0:
         message: "This upgrade brings perfomance impovements and stream schema changes. Details are available here: https://github.com/airbytehq/airbyte/pull/32345#issue-1985556333."
-        upgradeDeadline: "2024-04-01"
+        upgradeDeadline: "2024-03-18"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
