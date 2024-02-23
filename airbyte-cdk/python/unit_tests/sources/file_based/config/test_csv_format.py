@@ -27,6 +27,7 @@ class CsvHeaderDefinitionTest(unittest.TestCase):
     def test_given_from_csv_then_csv_has_header_row(self) -> None:
         assert CsvHeaderFromCsv().has_header_row()
 
+
 class CsvDelimiterTest(unittest.TestCase):
     def test_tab_delimter(self):
         assert CsvFormat(delimiter=r"\t").delimiter == '\\t'
