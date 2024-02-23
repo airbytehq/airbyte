@@ -13,9 +13,7 @@
         "segment_opts": {
           "saved_segment_id": 0,
           "match": "any",
-          "conditions": [
-            null
-          ]
+          "conditions": [null]
         },
         "store_id": "1a2df69xxx"
       },
@@ -49,9 +47,7 @@
         "workflow_type": "abandonedBrowse",
         "workflow_title": "string",
         "runtime": {
-          "days": [
-            "sunday"
-          ],
+          "days": ["sunday"],
           "hours": {
             "type": "send_asap"
           }
