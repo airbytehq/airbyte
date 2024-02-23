@@ -24,6 +24,8 @@ application {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
     implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'

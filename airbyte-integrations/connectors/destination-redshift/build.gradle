@@ -25,6 +25,8 @@ application {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
     implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
     // TODO: Verify no aws sdk code is pulled by this dependency causing classpath conflicts

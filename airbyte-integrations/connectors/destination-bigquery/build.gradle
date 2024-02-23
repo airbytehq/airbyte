@@ -36,6 +36,9 @@ application {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
     implementation 'com.codepoetics:protonpack:1.13'
     implementation 'org.apache.commons:commons-text:1.10.0'
 }
