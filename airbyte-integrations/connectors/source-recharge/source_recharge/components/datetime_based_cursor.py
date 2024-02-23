@@ -6,15 +6,15 @@
 from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 
 
 @dataclass
 class RechargeDateTimeBasedCursor(DatetimeBasedCursor):
     """
     Override for the default `DatetimeBasedCursor` to make self.close_slice() to produce `min` value instead of `max` value.
-    
+
     This is the ONLY CHANGE MADE HERE, to make the SOURCE STATE proccessed correctly:
         The `min` value should be determined, in the first place, since we would skip the records,
         if they are updated manually, by the Customer, and the range in not AFTER the STATE value, but before.

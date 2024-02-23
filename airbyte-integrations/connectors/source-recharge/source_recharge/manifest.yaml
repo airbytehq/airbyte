@@ -1,12 +1,6 @@
 version: 0.65.0
 
 definitions:
-  # API VERSION REFERENCE
-  deprecated_api_version:
-    x-recharge-version: "2021-01"
-  modern_api_version:
-    x-recharge-version: "2021-11"
-    
   # COMMON PARTS
   schema_loader:
     type: JsonFileSchemaLoader
@@ -26,7 +20,7 @@ definitions:
     inject_into:
       type: RequestOption
       inject_into: header
-      field_name: X-Recharge-Access-Token 
+      field_name: X-Recharge-Access-Token
 
   # PAGINATORS
   paginator_deprecated_api:
@@ -73,22 +67,21 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       description: >-
-          We should retry the SUCCESSFULL request (200), with incomplete response.content
-          Case when: `data declared to receive` less than `actually received`
+        We should retry the SUCCESSFULL request (200), with incomplete response.content
+        Case when: `data declared to receive` bigger than `actually received`
       response_filters:
         - action: RETRY
           predicate: "{{ response.content|length > 0 and headers.get('Content-Length', 0)|int > response.content|length }}"
-
   requester_deprecated_api:
     $ref: "#/definitions/requester_base"
     # for deprecated retriever we should use `2021-01` api version
     request_headers:
-      $ref: "#/definitions/deprecated_api_version"
+      x-recharge-version: "2021-01"
   requester_modern_api:
     $ref: "#/definitions/requester_base"
     # for modern retriever we should use >= `2021-11` api version
     request_headers:
-      $ref: "#/definitions/modern_api_version"
+      x-recharge-version: "2021-11"
 
   # RETRIEVER FOR `DEPRECATED API`
   retriever_api_deprecated:
@@ -134,7 +127,7 @@ definitions:
     #   $ref: "#/definitions/requester_modern_api"
     #   request_parameters:
     #     owner_resource: "{{ stream_partition['owner_resource'] }}"
-  
+
   # BASE STREAMS
   # FULL-REFRESH
   base_stream:
@@ -157,12 +150,12 @@ definitions:
       class_name: source_recharge.components.datetime_based_cursor.RechargeDateTimeBasedCursor
       cursor_field: "updated_at"
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%S%z'
-      datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: "updated_at_min"
@@ -186,7 +179,7 @@ definitions:
       $ref: "#/definitions/retriever_metafields"
     $parameters:
       name: "metafields"
-      data_path: "metafields"  
+      data_path: "metafields"
   # PRODUCTS
   products_stream:
     description: >-
@@ -211,8 +204,8 @@ definitions:
           field_path: []
     primary_key: ["shop", "store"]
     $parameters:
-        name: "shop"
-  
+      name: "shop"
+
   # INCREMENTAL STREAMS
   # ADDRESSES
   addresses_stream:
