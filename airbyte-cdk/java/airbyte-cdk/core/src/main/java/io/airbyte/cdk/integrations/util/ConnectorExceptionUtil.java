@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
+import io.airbyte.commons.functional.Either;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.Collection;
@@ -83,6 +84,17 @@ public class ConnectorExceptionUtil {
       LOGGER.error(initialMessage + stacktraces + "\nRethrowing first exception.");
       throw throwables.iterator().next();
     }
+  }
+
+  public static <T extends Throwable, Result> List<Result> getResultsOrLogAndThrowFirst(final String initialMessage,
+                                                                                        final List<Either<? extends T, Result>> eithers)
+      throws T {
+    List<? extends T> throwables = eithers.stream().filter(Either::isLeft).map(Either::getLeft).toList();
+    if (!throwables.isEmpty()) {
+      logAllAndThrowFirst(initialMessage, throwables);
+    }
+    // No need to filter on isRight since isLeft will throw before reaching this line.
+    return eithers.stream().map(Either::getRight).toList();
   }
 
   private static boolean isConfigErrorException(Throwable e) {

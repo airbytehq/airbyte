@@ -153,7 +153,7 @@ def test_should_retry_on_permission_error(requests_mock, stream_class, status, e
 
 def test_compressed_contact_response(requests_mock):
     stream = Contacts()
-    with open(os.path.dirname(__file__) + "/compressed_response", "rb") as compressed_response:
+    with open(os.path.dirname(__file__) + "/compressed_response", "rb") as file_response:
         url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
         requests_mock.register_uri("POST", url, [{"json": {"id": "random_id"}, "status_code": 202}])
         url = "https://api.sendgrid.com/v3/marketing/contacts/exports/random_id"
@@ -162,7 +162,28 @@ def test_compressed_contact_response(requests_mock):
             {"json": {"status": "ready", "urls": ["https://sample_url/sample_csv.csv.gzip"]}, "status_code": 202},
         ]
         requests_mock.register_uri("GET", url, resp_bodies)
-        requests_mock.register_uri("GET", "https://sample_url/sample_csv.csv.gzip", [{"body": compressed_response, "status_code": 202}])
+        requests_mock.register_uri("GET", "https://sample_url/sample_csv.csv.gzip", [{"body": file_response, "status_code": 202}])
+        recs = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        decompressed_response = pd.read_csv(os.path.dirname(__file__) + "/decompressed_response.csv", dtype=str)
+        expected_records = [
+            {k.lower(): v for k, v in x.items()} for x in decompressed_response.replace({nan: None}).to_dict(orient="records")
+        ]
+
+        assert recs == expected_records
+
+
+def test_uncompressed_contact_response(requests_mock):
+    stream = Contacts()
+    with open(os.path.dirname(__file__) + "/decompressed_response.csv", "rb") as file_response:
+        url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
+        requests_mock.register_uri("POST", url, [{"json": {"id": "random_id"}, "status_code": 202}])
+        url = "https://api.sendgrid.com/v3/marketing/contacts/exports/random_id"
+        resp_bodies = [
+            {"json": {"status": "pending", "id": "random_id", "urls": []}, "status_code": 202},
+            {"json": {"status": "ready", "urls": ["https://sample_url/sample_csv.csv.gzip"]}, "status_code": 202},
+        ]
+        requests_mock.register_uri("GET", url, resp_bodies)
+        requests_mock.register_uri("GET", "https://sample_url/sample_csv.csv.gzip", [{"body": file_response, "status_code": 202}])
         recs = list(stream.read_records(sync_mode=SyncMode.full_refresh))
         decompressed_response = pd.read_csv(os.path.dirname(__file__) + "/decompressed_response.csv", dtype=str)
         expected_records = [
