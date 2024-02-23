@@ -238,7 +238,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final Optional<String> rawNamespaceOverride = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET);
     final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation, rawNamespaceOverride);
     final BigQuery bigquery = getBigQuery(config);
-    final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe, rawNamespaceOverride);
+    final TyperDeduper typerDeduper =
+        buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe, rawNamespaceOverride);
 
     AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
     final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);

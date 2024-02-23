@@ -78,8 +78,8 @@ public class BigqueryDestinationHandlerTest {
     final var expectedStreamColumnNames = List.of("a", "b", "c");
     Mockito.when(existingTable.getClustering())
         .thenReturn(Clustering.newBuilder().setFields(
-                Stream.concat(expectedStreamColumnNames.stream(), Stream.of("_airbyte_extracted_at"))
-                    .collect(Collectors.toList()))
+            Stream.concat(expectedStreamColumnNames.stream(), Stream.of("_airbyte_extracted_at"))
+                .collect(Collectors.toList()))
             .build());
     stream = new StreamConfig(null,
         null,
@@ -124,4 +124,5 @@ public class BigqueryDestinationHandlerTest {
     Assertions.assertTrue(
         BigQueryDestinationHandler.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_AIRBYTE_META", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_RAW_ID")));
   }
+
 }

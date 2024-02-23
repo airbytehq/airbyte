@@ -216,30 +216,26 @@ public class BigQueryDestinationHandler implements DestinationHandler<BigquerySt
               Field.of(DESTINATION_STATE_TABLE_COLUMN_NAME, StandardSQLTypeName.STRING),
               Field.of(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE, StandardSQLTypeName.STRING),
               Field.of(DESTINATION_STATE_TABLE_COLUMN_STATE, StandardSQLTypeName.JSON),
-              Field.of(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT, StandardSQLTypeName.TIMESTAMP)
-          ))
-      ).build());
+              Field.of(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT, StandardSQLTypeName.TIMESTAMP))))
+          .build());
     }
 
     Map<AirbyteStreamNameNamespacePair, BigqueryState> destinationStates = StreamSupport.stream(
         bq.query(QueryJobConfiguration.newBuilder(
-            "SELECT * FROM " + getStateTableName()
-        ).build()).iterateAll().spliterator(),
-        false
-    ).collect(toMap(
-        fvList -> {
-          final FieldValue nameFieldValue = fvList.get(DESTINATION_STATE_TABLE_COLUMN_NAME);
-          final FieldValue namespaceFieldValue = fvList.get(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE);
-          return new AirbyteStreamNameNamespacePair(
-              nameFieldValue.isNull() ? null : nameFieldValue.getStringValue(),
-              namespaceFieldValue.isNull() ? null : namespaceFieldValue.getStringValue()
-          );
-        },
-        fvList -> {
-          JsonNode json = Jsons.deserialize(fvList.get(DESTINATION_STATE_TABLE_COLUMN_STATE).getStringValue());
-          return toBigqueryState(json);
-        }
-    ));
+            "SELECT * FROM " + getStateTableName()).build()).iterateAll().spliterator(),
+        false).collect(
+            toMap(
+                fvList -> {
+                  final FieldValue nameFieldValue = fvList.get(DESTINATION_STATE_TABLE_COLUMN_NAME);
+                  final FieldValue namespaceFieldValue = fvList.get(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE);
+                  return new AirbyteStreamNameNamespacePair(
+                      nameFieldValue.isNull() ? null : nameFieldValue.getStringValue(),
+                      namespaceFieldValue.isNull() ? null : namespaceFieldValue.getStringValue());
+                },
+                fvList -> {
+                  JsonNode json = Jsons.deserialize(fvList.get(DESTINATION_STATE_TABLE_COLUMN_STATE).getStringValue());
+                  return toBigqueryState(json);
+                }));
 
     final List<DestinationInitialState<BigqueryState>> initialStates = new ArrayList<>();
     for (final StreamConfig streamConfig : streamConfigs) {
@@ -295,7 +291,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<BigquerySt
   }
 
   private boolean existingSchemaMatchesStreamConfig(final StreamConfig stream,
-                                                   final TableDefinition existingTable)
+                                                    final TableDefinition existingTable)
       throws TableNotMigratedException {
     final var alterTableReport = buildAlterTableReport(stream, existingTable);
     boolean tableClusteringMatches = false;
@@ -340,24 +336,24 @@ public class BigQueryDestinationHandler implements DestinationHandler<BigquerySt
 
     // Columns that are typed differently than the StreamConfig
     final Set<String> columnsToChangeType = Stream.concat(
-            streamSchema.keySet().stream()
-                // If it's not in the existing schema, it should already be in the columnsToAdd Set
-                .filter(name -> {
-                  // Big Query Columns are case-insensitive, first find the correctly cased key if it exists
-                  return matchingKey(existingSchema.keySet(), name)
-                      // if it does exist, only include it in this set if the type (the value in each respective map)
-                      // is different between the stream and existing schemas
-                      .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
-                      // if there is no matching key, then don't include it because it is probably already in columnsToAdd
-                      .orElse(false);
-                }),
+        streamSchema.keySet().stream()
+            // If it's not in the existing schema, it should already be in the columnsToAdd Set
+            .filter(name -> {
+              // Big Query Columns are case-insensitive, first find the correctly cased key if it exists
+              return matchingKey(existingSchema.keySet(), name)
+                  // if it does exist, only include it in this set if the type (the value in each respective map)
+                  // is different between the stream and existing schemas
+                  .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
+                  // if there is no matching key, then don't include it because it is probably already in columnsToAdd
+                  .orElse(false);
+            }),
 
-            // OR columns that used to have a non-null constraint and shouldn't
-            // (https://github.com/airbytehq/airbyte/pull/31082)
-            existingTable.getSchema().getFields().stream()
-                .filter(field -> pks.contains(field.getName()))
-                .filter(field -> field.getMode() == Field.Mode.REQUIRED)
-                .map(Field::getName))
+        // OR columns that used to have a non-null constraint and shouldn't
+        // (https://github.com/airbytehq/airbyte/pull/31082)
+        existingTable.getSchema().getFields().stream()
+            .filter(field -> pks.contains(field.getName()))
+            .filter(field -> field.getMode() == Field.Mode.REQUIRED)
+            .map(Field::getName))
         .collect(Collectors.toSet());
 
     final boolean isDestinationV2Format = schemaContainAllFinalTableV2AirbyteColumns(existingSchema.keySet());
@@ -369,16 +365,16 @@ public class BigQueryDestinationHandler implements DestinationHandler<BigquerySt
   public static boolean clusteringMatches(final StreamConfig stream, final StandardTableDefinition existingTable) {
     return existingTable.getClustering() != null
         && containsAllIgnoreCase(
-        new HashSet<>(existingTable.getClustering().getFields()),
-        clusteringColumns(stream));
+            new HashSet<>(existingTable.getClustering().getFields()),
+            clusteringColumns(stream));
   }
 
   @VisibleForTesting
   public static boolean partitioningMatches(final StandardTableDefinition existingTable) {
     return existingTable.getTimePartitioning() != null
         && existingTable.getTimePartitioning()
-        .getField()
-        .equalsIgnoreCase("_airbyte_extracted_at")
+            .getField()
+            .equalsIgnoreCase("_airbyte_extracted_at")
         && TimePartitioning.Type.DAY.equals(existingTable.getTimePartitioning().getType());
   }
 
