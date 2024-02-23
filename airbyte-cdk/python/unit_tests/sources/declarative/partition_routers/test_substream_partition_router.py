@@ -20,7 +20,7 @@ data_second_parent_slice = [{"id": 2, "slice": "second", "data": "C"}]
 data_third_parent_slice = []
 all_parent_data = data_first_parent_slice + data_second_parent_slice + data_third_parent_slice
 parent_slices = [{"slice": "first"}, {"slice": "second"}, {"slice": "third"}]
-second_parent_stream_slice = [PerPartitionStreamSlice({"slice": "second_parent"}, {})]
+second_parent_stream_slice = [PerPartitionStreamSlice(partition={"slice": "second_parent"}, cursor_slice={})]
 
 
 class MockStream(Stream):
@@ -44,7 +44,7 @@ class MockStream(Stream):
             if isinstance(s, PerPartitionStreamSlice):
                 yield s
             else:
-                yield PerPartitionStreamSlice(s, {})
+                yield PerPartitionStreamSlice(partition=s, cursor_slice={})
 
     def read_records(
         self,
@@ -112,7 +112,7 @@ class MockStream(Stream):
                 "test_cursor_values_are_removed_from_parent_slices",
                 [
                     ParentStreamConfig(
-                        stream=MockStream([PerPartitionStreamSlice(p, {"start": 0, "end": 1}) for p in parent_slices], all_parent_data, "first_stream"),
+                        stream=MockStream([PerPartitionStreamSlice(partition=p, cursor_slice={"start": 0, "end": 1}) for p in parent_slices], all_parent_data, "first_stream"),
                         parent_key="id",
                         partition_field="first_stream_id",
                         parameters={},

@@ -54,7 +54,7 @@ class Record(Mapping[str, Any]):
 
 
 class PerPartitionStreamSlice(StreamSlice):
-    def __init__(self, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]) -> None:
+    def __init__(self, *, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]) -> None:
         self._partition = partition
         self._cursor_slice = cursor_slice
         if partition.keys() & cursor_slice.keys():
