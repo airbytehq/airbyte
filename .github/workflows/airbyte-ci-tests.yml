@@ -22,6 +22,9 @@ jobs:
       internal_poetry_packages: ${{ steps.changes.outputs.internal_poetry_packages }}
 
     steps:
+      - name: Checkout Airbyte
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v3
       - id: changes
         uses: dorny/paths-filter@v2
         with:
