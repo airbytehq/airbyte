@@ -516,6 +516,27 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  CustomRecordFilter:
+    title: Custom Record Filter
+    description: Record filter component whose behavior is derived from a custom code implementation of the connector.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomRecordFilter]
+      class_name:
+        title: Class Name
+        description: Fully-qualified name of the class that will be implementing the custom record filter strategy. The format is `source_<name>.<package>.<class_name>`.
+        type: string
+        examples:
+          - "source_railz.components.MyCustomCustomRecordFilter"
+      $parameters:
+        type: object
+        additionalProperties: true
   CustomRequester:
     title: Custom Requester
     description: Requester component whose behavior is derived from a custom code implementation of the connector.
@@ -1819,7 +1840,9 @@ definitions:
       record_filter:
         title: Record Filter
         description: Responsible for filtering records to be emitted by the Source.
-        "$ref": "#/definitions/RecordFilter"
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordFilter"
+          - "$ref": "#/definitions/RecordFilter"
       schema_normalization:
         "$ref": "#/definitions/SchemaNormalization"
         default: None
@@ -1847,6 +1870,19 @@ definitions:
       type:
         type: string
         enum: [RemoveFields]
+      condition:
+        description: The predicate to filter a property by a property value. Property will be removed if it is empty OR expression is evaluated to True.,
+        type: string
+        default: ""
+        interpolation_context:
+          - config
+          - property
+          - parameters
+        examples:
+          - "{{ property|string == '' }}"
+          - "{{ property is integer }}"
+          - "{{ property|length > 5 }}"
+          - "{{ property == 'some_string_to_match' }}"
       field_pointers:
         title: Field Paths
         description: Array of paths defining the field to remove. Each item is an array whose field describe the path of a field to remove.
@@ -1885,6 +1921,9 @@ definitions:
         type: string
         examples:
           - segment_id
+        interpolation_context:
+          - config
+          - parameters
       inject_into:
         title: Inject Into
         description: Configures where the descriptor should be set on the HTTP requests. Note that request parameters that are already encoded in the URL path will not be duplicated.
@@ -1988,6 +2027,10 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
+      ignore_stream_slicer_parameters_on_paginated_requests:
+        description: If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.
+        type: boolean
+        default: false
       partition_router:
         title: Partition Router
         description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.
@@ -2137,6 +2180,13 @@ interpolation:
       examples:
         - start_date: 2010-01-01
           api_key: "*****"
+    - title: parameters
+      description: Additional runtime parameters, to be used for string interpolation. Parameters can be passed down from a parent component to its subcomponents using the $parameters key. This can be used to avoid repetitions.
+      type: object
+      examples:
+        - path: "automations"
+          data_export_path: "automations"
+          cursor_field: "updated_at"
     - title: headers
       description: The HTTP headers from the last response received from the API. The object's keys are the header names from the response.
       type: object

@@ -104,6 +104,7 @@ allprojects {
         systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', 1
         // Order test classes by annotation.
         systemProperty 'junit.jupiter.testclass.order.default', 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation'
+        systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
 
         if (!project.hasProperty('testExecutionConcurrency')) {
             // By default, let gradle spawn as many independent workers as it wants.

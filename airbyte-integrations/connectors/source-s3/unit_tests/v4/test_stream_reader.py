@@ -5,7 +5,7 @@
 
 import io
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
 from unittest.mock import patch
@@ -269,3 +269,38 @@ def test_get_iam_s3_client(boto3_client_mock):
 
     # Assertions to validate the s3 client
     assert s3_client is not None
+
+@pytest.mark.parametrize(
+    "start_date, last_modified_date, expected_result",
+    (
+        # True when file is new or modified after given start_date
+        (
+            datetime.now() - timedelta(days=180),
+            datetime.now(),
+            True
+        ),
+        (
+            datetime.strptime("2024-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+            datetime.strptime("2024-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+            True
+        ),
+        # False when file is older than given start_date
+        (
+            datetime.now(),
+            datetime.now() - timedelta(days=180),
+            False
+        )
+    )
+)
+def test_filter_file_by_start_date(start_date: datetime, last_modified_date: datetime, expected_result: bool) -> None:
+    reader = SourceS3StreamReader()
+
+    reader.config = Config(
+        bucket="test",
+        aws_access_key_id="test",
+        aws_secret_access_key="test",
+        streams=[],
+        start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
+
+    assert expected_result == reader.is_modified_after_start_date(last_modified_date)

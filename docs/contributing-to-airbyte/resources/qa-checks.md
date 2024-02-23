@@ -20,11 +20,6 @@ This document should contain a section for each breaking change, in order of the
 *Applies to the following connector languages: java, low-code, python*
 
 The user facing connector documentation should be stored under `./docs/integrations/<connector-type>s/<connector-name>.md`.
-### Connectors documentation follows our guidelines
-*Applies to the following connector types: source, destination*
-*Applies to the following connector languages: java, low-code, python*
-
-The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
 ### Connectors must have a changelog entry for each version
 *Applies to the following connector types: source, destination*
 *Applies to the following connector languages: java, low-code, python*
