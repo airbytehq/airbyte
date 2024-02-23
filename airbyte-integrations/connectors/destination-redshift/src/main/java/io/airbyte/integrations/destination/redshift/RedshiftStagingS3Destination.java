@@ -179,7 +179,9 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  protected JdbcDestinationHandler<RedshiftState> getDestinationHandler(final String databaseName, final JdbcDatabase database, String rawTableSchema) {
+  protected JdbcDestinationHandler<RedshiftState> getDestinationHandler(final String databaseName,
+                                                                        final JdbcDatabase database,
+                                                                        String rawTableSchema) {
     return new RedshiftDestinationHandler(databaseName, database, rawTableSchema);
   }
 
@@ -235,7 +237,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
     if (disableTypeDedupe) {
-      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());
+      typerDeduper =
+          new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());
     } else {
       typerDeduper =
           new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());

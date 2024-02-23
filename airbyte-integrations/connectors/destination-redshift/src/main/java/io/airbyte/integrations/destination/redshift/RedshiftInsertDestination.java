@@ -116,7 +116,9 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   }
 
   @Override
-  protected JdbcDestinationHandler<RedshiftState> getDestinationHandler(final String databaseName, final JdbcDatabase database, String rawTableSchema) {
+  protected JdbcDestinationHandler<RedshiftState> getDestinationHandler(final String databaseName,
+                                                                        final JdbcDatabase database,
+                                                                        String rawTableSchema) {
     return new RedshiftDestinationHandler(databaseName, database, rawTableSchema);
   }
 

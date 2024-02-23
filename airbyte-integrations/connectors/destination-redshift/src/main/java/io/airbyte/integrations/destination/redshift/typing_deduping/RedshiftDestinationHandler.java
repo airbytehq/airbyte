@@ -69,7 +69,6 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler<RedshiftS
     };
   }
 
-
   @Override
   protected RedshiftState toDestinationState(JsonNode json) {
     return new RedshiftState(
