@@ -372,17 +372,19 @@ def _as_state(state_data: Dict[str, Any], stream_name: str = "", per_stream_stat
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state_data))
 
 
-def _as_error_trace(stream: str, error_message: str,  internal_message: Optional[str], failure_type: Optional[FailureType], stack_trace: Optional[str]) -> AirbyteMessage:
+def _as_error_trace(
+    stream: str, error_message: str, internal_message: Optional[str], failure_type: Optional[FailureType], stack_trace: Optional[str]
+) -> AirbyteMessage:
     trace_message = AirbyteTraceMessage(
         emitted_at=datetime.datetime.now().timestamp() * 1000.0,
         type=TraceType.ERROR,
         error=AirbyteErrorTraceMessage(
-                stream_descriptor=StreamDescriptor(name=stream),
-                message=error_message,
-                internal_message=internal_message,
-                failure_type=failure_type,
-                stack_trace=stack_trace,
-            ),
+            stream_descriptor=StreamDescriptor(name=stream),
+            message=error_message,
+            internal_message=internal_message,
+            failure_type=failure_type,
+            stack_trace=stack_trace,
+        ),
     )
 
     return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
@@ -1186,8 +1188,12 @@ def test_checkpoint_state_from_stream_instance():
     managers_stream = StreamNoStateMethod()
     state_manager = ConnectorStateManager(
         {
-            "teams": AirbyteStream(name="teams", namespace="", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]),
-            "managers": AirbyteStream(name="managers", namespace="", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental])
+            "teams": AirbyteStream(
+                name="teams", namespace="", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+            ),
+            "managers": AirbyteStream(
+                name="managers", namespace="", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+            ),
         },
         [],
     )
@@ -1207,9 +1213,19 @@ def test_checkpoint_state_from_stream_instance():
 @pytest.mark.parametrize(
     "exception_to_raise,expected_error_message,expected_internal_message",
     [
-        pytest.param(AirbyteTracedException(message="I was born only to crash like Icarus"), "I was born only to crash like Icarus", None, id="test_raises_traced_exception"),
-        pytest.param(Exception("Generic connector error message"), "Something went wrong in the connector. See the logs for more details.", "Generic connector error message", id="test_raises_generic_exception"),
-    ]
+        pytest.param(
+            AirbyteTracedException(message="I was born only to crash like Icarus"),
+            "I was born only to crash like Icarus",
+            None,
+            id="test_raises_traced_exception",
+        ),
+        pytest.param(
+            Exception("Generic connector error message"),
+            "Something went wrong in the connector. See the logs for more details.",
+            "Generic connector error message",
+            id="test_raises_generic_exception",
+        ),
+    ],
 )
 def test_continue_sync_with_failed_streams(mocker, exception_to_raise, expected_error_message, expected_internal_message):
     """
@@ -1317,7 +1333,9 @@ def test_sync_error_trace_messages_obfuscate_secrets(mocker):
 
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
     s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
-    s2 = StreamRaisesException(exception_to_raise=AirbyteTracedException(message="My api_key value API_KEY_VALUE flew too close to the sun."))
+    s2 = StreamRaisesException(
+        exception_to_raise=AirbyteTracedException(message="My api_key value API_KEY_VALUE flew too close to the sun.")
+    )
     s3 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})

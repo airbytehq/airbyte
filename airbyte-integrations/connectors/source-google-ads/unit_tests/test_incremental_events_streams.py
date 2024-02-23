@@ -51,7 +51,7 @@ def mock_response_child():
 
 
 class MockGoogleAds(GoogleAds):
-    def parse_single_result(self, schema, result, nullable = None):
+    def parse_single_result(self, schema, result):
         return result
 
     def send_request(self, query: str, customer_id: str, login_customer_id: str = "default"):
@@ -219,7 +219,7 @@ def mock_response_4():
 class MockGoogleAdsLimit(GoogleAds):
     count = 0
 
-    def parse_single_result(self, schema, result, nullable = None):
+    def parse_single_result(self, schema, result):
         return result
 
     def send_request(self, query: str, customer_id: str, login_customer_id: str = "default"):
