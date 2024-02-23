@@ -8,6 +8,7 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 
 import backoff
 import pendulum
+from datetime import datetime, timedelta
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -99,6 +100,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
     days_of_data_storage = None
     cursor_field = "segments.date"
     cursor_time_format = "YYYY-MM-DD"
+    backfill_days = 0
     # Slice duration is set to 14 days, because for conversion_window_days default value is 14.
     # Range less than 14 days will break the integration tests.
     slice_duration = pendulum.duration(days=14)
@@ -169,9 +171,10 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             date_in_current_stream = pendulum.parse(current_state)
             date_in_latest_record = pendulum.parse(record[self.cursor_field])
             cursor_value = (max(date_in_current_stream, date_in_latest_record)).format(self.cursor_time_format)
-            self.state = {customer_id: {self.cursor_field: cursor_value}}
         else:
-            self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
+            cursor_value = pendulum.parse(record[self.cursor_field]).format(self.cursor_time_format)
+        backfill_cursor_value = (datetime.strptime(cursor_value, "%Y-%m-%d") - timedelta(days=self.backfill_days)).strftime("%Y-%m-%d")
+        self.state = {customer_id: {self.cursor_field: backfill_cursor_value}}
 
     def _handle_expired_page_exception(self, exception: ExpiredPageTokenError, stream_slice: MutableMapping[str, Any], customer_id: str):
         """
@@ -411,6 +414,7 @@ class AdGroupAdAssetView(IncrementalGoogleAdsStream):
     """
     Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
     """
+    backfill_days = 10
 
     primary_key = ["asset.id", "customer.id", "campaign.id", "ad_group.id", "ad_group_ad.ad.id", "segments.date"]
 
