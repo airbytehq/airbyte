@@ -19,18 +19,14 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
-          - name: "account_coupon_redemptions"
-            bypass_reason: "There is no seed data available in our sandbox account"
           - name: "add_ons"
-            bypass_reason: "There is no seed data available in our sandbox account"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
           - name: "billing_infos"
-            bypass_reason: "There is no seed data available in our sandbox account"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
           - name: "credit_payments"
-            bypass_reason: "There is no seed data available in our sandbox account"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
           - name: "shipping_methods"
-            bypass_reason: "There is no seed data available in our sandbox account"
-          - name: "unique_coupons"
-            bypass_reason: "There is no seed data available in our sandbox account"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
