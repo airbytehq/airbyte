@@ -10,7 +10,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
-
+from source_harvest.availability_strategy import HarvestAvailabilityStrategy
 from source_harvest.streams import (
     BillableRates,
     Clients,
@@ -47,7 +47,6 @@ from source_harvest.streams import (
 )
 
 from .auth import HarvestOauth2Authenticator, HarvestTokenAuthenticator
-from source_harvest.availability_strategy import HarvestAvailabilityStrategy
 
 
 class SourceHarvest(AbstractSource):
