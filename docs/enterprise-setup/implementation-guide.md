@@ -124,7 +124,7 @@ See the [following guide](/access-management/sso-providers/azure-entra-id) on ho
 
 To configure basic auth (deploy without SSO), remove the entire `auth:` section from your airbyte.yml config file. You will authenticate with the instance admin user and password included in the your `airbyte.yml`.
 
-To modify auth configurations after Airbyte is installed, you will need to redeploy Airbyte with the additional environment variable `RESET_KEYCLOAK_REALM=TRUE`. As this also resets the list of Airbyte users and permissions, please use this with caution.
+To modify auth configurations after Airbyte is installed, you will need to redeploy Airbyte with the additional environment variable `KEYCLOAK_RESET_REALM=TRUE`. As this also resets the list of Airbyte users and permissions, please use this with caution.
 
 </details>
 
