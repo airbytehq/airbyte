@@ -56,11 +56,4 @@ class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransfo
     ): Field<Int>? {
         throw NotImplementedError("This Destination does not support final tables")
     }
-
-    override fun existingSchemaMatchesStreamConfig(
-        stream: StreamConfig,
-        existingTable: TableDefinition
-    ): Boolean {
-        throw NotImplementedError("This Destination does not support final tables")
-    }
 }

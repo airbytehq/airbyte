@@ -80,11 +80,14 @@ cp configs/airbyte.sample.yml configs/airbyte.yml
 
 3. Add your Airbyte Self-Managed Enterprise license key to your `airbyte.yml`. 
 
-4. Add your [auth details](/enterprise-setup/sso) to your `airbyte.yml`. Auth configurations aren't easy to modify after Airbyte is installed, so please double check them to make sure they're accurate before proceeding.
+4. Add your [auth details](/access-management/sso) to your `airbyte.yml`.  
 
 <details>
     <summary>Configuring auth in your airbyte.yml file</summary>
 
+
+<Tabs>
+<TabItem value="Okta" label="Okta">
 To configure SSO with Okta, add the following at the end of your `airbyte.yml` file:
 
 ```yaml
@@ -97,7 +100,31 @@ auth:
             client-secret: $OKTA_CLIENT_SECRET
 ```
 
+See the [following guide](/access-management/sso-providers/okta) on how to collect this information for Okta.
+
+</TabItem>
+<TabItem value="Other" label="Other">
+
+To configure SSO with any identity provider via [OpenID Connect (OIDC)](https://openid.net/developers/how-connect-works/), such as Azure Entra ID (formerly ActiveDirectory), add the following at the end of your `airbyte.yml` file:
+
+```yaml
+auth:   
+    identity-providers:
+        -   type: oidc
+            domain: $DOMAIN
+            app-name: $APP_INTEGRATION_NAME
+            client-id: $CLIENT_ID
+            client-secret: $CLIENT_SECRET
+```
+
+See the [following guide](/access-management/sso-providers/azure-entra-id) on how to collect this information for Azure Entra ID (formerly ActiveDirectory).
+
+</TabItem>
+</Tabs>
+
 To configure basic auth (deploy without SSO), remove the entire `auth:` section from your airbyte.yml config file. You will authenticate with the instance admin user and password included in the your `airbyte.yml`.
+
+To modify auth configurations after Airbyte is installed, you will need to redeploy Airbyte with the additional environment variable `KEYCLOAK_RESET_REALM=TRUE`. As this also resets the list of Airbyte users and permissions, please use this with caution.
 
 </details>
 
