@@ -9,6 +9,9 @@
       "readOnly": true,
       "maxLength": 13
     },
+    "object": {
+      "type": "string"
+    },
     "code": {
       "type": "string",
       "title": "Coupon code",

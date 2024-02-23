@@ -44,27 +44,13 @@ class SourceRecurly(AbstractSource):
 
         self.__client = None
 
-    @backoff.on_exception(
-        backoff.expo,
-        NetworkError,
-        on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
-        ),
-        max_tries=5,
-        giveup=lambda e: not isinstance(e, NetworkError),
-    )
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         try:
             # Checking the API key by trying a test API call to get the first account
             self._client(config["api_key"]).list_accounts().first()
             return True, None
-        except NetworkError as error:
-            logger.error(f"Caught retryable NetworkError: {error}")
-            raise
         except ApiError as err:
             return False, err.args[0]
-        except Exception as error:
-            return False, error
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = self._client(api_key=config["api_key"])
