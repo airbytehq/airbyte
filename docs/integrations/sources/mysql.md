@@ -223,6 +223,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.10 | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug. |
 | 3.3.9   | 2024-02-21 | [35525](https://github.com/airbytehq/airbyte/pull/35338)   | Adopt 0.21.4 and reduce cdc state compression threshold to 1MB.                                                                                                  |
 | 3.3.8   | 2024-02-20 | [35338](https://github.com/airbytehq/airbyte/pull/35338)   | Add config to throw an error on invalid CDC position.                                                                                                  |
 | 3.3.7   | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751)   | Emit analytics message for invalid CDC cursor.                                                                                                  |
