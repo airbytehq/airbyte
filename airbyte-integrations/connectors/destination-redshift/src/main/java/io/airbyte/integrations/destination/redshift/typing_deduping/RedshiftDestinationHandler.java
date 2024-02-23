@@ -4,11 +4,17 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.*;
+
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
+import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.Struct;
+import io.airbyte.integrations.base.destination.typing_deduping.Union;
+import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,37 +55,36 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler {
     }
   }
 
-  /**
-   * Issuing a select 1 limit 1 query can be expensive, so relying on SVV_TABLE_INFO system table.
-   * EXPLAIN of the select 1 from table limit 1 query: (seq scan and then limit is applied, read from
-   * bottom to top) XN Lim it (co st=0. 0 .0.01 rows=1 width=0) -> XN Seq Scan on _airbyte_raw_ users
-   * (cost=0.00..1000.00 rows=100000 width=0)
-   *
-   * @param id
-   * @return
-   * @throws Exception
-   */
   @Override
-  public boolean isFinalTableEmpty(final StreamId id) throws Exception {
-    // Redshift doesn't have an information_schema.tables table, so we have to use SVV_TABLE_INFO.
-    // From https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html:
-    // > The SVV_TABLE_INFO view doesn't return any information for empty tables.
-    // So we just query for our specific table, and if we get no rows back,
-    // then we assume the table is empty.
-    // Note that because the column names are reserved words (table, schema, database),
-    // we need to enquote them.
-    final List<JsonNode> query = jdbcDatabase.queryJsons(
-        """
-        SELECT 1
-        FROM SVV_TABLE_INFO
-        WHERE "database" = ?
-          AND "schema" = ?
-          AND "table" = ?
-        """,
-        databaseName,
-        id.finalNamespace(),
-        id.finalName());
-    return query.isEmpty();
+  protected String toJdbcTypeName(AirbyteType airbyteType) {
+    // This is mostly identical to the postgres implementation, but swaps jsonb to super
+    if (airbyteType instanceof final AirbyteProtocolType airbyteProtocolType) {
+      return toJdbcTypeName(airbyteProtocolType);
+    }
+    return switch (airbyteType.getTypeName()) {
+      case Struct.TYPE, UnsupportedOneOf.TYPE, Array.TYPE -> "super";
+      // No nested Unions supported so this will definitely not result in infinite recursion.
+      case Union.TYPE -> toJdbcTypeName(((Union) airbyteType).chooseType());
+      default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + airbyteType);
+    };
   }
+
+  private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {
+    return switch (airbyteProtocolType) {
+      case STRING -> "varchar";
+      case NUMBER -> "numeric";
+      case INTEGER -> "int8";
+      case BOOLEAN -> "bool";
+      case TIMESTAMP_WITH_TIMEZONE -> "timestamptz";
+      case TIMESTAMP_WITHOUT_TIMEZONE -> "timestamp";
+      case TIME_WITH_TIMEZONE -> "timetz";
+      case TIME_WITHOUT_TIMEZONE -> "time";
+      case DATE -> "date";
+      case UNKNOWN -> "super";
+    };
+  }
+
+  // Do not use SVV_TABLE_INFO to get isFinalTableEmpty.
+  // See https://github.com/airbytehq/airbyte/issues/34357
 
 }
