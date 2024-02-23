@@ -13,8 +13,10 @@ import org.junit.jupiter.api.Test
 
 class DefaultDiscoverOperationExecutorTest {
     @Test
-    @SuppressFBWarnings(value = ["RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"],
-        justification = "Invalid warning for Kotlin")
+    @SuppressFBWarnings(
+        value = ["RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"],
+        justification = "Invalid warning for Kotlin",
+    )
     internal fun `test that the expected Airbyte message is returned when executed`() {
         val executor = DefaultDiscoverOperationExecutor()
         val result = executor.execute()

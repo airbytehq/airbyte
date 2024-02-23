@@ -40,8 +40,10 @@ private val logger = KotlinLogging.logger {}
         "@|magenta                    /____/              |@",
     ],
 )
-@SuppressFBWarnings(value=["NP_NONNULL_RETURN_VIOLATION","NP_OPTIONAL_RETURN_NULL"],
-    justification = "Uses dependency injection")
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_RETURN_VIOLATION", "NP_OPTIONAL_RETURN_NULL"],
+    justification = "Uses dependency injection",
+)
 class IntegrationCommand : Runnable {
     @Value("\${micronaut.application.name}")
     lateinit var connectorName: String

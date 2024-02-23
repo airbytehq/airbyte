@@ -15,8 +15,10 @@ import io.micronaut.core.util.StringUtils
  * to the connector CLI as an argument.
  */
 @ConfigurationProperties("airbyte.connector.catalog")
-@SuppressFBWarnings(value=["NP_NONNULL_RETURN_VIOLATION"],
-    justification = "Uses dependency injection")
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_RETURN_VIOLATION"],
+    justification = "Uses dependency injection",
+)
 class AirbyteConfiguredCatalog {
     lateinit var configured: String
 

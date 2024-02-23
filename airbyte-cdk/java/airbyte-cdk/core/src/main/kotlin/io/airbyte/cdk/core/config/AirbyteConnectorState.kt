@@ -14,8 +14,10 @@ import io.micronaut.context.annotation.ConfigurationProperties
  *  to the connector CLI as an argument.
  */
 @ConfigurationProperties("airbyte.connector.state")
-@SuppressFBWarnings(value=["NP_NONNULL_RETURN_VIOLATION"],
-    justification = "Uses dependency injection")
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_RETURN_VIOLATION"],
+    justification = "Uses dependency injection",
+)
 class AirbyteConnectorState {
     lateinit var json: String
 
