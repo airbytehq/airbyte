@@ -51,7 +51,7 @@ import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
+public class BigQuerySqlGenerator implements SqlGenerator {
 
   public static final String QUOTE = "`";
   private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();

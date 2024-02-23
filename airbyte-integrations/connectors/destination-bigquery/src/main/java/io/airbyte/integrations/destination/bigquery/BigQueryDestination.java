@@ -360,7 +360,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                      final Consumer<AirbyteMessage> outputRecordCollector,
                                                                      final TyperDeduper typerDeduper)
       throws Exception {
-    typerDeduper.prepareTables();
     final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> writeConfigs = getUploaderMap(
         bigquery,
         config,
@@ -372,6 +371,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return new BigQueryRecordStandardConsumer(
         outputRecordCollector,
         () -> {
+          typerDeduper.prepareSchemasAndRawTables();
+
           // Set up our raw tables
           writeConfigs.get().forEach((streamId, uploader) -> {
             final StreamConfig stream = parsedCatalog.getStream(streamId);
@@ -390,6 +391,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
               uploader.createRawTable();
             }
           });
+
+          typerDeduper.prepareFinalTables();
         },
         (hasFailed, streamSyncSummaries) -> {
           try {
@@ -444,7 +447,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     if (disableTypeDedupe) {
       return new NoOpTyperDeduperWithV1V2Migrations<>(
-          sqlGenerator, destinationHandler, parsedCatalog, migrator, v2RawTableMigrator, 8);
+          sqlGenerator, destinationHandler, parsedCatalog, migrator, v2RawTableMigrator, List.of());
     }
 
     return new DefaultTyperDeduper<>(
@@ -453,8 +456,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         parsedCatalog,
         migrator,
         v2RawTableMigrator,
-        8);
-
+        List.of());
   }
 
   @Override

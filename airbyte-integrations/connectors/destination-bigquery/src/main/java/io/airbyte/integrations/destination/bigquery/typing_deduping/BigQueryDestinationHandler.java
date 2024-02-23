@@ -20,6 +20,7 @@ import com.google.cloud.bigquery.TableId;
 import com.google.common.collect.Streams;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableState;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.math.BigInteger;
@@ -35,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO this stuff almost definitely exists somewhere else in our codebase.
-public class BigQueryDestinationHandler implements DestinationHandler<TableDefinition> {
+public class BigQueryDestinationHandler implements DestinationHandler<BigqueryState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationHandler.class);
 
