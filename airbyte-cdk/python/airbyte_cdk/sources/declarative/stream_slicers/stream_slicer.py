@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from airbyte_cdk.sources.declarative.types import PerPartitionStreamSlice, StreamSlice
+from airbyte_cdk.sources.declarative.types import DeclarativeStreamSlice, StreamSlice
 
 
 @dataclass
@@ -22,7 +22,7 @@ class StreamSlicer(RequestOptionsProvider):
     """
 
     @abstractmethod
-    def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
+    def stream_slices(self) -> Iterable[DeclarativeStreamSlice]:
         """
         Defines stream slices
 

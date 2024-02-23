@@ -10,7 +10,7 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import DeclarativeStreamSlice
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -138,7 +138,7 @@ class DatetimeBasedCursor(Cursor):
             else None
         )
 
-    def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
+    def stream_slices(self) -> Iterable[DeclarativeStreamSlice]:
         """
         Partition the daterange into slices of size = step.
 
@@ -173,7 +173,7 @@ class DatetimeBasedCursor(Cursor):
 
     def _partition_daterange(
         self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]
-    ) -> List[PerPartitionStreamSlice]:
+    ) -> List[DeclarativeStreamSlice]:
         start_field = self._partition_field_start.eval(self.config)
         end_field = self._partition_field_end.eval(self.config)
         dates = []
@@ -181,7 +181,7 @@ class DatetimeBasedCursor(Cursor):
             next_start = self._evaluate_next_start_date_safely(start, step)
             end_date = self._get_date(next_start - self._cursor_granularity, end, min)
             dates.append(
-                PerPartitionStreamSlice(
+                DeclarativeStreamSlice(
                     partition={}, cursor_slice={start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)}
                 )
             )
@@ -229,7 +229,7 @@ class DatetimeBasedCursor(Cursor):
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[DeclarativeStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.request_parameter, stream_slice)
@@ -238,7 +238,7 @@ class DatetimeBasedCursor(Cursor):
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[DeclarativeStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.header, stream_slice)
@@ -247,7 +247,7 @@ class DatetimeBasedCursor(Cursor):
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[DeclarativeStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_data, stream_slice)
@@ -256,7 +256,7 @@ class DatetimeBasedCursor(Cursor):
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[DeclarativeStreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json, stream_slice)
@@ -265,7 +265,7 @@ class DatetimeBasedCursor(Cursor):
         # Never update kwargs
         return {}
 
-    def _get_request_options(self, option_type: RequestOptionType, stream_slice: Optional[PerPartitionStreamSlice]) -> Mapping[str, Any]:
+    def _get_request_options(self, option_type: RequestOptionType, stream_slice: Optional[DeclarativeStreamSlice]) -> Mapping[str, Any]:
         options: MutableMapping[str, Any] = {}
         if not stream_slice:
             return options

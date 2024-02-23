@@ -8,7 +8,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, PerPartitionStreamSlice, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, DeclarativeStreamSlice, StreamSlice, StreamState
 
 
 @dataclass
@@ -75,8 +75,8 @@ class ListPartitionRouter(StreamSlicer):
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
         return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
-    def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
-        return [PerPartitionStreamSlice({self._cursor_field.eval(self.config): slice_value}, {}) for slice_value in self.values]
+    def stream_slices(self) -> Iterable[DeclarativeStreamSlice]:
+        return [DeclarativeStreamSlice({self._cursor_field.eval(self.config): slice_value}, {}) for slice_value in self.values]
 
     def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: Optional[StreamSlice]) -> Mapping[str, Any]:
         if self.request_option and self.request_option.inject_into == request_option_type and stream_slice:
