@@ -31,7 +31,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest {
+public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest<PostgresState> {
 
   private static PostgresTestDatabase testContainer;
   private static String databaseName;
@@ -75,8 +75,8 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   }
 
   @Override
-  protected DestinationHandler getDestinationHandler() {
-    return new PostgresDestinationHandler(databaseName, database);
+  protected DestinationHandler<PostgresState> getDestinationHandler() {
+    return new PostgresDestinationHandler(databaseName, database, namespace);
   }
 
   @Override
@@ -95,9 +95,9 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     final Sql sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
-    List<DestinationInitialState> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    List<DestinationInitialState<PostgresState>> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
     assertEquals(1, initialStates.size());
-    final DestinationInitialState initialState = initialStates.getFirst();
+    final DestinationInitialState<PostgresState> initialState = initialStates.getFirst();
     assertTrue(initialState.isFinalTablePresent());
     assertFalse(initialState.isSchemaMismatch());
   }
