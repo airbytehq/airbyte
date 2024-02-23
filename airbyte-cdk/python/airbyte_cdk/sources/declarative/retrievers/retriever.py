@@ -6,7 +6,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import DeclarativeStreamSlice
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
 
@@ -32,7 +32,7 @@ class Retriever:
         """
 
     @abstractmethod
-    def stream_slices(self) -> Iterable[Optional[DeclarativeStreamSlice]]:
+    def stream_slices(self) -> Iterable[Optional[PerPartitionStreamSlice]]:
         """Returns the stream slices"""
 
     @property

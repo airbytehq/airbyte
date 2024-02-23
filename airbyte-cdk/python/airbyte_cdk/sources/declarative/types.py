@@ -16,7 +16,7 @@ StreamState = Mapping[str, Any]
 
 
 class Record(Mapping[str, Any]):
-    def __init__(self, data: Mapping[str, Any], associated_slice: Optional[DeclarativeStreamSlice]):
+    def __init__(self, data: Mapping[str, Any], associated_slice: Optional[PerPartitionStreamSlice]):
         self._data = data
         self._associated_slice = associated_slice
 
@@ -25,7 +25,7 @@ class Record(Mapping[str, Any]):
         return self._data
 
     @property
-    def associated_slice(self) -> Optional[DeclarativeStreamSlice]:
+    def associated_slice(self) -> Optional[PerPartitionStreamSlice]:
         return self._associated_slice
 
     def __repr__(self) -> str:
@@ -53,7 +53,7 @@ class Record(Mapping[str, Any]):
         return not self.__eq__(other)
 
 
-class DeclarativeStreamSlice(StreamSlice):
+class PerPartitionStreamSlice(StreamSlice):
     def __init__(self, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]) -> None:
         self._partition = partition
         self._cursor_slice = cursor_slice
@@ -64,14 +64,14 @@ class DeclarativeStreamSlice(StreamSlice):
     @property
     def partition(self) -> Mapping[str, Any]:
         p = self._partition
-        while isinstance(p, DeclarativeStreamSlice):
+        while isinstance(p, PerPartitionStreamSlice):
             p = p.partition
         return p
 
     @property
     def cursor_slice(self) -> Mapping[str, Any]:
         c = self._cursor_slice
-        while isinstance(c, DeclarativeStreamSlice):
+        while isinstance(c, PerPartitionStreamSlice):
             c = c.cursor_slice
         return c
 
@@ -79,7 +79,7 @@ class DeclarativeStreamSlice(StreamSlice):
         return repr(self._stream_slice)
 
     def __setitem__(self, key: str, value: Any) -> None:
-        raise ValueError("DeclarativeStreamSlice is immutable")
+        raise ValueError("PerPartitionStreamSlice is immutable")
 
     def __getitem__(self, key: str) -> Any:
         return self._stream_slice[key]
@@ -108,7 +108,7 @@ class DeclarativeStreamSlice(StreamSlice):
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, dict):
             return self._stream_slice == other
-        if isinstance(other, DeclarativeStreamSlice):
+        if isinstance(other, PerPartitionStreamSlice):
             # noinspection PyProtectedMember
             return self._partition == other._partition and self._cursor_slice == other._cursor_slice
         return False
