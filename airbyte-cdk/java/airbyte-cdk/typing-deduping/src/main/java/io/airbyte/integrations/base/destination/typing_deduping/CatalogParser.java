@@ -23,14 +23,14 @@ public class CatalogParser {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CatalogParser.class);
 
-  private final SqlGenerator<?> sqlGenerator;
+  private final SqlGenerator sqlGenerator;
   private final String rawNamespace;
 
-  public CatalogParser(final SqlGenerator<?> sqlGenerator) {
+  public CatalogParser(final SqlGenerator sqlGenerator) {
     this(sqlGenerator, DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
   }
 
-  public CatalogParser(final SqlGenerator<?> sqlGenerator, final String rawNamespace) {
+  public CatalogParser(final SqlGenerator sqlGenerator, final String rawNamespace) {
     this.sqlGenerator = sqlGenerator;
     this.rawNamespace = rawNamespace;
   }
