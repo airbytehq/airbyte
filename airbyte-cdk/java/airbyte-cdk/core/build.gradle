@@ -12,6 +12,10 @@ java {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    kapt libs.bundles.micronaut.annotation.processor
 
     api 'com.datadoghq:dd-trace-api:1.28.0'
     api 'com.datadoghq:dd-trace-ot:1.28.0'
@@ -21,6 +25,8 @@ dependencies {
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
 
+    implementation libs.bundles.micronaut.cli
+    implementation libs.kotlin.logging
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'io.aesy:datasize:1.0.0'
     implementation 'net.i2p.crypto:eddsa:0.3.0'
@@ -36,6 +42,11 @@ dependencies {
     testFixturesApi 'org.testcontainers:testcontainers:1.19.0'
     testFixturesApi 'org.testcontainers:jdbc:1.19.0'
 
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+
+    kaptTest libs.bundles.micronaut.annotation.processor
+
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources'))
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:datastore-postgres'))
@@ -45,4 +56,19 @@ dependencies {
     testImplementation 'org.testcontainers:mysql:1.19.0'
     testImplementation 'org.testcontainers:postgresql:1.19.0'
     testImplementation 'org.xbib.elasticsearch:joptsimple:6.3.2.1'
+    testImplementation libs.bundles.micronaut.test
+    testImplementation libs.mockk
+}
+
+// The DuplicatesStrategy will be required while this module is mixture of kotlin and java _with_ lombok dependencies.)
+// Kapt, by default, runs all annotation(processors and disables annotation(processing by javac, however)
+// this default behavior(breaks the lombok java annotation(processor.  To avoid(lombok breaking, kapt(has)
+// keepJavacAnnotationProcessors enabled, which causes duplicate META-INF files to be generated.)
+// Once lombok has been removed, this can also be removed.)
+kapt {
+    keepJavacAnnotationProcessors = true
+}
+
+tasks.withType(Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

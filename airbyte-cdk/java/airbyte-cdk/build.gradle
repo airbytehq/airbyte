@@ -1,7 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
+    alias(libs.plugins.kapt)
+    alias(libs.plugins.kotlin.jvm)
 }
 
 final var cdkVersion = {
@@ -17,6 +18,7 @@ allprojects {
     apply plugin: 'maven-publish'
     apply plugin: 'java-test-fixtures'
     apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'org.jetbrains.kotlin.kapt'
 
     group 'io.airbyte.cdk'
 
