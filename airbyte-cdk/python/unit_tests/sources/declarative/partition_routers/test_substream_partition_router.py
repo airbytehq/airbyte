@@ -188,6 +188,7 @@ class MockStream(Stream):
         "test_cursor_values_are_removed_from_parent_slices",
         "test_multiple_parent_streams",
         "test_missed_parent_key",
+        "test_dpath_extraction",
     ],
 )
 def test_substream_slicer(parent_stream_configs, expected_slices):
