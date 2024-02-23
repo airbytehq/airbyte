@@ -10,20 +10,6 @@ definitions:
     name: survey_ids
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          href:
-            type: string
-          id:
-            type: string
-          nickname:
-            type: string
-          title:
-            type: string
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -34,7 +20,7 @@ definitions:
         request_parameters:
           sort_by: date_modified
           sort_order: ASC
-        request_headers: { }
+        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
@@ -45,7 +31,7 @@ definitions:
               backoff_strategies:
                 - type: WaitTimeFromHeader
                   header: X-Ratelimit-App-Global-Minute-Reset
-        request_body_json: { }
+        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -65,7 +51,7 @@ definitions:
           page_size: 1000
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-      partition_router: [ ]
+      partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date_modified
@@ -85,69 +71,6 @@ streams:
     name: surveys
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          analyze_url:
-            type: string
-          buttons_text:
-            properties:
-              done_button:
-                type: string
-              exit_button:
-                type: string
-              next_button:
-                type: string
-              prev_button:
-                type: string
-            type: object
-          category:
-            type: string
-          collect_url:
-            type: string
-          custom_variables:
-            type: object
-          date_created:
-            type: string
-          date_modified:
-            type: string
-          edit_url:
-            type: string
-          folder_id:
-            type: string
-          footer:
-            type: boolean
-          href:
-            type: string
-          id:
-            type: string
-          is_owner:
-            type: boolean
-          language:
-            type: string
-          nickname:
-            type: string
-          page_count:
-            type: number
-          preview:
-            type: string
-          question_count:
-            type: number
-          response_count:
-            type: number
-          summary_url:
-            type: string
-          template_id:
-            type:
-              - "null"
-              - string
-          theme_id:
-            type: string
-          title:
-            type: string
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -198,24 +121,6 @@ streams:
     name: survey_pages
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          description:
-            type: string
-          href:
-            type: string
-          id:
-            type: string
-          position:
-            type: number
-          question_count:
-            type: number
-          title:
-            type: string
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -267,101 +172,6 @@ streams:
     name: survey_questions
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          answers:
-            properties:
-              choices:
-                items:
-                  properties:
-                    description:
-                      type: string
-                    id:
-                      type: string
-                    is_na:
-                      type: boolean
-                    position:
-                      type: number
-                    quiz_options:
-                      properties:
-                        score:
-                          type: number
-                      type: object
-                    text:
-                      type: string
-                    visible:
-                      type: boolean
-                    weight:
-                      type: number
-                  type: object
-                type: array
-              rows:
-                items:
-                  properties:
-                    id:
-                      type: string
-                    position:
-                      type: number
-                    text:
-                      type: string
-                    visible:
-                      type: boolean
-                  type: object
-                type: array
-            type: object
-          family:
-            type: string
-          forced_ranking:
-            type: boolean
-          headings:
-            items:
-              properties:
-                heading:
-                  type: string
-                image:
-                  properties:
-                    url:
-                      type: string
-                  type: object
-              type: object
-            type: array
-          href:
-            type: string
-          id:
-            type: string
-          layout:
-            properties:
-              bottom_spacing:
-                type: number
-              col_width:
-                type: number
-              col_width_format:
-                type: string
-              left_spacing:
-                type: number
-              position:
-                type: string
-              right_spacing:
-                type: number
-              top_spacing:
-                type: number
-              width:
-                type: number
-              width_format:
-                type: string
-            type:
-              - object
-              - "null"
-          position:
-            type: number
-          subtype:
-            type: string
-          visible:
-            type: boolean
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -412,95 +222,6 @@ streams:
     name: survey_responses
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          analyze_url:
-            type: string
-          collection_mode:
-            type: string
-          collector_id:
-            type: string
-          custom_value:
-            type: string
-          custom_variables:
-            type: object
-          date_created:
-            type: string
-          date_modified:
-            type: string
-          edit_url:
-            type: string
-          email_address:
-            type: string
-          first_name:
-            type: string
-          href:
-            type: string
-          id:
-            type: string
-          ip_address:
-            type: string
-          last_name:
-            type: string
-          logic_path:
-            type: object
-          metadata:
-            properties:
-              contact:
-                type: object
-            type: object
-          page_path:
-            items:
-              type: string
-            type: array
-          pages:
-            items:
-              properties:
-                id:
-                  type: string
-                questions:
-                  items:
-                    properties:
-                      answers:
-                        items:
-                          properties:
-                            choice_id:
-                              type: string
-                            choice_metadata:
-                              properties:
-                                weight:
-                                  type: string
-                              type: object
-                            row_id:
-                              type: string
-                            tag_data:
-                              type: array
-                            text:
-                              type: string
-                            x:
-                              type: string
-                            "y":
-                              type: string
-                          type: object
-                        type: array
-                      id:
-                        type: string
-                    type: object
-                  type: array
-              type: object
-            type: array
-          recipient_id:
-            type: string
-          response_status:
-            type: string
-          survey_id:
-            type: string
-          total_time:
-            type: number
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -636,65 +357,6 @@ streams:
     name: collectors
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          allow_multiple_responses:
-            type: boolean
-          anonymous_type:
-            type: string
-          closed_page_message:
-            type: string
-          date_created:
-            type: string
-          date_modified:
-            type: string
-          display_survey_results:
-            type: boolean
-          disqualification_message:
-            type: string
-          disqualification_type:
-            type: string
-          disqualification_url:
-            type: string
-          edit_response_type:
-            type: string
-          href:
-            type: string
-          id:
-            type: string
-          name:
-            type: string
-          password_enabled:
-            type: boolean
-          redirect_type:
-            type: string
-          redirect_url:
-            type: string
-          respondent_authentication:
-            type: boolean
-          response_count:
-            type: number
-          status:
-            type: string
-          survey_id:
-            type: string
-          thank_you_message:
-            type: string
-          thank_you_page:
-            properties:
-              is_enabled:
-                type: boolean
-              message:
-                type: string
-            type: object
-          type:
-            type: string
-          url:
-            type: string
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
