@@ -309,6 +309,37 @@
     },
     "vat_number": {
       "type": ["null", "string"]
+    },
+    "fraud_info": {
+      "type": ["null", "object"],
+      "properties": {
+        "object": {
+          "type": ["null", "string"]
+        },
+        "score": {
+          "type": ["null", "integer"]
+        },
+        "decision": {
+          "type": ["null", "string"]
+        },
+        "reference": {
+          "type": ["null", "string"]
+        },
+        "risk_rules_triggered": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "code": {
+                "type": ["null", "string"]
+              },
+              "message": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
