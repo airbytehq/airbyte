@@ -1,15 +1,16 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.source.relationaldb.state;
 
 import io.airbyte.cdk.db.IncrementalUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.time.Instant;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -34,12 +35,12 @@ public class CursorStateIteratorManager implements SourceStateIteratorManager<Ai
   private AirbyteStateMessage intermediateStateMessage = null;
 
   public CursorStateIteratorManager(
-      final StateManager stateManager,
-      final AirbyteStreamNameNamespacePair pair,
-      final String cursorField,
-      final String initialCursor,
-      final JsonSchemaPrimitive cursorType,
-      final int stateEmissionFrequency) {
+                                    final StateManager stateManager,
+                                    final AirbyteStreamNameNamespacePair pair,
+                                    final String cursorField,
+                                    final String initialCursor,
+                                    final JsonSchemaPrimitive cursorType,
+                                    final int stateEmissionFrequency) {
     this.stateManager = stateManager;
     this.pair = pair;
     this.cursorField = cursorField;
@@ -54,40 +55,43 @@ public class CursorStateIteratorManager implements SourceStateIteratorManager<Ai
    */
   @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint() {
-    // At this stage intermediate state message should never be null; otherwise it would have been blocked by shouldEmitStateMessage check.
+    // At this stage intermediate state message should never be null; otherwise it would have been
+    // blocked by shouldEmitStateMessage check.
     final AirbyteStateMessage message = intermediateStateMessage;
     intermediateStateMessage = null;
     return null;
   }
 
   /**
-   * Note: We do not try to catch exception here. If error/exception happens, we should fail the sync, and since we have saved state message
-   * before, we should be able to resume it in next sync if we have fixed the underlying issue, of if the issue is transient.
+   * Note: We do not try to catch exception here. If error/exception happens, we should fail the sync,
+   * and since we have saved state message before, we should be able to resume it in next sync if we
+   * have fixed the underlying issue, of if the issue is transient.
+   *
    * @param message
    * @return
    */
   @Override
   public AirbyteMessage processRecordMessage(AirbyteMessage message) {
-      totalRecordCount++;
-      if (message.getRecord().getData().hasNonNull(cursorField)) {
-        final String cursorCandidate = getCursorCandidate(message);
-        final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor, cursorCandidate, cursorType);
-        if (cursorComparison < 0) {
-          // Update the current max cursor only when current max cursor < cursor candidate from the message
-          if (stateEmissionFrequency > 0 && !Objects.equals(currentMaxCursor, initialCursor)) {
-            // Only create an intermediate state when it is not the first record.
-            intermediateStateMessage = createStateMessage(totalRecordCount);
-          }
-          currentMaxCursor = cursorCandidate;
-          currentMaxCursorRecordCount = 1L;
-        } else if (cursorComparison == 0) {
-          currentMaxCursorRecordCount++;
-        } else if (cursorComparison > 0 && stateEmissionFrequency > 0) {
-          LOGGER.warn("Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, "
-              + "data loss can occur.");
+    totalRecordCount++;
+    if (message.getRecord().getData().hasNonNull(cursorField)) {
+      final String cursorCandidate = getCursorCandidate(message);
+      final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor, cursorCandidate, cursorType);
+      if (cursorComparison < 0) {
+        // Update the current max cursor only when current max cursor < cursor candidate from the message
+        if (stateEmissionFrequency > 0 && !Objects.equals(currentMaxCursor, initialCursor)) {
+          // Only create an intermediate state when it is not the first record.
+          intermediateStateMessage = createStateMessage(totalRecordCount);
         }
+        currentMaxCursor = cursorCandidate;
+        currentMaxCursorRecordCount = 1L;
+      } else if (cursorComparison == 0) {
+        currentMaxCursorRecordCount++;
+      } else if (cursorComparison > 0 && stateEmissionFrequency > 0) {
+        LOGGER.warn("Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, "
+            + "data loss can occur.");
       }
-      return message;
+    }
+    return message;
 
   }
 

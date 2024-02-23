@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.source.relationaldb;
 
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.cdk.db.IncrementalUtils;
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
