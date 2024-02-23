@@ -19,6 +19,6 @@ data:
     - language:unknown
   ab_internal:
     sl: 100
-    ql: 200
+    ql: 100
   supportLevel: community
 metadataSpecVersion: "1.0"

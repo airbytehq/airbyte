@@ -6,12 +6,12 @@ package io.airbyte.integrations.destination.databricks;
 
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_CATALOG_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_ENABLE_SCHEMA_EVOLUTION_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_HTTP_PATH_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_PERSONAL_ACCESS_TOKEN_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_PORT_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_PURGE_STAGING_DATA_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_KEY;
-import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_ENABLE_SCHEMA_EVOLUTION_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SERVER_HOSTNAME_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,7 +45,8 @@ public record DatabricksDestinationConfig(String serverHostname,
         config.get(DATABRICKS_PERSONAL_ACCESS_TOKEN_KEY).asText(),
         config.has(DATABRICKS_CATALOG_KEY) ? config.get(DATABRICKS_CATALOG_KEY).asText() : DEFAULT_CATALOG,
         config.has(DATABRICKS_SCHEMA_KEY) ? config.get(DATABRICKS_SCHEMA_KEY).asText() : DEFAULT_DATABASE_SCHEMA,
-        config.has(DATABRICKS_ENABLE_SCHEMA_EVOLUTION_KEY) ? config.get(DATABRICKS_ENABLE_SCHEMA_EVOLUTION_KEY).asBoolean() : DEFAULT_ENABLE_SCHEMA_EVOLUTION,
+        config.has(DATABRICKS_ENABLE_SCHEMA_EVOLUTION_KEY) ? config.get(DATABRICKS_ENABLE_SCHEMA_EVOLUTION_KEY).asBoolean()
+            : DEFAULT_ENABLE_SCHEMA_EVOLUTION,
         config.has(DATABRICKS_PURGE_STAGING_DATA_KEY) ? config.get(DATABRICKS_PURGE_STAGING_DATA_KEY).asBoolean() : DEFAULT_PURGE_STAGING_DATA,
         DatabricksStorageConfigProvider.getDatabricksStorageConfig(config.get(DATABRICKS_DATA_SOURCE_KEY)));
   }

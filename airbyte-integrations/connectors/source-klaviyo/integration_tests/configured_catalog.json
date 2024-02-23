@@ -41,7 +41,7 @@
         "namespace": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": ["timestamp"],
+      "cursor_field": ["datetime"],
       "destination_sync_mode": "append",
       "primary_key": [["id"]]
     },
@@ -52,13 +52,13 @@
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
-        "source_defined_primary_key": [["email"]],
+        "source_defined_primary_key": [["id"]],
         "namespace": null
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
       "destination_sync_mode": "append",
-      "primary_key": [["email"]]
+      "primary_key": [["id"]]
     },
     {
       "stream": {

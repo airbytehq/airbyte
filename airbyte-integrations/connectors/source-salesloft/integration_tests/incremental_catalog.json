@@ -4,19 +4,10 @@
       "stream": {
         "name": "cadences",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -25,19 +16,10 @@
       "stream": {
         "name": "cadence_memberships",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -46,19 +28,10 @@
       "stream": {
         "name": "people",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -67,19 +40,10 @@
       "stream": {
         "name": "calls",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -88,19 +52,10 @@
       "stream": {
         "name": "actions",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -109,19 +64,10 @@
       "stream": {
         "name": "notes",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -130,19 +76,10 @@
       "stream": {
         "name": "crm_activities",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -151,19 +88,10 @@
       "stream": {
         "name": "successes",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -172,19 +100,10 @@
       "stream": {
         "name": "emails",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -193,19 +112,10 @@
       "stream": {
         "name": "accounts",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -214,15 +124,8 @@
       "stream": {
         "name": "account_stages",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -231,15 +134,8 @@
       "stream": {
         "name": "email_templates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -248,15 +144,8 @@
       "stream": {
         "name": "team_templates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -265,19 +154,10 @@
       "stream": {
         "name": "call_data_records",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"
@@ -286,19 +166,10 @@
       "stream": {
         "name": "searches",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "incremental"

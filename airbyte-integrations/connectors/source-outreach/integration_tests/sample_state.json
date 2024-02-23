@@ -32,6 +32,12 @@
   "calls": {
     "updatedAt": "2021-06-28T10:10:20Z"
   },
+  "call_purposes": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  },
+  "call_dispositions": {
+    "updatedAt": "2021-06-28T10:10:20Z"
+  },
   "users": {
     "updatedAt": "2021-06-28T10:10:20Z"
   },

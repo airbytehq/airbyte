@@ -42,6 +42,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "amount_reversed": {
       "type": ["null", "integer"]
     },
@@ -85,6 +88,9 @@
       "type": ["null", "integer"]
     },
     "description": {
+      "type": ["null", "string"]
+    },
+    "destination_payment": {
       "type": ["null", "string"]
     }
   },

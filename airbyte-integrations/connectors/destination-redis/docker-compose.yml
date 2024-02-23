@@ -5,10 +5,10 @@ services:
     command: redis-server --requirepass pw
     ports:
       - "6379:6379"
-#    uncomment if you want to mount volumes for persistence
-#    volumes:
-#      - $PWD/redis-data:/var/lib/redis
-#      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+    #    uncomment if you want to mount volumes for persistence
+    #    volumes:
+    #      - $PWD/redis-data:/var/lib/redis
+    #      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:

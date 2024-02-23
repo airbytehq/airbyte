@@ -4,12 +4,12 @@
 
 package io.airbyte.integrations.destination.redpanda;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID;
-import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
-import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
 
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;

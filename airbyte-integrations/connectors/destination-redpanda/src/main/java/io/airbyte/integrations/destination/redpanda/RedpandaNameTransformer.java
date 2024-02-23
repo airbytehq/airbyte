@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.redpanda;
 
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 public class RedpandaNameTransformer extends StandardNameTransformer {
 

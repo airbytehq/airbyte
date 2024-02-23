@@ -21,8 +21,8 @@
       "type": ["null", "string"]
     },
     "idea_commenter_user": {
-      "type" : "object",
-      "properties" : {
+      "type": "object",
+      "properties": {
         "id": {
           "type": ["null", "string"]
         },
@@ -41,8 +41,8 @@
       }
     },
     "idea": {
-      "type" : "object",
-      "properties" : {
+      "type": "object",
+      "properties": {
         "id": {
           "type": ["null", "string"]
         },
@@ -59,8 +59,8 @@
           "type": ["null", "string"]
         },
         "workflow_status": {
-          "type" : "object",
-          "properties" : {
+          "type": "object",
+          "properties": {
             "id": {
               "type": ["null", "string"]
             },
@@ -79,8 +79,8 @@
           }
         },
         "description": {
-          "type" : "object",
-          "properties" : {
+          "type": "object",
+          "properties": {
             "id": {
               "type": ["null", "string"]
             },

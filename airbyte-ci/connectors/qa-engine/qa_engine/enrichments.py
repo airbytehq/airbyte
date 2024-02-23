@@ -14,7 +14,7 @@ def get_enriched_catalog(
       - Rename columns to snake case.
       - Rename name column to connector_name.
       - Rename docker_image_tag to connector_version.
-      - Replace null value for release_stage with alpha.
+      - Replace null value for support_level with unknown.
     Enrichments:
       - is_on_cloud: determined by the merge operation results.
       - connector_technical_name: built from the docker repository field. airbyte/source-pokeapi -> source-pokeapi.
@@ -45,7 +45,7 @@ def get_enriched_catalog(
     enriched_catalog["connector_name"] = enriched_catalog["name"]
     enriched_catalog["connector_technical_name"] = enriched_catalog["docker_repository"].str.replace("airbyte/", "")
     enriched_catalog["connector_version"] = enriched_catalog["docker_image_tag"]
-    enriched_catalog["release_stage"] = enriched_catalog["release_stage"].fillna("unknown")
+    enriched_catalog["support_level"] = enriched_catalog["support_level"].fillna("unknown")
     enriched_catalog = enriched_catalog.merge(
         adoption_metrics_per_connector_version, how="left", on=["connector_definition_id", "connector_version"]
     )

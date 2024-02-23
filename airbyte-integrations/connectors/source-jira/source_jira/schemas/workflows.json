@@ -140,6 +140,14 @@
           }
         }
       }
+    },
+    "created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   },
   "readOnly": true

@@ -1,22 +1,19 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import json
-import sentry_sdk
-from google.cloud import storage
-
-from dagster import asset, OpExecutionContext, MetadataValue, Output
-from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
-
-from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
-from metadata_service.models.transform import to_json_sanitized_dict
-
-from orchestrator.assets.registry_entry import read_registry_entry_blob
-from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
-from orchestrator.logging import sentry
-
 from typing import List
 
+import sentry_sdk
+from dagster import MetadataValue, OpExecutionContext, Output, asset
+from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
+from google.cloud import storage
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from metadata_service.models.transform import to_json_sanitized_dict
+from orchestrator.assets.registry_entry import read_registry_entry_blob
+from orchestrator.logging import sentry
+from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 
 GROUP_NAME = "registry"
 

@@ -5,9 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "vcrpy"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
@@ -16,13 +14,30 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-linnworks=source_linnworks.run:run",
+        ],
+    },
     name="source_linnworks",
     description="Source implementation for Linnworks.",
     author="Labanoras Tech",
     author_email="jv@labanoras.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={
+        "": [
+            # Include yaml files in the package (if any)
+            "*.yml",
+            "*.yaml",
+            # Include all json files in the package, up to 4 levels deep
+            "*.json",
+            "*/*.json",
+            "*/*/*.json",
+            "*/*/*/*.json",
+            "*/*/*/*/*.json",
+        ]
+    },
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

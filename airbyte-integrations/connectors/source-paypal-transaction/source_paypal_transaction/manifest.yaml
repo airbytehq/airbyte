@@ -1,0 +1,399 @@
+version: 0.50.2
+type: DeclarativeSource
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - "{{ parameters.field_path }}"
+
+  requester:
+    type: HttpRequester
+    url_base: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/'
+    path: "{{ parameters.path }}"
+    http_method: GET
+    request_headers:
+      Content-Type: application/json
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_paypal_transaction.components.PayPalOauth2Authenticator
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_request_body:
+        Content-Type: application/x-www-form-urlencoded
+      token_refresh_endpoint: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/v1/oauth2/token'
+      grant_type: client_credentials
+      expires_in_name: expires_in
+      access_token_name: access_token
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 100
+    request_body_json: {}
+
+  #NOTE: The streams Payments, Orders and Subscriptions require a webhook so you can register
+  #the Ids of each event as these endpoints do not have a GET method to list the Ids and use it
+  #in other streams
+
+  #Stream Transactions
+  #Paypal API only has V1 for this stream
+  transactions_stream:
+    type: DeclarativeStream
+    primary_key: transaction_id
+    name: "transactions"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 500
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: all
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              description: "Handle HTTP 400 with error message: Data for the given start date is not available. "
+              response_filters:
+                - http_codes: [400]
+                  action: IGNORE
+                  predicate: "{{ 'Data for the given start date is not available' in response['message']}}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - transaction_updated_date
+            value: >-
+              {{ format_datetime(record['transaction_info']['transaction_updated_date'], '%Y-%m-%dT%H:%M:%SZ') }}
+      - type: AddFields
+        fields:
+          - path:
+              - transaction_id
+            value: "{{ record['transaction_info']['transaction_id'] }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: transaction_updated_date
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ max( format_datetime(config.get('start_date'), '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: start_date
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ format_datetime(config.get('end_date') if config.get('end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+      end_time_option:
+        type: RequestOption
+        field_name: end_date
+        inject_into: request_parameter
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: "P{{ config.get('time_window', 7) }}D"
+      cursor_granularity: PT1S
+    $parameters:
+      path: "v1/reporting/transactions"
+      field_path: transaction_details
+
+  #Stream balances
+  #Paypal API only has V1 for this stream
+  balances_stream:
+    type: DeclarativeStream
+    primary_key: as_of_time
+    name: "balances"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 500
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters: {}
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - as_of_time
+            value: "{{ format_datetime(record['as_of_time'], '%Y-%m-%dT%H:%M:%SZ') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: as_of_time
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ max( format_datetime(config.get('start_date'), '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: as_of_time
+        inject_into: request_parameter
+    $parameters:
+      path: "v1/reporting/balances"
+
+  #New Stream - List Product
+  #Paypal API only has V1 for this stream
+  list_products_stream:
+    type: DeclarativeStream
+    primary_key: id
+    name: "list_products"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 20
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: GET
+        request_headers:
+          Content-Type: application/json
+    $parameters:
+      path: "v1/catalogs/products"
+      field_path: products
+
+  # New Stream - Show Product Details
+  #Paypal API only has V1 for this stream
+  #This can't be incremental as there is no time filtering. If you need to have the updates, you need to Append in the full_sync
+  # This stream works, however has some challenges with performance. Whith a big catalog it can take up to 3 hrs.
+  show_product_details_stream:
+    type: DeclarativeStream
+    primary_key: id
+    name: "show_product_details"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/v1/catalogs/products/{{ stream_slice.id }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "id"
+            stream:
+              $ref: "#/definitions/list_products_stream"
+
+  #Stream List Disputes
+  #Paypal API only has V1 for this stream
+  list_disputes_stream:
+    type: DeclarativeStream
+    primary_key: dispute_id
+    name: "list_disputes"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next_page_token
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page_size
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 50
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: GET
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - updated_time_cut
+            value: >-
+              {{ record['update_time'] }}
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_time_cut
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('dispute_start_date') if config.get('dispute_start_date') else (now_utc() - duration('P179D')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      end_datetime:
+        type: MinMaxDatetime
+        #Adding a time delta as the API has a problem with the slice being too close to the now_utc. Set to 30M
+        datetime: >-
+          {{ format_datetime(config.get('dispute_end_date') if config.get('dispute_end_date') else (now_utc() - duration('PT30M')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z'}}
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_time_option:
+        type: RequestOption
+        field_name: update_time_after
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: update_time_before
+        inject_into: request_parameter
+      step: "P{{ config.get('time_window', 7) }}D"
+      cursor_granularity: PT1S
+    $parameters:
+      path: "v1/customer/disputes"
+      field_path: items
+
+  #Stream Search Invoices
+  # Currently it does not support incremental sync as metadata does not contain last_update_date
+  search_invoices_stream:
+    type: DeclarativeStream
+    primary_key: id
+    name: "search_invoices"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 100
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+        request_body_json:
+          creation_date_range:
+            start: "{{ config.get('start_date') }}"
+            end: >-
+              {{ format_datetime(config.get('end_date') if config.get('end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+    $parameters:
+      field_path: items
+      path: "v2/invoicing/search-invoices"
+
+  #Stream List Payments
+  #Currently uses V1 which is about to be derecated
+  #But there is no endpoint in v2 for listing payments
+  list_payments_stream:
+    type: DeclarativeStream
+    primary_key: id
+    name: "list_payments"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.next_id}}"
+          stop_condition: "{{ response.next_id == ''}}"
+          page_size: 20
+        page_token_option:
+          type: RequestOption
+          field_name: start_id
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          field_name: count
+          inject_into: request_parameter
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          start_time: "{{ stream_interval.start_time.strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          end_time: "{{ stream_interval.end_time.strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: update_time
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        #type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ format_datetime(config.get('end_date') if config.get('end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end_time
+        inject_into: request_parameter
+      step: "P{{ config.get('time_window', 7) }}D"
+      cursor_granularity: PT1S
+    $parameters:
+      path: "v1/payments/payment"
+      field_path: payments
+
+streams:
+  - "#/definitions/transactions_stream"
+  - "#/definitions/balances_stream"
+  - "#/definitions/list_products_stream"
+  - "#/definitions/show_product_details_stream"
+  - "#/definitions/list_disputes_stream"
+  - "#/definitions/search_invoices_stream"
+  - "#/definitions/list_payments_stream"
+
+check:
+  stream_names:
+    - "balances"

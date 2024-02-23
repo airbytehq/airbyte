@@ -5,10 +5,10 @@
 package io.airbyte.integrations.destination.mssql_strict_encrypt;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.integrations.destination.mssql.MSSQLDestination;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.slf4j.Logger;

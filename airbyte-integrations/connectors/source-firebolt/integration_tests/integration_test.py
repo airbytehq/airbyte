@@ -66,7 +66,7 @@ def table_schema() -> str:
             # Removed as part of PR 25965 because... it just didn't work?
             "column5": {"type": ["null", "string"]},
             "column6": {"type": "array", "items": {"type": ["null", "integer"]}},
-            "column7": {"type": ["null", "integer"]},
+            "column7": {"type": ["null", "boolean"]},
         },
     }
     return schema

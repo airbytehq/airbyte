@@ -18,19 +18,16 @@
       "type": ["null", "string"]
     },
     "data": {
-      "type" : [
-        "null",
-        "array"
-      ],
-       "items": {
-          "type": ["null", "object"],
-         "properties": {
-           "properties": {
-           "timestamp": {"type": ["null", "integer"]},
-           "value": {"type": ["null", "number"]}
-           }
-         }
-       }
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "properties": {
+            "timestamp": { "type": ["null", "integer"] },
+            "value": { "type": ["null", "number"] }
+          }
+        }
+      }
     }
   }
 }

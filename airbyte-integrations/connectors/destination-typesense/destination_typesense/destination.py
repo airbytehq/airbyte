@@ -3,9 +3,9 @@
 #
 
 
-from logging import Logger
 from typing import Any, Iterable, Mapping
 
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_typesense.writer import TypesenseWriter
@@ -18,7 +18,7 @@ def get_client(config: Mapping[str, Any]) -> Client:
     port = config.get("port") or "8108"
     protocol = config.get("protocol") or "https"
 
-    client = Client({"api_key": api_key, "nodes": [{"host": host, "port": port, "protocol": protocol}], "connection_timeout_seconds": 2})
+    client = Client({"api_key": api_key, "nodes": [{"host": host, "port": port, "protocol": protocol}], "connection_timeout_seconds": 3600})
 
     return client
 
@@ -38,18 +38,20 @@ class DestinationTypesense(Destination):
                     pass
                 client.collections.create({"name": steam_name, "fields": [{"name": ".*", "type": "auto"}]})
 
-            writer = TypesenseWriter(client, steam_name, config.get("batch_size"))
-            for message in input_messages:
-                if message.type == Type.STATE:
-                    writer.flush()
-                    yield message
-                elif message.type == Type.RECORD:
-                    writer.queue_write_operation(message.record.data)
-                else:
-                    continue
-            writer.flush()
+        writer = TypesenseWriter(client, config.get("batch_size"))
+        for message in input_messages:
+            if message.type == Type.STATE:
+                writer.flush()
+                yield message
+            elif message.type == Type.RECORD:
+                record = message.record
+                writer.queue_write_operation(record.stream, record.data)
+            else:
+                continue
+        writer.flush()
 
-    def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        logger.debug("TypeSense Destination Config Check")
         try:
             client = get_client(config=config)
             client.collections.create({"name": "_airbyte", "fields": [{"name": "title", "type": "string"}]})

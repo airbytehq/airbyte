@@ -60,6 +60,7 @@ class AbstractFileBasedStreamReader(ABC):
     def get_matching_files(
         self,
         globs: List[str],
+        prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
         """

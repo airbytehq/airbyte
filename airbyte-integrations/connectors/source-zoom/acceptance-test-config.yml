@@ -40,5 +40,5 @@ tests:
         "meetings":
           - "start_url"
         "webinars":
-          - "start_url"          
+          - "start_url"
       timeout_seconds: 3600

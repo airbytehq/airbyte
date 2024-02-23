@@ -123,8 +123,9 @@ def test_invoices_request_params(patch_incremental_base_class, mocker, config, c
     inputs = {"stream_state": current_stream_state, "next_page_token": next_page_token}
     expected_params = expected_params or {}
     expected_params["limit"] = OrbStream.page_size
-    expected_params["status[]"] = ['void', 'paid', 'issued', 'synced']
+    expected_params["status[]"] = ["void", "paid", "issued", "synced"]
     assert stream.request_params(**inputs) == expected_params
+
 
 # We have specific unit tests for CreditsLedgerEntries incremental stream
 # because that employs slicing logic
@@ -345,6 +346,7 @@ def test_credits_ledger_entries_enriches_with_multiple_entries_per_event(mocker)
         {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement"},
     ]
 
+
 # We have specific unit tests for SubscriptionUsage incremental stream
 # because its logic differs from other IncrementalOrbStreams
 
@@ -383,53 +385,85 @@ def test_subscription_usage_get_updated_state(mocker, current_stream_state, late
 
 def test_subscription_usage_stream_slices(mocker):
     mocker.patch.object(
-        Subscriptions, "read_records", return_value=iter([
-            {"id": "1", "plan_id": "2"},
-            {"id": "11", "plan_id": "2"},
-            {"id": "111", "plan_id": "3"}  # should be ignored because plan_id set to 2
-        ])
+        Subscriptions,
+        "read_records",
+        return_value=iter(
+            [
+                {"id": "1", "plan_id": "2"},
+                {"id": "11", "plan_id": "2"},
+                {"id": "111", "plan_id": "3"},  # should be ignored because plan_id set to 2
+            ]
+        ),
     )
     stream = SubscriptionUsage(plan_id="2", start_date="2022-01-25T12:00:00+00:00", end_date="2022-01-26T12:00:00+00:00")
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     expected_stream_slice = [
         {"subscription_id": "1", "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
-        {"subscription_id": "11", "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"}
+        {"subscription_id": "11", "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
     ]
     assert list(stream.stream_slices(**inputs)) == expected_stream_slice
 
 
 def test_subscription_usage_stream_slices_with_grouping_key(mocker):
     mocker.patch.object(
-        Subscriptions, "read_records", return_value=iter([
-            {"id": "1", "plan_id": "2"},
-            {"id": "11", "plan_id": "2"},
-            {"id": "111", "plan_id": "3"}  # should be ignored because plan_id set to 2
-        ])
+        Subscriptions,
+        "read_records",
+        return_value=iter(
+            [
+                {"id": "1", "plan_id": "2"},
+                {"id": "11", "plan_id": "2"},
+                {"id": "111", "plan_id": "3"},  # should be ignored because plan_id set to 2
+            ]
+        ),
     )
 
     mocker.patch.object(
-        Plans, "read_records", return_value=iter([
-            {"id": "2", "prices": [
-                {"billable_metric": {"id": "billableMetricIdA"}},
-                {"billable_metric": {"id": "billableMetricIdB"}}
-            ]},
-            {"id": "3", "prices": [  # should be ignored because plan_id is set to 2
-                {"billable_metric": {"id": "billableMetricIdC"}}
-            ]}
-        ])
+        Plans,
+        "read_records",
+        return_value=iter(
+            [
+                {"id": "2", "prices": [{"billable_metric": {"id": "billableMetricIdA"}}, {"billable_metric": {"id": "billableMetricIdB"}}]},
+                {"id": "3", "prices": [{"billable_metric": {"id": "billableMetricIdC"}}]},  # should be ignored because plan_id is set to 2
+            ]
+        ),
     )
 
     # when a grouping_key is present, one slice per billable_metric is created because the Orb API
     # requires one API call per billable metric if the group_by param is in use.
-    stream = SubscriptionUsage(plan_id="2", subscription_usage_grouping_key="groupKey", start_date="2022-01-25T12:00:00+00:00", end_date="2022-01-26T12:00:00+00:00")
+    stream = SubscriptionUsage(
+        plan_id="2",
+        subscription_usage_grouping_key="groupKey",
+        start_date="2022-01-25T12:00:00+00:00",
+        end_date="2022-01-26T12:00:00+00:00",
+    )
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
 
     # one slice per billable metric per subscription that matches the input plan
     expected_stream_slice = [
-        {"subscription_id": "1", "billable_metric_id": "billableMetricIdA", "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
-        {"subscription_id": "1", "billable_metric_id": "billableMetricIdB", "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
-        {"subscription_id": "11", "billable_metric_id": "billableMetricIdA", "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
-        {"subscription_id": "11", "billable_metric_id": "billableMetricIdB", "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
+        {
+            "subscription_id": "1",
+            "billable_metric_id": "billableMetricIdA",
+            "timeframe_start": "2022-01-25T12:00:00+00:00",
+            "timeframe_end": "2022-01-26T12:00:00+00:00",
+        },
+        {
+            "subscription_id": "1",
+            "billable_metric_id": "billableMetricIdB",
+            "timeframe_start": "2022-01-25T12:00:00+00:00",
+            "timeframe_end": "2022-01-26T12:00:00+00:00",
+        },
+        {
+            "subscription_id": "11",
+            "billable_metric_id": "billableMetricIdA",
+            "timeframe_start": "2022-01-25T12:00:00+00:00",
+            "timeframe_end": "2022-01-26T12:00:00+00:00",
+        },
+        {
+            "subscription_id": "11",
+            "billable_metric_id": "billableMetricIdB",
+            "timeframe_start": "2022-01-25T12:00:00+00:00",
+            "timeframe_end": "2022-01-26T12:00:00+00:00",
+        },
     ]
     assert list(stream.stream_slices(**inputs)) == expected_stream_slice
 
@@ -440,44 +474,73 @@ def test_subscription_usage_stream_slices_with_grouping_key(mocker):
         # Slice matches subscription in state, no grouping
         (
             dict(subscription_id_foo=dict(timeframe_start="2022-01-25T12:00:00+00:00")),
-            dict(subscription_id="subscription_id_foo", timeframe_start="2022-01-25T12:00:00+00:00", timeframe_end="2022-01-26T12:00:00+00:00"),
-            None
+            dict(
+                subscription_id="subscription_id_foo",
+                timeframe_start="2022-01-25T12:00:00+00:00",
+                timeframe_end="2022-01-26T12:00:00+00:00",
+            ),
+            None,
         ),
         # Slice does not match subscription in state, no grouping
         (
             dict(subscription_id_foo=dict(timeframe_start="2022-01-25T12:00:00+00:00")),
-            dict(subscription_id="subscription_id_bar", timeframe_start="2022-01-25T12:00:00+00:00", timeframe_end="2022-01-26T12:00:00+00:00"),
-            None
+            dict(
+                subscription_id="subscription_id_bar",
+                timeframe_start="2022-01-25T12:00:00+00:00",
+                timeframe_end="2022-01-26T12:00:00+00:00",
+            ),
+            None,
         ),
         # No existing state, no grouping
         (
             {},
-            dict(subscription_id="subscription_id_baz", timeframe_start="2022-01-25T12:00:00+00:00", timeframe_end="2022-01-26T12:00:00+00:00"),
-            None
+            dict(
+                subscription_id="subscription_id_baz",
+                timeframe_start="2022-01-25T12:00:00+00:00",
+                timeframe_end="2022-01-26T12:00:00+00:00",
+            ),
+            None,
         ),
         # Slice matches subscription in state, with grouping
         (
             dict(subscription_id_foo=dict(timeframe_start="2022-01-25T12:00:00+00:00")),
-            dict(subscription_id="subscription_id_foo", billable_metric_id="billableMetricA", timeframe_start="2022-01-25T12:00:00+00:00", timeframe_end="2022-01-26T12:00:00+00:00"),
-            "group_key_foo"
+            dict(
+                subscription_id="subscription_id_foo",
+                billable_metric_id="billableMetricA",
+                timeframe_start="2022-01-25T12:00:00+00:00",
+                timeframe_end="2022-01-26T12:00:00+00:00",
+            ),
+            "group_key_foo",
         ),
         # Slice does not match subscription in state, with grouping
         (
             dict(subscription_id_foo=dict(timeframe_start="2022-01-25T12:00:00+00:00")),
-            dict(subscription_id="subscription_id_bar", billable_metric_id="billableMetricA", timeframe_start="2022-01-25T12:00:00+00:00", timeframe_end="2022-01-26T12:00:00+00:00"),
-            "group_key_foo"
+            dict(
+                subscription_id="subscription_id_bar",
+                billable_metric_id="billableMetricA",
+                timeframe_start="2022-01-25T12:00:00+00:00",
+                timeframe_end="2022-01-26T12:00:00+00:00",
+            ),
+            "group_key_foo",
         ),
         # No existing state, with grouping
         (
             {},
-            dict(subscription_id="subscription_id_baz", billable_metric_id="billableMetricA", timeframe_start="2022-01-25T12:00:00+00:00", timeframe_end="2022-01-26T12:00:00+00:00"),
-            "group_key_foo"
+            dict(
+                subscription_id="subscription_id_baz",
+                billable_metric_id="billableMetricA",
+                timeframe_start="2022-01-25T12:00:00+00:00",
+                timeframe_end="2022-01-26T12:00:00+00:00",
+            ),
+            "group_key_foo",
         ),
     ],
 )
 def test_subscription_usage_request_params(mocker, current_stream_state, current_stream_slice, grouping_key):
     if grouping_key:
-        stream = SubscriptionUsage(start_date="2022-01-25T12:00:00+00:00", end_date="2022-01-26T12:00:00+00:00", subscription_usage_grouping_key=grouping_key)
+        stream = SubscriptionUsage(
+            start_date="2022-01-25T12:00:00+00:00", end_date="2022-01-26T12:00:00+00:00", subscription_usage_grouping_key=grouping_key
+        )
     else:
         stream = SubscriptionUsage(start_date="2022-01-25T12:00:00+00:00", end_date="2022-01-26T12:00:00+00:00")
 
@@ -500,30 +563,13 @@ def test_subscription_usage_yield_transformed_subrecords(mocker):
     stream = SubscriptionUsage(start_date="2022-01-25T12:00:00+00:00", end_date="2022-01-26T12:00:00+00:00")
 
     subscription_usage_response = {
-        "billable_metric": {
-            "name": "Metric A",
-            "id": "billableMetricA"
-        },
+        "billable_metric": {"name": "Metric A", "id": "billableMetricA"},
         "usage": [
-            {
-                "quantity": 0,
-                "timeframe_start": "2022-01-25T12:00:00+00:00",
-                "timeframe_end": "2022-01-26T12:00:00+00:00"
-            },
-            {
-                "quantity": 1,
-                "timeframe_start": "2022-01-25T12:00:00+00:00",
-                "timeframe_end": "2022-01-26T12:00:00+00:00"
-            },
-            {
-                "quantity": 2,
-                "timeframe_start": "2022-01-26T12:00:00+00:00",
-                "timeframe_end": "2022-01-27T12:00:00+00:00"
-            }
+            {"quantity": 0, "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
+            {"quantity": 1, "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
+            {"quantity": 2, "timeframe_start": "2022-01-26T12:00:00+00:00", "timeframe_end": "2022-01-27T12:00:00+00:00"},
         ],
-        "otherTopLevelField": {
-            "shouldBeIncluded": "true"
-        }
+        "otherTopLevelField": {"shouldBeIncluded": "true"},
     }
 
     subscription_id = "subscriptionIdA"
@@ -536,10 +582,8 @@ def test_subscription_usage_yield_transformed_subrecords(mocker):
             "timeframe_end": "2022-01-26T12:00:00+00:00",
             "billable_metric_name": "Metric A",
             "billable_metric_id": "billableMetricA",
-            "otherTopLevelField": {
-                "shouldBeIncluded": "true"
-            },
-            "subscription_id": subscription_id
+            "otherTopLevelField": {"shouldBeIncluded": "true"},
+            "subscription_id": subscription_id,
         },
         {
             "quantity": 2,
@@ -547,11 +591,9 @@ def test_subscription_usage_yield_transformed_subrecords(mocker):
             "timeframe_end": "2022-01-27T12:00:00+00:00",
             "billable_metric_name": "Metric A",
             "billable_metric_id": "billableMetricA",
-            "otherTopLevelField": {
-                "shouldBeIncluded": "true"
-            },
-            "subscription_id": subscription_id
-        }
+            "otherTopLevelField": {"shouldBeIncluded": "true"},
+            "subscription_id": subscription_id,
+        },
     ]
 
     actual_output = list(stream.yield_transformed_subrecords(subscription_usage_response, subscription_id))
@@ -560,37 +602,19 @@ def test_subscription_usage_yield_transformed_subrecords(mocker):
 
 
 def test_subscription_usage_yield_transformed_subrecords_with_grouping(mocker):
-    stream = SubscriptionUsage(start_date="2022-01-25T12:00:00+00:00", end_date="2022-01-26T12:00:00+00:00", subscription_usage_grouping_key="grouping_key")
+    stream = SubscriptionUsage(
+        start_date="2022-01-25T12:00:00+00:00", end_date="2022-01-26T12:00:00+00:00", subscription_usage_grouping_key="grouping_key"
+    )
 
     subscription_usage_response = {
-        "billable_metric": {
-            "name": "Metric A",
-            "id": "billableMetricA"
-        },
-        "metric_group": {
-            "property_key": "grouping_key",
-            "property_value": "grouping_value"
-        },
+        "billable_metric": {"name": "Metric A", "id": "billableMetricA"},
+        "metric_group": {"property_key": "grouping_key", "property_value": "grouping_value"},
         "usage": [
-            {
-                "quantity": 0,
-                "timeframe_start": "2022-01-25T12:00:00+00:00",
-                "timeframe_end": "2022-01-26T12:00:00+00:00"
-            },
-            {
-                "quantity": 1,
-                "timeframe_start": "2022-01-25T12:00:00+00:00",
-                "timeframe_end": "2022-01-26T12:00:00+00:00"
-            },
-            {
-                "quantity": 2,
-                "timeframe_start": "2022-01-26T12:00:00+00:00",
-                "timeframe_end": "2022-01-27T12:00:00+00:00"
-            }
+            {"quantity": 0, "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
+            {"quantity": 1, "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
+            {"quantity": 2, "timeframe_start": "2022-01-26T12:00:00+00:00", "timeframe_end": "2022-01-27T12:00:00+00:00"},
         ],
-        "otherTopLevelField": {
-            "shouldBeIncluded": "true"
-        }
+        "otherTopLevelField": {"shouldBeIncluded": "true"},
     }
 
     subscription_id = "subscriptionIdA"
@@ -603,11 +627,9 @@ def test_subscription_usage_yield_transformed_subrecords_with_grouping(mocker):
             "timeframe_end": "2022-01-26T12:00:00+00:00",
             "billable_metric_name": "Metric A",
             "billable_metric_id": "billableMetricA",
-            "otherTopLevelField": {
-                "shouldBeIncluded": "true"
-            },
+            "otherTopLevelField": {"shouldBeIncluded": "true"},
             "subscription_id": subscription_id,
-            "grouping_key": "grouping_value"
+            "grouping_key": "grouping_value",
         },
         {
             "quantity": 2,
@@ -615,12 +637,10 @@ def test_subscription_usage_yield_transformed_subrecords_with_grouping(mocker):
             "timeframe_end": "2022-01-27T12:00:00+00:00",
             "billable_metric_name": "Metric A",
             "billable_metric_id": "billableMetricA",
-            "otherTopLevelField": {
-                "shouldBeIncluded": "true"
-            },
+            "otherTopLevelField": {"shouldBeIncluded": "true"},
             "subscription_id": subscription_id,
-            "grouping_key": "grouping_value"
-        }
+            "grouping_key": "grouping_value",
+        },
     ]
 
     actual_output = list(stream.yield_transformed_subrecords(subscription_usage_response, subscription_id))

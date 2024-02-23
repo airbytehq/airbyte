@@ -1,27 +1,26 @@
-import pandas as pd
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import json
 import os
 import re
 from datetime import datetime
-
-from dagster import Output, asset, OpExecutionContext, MetadataValue
-from google.cloud import storage
 from typing import List, Type, TypeVar
 
-from orchestrator.ops.slack import send_slack_message
+import pandas as pd
+from dagster import MetadataValue, OpExecutionContext, Output, asset
+from google.cloud import storage
+from orchestrator.config import CONNECTOR_TEST_SUMMARY_FOLDER, NIGHTLY_COMPLETE_REPORT_FILE_NAME
+from orchestrator.logging import sentry
 from orchestrator.models.ci_report import ConnectorNightlyReport, ConnectorPipelineReport
-from orchestrator.config import (
-    NIGHTLY_COMPLETE_REPORT_FILE_NAME,
-    CONNECTOR_TEST_SUMMARY_FOLDER,
-)
+from orchestrator.ops.slack import send_slack_message
 from orchestrator.templates.render import (
     render_connector_nightly_report_md,
-    render_connector_test_summary_html,
     render_connector_test_badge,
+    render_connector_test_summary_html,
 )
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from orchestrator.logging import sentry
-
 
 T = TypeVar("T")
 

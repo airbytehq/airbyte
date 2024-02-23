@@ -4,11 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source QuickBooks Spec",
     "type": "object",
-    "required": [
-      "credentials",
-      "start_date",
-      "sandbox"
-    ],
+    "required": ["credentials", "start_date", "sandbox"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -50,7 +46,7 @@
                 "airbyte_secret": true
               },
               "access_token": {
-                "description": "Access token fot making authenticated requests.",
+                "description": "Access token for making authenticated requests.",
                 "title": "Access Token",
                 "type": "string",
                 "airbyte_secret": true
@@ -78,9 +74,7 @@
         "type": "string",
         "format": "date-time",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": [
-          "2021-03-20T00:00:00Z"
-        ]
+        "examples": ["2021-03-20T00:00:00Z"]
       },
       "sandbox": {
         "order": 2,

@@ -6,11 +6,16 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_file/spec.json"
+      - spec_path: "integration_tests/cloud_spec.json"
+        deployment_mode: "cloud"
   connection:
     tests:
       - config_path: "integration_tests/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - config_path: "integration_tests/local_config.json"
+        deployment_mode: "cloud"
         status: "failed"
   discovery:
     tests:
@@ -23,6 +28,9 @@ acceptance_tests:
           extra_fields: no
           exact_order: no
           extra_records: yes
+        file_types:
+          skip_test: yes
+          bypass_reason: "Source is not based on file based CDK"
   full_refresh:
     tests:
       - config_path: "integration_tests/config.json"

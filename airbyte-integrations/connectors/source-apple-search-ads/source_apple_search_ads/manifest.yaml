@@ -15,7 +15,7 @@ definitions:
       X-AP-Context: orgId={{ config.org_id }}
     error_handler:
       response_filters:
-        - http_codes: [ 500, 429 ]
+        - http_codes: [500, 429]
           action: RETRY
       backoff_strategies:
         - type: "ExponentialBackoffStrategy"
@@ -80,7 +80,7 @@ definitions:
         parent_stream_configs:
           - stream: "#/definitions/adgroups_stream"
             parent_key: "id"
-            partition_field: "adgroup_id"      
+            partition_field: "adgroup_id"
       requester:
         $ref: "#/definitions/retriever/requester"
         path: "/campaigns/{{ stream_slice.parent_slice.campaign_id }}/adgroups/{{ stream_slice.adgroup_id }}/targetingkeywords"
@@ -117,12 +117,12 @@ definitions:
           granularity: "{{ parameters.granularity }}"
           selector: '{
             "orderBy": [
-              {
-                "field": "countryOrRegion",
-                "sortOrder": "ASCENDING"
-              }
+            {
+            "field": "countryOrRegion",
+            "sortOrder": "ASCENDING"
+            }
             ]
-          }'
+            }'
           groupBy: "[ 'countryOrRegion' ]"
 
   campaigns_report_daily_stream:
@@ -139,9 +139,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "campaignId" ]
+          - path: ["campaignId"]
             value: "{{ record.metadata.campaignId }}"
-          - path: [ "date" ]
+          - path: ["date"]
             value: "{{ stream_slice.start_time }}"
 
   adgroups_report_daily_stream:
@@ -164,9 +164,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "adGroupId" ]
+          - path: ["adGroupId"]
             value: "{{ record.metadata.adGroupId }}"
-          - path: [ "date" ]
+          - path: ["date"]
             value: "{{ stream_slice.start_time }}"
 
   keywords_report_daily_stream:
@@ -191,18 +191,17 @@ definitions:
           response_filters:
             - predicate: "{{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in response.error.errors[0].message }}"
               action: IGNORE
-            - http_codes: [ 500, 429 ]
+            - http_codes: [500, 429]
               action: RETRY
           backoff_strategies:
             - type: "ExponentialBackoffStrategy"
     transformations:
       - type: AddFields
         fields:
-          - path: [ "keywordId" ]
+          - path: ["keywordId"]
             value: "{{ record.metadata.keywordId }}"
-          - path: [ "date" ]
+          - path: ["date"]
             value: "{{ stream_slice.start_time }}"
-
 
 streams:
   - "#/definitions/campaigns_stream"

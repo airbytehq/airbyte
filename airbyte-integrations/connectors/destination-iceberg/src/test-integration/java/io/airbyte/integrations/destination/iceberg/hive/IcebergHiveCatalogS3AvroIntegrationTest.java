@@ -7,10 +7,10 @@ package io.airbyte.integrations.destination.iceberg.hive;
 import static io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil.ICEBERG_IMAGE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil;
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 import io.airbyte.integrations.destination.iceberg.container.HiveMetastoreS3PostgresCompose;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
@@ -49,10 +49,10 @@ public class IcebergHiveCatalogS3AvroIntegrationTest extends DestinationAcceptan
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {}
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {}
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
   @Override
   protected String getImageName() {
@@ -70,10 +70,10 @@ public class IcebergHiveCatalogS3AvroIntegrationTest extends DestinationAcceptan
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
   }

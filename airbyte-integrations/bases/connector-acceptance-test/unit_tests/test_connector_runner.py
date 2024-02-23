@@ -5,6 +5,7 @@
 
 import json
 import os
+from pathlib import Path
 
 import pytest
 from airbyte_protocol.models import (
@@ -29,27 +30,14 @@ class TestContainerRunner:
     def released_image_name(self):
         return "airbyte/source-faker:latest"
 
-    @pytest.fixture()
-    async def local_tar_image(self, dagger_client, tmpdir, released_image_name):
-        local_image_tar_path = str(tmpdir / "local_image.tar")
-        await dagger_client.container().from_(released_image_name).export(local_image_tar_path)
-        os.environ["CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"] = local_image_tar_path
-        yield local_image_tar_path
-        os.environ.pop("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH")
-
-    async def test_load_container_from_tar(self, dagger_client, dev_image_name, local_tar_image):
-        runner = connector_runner.ConnectorRunner(dev_image_name, dagger_client)
-        await runner.load_container()
-        assert await runner._connector_under_test_container.with_exec(["spec"])
-
-    async def test_load_container_from_released_connector(self, dagger_client, released_image_name):
-        runner = connector_runner.ConnectorRunner(released_image_name, dagger_client)
-        await runner.load_container()
-        assert await runner._connector_under_test_container.with_exec(["spec"])
-
-    async def test_get_container_env_variable_value(self, dagger_client, dev_image_name, local_tar_image):
-        runner = connector_runner.ConnectorRunner(dev_image_name, dagger_client, custom_environment_variables={"FOO": "BAR"})
+    async def test_get_container_env_variable_value(self, source_faker_container):
+        runner = connector_runner.ConnectorRunner(source_faker_container, custom_environment_variables={"FOO": "BAR"})
         assert await runner.get_container_env_variable_value("FOO") == "BAR"
+
+    @pytest.mark.parametrize("deployment_mode", ["oss", "cloud"])
+    async def test_set_deployment_mode_env(self, source_faker_container, deployment_mode):
+        runner = connector_runner.ConnectorRunner(source_faker_container, deployment_mode=deployment_mode)
+        assert await runner.get_container_env_variable_value("DEPLOYMENT_MODE") == deployment_mode.upper()
 
     def test_parse_airbyte_messages_from_command_output(self, mocker, tmp_path):
         old_configuration_path = tmp_path / "config.json"
@@ -76,10 +64,8 @@ class TestContainerRunner:
 
         mocker.patch.object(connector_runner.ConnectorRunner, "_persist_new_configuration")
         runner = connector_runner.ConnectorRunner(
-            "source-test:dev",
             mocker.Mock(),
             connector_configuration_path=old_configuration_path,
-            custom_environment_variables={"foo": "bar"},
         )
         runner.parse_airbyte_messages_from_command_output(raw_command_output)
         runner._persist_new_configuration.assert_called_once_with(new_configuration, 1)
@@ -125,10 +111,42 @@ class TestContainerRunner:
                 json.dump(old_configuration, old_configuration_file)
         else:
             old_configuration_path = None
-        mocker.patch.object(connector_runner, "docker")
-        runner = connector_runner.ConnectorRunner("source-test:dev", mocker.MagicMock(), old_configuration_path)
+
+        runner = connector_runner.ConnectorRunner(mocker.MagicMock(), connector_configuration_path=old_configuration_path)
         new_configuration_path = runner._persist_new_configuration(new_configuration, new_configuration_emitted_at)
         if not expect_new_configuration:
             assert new_configuration_path is None
         else:
             assert new_configuration_path == tmp_path / "updated_configurations" / f"config|{new_configuration_emitted_at}.json"
+
+
+async def test_get_connector_container(mocker):
+
+    dagger_client = mocker.AsyncMock()
+    os.environ["CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"] = "test_tarball_path"
+
+    # Mock the functions called within get_connector_container
+    mocker.patch.object(connector_runner, "get_container_from_id", new=mocker.AsyncMock())
+    mocker.patch.object(connector_runner, "get_container_from_tarball_path", new=mocker.AsyncMock())
+    mocker.patch.object(connector_runner, "get_container_from_local_image", new=mocker.AsyncMock())
+    mocker.patch.object(connector_runner, "get_container_from_dockerhub_image", new=mocker.AsyncMock())
+
+    # Test the case when the CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH is set
+    await connector_runner.get_connector_container(dagger_client, "test_image:tag")
+    connector_runner.get_container_from_tarball_path.assert_called_with(dagger_client, Path("test_tarball_path"))
+
+    # Test the case when the CONNECTOR_CONTAINER_ID is set
+    Path("/tmp/container_id.txt").write_text("test_container_id")
+    await connector_runner.get_connector_container(dagger_client, "test_image:tag")
+    connector_runner.get_container_from_id.assert_called_with(dagger_client, "test_container_id")
+    Path("/tmp/container_id.txt").unlink()
+
+    # Test the case when none of the environment variables are set
+    os.environ.pop("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH")
+    await connector_runner.get_connector_container(dagger_client, "test_image:tag")
+    connector_runner.get_container_from_local_image.assert_called_with(dagger_client, "test_image:tag")
+
+    # Test the case when all previous attempts fail
+    connector_runner.get_container_from_local_image.return_value = None
+    await connector_runner.get_connector_container(dagger_client, "test_image:tag")
+    connector_runner.get_container_from_dockerhub_image.assert_called_with(dagger_client, "test_image:tag")

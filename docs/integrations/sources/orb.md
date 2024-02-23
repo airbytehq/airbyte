@@ -9,11 +9,11 @@ will only read and output new records based on their `created_at` timestamp.
 
 This Source is capable of syncing the following core resources, each of which has a separate Stream. Note that all of the streams are incremental:
 
-* [Subscriptions](https://docs.withorb.com/docs/orb-docs/api-reference/operations/list-subscriptions)
-* [Plans](https://docs.withorb.com/docs/orb-docs/api-reference/operations/list-plans)
-* [Customers](https://docs.withorb.com/docs/orb-docs/api-reference/operations/list-customers)
-* [Credits Ledger Entries](https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-customer-credit-ledger)
-* [Subscription Usage](https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-subscription-usage)
+* [Subscriptions](https://docs.withorb.com/reference/list-subscriptions)
+* [Plans](https://docs.withorb.com/reference/list-plans)
+* [Customers](https://docs.withorb.com/reference/list-customers)
+* [Credits Ledger Entries](https://docs.withorb.com/reference/fetch-customer-credits-ledger)
+* [Subscription Usage](https://docs.withorb.com/reference/fetch-subscription-usage)
 
 As a caveat, the Credits Ledger Entries must read all Customers for an incremental sync, but will only incrementally return new ledger entries for each customers.
 

@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.pulsar;
 
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;

@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.starburst_galaxy;
 
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_ACCESS_KEY_ID;
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_PATH;
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_SECRET_ACCESS_KEY;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_ACCESS_KEY_ID;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_PATH;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_SECRET_ACCESS_KEY;
 import static io.airbyte.integrations.destination.starburst_galaxy.StarburstGalaxyConstants.CATALOG_SCHEMA;
 import static io.airbyte.integrations.destination.starburst_galaxy.StarburstGalaxyConstants.STAGING_OBJECT_STORE;
 import static io.airbyte.integrations.destination.starburst_galaxy.StarburstGalaxyDestinationConfig.get;
@@ -16,9 +16,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;

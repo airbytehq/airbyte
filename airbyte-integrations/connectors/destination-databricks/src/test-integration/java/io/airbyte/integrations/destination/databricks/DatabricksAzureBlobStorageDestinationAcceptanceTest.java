@@ -13,9 +13,9 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -46,7 +46,7 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(SECRETS_CONFIG_JSON)));
 
     // Set a random Azure path and database schema for each integration test
@@ -70,7 +70,7 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
     final BlobServiceClient storageClient = new BlobServiceClientBuilder()
         .endpoint(azureBlobStorageConfig.getEndpointUrl())
         .sasToken(azureBlobStorageConfig.getSasToken())
@@ -84,7 +84,7 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
       blobContainerClient.delete();
     }
 
-    super.tearDown(testEnv, TEST_SCHEMAS);
+    super.tearDown(testEnv);
   }
 
 }

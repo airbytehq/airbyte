@@ -1,5 +1,8 @@
-from dagster import sensor, RunRequest, SkipReason, SensorDefinition, SensorEvaluationContext, build_resources, DefaultSensorStatus
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+from dagster import DefaultSensorStatus, RunRequest, SensorDefinition, SensorEvaluationContext, SkipReason, build_resources, sensor
 from orchestrator.utils.dagster_helpers import string_array_to_hash
 
 

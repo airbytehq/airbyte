@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = false)
 public class RESTCatalogConfig
-        extends IcebergCatalogConfig {
+    extends IcebergCatalogConfig {
 
   private final String uri;
   private final String credential;
@@ -79,4 +79,5 @@ public class RESTCatalogConfig
     catalog.initialize(CATALOG_NAME, properties);
     return catalog;
   }
+
 }

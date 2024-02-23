@@ -35,7 +35,7 @@
     },
     "expires_at": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "created_by": {
       "avatar_url": {
@@ -56,6 +56,9 @@
       "web_url": {
         "type": ["null", "string"]
       }
+    },
+    "locked": {
+      "type": ["null", "boolean"]
     }
   }
 }

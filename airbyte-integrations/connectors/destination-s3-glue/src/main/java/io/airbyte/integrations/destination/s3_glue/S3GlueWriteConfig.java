@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.s3_glue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.s3.WriteConfig;
+import io.airbyte.cdk.integrations.destination.s3.WriteConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
 public class S3GlueWriteConfig extends WriteConfig {

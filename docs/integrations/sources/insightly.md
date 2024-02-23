@@ -71,6 +71,7 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| 0.2.0   | 2023-10-23 |[31162](https://github.com/airbytehq/airbyte/pull/31162)  | Migrate to low-code framework         |
 | 0.1.3   | 2023-05-15 |[26079](https://github.com/airbytehq/airbyte/pull/26079)  | Make incremental syncs timestamp inclusive          |
 | 0.1.2   | 2023-03-23 |[24422](https://github.com/airbytehq/airbyte/pull/24422)  | Fix incremental timedelta causing missing records   |
 | 0.1.1   | 2022-11-11 |[19356](https://github.com/airbytehq/airbyte/pull/19356)  | Fix state date parse bug                            |

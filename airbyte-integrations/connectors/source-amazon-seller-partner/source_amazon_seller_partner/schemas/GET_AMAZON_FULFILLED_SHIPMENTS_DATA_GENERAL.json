@@ -10,10 +10,10 @@
     "shipment-item-id": { "type": ["null", "string"] },
     "amazon-order-item-id": { "type": ["null", "string"] },
     "merchant-order-item-id": { "type": ["null", "string"] },
-    "purchase-date": { "type": ["null", "string"] },
-    "payments-date": { "type": ["null", "string"] },
-    "shipment-date": { "type": ["null", "string"] },
-    "reporting-date": { "type": ["null", "string"] },
+    "purchase-date": { "type": ["null", "string"], "format": "date-time" },
+    "payments-date": { "type": ["null", "string"], "format": "date-time" },
+    "shipment-date": { "type": ["null", "string"], "format": "date-time" },
+    "reporting-date": { "type": ["null", "string"], "format": "date-time" },
     "buyer-email": { "type": ["null", "string"] },
     "buyer-name": { "type": ["null", "string"] },
     "buyer-phone-number": { "type": ["null", "string"] },
@@ -48,9 +48,13 @@
     "ship-promotion-discount": { "type": ["null", "string"] },
     "carrier": { "type": ["null", "string"] },
     "tracking-number": { "type": ["null", "string"] },
-    "estimated-arrival-date": { "type": ["null", "string"] },
+    "estimated-arrival-date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "fulfillment-center-id": { "type": ["null", "string"] },
     "fulfillment-channel": { "type": ["null", "string"] },
-    "sales-channel": { "type": ["null", "string"] }
+    "sales-channel": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

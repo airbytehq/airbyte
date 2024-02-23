@@ -24,7 +24,7 @@ data:
   tags:
     - language:java
   ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
+    sl: 100
+    ql: 200
+  supportLevel: community
 metadataSpecVersion: "1.0"

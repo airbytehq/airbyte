@@ -52,6 +52,20 @@
                 },
                 "fieldType": {
                   "type": ["null", "string"]
+                },
+                "validation": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "blockedEmailDomains": {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "useDefaultBlockList": {
+                      "type": ["null", "boolean"]
+                    }
+                  }
                 }
               }
             }
@@ -108,6 +122,12 @@
         },
         "allowLinkToResetKnownValues": {
           "type": ["null", "boolean"]
+        },
+        "lifecycleStages": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
         }
       }
     },
@@ -163,6 +183,9 @@
               "type": ["null", "string"]
             }
           }
+        },
+        "cssClass": {
+          "type": ["null", "string"]
         }
       }
     },

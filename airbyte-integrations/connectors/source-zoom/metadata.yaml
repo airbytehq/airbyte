@@ -8,6 +8,11 @@ data:
   icon: zoom.svg
   license: MIT
   name: Zoom
+  remoteRegistries:
+    pypi:
+      # TODO: Enable once build problems are fixed
+      enabled: false
+      packageName: airbyte-source-zoom
   registries:
     cloud:
       enabled: true
@@ -19,7 +24,7 @@ data:
     - language:low-code
     - language:python
   ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
+    sl: 100
+    ql: 200
+  supportLevel: community
 metadataSpecVersion: "1.0"

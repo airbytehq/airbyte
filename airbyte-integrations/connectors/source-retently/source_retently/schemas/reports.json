@@ -7,7 +7,7 @@
       "type": ["null", "string"]
     },
     "questionsStats": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "type": "object",
         "additionalProperties": true

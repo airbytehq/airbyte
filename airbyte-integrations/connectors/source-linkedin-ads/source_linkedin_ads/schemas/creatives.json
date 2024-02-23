@@ -28,7 +28,7 @@
     },
     "review": {
       "type": ["null", "object"],
-      "properties" : {
+      "properties": {
         "status": {
           "type": ["null", "string"]
         },
@@ -37,32 +37,31 @@
         }
       }
     },
-    "isServing" : {
-      "type" : ["null", "boolean"]
+    "isServing": {
+      "type": ["null", "boolean"]
     },
-    "campaign" : {
-      "type" : ["null", "string"]
+    "campaign": {
+      "type": ["null", "string"]
     },
-    "id" : {
-      "type" : ["null", "string"]
+    "id": {
+      "type": ["null", "string"]
     },
-    "intendedStatus" : {
-      "type" : ["null", "string"]
+    "intendedStatus": {
+      "type": ["null", "string"]
     },
-    "account" : {
-      "type" : ["null", "string"]
+    "account": {
+      "type": ["null", "string"]
     },
-    "leadgenCallToAction" : {
-      "type" : ["null", "object"],
-      "properties" : {
-        "destination" : {
-          "type" : ["null", "string"]
+    "leadgenCallToAction": {
+      "type": ["null", "object"],
+      "properties": {
+        "destination": {
+          "type": ["null", "string"]
         },
-        "label" : {
-          "type" : ["null", "string"]
+        "label": {
+          "type": ["null", "string"]
         }
       }
     }
   }
 }
-

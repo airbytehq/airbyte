@@ -27,6 +27,12 @@
     "mobile_phone_number": {
       "type": ["null", "string"]
     },
+    "member_of_pending_approval": {
+      "type": ["null", "array"]
+    },
+    "observer_of_pending_approval": {
+      "type": ["null", "array"]
+    },
     "department_ids": {
       "type": ["null", "array"]
     },
@@ -139,7 +145,13 @@
       "type": ["null", "array"]
     },
     "workspace_info": {
-      "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "additionalProperties": true
+      }
+    },
+    "work_schedule_id": {
+      "type": ["null", "integer"]
     }
   }
 }

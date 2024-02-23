@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Vertica Destination Spec",
     "type": "object",
-    "required": ["host", "port", "username", "database","schema"],
+    "required": ["host", "port", "username", "database", "schema"],
     "additionalProperties": true,
     "properties": {
       "host": {

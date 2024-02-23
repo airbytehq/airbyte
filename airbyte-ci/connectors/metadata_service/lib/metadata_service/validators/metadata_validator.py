@@ -1,17 +1,22 @@
-import semver
-import pathlib
-import yaml
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+import pathlib
 from dataclasses import dataclass
-from pydantic import ValidationError
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from typing import Optional, Tuple, Union, List, Callable
+from typing import Callable, List, Optional, Tuple, Union
+
+import semver
+import yaml
 from metadata_service.docker_hub import is_image_on_docker_hub
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from pydantic import ValidationError
 from pydash.objects import get
 
 
 @dataclass(frozen=True)
 class ValidatorOptions:
+    docs_path: str
     prerelease_tag: Optional[str] = None
 
 
@@ -21,15 +26,8 @@ Validator = Callable[[ConnectorMetadataDefinitionV0, ValidatorOptions], Validati
 # TODO: Remove these when each of these connectors ship any new version
 ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
     ("airbyte/source-prestashop", "1.0.0"),
-    ("airbyte/source-onesignal", "1.0.0"),
     ("airbyte/source-yandex-metrica", "1.0.0"),
-    ("airbyte/destination-meilisearch", "1.0.0"),
     ("airbyte/destination-csv", "1.0.0"),
-    ("airbyte/source-metabase", "1.0.0"),
-    ("airbyte/source-typeform", "1.0.0"),
-    ("airbyte/source-recharge", "1.0.0"),
-    ("airbyte/source-pipedrive", "1.0.0"),
-    ("airbyte/source-paypal-transaction", "2.0.0"),
 ]
 
 
@@ -66,7 +64,7 @@ def validate_metadata_images_in_dockerhub(
 
     print(f"Checking that the following images are on dockerhub: {images_to_check}")
     for image, version in images_to_check:
-        if not is_image_on_docker_hub(image, version):
+        if not is_image_on_docker_hub(image, version, retries=3):
             return False, f"Image {image}:{version} does not exist in DockerHub"
 
     return True, None
@@ -98,7 +96,7 @@ def validate_all_tags_are_keyvalue_pairs(
 def is_major_version(version: str) -> bool:
     """Check whether the version is of format N.0.0"""
     semver_version = semver.Version.parse(version)
-    return semver_version.minor == 0 and semver_version.patch == 0
+    return semver_version.minor == 0 and semver_version.patch == 0 and semver_version.prerelease is None
 
 
 def validate_major_version_bump_has_breaking_change_entry(
@@ -133,10 +131,62 @@ def validate_major_version_bump_has_breaking_change_entry(
     return True, None
 
 
+def validate_docs_path_exists(metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions) -> ValidationResult:
+    """Ensure that the doc_path exists."""
+    if not pathlib.Path(validator_opts.docs_path).exists():
+        return False, f"Could not find {validator_opts.docs_path}."
+
+    return True, None
+
+
+def validate_metadata_base_images_in_dockerhub(
+    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
+) -> ValidationResult:
+    metadata_definition_dict = metadata_definition.dict()
+
+    image_address = get(metadata_definition_dict, "data.connectorBuildOptions.baseImage")
+    if image_address is None:
+        return True, None
+
+    try:
+        image_name, tag_with_sha_prefix, digest = image_address.split(":")
+        # As we query the DockerHub API we need to remove the docker.io prefix
+        image_name = image_name.replace("docker.io/", "")
+    except ValueError:
+        return False, f"Image {image_address} is not in the format <image>:<tag>@<sha>"
+    tag = tag_with_sha_prefix.split("@")[0]
+
+    print(f"Checking that the base images is on dockerhub: {image_address}")
+
+    if not is_image_on_docker_hub(image_name, tag, digest, retries=3):
+        return False, f"Image {image_address} does not exist in DockerHub"
+
+    return True, None
+
+
+def validate_pypi_only_for_python(
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+) -> ValidationResult:
+    """Ensure that if pypi publishing is enabled for a connector, it has a python language tag."""
+
+    pypi_enabled = get(metadata_definition, "data.remoteRegistries.pypi.enabled", False)
+    if not pypi_enabled:
+        return True, None
+
+    tags = get(metadata_definition, "data.tags", [])
+    if "language:python" not in tags and "language:low-code" not in tags:
+        return False, "If pypi publishing is enabled, the connector must have a python language tag."
+
+    return True, None
+
+
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
     validate_major_version_bump_has_breaking_change_entry,
+    validate_docs_path_exists,
+    validate_metadata_base_images_in_dockerhub,
+    validate_pypi_only_for_python,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
@@ -147,7 +197,7 @@ POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
 def validate_and_load(
     file_path: pathlib.Path,
     validators_to_run: List[Validator],
-    validator_opts: ValidatorOptions = ValidatorOptions(),
+    validator_opts: ValidatorOptions,
 ) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
     """Load a metadata file from a path (runs jsonschema validation) and run optional extra validators.
 
@@ -163,6 +213,7 @@ def validate_and_load(
         return None, f"Validation error: {e}"
 
     for validator in validators_to_run:
+        print(f"Running validator: {validator.__name__}")
         is_valid, error = validator(metadata_model, validator_opts)
         if not is_valid:
             return None, f"Validation error: {error}"

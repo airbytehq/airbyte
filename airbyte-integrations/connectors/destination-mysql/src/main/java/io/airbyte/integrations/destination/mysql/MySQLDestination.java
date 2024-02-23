@@ -4,22 +4,23 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.ssh.SshWrappedDestination;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -125,6 +126,11 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator() {
+    throw new UnsupportedOperationException("mysql does not yet support DV2");
   }
 
   public static void main(final String[] args) throws Exception {

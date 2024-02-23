@@ -19,6 +19,18 @@
     "hire_date": {
       "type": ["string", "null"]
     },
+    "amount_type": {
+      "type": ["string", "null"]
+    },
+    "annual_salary": {
+      "type": ["string", "null"]
+    },
+    "comp_type": {
+      "type": ["string", "null"]
+    },
+    "pay_rate": {
+      "type": ["string", "null"]
+    },
     "employment_type": {
       "type": ["string", "null"]
     },

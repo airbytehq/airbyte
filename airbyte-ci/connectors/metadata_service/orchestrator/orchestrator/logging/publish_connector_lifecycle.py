@@ -1,6 +1,10 @@
-import os
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+import os
 from enum import Enum
+
 from dagster import OpExecutionContext
 from orchestrator.ops.slack import send_slack_message
 

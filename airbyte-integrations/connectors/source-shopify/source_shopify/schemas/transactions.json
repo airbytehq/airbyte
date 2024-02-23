@@ -46,6 +46,36 @@
     "status": {
       "type": ["null", "string"]
     },
+    "total_unsettled_set": {
+      "type": ["null", "object"],
+      "properties": {
+        "shop_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "presentment_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "payment_id": {
+      "type": ["null", "string"]
+    },
     "payment_details": {
       "properties": {
         "cvv_result_code": {

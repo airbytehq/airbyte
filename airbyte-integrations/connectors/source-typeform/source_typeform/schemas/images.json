@@ -10,7 +10,7 @@
     "src": {
       "type": ["null", "string"]
     },
-    "width":{
+    "width": {
       "type": ["null", "integer"]
     },
     "height": {
@@ -19,7 +19,7 @@
     "media_type": {
       "type": ["null", "string"]
     },
-    "avg_color":{
+    "avg_color": {
       "type": ["null", "string"]
     },
     "has_alpha": {

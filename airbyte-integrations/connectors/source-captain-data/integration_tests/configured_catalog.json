@@ -10,14 +10,8 @@
         "name": "workspace",
         "namespace": null,
         "source_defined_cursor": null,
-        "source_defined_primary_key": [
-          [
-            "name"
-          ]
-        ],
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "source_defined_primary_key": [["name"]],
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     },
@@ -31,14 +25,8 @@
         "name": "workflows",
         "namespace": null,
         "source_defined_cursor": null,
-        "source_defined_primary_key": [
-          [
-            "uid"
-          ]
-        ],
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "source_defined_primary_key": [["uid"]],
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     },
@@ -52,14 +40,8 @@
         "name": "jobs",
         "namespace": null,
         "source_defined_cursor": null,
-        "source_defined_primary_key": [
-          [
-            "uid"
-          ]
-        ],
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "source_defined_primary_key": [["uid"]],
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     },
@@ -73,14 +55,8 @@
         "name": "job_results",
         "namespace": null,
         "source_defined_cursor": null,
-        "source_defined_primary_key": [
-          [
-            "job_result_id"
-          ]
-        ],
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "source_defined_primary_key": [["job_result_id"]],
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     }

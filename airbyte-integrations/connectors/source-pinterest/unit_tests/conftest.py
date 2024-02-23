@@ -72,8 +72,4 @@ def analytics_report_stream():
 
 @fixture
 def date_range():
-    return {
-        'start_date': '2023-01-01',
-        'end_date': '2023-01-31',
-        'parent': {'id': '123'}
-    }
+    return {"start_date": "2023-01-01", "end_date": "2023-01-31", "parent": {"id": "123"}}

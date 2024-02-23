@@ -1,4 +1,4 @@
-name: Run QA Engine
+name: Connector Ops CI - QA Engine
 
 on:
   workflow_dispatch:

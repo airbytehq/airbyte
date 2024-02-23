@@ -1,11 +1,30 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": "integer"
     },
     "customer_id": {
       "type": ["integer", "null"]
+    },
+    "delivery_tax": {
+      "type": ["string", "null"]
+    },
+    "entered_by_type": {
+      "type": ["string", "null"]
+    },
+    "shipping_selections": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {}
+      }
+    },
+    "sales_agent_user_id": {
+      "type": ["string", "null"]
     },
     "customer_type_id": {
       "type": ["integer", "null"]

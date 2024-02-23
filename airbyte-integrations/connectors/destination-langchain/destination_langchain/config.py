@@ -6,6 +6,8 @@ import json
 import re
 from typing import List, Literal, Optional, Union
 
+import dpath.util
+from airbyte_cdk.destinations.vector_db_based.embedder import FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
@@ -32,27 +34,6 @@ class ProcessingConfigModel(BaseModel):
 
     class Config:
         schema_extra = {"group": "processing"}
-
-
-class OpenAIEmbeddingConfigModel(BaseModel):
-    mode: Literal["openai"] = Field("openai", const=True)
-    openai_key: str = Field(..., title="OpenAI API key", airbyte_secret=True)
-
-    class Config:
-        title = "OpenAI"
-        schema_extra = {
-            "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
-        }
-
-
-class FakeEmbeddingConfigModel(BaseModel):
-    mode: Literal["fake"] = Field("fake", const=True)
-
-    class Config:
-        title = "Fake"
-        schema_extra = {
-            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
-        }
 
 
 class PineconeIndexingModel(BaseModel):
@@ -136,9 +117,15 @@ class ConfigModel(BaseModel):
         del pyschema["definitions"]
         return pyschema
 
+    @staticmethod
+    def remove_discriminator(schema: dict) -> None:
+        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+        dpath.util.delete(schema, "properties/*/discriminator")
+
     @classmethod
     def schema(cls):
         """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema()
         schema = cls.resolve_refs(schema)
+        cls.remove_discriminator(schema)
         return schema

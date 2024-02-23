@@ -61,14 +61,14 @@
       "type": ["null", "object"],
       "properties": {
         "apn_credential_sid": {
-            "type": ["null", "string"]
-          },
+          "type": ["null", "string"]
+        },
         "include_date": {
           "type": ["null", "boolean"]
         },
         "fcm_credential_sid": {
-            "type": ["null", "string"]
-          }
+          "type": ["null", "string"]
+        }
       }
     },
     "date_created": {

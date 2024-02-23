@@ -62,6 +62,18 @@
     },
     {
       "stream": {
+        "name": "conversions",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastModified"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["lastModified"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "ad_campaign_analytics",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],

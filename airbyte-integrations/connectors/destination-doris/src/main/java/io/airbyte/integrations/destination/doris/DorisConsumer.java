@@ -5,8 +5,8 @@
 package io.airbyte.integrations.destination.doris;
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
+import io.airbyte.cdk.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;

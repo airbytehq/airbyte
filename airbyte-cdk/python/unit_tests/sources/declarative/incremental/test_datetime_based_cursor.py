@@ -509,7 +509,9 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
         ("test_parse_date_number", "20210101", "%Y%m%d", "P1D", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)),
     ],
 )
-def test_parse_date_legacy_merge_datetime_format_in_cursor_datetime_format(test_name, input_date, date_format, date_format_granularity, expected_output_date):
+def test_parse_date_legacy_merge_datetime_format_in_cursor_datetime_format(
+    test_name, input_date, date_format, date_format_granularity, expected_output_date
+):
     slicer = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", parameters={}),

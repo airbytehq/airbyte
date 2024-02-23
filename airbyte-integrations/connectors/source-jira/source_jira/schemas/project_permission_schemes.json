@@ -6,6 +6,10 @@
       "type": ["null", "string"],
       "description": "The URL of the issue level security item."
     },
+    "projectId": {
+      "type": ["null", "string"],
+      "description": "Id of the related project."
+    },
     "id": {
       "type": ["null", "string"],
       "description": "The ID of the issue level security item."

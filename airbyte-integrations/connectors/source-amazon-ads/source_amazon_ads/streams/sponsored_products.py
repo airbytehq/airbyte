@@ -104,6 +104,13 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
                 f"Skip current AdGroup because it does not support request {response.request.url} for "
                 f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {response.text}"
             )
+        elif response.status_code == HTTPStatus.NOT_FOUND:
+            # 404 Either the specified ad group identifier was not found,
+            # or the specified ad group was found but no associated bid was found.
+            self.logger.warning(
+                f"Skip current AdGroup because the specified ad group has no associated bid {response.request.url} for "
+                f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {response.text}"
+            )
 
         else:
             response.raise_for_status()

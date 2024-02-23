@@ -72,6 +72,10 @@
     },
     "Progressive Price 3": {
       "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

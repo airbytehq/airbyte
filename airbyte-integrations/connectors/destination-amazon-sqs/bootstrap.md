@@ -11,7 +11,7 @@ have performance implications if sending high volumes of messages.
 #### Message Body
 By default, the SQS Message body is built using the AirbyteMessageRecord's 'data' property.
 
-If the **message_body_key** config item is set, we use the value as a key within the the AirbyteMessageRecord's 'data' property. This could be 
+If the **message_body_key** config item is set, we use the value as a key within the AirbyteMessageRecord's 'data' property. This could be 
 improved to handle nested keys by using JSONPath syntax to lookup values.
 
 For example, given the input Record:
