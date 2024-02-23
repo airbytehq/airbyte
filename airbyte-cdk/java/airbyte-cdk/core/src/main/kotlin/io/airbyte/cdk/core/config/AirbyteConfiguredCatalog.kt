@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.core.config
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.micronaut.context.annotation.ConfigurationProperties
@@ -14,6 +15,8 @@ import io.micronaut.core.util.StringUtils
  * to the connector CLI as an argument.
  */
 @ConfigurationProperties("airbyte.connector.catalog")
+@SuppressFBWarnings(value=["NP_NONNULL_RETURN_VIOLATION"],
+    justification = "Uses dependency injection")
 class AirbyteConfiguredCatalog {
     lateinit var configured: String
 

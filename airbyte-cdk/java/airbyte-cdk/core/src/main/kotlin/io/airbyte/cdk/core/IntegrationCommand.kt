@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.core
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.core.operation.Operation
 import io.airbyte.cdk.core.operation.OperationType
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
@@ -39,6 +40,8 @@ private val logger = KotlinLogging.logger {}
         "@|magenta                    /____/              |@",
     ],
 )
+@SuppressFBWarnings(value=["NP_NONNULL_RETURN_VIOLATION","NP_OPTIONAL_RETURN_NULL"],
+    justification = "Uses dependency injection")
 class IntegrationCommand : Runnable {
     @Value("\${micronaut.application.name}")
     lateinit var connectorName: String
