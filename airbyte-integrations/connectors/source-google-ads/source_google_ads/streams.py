@@ -173,7 +173,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             cursor_value = (max(date_in_current_stream, date_in_latest_record)).format(self.cursor_time_format)
         else:
             cursor_value = pendulum.parse(record[self.cursor_field]).format(self.cursor_time_format)
-        backfill_cursor_value = (datetime.strptime(cursor_value, "%Y-%m-%d") - timedelta(days=self.backfill_days)).strftime("%Y-%m-%d")
+        backfill_cursor_value = (pendulum.parse(cursor_value) - timedelta(days=self.backfill_days)).format(self.cursor_time_format)
         self.state = {customer_id: {self.cursor_field: backfill_cursor_value}}
 
     def _handle_expired_page_exception(self, exception: ExpiredPageTokenError, stream_slice: MutableMapping[str, Any], customer_id: str):
