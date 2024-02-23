@@ -50,19 +50,19 @@ class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
                 values[CONNECTOR_OPERATION] = commandLine.rawArguments[0].lowercase()
                 values.putAll(
                     loadFile(
-                        commandLine.optionValue(JavaBaseConstants.ARGS_CONFIG_KEY) as String,
+                        commandLine.optionValue(JavaBaseConstants.ARGS_CONFIG_KEY) as String?,
                         CONNECTOR_CONFIG_PREFIX,
                     ),
                 )
                 values.putAll(
                     loadFileContents(
-                        commandLine.optionValue(JavaBaseConstants.ARGS_CATALOG_KEY) as String,
+                        commandLine.optionValue(JavaBaseConstants.ARGS_CATALOG_KEY) as String?,
                         String.format(PREFIX_FORMAT, CONNECTOR_CATALOG_PREFIX, CONNECTOR_CATALOG_KEY),
                     ),
                 )
                 values.putAll(
                     loadFileContents(
-                        commandLine.optionValue(JavaBaseConstants.ARGS_STATE_KEY) as String,
+                        commandLine.optionValue(JavaBaseConstants.ARGS_STATE_KEY) as String?,
                         String.format(PREFIX_FORMAT, CONNECTOR_STATE_PREFIX, CONNECTOR_STATE_KEY),
                     ),
                 )
@@ -72,12 +72,12 @@ class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
         }
 
         private fun loadFile(
-            propertyFilePath: String,
+            propertyFilePath: String?,
             prefix: String,
         ): Map<String?, Any?> {
             if (StringUtils.hasText(propertyFilePath)) {
-                val propertyFile = Path.of(propertyFilePath).toFile()
-                if (propertyFile.exists()) {
+                val propertyFile = propertyFilePath?.let { Path.of(it).toFile() }
+                if (propertyFile?.exists() == true) {
                     val properties: Map<String?, Any?>? =
                         Jsons.deserialize(propertyFile.readText(), MapTypeReference())
                     return flatten(properties!!, prefix).collect(
@@ -96,12 +96,12 @@ class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
         }
 
         private fun loadFileContents(
-            propertyFilePath: String,
+            propertyFilePath: String?,
             prefix: String,
         ): Map<String?, Any?> {
             if (StringUtils.hasText(propertyFilePath)) {
-                val propertyFile = Path.of(propertyFilePath).toFile()
-                if (propertyFile.exists()) {
+                val propertyFile = propertyFilePath?.let { Path.of(it).toFile() }
+                if (propertyFile?.exists() == true) {
                     return java.util.Map.of<String, Any>(prefix, propertyFile.readText())
                 } else {
                     logger.warn { "Property file '$propertyFile', not found for prefix '$prefix'." }
