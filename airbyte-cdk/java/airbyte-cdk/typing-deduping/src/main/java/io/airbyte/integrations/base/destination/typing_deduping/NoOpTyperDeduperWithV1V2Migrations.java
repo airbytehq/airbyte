@@ -30,19 +30,19 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
  * json->string migrations in the raw tables.
  */
 @Slf4j
-public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implements TyperDeduper {
+public class NoOpTyperDeduperWithV1V2Migrations implements TyperDeduper {
 
-  private final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator;
+  private final DestinationV1V2Migrator v1V2Migrator;
   private final V2TableMigrator v2TableMigrator;
   private final ExecutorService executorService;
   private final ParsedCatalog parsedCatalog;
-  private final SqlGenerator<DialectTableDefinition> sqlGenerator;
-  private final DestinationHandler<DialectTableDefinition> destinationHandler;
+  private final SqlGenerator sqlGenerator;
+  private final DestinationHandler destinationHandler;
 
-  public NoOpTyperDeduperWithV1V2Migrations(final SqlGenerator<DialectTableDefinition> sqlGenerator,
-                                            final DestinationHandler<DialectTableDefinition> destinationHandler,
+  public NoOpTyperDeduperWithV1V2Migrations(final SqlGenerator sqlGenerator,
+                                            final DestinationHandler destinationHandler,
                                             final ParsedCatalog parsedCatalog,
-                                            final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
+                                            final DestinationV1V2Migrator v1V2Migrator,
                                             final V2TableMigrator v2TableMigrator) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
