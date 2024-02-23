@@ -225,6 +225,6 @@ tasks.named('compileTestJava').configure {
 // uses afterEvaluate because at configuration time, the kaptGenerateStubsKotlin task does not exist.
 afterEvaluate {
     tasks.named('kaptGenerateStubsKotlin').configure {
-        mustRunAfter generateApiServer, generateApiClient
+        mustRunAfter generateApiServer, generateApiClient, generateJsonSchema2Pojo
     }
 }
