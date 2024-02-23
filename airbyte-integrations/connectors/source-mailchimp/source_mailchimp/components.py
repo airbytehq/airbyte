@@ -15,6 +15,8 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     RequestInput,
 )
 from airbyte_cdk.sources.declarative.types import StreamState
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 
 @dataclass
@@ -59,20 +61,17 @@ class MailChimpRequester(HttpRequester):
         The data center is already embedded in API keys, but not OAuth access tokens.
         This method retrieves the data center for OAuth credentials.
         """
-        try:
-            response = requests.get(
-                "https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": "OAuth {}".format(access_token)}
+        response = requests.get("https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": "OAuth {}".format(access_token)})
+
+        # Requests to this endpoint will return a 200 status code even if the access token is invalid.
+        error = response.json().get("error")
+        if error == "invalid_token":
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                internal_message=error,
+                message="The access token you provided was invalid. Please check your credentials and try again.",
             )
-
-            # Requests to this endpoint will return a 200 status code even if the access token is invalid.
-            error = response.json().get("error")
-            if error == "invalid_token":
-                raise ValueError("The access token you provided was invalid. Please check your credentials and try again.")
-            return response.json()["dc"]
-
-        # Handle any other exceptions that may occur.
-        except Exception as e:
-            raise Exception(f"An error occurred while retrieving the data center for your account. \n {repr(e)}")
+        return response.json()["dc"]
 
 
 class MailChimpRecordFilter(RecordFilter):
