@@ -154,7 +154,9 @@ class SubstreamPartitionRouter(StreamSlicer):
                             pass
                         else:
                             empty_parent_slice = False
-                            yield PerPartitionStreamSlice(partition={stream_state_field: stream_state_value, "parent_slice": parent_partition}, cursor_slice={})
+                            yield PerPartitionStreamSlice(
+                                partition={stream_state_field: stream_state_value, "parent_slice": parent_partition}, cursor_slice={}
+                            )
                     # If the parent slice contains no records,
                     if empty_parent_slice:
                         yield from []
