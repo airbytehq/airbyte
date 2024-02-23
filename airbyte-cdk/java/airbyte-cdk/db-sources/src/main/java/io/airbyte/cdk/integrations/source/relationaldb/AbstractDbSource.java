@@ -17,6 +17,8 @@ import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.CursorStateIteratorManager;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
@@ -399,17 +401,16 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream,
           cursorField);
 
-      StateDecoratingIteratorManager manager = new StateDecoratingIteratorManager();
+      CursorStateIteratorManager manager = new CursorStateIteratorManager(
+          stateManager,
+          pair,
+          cursorField,
+          cursorInfo.map(CursorInfo::getCursor).orElse(null),
+          cursorType,
+          getStateEmissionFrequency());
 
       iterator = AutoCloseableIterators.transform(
-          autoCloseableIterator -> new StateDecoratingIterator(
-              autoCloseableIterator,
-              stateManager,
-              pair,
-              cursorField,
-              cursorInfo.map(CursorInfo::getCursor).orElse(null),
-              cursorType,
-              getStateEmissionFrequency()),
+          autoCloseableIterator -> new SourceStateIterator(autoCloseableIterator, manager),
           airbyteMessageIterator,
           AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {

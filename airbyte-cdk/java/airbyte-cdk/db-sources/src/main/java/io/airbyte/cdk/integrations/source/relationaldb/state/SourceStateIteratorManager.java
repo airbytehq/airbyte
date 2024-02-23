@@ -34,4 +34,8 @@ public interface SourceStateIteratorManager<T> {
    */
   boolean shouldEmitStateMessage(final long recordCount, final Instant lastCheckpoint);
 
+  default boolean shouldThrowAfterException() {
+    return true;
+  }
+
 }
