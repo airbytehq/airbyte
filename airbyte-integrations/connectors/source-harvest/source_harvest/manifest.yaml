@@ -1,0 +1,4255 @@
+version: 0.61.2
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - clients
+streams:
+  - type: DeclarativeStream
+    name: clients
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created_at:
+            type: string
+          currency:
+            type: string
+          id:
+            type: number
+          is_active:
+            type: boolean
+          name:
+            type: string
+          statement_key:
+            type: string
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /clients
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - clients
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: company
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          approval_feature:
+            type: boolean
+          base_uri:
+            type: string
+          clock:
+            type: string
+          color_scheme:
+            type: string
+          currency:
+            type: string
+          currency_code_display:
+            type: string
+          currency_symbol_display:
+            type: string
+          date_format:
+            type: string
+          decimal_symbol:
+            type: string
+          estimate_feature:
+            type: boolean
+          expense_feature:
+            type: boolean
+          full_domain:
+            type: string
+          invoice_feature:
+            type: boolean
+          is_active:
+            type: boolean
+          name:
+            type: string
+          plan_type:
+            type: string
+          team_feature:
+            type: boolean
+          thousands_separator:
+            type: string
+          time_format:
+            type: string
+          wants_timestamp_timers:
+            type: boolean
+          week_start_day:
+            type: string
+          weekly_capacity:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /company
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router: []
+  - type: DeclarativeStream
+    name: contacts
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          client:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          created_at:
+            type: string
+          email:
+            type: string
+          fax:
+            type: string
+          first_name:
+            type: string
+          id:
+            type: number
+          last_name:
+            type: string
+          phone_mobile:
+            type: string
+          phone_office:
+            type: string
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /contacts
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - contacts
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: estimate_item_categories
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created_at:
+            type: string
+          id:
+            type: number
+          name:
+            type: string
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /estimate_item_categories
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - estimate_item_categories
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: estimates
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount:
+            type: number
+          client:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          client_key:
+            type: string
+          created_at:
+            type: string
+          creator:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          currency:
+            type: string
+          discount_amount:
+            type: number
+          id:
+            type: number
+          issue_date:
+            type: string
+          line_items:
+            type: array
+          notes:
+            type: string
+          number:
+            type: string
+          purchase_order:
+            type: string
+          sent_at:
+            type: string
+          state:
+            type: string
+          subject:
+            type: string
+          tax2_amount:
+            type: number
+          tax_amount:
+            type: number
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /estimates
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - estimates
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: expense_categories
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created_at:
+            type: string
+          id:
+            type: number
+          is_active:
+            type: boolean
+          name:
+            type: string
+          unit_name:
+            type:
+              - 'null'
+              - string
+          unit_price:
+            type:
+              - 'null'
+              - number
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /expense_categories
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - expense_categories
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: expenses
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable:
+            type: boolean
+          client:
+            properties:
+              currency:
+                type: string
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          created_at:
+            type: string
+          expense_category:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          id:
+            type: number
+          is_billed:
+            type: boolean
+          is_closed:
+            type: boolean
+          is_locked:
+            type: boolean
+          notes:
+            type: string
+          project:
+            properties:
+              code:
+                type: string
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          spent_date:
+            type: string
+          total_cost:
+            type: number
+          units:
+            type: number
+          updated_at:
+            type: string
+          user:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          user_assignment:
+            properties:
+              budget:
+                type:
+                  - 'null'
+                  - number
+              created_at:
+                type: string
+              hourly_rate:
+                type: number
+              id:
+                type: number
+              is_active:
+                type: boolean
+              is_project_manager:
+                type: boolean
+              updated_at:
+                type: string
+              use_default_rates:
+                type: boolean
+            type: object
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /expenses
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - expenses
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: invoice_item_categories
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created_at:
+            type: string
+          id:
+            type: number
+          name:
+            type: string
+          updated_at:
+            type: string
+          use_as_expense:
+            type: boolean
+          use_as_service:
+            type: boolean
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /invoice_item_categories
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - invoice_item_categories
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: invoices
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount:
+            type: number
+          client:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          client_key:
+            type: string
+          created_at:
+            type: string
+          creator:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          currency:
+            type: string
+          discount:
+            type:
+              - 'null'
+              - number
+          discount_amount:
+            type: number
+          due_amount:
+            type: number
+          due_date:
+            type: string
+          id:
+            type: number
+          issue_date:
+            type: string
+          line_items:
+            items:
+              properties:
+                amount:
+                  type: number
+                description:
+                  type: string
+                id:
+                  type: number
+                kind:
+                  type: string
+                project:
+                  properties:
+                    code:
+                      type: string
+                    id:
+                      type: number
+                    name:
+                      type: string
+                  type: object
+                quantity:
+                  type: number
+                taxed:
+                  type: boolean
+                taxed2:
+                  type: boolean
+                unit_price:
+                  type: number
+              type: object
+            type: array
+          notes:
+            type: string
+          number:
+            type: string
+          paid_at:
+            type:
+              - 'null'
+              - string
+          paid_date:
+            type:
+              - 'null'
+              - string
+          payment_options:
+            type: array
+          payment_term:
+            type: string
+          period_end:
+            type:
+              - 'null'
+              - string
+          period_start:
+            type:
+              - 'null'
+              - string
+          purchase_order:
+            type: string
+          sent_at:
+            type:
+              - 'null'
+              - string
+          state:
+            type: string
+          subject:
+            type: string
+          tax2_amount:
+            type: number
+          tax_amount:
+            type: number
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /invoices
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - invoices
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: projects
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          bill_by:
+            type: string
+          budget:
+            type:
+              - 'null'
+              - number
+          budget_by:
+            type: string
+          budget_is_monthly:
+            type: boolean
+          client:
+            properties:
+              currency:
+                type: string
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          code:
+            type:
+              - 'null'
+              - string
+          cost_budget:
+            type:
+              - 'null'
+              - number
+          cost_budget_include_expenses:
+            type: boolean
+          created_at:
+            type: string
+          fee:
+            type:
+              - 'null'
+              - number
+          id:
+            type: number
+          is_active:
+            type: boolean
+          is_billable:
+            type: boolean
+          is_fixed_fee:
+            type: boolean
+          name:
+            type: string
+          notes:
+            type:
+              - 'null'
+              - string
+          notify_when_over_budget:
+            type: boolean
+          over_budget_notification_percentage:
+            type: number
+          show_budget_to_all:
+            type: boolean
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /projects
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - projects
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: roles
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created_at:
+            type: string
+          id:
+            type: number
+          name:
+            type: string
+          updated_at:
+            type: string
+          user_ids:
+            items:
+              type: number
+            type: array
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /roles
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - roles
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: task_assignments
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable:
+            type: boolean
+          created_at:
+            type: string
+          id:
+            type: number
+          is_active:
+            type: boolean
+          project:
+            properties:
+              code:
+                type:
+                  - 'null'
+                  - string
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          task:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /task_assignments
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - task_assignments
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: tasks
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable_by_default:
+            type: boolean
+          created_at:
+            type: string
+          id:
+            type: number
+          is_active:
+            type: boolean
+          is_default:
+            type: boolean
+          name:
+            type: string
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /tasks
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - tasks
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: time_entries
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable:
+            type: boolean
+          billable_rate:
+            type:
+              - 'null'
+              - number
+          budgeted:
+            type: boolean
+          client:
+            properties:
+              currency:
+                type: string
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          cost_rate:
+            type:
+              - 'null'
+              - number
+          created_at:
+            type: string
+          hours:
+            type: number
+          hours_without_timer:
+            type: number
+          id:
+            type: number
+          invoice:
+            properties:
+              id:
+                type: number
+              number:
+                type: string
+            type:
+              - object
+              - 'null'
+          is_billed:
+            type: boolean
+          is_closed:
+            type: boolean
+          is_locked:
+            type: boolean
+          is_running:
+            type: boolean
+          locked_reason:
+            type:
+              - 'null'
+              - string
+          notes:
+            type: string
+          project:
+            properties:
+              code:
+                type: string
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          rounded_hours:
+            type: number
+          spent_date:
+            type: string
+          task:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          task_assignment:
+            properties:
+              billable:
+                type: boolean
+              created_at:
+                type: string
+              id:
+                type: number
+              is_active:
+                type: boolean
+              updated_at:
+                type: string
+            type: object
+          updated_at:
+            type: string
+          user:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          user_assignment:
+            properties:
+              budget:
+                type:
+                  - 'null'
+                  - number
+              created_at:
+                type: string
+              hourly_rate:
+                type: number
+              id:
+                type: number
+              is_active:
+                type: boolean
+              is_project_manager:
+                type: boolean
+              updated_at:
+                type: string
+              use_default_rates:
+                type: boolean
+            type: object
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /time_entries
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - time_entries
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: user_assignments
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          budget:
+            type:
+              - 'null'
+              - number
+          created_at:
+            type: string
+          hourly_rate:
+            type:
+              - 'null'
+              - number
+          id:
+            type: number
+          is_active:
+            type: boolean
+          is_project_manager:
+            type: boolean
+          project:
+            properties:
+              code:
+                type:
+                  - 'null'
+                  - string
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          updated_at:
+            type: string
+          use_default_rates:
+            type: boolean
+          user:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /user_assignments
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - user_assignments
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: users
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          access_roles:
+            items:
+              type: string
+            type: array
+          avatar_url:
+            type: string
+          calendar_integration_enabled:
+            type: boolean
+          can_create_projects:
+            type: boolean
+          cost_rate:
+            type:
+              - 'null'
+              - number
+          created_at:
+            type: string
+          default_hourly_rate:
+            type:
+              - 'null'
+              - number
+          email:
+            type: string
+          first_name:
+            type: string
+          has_access_to_all_future_projects:
+            type: boolean
+          id:
+            type: number
+          is_active:
+            type: boolean
+          is_contractor:
+            type: boolean
+          last_name:
+            type: string
+          permissions_claims:
+            items:
+              type: string
+            type: array
+          roles:
+            items:
+              type: string
+            type: array
+          telephone:
+            type: string
+          timezone:
+            type: string
+          updated_at:
+            type: string
+          weekly_capacity:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /users
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - users
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: expenses_categories
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable_amount:
+            type: number
+          currency:
+            type: string
+          expense_category_id:
+            type: number
+          expense_category_name:
+            type: string
+          total_amount:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /reports/expenses/categories
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: to
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P1M
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: expenses_clients
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable_amount:
+            type: number
+          client_id:
+            type: number
+          client_name:
+            type: string
+          currency:
+            type: string
+          total_amount:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /reports/expenses/clients
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: to
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P1M
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: expenses_projects
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable_amount:
+            type: number
+          client_id:
+            type: number
+          client_name:
+            type: string
+          currency:
+            type: string
+          project_id:
+            type: number
+          project_name:
+            type: string
+          total_amount:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /reports/expenses/projects
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: to
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P1M
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: expenses_team
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable_amount:
+            type: number
+          currency:
+            type: string
+          is_contractor:
+            type: boolean
+          total_amount:
+            type: number
+          user_id:
+            type: number
+          user_name:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /reports/expenses/team
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: to
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P1M
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: project_budget
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          budget:
+            type: number
+          budget_by:
+            type: string
+          budget_is_monthly:
+            type: boolean
+          budget_remaining:
+            type: number
+          budget_spent:
+            type: number
+          client_id:
+            type: number
+          client_name:
+            type: string
+          is_active:
+            type: boolean
+          project_id:
+            type: number
+          project_name:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /reports/project_budget
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+  - type: DeclarativeStream
+    name: time_clients
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable_amount:
+            type: number
+          billable_hours:
+            type: number
+          client_id:
+            type: number
+          client_name:
+            type: string
+          currency:
+            type: string
+          total_hours:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /reports/time/clients
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: to
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P1M
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: time_projects
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable_amount:
+            type: number
+          billable_hours:
+            type: number
+          client_id:
+            type: number
+          client_name:
+            type: string
+          currency:
+            type: string
+          project_id:
+            type: number
+          project_name:
+            type: string
+          total_hours:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /reports/time/projects
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: to
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P1M
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: time_tasks
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          billable_amount:
+            type: number
+          billable_hours:
+            type: number
+          currency:
+            type: string
+          task_id:
+            type: number
+          task_name:
+            type: string
+          total_hours:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /reports/time/tasks
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: to
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P1M
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: time_team
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          avatar_url:
+            type: string
+          billable_amount:
+            type: number
+          billable_hours:
+            type: number
+          currency:
+            type: string
+          is_contractor:
+            type: boolean
+          total_hours:
+            type: number
+          user_id:
+            type: number
+          user_name:
+            type: string
+          weekly_capacity:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /reports/time/team
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: to
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P1M
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: uninvoiced
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          client_id:
+            type: number
+          client_name:
+            type: string
+          currency:
+            type: string
+          project_id:
+            type: number
+          project_name:
+            type: string
+          total_hours:
+            type: number
+          uninvoiced_amount:
+            type: number
+          uninvoiced_expenses:
+            type: number
+          uninvoiced_hours:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /reports/uninvoiced
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: to
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P1M
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: estimate_messages
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          body:
+            type: string
+          created_at:
+            type: string
+          id:
+            type: number
+          recipients:
+            items:
+              properties:
+                email:
+                  type: string
+                name:
+                  type: string
+              type: object
+            type: array
+          send_me_a_copy:
+            type: boolean
+          sent_by:
+            type: string
+          sent_by_email:
+            type: string
+          sent_from:
+            type: string
+          sent_from_email:
+            type: string
+          subject:
+            type: string
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /estimates/{{stream_partition.id}}/messages
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - estimate_messages
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: estimates_parent
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties: {}
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.harvestapp.com/v2/
+                    path: /estimates
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers:
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
+                    authenticator:
+                      type: OAuthAuthenticator
+                      client_id: '{{ config[''client_id''] }}'
+                      grant_type: refresh_token
+                      client_secret: '{{ config[''client_secret''] }}'
+                      refresh_token: '{{ config[''client_refresh_token''] }}'
+                      refresh_request_body: {}
+                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: Retry-After
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - estimates
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 1
+                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+                  partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: invoice_messages
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attach_pdf:
+            type: boolean
+          body:
+            type: string
+          created_at:
+            type: string
+          id:
+            type: number
+          include_link_to_client_invoice:
+            type: boolean
+          recipients:
+            items:
+              properties:
+                email:
+                  type: string
+                name:
+                  type: string
+              type: object
+            type: array
+          reminder:
+            type: boolean
+          send_me_a_copy:
+            type: boolean
+          sent_by:
+            type: string
+          sent_by_email:
+            type: string
+          sent_from:
+            type: string
+          sent_from_email:
+            type: string
+          subject:
+            type: string
+          thank_you:
+            type: boolean
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /invoices/{{stream_partition.id}}/messages
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - invoice_messages
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: invoice_parent
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      amount:
+                        type: number
+                      client:
+                        properties:
+                          id:
+                            type: number
+                          name:
+                            type: string
+                        type: object
+                      client_key:
+                        type: string
+                      created_at:
+                        type: string
+                      creator:
+                        properties:
+                          id:
+                            type: number
+                          name:
+                            type: string
+                        type: object
+                      currency:
+                        type: string
+                      discount:
+                        type:
+                          - 'null'
+                          - number
+                      discount_amount:
+                        type: number
+                      due_amount:
+                        type: number
+                      due_date:
+                        type: string
+                      id:
+                        type: number
+                      issue_date:
+                        type: string
+                      line_items:
+                        items:
+                          properties:
+                            amount:
+                              type: number
+                            description:
+                              type: string
+                            id:
+                              type: number
+                            kind:
+                              type: string
+                            project:
+                              properties:
+                                code:
+                                  type: string
+                                id:
+                                  type: number
+                                name:
+                                  type: string
+                              type: object
+                            quantity:
+                              type: number
+                            taxed:
+                              type: boolean
+                            taxed2:
+                              type: boolean
+                            unit_price:
+                              type: number
+                          type: object
+                        type: array
+                      notes:
+                        type: string
+                      number:
+                        type: string
+                      paid_at:
+                        type:
+                          - 'null'
+                          - string
+                      paid_date:
+                        type:
+                          - 'null'
+                          - string
+                      payment_options:
+                        type: array
+                      payment_term:
+                        type: string
+                      period_end:
+                        type:
+                          - 'null'
+                          - string
+                      period_start:
+                        type:
+                          - 'null'
+                          - string
+                      purchase_order:
+                        type: string
+                      sent_at:
+                        type:
+                          - 'null'
+                          - string
+                      state:
+                        type: string
+                      subject:
+                        type: string
+                      tax2_amount:
+                        type: number
+                      tax_amount:
+                        type: number
+                      updated_at:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.harvestapp.com/v2/
+                    path: /invoices
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers:
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
+                    authenticator:
+                      type: OAuthAuthenticator
+                      client_id: '{{ config[''client_id''] }}'
+                      grant_type: refresh_token
+                      client_secret: '{{ config[''client_secret''] }}'
+                      refresh_token: '{{ config[''client_refresh_token''] }}'
+                      refresh_request_body: {}
+                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: Retry-After
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - invoices
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 1
+                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+                  partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: invoice_payments
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount:
+            type: number
+          created_at:
+            type: string
+          id:
+            type: number
+          notes:
+            type: string
+          paid_at:
+            type: string
+          paid_date:
+            type: string
+          payment_gateway:
+            type: object
+          recorded_by:
+            type: string
+          recorded_by_email:
+            type: string
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /invoices/{{stream_partition.id}}/payments
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - invoice_payments
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: invoice_parent
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      amount:
+                        type: number
+                      client:
+                        properties:
+                          id:
+                            type: number
+                          name:
+                            type: string
+                        type: object
+                      client_key:
+                        type: string
+                      created_at:
+                        type: string
+                      creator:
+                        properties:
+                          id:
+                            type: number
+                          name:
+                            type: string
+                        type: object
+                      currency:
+                        type: string
+                      discount:
+                        type:
+                          - 'null'
+                          - number
+                      discount_amount:
+                        type: number
+                      due_amount:
+                        type: number
+                      due_date:
+                        type: string
+                      id:
+                        type: number
+                      issue_date:
+                        type: string
+                      line_items:
+                        items:
+                          properties:
+                            amount:
+                              type: number
+                            description:
+                              type: string
+                            id:
+                              type: number
+                            kind:
+                              type: string
+                            project:
+                              properties:
+                                code:
+                                  type: string
+                                id:
+                                  type: number
+                                name:
+                                  type: string
+                              type: object
+                            quantity:
+                              type: number
+                            taxed:
+                              type: boolean
+                            taxed2:
+                              type: boolean
+                            unit_price:
+                              type: number
+                          type: object
+                        type: array
+                      notes:
+                        type: string
+                      number:
+                        type: string
+                      paid_at:
+                        type:
+                          - 'null'
+                          - string
+                      paid_date:
+                        type:
+                          - 'null'
+                          - string
+                      payment_options:
+                        type: array
+                      payment_term:
+                        type: string
+                      period_end:
+                        type:
+                          - 'null'
+                          - string
+                      period_start:
+                        type:
+                          - 'null'
+                          - string
+                      purchase_order:
+                        type: string
+                      sent_at:
+                        type:
+                          - 'null'
+                          - string
+                      state:
+                        type: string
+                      subject:
+                        type: string
+                      tax2_amount:
+                        type: number
+                      tax_amount:
+                        type: number
+                      updated_at:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.harvestapp.com/v2/
+                    path: /invoices
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers:
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
+                    authenticator:
+                      type: OAuthAuthenticator
+                      client_id: '{{ config[''client_id''] }}'
+                      grant_type: refresh_token
+                      client_secret: '{{ config[''client_secret''] }}'
+                      refresh_token: '{{ config[''client_refresh_token''] }}'
+                      refresh_request_body: {}
+                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: Retry-After
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - invoices
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 1
+                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+                  partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: project_assignments
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          budget:
+            type:
+              - 'null'
+              - number
+          client:
+            properties:
+              currency:
+                type: string
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          created_at:
+            type: string
+          hourly_rate:
+            type:
+              - 'null'
+              - number
+          id:
+            type: number
+          is_active:
+            type: boolean
+          is_project_manager:
+            type: boolean
+          project:
+            properties:
+              code:
+                type:
+                  - 'null'
+                  - string
+              id:
+                type: number
+              is_billable:
+                type: boolean
+              name:
+                type: string
+            type: object
+          task_assignments:
+            items:
+              properties:
+                billable:
+                  type: boolean
+                created_at:
+                  type: string
+                id:
+                  type: number
+                is_active:
+                  type: boolean
+                task:
+                  properties:
+                    id:
+                      type: number
+                    name:
+                      type: string
+                  type: object
+                updated_at:
+                  type: string
+              type: object
+            type: array
+          updated_at:
+            type: string
+          use_default_rates:
+            type: boolean
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /users/{{stream_partition.id}}/project_assignments
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - project_assignments
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: users_parent
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      access_roles:
+                        items:
+                          type: string
+                        type: array
+                      avatar_url:
+                        type: string
+                      calendar_integration_enabled:
+                        type: boolean
+                      can_create_projects:
+                        type: boolean
+                      cost_rate:
+                        type:
+                          - 'null'
+                          - number
+                      created_at:
+                        type: string
+                      default_hourly_rate:
+                        type:
+                          - 'null'
+                          - number
+                      email:
+                        type: string
+                      first_name:
+                        type: string
+                      has_access_to_all_future_projects:
+                        type: boolean
+                      id:
+                        type: number
+                      is_active:
+                        type: boolean
+                      is_contractor:
+                        type: boolean
+                      last_name:
+                        type: string
+                      permissions_claims:
+                        items:
+                          type: string
+                        type: array
+                      roles:
+                        items:
+                          type: string
+                        type: array
+                      telephone:
+                        type: string
+                      timezone:
+                        type: string
+                      updated_at:
+                        type: string
+                      weekly_capacity:
+                        type: number
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.harvestapp.com/v2/
+                    path: /users
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers:
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
+                    authenticator:
+                      type: OAuthAuthenticator
+                      client_id: '{{ config[''client_id''] }}'
+                      grant_type: refresh_token
+                      client_secret: '{{ config[''client_secret''] }}'
+                      refresh_token: '{{ config[''client_refresh_token''] }}'
+                      refresh_request_body: {}
+                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: Retry-After
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - users
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 1
+                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+                  partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: billable_rates
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount:
+            type: number
+          created_at:
+            type: string
+          id:
+            type: number
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /users/{{stream_partition.id}}/billable_rates
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - billable_rates
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: users
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      access_roles:
+                        items:
+                          type: string
+                        type: array
+                      avatar_url:
+                        type: string
+                      calendar_integration_enabled:
+                        type: boolean
+                      can_create_projects:
+                        type: boolean
+                      cost_rate:
+                        type:
+                          - 'null'
+                          - number
+                      created_at:
+                        type: string
+                      default_hourly_rate:
+                        type:
+                          - 'null'
+                          - number
+                      email:
+                        type: string
+                      first_name:
+                        type: string
+                      has_access_to_all_future_projects:
+                        type: boolean
+                      id:
+                        type: number
+                      is_active:
+                        type: boolean
+                      is_contractor:
+                        type: boolean
+                      last_name:
+                        type: string
+                      permissions_claims:
+                        items:
+                          type: string
+                        type: array
+                      roles:
+                        items:
+                          type: string
+                        type: array
+                      telephone:
+                        type: string
+                      timezone:
+                        type: string
+                      updated_at:
+                        type: string
+                      weekly_capacity:
+                        type: number
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.harvestapp.com/v2/
+                    path: /users
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers:
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
+                    authenticator:
+                      type: OAuthAuthenticator
+                      client_id: '{{ config[''client_id''] }}'
+                      grant_type: refresh_token
+                      client_secret: '{{ config[''client_secret''] }}'
+                      refresh_token: '{{ config[''client_refresh_token''] }}'
+                      refresh_request_body: {}
+                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: Retry-After
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - users
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 1
+                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+                  partition_router: []
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: updated_at
+                  cursor_datetime_formats:
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_time_option:
+                    type: RequestOption
+                    field_name: updated_since
+                    inject_into: request_parameter
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: cost_rates
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount:
+            type: number
+          created_at:
+            type: string
+          id:
+            type: number
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /users/{{stream_partition.id}}/cost_rates
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - cost_rates
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: users
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      access_roles:
+                        items:
+                          type: string
+                        type: array
+                      avatar_url:
+                        type: string
+                      calendar_integration_enabled:
+                        type: boolean
+                      can_create_projects:
+                        type: boolean
+                      cost_rate:
+                        type:
+                          - 'null'
+                          - number
+                      created_at:
+                        type: string
+                      default_hourly_rate:
+                        type:
+                          - 'null'
+                          - number
+                      email:
+                        type: string
+                      first_name:
+                        type: string
+                      has_access_to_all_future_projects:
+                        type: boolean
+                      id:
+                        type: number
+                      is_active:
+                        type: boolean
+                      is_contractor:
+                        type: boolean
+                      last_name:
+                        type: string
+                      permissions_claims:
+                        items:
+                          type: string
+                        type: array
+                      roles:
+                        items:
+                          type: string
+                        type: array
+                      telephone:
+                        type: string
+                      timezone:
+                        type: string
+                      updated_at:
+                        type: string
+                      weekly_capacity:
+                        type: number
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.harvestapp.com/v2/
+                    path: /users
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers:
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
+                    authenticator:
+                      type: OAuthAuthenticator
+                      client_id: '{{ config[''client_id''] }}'
+                      grant_type: refresh_token
+                      client_secret: '{{ config[''client_secret''] }}'
+                      refresh_token: '{{ config[''client_refresh_token''] }}'
+                      refresh_request_body: {}
+                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: Retry-After
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - users
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 1
+                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+                  partition_router: []
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: updated_at
+                  cursor_datetime_formats:
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_time_option:
+                    type: RequestOption
+                    field_name: updated_since
+                    inject_into: request_parameter
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: estimates_parent
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /estimates
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - estimates
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+  - type: DeclarativeStream
+    name: invoice_parent
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          amount:
+            type: number
+          client:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          client_key:
+            type: string
+          created_at:
+            type: string
+          creator:
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+            type: object
+          currency:
+            type: string
+          discount:
+            type:
+              - 'null'
+              - number
+          discount_amount:
+            type: number
+          due_amount:
+            type: number
+          due_date:
+            type: string
+          id:
+            type: number
+          issue_date:
+            type: string
+          line_items:
+            items:
+              properties:
+                amount:
+                  type: number
+                description:
+                  type: string
+                id:
+                  type: number
+                kind:
+                  type: string
+                project:
+                  properties:
+                    code:
+                      type: string
+                    id:
+                      type: number
+                    name:
+                      type: string
+                  type: object
+                quantity:
+                  type: number
+                taxed:
+                  type: boolean
+                taxed2:
+                  type: boolean
+                unit_price:
+                  type: number
+              type: object
+            type: array
+          notes:
+            type: string
+          number:
+            type: string
+          paid_at:
+            type:
+              - 'null'
+              - string
+          paid_date:
+            type:
+              - 'null'
+              - string
+          payment_options:
+            type: array
+          payment_term:
+            type: string
+          period_end:
+            type:
+              - 'null'
+              - string
+          period_start:
+            type:
+              - 'null'
+              - string
+          purchase_order:
+            type: string
+          sent_at:
+            type:
+              - 'null'
+              - string
+          state:
+            type: string
+          subject:
+            type: string
+          tax2_amount:
+            type: number
+          tax_amount:
+            type: number
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /invoices
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - invoices
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+  - type: DeclarativeStream
+    name: users_parent
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          access_roles:
+            items:
+              type: string
+            type: array
+          avatar_url:
+            type: string
+          calendar_integration_enabled:
+            type: boolean
+          can_create_projects:
+            type: boolean
+          cost_rate:
+            type:
+              - 'null'
+              - number
+          created_at:
+            type: string
+          default_hourly_rate:
+            type:
+              - 'null'
+              - number
+          email:
+            type: string
+          first_name:
+            type: string
+          has_access_to_all_future_projects:
+            type: boolean
+          id:
+            type: number
+          is_active:
+            type: boolean
+          is_contractor:
+            type: boolean
+          last_name:
+            type: string
+          permissions_claims:
+            items:
+              type: string
+            type: array
+          roles:
+            items:
+              type: string
+            type: array
+          telephone:
+            type: string
+          timezone:
+            type: string
+          updated_at:
+            type: string
+          weekly_capacity:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.harvestapp.com/v2/
+        path: /users
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - users
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - start_date
+      - client_id
+      - client_secret
+      - client_refresh_token
+      - account_id
+    properties:
+      start_date:
+        type: string
+        title: Replication Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 0
+      client_id:
+        type: string
+        title: Client ID
+        airbyte_secret: true
+        order: 1
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+        order: 2
+      client_refresh_token:
+        type: string
+        title: Refresh token
+        airbyte_secret: true
+        order: 3
+      account_id:
+        type: string
+        order: 4
+        title: Account Id
+        airbyte_secret: true
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    clients: true
+    company: true
+    contacts: true
+    estimate_item_categories: true
+    estimates: true
+    expense_categories: true
+    expenses: true
+    invoice_item_categories: true
+    invoices: true
+    projects: true
+    roles: true
+    task_assignments: true
+    tasks: true
+    time_entries: true
+    user_assignments: true
+    users: true
+    expenses_categories: true
+    expenses_clients: true
+    expenses_projects: true
+    expenses_team: true
+    project_budget: true
+    time_clients: true
+    time_projects: true
+    time_tasks: true
+    time_team: true
+    uninvoiced: true
+    estimate_messages: true
+    invoice_messages: true
+    invoice_payments: true
+    project_assignments: true
+    billable_rates: true
+    cost_rates: true
+    estimates_parent: true
+    invoice_parent: true
+    users_parent: true
