@@ -51,6 +51,9 @@ dependencies {
     implementation "org.postgresql:postgresql:42.5.0"
     implementation "commons-collections:commons-collections:3.2.2"
 
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+
     testImplementation libs.testcontainers.postgresql
     integrationTestJavaImplementation libs.testcontainers.postgresql
 
