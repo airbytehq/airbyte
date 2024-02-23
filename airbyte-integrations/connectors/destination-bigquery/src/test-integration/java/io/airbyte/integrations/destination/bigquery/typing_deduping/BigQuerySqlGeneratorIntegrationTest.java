@@ -25,7 +25,6 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
-import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.json.Jsons;
@@ -57,7 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Execution(ExecutionMode.CONCURRENT)
-public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<TableDefinition> {
+public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<BigqueryState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
 
@@ -82,7 +81,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   @Override
   protected BigQueryDestinationHandler getDestinationHandler() {
-    return new BigQueryDestinationHandler(bq, "US");
+    return new BigQueryDestinationHandler(bq, "US", namespace);
   }
 
   @Override
@@ -363,7 +362,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   @Test
   public void testCreateTableInOtherRegion() throws InterruptedException {
-    final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
+    final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1", namespace);
     // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
     bq.getDataset(namespace).delete();
     final var sqlGenerator = new BigQuerySqlGenerator(projectId, "asia-east1");
