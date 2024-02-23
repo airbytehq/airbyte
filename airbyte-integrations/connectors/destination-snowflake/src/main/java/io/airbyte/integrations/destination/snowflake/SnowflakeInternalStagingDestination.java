@@ -172,7 +172,8 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
     final List<Migration<SnowflakeState>> migrations = List.of(new ExtractedAtUtcTimezoneMigration(database));
     if (disableTypeDedupe) {
-      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, migrations);
+      typerDeduper =
+          new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, migrations);
     } else {
       typerDeduper =
           new DefaultTyperDeduper<>(
