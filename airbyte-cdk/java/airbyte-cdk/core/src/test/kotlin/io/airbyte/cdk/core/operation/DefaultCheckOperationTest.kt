@@ -36,7 +36,7 @@ class DefaultCheckOperationTest {
     }
 
     @Test
-    internal fun `test that on a failed execution of the operation, the result is written to the output record collector`() {
+    internal fun `test that on a failed execution of the operation, the failed check message is returned`() {
         val operationExecutor: OperationExecutor = mockk()
         val failure = NullPointerException("test")
         val expectedMessage =
@@ -53,7 +53,8 @@ class DefaultCheckOperationTest {
         val operation = DefaultCheckOperation(operationExecutor = operationExecutor)
 
         val result = operation.execute()
-        assertTrue(result.isFailure)
+        assertTrue(result.isSuccess)
+        assertEquals(expectedMessage, result.getOrNull())
         verify { operationExecutor.execute() }
     }
 }

@@ -26,8 +26,11 @@ class DefaultDiscoverOperationTest {
         val expectedMessage = AirbyteMessage()
         val operation = DefaultDiscoverOperation(operationExecutor = operationExecutor)
 
+        every { operationExecutor.execute() } returns Result.success(expectedMessage)
+
         val result = operation.execute()
         assertTrue(result.isSuccess)
+        assertEquals(expectedMessage, result.getOrNull())
     }
 
     @Test
