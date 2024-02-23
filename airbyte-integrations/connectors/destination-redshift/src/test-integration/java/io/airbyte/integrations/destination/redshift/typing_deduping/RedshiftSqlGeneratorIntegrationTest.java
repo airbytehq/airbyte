@@ -46,7 +46,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest {
+public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest<RedshiftState> {
 
   /**
    * Redshift's JDBC driver doesn't map certain data types onto {@link java.sql.JDBCType} usefully.
@@ -151,8 +151,8 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   }
 
   @Override
-  protected DestinationHandler getDestinationHandler() {
-    return new RedshiftDestinationHandler(databaseName, database);
+  protected DestinationHandler<RedshiftState> getDestinationHandler() {
+    return new RedshiftDestinationHandler(databaseName, database, namespace);
   }
 
   @Override
@@ -180,9 +180,9 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   public void testCreateTableIncremental() throws Exception {
     final Sql sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
-    List<DestinationInitialState> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    List<DestinationInitialState<RedshiftState>> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
     assertEquals(1, initialStates.size());
-    final DestinationInitialState initialState = initialStates.getFirst();
+    final DestinationInitialState<RedshiftState> initialState = initialStates.getFirst();
     assertTrue(initialState.isFinalTablePresent());
     assertFalse(initialState.isSchemaMismatch());
     // TODO assert on table clustering, etc.
