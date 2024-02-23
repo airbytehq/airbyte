@@ -8,6 +8,8 @@ import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_DATA
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -17,9 +19,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
 
 public class BigQuerySourceStructRepeatedTest extends AbstractBigQuerySourceTest {
 
@@ -35,9 +34,9 @@ public class BigQuerySourceStructRepeatedTest extends AbstractBigQuerySourceTest
     final List<AirbyteMessage> actualMessages = MoreIterators.toList(new BigQuerySource().read(config, getConfiguredCatalog(), null));
 
     ObjectMapper mapper = new ObjectMapper();
-    // JsonNode actualObj = mapper.readTree("{\"key_value_pairs\":[{ \"key\": \"a\",\"value\": \"0.7\"}, {\"key\": \"b\",\"value\": \"0.8\"}, {\"key\": \"c\",\"value\": \"1.2\"}]}");
+    // JsonNode actualObj = mapper.readTree("{\"key_value_pairs\":[{ \"key\": \"a\",\"value\": \"0.7\"},
+    // {\"key\": \"b\",\"value\": \"0.8\"}, {\"key\": \"c\",\"value\": \"1.2\"}]}");
     JsonNode actualObj = mapper.readTree("[{ \"key\": \"a\",\"value\": 0.7}, {\"key\": \"b\",\"value\": 0.8}, {\"key\": \"c\",\"value\": 1.2}]");
-
 
     assertNotNull(actualMessages);
     assertEquals(1, actualMessages.size());

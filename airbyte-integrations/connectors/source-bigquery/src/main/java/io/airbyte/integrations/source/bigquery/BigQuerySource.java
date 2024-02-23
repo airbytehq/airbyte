@@ -9,10 +9,10 @@ import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryU
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
-import com.google.cloud.bigquery.Field;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.cdk.db.bigquery.BigQueryDatabase;
@@ -132,10 +132,9 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
               final StandardSQLTypeName standardType;
               if (f.getType().getStandardType() == StandardSQLTypeName.STRUCT && f.getMode() == Field.Mode.REPEATED) {
                 standardType = StandardSQLTypeName.ARRAY;
-              }
-              else
+              } else
                 standardType = f.getType().getStandardType();
-              
+
               return new CommonField<>(f.getName(), standardType);
             })
             .collect(Collectors.toList()))
