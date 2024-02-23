@@ -2,14 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
-import backoff
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from recurly import ApiError, Client, NetworkError
+from recurly import ApiError, Client
 
 from .streams import (
     AccountCouponRedemptions,
@@ -30,8 +28,6 @@ from .streams import (
     Transactions,
     UniqueCoupons,
 )
-
-logger = logging.getLogger("airbyte")
 
 
 class SourceRecurly(AbstractSource):
