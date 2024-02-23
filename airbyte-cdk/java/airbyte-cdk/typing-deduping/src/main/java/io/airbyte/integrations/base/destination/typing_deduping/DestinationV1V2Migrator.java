@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-public interface DestinationV1V2Migrator<DialectTableDefinition> {
+public interface DestinationV1V2Migrator {
 
   /**
    * This is the primary entrypoint to this interface
@@ -17,8 +17,8 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
    * @param streamConfig the stream to assess migration needs
    */
   void migrateIfNecessary(
-                          final SqlGenerator<DialectTableDefinition> sqlGenerator,
-                          final DestinationHandler<DialectTableDefinition> destinationHandler,
+                          final SqlGenerator sqlGenerator,
+                          final DestinationHandler destinationHandler,
                           final StreamConfig streamConfig)
       throws TableNotMigratedException, UnexpectedSchemaException, Exception;
 

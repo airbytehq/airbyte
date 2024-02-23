@@ -48,7 +48,7 @@ class BuildConnectorImagesBase(Step, ABC):
             f"The {self.context.connector.technical_name} docker image "
             f"was successfully built for platform(s) {', '.join(self.build_platforms)}"
         )
-        return StepResult(step=self, status=StepStatus.SUCCESS, stdout=success_message, output_artifact=build_results_per_platform)
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout=success_message, output=build_results_per_platform)
 
     async def _build_connector(self, platform: Platform, *args: Any, **kwargs: Any) -> Container:
         """Implement the generation of the image for the platform and return the corresponding container.

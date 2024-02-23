@@ -4,6 +4,10 @@
 
 package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping;
 
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS;
 import static org.jooq.impl.DSL.exists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
@@ -12,16 +16,23 @@ import static org.jooq.impl.DSL.selectOne;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
-import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.commons.concurrency.CompletableFutures;
 import io.airbyte.commons.exceptions.SQLRuntimeException;
+import io.airbyte.commons.functional.Either;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStateImpl;
+import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableState;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import java.sql.JDBCType;
+import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLType;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -30,6 +41,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.conf.ParamType;
@@ -38,7 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Slf4j
-public class JdbcDestinationHandler implements DestinationHandler<TableDefinition> {
+public abstract class JdbcDestinationHandler implements DestinationHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDestinationHandler.class);
 
@@ -51,18 +64,11 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     this.jdbcDatabase = jdbcDatabase;
   }
 
-  @Override
-  public Optional<TableDefinition> findExistingTable(final StreamId id) throws Exception {
+  private Optional<TableDefinition> findExistingTable(final StreamId id) throws Exception {
     return findExistingTable(jdbcDatabase, databaseName, id.finalNamespace(), id.finalName());
   }
 
-  @Override
-  public LinkedHashMap<String, TableDefinition> findExistingFinalTables(List<StreamId> streamIds) throws Exception {
-    return null;
-  }
-
-  @Override
-  public boolean isFinalTableEmpty(final StreamId id) throws Exception {
+  private boolean isFinalTableEmpty(final StreamId id) throws Exception {
     return !jdbcDatabase.queryBoolean(
         select(
             field(exists(
@@ -72,8 +78,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
                         .getSQL(ParamType.INLINED));
   }
 
-  @Override
-  public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
+  private InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
     boolean tableExists = jdbcDatabase.executeMetadataQuery(dbmetadata -> {
       LOGGER.info("Retrieving table from Db metadata: {} {} {}", databaseName, id.rawNamespace(), id.rawName());
       try (final ResultSet table = dbmetadata.getTables(databaseName, id.rawNamespace(), id.rawName(), null)) {
@@ -143,6 +148,39 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     }
   }
 
+  @Override
+  public List<DestinationInitialState> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
+    final List<CompletionStage<DestinationInitialState>> initialStates = streamConfigs.stream()
+        .map(this::retrieveState)
+        .toList();
+    final List<Either<? extends Exception, DestinationInitialState>> states = CompletableFutures.allOf(initialStates).toCompletableFuture().join();
+    return ConnectorExceptionUtil.getResultsOrLogAndThrowFirst("Failed to retrieve initial state", states);
+  }
+
+  private CompletionStage<DestinationInitialState> retrieveState(final StreamConfig streamConfig) {
+    return CompletableFuture.supplyAsync(() -> {
+      try {
+        final Optional<TableDefinition> finalTableDefinition = findExistingTable(streamConfig.id());
+        final boolean isSchemaMismatch;
+        final boolean isFinalTableEmpty;
+        if (finalTableDefinition.isPresent()) {
+          isSchemaMismatch = !existingSchemaMatchesStreamConfig(streamConfig, finalTableDefinition.get());
+          isFinalTableEmpty = isFinalTableEmpty(streamConfig.id());
+        } else {
+          // If the final table doesn't exist, then by definition it doesn't have a schema mismatch and has no
+          // records.
+          isSchemaMismatch = false;
+          isFinalTableEmpty = true;
+        }
+        final InitialRawTableState initialRawTableState = getInitialRawTableState(streamConfig.id());
+        return new DestinationInitialStateImpl(streamConfig, finalTableDefinition.isPresent(), initialRawTableState,
+            isSchemaMismatch, isFinalTableEmpty);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
   public static Optional<TableDefinition> findExistingTable(final JdbcDatabase jdbcDatabase,
                                                             final String databaseName,
                                                             final String schemaName,
@@ -159,16 +197,8 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
           final String columnName = columns.getString("COLUMN_NAME");
           final String typeName = columns.getString("TYPE_NAME");
           final int columnSize = columns.getInt("COLUMN_SIZE");
-          final int datatype = columns.getInt("DATA_TYPE");
-          SQLType sqlType;
-          try {
-            sqlType = JDBCType.valueOf(datatype);
-          } catch (final IllegalArgumentException e) {
-            // Unknown jdbcType convert to customSqlType
-            LOGGER.warn("Unrecognized JDBCType {}; falling back to UNKNOWN", datatype, e);
-            sqlType = new CustomSqlType("Unknown", "Unknown", datatype);
-          }
-          columnDefinitions.put(columnName, new ColumnDefinition(columnName, typeName, sqlType, columnSize));
+          final String isNullable = columns.getString("IS_NULLABLE");
+          columnDefinitions.put(columnName, new ColumnDefinition(columnName, typeName, columnSize, fromIsNullableIsoString(isNullable)));
         }
       } catch (final SQLException e) {
         LOGGER.error("Failed to retrieve column info for {}.{}.{}", databaseName, schemaName, tableName, e);
@@ -183,5 +213,56 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
     return Optional.of(new TableDefinition(retrievedColumnDefns));
   }
+
+  public static boolean fromIsNullableIsoString(final String isNullable) {
+    return "YES".equalsIgnoreCase(isNullable);
+  }
+
+  private boolean isAirbyteRawIdColumnMatch(final TableDefinition existingTable) {
+    return existingTable.columns().containsKey(COLUMN_NAME_AB_RAW_ID) &&
+        toJdbcTypeName(AirbyteProtocolType.STRING).equals(existingTable.columns().get(COLUMN_NAME_AB_RAW_ID).type());
+  }
+
+  private boolean isAirbyteExtractedAtColumnMatch(final TableDefinition existingTable) {
+    return existingTable.columns().containsKey(COLUMN_NAME_AB_EXTRACTED_AT) &&
+        toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE).equals(existingTable.columns().get(COLUMN_NAME_AB_EXTRACTED_AT).type());
+  }
+
+  private boolean isAirbyteMetaColumnMatch(final TableDefinition existingTable) {
+    return existingTable.columns().containsKey(COLUMN_NAME_AB_META) &&
+        toJdbcTypeName(new Struct(new LinkedHashMap<>())).equals(existingTable.columns().get(COLUMN_NAME_AB_META).type());
+  }
+
+  protected boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
+    // Check that the columns match, with special handling for the metadata columns.
+    if (!isAirbyteRawIdColumnMatch(existingTable) ||
+        !isAirbyteExtractedAtColumnMatch(existingTable) ||
+        !isAirbyteMetaColumnMatch(existingTable)) {
+      // Missing AB meta columns from final table, we need them to do proper T+D so trigger soft-reset
+      return false;
+    }
+    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
+        .collect(LinkedHashMap::new,
+            (map, column) -> map.put(column.getKey().name(), toJdbcTypeName(column.getValue())),
+            LinkedHashMap::putAll);
+
+    // Filter out Meta columns since they don't exist in stream config.
+    final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
+        .filter(column -> V2_FINAL_TABLE_METADATA_COLUMNS.stream()
+            .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
+        .collect(LinkedHashMap::new,
+            (map, column) -> map.put(column.getKey(), column.getValue().type()),
+            LinkedHashMap::putAll);
+
+    return actualColumns.equals(intendedColumns);
+  }
+
+  /**
+   * Convert to the TYPE_NAME retrieved from {@link java.sql.DatabaseMetaData#getColumns}
+   *
+   * @param airbyteType
+   * @return
+   */
+  protected abstract String toJdbcTypeName(final AirbyteType airbyteType);
 
 }

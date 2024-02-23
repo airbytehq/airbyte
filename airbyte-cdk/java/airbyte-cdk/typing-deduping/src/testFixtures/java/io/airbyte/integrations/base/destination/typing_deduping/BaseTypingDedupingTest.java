@@ -156,7 +156,7 @@ public abstract class BaseTypingDedupingTest {
    */
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 
-  protected abstract SqlGenerator<?> getSqlGenerator();
+  protected abstract SqlGenerator getSqlGenerator();
 
   /**
    * Destinations which need to clean up resources after an entire test finishes should override this
@@ -215,7 +215,7 @@ public abstract class BaseTypingDedupingTest {
     streamName = "test_stream" + getUniqueSuffix();
     streamsToTearDown = new ArrayList<>();
 
-    final SqlGenerator<?> generator = getSqlGenerator();
+    final SqlGenerator generator = getSqlGenerator();
     DIFFER = new RecordDiffer(
         getRawMetadataColumnNames(),
         getFinalMetadataColumnNames(),
