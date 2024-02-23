@@ -48,6 +48,8 @@ acceptance_tests:
         future_state:
           future_state_path: "integration_tests/future_state.json"
         timeout_seconds: 7200
+        # skip incremental tests as filter condition greater than or equal is used, so last record for any stream state is duplicated
+        skip_comprehensive_incremental_tests: true
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

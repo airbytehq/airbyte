@@ -48,7 +48,7 @@ class TestUnitTests:
     @pytest.fixture
     async def certified_container_with_setup(self, context_for_certified_connector_with_setup, current_platform):
         result = await BuildConnectorImages(context_for_certified_connector_with_setup).run()
-        return result.output_artifact[current_platform]
+        return result.output[current_platform]
 
     @pytest.fixture
     def context_for_connector_with_poetry(self, mocker, connector_with_poetry, dagger_client, current_platform):
@@ -69,7 +69,7 @@ class TestUnitTests:
     @pytest.fixture
     async def container_with_poetry(self, context_for_connector_with_poetry, current_platform):
         result = await BuildConnectorImages(context_for_connector_with_poetry).run()
-        return result.output_artifact[current_platform]
+        return result.output[current_platform]
 
     async def test__run_for_setup_py(self, context_for_certified_connector_with_setup, certified_container_with_setup):
         # Assume that the tests directory is available
@@ -80,7 +80,7 @@ class TestUnitTests:
             "Total coverage:" in result.stdout
         ), "The pytest-cov package should be installed in the test environment and test coverage report should be displayed."
         assert "Required test coverage of" in result.stdout, "A test coverage threshold should be defined for certified connectors."
-        pip_freeze_output = await result.output_artifact.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
+        pip_freeze_output = await result.output.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
         assert (
             context_for_certified_connector_with_setup.connector.technical_name in pip_freeze_output
         ), "The connector should be installed in the test environment."
@@ -93,7 +93,7 @@ class TestUnitTests:
         assert isinstance(result, StepResult)
         # We only check for the presence of "test session starts" because we have no guarantee that the tests will pass
         assert "test session starts" in result.stdout or "test session starts" in result.stderr, "The pytest tests should have started."
-        pip_freeze_output = await result.output_artifact.with_exec(["poetry", "run", "pip", "freeze"], skip_entrypoint=True).stdout()
+        pip_freeze_output = await result.output.with_exec(["poetry", "run", "pip", "freeze"], skip_entrypoint=True).stdout()
 
         assert (
             context_for_connector_with_poetry.connector.technical_name in pip_freeze_output
