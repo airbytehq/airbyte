@@ -112,7 +112,6 @@ class DeclarativeStream(Stream):
         """
         return self._schema_loader.get_json_schema()
 
-    # @deprecated(reason="Use stream_slices instead")
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[PerPartitionStreamSlice]]:
