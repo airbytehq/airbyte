@@ -34,7 +34,6 @@ private val logger = KotlinLogging.logger {}
  */
 class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
     MapPropertySource("connector", resolveValues(commandLine)) {
-
     companion object {
         private const val PREFIX_FORMAT = "%s.%s"
         private const val ROOT_CONFIGURATION_PROPERTY_KEY = "airbyte.connector"
@@ -52,27 +51,30 @@ class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
                 values.putAll(
                     loadFile(
                         commandLine.optionValue(JavaBaseConstants.ARGS_CONFIG_KEY) as String,
-                        CONNECTOR_CONFIG_PREFIX
-                    )
+                        CONNECTOR_CONFIG_PREFIX,
+                    ),
                 )
                 values.putAll(
                     loadFileContents(
                         commandLine.optionValue(JavaBaseConstants.ARGS_CATALOG_KEY) as String,
-                        String.format(PREFIX_FORMAT, CONNECTOR_CATALOG_PREFIX, CONNECTOR_CATALOG_KEY)
-                    )
+                        String.format(PREFIX_FORMAT, CONNECTOR_CATALOG_PREFIX, CONNECTOR_CATALOG_KEY),
+                    ),
                 )
                 values.putAll(
                     loadFileContents(
                         commandLine.optionValue(JavaBaseConstants.ARGS_STATE_KEY) as String,
-                        String.format(PREFIX_FORMAT, CONNECTOR_STATE_PREFIX, CONNECTOR_STATE_KEY)
-                    )
+                        String.format(PREFIX_FORMAT, CONNECTOR_STATE_PREFIX, CONNECTOR_STATE_KEY),
+                    ),
                 )
             }
-            logger.debug { "Resolved values: $values"}
+            logger.debug { "Resolved values: $values" }
             return values
         }
 
-        private fun loadFile(propertyFilePath: String, prefix: String): Map<String?, Any?> {
+        private fun loadFile(
+            propertyFilePath: String,
+            prefix: String,
+        ): Map<String?, Any?> {
             if (StringUtils.hasText(propertyFilePath)) {
                 val propertyFile = Path.of(propertyFilePath).toFile()
                 if (propertyFile.exists()) {
@@ -81,10 +83,11 @@ class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
                     return flatten(properties!!, prefix).collect(
                         Collectors.toMap(
                             { e: Map.Entry<String?, Any?> -> e.key },
-                            { e: Map.Entry<String?, Any?> -> e.value })
+                            { e: Map.Entry<String?, Any?> -> e.value },
+                        ),
                     )
                 } else {
-                    logger.warn {"Property file '${propertyFile}', not found for prefix '${prefix}'."}
+                    logger.warn { "Property file '$propertyFile', not found for prefix '$prefix'." }
                     return mapOf()
                 }
             } else {
@@ -92,13 +95,16 @@ class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
             }
         }
 
-        private fun loadFileContents(propertyFilePath: String, prefix: String): Map<String?, Any?> {
+        private fun loadFileContents(
+            propertyFilePath: String,
+            prefix: String,
+        ): Map<String?, Any?> {
             if (StringUtils.hasText(propertyFilePath)) {
                 val propertyFile = Path.of(propertyFilePath).toFile()
                 if (propertyFile.exists()) {
-                    return java.util.Map.of<String, Any>(prefix,propertyFile.readText())
+                    return java.util.Map.of<String, Any>(prefix, propertyFile.readText())
                 } else {
-                    logger.warn { "Property file '${propertyFile}', not found for prefix '${prefix}'." }
+                    logger.warn { "Property file '$propertyFile', not found for prefix '$prefix'." }
                     return mapOf()
                 }
             } else {
@@ -106,16 +112,22 @@ class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
             }
         }
 
-        private fun flatten(map: Map<String?, Any?>, prefix: String): Stream<Map.Entry<String?, Any?>> {
+        private fun flatten(
+            map: Map<String?, Any?>,
+            prefix: String,
+        ): Stream<Map.Entry<String?, Any?>> {
             return map.entries.stream().flatMap { e: Map.Entry<String?, Any?> ->
                 flattenValue(
                     e,
-                    prefix
+                    prefix,
                 )
             }
         }
 
-        private fun flattenValue(entry: Map.Entry<String?, Any?>, prefix: String): Stream<Map.Entry<String?, Any?>> {
+        private fun flattenValue(
+            entry: Map.Entry<String?, Any?>,
+            prefix: String,
+        ): Stream<Map.Entry<String?, Any?>> {
             return if (entry.value is Map<*, *>) {
                 flatten(entry.value as Map<String?, Any?>, String.format(PREFIX_FORMAT, prefix, entry.key))
             } else {
@@ -124,14 +136,14 @@ class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
                         String.format(
                             PREFIX_FORMAT,
                             prefix,
-                            entry.key
-                        ), entry.value
-                    )
+                            entry.key,
+                        ),
+                        entry.value,
+                    ),
                 )
             }
         }
     }
 
     private class MapTypeReference : TypeReference<Map<String?, Any?>?>()
-
 }

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DefaultCheckOperationExecutorTest {
-
     @Test
     internal fun `test that the expected Airbyte message is returned when executed`() {
         val executor = DefaultCheckOperationExecutor()

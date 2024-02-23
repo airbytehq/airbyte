@@ -24,14 +24,14 @@ private val logger = KotlinLogging.logger {}
 @Named("readOperationExecutor")
 @Requires(
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
-    value = "read"
+    value = "read",
 )
-class DefaultReadOperationExecutor(private val messageIterator: Optional<AutoCloseableIterator<AirbyteMessage>>,
-                                   @Named("outputRecordCollector") private val outputRecordCollector: Consumer<AirbyteMessage>,
-                                   private val shutdownUtils: ShutdownUtils
-):
+class DefaultReadOperationExecutor(
+    private val messageIterator: Optional<AutoCloseableIterator<AirbyteMessage>>,
+    @Named("outputRecordCollector") private val outputRecordCollector: Consumer<AirbyteMessage>,
+    private val shutdownUtils: ShutdownUtils,
+) :
     OperationExecutor {
-
     override fun execute(): Result<AirbyteMessage?> {
         try {
             if (messageIterator.isPresent) {
@@ -55,8 +55,8 @@ class DefaultReadOperationExecutor(private val messageIterator: Optional<AutoClo
                 return Result.failure(
                     OperationExecutionException(
                         "Failed to read from connector.",
-                        IllegalArgumentException("Read operation supported, but message iterator does not exist.")
-                    )
+                        IllegalArgumentException("Read operation supported, but message iterator does not exist."),
+                    ),
                 )
             }
             return Result.success(null)
@@ -66,7 +66,7 @@ class DefaultReadOperationExecutor(private val messageIterator: Optional<AutoClo
                 ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
                 TimeUnit.MINUTES,
                 ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
-                TimeUnit.MINUTES
+                TimeUnit.MINUTES,
             )
         }
     }

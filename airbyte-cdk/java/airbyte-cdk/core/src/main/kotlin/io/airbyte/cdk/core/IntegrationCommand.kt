@@ -20,14 +20,15 @@ import picocli.CommandLine
 import java.nio.file.Path
 import java.util.Optional
 import java.util.function.Consumer
-import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
 
 /**
  * CLI implementation that invokes the requested operation for the connector.
  */
-@CommandLine.Command(name = "airbyte-connector", description = ["Executes an Airbyte connector"],
+@CommandLine.Command(
+    name = "airbyte-connector",
+    description = ["Executes an Airbyte connector"],
     mixinStandardHelpOptions = true,
     header = [
         "@|magenta     ___    _      __          __       |@",
@@ -35,10 +36,10 @@ private val logger = KotlinLogging.logger {}
         "@|magenta   / /| | / / ___/ __ \\/ / / / __/ _   |@",
         "@|magenta  / ___ |/ / /  / /_/ / /_/ / /_/  __/  |@",
         "@|magenta /_/  |_/_/_/  /_.___/\\__, /\\__/\\___/|@",
-        "@|magenta                    /____/              |@"
-    ])
-class IntegrationCommand: Runnable {
-
+        "@|magenta                    /____/              |@",
+    ],
+)
+class IntegrationCommand : Runnable {
     @Value("\${micronaut.application.name}")
     lateinit var connectorName: String
 
@@ -49,32 +50,44 @@ class IntegrationCommand: Runnable {
     @Named("outputRecordCollector")
     lateinit var outputRecordCollector: Consumer<AirbyteMessage>
 
-    @CommandLine.Parameters(index = "0", description = [
-        "The command to execute (check|discover|read|spec|write)",
-        "\t check - checks the config can be used to connect",
-        "\t discover - outputs a catalog describing the source's catalog",
-        "\t read - reads the source and outputs messages to STDOUT",
-        "\t spec - outputs the json configuration specification",
-        "\t write - writes messages from STDIN to the integration"
-    ])
+    @CommandLine.Parameters(
+        index = "0",
+        description = [
+            "The command to execute (check|discover|read|spec|write)",
+            "\t check - checks the config can be used to connect",
+            "\t discover - outputs a catalog describing the source's catalog",
+            "\t read - reads the source and outputs messages to STDOUT",
+            "\t spec - outputs the json configuration specification",
+            "\t write - writes messages from STDIN to the integration",
+        ],
+    )
     lateinit var command: String
 
-    @CommandLine.Option(names = [ "--" + JavaBaseConstants.ARGS_CONFIG_KEY ], description = [
-        JavaBaseConstants.ARGS_CONFIG_DESC,
-        "Required by the following commands: check, discover, read, write"
-    ])
+    @CommandLine.Option(
+        names = [ "--" + JavaBaseConstants.ARGS_CONFIG_KEY ],
+        description = [
+            JavaBaseConstants.ARGS_CONFIG_DESC,
+            "Required by the following commands: check, discover, read, write",
+        ],
+    )
     lateinit var configFile: Path
 
-    @CommandLine.Option(names = [  "--" + JavaBaseConstants.ARGS_CATALOG_KEY ], description = [
-        JavaBaseConstants.ARGS_CATALOG_DESC,
-        "Required by the following commands: read, write"
-    ])
+    @CommandLine.Option(
+        names = [ "--" + JavaBaseConstants.ARGS_CATALOG_KEY ],
+        description = [
+            JavaBaseConstants.ARGS_CATALOG_DESC,
+            "Required by the following commands: read, write",
+        ],
+    )
     lateinit var catalogFile: Path
 
-    @CommandLine.Option(names = [  "--" + JavaBaseConstants.ARGS_STATE_KEY ], description = [
-        JavaBaseConstants.ARGS_PATH_DESC,
-        "Required by the following commands: read",
-    ])
+    @CommandLine.Option(
+        names = [ "--" + JavaBaseConstants.ARGS_STATE_KEY ],
+        description = [
+            JavaBaseConstants.ARGS_PATH_DESC,
+            "Required by the following commands: read",
+        ],
+    )
     lateinit var stateFile: Optional<Path>
 
     @CommandLine.Spec
@@ -113,8 +126,8 @@ class IntegrationCommand: Runnable {
                             .withConnectionStatus(
                                 AirbyteConnectionStatus()
                                     .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                                    .withMessage(displayMessage)
-                            )
+                                    .withMessage(displayMessage),
+                            ),
                     )
             }
         }
@@ -127,9 +140,11 @@ class IntegrationCommand: Runnable {
             val operationType = OperationType.valueOf(command.uppercase())
             val operation: Operation? = operations.firstOrNull { o: Operation -> (operationType == o.type()) }
             operation?.execute()
-                ?: Result.failure(IllegalArgumentException(
-                    "Connector does not support the '${operationType.name.lowercase()}' operation."
-                ))
+                ?: Result.failure(
+                    IllegalArgumentException(
+                        "Connector does not support the '${operationType.name.lowercase()}' operation.",
+                    ),
+                )
         } catch (e: IllegalArgumentException) {
             Result.failure(IllegalArgumentException("Connector does not support the '${command.lowercase()}' operation.", e))
         }

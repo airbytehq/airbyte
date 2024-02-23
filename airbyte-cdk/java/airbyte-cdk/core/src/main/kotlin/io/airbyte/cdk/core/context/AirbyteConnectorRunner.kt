@@ -10,8 +10,8 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.context.ApplicationContextBuilder
 import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
-import io.micronaut.core.cli.CommandLine as MicronautCommandLine
 import picocli.CommandLine
+import io.micronaut.core.cli.CommandLine as MicronautCommandLine
 
 /**
  * Custom Micronaut application runner that configures the CLI components and adds the custom
@@ -25,23 +25,29 @@ import picocli.CommandLine
  * </code>
  */
 class AirbyteConnectorRunner {
-
     companion object {
-        fun <R : Runnable?> run(cls: Class<R>, vararg args: String) {
+        fun <R : Runnable?> run(
+            cls: Class<R>,
+            vararg args: String,
+        ) {
             val builder: ApplicationContextBuilder = buildApplicationContext(cls, args)
             builder.start().use { ctx ->
                 run(cls, ctx, *args)
             }
         }
 
-        fun <R : Runnable?> run(cls: Class<R>?, ctx: ApplicationContext?, vararg args: String?) {
+        fun <R : Runnable?> run(
+            cls: Class<R>?,
+            ctx: ApplicationContext?,
+            vararg args: String?,
+        ) {
             val commandLine = CommandLine(cls, MicronautFactory(ctx))
             commandLine.execute(*args)
         }
 
         private fun buildApplicationContext(
             cls: Class<*>,
-            args: Array<out String>
+            args: Array<out String>,
         ): ApplicationContextBuilder {
             val commandLine: MicronautCommandLine = MicronautCommandLine.parse(*args)
             val connectorConfigurationPropertySource = ConnectorConfigurationPropertySource(commandLine)

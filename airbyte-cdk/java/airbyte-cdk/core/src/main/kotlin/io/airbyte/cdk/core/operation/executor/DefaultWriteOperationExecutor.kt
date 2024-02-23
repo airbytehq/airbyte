@@ -27,14 +27,13 @@ private val logger = KotlinLogging.logger {}
 @Named("writeOperationExecutor")
 @Requires(
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
-    value = "write"
+    value = "write",
 )
-class DefaultWriteOperationExecutor(private val catalog: AirbyteConfiguredCatalog,
-                                    private val messageConsumerFactory: Optional<SerializedAirbyteMessageConsumerFactory>,
-                                    private val shutdownUtils: ShutdownUtils
-
-): OperationExecutor {
-
+class DefaultWriteOperationExecutor(
+    private val catalog: AirbyteConfiguredCatalog,
+    private val messageConsumerFactory: Optional<SerializedAirbyteMessageConsumerFactory>,
+    private val shutdownUtils: ShutdownUtils,
+) : OperationExecutor {
     override fun execute(): Result<AirbyteMessage?> {
         try {
             if (messageConsumerFactory.isPresent) {
@@ -53,7 +52,7 @@ class DefaultWriteOperationExecutor(private val catalog: AirbyteConfiguredCatalo
                         try {
                             consumer.close()
                         } catch (e: Exception) {
-                            logger.warn(e) { "Failed to close consumer."}
+                            logger.warn(e) { "Failed to close consumer." }
                         }
                     }
                 }
@@ -61,8 +60,8 @@ class DefaultWriteOperationExecutor(private val catalog: AirbyteConfiguredCatalo
                 return Result.failure(
                     OperationExecutionException(
                         "Failed to write output from connector.",
-                        IllegalArgumentException("Writer operation supported, but output consumer does not exist.")
-                    )
+                        IllegalArgumentException("Writer operation supported, but output consumer does not exist."),
+                    ),
                 )
             }
 
@@ -73,7 +72,7 @@ class DefaultWriteOperationExecutor(private val catalog: AirbyteConfiguredCatalo
                 ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
                 TimeUnit.MINUTES,
                 ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
-                TimeUnit.MINUTES
+                TimeUnit.MINUTES,
             )
         }
     }
@@ -86,7 +85,7 @@ class DefaultWriteOperationExecutor(private val catalog: AirbyteConfiguredCatalo
     fun consumeWriteStream(
         consumer: SerializedAirbyteMessageConsumer,
         bis: BufferedInputStream,
-        baos: ByteArrayOutputStream
+        baos: ByteArrayOutputStream,
     ) {
         consumer.start()
 

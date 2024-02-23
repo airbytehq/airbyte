@@ -10,7 +10,6 @@ import jakarta.inject.Singleton
 
 @Factory
 class ValidationFactory {
-
     @Singleton
     fun jsonSchemaValidator(): JsonSchemaValidator {
         return JsonSchemaValidator()

@@ -15,17 +15,16 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DefaultCheckOperationTest {
-
     @Test
     internal fun `test that the correct operation type is returned`() {
-        val operationExecutor:OperationExecutor = mockk()
+        val operationExecutor: OperationExecutor = mockk()
         val operation = DefaultCheckOperation(operationExecutor = operationExecutor)
         assertEquals(OperationType.CHECK, operation.type())
     }
 
     @Test
     internal fun `test that on successful execution of the operation, the result is returned`() {
-        val operationExecutor:OperationExecutor = mockk()
+        val operationExecutor: OperationExecutor = mockk()
 
         every { operationExecutor.execute() } returns Result.success(AirbyteMessage())
 
@@ -38,15 +37,16 @@ class DefaultCheckOperationTest {
 
     @Test
     internal fun `test that on a failed execution of the operation, the result is written to the output record collector`() {
-        val operationExecutor:OperationExecutor = mockk()
+        val operationExecutor: OperationExecutor = mockk()
         val failure = NullPointerException("test")
-        val expectedMessage = AirbyteMessage()
-            .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-            .withConnectionStatus(
-                AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                    .withMessage(failure.message)
-            )
+        val expectedMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.CONNECTION_STATUS)
+                .withConnectionStatus(
+                    AirbyteConnectionStatus()
+                        .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                        .withMessage(failure.message),
+                )
 
         every { operationExecutor.execute() } returns Result.failure(failure)
 

@@ -18,19 +18,18 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
 class CatalogValidatorTest {
-
     @ParameterizedTest
-    @EnumSource(value=OperationType::class, names = ["READ","WRITE"])
-    internal fun `test that a populated configured catalog can be validated`(operationType:OperationType) {
+    @EnumSource(value = OperationType::class, names = ["READ", "WRITE"])
+    internal fun `test that a populated configured catalog can be validated`(operationType: OperationType) {
         val connectorName = "test-destination"
         val operation = operationType.name.lowercase()
         val streamName = "test-name"
         val streamNamespace = "test-namespace"
         val catalogJson = "{\"streams\":[{\"stream\":{\"name\":\"$streamName\",\"namespace\":\"$streamNamespace\"}}]}"
-        val catalog:AirbyteConfiguredCatalog = mockk()
+        val catalog: AirbyteConfiguredCatalog = mockk()
         every { catalog.getConfiguredCatalog() } returns Jsons.deserialize(catalogJson, ConfiguredAirbyteCatalog::class.java)
 
-        val validator = CatalogValidator(connectorName=connectorName, operation=operation, airbyteConfiguredCatalog=catalog)
+        val validator = CatalogValidator(connectorName = connectorName, operation = operation, airbyteConfiguredCatalog = catalog)
         val event: StartupEvent = mockk()
         assertDoesNotThrow {
             validator.onApplicationEvent(event)
@@ -39,14 +38,14 @@ class CatalogValidatorTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value=OperationType::class, names = ["READ","WRITE"])
-    internal fun `test that a missing configured catalog can be invalidated`(operationType:OperationType) {
+    @EnumSource(value = OperationType::class, names = ["READ", "WRITE"])
+    internal fun `test that a missing configured catalog can be invalidated`(operationType: OperationType) {
         val connectorName = "test-destination"
         val operation = operationType.name.lowercase()
-        val catalog:AirbyteConfiguredCatalog = mockk()
+        val catalog: AirbyteConfiguredCatalog = mockk()
         every { catalog.getConfiguredCatalog() } returns CatalogValidator.emptyCatalog
 
-        val validator = CatalogValidator(connectorName=connectorName, operation=operation, airbyteConfiguredCatalog=catalog)
+        val validator = CatalogValidator(connectorName = connectorName, operation = operation, airbyteConfiguredCatalog = catalog)
         val event: StartupEvent = mockk()
         assertThrows<IllegalArgumentException> {
             validator.onApplicationEvent(event)
@@ -55,21 +54,21 @@ class CatalogValidatorTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value=OperationType::class, names = ["SPEC","DISCOVER","CHECK"])
-    internal fun `test that catalog validation is skipped for unsupported operations`(operationType:OperationType) {
+    @EnumSource(value = OperationType::class, names = ["SPEC", "DISCOVER", "CHECK"])
+    internal fun `test that catalog validation is skipped for unsupported operations`(operationType: OperationType) {
         val connectorName = "test-destination"
         val operation = operationType.name.lowercase()
         val streamName = "test-name"
         val streamNamespace = "test-namespace"
         val catalogJson = "{\"streams\":[{\"stream\":{\"name\":\"$streamName\",\"namespace\":\"$streamNamespace\"}}]}"
-        val catalog:AirbyteConfiguredCatalog = mockk()
+        val catalog: AirbyteConfiguredCatalog = mockk()
         every { catalog.getConfiguredCatalog() } returns Jsons.deserialize(catalogJson, ConfiguredAirbyteCatalog::class.java)
 
-        val validator = CatalogValidator(connectorName=connectorName, operation=operation, airbyteConfiguredCatalog=catalog)
+        val validator = CatalogValidator(connectorName = connectorName, operation = operation, airbyteConfiguredCatalog = catalog)
         val event: StartupEvent = mockk()
         assertDoesNotThrow {
             validator.onApplicationEvent(event)
         }
-        verify(exactly = 0){ catalog.getConfiguredCatalog() }
+        verify(exactly = 0) { catalog.getConfiguredCatalog() }
     }
 }

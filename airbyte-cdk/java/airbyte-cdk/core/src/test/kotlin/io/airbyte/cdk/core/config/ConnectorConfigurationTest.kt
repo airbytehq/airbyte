@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test
 import java.util.Optional
 
 class ConnectorConfigurationTest {
-
     @Test
     internal fun `test retrieving the raw namespace from the configuration`() {
         val namespace = "test"
@@ -34,9 +33,8 @@ class ConnectorConfigurationTest {
 }
 
 @JsonIgnoreProperties("rawNamespace")
-class TestConnectorConfiguration(val namespace:String?):ConnectorConfiguration {
+class TestConnectorConfiguration(val namespace: String?) : ConnectorConfiguration {
     override fun getRawNamespace(): Optional<String> {
         return Optional.ofNullable(namespace)
     }
-
 }

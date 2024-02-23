@@ -9,5 +9,9 @@ package io.airbyte.cdk.core.operation
  * implement all of these operations.
  */
 enum class OperationType {
-    SPEC, CHECK, DISCOVER, READ, WRITE
+    SPEC,
+    CHECK,
+    DISCOVER,
+    READ,
+    WRITE,
 }

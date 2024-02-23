@@ -14,7 +14,6 @@ import io.micronaut.context.annotation.ConfigurationProperties
  */
 @ConfigurationProperties("airbyte.connector.state")
 class AirbyteConnectorState {
-
     lateinit var json: String
 
     fun toJson(): JsonNode {

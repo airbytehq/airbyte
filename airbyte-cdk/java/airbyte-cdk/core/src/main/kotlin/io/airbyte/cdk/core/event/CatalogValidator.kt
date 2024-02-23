@@ -24,11 +24,12 @@ private val logger = KotlinLogging.logger {}
 @Singleton
 @Requires(bean = AirbyteConfiguredCatalog::class)
 @Requires(property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION)
-class CatalogValidator(@Value("\${micronaut.application.name}") private val connectorName:String,
-                       @Value("\${airbyte.connector.operation}") private val operation:String,
-                       private val airbyteConfiguredCatalog:AirbyteConfiguredCatalog):
+class CatalogValidator(
+    @Value("\${micronaut.application.name}") private val connectorName: String,
+    @Value("\${airbyte.connector.operation}") private val operation: String,
+    private val airbyteConfiguredCatalog: AirbyteConfiguredCatalog,
+) :
     ApplicationEventListener<StartupEvent> {
-
     companion object {
         var emptyCatalog: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog()
     }
@@ -46,7 +47,7 @@ class CatalogValidator(@Value("\${micronaut.application.name}") private val conn
     private fun requiresCatalog(): Boolean {
         return OperationType.READ.name.equals(
             operation,
-            ignoreCase = true
+            ignoreCase = true,
         ) || OperationType.WRITE.name.equals(operation, ignoreCase = true)
     }
 }

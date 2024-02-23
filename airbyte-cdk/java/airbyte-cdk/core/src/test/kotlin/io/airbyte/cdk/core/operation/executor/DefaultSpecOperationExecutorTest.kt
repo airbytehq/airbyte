@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DefaultSpecOperationExecutorTest {
-
     @Test
     internal fun `test that when the spec file is located on the classpath, a successful result is returned`() {
         val executor = DefaultSpecOperationExecutor()

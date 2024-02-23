@@ -28,11 +28,12 @@ private val logger = KotlinLogging.logger {}
 @Singleton
 @Requires(bean = ConnectorConfiguration::class)
 @Requires(property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION)
-class ConfigurationValidator(@Value("\${micronaut.application.name}") private val connectorName:String,
-                             @Value("\${airbyte.connector.operation}") private val operation:String,
-                             private val configuration: ConnectorConfiguration,
-                             private val validator: JsonSchemaValidator): ApplicationEventListener<StartupEvent> {
-
+class ConfigurationValidator(
+    @Value("\${micronaut.application.name}") private val connectorName: String,
+    @Value("\${airbyte.connector.operation}") private val operation: String,
+    private val configuration: ConnectorConfiguration,
+    private val validator: JsonSchemaValidator,
+) : ApplicationEventListener<StartupEvent> {
     override fun onApplicationEvent(event: StartupEvent) {
         if (requiresConfiguration()) {
             try {
@@ -40,7 +41,7 @@ class ConfigurationValidator(@Value("\${micronaut.application.name}") private va
                 if (validationResult.isNotEmpty()) {
                     throw Exception(String.format("Verification error(s) occurred. Errors: %s ", validationResult))
                 } else {
-                    logger.info{ "$connectorName connector configuration is valid." }
+                    logger.info { "$connectorName connector configuration is valid." }
                 }
             } catch (e: Exception) {
                 throw RuntimeException(e)
@@ -56,16 +57,16 @@ class ConfigurationValidator(@Value("\${micronaut.application.name}") private va
     private fun requiresConfiguration(): Boolean {
         return OperationType.CHECK.name.equals(
             operation,
-            ignoreCase = true
+            ignoreCase = true,
         ) ||
-                OperationType.DISCOVER.name.equals(
-                    operation,
-                    ignoreCase = true
-                ) ||
-                OperationType.READ.name.equals(
-                    operation,
-                    ignoreCase = true
-                ) ||
-                OperationType.WRITE.name.equals(operation, ignoreCase = true)
+            OperationType.DISCOVER.name.equals(
+                operation,
+                ignoreCase = true,
+            ) ||
+            OperationType.READ.name.equals(
+                operation,
+                ignoreCase = true,
+            ) ||
+            OperationType.WRITE.name.equals(operation, ignoreCase = true)
     }
 }

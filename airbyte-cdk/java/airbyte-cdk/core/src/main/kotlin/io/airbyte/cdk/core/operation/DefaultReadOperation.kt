@@ -15,10 +15,11 @@ import jakarta.inject.Singleton
 @Named("readOperation")
 @Requires(
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
-    value = "read"
+    value = "read",
 )
-class DefaultReadOperation(@Named("readOperationExecutor") private val operationExecutor: OperationExecutor): Operation {
-
+class DefaultReadOperation(
+    @Named("readOperationExecutor") private val operationExecutor: OperationExecutor,
+) : Operation {
     override fun type(): OperationType {
         return OperationType.READ
     }

@@ -24,7 +24,6 @@ private val logger = KotlinLogging.logger {}
  */
 @Singleton
 class ShutdownUtils {
-
     companion object {
         private const val TYPE_AND_DEDUPE_THREAD_NAME: String = "type-and-dedupe"
         private const val FORCED_EXIT_CODE: Int = 2
@@ -45,8 +44,10 @@ class ShutdownUtils {
         @VisibleForTesting
         val ORPHANED_THREAD_FILTER: Predicate<Thread> =
             Predicate<Thread> { runningThread: Thread ->
-                (runningThread.name != Thread.currentThread().name
-                        && !runningThread.isDaemon && TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name)
+                (
+                    runningThread.name != Thread.currentThread().name &&
+                        !runningThread.isDaemon && TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name
+                )
             }
     }
 
@@ -71,29 +72,32 @@ class ShutdownUtils {
         interruptTimeDelay: Int,
         interruptTimeUnit: TimeUnit,
         exitTimeDelay: Int,
-        exitTimeUnit: TimeUnit
+        exitTimeUnit: TimeUnit,
     ) {
         val currentThread = Thread.currentThread()
 
-        val runningThreads = ThreadUtils.getAllThreads()
-            .stream()
-            .filter(ORPHANED_THREAD_FILTER)
-            .collect(Collectors.toList())
+        val runningThreads =
+            ThreadUtils.getAllThreads()
+                .stream()
+                .filter(ORPHANED_THREAD_FILTER)
+                .collect(Collectors.toList())
         if (runningThreads.isNotEmpty()) {
             logger.warn {
                 """
-                  The main thread is exiting while children non-daemon threads from a connector are still active.
-                  Ideally, this situation should not happen...
-                  Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
-                  The main thread is: ${dumpThread(currentThread)}
-                  """.trimIndent()
+                The main thread is exiting while children non-daemon threads from a connector are still active.
+                Ideally, this situation should not happen...
+                Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
+                The main thread is: ${dumpThread(currentThread)}
+                """.trimIndent()
             }
-            val scheduledExecutorService = Executors
-                .newSingleThreadScheduledExecutor(
-                    BasicThreadFactory.Builder() // this thread executor will create daemon threads, so it does not block exiting if all other active
-                        // threads are already stopped.
-                        .daemon(true).build()
-                )
+            val scheduledExecutorService =
+                Executors
+                    .newSingleThreadScheduledExecutor(
+                        // this thread executor will create daemon threads, so it does not block exiting if all other active
+                        BasicThreadFactory.Builder()
+                            // threads are already stopped.
+                            .daemon(true).build(),
+                    )
             for (runningThread in runningThreads) {
                 val str = "Active non-daemon thread: " + dumpThread(runningThread)
                 logger.warn { str }
@@ -103,14 +107,14 @@ class ShutdownUtils {
                 scheduledExecutorService.schedule(
                     { runningThread.interrupt() },
                     interruptTimeDelay.toLong(),
-                    interruptTimeUnit
+                    interruptTimeUnit,
                 )
             }
             scheduledExecutorService.schedule({
                 if (ThreadUtils.getAllThreads().stream()
                         .anyMatch { runningThread: Thread -> !runningThread.isDaemon && runningThread.name != currentThread.name }
                 ) {
-                    logger.error {"Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n" }
+                    logger.error { "Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n" }
                     exitHook.run()
                 }
             }, exitTimeDelay.toLong(), exitTimeUnit)
@@ -119,8 +123,10 @@ class ShutdownUtils {
 
     private fun dumpThread(thread: Thread): String {
         return String.format(
-            "%s (%s)\n Thread stacktrace: %s", thread.name, thread.state,
-            Strings.join(listOf(*thread.stackTrace), "\n        at ")
+            "%s (%s)\n Thread stacktrace: %s",
+            thread.name,
+            thread.state,
+            Strings.join(listOf(*thread.stackTrace), "\n        at "),
         )
     }
 }

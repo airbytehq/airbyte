@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 class AirbyteConfiguredCatalogTest {
-
     @Test
     internal fun `test that a non-empty configured catalog can be converted`() {
         val streamName = "test-name"

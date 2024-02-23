@@ -15,16 +15,17 @@ import jakarta.inject.Singleton
 @Named("checkOperationExecutor")
 @Requires(
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
-    value = "check"
+    value = "check",
 )
-class DefaultCheckOperationExecutor: OperationExecutor {
-
+class DefaultCheckOperationExecutor : OperationExecutor {
     override fun execute(): Result<AirbyteMessage?> {
-        return Result.success(AirbyteMessage()
-            .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-            .withConnectionStatus(
-                AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.SUCCEEDED))
-            )
+        return Result.success(
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.CONNECTION_STATUS)
+                .withConnectionStatus(
+                    AirbyteConnectionStatus()
+                        .withStatus(AirbyteConnectionStatus.Status.SUCCEEDED),
+                ),
+        )
     }
 }

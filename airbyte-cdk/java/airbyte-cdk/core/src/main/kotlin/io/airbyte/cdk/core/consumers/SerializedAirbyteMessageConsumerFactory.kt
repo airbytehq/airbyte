@@ -14,19 +14,25 @@ import jakarta.inject.Singleton
  * for writing record messages to a destination.
  */
 interface SerializedAirbyteMessageConsumerFactory {
-
     @Throws(Exception::class)
     fun createMessageConsumer(catalog: ConfiguredAirbyteCatalog): SerializedAirbyteMessageConsumer
 }
 
 @Singleton
 @Named("serializedAirbyteMessageConsumerFactory")
-class DefaultSerializedAirbyteMessageConsumerFactory: SerializedAirbyteMessageConsumerFactory {
+class DefaultSerializedAirbyteMessageConsumerFactory : SerializedAirbyteMessageConsumerFactory {
     override fun createMessageConsumer(catalog: ConfiguredAirbyteCatalog): SerializedAirbyteMessageConsumer {
-        return (object : SerializedAirbyteMessageConsumer {
-            override fun accept(message: String, sizeInBytes: Int) {}
-            override fun close() {}
-            override fun start() {}
-        })
+        return (
+            object : SerializedAirbyteMessageConsumer {
+                override fun accept(
+                    message: String,
+                    sizeInBytes: Int,
+                ) {}
+
+                override fun close() {}
+
+                override fun start() {}
+            }
+        )
     }
 }

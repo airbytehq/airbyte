@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AirbyteConnectorStateTest {
-
     @Test
     internal fun `test that a non-empty connector state can be converted to JSON`() {
         val connectorState = AirbyteConnectorState()

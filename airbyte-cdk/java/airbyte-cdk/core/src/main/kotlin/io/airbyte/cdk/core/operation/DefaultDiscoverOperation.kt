@@ -15,11 +15,11 @@ import jakarta.inject.Singleton
 @Named("discoverOperation")
 @Requires(
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
-    value = "discover"
+    value = "discover",
 )
-class DefaultDiscoverOperation(@Named("discoverOperationExecutor") private val operationExecutor: OperationExecutor
-): Operation {
-
+class DefaultDiscoverOperation(
+    @Named("discoverOperationExecutor") private val operationExecutor: OperationExecutor,
+) : Operation {
     override fun type(): OperationType {
         return OperationType.DISCOVER
     }

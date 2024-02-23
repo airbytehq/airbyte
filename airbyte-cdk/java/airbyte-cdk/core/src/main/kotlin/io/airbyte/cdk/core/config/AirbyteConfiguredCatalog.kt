@@ -15,13 +15,16 @@ import io.micronaut.core.util.StringUtils
  */
 @ConfigurationProperties("airbyte.connector.catalog")
 class AirbyteConfiguredCatalog {
-
     lateinit var configured: String
 
     fun getConfiguredCatalog(): ConfiguredAirbyteCatalog {
-        return if (StringUtils.isNotEmpty(configured)) Jsons.deserialize(
-            configured,
-            ConfiguredAirbyteCatalog::class.java
-        ) else ConfiguredAirbyteCatalog()
+        return if (StringUtils.isNotEmpty(configured)) {
+            Jsons.deserialize(
+                configured,
+                ConfiguredAirbyteCatalog::class.java,
+            )
+        } else {
+            ConfiguredAirbyteCatalog()
+        }
     }
 }

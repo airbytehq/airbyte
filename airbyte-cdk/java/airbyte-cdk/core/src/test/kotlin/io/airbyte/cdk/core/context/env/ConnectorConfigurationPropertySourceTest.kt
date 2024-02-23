@@ -21,7 +21,6 @@ import kotlin.io.path.pathString
 import kotlin.io.path.writeText
 
 class ConnectorConfigurationPropertySourceTest {
-
     @Test
     internal fun `test converting the connector configuration argument to configuration properties`() {
         val key = "key"
@@ -164,5 +163,4 @@ class ConnectorConfigurationPropertySourceTest {
         assertEquals(1, propertySource.asMap().size)
         assertEquals(operation, propertySource.get(CONNECTOR_OPERATION))
     }
-
 }

@@ -16,8 +16,7 @@ import java.util.function.Consumer
  */
 @Singleton
 @Named("outputRecordCollector")
-class DefaultOutputRecordCollector: Consumer<AirbyteMessage> {
-
+class DefaultOutputRecordCollector : Consumer<AirbyteMessage> {
     override fun accept(airbyteMessage: AirbyteMessage) {
         println(Jsons.serialize(airbyteMessage))
     }

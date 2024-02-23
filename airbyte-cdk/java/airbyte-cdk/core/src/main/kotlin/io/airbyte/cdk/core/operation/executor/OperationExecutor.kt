@@ -11,6 +11,5 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
  * represented by the operation type, returning a successful or failure result.
  */
 interface OperationExecutor {
-
     fun execute(): Result<AirbyteMessage?>
 }

@@ -15,11 +15,11 @@ import jakarta.inject.Singleton
 @Named("specOperation")
 @Requires(
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
-    value = "spec"
+    value = "spec",
 )
-class DefaultSpecOperation(@Named("specOperationExecutor") private val operationExecutor: OperationExecutor
-): Operation {
-
+class DefaultSpecOperation(
+    @Named("specOperationExecutor") private val operationExecutor: OperationExecutor,
+) : Operation {
     override fun type(): OperationType {
         return OperationType.SPEC
     }

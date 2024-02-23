@@ -21,7 +21,6 @@ import java.util.Optional
 import java.util.concurrent.TimeUnit
 
 class DefaultWriteOperationExecutorTest {
-
     @Test
     internal fun `test that for each message in the iterator, an airbyte message is written to the output record consumer`() {
         val catalog: AirbyteConfiguredCatalog = mockk()
@@ -36,29 +35,41 @@ class DefaultWriteOperationExecutorTest {
         every { consumer.start() } returns Unit
         every { consumer.accept(any(), any()) } returns Unit
         every { messageConsumerFactory.createMessageConsumer(catalog.getConfiguredCatalog()) } returns consumer
-        every { shutdownUtils.stopOrphanedThreads(
-            ShutdownUtils.EXIT_HOOK,
-            ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES,
-            ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES) } returns Unit
+        every {
+            shutdownUtils.stopOrphanedThreads(
+                ShutdownUtils.EXIT_HOOK,
+                ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+                ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+            )
+        } returns Unit
 
-        val executor = spyk<DefaultWriteOperationExecutor>(DefaultWriteOperationExecutor(catalog=catalog,
-            messageConsumerFactory=messageConsumerFactoryOptional, shutdownUtils=shutdownUtils))
+        val executor =
+            spyk<DefaultWriteOperationExecutor>(
+                DefaultWriteOperationExecutor(
+                    catalog = catalog,
+                    messageConsumerFactory = messageConsumerFactoryOptional,
+                    shutdownUtils = shutdownUtils,
+                ),
+            )
 
         every { executor.getInputStream() } returns inputStream
 
         val result = executor.execute()
 
         assertTrue(result.isSuccess)
-        verify(exactly=13) { consumer.accept(any(), any()) }
-        verify(exactly=1) { consumer.close() }
-        verify(exactly=1) { shutdownUtils.stopOrphanedThreads(
-            ShutdownUtils.EXIT_HOOK,
-            ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES,
-            ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES) }
+        verify(exactly = 13) { consumer.accept(any(), any()) }
+        verify(exactly = 1) { consumer.close() }
+        verify(exactly = 1) {
+            shutdownUtils.stopOrphanedThreads(
+                ShutdownUtils.EXIT_HOOK,
+                ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+                ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+            )
+        }
     }
 
     @Test
@@ -70,25 +81,35 @@ class DefaultWriteOperationExecutorTest {
 
         every { catalog.getConfiguredCatalog() } returns mockk()
         every { messageConsumerFactory.createMessageConsumer(catalog.getConfiguredCatalog()) } throws NullPointerException("test")
-        every { shutdownUtils.stopOrphanedThreads(
-            ShutdownUtils.EXIT_HOOK,
-            ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES,
-            ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES) } returns Unit
+        every {
+            shutdownUtils.stopOrphanedThreads(
+                ShutdownUtils.EXIT_HOOK,
+                ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+                ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+            )
+        } returns Unit
 
-        val executor = DefaultWriteOperationExecutor(catalog=catalog,
-            messageConsumerFactory=messageConsumerFactoryOptional, shutdownUtils=shutdownUtils)
+        val executor =
+            DefaultWriteOperationExecutor(
+                catalog = catalog,
+                messageConsumerFactory = messageConsumerFactoryOptional,
+                shutdownUtils = shutdownUtils,
+            )
 
         val result = executor.execute()
 
         assertTrue(result.isFailure)
-        verify(exactly=1) { shutdownUtils.stopOrphanedThreads(
-            ShutdownUtils.EXIT_HOOK,
-            ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES,
-            ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES) }
+        verify(exactly = 1) {
+            shutdownUtils.stopOrphanedThreads(
+                ShutdownUtils.EXIT_HOOK,
+                ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+                ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+            )
+        }
     }
 
     @Test
@@ -97,24 +118,34 @@ class DefaultWriteOperationExecutorTest {
         val messageConsumerFactoryOptional: Optional<SerializedAirbyteMessageConsumerFactory> = Optional.empty()
         val shutdownUtils: ShutdownUtils = mockk()
 
-        every { shutdownUtils.stopOrphanedThreads(
-            ShutdownUtils.EXIT_HOOK,
-            ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES,
-            ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES) } returns Unit
+        every {
+            shutdownUtils.stopOrphanedThreads(
+                ShutdownUtils.EXIT_HOOK,
+                ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+                ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+            )
+        } returns Unit
 
-        val executor = DefaultWriteOperationExecutor(catalog=catalog,
-            messageConsumerFactory=messageConsumerFactoryOptional, shutdownUtils=shutdownUtils)
+        val executor =
+            DefaultWriteOperationExecutor(
+                catalog = catalog,
+                messageConsumerFactory = messageConsumerFactoryOptional,
+                shutdownUtils = shutdownUtils,
+            )
 
         val result = executor.execute()
 
         assertTrue(result.isFailure)
-        verify(exactly=1) { shutdownUtils.stopOrphanedThreads(
-            ShutdownUtils.EXIT_HOOK,
-            ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES,
-            ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
-            TimeUnit.MINUTES) }
+        verify(exactly = 1) {
+            shutdownUtils.stopOrphanedThreads(
+                ShutdownUtils.EXIT_HOOK,
+                ShutdownUtils.INTERRUPT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+                ShutdownUtils.EXIT_THREAD_DELAY_MINUTES,
+                TimeUnit.MINUTES,
+            )
+        }
     }
 }

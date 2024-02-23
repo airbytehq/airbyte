@@ -15,10 +15,11 @@ import jakarta.inject.Singleton
 @Named("writeOperation")
 @Requires(
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
-    value = "write"
+    value = "write",
 )
-class DefaultWriteOperation(@Named("writeOperationExecutor") private val operationExecutor: OperationExecutor): Operation {
-
+class DefaultWriteOperation(
+    @Named("writeOperationExecutor") private val operationExecutor: OperationExecutor,
+) : Operation {
     override fun type(): OperationType {
         return OperationType.WRITE
     }

@@ -15,12 +15,10 @@ import jakarta.inject.Singleton
 @Named("discoverOperationExecutor")
 @Requires(
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
-    value = "discover"
+    value = "discover",
 )
-class DefaultDiscoverOperationExecutor: OperationExecutor {
-
+class DefaultDiscoverOperationExecutor : OperationExecutor {
     override fun execute(): Result<AirbyteMessage?> {
         return Result.success(AirbyteMessage().withType(AirbyteMessage.Type.CATALOG).withCatalog(AirbyteCatalog()))
     }
-
 }

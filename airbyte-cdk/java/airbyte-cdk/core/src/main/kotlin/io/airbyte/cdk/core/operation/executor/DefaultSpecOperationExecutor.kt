@@ -18,17 +18,17 @@ import jakarta.inject.Singleton
 @Named("specOperationExecutor")
 @Requires(
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
-    value = "spec"
+    value = "spec",
 )
-class DefaultSpecOperationExecutor(private val specFile:String="spec.json"): OperationExecutor {
-
+class DefaultSpecOperationExecutor(private val specFile: String = "spec.json") : OperationExecutor {
     override fun execute(): Result<AirbyteMessage> {
         try {
             val resourceString = MoreResources.readResource(specFile)
-            val connectorSpecification = Jsons.deserialize(
-                resourceString,
-                ConnectorSpecification::class.java
-            )
+            val connectorSpecification =
+                Jsons.deserialize(
+                    resourceString,
+                    ConnectorSpecification::class.java,
+                )
             return Result.success(AirbyteMessage().withType(AirbyteMessage.Type.SPEC).withSpec(connectorSpecification))
         } catch (e: Exception) {
             return Result.failure(OperationExecutionException("Failed to retrieve specification from connector.", e))

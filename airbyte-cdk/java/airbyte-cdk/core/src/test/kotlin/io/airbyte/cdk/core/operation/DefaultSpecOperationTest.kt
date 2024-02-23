@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DefaultSpecOperationTest {
-
     @Test
     internal fun `test that the correct operation type is returned`() {
         val operationExecutor: OperationExecutor = mockk()
@@ -24,7 +23,7 @@ class DefaultSpecOperationTest {
 
     @Test
     internal fun `test that on successful execution of the operation, the result is written to the output record collector`() {
-        val operationExecutor:OperationExecutor = mockk()
+        val operationExecutor: OperationExecutor = mockk()
         val expectedMessage = AirbyteMessage()
 
         every { operationExecutor.execute() } returns Result.success(expectedMessage)
@@ -38,7 +37,7 @@ class DefaultSpecOperationTest {
 
     @Test
     internal fun `test that on a failed execution of the operation, the failure result is returned`() {
-        val operationExecutor:OperationExecutor = mockk()
+        val operationExecutor: OperationExecutor = mockk()
 
         every { operationExecutor.execute() } returns Result.failure(NullPointerException("test"))
 

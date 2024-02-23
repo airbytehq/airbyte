@@ -7,4 +7,4 @@ package io.airbyte.cdk.core.operation
 /**
  * Custom exception that represents a failure to execute an operation.
  */
-class OperationExecutionException(message:String, cause:Throwable): Exception(message, cause) {}
+class OperationExecutionException(message: String, cause: Throwable) : Exception(message, cause)

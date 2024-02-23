@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DefaultReadOperationTest {
-
     @Test
     internal fun `test that the correct operation type is returned`() {
         val operationExecutor: OperationExecutor = mockk()
@@ -25,7 +24,9 @@ class DefaultReadOperationTest {
     internal fun `test that the result of the operation is returned`() {
         val operationExecutor: OperationExecutor = mockk()
 
-        every { operationExecutor.execute() } answers { Result.success(AirbyteMessage()) } andThenAnswer { Result.failure(NullPointerException("test"))}
+        every {
+            operationExecutor.execute()
+        } answers { Result.success(AirbyteMessage()) } andThenAnswer { Result.failure(NullPointerException("test")) }
 
         val operation = DefaultReadOperation(operationExecutor = operationExecutor)
 
