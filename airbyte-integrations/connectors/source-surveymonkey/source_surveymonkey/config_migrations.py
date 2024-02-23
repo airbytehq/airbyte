@@ -50,19 +50,9 @@ class MigrateAccessTokenToCredentials:
         return migrated_config
 
     @classmethod
-    def obscure_access_token(cls, access_token: str) -> str:
-        """Obscures the access token."""
-        return "*" * (len(access_token) // 2)
-
-    @classmethod
     def emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
         """Emits the control message."""
-        hashed_access_token = cls.obscure_access_token(migrated_config[cls.migrate_to_key][cls.migrate_from_key])
-        hashed_config = migrated_config.copy()
-        hashed_config[cls.migrate_to_key][cls.migrate_from_key] = hashed_access_token
-        hashed_config[cls.migrate_from_key] = hashed_access_token
-
-        control_message = create_connector_config_control_message(hashed_config)
+        control_message = create_connector_config_control_message(migrated_config)
         cls.message_repository.emit_message(control_message)
         for message in cls.message_repository._message_queue:
             print(message.json(exclude_unset=True))

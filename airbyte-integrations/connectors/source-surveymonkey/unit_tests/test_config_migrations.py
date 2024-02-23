@@ -65,7 +65,7 @@ def test_migrate_config():
     # new custom_reports are type(list)
     assert isinstance(control_msg.control.connectorConfig.config["credentials"]["access_token"], str)
     # check the migrated values
-    assert control_msg.control.connectorConfig.config["credentials"]["access_token"] == "******"
+    assert control_msg.control.connectorConfig.config["credentials"]["access_token"] == "access_token"
     # revert the test_config to the starting point
     revert_migration()
 
