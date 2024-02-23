@@ -3,9 +3,10 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - survey_ids
-streams:
-  - type: DeclarativeStream
+    - surveys
+definitions:
+  survey_ids:
+    type: DeclarativeStream
     name: survey_ids
     primary_key:
       - id
@@ -33,7 +34,7 @@ streams:
         request_parameters:
           sort_by: date_modified
           sort_order: ASC
-        request_headers: {}
+        request_headers: { }
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
@@ -44,7 +45,7 @@ streams:
               backoff_strategies:
                 - type: WaitTimeFromHeader
                   header: X-Ratelimit-App-Global-Minute-Reset
-        request_body_json: {}
+        request_body_json: { }
       record_selector:
         type: RecordSelector
         extractor:
@@ -61,10 +62,10 @@ streams:
           inject_into: request_parameter
         pagination_strategy:
           type: CursorPagination
-          page_size: 4
+          page_size: 1000
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-      partition_router: []
+      partition_router: [ ]
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date_modified
@@ -79,6 +80,7 @@ streams:
         type: RequestOption
         field_name: start_modified_at
         inject_into: request_parameter
+streams:
   - type: DeclarativeStream
     name: surveys
     primary_key:
@@ -177,7 +179,7 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          page_size: 4
+          page_size: 1000
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router:
@@ -187,80 +189,7 @@ streams:
               parent_key: id
               partition_field: survey_id
               stream:
-                type: DeclarativeStream
-                name: survey_ids
-                primary_key:
-                  - id
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $schema: http://json-schema.org/schema#
-                    properties:
-                      href:
-                        type: string
-                      id:
-                        type: string
-                      nickname:
-                        type: string
-                      title:
-                        type: string
-                    type: object
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.surveymonkey.com/v3/
-                    path: surveys
-                    http_method: GET
-                    request_parameters:
-                      sort_by: date_modified
-                      sort_order: ASC
-                    request_headers: {}
-                    authenticator:
-                      type: BearerAuthenticator
-                      api_token: "{{ config['credentials']['access_token'] }}"
-                    error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: WaitTimeFromHeader
-                              header: X-Ratelimit-App-Global-Minute-Reset
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - data
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestPath
-                    page_size_option:
-                      type: RequestOption
-                      field_name: per_page
-                      inject_into: request_parameter
-                    pagination_strategy:
-                      type: CursorPagination
-                      page_size: 4
-                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-                  partition_router: []
-                incremental_sync:
-                  type: DatetimeBasedCursor
-                  cursor_field: date_modified
-                  cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%S"
-                  datetime_format: "%Y-%m-%dT%H:%M:%S"
-                  start_datetime:
-                    type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-                  start_time_option:
-                    type: RequestOption
-                    field_name: start_modified_at
-                    inject_into: request_parameter
+                $ref: "#/definitions/survey_ids"
     transformations:
       - type: RemoveFields
         field_pointers:
@@ -319,7 +248,7 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          page_size: 4
+          page_size: 1000
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router:
@@ -329,80 +258,7 @@ streams:
               parent_key: id
               partition_field: survey_id
               stream:
-                type: DeclarativeStream
-                name: survey_ids
-                primary_key:
-                  - id
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $schema: http://json-schema.org/schema#
-                    properties:
-                      href:
-                        type: string
-                      id:
-                        type: string
-                      nickname:
-                        type: string
-                      title:
-                        type: string
-                    type: object
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.surveymonkey.com/v3/
-                    path: surveys
-                    http_method: GET
-                    request_parameters:
-                      sort_by: date_modified
-                      sort_order: ASC
-                    request_headers: {}
-                    authenticator:
-                      type: BearerAuthenticator
-                      api_token: "{{ config['credentials']['access_token'] }}"
-                    error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: WaitTimeFromHeader
-                              header: X-Ratelimit-App-Global-Minute-Reset
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - data
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestPath
-                    page_size_option:
-                      type: RequestOption
-                      field_name: per_page
-                      inject_into: request_parameter
-                    pagination_strategy:
-                      type: CursorPagination
-                      page_size: 4
-                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-                  partition_router: []
-                incremental_sync:
-                  type: DatetimeBasedCursor
-                  cursor_field: date_modified
-                  cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%S"
-                  datetime_format: "%Y-%m-%dT%H:%M:%S"
-                  start_datetime:
-                    type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-                  start_time_option:
-                    type: RequestOption
-                    field_name: start_modified_at
-                    inject_into: request_parameter
+                $ref: "#/definitions/survey_ids"
     transformations:
       - type: RemoveFields
         field_pointers:
@@ -541,7 +397,7 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          page_size: 4
+          page_size: 1000
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router:
@@ -551,80 +407,7 @@ streams:
               parent_key: id
               partition_field: survey_id
               stream:
-                type: DeclarativeStream
-                name: survey_ids
-                primary_key:
-                  - id
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $schema: http://json-schema.org/schema#
-                    properties:
-                      href:
-                        type: string
-                      id:
-                        type: string
-                      nickname:
-                        type: string
-                      title:
-                        type: string
-                    type: object
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.surveymonkey.com/v3/
-                    path: surveys
-                    http_method: GET
-                    request_parameters:
-                      sort_by: date_modified
-                      sort_order: ASC
-                    request_headers: {}
-                    authenticator:
-                      type: BearerAuthenticator
-                      api_token: "{{ config['credentials']['access_token'] }}"
-                    error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: WaitTimeFromHeader
-                              header: X-Ratelimit-App-Global-Minute-Reset
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - data
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestPath
-                    page_size_option:
-                      type: RequestOption
-                      field_name: per_page
-                      inject_into: request_parameter
-                    pagination_strategy:
-                      type: CursorPagination
-                      page_size: 4
-                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-                  partition_router: []
-                incremental_sync:
-                  type: DatetimeBasedCursor
-                  cursor_field: date_modified
-                  cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%S"
-                  datetime_format: "%Y-%m-%dT%H:%M:%S"
-                  start_datetime:
-                    type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-                  start_time_option:
-                    type: RequestOption
-                    field_name: start_modified_at
-                    inject_into: request_parameter
+                $ref: "#/definitions/survey_ids"
   - type: DeclarativeStream
     name: survey_responses
     primary_key:
@@ -766,80 +549,7 @@ streams:
               parent_key: id
               partition_field: survey_id
               stream:
-                type: DeclarativeStream
-                name: survey_ids
-                primary_key:
-                  - id
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $schema: http://json-schema.org/schema#
-                    properties:
-                      href:
-                        type: string
-                      id:
-                        type: string
-                      nickname:
-                        type: string
-                      title:
-                        type: string
-                    type: object
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.surveymonkey.com/v3/
-                    path: surveys
-                    http_method: GET
-                    request_parameters:
-                      sort_by: date_modified
-                      sort_order: ASC
-                    request_headers: {}
-                    authenticator:
-                      type: BearerAuthenticator
-                      api_token: "{{ config['credentials']['access_token'] }}"
-                    error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: WaitTimeFromHeader
-                              header: X-Ratelimit-App-Global-Minute-Reset
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - data
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestPath
-                    page_size_option:
-                      type: RequestOption
-                      field_name: per_page
-                      inject_into: request_parameter
-                    pagination_strategy:
-                      type: CursorPagination
-                      page_size: 4
-                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-                  partition_router: []
-                incremental_sync:
-                  type: DatetimeBasedCursor
-                  cursor_field: date_modified
-                  cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%S"
-                  datetime_format: "%Y-%m-%dT%H:%M:%S"
-                  start_datetime:
-                    type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-                  start_time_option:
-                    type: RequestOption
-                    field_name: start_modified_at
-                    inject_into: request_parameter
+                $ref: "#/definitions/survey_ids"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date_modified
@@ -915,80 +625,7 @@ streams:
               parent_key: id
               partition_field: survey_id
               stream:
-                type: DeclarativeStream
-                name: survey_ids
-                primary_key:
-                  - id
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $schema: http://json-schema.org/schema#
-                    properties:
-                      href:
-                        type: string
-                      id:
-                        type: string
-                      nickname:
-                        type: string
-                      title:
-                        type: string
-                    type: object
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.surveymonkey.com/v3/
-                    path: surveys
-                    http_method: GET
-                    request_parameters:
-                      sort_by: date_modified
-                      sort_order: ASC
-                    request_headers: {}
-                    authenticator:
-                      type: BearerAuthenticator
-                      api_token: "{{ config['credentials']['access_token'] }}"
-                    error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: WaitTimeFromHeader
-                              header: X-Ratelimit-App-Global-Minute-Reset
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - data
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestPath
-                    page_size_option:
-                      type: RequestOption
-                      field_name: per_page
-                      inject_into: request_parameter
-                    pagination_strategy:
-                      type: CursorPagination
-                      page_size: 4
-                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-                  partition_router: []
-                incremental_sync:
-                  type: DatetimeBasedCursor
-                  cursor_field: date_modified
-                  cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%S"
-                  datetime_format: "%Y-%m-%dT%H:%M:%S"
-                  start_datetime:
-                    type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-                  start_time_option:
-                    type: RequestOption
-                    field_name: start_modified_at
-                    inject_into: request_parameter
+                $ref: "#/definitions/survey_ids"
     transformations:
       - type: AddFields
         fields:
@@ -1089,7 +726,7 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          page_size: 4
+          page_size: 1000
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router:
@@ -1160,84 +797,7 @@ streams:
                           parent_key: id
                           partition_field: survey_id
                           stream:
-                            type: DeclarativeStream
-                            name: survey_ids
-                            primary_key:
-                              - id
-                            schema_loader:
-                              type: InlineSchemaLoader
-                              schema:
-                                $schema: http://json-schema.org/schema#
-                                properties:
-                                  href:
-                                    type: string
-                                  id:
-                                    type: string
-                                  nickname:
-                                    type: string
-                                  title:
-                                    type: string
-                                type: object
-                            retriever:
-                              type: SimpleRetriever
-                              requester:
-                                type: HttpRequester
-                                url_base: https://api.surveymonkey.com/v3/
-                                path: surveys
-                                http_method: GET
-                                request_parameters:
-                                  sort_by: date_modified
-                                  sort_order: ASC
-                                request_headers: {}
-                                authenticator:
-                                  type: BearerAuthenticator
-                                  api_token: "{{ config['credentials']['access_token'] }}"
-                                error_handler:
-                                  type: CompositeErrorHandler
-                                  error_handlers:
-                                    - type: DefaultErrorHandler
-                                      backoff_strategies:
-                                        - type: WaitTimeFromHeader
-                                          header: X-Ratelimit-App-Global-Minute-Reset
-                                request_body_json: {}
-                              record_selector:
-                                type: RecordSelector
-                                extractor:
-                                  type: DpathExtractor
-                                  field_path:
-                                    - data
-                              paginator:
-                                type: DefaultPaginator
-                                page_token_option:
-                                  type: RequestPath
-                                page_size_option:
-                                  type: RequestOption
-                                  field_name: per_page
-                                  inject_into: request_parameter
-                                pagination_strategy:
-                                  type: CursorPagination
-                                  page_size: 4
-                                  cursor_value: >-
-                                    {{ response.get("links", {}).get("next", {})
-                                    }}
-                                  stop_condition: >-
-                                    {{ not response.get("links", {}).get("next",
-                                    {}) }}
-                              partition_router: []
-                            incremental_sync:
-                              type: DatetimeBasedCursor
-                              cursor_field: date_modified
-                              cursor_datetime_formats:
-                                - "%Y-%m-%dT%H:%M:%S"
-                              datetime_format: "%Y-%m-%dT%H:%M:%S"
-                              start_datetime:
-                                type: MinMaxDatetime
-                                datetime: "{{ config['start_date'] }}"
-                                datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-                              start_time_option:
-                                type: RequestOption
-                                field_name: start_modified_at
-                                inject_into: request_parameter
+                            $ref: "#/definitions/survey_ids"
                 transformations:
                   - type: AddFields
                     fields:
@@ -1304,7 +864,7 @@ spec:
         format: "date-time"
       survey_ids:
         type: array
-        order: 4
+        order: 1000
         items:
           type: string
           pattern: "^[0-9]{8,9}$"
@@ -1358,12 +918,3 @@ spec:
             path_in_connector_config:
               - origin
   type: Spec
-metadata:
-  autoImportSchema:
-    survey_ids: true
-    surveys: true
-    survey_pages: true
-    survey_questions: true
-    survey_responses: true
-    survey_collectors: true
-    collectors: true

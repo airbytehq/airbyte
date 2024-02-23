@@ -47,7 +47,7 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 
 ## Supported streams and sync modes
 
-* [Surveys](https://developer.surveymonkey.com/api/v3/#surveys) \(Incremental\)
+* [Surveys](https://developer.surveymonkey.com/api/v3/#surveys)
 * [SurveyPages](https://developer.surveymonkey.com/api/v3/#surveys-id-pages)
 * [SurveyQuestions](https://developer.surveymonkey.com/api/v3/#surveys-id-pages-id-questions)
 * [SurveyResponses](https://developer.surveymonkey.com/api/v3/#survey-responses) \(Incremental\)
