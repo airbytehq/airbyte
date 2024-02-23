@@ -186,7 +186,6 @@ class MockStream(Stream):
         "test_with_parent_slices_and_records",
         "test_multiple_parent_streams",
         "test_cursor_values_are_removed_from_parent_slices",
-        "test_multiple_parent_streams",
         "test_missed_parent_key",
         "test_dpath_extraction",
     ],

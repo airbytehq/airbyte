@@ -102,7 +102,7 @@ class SubstreamPartitionRouter(StreamSlicer):
                     key = parent_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
                     value = stream_slice.get(key)
                     if value:
-                        params.update({parent_config.request_option.field_name.eval(config=self.config): value})
+                        params.update({parent_config.request_option.field_name.eval(config=self.config): value}) # type: ignore # field_name is always casted to an interpolated string
         return params
 
     def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
