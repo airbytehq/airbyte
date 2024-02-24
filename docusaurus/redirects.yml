@@ -93,6 +93,6 @@
     - /enterprise-setup/self-managed/sso
     - /enterprise-setup/sso
   to: /access-management/sso
-- from: 
+- from:
     - /pyairbyte
   to: /using-airbyte/airbyte-lib/getting-started
