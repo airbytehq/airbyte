@@ -7,9 +7,7 @@ package io.airbyte.integrations.source.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
-import org.junit.jupiter.api.Disabled;
 
-@Disabled
 public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
   @Override
