@@ -403,6 +403,9 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertCdcMetaData(recordMessages2.get(0).getData(), true);
   }
 
+  protected void waitForCdcRecords(String schemaName, String tableName, int recordCount)
+      throws Exception {}
+
   @SuppressWarnings({"BusyWait", "CodeBlock2Expr"})
   @Test
   // Verify that when data is inserted into the database while a sync is happening and after the first
@@ -418,6 +421,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
                   "F-" + recordsCreated));
       writeModelRecord(record);
     }
+    waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, recordsToCreate);
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
         .read(config(), getConfiguredCatalog(), null);
@@ -437,6 +441,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
                   "F-" + recordsCreated));
       writeModelRecord(record);
     }
+    waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, recordsToCreate * 2);
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = source()

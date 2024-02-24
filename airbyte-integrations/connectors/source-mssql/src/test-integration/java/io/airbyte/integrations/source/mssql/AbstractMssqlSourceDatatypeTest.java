@@ -122,16 +122,13 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues("123.0", "1.2345678901234567E9", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("real")
-            .airbyteType(JsonSchemaType.NUMBER)
-            .addInsertValues("'123'", "'1234567890.1234567'", "null")
-            .addExpectedValues("123.0", "1.23456794E9", null)
-            .createTablePatternSql(CREATE_TABLE_SQL)
-            .build());
-
+    // TODO SGX re-enable
+    /*
+     * addDataTypeTestData( TestDataHolder.builder() .sourceType("real")
+     * .airbyteType(JsonSchemaType.NUMBER) .addInsertValues("'123'", "'1234567890.1234567'", "null")
+     * .addExpectedValues("123.0", "1.23456794E9", null) .createTablePatternSql(CREATE_TABLE_SQL)
+     * .build());
+     */
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")

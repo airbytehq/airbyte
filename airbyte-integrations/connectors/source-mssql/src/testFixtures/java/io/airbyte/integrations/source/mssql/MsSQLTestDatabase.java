@@ -11,6 +11,7 @@ import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,35 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     return with("EXEC sys.sp_cdc_enable_db;");
   }
 
+  public synchronized MsSQLTestDatabase withCdcForTable(String schemaName, String tableName, String roleName) {
+    String captureInstanceName = "%s_%s".formatted(schemaName, tableName);
+    return withCdcForTable(schemaName, tableName, roleName, captureInstanceName);
+  }
+
+  public synchronized MsSQLTestDatabase withCdcForTable(String schemaName, String tableName, String roleName, String captureInstanceName) {
+    final var enableCdcSqlFmt = """
+                                EXEC sys.sp_cdc_enable_table
+                                \t@source_schema = N'%s',
+                                \t@source_name   = N'%s',
+                                \t@role_name     = %s,
+                                \t@supports_net_changes = 0,
+                                \t@capture_instance = N'%s'""";
+    String sqlRoleName = roleName == null ? "NULL" : "N'%s'".formatted(roleName);
+    Instant startTime = Instant.now();
+    Instant timeout = startTime.plusSeconds(300);
+    while (timeout.isAfter(Instant.now())) {
+      try {
+        getDslContext().execute(enableCdcSqlFmt.formatted(schemaName, tableName, sqlRoleName, captureInstanceName));
+        return this;
+      } catch (Exception e) {
+        if (!e.getMessage().contains("The error returned was 14258: 'Cannot perform this operation while SQLServerAgent is starting.")) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+    throw new RuntimeException("Couldn't enable CDC for table %s.%s".formatted(schemaName, tableName));
+  }
+
   public MsSQLTestDatabase withoutCdc() {
     return with("EXEC sys.sp_cdc_disable_db;");
   }
@@ -98,8 +128,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   public MsSQLTestDatabase withShortenedCapturePollingInterval() {
-    return with("EXEC sys.sp_cdc_change_job @job_type = 'capture', @pollinginterval = %d;",
-        MssqlCdcTargetPosition.MAX_LSN_QUERY_DELAY_TEST.toSeconds());
+    return with("EXEC sys.sp_cdc_change_job @job_type = 'capture', @pollinginterval = 1;");
   }
 
   private void waitForAgentState(final boolean running) {
@@ -145,6 +174,26 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       }
     }
     throw new RuntimeException("Exhausted retry attempts while polling for max LSN availability");
+  }
+
+  public void waitForCdcRecords(String schemaName, String tableName, int recordCount)
+      throws SQLException {
+    int maxTimeoutSec = 300;
+    String sql = "SELECT count(*) FROM cdc.%s_%s_ct".formatted(schemaName, tableName);
+    int actualRecordCount;
+    Instant startTime = Instant.now();
+    Instant maxTime = startTime.plusSeconds(maxTimeoutSec);
+    do {
+      LOGGER.info("fetching the number of CDC records for {}.{}", schemaName, tableName);
+      actualRecordCount = query(ctx -> ctx.fetch(sql)).get(0).get(0, Integer.class);
+      LOGGER.info("Found {} CDC records for {}.{}. Expecting {}. Trying again", actualRecordCount, schemaName, tableName, recordCount);
+    } while (actualRecordCount < recordCount && maxTime.isAfter(Instant.now()));
+    if (actualRecordCount >= recordCount) {
+      LOGGER.info("found {} records!", actualRecordCount);
+    } else {
+      throw new RuntimeException(
+          "failed to find %d records after %s seconds. Only found %d!".formatted(recordCount, maxTimeoutSec, actualRecordCount));
+    }
   }
 
   @Override
