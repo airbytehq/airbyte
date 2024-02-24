@@ -4,9 +4,9 @@ FROM python:3.9.11-alpine3.15 as base
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
-# upgrade pip to the latest version
+
 RUN apk --no-cache upgrade \
-    && pip install --upgrade pip \
+    && pip install --upgrade pip  \
     && apk --no-cache add tzdata build-base
 
 
@@ -14,7 +14,7 @@ COPY setup.py ./
 # install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
 
-# build a clean environment
+
 FROM base
 WORKDIR /airbyte/integration_code
 
@@ -34,5 +34,5 @@ COPY source_harness ./source_harness
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.0
-LABEL io.airbyte.name=airbyte/source-harness
+LABEL io.airbyte.version=0.3.0
+LABEL io.airbyte.name=airbyte/source-snapchat-marketing
