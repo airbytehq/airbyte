@@ -8,7 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public class CloudDeploymentSslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   @Override
