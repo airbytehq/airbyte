@@ -25,7 +25,8 @@ import org.jooq.SQLDialect;
 public class RedshiftDestinationHandler extends JdbcDestinationHandler<RedshiftState> {
 
   public RedshiftDestinationHandler(final String databaseName, final JdbcDatabase jdbcDatabase, String rawNamespace) {
-    super(databaseName, jdbcDatabase, rawNamespace, SQLDialect.POSTGRES);
+    // :shrug: apparently this works better than using POSTGRES
+    super(databaseName, jdbcDatabase, rawNamespace, SQLDialect.DEFAULT);
   }
 
   @Override
