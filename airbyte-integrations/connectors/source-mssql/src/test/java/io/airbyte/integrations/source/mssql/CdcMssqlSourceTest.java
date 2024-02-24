@@ -64,7 +64,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -476,32 +475,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   protected void waitForCdcRecords(String schemaName, String tableName, int recordCount)
       throws Exception {
     testdb.waitForCdcRecords(schemaName, tableName, recordCount);
-  }
-
-  @Disabled
-  @Test
-  protected void testRecordsProducedDuringAndAfterSync() throws Exception {
-    super.testRecordsProducedDuringAndAfterSync();
-  }
-
-  @Disabled
-  @Test
-  void testNoDataOnSecondSync() throws Exception {}
-
-  @Disabled
-  @Test
-  void testCdcAndFullRefreshInSameSync() {}
-
-  @Test
-  @Disabled
-  public void testDelete() throws Exception {
-
-  }
-
-  @Test
-  @Disabled
-  public void testUpdate() throws Exception {
-
   }
 
 }

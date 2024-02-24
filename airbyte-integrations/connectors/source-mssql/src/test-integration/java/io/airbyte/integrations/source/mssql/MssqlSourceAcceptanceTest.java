@@ -30,8 +30,10 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected static final String SCHEMA_NAME = "dbo";

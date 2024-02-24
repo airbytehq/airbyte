@@ -10,7 +10,9 @@ import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
   @Override

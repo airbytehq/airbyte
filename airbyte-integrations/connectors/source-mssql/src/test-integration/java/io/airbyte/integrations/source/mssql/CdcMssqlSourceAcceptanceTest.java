@@ -29,7 +29,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -171,19 +170,6 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   private List<AirbyteStateMessage> filterStateMessages(final List<AirbyteMessage> messages) {
     return messages.stream().filter(r -> r.getType() == AirbyteMessage.Type.STATE).map(AirbyteMessage::getState)
         .collect(Collectors.toList());
-  }
-
-  @Test
-  @Disabled
-  public void testIdenticalFullRefreshes() throws Exception {
-    super.testIdenticalFullRefreshes();
-  }
-
-  @Test
-  @Disabled
-  @Override
-  public void testEntrypointEnvVar() throws Exception {
-    super.testEntrypointEnvVar();
   }
 
 }
