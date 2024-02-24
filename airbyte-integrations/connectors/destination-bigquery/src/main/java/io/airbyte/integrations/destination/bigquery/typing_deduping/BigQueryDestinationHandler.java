@@ -207,18 +207,13 @@ public class BigQueryDestinationHandler implements DestinationHandler<BigquerySt
 
   @Override
   public List<DestinationInitialState<BigqueryState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
-    final TableId stateTableId = TableId.of(rawTableDataset, DESTINATION_STATE_TABLE_NAME);
-    final Table stateTable = bq.getTable(stateTableId);
-    if (stateTable == null || !stateTable.exists()) {
-      bq.create(TableInfo.newBuilder(
-          stateTableId,
-          StandardTableDefinition.of(Schema.of(
-              Field.of(DESTINATION_STATE_TABLE_COLUMN_NAME, StandardSQLTypeName.STRING),
-              Field.of(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE, StandardSQLTypeName.STRING),
-              Field.of(DESTINATION_STATE_TABLE_COLUMN_STATE, StandardSQLTypeName.JSON),
-              Field.of(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT, StandardSQLTypeName.TIMESTAMP))))
-          .build());
-    }
+    // Would be nice to use bq.create(), but it doesn't support `create table if not exists`.
+    bq.query(QueryJobConfiguration.newBuilder(
+        "CREATE TABLE IF NOT EXISTS " + getStateTableName() + " ("
+            + DESTINATION_STATE_TABLE_COLUMN_NAME + " STRING, "
+            + DESTINATION_STATE_TABLE_COLUMN_NAMESPACE + " STRING, "
+            + DESTINATION_STATE_TABLE_COLUMN_STATE + " JSON, "
+            + DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT + " TIMESTAMP)").build());
 
     Map<AirbyteStreamNameNamespacePair, BigqueryState> destinationStates = StreamSupport.stream(
         bq.query(QueryJobConfiguration.newBuilder(
