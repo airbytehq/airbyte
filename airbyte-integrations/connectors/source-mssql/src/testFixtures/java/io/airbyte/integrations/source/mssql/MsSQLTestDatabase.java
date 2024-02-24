@@ -11,6 +11,7 @@ import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -183,13 +184,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   public MsSQLTestDatabase(final MSSQLServerContainer<?> container) {
     super(container);
-    bgThreads = new AbstractMssqlTestDatabaseBackgroundThread[] {
-      new MssqlTestDatabaseBackgroundThreadAgentState(),
-      new MssqlTestDatabaseBackgroundThreadFnCdcGetMaxLsn(),
-      new MssqlTestDatabaseBackgroundThreadLsnTimeMapping(),
-      new MssqlTestDatabaseBackgroundThreadEnableInternalTable(),
-      new MssqlTestDatabaseBackgroundThreadQueryChangeTables(),
-      new MssqlTestDatabaseBackgroundThreadQueryInternalTable()};
+    bgThreads = new AbstractMssqlTestDatabaseBackgroundThread[] {};
     LOGGER.info("SGX creating new database. databaseId=" + this.databaseId + ", databaseName=" + getDatabaseName());
   }
 
@@ -204,13 +199,6 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     LOGGER.info("enabling CDC on database {} with id {}", getDatabaseName(), databaseId);
     with("EXEC sys.sp_cdc_enable_db;");
     LOGGER.info("CDC enabled on database {} with id {}", getDatabaseName(), databaseId);
-    try {
-      LOGGER.info("sleeping");
-      Thread.sleep(300_000);
-      LOGGER.info("resuming");
-    } catch (InterruptedException e) {
-
-    }
     return this;
   }
 
@@ -222,7 +210,19 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
                                 \t@role_name     = %s,
                                 \t@supports_net_changes = 0""";
     String sqlRoleName = roleName == null ? "NULL" : "N'%s'".formatted(roleName);
-    return with(enableCdcSqlFmt.formatted(schemaName, tableName, sqlRoleName));
+    Instant startTime = Instant.now();
+    Instant timeout = startTime.plusSeconds(300);
+    while (timeout.isAfter(Instant.now())) {
+      try {
+        getDslContext().execute(enableCdcSqlFmt.formatted(schemaName, tableName, sqlRoleName));
+        return this;
+      } catch (Exception e) {
+        if (!e.getMessage().contains("The error returned was 14258: 'Cannot perform this operation while SQLServerAgent is starting.")) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+    throw new RuntimeException("Couldn't enable CDC for table %s.%s".formatted(schemaName, tableName));
   }
 
   public MsSQLTestDatabase withoutCdc() {
@@ -248,8 +248,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   public MsSQLTestDatabase withShortenedCapturePollingInterval() {
-    return with("EXEC sys.sp_cdc_change_job @job_type = 'capture', @pollinginterval = %d;",
-        MssqlCdcTargetPosition.MAX_LSN_QUERY_DELAY_TEST.toSeconds());
+    return with("EXEC sys.sp_cdc_change_job @job_type = 'capture', @pollinginterval = 1;");
   }
 
   private void waitForAgentState(final boolean running) {
@@ -295,6 +294,26 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       }
     }
     throw new RuntimeException("Exhausted retry attempts while polling for max LSN availability");
+  }
+
+  public void waitForCdcRecords(String schemaName, String tableName, int recordCount)
+      throws SQLException {
+    int maxTimeoutSec = 60;
+    String sql = "SELECT count(*) FROM cdc.%s_%s_ct".formatted(schemaName, tableName);
+    int actualRecordCount;
+    Instant startTime = Instant.now();
+    Instant maxTime = startTime.plusSeconds(maxTimeoutSec);
+    do {
+      LOGGER.info("fetching the number of CDC records for {}.{}", schemaName, tableName);
+      actualRecordCount = query(ctx -> ctx.fetch(sql)).get(0).get(0, Integer.class);
+      LOGGER.info("Found {} CDC records for {}.{}. Expecting {}. Trying again", actualRecordCount, schemaName, tableName, recordCount);
+    } while (actualRecordCount < recordCount && maxTime.isAfter(Instant.now()));
+    if (actualRecordCount >= recordCount) {
+      LOGGER.info("found {} records!", actualRecordCount);
+    } else {
+      throw new RuntimeException(
+          "failed to find %d records after %s seconds. Only found %d!".formatted(recordCount, maxTimeoutSec, actualRecordCount));
+    }
   }
 
   @Override

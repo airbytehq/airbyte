@@ -49,6 +49,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -468,6 +469,11 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       }
     }
+  }
+
+  protected void waitForCdcRecords(String schemaName, String tableName, int recordCount)
+      throws SQLException {
+    testdb.waitForCdcRecords(schemaName, tableName, recordCount);
   }
 
 }
