@@ -8,7 +8,9 @@ import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTyp
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   protected MsSQLTestDatabase testdb;

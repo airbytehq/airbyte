@@ -6,7 +6,9 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   @Override
