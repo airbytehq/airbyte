@@ -478,4 +478,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     }
   }
 
+  protected void waitForCdcRecords(String schemaName, String tableName, int recordCount)
+      throws Exception {
+    testdb.waitForCdcRecords(schemaName, tableName, recordCount);
+  }
+
 }
