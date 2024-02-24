@@ -183,13 +183,14 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   public MsSQLTestDatabase(final MSSQLServerContainer<?> container) {
     super(container);
-    bgThreads = new AbstractMssqlTestDatabaseBackgroundThread[] {
-      new MssqlTestDatabaseBackgroundThreadAgentState(),
-      new MssqlTestDatabaseBackgroundThreadFnCdcGetMaxLsn(),
-      new MssqlTestDatabaseBackgroundThreadLsnTimeMapping(),
-      new MssqlTestDatabaseBackgroundThreadEnableInternalTable(),
-      new MssqlTestDatabaseBackgroundThreadQueryChangeTables(),
-      new MssqlTestDatabaseBackgroundThreadQueryInternalTable()};
+    bgThreads = new AbstractMssqlTestDatabaseBackgroundThread[] {/*
+                                                                  * new MssqlTestDatabaseBackgroundThreadAgentState(), new
+                                                                  * MssqlTestDatabaseBackgroundThreadFnCdcGetMaxLsn(), new
+                                                                  * MssqlTestDatabaseBackgroundThreadLsnTimeMapping(), new
+                                                                  * MssqlTestDatabaseBackgroundThreadEnableInternalTable(), new
+                                                                  * MssqlTestDatabaseBackgroundThreadQueryChangeTables(), new
+                                                                  * MssqlTestDatabaseBackgroundThreadQueryInternalTable()
+                                                                  */};
     LOGGER.info("SGX creating new database. databaseId=" + this.databaseId + ", databaseName=" + getDatabaseName());
   }
 
@@ -204,13 +205,22 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     LOGGER.info("enabling CDC on database {} with id {}", getDatabaseName(), databaseId);
     with("EXEC sys.sp_cdc_enable_db;");
     LOGGER.info("CDC enabled on database {} with id {}", getDatabaseName(), databaseId);
-    try {
-      LOGGER.info("sleeping");
-      Thread.sleep(300_000);
-      LOGGER.info("resuming");
-    } catch (InterruptedException e) {
-
-    }
+    /*
+     * String internalSchemaName = getInternalSchemaName() + "_2";
+     * with("CREATE SCHEMA %s".formatted(internalSchemaName));
+     * with("CREATE TABLE %s.%s (id INTEGER PRIMARY KEY)".formatted(internalSchemaName,
+     * getInternalTableName())); with("GRANT ALL ON %s.%s TO PUBLIC".formatted(internalSchemaName,
+     * getInternalTableName())); while (true) { try { withCdcForTable(internalSchemaName,
+     * getInternalTableName(), null); break; } catch (Exception e) { if (!e.getMessage().
+     * contains("The error returned was 14258: 'Cannot perform this operation while SQLServerAgent is starting."
+     * )) { throw e; } } }
+     */
+    /*
+     * byte[] maxLsn; int tryCount = 0; do { try { tryCount++;
+     * LOGGER.info("waiting for fn_cdc_get_max_lsn to return a non-null value try {}", tryCount); maxLsn
+     * = query(ctx -> ctx.fetch("SELECT sys.fn_cdc_get_max_lsn();").get(0).get(0, byte[].class)); }
+     * catch (SQLException e) { throw new RuntimeException(e); } } while (maxLsn == null);
+     */
     return this;
   }
 
@@ -222,7 +232,20 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
                                 \t@role_name     = %s,
                                 \t@supports_net_changes = 0""";
     String sqlRoleName = roleName == null ? "NULL" : "N'%s'".formatted(roleName);
-    return with(enableCdcSqlFmt.formatted(schemaName, tableName, sqlRoleName));
+    int tryCount = 0;
+    while (true) {
+      try {
+        tryCount++;
+        LOGGER.info("attempting to enable CDC for table {}.{} and role {}. Try {}", schemaName, tableName, roleName, tryCount);
+        with(enableCdcSqlFmt.formatted(schemaName, tableName, sqlRoleName));
+        break;
+      } catch (Exception e) {
+        if (!e.getMessage().contains("The error returned was 14258: 'Cannot perform this operation while SQLServerAgent is starting.")) {
+          throw e;
+        }
+      }
+    }
+    return this;
   }
 
   public MsSQLTestDatabase withoutCdc() {
