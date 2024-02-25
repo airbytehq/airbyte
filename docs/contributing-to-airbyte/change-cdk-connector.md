@@ -21,10 +21,10 @@ Make sure you're working on an issue had been already triaged to not have your c
 3. Code the change
 4. Write a unit test for each custom function you added or changed
 5. Ensure all tests, including connector acceptance tests, pass
-6. Update the `metadata.yaml` and `Dockerfile` version following the [guidelines](./resources/pull-requests-handbook.md#semantic-versioning-for-connectors)
+6. Update the `metadata.yaml` following the [guidelines](./resources/pull-requests-handbook.md#semantic-versioning-for-connectors)
 7. Update the changelog entry in documentation in `docs/integrations/<connector-name>.md`
+8. Make sure your contribution passes our [QA checks](./resources/qa-checks.md)
 
-A comment will automatically be added to your PR with a checklist containing the necessary steps to complete your contribution and get it merged.
 
 :::info
 There is a README file inside each connector folder containing instructions to run that connector's tests locally.

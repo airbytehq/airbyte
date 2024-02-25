@@ -13,13 +13,15 @@ from typing import TYPE_CHECKING
 import segment.analytics as analytics  # type: ignore
 from asyncclick import get_current_context
 
+DISABLE_TELEMETRY = os.environ.get("AIRBYTE_CI_DISABLE_TELEMETRY", "false").lower() == "true"
+
 if TYPE_CHECKING:
     from typing import Any, Callable, Dict, Tuple
 
     from asyncclick import Command
 
 analytics.write_key = "G6G7whgro81g9xM00kN2buclGKvcOjFd"
-analytics.send = True
+analytics.send = not DISABLE_TELEMETRY
 analytics.debug = False
 
 
@@ -49,13 +51,13 @@ def click_track_command(f: Callable) -> Callable:
 
     def wrapper(*args: Tuple, **kwargs: Dict[str, Any]) -> Command:
         ctx = get_current_context()
+
         top_level_command = ctx.command_path
         full_cmd = " ".join(sys.argv)
 
         # remove anything prior to the command name f.__name__
         # to avoid logging inline secrets
-        santized_cmd = full_cmd[full_cmd.find(top_level_command) :]
-
+        sanitized_cmd = full_cmd[full_cmd.find(top_level_command) :]
         sys_id = _get_anonymous_system_id()
         sys_user_name = f"anonymous:{sys_id}"
         airbyter = _is_airbyte_user()
@@ -65,7 +67,7 @@ def click_track_command(f: Callable) -> Callable:
         event = f"airbyte-ci:{f.__name__}"
 
         # IMPORTANT! do not log kwargs as they may contain secrets
-        analytics.track(user_id, event, {"username": sys_user_name, "command": santized_cmd, "airbyter": airbyter})
+        analytics.track(user_id, event, {"username": sys_user_name, "command": sanitized_cmd, "airbyter": airbyter})
 
         return f(*args, **kwargs)
 

@@ -312,11 +312,11 @@ public class MongoUtilTest {
   void testGetDebeziumEventQueueSize() {
     final int queueSize = 5000;
     final MongoDbSourceConfig validQueueSizeConfiguration = new MongoDbSourceConfig(
-        Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, queueSize))));
+        Jsons.jsonNode(Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, queueSize, DATABASE_CONFIG_CONFIGURATION_KEY, Map.of())));
     final MongoDbSourceConfig tooSmallQueueSizeConfiguration = new MongoDbSourceConfig(
-        Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, Integer.MIN_VALUE))));
+        Jsons.jsonNode(Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, Integer.MIN_VALUE, DATABASE_CONFIG_CONFIGURATION_KEY, Map.of())));
     final MongoDbSourceConfig tooLargeQueueSizeConfiguration = new MongoDbSourceConfig(
-        Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, Integer.MAX_VALUE))));
+        Jsons.jsonNode(Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, Integer.MAX_VALUE, DATABASE_CONFIG_CONFIGURATION_KEY, Map.of())));
     final MongoDbSourceConfig missingQueueSizeConfiguration =
         new MongoDbSourceConfig(Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, Map.of())));
 

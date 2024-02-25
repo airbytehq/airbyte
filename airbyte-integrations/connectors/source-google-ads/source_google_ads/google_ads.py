@@ -5,7 +5,7 @@
 
 import logging
 from enum import Enum
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional
 
 import backoff
 from airbyte_cdk.models import FailureType

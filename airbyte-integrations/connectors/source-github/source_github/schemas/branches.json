@@ -25,6 +25,9 @@
     "protection": {
       "type": ["null", "object"],
       "properties": {
+        "enabled": {
+          "type": ["null", "boolean"]
+        },
         "required_status_checks": {
           "type": ["null", "object"],
           "properties": {
@@ -35,6 +38,20 @@
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "string"]
+              }
+            },
+            "checks": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": ["null", "string"]
+                  },
+                  "app_id": {
+                    "type": ["null", "integer"]
+                  }
+                }
               }
             }
           }

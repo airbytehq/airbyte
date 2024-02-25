@@ -46,6 +46,8 @@ This page contains the setup guide and reference information for the Amazon Sell
 
 ## Step 2: Set up the source connector in Airbyte
 
+To pass the check for Seller and Vendor accounts, you must have access to the [Orders endpoint](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) and the [Vendor Orders endpoint](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders), respectively.
+
 <!-- env:cloud -->
 
 **For Airbyte Cloud:**
@@ -136,6 +138,7 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+- [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 
 ## Report options
 
@@ -165,6 +168,8 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version  | Date       | Pull Request                                                | Subject                                                                                                                                                                             |
 |:---------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `3.5.0`  | 2024-02-09 | [\#35331](https://github.com/airbytehq/airbyte/pull/35331)  | Fix check for Vendor accounts. Add failed report result message                                                                                                                     |
+| `3.4.0`  | 2024-02-15 | [\#35273](https://github.com/airbytehq/airbyte/pull/35273)  | Add `VendorOrders` stream                                                                                                                                                           |
 | `3.3.2`  | 2024-02-13 | [\#33996](https://github.com/airbytehq/airbyte/pull/33996)  | Add integration tests                                                                                                                                                               |
 | `3.3.1`  | 2024-02-09 | [\#35106](https://github.com/airbytehq/airbyte/pull/35106)  | Add logs for the failed check command                                                                                                                                               |
 | `3.3.0`  | 2024-02-09 | [\#35062](https://github.com/airbytehq/airbyte/pull/35062)  | Fix the check command for the `Vendor` account type                                                                                                                                 |

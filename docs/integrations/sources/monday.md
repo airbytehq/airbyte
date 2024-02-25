@@ -74,7 +74,8 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------|
-| 2.0.2 | 2024-02-12 | [35146](https://github.com/airbytehq/airbyte/pull/35146) | Manage dependencies with Poetry. |
+| 2.0.3   | 2024-02-21 | [35506](https://github.com/airbytehq/airbyte/pull/35506)  | Support for column values of the mirror type for the `Items` stream.    |
+| 2.0.2   | 2024-02-12 | [35146](https://github.com/airbytehq/airbyte/pull/35146)  | Manage dependencies with Poetry.                                        |
 | 2.0.1   | 2024-02-08 | [35016](https://github.com/airbytehq/airbyte/pull/35016)  | Migrated to the latest airbyte cdk                                      |
 | 2.0.0   | 2024-01-12 | [34108](https://github.com/airbytehq/airbyte/pull/34108)  | Migrated to the latest API version: 2024-01                             |
 | 1.1.4   | 2023-12-13 | [33448](https://github.com/airbytehq/airbyte/pull/33448)  | Increase test coverage and migrate to base image                        |

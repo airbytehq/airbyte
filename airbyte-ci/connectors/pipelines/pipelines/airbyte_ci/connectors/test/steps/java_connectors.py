@@ -38,12 +38,16 @@ class IntegrationTests(GradleTask):
     gradle_task_name = "integrationTestJava"
     mount_connector_secrets = True
     bind_to_docker_host = True
-    with_test_report = True
+    with_test_artifacts = True
 
     @property
     def default_params(self) -> STEP_PARAMS:
         return super().default_params | {
-            "-x": ["buildConnectorImage", "assemble"],  # Exclude the buildConnectorImage and assemble tasks
+            # Exclude the assemble task to avoid a circular dependency on airbyte-ci.
+            # The integrationTestJava gradle task depends on assemble, which in turns
+            # depends on buildConnectorImage to build the connector's docker image.
+            # At this point, the docker image has already been built.
+            "-x": ["assemble"],
         }
 
     async def _load_normalization_image(self, normalization_tar_file: File) -> None:
@@ -76,7 +80,7 @@ class UnitTests(GradleTask):
     title = "Java Connector Unit Tests"
     gradle_task_name = "test"
     bind_to_docker_host = True
-    with_test_report = True
+    with_test_artifacts = True
 
 
 def _create_integration_step_args_factory(context: ConnectorContext) -> Callable:
@@ -86,14 +90,14 @@ def _create_integration_step_args_factory(context: ConnectorContext) -> Callable
 
     async def _create_integration_step_args(results: RESULTS_DICT) -> Dict[str, Optional[File]]:
 
-        connector_container = results["build"].output_artifact[LOCAL_BUILD_PLATFORM]
+        connector_container = results["build"].output[LOCAL_BUILD_PLATFORM]
         connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container, LOCAL_BUILD_PLATFORM)
 
         if context.connector.supports_normalization:
             tar_file_name = f"{context.connector.normalization_repository}_{context.git_revision}.tar"
             build_normalization_results = results["build_normalization"]
 
-            normalization_container = build_normalization_results.output_artifact
+            normalization_container = build_normalization_results.output
             normalization_tar_file, _ = await export_container_to_tarball(
                 context, normalization_container, LOCAL_BUILD_PLATFORM, tar_file_name=tar_file_name
             )
@@ -134,9 +138,7 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
             step=AcceptanceTests(context, True),
-            args=lambda results: {
-                "connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]
-            },
+            args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
     ]
@@ -155,7 +157,7 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
                 id=CONNECTOR_TEST_STEP_ID.BUILD,
                 step=BuildConnectorImages(context),
                 args=lambda results: {
-                    "dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output_artifact.directory(dist_tar_directory_path(context))
+                    "dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output.directory(dist_tar_directory_path(context))
                 },
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
             ),

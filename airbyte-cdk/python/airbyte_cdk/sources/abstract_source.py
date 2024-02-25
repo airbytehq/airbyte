@@ -14,7 +14,9 @@ from airbyte_cdk.models import (
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
+    FailureType,
     Status,
+    StreamDescriptor,
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
@@ -27,6 +29,7 @@ from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -133,11 +136,16 @@ class AbstractSource(Source, ABC):
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
                 except AirbyteTracedException as e:
+                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
+                    logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    if self.continue_sync_on_stream_failure:
-                        stream_name_to_exception[stream_instance.name] = e
-                    else:
-                        raise e
+                    yield e.as_sanitized_airbyte_message(stream_descriptor=StreamDescriptor(name=configured_stream.stream.name))
+                    stream_name_to_exception[stream_instance.name] = e
+                    if self.stop_sync_on_stream_failure:
+                        logger.info(
+                            f"Stopping sync on error from stream {configured_stream.stream.name} because {self.name} does not support continuing syncs on error."
+                        )
+                        break
                 except Exception as e:
                     yield from self._emit_queued_messages()
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
@@ -145,15 +153,28 @@ class AbstractSource(Source, ABC):
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
                     display_message = stream_instance.get_error_display_message(e)
                     if display_message:
-                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
-                    raise e
+                        traced_exception = AirbyteTracedException.from_exception(e, message=display_message)
+                    else:
+                        traced_exception = AirbyteTracedException.from_exception(e)
+                    yield traced_exception.as_sanitized_airbyte_message(
+                        stream_descriptor=StreamDescriptor(name=configured_stream.stream.name)
+                    )
+                    stream_name_to_exception[stream_instance.name] = traced_exception
+                    if self.stop_sync_on_stream_failure:
+                        logger.info(f"{self.name} does not support continuing syncs on error from stream {configured_stream.stream.name}")
+                        break
                 finally:
                     timer.finish_event()
                     logger.info(f"Finished syncing {configured_stream.stream.name}")
                     logger.info(timer.report())
 
-        if self.continue_sync_on_stream_failure and len(stream_name_to_exception) > 0:
-            raise AirbyteTracedException(message=self._generate_failed_streams_error_message(stream_name_to_exception))
+        if len(stream_name_to_exception) > 0:
+            error_message = self._generate_failed_streams_error_message(stream_name_to_exception)
+            logger.info(error_message)
+            # We still raise at least one exception when a stream raises an exception because the platform currently relies
+            # on a non-zero exit code to determine if a sync attempt has failed. We also raise the exception as a config_error
+            # type because this combined error isn't actionable, but rather the previously emitted individual errors.
+            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
         logger.info(f"Finished syncing {self.name}")
 
     @property
@@ -282,17 +303,17 @@ class AbstractSource(Source, ABC):
         return _default_message_repository
 
     @property
-    def continue_sync_on_stream_failure(self) -> bool:
+    def stop_sync_on_stream_failure(self) -> bool:
         """
         WARNING: This function is in-development which means it is subject to change. Use at your own risk.
 
-        By default, a source should raise an exception and stop the sync when it encounters an error while syncing a stream. This
-        method can be overridden on a per-source basis so that a source will continue syncing streams other streams even if an
-        exception is raised for a stream.
+        By default, when a source encounters an exception while syncing a stream, it will emit an error trace message and then
+        continue syncing the next stream. This can be overwritten on a per-source basis so that the source will stop the sync
+        on the first error seen and emit a single error trace message for that stream.
         """
         return False
 
     @staticmethod
     def _generate_failed_streams_error_message(stream_failures: Mapping[str, AirbyteTracedException]) -> str:
-        failures = ", ".join([f"{stream}: {exception.__repr__()}" for stream, exception in stream_failures.items()])
+        failures = ", ".join([f"{stream}: {filter_secrets(exception.__repr__())}" for stream, exception in stream_failures.items()])
         return f"During the sync, the following streams did not sync successfully: {failures}"
