@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from types import TracebackType
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 
 import yaml  # type: ignore
 from anyio import Path
@@ -68,6 +68,7 @@ class ConnectorContext(PipelineContext):
         concurrent_cat: Optional[bool] = False,
         run_step_options: RunStepOptions = RunStepOptions(),
         targeted_platforms: Sequence[Platform] = BUILD_PLATFORMS,
+        versions_to_test: Optional[Tuple[str, str]] = None,
     ) -> None:
         """Initialize a connector context.
 
@@ -95,6 +96,7 @@ class ConnectorContext(PipelineContext):
             s3_build_cache_secret_key (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
             concurrent_cat (bool, optional): Whether to run the CAT tests in parallel. Defaults to False.
             targeted_platforms (Optional[Iterable[Platform]], optional): The platforms to build the connector image for. Defaults to BUILD_PLATFORMS.
+            versions_to_test (Optional[Tuple[str, str]]): The control and target version of the connector to be used in regression tests.
         """
 
         self.pipeline_name = pipeline_name
@@ -116,6 +118,7 @@ class ConnectorContext(PipelineContext):
         self.concurrent_cat = concurrent_cat
         self._connector_secrets: Optional[Dict[str, Secret]] = None
         self.targeted_platforms = targeted_platforms
+        self.versions_to_test = versions_to_test
 
         super().__init__(
             pipeline_name=pipeline_name,

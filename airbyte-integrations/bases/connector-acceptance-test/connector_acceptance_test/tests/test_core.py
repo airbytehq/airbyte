@@ -5,6 +5,7 @@
 import functools
 import json
 import logging
+import os
 import re
 from collections import Counter, defaultdict
 from functools import reduce
@@ -1048,10 +1049,13 @@ class TestBasicRead(BaseTest):
         docker_runner: ConnectorRunner,
         detailed_logger: Logger,
         certified_file_based_connector: bool,
+        store_records_dir: str,
     ):
         output = await docker_runner.call_read(connector_config, configured_catalog)
 
         records = [message.record for message in filter_output(output, Type.RECORD)]
+        if store_records_dir:
+            self._store_records(store_records_dir, expect_records_config, records)
 
         if certified_file_based_connector:
             self._file_types.update(self._get_actual_file_types(records))
@@ -1090,6 +1094,18 @@ class TestBasicRead(BaseTest):
                 if message.trace.type == TraceType.STREAM_STATUS
             ]
             self._validate_stream_statuses(configured_catalog=configured_catalog, statuses=all_statuses)
+
+    @staticmethod
+    def _store_records(store_records_dir: str, expect_records_config: ExpectedRecordsConfig, records: List[AirbyteRecordMessage]) -> None:
+        # Store records in the provided directory, at the relative path provided in the acceptance test config file
+        filepath = f"{store_records_dir}/{expect_records_config.path}"
+        directory, filename = os.path.split(filepath)
+        os.makedirs(directory, exist_ok=True)
+        if not (Path(directory) / filename).exists():
+            # If this test is called > 1x for the given file, only write the records once
+            with open(filepath, "w") as fp:
+                for record in records:
+                    fp.write(f"{record.json()}\n")
 
     async def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
         if not inputs.expect_trace_message_on_failure:

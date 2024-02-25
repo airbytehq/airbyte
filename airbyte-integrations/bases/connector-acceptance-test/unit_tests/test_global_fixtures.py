@@ -135,13 +135,14 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
 
 
 @pytest.mark.parametrize(
-    "test_strictness_level, configured_catalog, empty_streams, expected_records, expected_records_config, should_fail",
+    "test_strictness_level, configured_catalog, empty_streams, expected_records, expected_records_config, store_records_dir, should_fail",
     [
         pytest.param(
             Config.TestStrictnessLevel.high,
             TEST_CONFIGURED_CATALOG,
             set(),
             [],
+            None,
             None,
             True,
             id="High strictness level: No expected records configuration ->  Failing",
@@ -152,6 +153,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             {EmptyStreamConfiguration(name="test_stream_b"), EmptyStreamConfiguration(name="test_stream_c")},
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
             ExpectedRecordsConfig(path="expected_records.jsonl"),
+            None,
             False,
             id="High strictness level: test_stream_b and test_stream_c are declared as empty streams, expected records only contains test_stream_a record -> Not failing",
         ),
@@ -161,6 +163,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             set(),
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
             ExpectedRecordsConfig(path="expected_records.jsonl"),
+            None,
             True,
             id="High strictness level: test_stream_b and test_stream_c are not declared as empty streams, expected records only contains test_stream_a record -> Failing",
         ),
@@ -170,6 +173,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             {EmptyStreamConfiguration(name="test_stream_b")},
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
             ExpectedRecordsConfig(path="expected_records.jsonl"),
+            None,
             True,
             id="High strictness level: test_stream_b is declared as an empty stream, test_stream_c is not declared as empty streams, expected records only contains test_stream_a record -> Failing",
         ),
@@ -179,14 +183,26 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             set(),
             [],
             ExpectedRecordsConfig(bypass_reason="A good reason to not have expected records"),
+            None,
             False,
             id="High strictness level: Expected records configuration with bypass_reason ->  Not failing",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.high,
+            TEST_CONFIGURED_CATALOG,
+            {EmptyStreamConfiguration(name="test_stream_b")},
+            [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
+            ExpectedRecordsConfig(path="expected_records.jsonl"),
+            "path-to-expected-records.json",
+            False,
+            id="High strictness level: this would fail but we don't do an expected records comparison because we got a value for store-records-dir -> Not failing",
         ),
         pytest.param(
             Config.TestStrictnessLevel.low,
             TEST_CONFIGURED_CATALOG,
             set(),
             [],
+            None,
             None,
             False,
             id="Low strictness level, no empty stream, no expected records ->  Not failing",
@@ -197,13 +213,24 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             set(),
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
             ExpectedRecordsConfig(path="expected_records.jsonl"),
+            None,
             False,
             id="Low strictness level, no empty stream, incomplete expected records ->  Not failing",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.low,
+            TEST_CONFIGURED_CATALOG,
+            {EmptyStreamConfiguration(name="test_stream_b")},
+            [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
+            ExpectedRecordsConfig(path="expected_records.jsonl"),
+            "path-to-expected-records.json",
+            False,
+            id="Low strictness level: we don't do an expected records comparison because we got a value for store-records-dir -> Not failing",
         ),
     ],
 )
 def test_expected_records_by_stream_fixture(
-    tmp_path, mocker, test_strictness_level, configured_catalog, empty_streams, expected_records, expected_records_config, should_fail
+    tmp_path, mocker, test_strictness_level, configured_catalog, empty_streams, expected_records, expected_records_config, store_records_dir, should_fail
 ):
     mocker.patch.object(conftest.pytest, "fail")
 
@@ -213,7 +240,7 @@ def test_expected_records_by_stream_fixture(
             expected_records_file.write(json.dumps(record) + "\n")
 
     conftest.expected_records_by_stream_fixture.__wrapped__(
-        test_strictness_level, configured_catalog, empty_streams, expected_records_config, base_path
+        test_strictness_level, configured_catalog, empty_streams, expected_records_config, base_path, store_records_dir
     )
     if should_fail:
         conftest.pytest.fail.assert_called_once()

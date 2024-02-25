@@ -21,7 +21,7 @@ configured_catalog_path: Optional[str] = Field(default=None, description="Path t
 timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
 deployment_mode: Optional[str] = Field(default=None, description="Deployment mode to run the test in", regex=r"^(cloud|oss)$")
 
-SEMVER_REGEX = r"(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*)))?(?:\-([\w][\w\.\-_]*))?)?"
+SEMVER_REGEX = r"^(latest|(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*)))?(?:\-([\w][\w\.\-_]*))?)?)$"
 ALLOW_LEGACY_CONFIG = True
 
 

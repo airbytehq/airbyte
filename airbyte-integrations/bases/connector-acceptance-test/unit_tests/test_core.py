@@ -593,16 +593,17 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
 
 
 @pytest.mark.parametrize(
-    "schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation",
+    "schema, ignored_fields, expect_records_config, record, expected_records_by_stream, store_records_dir, expectation",
     [
-        ({"type": "object"}, {}, ExpectedRecordsConfig(path="foobar"), {"aa": 23}, {}, does_not_raise()),
-        ({"type": "object"}, {}, ExpectedRecordsConfig(path="foobar"), {}, {}, does_not_raise()),
+        ({"type": "object"}, {}, ExpectedRecordsConfig(path="foobar"), {"aa": 23}, {}, "", does_not_raise()),
+        ({"type": "object"}, {}, ExpectedRecordsConfig(path="foobar"), {}, {}, "", does_not_raise()),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
             {},
             ExpectedRecordsConfig(path="foobar"),
             {"aa": 23},
             {},
+            "",
             pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
         ),
         (
@@ -611,6 +612,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             ExpectedRecordsConfig(path="foobar"),
             {"created": "23"},
             {},
+            "",
             does_not_raise(),
         ),
         (
@@ -619,6 +621,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             ExpectedRecordsConfig(path="foobar"),
             {"root": {"created": "23"}},
             {},
+            "",
             pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
         ),
         # Recharge shop stream case
@@ -628,6 +631,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             ExpectedRecordsConfig(path="foobar"),
             {"shop": {"a": "23"}, "store": {"b": "23"}},
             {},
+            "",
             does_not_raise(),
         ),
         # Fail when expected and actual records are not equal
@@ -637,7 +641,18 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             ExpectedRecordsConfig(path="foobar"),
             {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+            "",
             pytest.raises(Failed, match="Stream test_stream: All expected records must be produced"),
+        ),
+        # Do not fail when store_records_dir, even when expected and actual records are not equal
+        (
+                {"type": "object"},
+                {},
+                ExpectedRecordsConfig(path="foobar"),
+                {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
+                {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+                "fake",
+                pytest.raises(Failed, match="Stream test_stream: All expected records must be produced"),
         ),
         # Expected and Actual records are not equal but we ignore fast changing field
         (
@@ -646,6 +661,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             ExpectedRecordsConfig(path="foobar"),
             {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+            "",
             does_not_raise(),
         ),
         # Fail when expected and actual records are not equal and exact_order=True
@@ -655,6 +671,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
             {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+            "",
             pytest.raises(AssertionError, match="Stream test_stream: Mismatch of record order or values"),
         ),
         # Expected and Actual records are not equal but we ignore fast changing field (for case when exact_order=True)
@@ -664,11 +681,12 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
             {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}]},
+            "",
             does_not_raise(),
         ),
     ],
 )
-async def test_read(mocker, schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation):
+async def test_read(mocker, schema, ignored_fields, expect_records_config, record, expected_records_by_stream, store_records_dir, expectation):
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -699,6 +717,7 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
             ignored_fields=ignored_fields,
             detailed_logger=MagicMock(),
             certified_file_based_connector=False,
+            store_records_dir=store_records_dir,
         )
 
 

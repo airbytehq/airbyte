@@ -120,24 +120,42 @@ class TestBuildConnectorImage:
             assert step_result.output_artifact[platform] == container_built_from_base
 
     @pytest.mark.slow
-    async def test_building_from_base_image_for_real(self, test_context_with_real_connector_using_base_image, current_platform):
-        step = python_connectors.BuildConnectorImages(test_context_with_real_connector_using_base_image)
+    @pytest.mark.parametrize(
+        "image_name,",
+        [
+            pytest.param(None, id="no-image-name"),
+            pytest.param("airbyte/source-faker:0.1.1", id="image-name-with-version"),
+            pytest.param("airbyte/source-faker", id="image-name-without-version"),
+        ],
+    )
+    async def test_building_from_base_image_for_real(self, test_context_with_real_connector_using_base_image, current_platform, image_name):
+        step = python_connectors.BuildConnectorImages(test_context_with_real_connector_using_base_image, image_name)
         step_result = await step._run()
-        step_result.status is StepStatus.SUCCESS
+        assert step_result.status is StepStatus.SUCCESS
         built_container = step_result.output_artifact[current_platform]
         assert await built_container.env_variable("AIRBYTE_ENTRYPOINT") == " ".join(
             build_customization.get_entrypoint(step.context.connector)
         )
         assert await built_container.workdir() == step.PATH_TO_INTEGRATION_CODE
         assert await built_container.entrypoint() == build_customization.get_entrypoint(step.context.connector)
-        assert (
-            await built_container.label("io.airbyte.version")
-            == test_context_with_real_connector_using_base_image.connector.metadata["dockerImageTag"]
-        )
-        assert (
-            await built_container.label("io.airbyte.name")
-            == test_context_with_real_connector_using_base_image.connector.metadata["dockerRepository"]
-        )
+
+        built_version = await built_container.label("io.airbyte.version")
+        built_label = await built_container.label("io.airbyte.name")
+
+        if image_name and self._has_version(image_name):
+            expected_label, expected_version = image_name.split(":")
+        elif image_name:
+            expected_version = None  # In this case the version is latest on DockerHub, which is dynamic, so we don't worry about the assertion
+            expected_label = image_name
+        else:
+            expected_version = test_context_with_real_connector_using_base_image.connector.metadata["dockerImageTag"]
+            expected_label = test_context_with_real_connector_using_base_image.connector.metadata["dockerRepository"]
+
+        assert built_version == expected_version if expected_version else True
+        assert built_label == expected_label
+
+    def _has_version(self, image_name: str) -> bool:
+        return len(image_name.split(":")) == 2
 
     @pytest.mark.slow
     async def test_building_from_base_image_with_customization_for_real(

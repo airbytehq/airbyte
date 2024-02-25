@@ -4,9 +4,10 @@
 
 import json
 import logging
+import os
 from collections import UserDict
 from pathlib import Path
-from typing import Iterable, List, MutableMapping, Set, Union
+from typing import Iterable, List, MutableMapping, Optional, Set, Union
 
 import pytest
 from yaml import load
@@ -27,15 +28,22 @@ from airbyte_protocol.models import (
 from connector_acceptance_test.config import Config, EmptyStreamConfiguration
 
 
-def load_config(path: str) -> Config:
+def load_config(path: str, config_file_override: Optional[str] = None) -> Config:
     """Function to load test config, avoid duplication of code in places where we can't use fixture"""
-    path = Path(path) / "acceptance-test-config.yml"
+    path = _get_path_from_filepath(config_file_override) or Path(path) / "acceptance-test-config.yml"
     if not path.exists():
         pytest.fail(f"config file {path.absolute()} does not exist")
 
     with open(str(path), "r") as file:
         data = load(file, Loader=Loader)
         return Config.parse_obj(data)
+
+
+def _get_path_from_filepath(filepath: str) -> Optional[Path]:
+    if filepath:
+        directory, filename = os.path.split(filepath)
+        return Path(directory) / filepath
+    return None
 
 
 def full_refresh_only_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> ConfiguredAirbyteCatalog:

@@ -132,21 +132,31 @@ async def test_get_connector_container(mocker):
     mocker.patch.object(connector_runner, "get_container_from_dockerhub_image", new=mocker.AsyncMock())
 
     # Test the case when the CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH is set
-    await connector_runner.get_connector_container(dagger_client, "test_image:tag")
+    await connector_runner.get_connector_container(dagger_client, "test_image:tag", None)
     connector_runner.get_container_from_tarball_path.assert_called_with(dagger_client, Path("test_tarball_path"))
+
+    # Test the case when the input container ID is set
+    Path("/tmp/input_container_id.txt").write_text("test_input_container_id")
+    await connector_runner.get_connector_container(dagger_client, "test_image:tag", "/tmp/input_container_id.txt")
+    connector_runner.get_container_from_id.assert_called_with(dagger_client, "test_input_container_id")
+    Path("/tmp/input_container_id.txt").unlink()
+
+    # Test the case when the input container ID is set but path does not exist
+    with pytest.raises(AssertionError):
+        await connector_runner.get_connector_container(dagger_client, "test_image:tag", "/tmp/input_container_id.txt")
 
     # Test the case when the CONNECTOR_CONTAINER_ID is set
     Path("/tmp/container_id.txt").write_text("test_container_id")
-    await connector_runner.get_connector_container(dagger_client, "test_image:tag")
+    await connector_runner.get_connector_container(dagger_client, "test_image:tag", None)
     connector_runner.get_container_from_id.assert_called_with(dagger_client, "test_container_id")
     Path("/tmp/container_id.txt").unlink()
 
     # Test the case when none of the environment variables are set
     os.environ.pop("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH")
-    await connector_runner.get_connector_container(dagger_client, "test_image:tag")
+    await connector_runner.get_connector_container(dagger_client, "test_image:tag", None)
     connector_runner.get_container_from_local_image.assert_called_with(dagger_client, "test_image:tag")
 
     # Test the case when all previous attempts fail
     connector_runner.get_container_from_local_image.return_value = None
-    await connector_runner.get_connector_container(dagger_client, "test_image:tag")
+    await connector_runner.get_connector_container(dagger_client, "test_image:tag", None)
     connector_runner.get_container_from_dockerhub_image.assert_called_with(dagger_client, "test_image:tag")

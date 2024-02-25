@@ -23,6 +23,10 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     VERSION_INC_CHECK = "version_inc_check"
     TEST_ORCHESTRATOR = "test_orchestrator"
     DEPLOY_ORCHESTRATOR = "deploy_orchestrator"
+    REGRESSION_TEST_BUILD_CONTROL = "regression_test_build_control"
+    REGRESSION_TEST_BUILD_TARGET = "regression_test_build_target"
+    REGRESSION_TEST_CONTROL = "regression_test_control"
+    REGRESSION_TEST_TARGET = "regression_test_target"
 
     def __str__(self) -> str:
         return self.value

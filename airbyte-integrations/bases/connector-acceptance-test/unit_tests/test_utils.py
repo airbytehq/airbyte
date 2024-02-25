@@ -366,3 +366,18 @@ def test_build_configured_catalog_from_custom_catalog(mocker, custom_configured_
         common.logging.info.assert_called_once()
     else:
         common.pytest.fail.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "path, expected_path_name",
+    [
+        pytest.param("fake", "fake", id="no path separator returns Path"),
+        pytest.param("fake/file.json", "file.json", id="no path separator returns Path"),
+        pytest.param("", False, id="no path None"),
+    ]
+)
+def test_get_config_filepath(path, expected_path_name):
+    if expected_path_name:
+        assert common._get_path_from_filepath(path).name == expected_path_name
+    else:
+        assert common._get_path_from_filepath(path) is None

@@ -35,7 +35,20 @@ from connector_acceptance_test.utils import (
 @pytest.fixture(name="acceptance_test_config", scope="session")
 def acceptance_test_config_fixture(pytestconfig) -> Config:
     """Fixture with test's config"""
-    return load_config(pytestconfig.getoption("--acceptance-test-config", skip=True))
+    return load_config(
+        pytestconfig.getoption("--acceptance-test-config", skip=True),
+        pytestconfig.getoption("--acceptance-test-config-filepath"),
+    )
+
+
+@pytest.fixture(name="store_records_dir")
+def store_records_dir_fixture(request):
+    return request.config.getoption("--store-expected-records")
+
+
+@pytest.fixture(name="container_id_path", scope="session")
+def container_id_path_fixture(request):
+    return request.config.getoption("--container-id-filepath")
 
 
 @pytest.fixture(name="base_path")
@@ -113,8 +126,8 @@ def configured_catalog_fixture(
 
 
 @pytest.fixture(name="image_tag", scope="session")
-def image_tag_fixture(acceptance_test_config) -> str:
-    return acceptance_test_config.connector_image
+def image_tag_fixture(request, acceptance_test_config) -> str:
+    return request.config.getoption("--connector-version") or acceptance_test_config.connector_image
 
 
 @pytest.fixture(name="connector_config")
@@ -167,8 +180,8 @@ async def dagger_client(anyio_backend):
 
 
 @pytest.fixture(scope="session")
-async def connector_container(dagger_client, image_tag):
-    connector_container = await connector_runner.get_connector_container(dagger_client, image_tag)
+async def connector_container(dagger_client, image_tag, container_id_path):
+    connector_container = await connector_runner.get_connector_container(dagger_client, image_tag, container_id_path)
     if cachebuster := os.environ.get("CACHEBUSTER"):
         connector_container = connector_container.with_env_variable("CACHEBUSTER", cachebuster)
     return await connector_container
@@ -196,8 +209,9 @@ def previous_connector_image_name_fixture(image_tag, inputs) -> str:
 async def previous_version_connector_container(
     dagger_client,
     previous_connector_image_name,
+    container_id_path,
 ):
-    connector_container = await connector_runner.get_connector_container(dagger_client, previous_connector_image_name)
+    connector_container = await connector_runner.get_connector_container(dagger_client, previous_connector_image_name, container_id_path)
     if cachebuster := os.environ.get("CACHEBUSTER"):
         connector_container = connector_container.with_env_variable("CACHEBUSTER", cachebuster)
     return await connector_container
@@ -248,6 +262,7 @@ def expected_records_by_stream_fixture(
     empty_streams: Set[EmptyStreamConfiguration],
     expect_records_config: ExpectedRecordsConfig,
     base_path,
+    store_records_dir: Optional[str],
 ) -> MutableMapping[str, List[MutableMapping]]:
     def enforce_high_strictness_level_rules(expect_records_config, configured_catalog, empty_streams, records_by_stream) -> Optional[str]:
         error_prefix = "High strictness level error: "
@@ -263,6 +278,10 @@ def expected_records_by_stream_fixture(
         else:
             if not getattr(expect_records_config, "bypass_reason", None):
                 pytest.fail(error_prefix / "A bypass reason must be filled if no path to expected records is provided.")
+
+    if store_records_dir:
+        # When --store-expected-records is set, we are saving down expected records for use in a subsequent test so don't validate here.
+        return {}
 
     expected_records_by_stream = {}
     if expect_records_config:

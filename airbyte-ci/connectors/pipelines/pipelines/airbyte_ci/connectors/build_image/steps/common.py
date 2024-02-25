@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import docker  # type: ignore
 from dagger import Container, ExecError, Platform, QueryError
@@ -26,28 +26,40 @@ class BuildConnectorImagesBase(Step, ABC):
     def title(self) -> str:
         return f"Build {self.context.connector.technical_name} docker image for platform(s) {', '.join(self.build_platforms)}"
 
-    def __init__(self, context: ConnectorContext) -> None:
+    def __init__(self, context: ConnectorContext, docker_image_name: Optional[str] = None) -> None:
         self.build_platforms = context.targeted_platforms
+        self.docker_image_name = docker_image_name
         super().__init__(context)
 
     async def _run(self, *args: Any) -> StepResult:
-        build_results_per_platform = {}
-        for platform in self.build_platforms:
-            try:
-                connector = await self._build_connector(platform, *args)
+        if self.docker_image_name:
+            self.logger.info(f"Pulling connector {self.docker_image_name}")
+            build_results_per_platform = {
+                platform: self.dagger_client.container(platform=platform).from_(self.docker_image_name)
+                for platform in self.build_platforms
+            }
+            success_message = (
+                f"The {self.docker_image_name} images "
+                f"were successfully pulled for platform(s) {', '.join(self.build_platforms)}"
+            )
+        else:
+            build_results_per_platform = {}
+            for platform in self.build_platforms:
                 try:
-                    await connector.with_exec(["spec"])
-                except ExecError as e:
-                    return StepResult(
-                        step=self, status=StepStatus.FAILURE, stderr=str(e), stdout=f"Failed to run the spec command on the connector container for platform {platform}."
-                    )
-                build_results_per_platform[platform] = connector
-            except QueryError as e:
-                return StepResult(step=self, status=StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}")
-        success_message = (
-            f"The {self.context.connector.technical_name} docker image "
-            f"was successfully built for platform(s) {', '.join(self.build_platforms)}"
-        )
+                    connector = await self._build_connector(platform, *args)
+                    try:
+                        await connector.with_exec(["spec"])
+                    except ExecError as e:
+                        return StepResult(
+                            step=self, status=StepStatus.FAILURE, stderr=str(e), stdout=f"Failed to run the spec command on the connector container for platform {platform}."
+                        )
+                    build_results_per_platform[platform] = connector
+                except QueryError as e:
+                    return StepResult(step=self, status=StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}")
+            success_message = (
+                f"The {self.context.connector.technical_name} docker image "
+                f"was successfully built for platform(s) {', '.join(self.build_platforms)}"
+            )
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout=success_message, output_artifact=build_results_per_platform)
 
     async def _build_connector(self, platform: Platform, *args: Any, **kwargs: Any) -> Container:

@@ -233,6 +233,7 @@ class AcceptanceTests(Step):
         """
         super().__init__(context)
         self.concurrent_test_run = concurrent_test_run
+        self._container_id_filepath = "/tmp/container_id.txt"
 
     async def get_cat_command(self, connector_dir: Directory) -> List[str]:
         """
@@ -258,19 +259,23 @@ class AcceptanceTests(Step):
 
         if not self.context.connector.acceptance_test_config:
             return StepResult(step=self, status=StepStatus.SKIPPED)
+
         connector_dir = await self.context.get_connector_dir()
         cat_container = await self._build_connector_acceptance_test(connector_under_test_container, connector_dir)
         cat_command = await self.get_cat_command(connector_dir)
-        cat_container = cat_container.with_(hacks.never_fail_exec(cat_command))
-        step_result = await self.get_step_result(cat_container)
-        secret_dir = cat_container.directory(self.CONTAINER_SECRETS_DIRECTORY)
 
+        cat_container = cat_container.with_(hacks.never_fail_exec(cat_command))
+
+        await self._update_secrets_dir(cat_container)
+        return await self.get_step_result(cat_container)
+
+    async def _update_secrets_dir(self, cat_container: Container):
+        secret_dir = cat_container.directory(self.CONTAINER_SECRETS_DIRECTORY)
         if secret_files := await secret_dir.entries():
             for file_path in secret_files:
                 if file_path.startswith("updated_configurations"):
                     self.context.updated_secrets_dir = secret_dir
                     break
-        return step_result
 
     def get_cache_buster(self) -> str:
         """
@@ -304,7 +309,7 @@ class AcceptanceTests(Step):
             cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
             .with_env_variable("CACHEBUSTER", self.get_cache_buster())
-            .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
+            .with_new_file(self._container_id_filepath, contents=str(connector_container_id))
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
             .with_(await secrets.mounted_connector_secrets(self.context, self.CONTAINER_SECRETS_DIRECTORY))

@@ -36,6 +36,30 @@ def pytest_addoption(parser):
     parser.addoption(
         "--acceptance-test-config", action="store", default=".", help="Folder with standard test config - acceptance_test_config.yml"
     )
+    parser.addoption(
+        "--acceptance-test-config-filepath",
+        action="store",
+        default="",
+        help="Path to an acceptance test config yml, to override the acceptance-test-config.yml in the default location.",
+    )
+    parser.addoption(
+        "--connector-version",
+        action="store",
+        default="",
+        help="The image tag for the version of the connector to test. If not set, we use the connector version in acceptance-test-config.yml.",
+    )
+    parser.addoption(
+        "--store-expected-records",
+        action="store",
+        default="",
+        help="Folder to store expected records, e.g. for inspection or use in a subsequent test. If not set records will not be stored.",
+    )
+    parser.addoption(
+        "--container-id-filepath",
+        action="store",
+        default=None,
+        help="Path to the container ID, when one is present and differs from the default (/tmp/container_id.txt). Used during regression testing via airbyte-ci.",
+    )
 
 
 class TestAction(Enum):
@@ -51,7 +75,10 @@ def pytest_generate_tests(metafunc):
 
     if "inputs" in metafunc.fixturenames:
         test_config_key = metafunc.cls.config_key()
-        global_config = load_config(metafunc.config.getoption("--acceptance-test-config"))
+        global_config = load_config(
+            metafunc.config.getoption("--acceptance-test-config"),
+            metafunc.config.getoption("--acceptance-test-config-filepath"),
+        )
         test_configuration: GenericTestConfig = getattr(global_config.acceptance_tests, test_config_key, None)
         test_action, reason = parametrize_skip_or_fail(
             metafunc.cls, metafunc.function, global_config.test_strictness_level, test_configuration
@@ -117,7 +144,10 @@ def pytest_collection_modifyitems(config, items):
     if `timeout_seconds` is not specified in the acceptance test config.
     """
 
-    config = load_config(config.getoption("--acceptance-test-config"))
+    config = load_config(
+        config.getoption("--acceptance-test-config"),
+        config.getoption("--acceptance-test-config-filepath"),
+    )
 
     i = 0
     packed_items = []

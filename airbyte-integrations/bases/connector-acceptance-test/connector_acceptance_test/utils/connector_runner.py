@@ -89,12 +89,15 @@ async def get_container_from_dockerhub_image(dagger_client: dagger.Client, docke
         pytest.exit(f"Failed to import connector image from DockerHub: {e}")
 
 
-async def get_connector_container(dagger_client: dagger.Client, image_name_with_tag: str) -> dagger.Container:
+async def get_connector_container(
+    dagger_client: dagger.Client, image_name_with_tag: str, path_to_container_id: Optional[str]
+) -> dagger.Container:
     """Get a dagger container for the connector image to test.
 
     Args:
         dagger_client (dagger.Client): The dagger client to use to import the connector image
         image_name_with_tag (str): The docker image name and tag of the connector image to test
+        path_to_container_id (Optional[str]): A path to the location of a file containing the container ID.
 
     Returns:
         dagger.Container: The dagger container for the connector image to test
@@ -102,6 +105,12 @@ async def get_connector_container(dagger_client: dagger.Client, image_name_with_
     # If a container_id.txt file is available, we'll use it to load the connector container
     # We use a txt file as container ids can be too long to be passed as env vars
     # It's used for dagger-in-dagger use case with airbyte-ci, when the connector container is built via an upstream dagger operation
+    # When regression testing via airbyte-ci, a path to the container ID is required and must be specified by the caller, as at least 2 contianer IDs will be present
+    if path_to_container_id:
+        connector_container_id_path = Path(path_to_container_id)
+        assert connector_container_id_path.exists(), f"The specified path to the container ID was not found. path={path_to_container_id}"
+        return await get_container_from_id(dagger_client, connector_container_id_path.read_text())
+
     connector_container_id_path = Path("/tmp/container_id.txt")
     if connector_container_id_path.exists():
         # If the CONNECTOR_CONTAINER_ID env var is set, we'll use it to load the connector container
@@ -226,6 +235,7 @@ class ConnectorRunner:
         catalog: dict = None,
         state: Union[dict, list] = None,
         enable_caching=True,
+        store_expected_records: str = "",
     ) -> List[AirbyteMessage]:
         """Run a command in the connector container and return the list of AirbyteMessages emitted by the connector.
 
