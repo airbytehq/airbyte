@@ -248,9 +248,6 @@ class Records(AttioStream):
             for attribute in attributes:
                 t = attribute["type"]
 
-                if t == "interaction":
-                    continue
-
                 slug = attribute["api_slug"]
                 is_multi = attribute["is_multiselect"]
 
@@ -331,6 +328,14 @@ class Records(AttioStream):
                     record[slug + "_first_name"] = None if len(vs) == 0 else vs[0]["first_name"]
                     record[slug + "_last_name"] = None if len(vs) == 0 else vs[0]["last_name"]
                     record[slug + "_full_name"] = None if len(vs) == 0 else vs[0]["full_name"]
+                elif t == "interaction" and not is_multi:
+                    record[slug] = {
+                        "interaction_type": None if len(vs) == 0 else vs[0]["interaction_type"],
+                        "interacted_at": None if len(vs) == 0 else vs[0]["interacted_at"],
+                        "owner_actor_type": None if len(vs) == 0 else vs[0]["owner_actor"]["type"],
+                        "owner_actor_id": None if len(vs) == 0 else vs[0]["owner_actor"]["id"],
+                    }
+                    continue
 
             yield record
 
@@ -462,6 +467,16 @@ class Records(AttioStream):
                 properties[slug + "_first_name"] = {"type": "string"}
                 properties[slug + "_last_name"] = {"type": "string"}
                 properties[slug + "_full_name"] = {"type": "string"}
+            elif attr["type"] == "interaction" and not attr["is_multiselect"]:
+                properties[slug] = {
+                    "type": "object",
+                    "properties": {
+                        "interaction_type": {"type": "string"},
+                        "interacted_at": {"type": "string", "airbyte_type": "timestamp_with_timezone", "format": "date-time"},
+                        "owner_actor_type": {"type": "string"},
+                        "owner_actor_id": {"type": "string"},
+                    },
+                }
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "additionalProperties": True,

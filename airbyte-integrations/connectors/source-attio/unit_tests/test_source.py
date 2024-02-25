@@ -311,6 +311,16 @@ def test_discover(requests_mock, make_attribute_response, make_object_response):
         ]
     )
 
+    interaction_schema = {
+        "type": "object",
+        "properties": {
+            "interaction_type": {"type": "string"},
+            "interacted_at": {"type": "string", "airbyte_type": "timestamp_with_timezone", "format": "date-time"},
+            "owner_actor_type": {"type": "string"},
+            "owner_actor_id": {"type": "string"},
+        },
+    }
+
     attribute_schemas = [s.json_schema for s in filter(lambda x: x.name in ["people_attributes", "companies_attributes"], streams)]
     for schema in attribute_schemas:
         expected_schema = {
@@ -386,7 +396,7 @@ def test_discover(requests_mock, make_attribute_response, make_object_response):
             "instagram": {"type": "string"},
             "linkedin": {"type": "string"},
             "twitter": {"type": "string"},
-            # No first_calendar_interaction
+            "first_calendar_interaction": interaction_schema,
             "strongest_connection_user": {
                 "type": "object",
                 "properties": {
@@ -449,7 +459,7 @@ def test_discover(requests_mock, make_attribute_response, make_object_response):
             "twitter_follower_count": {"type": "number"},
             "estimated_arr_usd": {"type": "string"},
             "funding_raised_usd": {"type": "number"},
-            # No first_calendar_interaction
+            "first_calendar_interaction": interaction_schema,
             "created_at": {"type": "string", "airbyte_type": "timestamp_with_timezone", "format": "date-time"},
             "created_by": {
                 "type": "object",
