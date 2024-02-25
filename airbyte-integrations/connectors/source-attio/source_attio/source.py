@@ -250,6 +250,11 @@ class Records(AttioStream):
 
                 slug = attribute["api_slug"]
                 is_multi = attribute["is_multiselect"]
+                num_allowed_objects = (
+                    0
+                    if attribute["config_record_reference_allowed_object_ids"] is None
+                    else len(attribute["config_record_reference_allowed_object_ids"])
+                )
 
                 vs = values[slug]
 
@@ -274,20 +279,25 @@ class Records(AttioStream):
                 elif t == "select" and is_multi:
                     record[slug] = [v["option"]["title"] for v in vs]
                 elif t == "record-reference" and not is_multi:
-                    record[slug] = (
-                        None
-                        if len(vs) == 0
-                        else {
+                    if len(vs) == 0:
+                        record[slug] = None
+                    elif num_allowed_objects == 1:
+                        record[slug] = vs[0]["target_record_id"]
+                    else:
+                        record[slug] = {
                             "target_object": vs[0]["target_object"],
                             "target_record_id": vs[0]["target_record_id"],
                         }
-                    )
                 elif t == "record-reference" and is_multi:
                     record[slug] = [
-                        {
-                            "target_object": v["target_object"],
-                            "target_record_id": v["target_record_id"],
-                        }
+                        (
+                            v["target_record_id"]
+                            if num_allowed_objects == 1
+                            else {
+                                "target_object": v["target_object"],
+                                "target_record_id": v["target_record_id"],
+                            }
+                        )
                         for v in vs
                     ]
                 elif t == "actor-reference" and not is_multi:
@@ -406,25 +416,49 @@ class Records(AttioStream):
                 properties[slug] = {"type": "array", "items": {"type": "string"}}
             elif attr["type"] == "select" and not attr["is_multiselect"]:
                 properties[slug] = {"type": "string"}
-            elif attr["type"] == "record-reference" and attr["is_multiselect"]:
-                properties[slug] = {
-                    "type": "array",
-                    "items": {
+            elif attr["type"] == "record-reference" and not attr["is_multiselect"]:
+                # If we only have a single allow object, return just the ID.
+                # This makes joining and reading data much easier for the user.
+                # However, if we return multiple allowed objects, we need to return the object too
+                # so we can disambiguate the record across different objects where IDs might clash.
+                # Note that zero allowed objects should be interpreted as allowing all objects.
+                num_allowed_objects = (
+                    0
+                    if attr["config_record_reference_allowed_object_ids"] is None
+                    else len(attr["config_record_reference_allowed_object_ids"])
+                )
+
+                if num_allowed_objects == 1:
+                    properties[slug] = {
+                        "type": "string",
+                    }
+                else:
+                    properties[slug] = {
                         "type": "object",
                         "properties": {
                             "target_object": {"type": "string"},
                             "target_record_id": {"type": "string"},
                         },
-                    },
-                }
-            elif attr["type"] == "record-reference" and not attr["is_multiselect"]:
-                properties[slug] = {
-                    "type": "object",
-                    "properties": {
-                        "target_object": {"type": "string"},
-                        "target_record_id": {"type": "string"},
-                    },
-                }
+                    }
+            elif attr["type"] == "record-reference" and attr["is_multiselect"]:
+                num_allowed_objects = (
+                    0
+                    if attr["config_record_reference_allowed_object_ids"] is None
+                    else len(attr["config_record_reference_allowed_object_ids"])
+                )
+                if num_allowed_objects == 1:
+                    properties[slug] = {"type": "array", "items": {"type": "string"}}
+                else:
+                    properties[slug] = {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "target_object": {"type": "string"},
+                                "target_record_id": {"type": "string"},
+                            },
+                        },
+                    }
             elif attr["type"] == "actor-reference" and attr["is_multiselect"]:
                 properties[slug] = {
                     "type": "array",

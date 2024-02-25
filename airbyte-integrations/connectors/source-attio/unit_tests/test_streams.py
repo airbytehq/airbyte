@@ -256,6 +256,8 @@ def test_records_parse_response(requests_mock, make_attribute_response, make_rec
         make_attribute_response(api_slug="select_multi", type="select", is_multi=True, **base_attr),
         make_attribute_response(api_slug="record_reference_single", type="record-reference", is_multi=False, **base_attr),
         make_attribute_response(api_slug="record_reference_multi", type="record-reference", is_multi=True, **base_attr),
+        make_attribute_response(api_slug="record_reference_single_allowed_single", type="record-reference", is_multi=False, allowed_object_ids=["c5a593c1-7732-4c05-9d03-a9c2a2f289d6"], **base_attr),
+        make_attribute_response(api_slug="record_reference_single_allowed_multi", type="record-reference", is_multi=True, allowed_object_ids=["c5a593c1-7732-4c05-9d03-a9c2a2f289d6"], **base_attr),
         make_attribute_response(api_slug="actor_reference_single", type="actor-reference", is_multi=False, **base_attr),
         make_attribute_response(api_slug="actor_reference_multi", type="actor-reference", is_multi=True, **base_attr),
         make_attribute_response(api_slug="location_single", type="location", is_multi=False, **base_attr),
@@ -395,6 +397,25 @@ def test_records_parse_response(requests_mock, make_attribute_response, make_rec
             {
                 "target_object": "people",
                 "target_record_id": "fab0ce74-a063-41cd-a65a-661006611c30",
+                "attribute_type": "record-reference"
+            }
+        ],
+        "record_reference_single_allowed_single": [
+            {
+                "target_object": "people",
+                "target_record_id": "61ac43d6-2cd6-437c-a4c0-533c502f1bf5",
+                "attribute_type": "record-reference"
+            }
+        ],
+        "record_reference_single_allowed_multi": [
+            {
+                "target_object": "people",
+                "target_record_id": "61ac43d6-2cd6-437c-a4c0-533c502f1bf5",
+                "attribute_type": "record-reference"
+            },
+            {
+                "target_object": "people",
+                "target_record_id": "042a79b2-0a99-41b8-9673-e7240af60b63",
                 "attribute_type": "record-reference"
             }
         ],
@@ -541,6 +562,10 @@ def test_records_parse_response(requests_mock, make_attribute_response, make_rec
     assert record["record_reference_multi"][0]["target_record_id"] == "ec08c6df-5eeb-40cb-b84a-054086f5301f"
     assert record["record_reference_multi"][1]["target_object"] == "people"
     assert record["record_reference_multi"][1]["target_record_id"] == "fab0ce74-a063-41cd-a65a-661006611c30"
+
+    assert record["record_reference_single_allowed_single"] == "61ac43d6-2cd6-437c-a4c0-533c502f1bf5"
+
+    assert record["record_reference_single_allowed_multi"] == ["61ac43d6-2cd6-437c-a4c0-533c502f1bf5", "042a79b2-0a99-41b8-9673-e7240af60b63"]
 
     assert record["actor_reference_single"]["referenced_actor_type"] == "workspace-member"
 
