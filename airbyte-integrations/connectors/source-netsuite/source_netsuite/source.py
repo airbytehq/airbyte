@@ -12,7 +12,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests_oauthlib import OAuth1
-from source_netsuite.constraints import CUSTOM_INCREMENTAL_CURSOR, INCREMENTAL_CURSOR, META_PATH, RECORD_PATH, SCHEMA_HEADERS
+from source_netsuite.constraints import CUSTOM_INCREMENTAL_CURSOR, FILTERABLE_PROPS_SCHEMA_PATH, INCREMENTAL_CURSOR, META_PATH, RECORD_PATH, SCHEMA_HEADERS
 from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream
 
 
@@ -119,11 +119,12 @@ class SourceNetsuite(AbstractSource):
         }
 
         schema = schemas[object_name]
-        schema_props = schema.get("properties")
+        schema_props = schema.get("properties") 
+        schema_filterable_props = schema.get(FILTERABLE_PROPS_SCHEMA_PATH) 
         if schema_props:
-            if INCREMENTAL_CURSOR in schema_props.keys():
+            if INCREMENTAL_CURSOR in schema_props.keys() and INCREMENTAL_CURSOR in schema_filterable_props:
                 return IncrementalNetsuiteStream(**input_args)
-            elif CUSTOM_INCREMENTAL_CURSOR in schema_props.keys():
+            elif CUSTOM_INCREMENTAL_CURSOR in schema_props.keys() and CUSTOM_INCREMENTAL_CURSOR in schema_filterable_props:
                 return CustomIncrementalNetsuiteStream(**input_args)
             else:
                 # all other streams are full_refresh
