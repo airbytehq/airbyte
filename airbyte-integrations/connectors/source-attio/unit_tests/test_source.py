@@ -62,6 +62,25 @@ def test_discover(requests_mock, make_attribute_response, make_object_response):
             is_multi=False,
             workspace_id=WORKSPACE_ID,
             object_id=person_id,
+            allowed_object_ids=["c9cad75a-82f8-40c6-9edc-f567efdc2b9a"],
+        ),
+        make_attribute_response(
+            title="Single Record",
+            api_slug="single_record",
+            type="record-reference",
+            is_multi=False,
+            workspace_id=WORKSPACE_ID,
+            object_id=person_id,
+            allowed_object_ids=["c9cad75a-82f8-40c6-9edc-f567efdc2b9a", "3497d03e-bd8a-4a3f-a41f-f4705777e341"],
+        ),
+        make_attribute_response(
+            title="Multi Record",
+            api_slug="multi_record",
+            type="record-reference",
+            is_multi=True,
+            workspace_id=WORKSPACE_ID,
+            object_id=person_id,
+            allowed_object_ids=["c9cad75a-82f8-40c6-9edc-f567efdc2b9a", "3497d03e-bd8a-4a3f-a41f-f4705777e341"],
         ),
         make_attribute_response(
             title="Description",
@@ -205,6 +224,7 @@ def test_discover(requests_mock, make_attribute_response, make_object_response):
             is_multi=True,
             workspace_id=WORKSPACE_ID,
             object_id=company_id,
+            allowed_object_ids=["c9cad75a-82f8-40c6-9edc-f567efdc2b9a"],
         ),
         make_attribute_response(
             title="Categories",
@@ -368,11 +388,25 @@ def test_discover(requests_mock, make_attribute_response, make_object_response):
             "name_first_name": {"type": "string"},
             "name_last_name": {"type": "string"},
             "name_full_name": {"type": "string"},
-            "company": {
+            # Return just the record ID for single value, single allow object attribute
+            "company": {"type": "string"},
+            # For attributes with multiple allowed objects, return the object and the record ID
+            "single_record": {
                 "type": "object",
                 "properties": {
                     "target_object": {"type": "string"},
                     "target_record_id": {"type": "string"},
+                },
+            },
+            # And return an array of that if we have a multiselect attribute
+            "multi_record": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "target_object": {"type": "string"},
+                        "target_record_id": {"type": "string"},
+                    },
                 },
             },
             "description": {"type": "string"},
@@ -434,11 +468,7 @@ def test_discover(requests_mock, make_attribute_response, make_object_response):
             "team": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "target_object": {"type": "string"},
-                        "target_record_id": {"type": "string"},
-                    },
+                    "type": "string",
                 },
             },
             "categories": {

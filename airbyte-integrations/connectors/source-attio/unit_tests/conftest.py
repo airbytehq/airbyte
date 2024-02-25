@@ -28,6 +28,7 @@ def make_attribute_response():
         attribute_id: str = None,
         title: str = None,
         api_slug: str = None,
+        allowed_object_ids: list = None,
     ) -> dict:
         attribute_id = attribute_id or str(uuid4())
         title = title or f"{type} {'(multi)' if is_multi else ''} attribute"
@@ -57,7 +58,7 @@ def make_attribute_response():
             "created_at": "2023-03-13T23:20:19.285000000Z",
             "config": {
                 "currency": {"default_currency_code": None, "display_type": None},
-                "record_reference": {"allowed_object_ids": None},
+                "record_reference": {"allowed_object_ids": allowed_object_ids},
             },
         }
 
