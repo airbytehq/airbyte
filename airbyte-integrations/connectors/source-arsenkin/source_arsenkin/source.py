@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 import json
-import time
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple, Optional
 
@@ -11,6 +10,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_protocol.models import SyncMode
+from source_arsenkin.tasks import ArsenkinTask, TaskStatus
 
 
 class ArsenkinStream(HttpStream, ABC):
@@ -26,6 +26,12 @@ class ArsenkinStream(HttpStream, ABC):
         super().__init__(authenticator=authenticator)
         self.config = config
 
+        self.device = self.config["device"]
+        self.keywords = self.config["keywords"]
+        self.region_yandex = self.config["region_yandex"]
+
+        self.tasks: list[ArsenkinTask] = [ArsenkinTask(token=self.token, request_params=self.request_params())]
+
     @property
     def token(self) -> str:
         return self.config["token"]
@@ -33,23 +39,13 @@ class ArsenkinStream(HttpStream, ABC):
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         raise NotImplementedError()
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
-        raise NotImplementedError()
-
-    def _set_task_request(self) -> requests.Response:
-        """Set task"""
-        raise NotImplementedError()
-
-    def _get_task_request(self, task_id) -> requests.Response:
-        """Get task status response"""
-        raise NotImplementedError()
-
-    def _get_results_request(self, task_id) -> requests.Response:
-        """Get results of complete task"""
-        raise NotImplementedError()
+    def stream_slices(
+            self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.tasks: list
+        for task in self.tasks:
+            task.start()
+            yield {"task": task}
 
     def read_records(
             self,
@@ -59,43 +55,26 @@ class ArsenkinStream(HttpStream, ABC):
             stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         """Custom read_records required because of working with tasks"""
-        set_task_resp: requests.Response = self._set_task_request()
-        if set_task_resp.status_code != 200:
-            raise ValueError  # TODO: another error
 
-        print(set_task_resp.json())
-        task_id: int = set_task_resp.json()["task_id"]
-        while True:
-            get_task_resp: requests.Response = self._get_task_request(task_id=task_id)
-            if get_task_resp.status_code != 200:
-                raise ValueError  # TODO: another error
-            status_json: dict[str, any] = get_task_resp.json()
-
-            task_status: str = status_json["status"]
-            if task_status == self.task_done:
-                get_results_resp: requests.Response = self._get_results_request(task_id=task_id)
-                for record in self.parse_response(response=get_results_resp):
-                    yield record
-                break
-            else:
-                time.sleep(10)
+        task = stream_slice["task"]
+        task.wait_until_completed()
+        for record in self.parse_response(response=task.result, stream_slice=stream_slice):
+            yield record
 
 
-class ParserADS(ArsenkinStream):
+class Ads(ArsenkinStream):
     """Ads parser for Arsenkin"""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pass
+
+    primary_key = None
 
     def path(
             self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
             next_page_token: Optional[Mapping[str, Any]] = None
     ) -> str:
         return ""  # stream type for Arsenkin is a query param, not defined by path
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        pass
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    # TODO: check if this is correct
-    primary_key = "task_id"
 
     def request_params(
             self, **kwargs
@@ -139,18 +118,6 @@ class ParserADS(ArsenkinStream):
         config["device"] = user_config["device"]["device_type"]
         return config
 
-    def _set_task_request(self) -> requests.Response:
-        """Set task to parse ads"""
-        return requests.get(self.url_base + "set", params=self.request_params())
-
-    def _get_task_request(self, task_id) -> requests.Response:
-        """Get task status response"""
-        return requests.get(self.url_base + "check", params={"token": self.token, "task_id": task_id})
-
-    def _get_results_request(self, task_id) -> requests.Response:
-        """Get results of complete task"""
-        return requests.get(self.url_base + "result", params={"token": self.token, "task_id": task_id})
-
 
 class SourceArsenkin(AbstractSource):
 
@@ -162,19 +129,13 @@ class SourceArsenkin(AbstractSource):
         """
         ads_stream: ArsenkinStream = self.streams(config)[0]
         try:
-            stream_params: dict[str, any] = ads_stream.request_params().copy()
-            stream_params["keywords"] = json.dumps(["Тест"])
-            stream_params["device"] = "desktop"
-            stream_params["region_yandex"] = 213
-            test_response = requests.get(ads_stream.url_base + ads_stream.path(), params=stream_params)
-            if test_response.status_code != 200:
-                return False, test_response.text
-            else:
-                response_json = test_response.json()
-                if "task_id" not in response_json:  # Task was not set successfully
-                    return False, test_response.text
-                else:  # Task was set successfully, connection is ok
-                    return True, None
+            task = ArsenkinTask(token=config["token"], request_params=ads_stream.request_params() | {
+                "keywords": json.dumps(["Test"]),
+                "region_yandex": 213,
+                "device": "desktop",
+            })
+            task.start()
+            return task.start != TaskStatus.FAILED, None
         except Exception as ex:
             return False, ex
 
@@ -182,4 +143,4 @@ class SourceArsenkin(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [ParserADS(authenticator=None, config=ParserADS.transform_config(user_config=config))]
+        return [Ads(authenticator=None, config=Ads.transform_config(user_config=config))]
