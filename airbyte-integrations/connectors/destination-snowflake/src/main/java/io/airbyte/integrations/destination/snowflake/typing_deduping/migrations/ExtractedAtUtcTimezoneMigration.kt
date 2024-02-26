@@ -7,6 +7,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import org.jooq.Field
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL.*
@@ -32,7 +33,12 @@ class ExtractedAtUtcTimezoneMigration(private val database: JdbcDatabase) : Migr
   override fun migrateIfNecessary(destinationHandler: DestinationHandler<SnowflakeState>, stream: StreamConfig, state: DestinationInitialState<SnowflakeState>): Migration.MigrationResult<SnowflakeState> {
     if (!state.initialRawTableState.rawTableExists) {
       // The raw table doesn't exist. No migration necessary. Update the state.
-      logger.info("Skipping ExtractedAtUtcTimezoneMigration for ${state.streamConfig.id.originalNamespace}.${state.streamConfig.id.originalName} because the raw table doesn't exist")
+      logger.info("Skipping ExtractedAtUtcTimezoneMigration for ${stream.id.originalNamespace}.${stream.id.originalName} because the raw table doesn't exist")
+      return Migration.MigrationResult(state.destinationState.copy(extractedAtInUtc = true), false)
+    }
+    if (stream.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
+      // We're nuking the data for this stream. No migration necessary. Update the state.
+      logger.info("Skipping ExtractedAtUtcTimezoneMigration for ${stream.id.originalNamespace}.${stream.id.originalName} because the sync mode is OVERWRITE.")
       return Migration.MigrationResult(state.destinationState.copy(extractedAtInUtc = true), false)
     }
 
@@ -55,11 +61,11 @@ class ExtractedAtUtcTimezoneMigration(private val database: JdbcDatabase) : Migr
     if (rawRecordTimezone == null
         || (rawRecordTimezone.get("tzh").intValue() == 0 && rawRecordTimezone.get("tzm").intValue() == 0)) {
       // There are no raw records, or the raw records are already in UTC. No migration necessary. Update the state.
-      logger.info("Skipping ExtractedAtUtcTimezoneMigration for ${state.streamConfig.id.originalNamespace}.${state.streamConfig.id.originalName} because the raw table doesn't contain records needing migration.")
+      logger.info("Skipping ExtractedAtUtcTimezoneMigration for ${stream.id.originalNamespace}.${stream.id.originalName} because the raw table doesn't contain records needing migration.")
       return Migration.MigrationResult(state.destinationState.copy(extractedAtInUtc = true), false)
     }
 
-    logger.info("Executing ExtractedAtUtcTimezoneMigration for ${state.streamConfig.id.originalNamespace}.${state.streamConfig.id.originalName} for real.")
+    logger.info("Executing ExtractedAtUtcTimezoneMigration for ${stream.id.originalNamespace}.${stream.id.originalName} for real.")
 
     destinationHandler.execute(Sql.of(
         update(table(quotedName(stream.id().rawNamespace, stream.id().rawName)))
