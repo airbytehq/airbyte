@@ -9,7 +9,7 @@ from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
 from .backends import BaseBackend, FileBackend
 from .connector_runner import ConnectorRunner, SecretDict
-from .utils import get_connector, get_connector_config, get_state
+from .utils import ConnectorUnderTest, get_connector, get_connector_config, get_state
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,24 +41,21 @@ async def _main(
     state = get_state(state_path) if state_path else None
 
     async with dagger.Connection(config=dagger.Config(log_output=sys.stderr)) as client:
-        control_container = await get_connector(client, control_image_name)
-        control_version = control_image_name.split(":")[-1]
-
-        target_container = await get_connector(client, target_image_name)
-        target_version = target_image_name.split(":")[-1]
+        control_connector = await get_connector(client, connector_name, control_image_name)
+        target_connector = await get_connector(client, connector_name, target_image_name)
 
         # TODO: maybe use proxy to cache the response from the first round and use the cache for the second round
         #   (this may only make sense for syncs with an input state)
         tasks = [
             dispatch(
-                container,
-                FileBackend(f"{output_directory}/{version}"),
-                f"{output_directory}/{version}",
+                connector.container,
+                FileBackend(f"{output_directory}/{connector.version}/{command}"),
+                f"{output_directory}/{connector.version}",
                 command,
                 config,
                 catalog,
                 state,
-            ) for version, container in [(control_version, control_container), (target_version, target_container)]
+            ) for connector in [control_connector, target_connector]
         ]
         await asyncio.gather(*tasks)
 
@@ -73,10 +70,11 @@ async def dispatch(
     state: Optional[Dict],
 ):
     if command == "read":
-        runner = ConnectorRunner(container, backend, output_directory)
         if state:
+            runner = ConnectorRunner(container, backend, f"{output_directory}/read-with-state")
             await runner.call_read_with_state(config, catalog, state)
         else:
+            runner = ConnectorRunner(container, backend, f"{output_directory}/read")
             await runner.call_read(config, catalog)
 
     else:
