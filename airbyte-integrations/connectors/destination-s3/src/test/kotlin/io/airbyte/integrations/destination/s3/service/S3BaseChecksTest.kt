@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.s3.service
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.*
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
+import io.micronaut.context.annotation.Property
 import io.micronaut.context.env.Environment
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -25,6 +27,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
 @MicronautTest(environments = [Environment.TEST, "destination"])
+@Property(name = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION, value = "check")
 class S3BaseChecksTest {
     companion object {
         @JvmStatic

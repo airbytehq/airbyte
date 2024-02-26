@@ -6,8 +6,10 @@ package io.airbyte.integrations.destination.s3.service
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ListObjectsRequest
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
@@ -16,6 +18,10 @@ import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 
 @Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "check",
+)
 class S3BaseChecks(private val s3Client: AmazonS3) {
     private val logger = KotlinLogging.logger {}
 
