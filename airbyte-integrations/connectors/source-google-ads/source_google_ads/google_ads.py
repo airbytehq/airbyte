@@ -214,18 +214,8 @@ class GoogleAds:
         return field_value
 
     @staticmethod
-    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow, nullable: Optional[List[str]] = None):
-        if nullable is None:
-            nullable = []
+    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):
         props = schema.get("properties")
         fields = GoogleAds.get_fields_from_schema(schema)
-        # Making fields nullable is a temporary try to avoid `500 Internal server error` happen when
-        # `user_interest.availabilities` and `user_interest.launched_to_all` fields are queried while syncing `user_interest` stream.
-        # It seems like the values for the fields have changed following the 500 errors and it is unexpected,
-        # so until we understand the issue with the 500 errors, we will nullify those two fields.
-        # This should affect only the `user_interest` stream.
-        # TODO: we need to get rid of the nullable condition once the issue https://github.com/airbytehq/oncall/issues/4306 to be resolved.
-        single_record = {
-            field: GoogleAds.get_field_value(result, field, props.get(field)) if field not in nullable else None for field in fields
-        }
+        single_record = {field: GoogleAds.get_field_value(result, field, props.get(field)) for field in fields}
         return single_record

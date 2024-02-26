@@ -22,6 +22,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
@@ -44,7 +45,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<SnowflakeTableDefinition> {
+public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest {
 
   private static String databaseName;
   private static JdbcDatabase database;
@@ -411,8 +412,9 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     // should be OK with new tables
     destinationHandler.execute(createTable);
-    final Optional<SnowflakeTableDefinition> existingTableA = destinationHandler.findExistingTable(streamId);
-    assertTrue(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableA.get()));
+    List<DestinationInitialState> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    assertEquals(1, initialStates.size());
+    assertFalse(initialStates.get(0).isSchemaMismatch());
     destinationHandler.execute(Sql.of("DROP TABLE " + streamId.finalTableId("")));
 
     // Hack the create query to add NOT NULLs to emulate the old behavior
@@ -424,8 +426,9 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             .collect(joining("\r\n")))
         .toList()).toList();
     destinationHandler.execute(new Sql(createTableModified));
-    final Optional<SnowflakeTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
-    assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));
+    initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    assertEquals(1, initialStates.size());
+    assertTrue(initialStates.get(0).isSchemaMismatch());
   }
 
 }
