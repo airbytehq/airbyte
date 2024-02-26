@@ -5,10 +5,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-
 on:
   workflow_dispatch:
   push:
@@ -36,6 +32,7 @@ jobs:
           filters: |
             python_cdk:
               - 'airbyte-cdk/python/**/*'
+
   run-python-cdk-check:
     needs:
       - changes
@@ -54,18 +51,8 @@ jobs:
         run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3
       - name: Install Pyenv
         run: python3 -m pip install virtualenv --user
-      - name: cd airbyte-cdk/python
-        run: cd airbyte-cdk/python
       - name: Run Gradle Check on Python CDK
-        uses: burrunan/gradle-cache-action@v1
-        env:
-          CI: true
-        with:
-          job-id: python-cdk-check
-          read-only: ${{ github.ref != 'refs/heads/master' }}
-          gradle-distribution-sha-256-sum-warning: false
-          concurrent: true
-          arguments: --scan build
+        run: (cd airbyte-cdk/python && CI=true ./gradlew --no-daemon --no-build-cache --scan check)
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure

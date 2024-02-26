@@ -26,5 +26,9 @@ class ConfigBuilder:
         self._config["credentials"]["api_token"] = api_token
         return self
 
+    def with_client_id(self, client_id: str) -> "ConfigBuilder":
+        self._config["credentials"]["client_id"] = client_id
+        return self
+
     def build(self) -> Dict[str, Any]:
         return self._config
