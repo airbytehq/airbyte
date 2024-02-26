@@ -1,6 +1,9 @@
 import json
 import os
+from dataclasses import dataclass
 from typing import Dict, Optional
+
+import dagger
 
 from .connector_runner import SecretDict, get_connector_container
 
@@ -23,8 +26,16 @@ def _read_json(path: str) -> Dict:
     return json.loads(contents)
 
 
-async def get_connector(dagger_client, image_name):
-    connector_container = await get_connector_container(dagger_client, image_name)
+@dataclass
+class ConnectorUnderTest:
+    technical_name: str
+    version: str
+    container: dagger.Container
+
+
+async def get_connector(dagger_client, connector_name: str, image_name: str) -> ConnectorUnderTest:
+    dagger_container = await get_connector_container(dagger_client, image_name)
     if cachebuster := os.environ.get("CACHEBUSTER"):
-        connector_container = connector_container.with_env_variable("CACHEBUSTER", cachebuster)
-    return await connector_container
+        dagger_container = dagger_container.with_env_variable("CACHEBUSTER", cachebuster)
+
+    return ConnectorUnderTest(connector_name, image_name.split(":")[-1], await dagger_container)

@@ -11,6 +11,10 @@ description = "Contains regression tests for connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
 homepage = "https://github.com/airbytehq/airbyte"
+readme = "README.md"
+packages = [
+    { include = "regression_testing", from = "src" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -53,3 +57,6 @@ mount_docker_socket = true
 
 [tool.poetry.scripts]
 run-regression-tests = "regression_testing.main:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
