@@ -7,29 +7,53 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
 
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Collection;
 import java.util.Optional;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator {
+public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition, DestinationState extends MinimumDestinationState>
+    implements Migration<DestinationState> {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseDestinationV1V2Migrator.class);
 
+  private final SqlGenerator sqlGenerator;
+
+  /**
+   * Should never be called. Exists so that we can mock this object, because Mockito
+   * requires a no-args constructor.
+   */
+  protected BaseDestinationV1V2Migrator() {
+    this(null);
+  }
+
+  protected BaseDestinationV1V2Migrator(SqlGenerator sqlGenerator) {
+    this.sqlGenerator = sqlGenerator;
+  }
+
+  protected abstract DestinationState setV1V2MigrationDone(DestinationState state);
+
+  @NotNull
   @Override
-  public void migrateIfNecessary(
-                                 final SqlGenerator sqlGenerator,
-                                 final DestinationHandler<?> destinationHandler,
-                                 final StreamConfig streamConfig)
-      throws Exception {
+  public MigrationResult<DestinationState> migrateIfNecessary(
+                                                              @NotNull DestinationHandler<DestinationState> destinationHandler,
+                                                              @NotNull StreamConfig streamConfig,
+                                                              @NotNull DestinationInitialState<DestinationState> state) {
     LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
     if (shouldMigrate(streamConfig)) {
       LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());
       migrate(sqlGenerator, destinationHandler, streamConfig);
       LOGGER.info("V2 Migration completed successfully for stream {}", streamConfig.id().finalName());
+      final DestinationState updatedState = setV1V2MigrationDone(state.destinationState());
+      // The v2 raw table now exists. We should refetch the initial state.
+      return new MigrationResult<>(updatedState, true);
     } else {
       LOGGER.info("No Migration Required for stream: {}", streamConfig.id().finalName());
+      return new MigrationResult<>(state.destinationState(), false);
     }
 
   }
@@ -40,12 +64,18 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param streamConfig the stream in question
    * @return whether to migrate the stream
    */
-  protected boolean shouldMigrate(final StreamConfig streamConfig) throws Exception {
+  protected boolean shouldMigrate(final StreamConfig streamConfig) {
     final var v1RawTable = convertToV1RawName(streamConfig);
     LOGGER.info("Checking whether v1 raw table {} in dataset {} exists", v1RawTable.tableName(), v1RawTable.namespace());
     final var syncModeNeedsMigration = isMigrationRequiredForSyncMode(streamConfig.destinationSyncMode());
-    final var noValidV2RawTableExists = !doesValidV2RawTableAlreadyExist(streamConfig);
-    final var aValidV1RawTableExists = doesValidV1RawTableExist(v1RawTable.namespace(), v1RawTable.tableName());
+    final boolean noValidV2RawTableExists;
+    final boolean aValidV1RawTableExists;
+    try {
+      noValidV2RawTableExists = !doesValidV2RawTableAlreadyExist(streamConfig);
+      aValidV1RawTableExists = doesValidV1RawTableExist(v1RawTable.namespace(), v1RawTable.tableName());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     LOGGER.info("Migration Info: Required for Sync mode: {}, No existing v2 raw tables: {}, A v1 raw table exists: {}",
         syncModeNeedsMigration, noValidV2RawTableExists, aValidV1RawTableExists);
     return syncModeNeedsMigration && noValidV2RawTableExists && aValidV1RawTableExists;

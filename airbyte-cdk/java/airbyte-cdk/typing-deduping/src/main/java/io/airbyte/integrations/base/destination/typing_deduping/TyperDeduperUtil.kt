@@ -28,14 +28,6 @@ class TyperDeduperUtil {
             migrations: List<Migration<DestinationState>>,
             initialStates: List<DestinationInitialStatus<DestinationState>>
         ): List<DestinationInitialStatus<DestinationState>> {
-            // TODO: Either the migrations run the soft reset and create v2 tables or the actual
-            // prepare tables.
-            // unify the logic
-            // with current state of raw tables & final tables. This is done first before gather
-            // initial state
-            // to avoid recreating
-            // final tables later again.
-
             // Run migrations in lockstep. Some migrations may require us to refetch the initial
             // state.
             // We want to be able to batch those calls together across streams.
@@ -115,40 +107,6 @@ class TyperDeduperUtil {
                     }
             }
             return currentStates
-        }
-
-        /**
-         * The legacy-style migrations (V1V2Migrator, V2TableMigrator) need to run before we gather
-         * initial state, because they're dumb and weird. (specifically: SnowflakeV2TableMigrator
-         * inspects the final tables and triggers a soft reset directly within the migration). TODO:
-         * Migrate these migrations to the new migration system. This will also reduce the number of
-         * times we need to query DB metadata, since (a) we can rely on the gatherInitialState
-         * values, and (b) we can add a DestinationState field for these migrations. It also enables
-         * us to not trigger multiple soft resets in a single sync.
-         */
-        @JvmStatic
-        fun <DestinationState> executeWeirdMigrations(
-            executorService: ExecutorService,
-            sqlGenerator: SqlGenerator,
-            destinationHandler: DestinationHandler<DestinationState>,
-            v1V2Migrator: DestinationV1V2Migrator,
-            v2TableMigrator: V2TableMigrator,
-            parsedCatalog: ParsedCatalog
-        ) {
-            val futures =
-                parsedCatalog.streams.map {
-                    CompletableFuture.supplyAsync(
-                        {
-                            v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, it)
-                            v2TableMigrator.migrateIfNecessary(it)
-                        },
-                        executorService
-                    )
-                }
-            getResultsOrLogAndThrowFirst(
-                "The following exceptions were thrown attempting to run migrations:\n",
-                CompletableFutures.allOf(futures.toList()).toCompletableFuture().join()
-            )
         }
 
         /**
