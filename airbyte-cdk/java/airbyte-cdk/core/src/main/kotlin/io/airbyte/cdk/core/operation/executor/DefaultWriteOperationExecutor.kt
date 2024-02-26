@@ -29,6 +29,7 @@ private val logger = KotlinLogging.logger {}
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
     value = "write",
 )
+@Requires(env = ["destination"])
 class DefaultWriteOperationExecutor(
     private val catalog: AirbyteConfiguredCatalog,
     private val messageConsumerFactory: Optional<SerializedAirbyteMessageConsumerFactory>,

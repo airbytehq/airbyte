@@ -26,6 +26,7 @@ private val logger = KotlinLogging.logger {}
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
     value = "read",
 )
+@Requires(env = ["source"])
 class DefaultReadOperationExecutor(
     private val messageIterator: Optional<AutoCloseableIterator<AirbyteMessage>>,
     @Named("outputRecordCollector") private val outputRecordCollector: Consumer<AirbyteMessage>,

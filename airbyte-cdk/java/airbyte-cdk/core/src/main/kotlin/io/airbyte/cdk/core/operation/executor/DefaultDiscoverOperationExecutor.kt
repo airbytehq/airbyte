@@ -17,6 +17,7 @@ import jakarta.inject.Singleton
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
     value = "discover",
 )
+@Requires(env = ["source"])
 class DefaultDiscoverOperationExecutor : OperationExecutor {
     override fun execute(): Result<AirbyteMessage?> {
         return Result.success(AirbyteMessage().withType(AirbyteMessage.Type.CATALOG).withCatalog(AirbyteCatalog()))

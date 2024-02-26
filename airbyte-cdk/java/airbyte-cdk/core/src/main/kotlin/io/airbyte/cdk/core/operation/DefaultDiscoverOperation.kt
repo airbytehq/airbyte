@@ -17,6 +17,7 @@ import jakarta.inject.Singleton
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
     value = "discover",
 )
+@Requires(env = ["source"])
 class DefaultDiscoverOperation(
     @Named("discoverOperationExecutor") private val operationExecutor: OperationExecutor,
 ) : Operation {

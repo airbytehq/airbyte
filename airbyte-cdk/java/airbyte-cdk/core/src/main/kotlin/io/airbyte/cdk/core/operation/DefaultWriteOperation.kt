@@ -17,6 +17,7 @@ import jakarta.inject.Singleton
     property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
     value = "write",
 )
+@Requires(env = ["destination"])
 class DefaultWriteOperation(
     @Named("writeOperationExecutor") private val operationExecutor: OperationExecutor,
 ) : Operation {
