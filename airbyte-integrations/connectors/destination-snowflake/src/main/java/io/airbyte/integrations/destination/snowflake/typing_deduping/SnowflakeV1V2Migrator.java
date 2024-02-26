@@ -14,12 +14,14 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import lombok.SneakyThrows;
+import org.jetbrains.annotations.NotNull;
 
-public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinition> {
+public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinition, SnowflakeState> {
 
   private final NamingConventionTransformer namingConventionTransformer;
 
@@ -29,10 +31,26 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefi
 
   public SnowflakeV1V2Migrator(final NamingConventionTransformer namingConventionTransformer,
                                final JdbcDatabase database,
-                               final String databaseName) {
+                               final String databaseName,
+                               final SnowflakeSqlGenerator generator) {
+    super(generator);
     this.namingConventionTransformer = namingConventionTransformer;
     this.database = database;
     this.databaseName = databaseName;
+  }
+
+  @Override
+  public boolean requireMigration(@NotNull SnowflakeState state) {
+    return state.getV1V2MigrationDone();
+  }
+
+  @Override
+  protected SnowflakeState setV1V2MigrationDone(SnowflakeState state) {
+    return new SnowflakeState(
+        state.getNeedsSoftReset(),
+        true,
+        state.getFinalTableNameUppercase(),
+        state.getExtractedAtInUtc());
   }
 
   @SneakyThrows
