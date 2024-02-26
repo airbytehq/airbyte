@@ -450,8 +450,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final BigQueryV2TableMigrator v2RawTableMigrator = new BigQueryV2TableMigrator(bigquery);
     final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(
         bigquery,
-        datasetLocation
-    );
+        datasetLocation);
 
     if (disableTypeDedupe) {
       return new NoOpTyperDeduperWithV1V2Migrations<>(

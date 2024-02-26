@@ -430,8 +430,8 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   /**
-   * Bigquery doesn't handle frequent INSERT/DELETE statements on a single table very well.
-   * So we don't have real state handling. Disable this test.
+   * Bigquery doesn't handle frequent INSERT/DELETE statements on a single table very well. So we
+   * don't have real state handling. Disable this test.
    */
   @Override
   @Disabled
@@ -439,6 +439,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   public void testStateHandling() throws Exception {
     super.testStateHandling();
   }
+
   /**
    * TableResult contains records in a somewhat nonintuitive format (and it avoids loading them all
    * into memory). That's annoying for us since we're working with small test data, so just pull
