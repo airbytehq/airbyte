@@ -126,7 +126,7 @@ class SubstreamPartitionRouter(StreamSlicer):
             for parent_stream_config in self.parent_stream_configs:
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key.eval(self.config)  # type: ignore # parent_key is always casted to an interpolated string
-                stream_state_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
+                partition_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
                 for parent_stream_slice in parent_stream.stream_slices(
                     sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
                 ):
@@ -149,13 +149,13 @@ class SubstreamPartitionRouter(StreamSlicer):
                         elif isinstance(parent_record, Record):
                             parent_record = parent_record.data
                         try:
-                            stream_state_value = dpath.util.get(parent_record, parent_field)
+                            partition_value = dpath.util.get(parent_record, parent_field)
                         except KeyError:
                             pass
                         else:
                             empty_parent_slice = False
                             yield PerPartitionStreamSlice(
-                                partition={stream_state_field: stream_state_value, "parent_slice": parent_partition}, cursor_slice={}
+                                partition={partition_field: partition_value, "parent_slice": parent_partition}, cursor_slice={}
                             )
                     # If the parent slice contains no records,
                     if empty_parent_slice:
