@@ -238,22 +238,6 @@ class AbstractSource(Source, ABC):
             yield from self.message_repository.consume_queue()
         return
 
-    # def _read_full_refresh(
-    #     self,
-    #     logger: logging.Logger,
-    #     stream_instance: Stream,
-    #     configured_stream: ConfiguredAirbyteStream,
-    #     internal_config: InternalConfig,
-    # ) -> Iterator[AirbyteMessage]:
-    #     total_records_counter = 0
-    #     for record_data_or_message in stream_instance.read_full_refresh(configured_stream.cursor_field, logger, self._slice_logger):
-    #         message = self._get_message(record_data_or_message, stream_instance)
-    #         yield message
-    #         if message.type == MessageType.RECORD:
-    #             total_records_counter += 1
-    #             if internal_config.is_limit_reached(total_records_counter):
-    #                 return
-
     def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream) -> AirbyteMessage:
         """
         Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
