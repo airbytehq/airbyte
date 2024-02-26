@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-COMMANDS = ["check", "discover", "read", "read-with-state", "spec"]
+COMMANDS = ["all", "check", "discover", "read", "read-with-state", "spec"]
 
 
 async def _main(
@@ -42,23 +42,38 @@ async def _main(
     catalog = ConfiguredAirbyteCatalog.parse_file(catalog_path) if catalog_path else None
     state = get_state(state_path) if state_path else None
 
-    async with dagger.Connection(config=dagger.Config(log_output=sys.stderr)) as client:
+    async with (dagger.Connection(config=dagger.Config(log_output=sys.stderr)) as client):
         control_connector = await get_connector(client, connector_name, control_image_name)
         target_connector = await get_connector(client, connector_name, target_image_name)
 
         # TODO: maybe use proxy to cache the response from the first round and use the cache for the second round
         #   (this may only make sense for syncs with an input state)
-        tasks = [
-            dispatch(
-                connector.container,
-                FileBackend(f"{output_directory}/{connector.version}/{command}"),
-                f"{output_directory}/{connector.version}",
-                command,
-                config,
-                catalog,
-                state,
-            ) for connector in [control_connector, target_connector]
-        ]
+        if command == "all":
+            tasks = []
+            for command in COMMANDS:
+                tasks.extend([
+                    dispatch(
+                        connector.container,
+                        FileBackend(f"{output_directory}/{connector.version}/{command}"),
+                        f"{output_directory}/{connector.version}",
+                        command,
+                        config,
+                        catalog,
+                        state,
+                    ) for connector in [control_connector, target_connector]
+                ])
+        else:
+            tasks = [
+                dispatch(
+                    connector.container,
+                    FileBackend(f"{output_directory}/{connector.version}/{command}"),
+                    f"{output_directory}/{connector.version}",
+                    command,
+                    config,
+                    catalog,
+                    state,
+                ) for connector in [control_connector, target_connector]
+            ]
         await asyncio.gather(*tasks)
 
 
