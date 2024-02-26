@@ -14,7 +14,7 @@ from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import Per
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamState
 from airbyte_cdk.sources.message import MessageRepository
 from isodate import Duration, parse_duration
 
