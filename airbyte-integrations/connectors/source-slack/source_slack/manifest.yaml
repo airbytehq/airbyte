@@ -277,6 +277,12 @@ definitions:
               type: RequestOption
               field_name: channel
               inject_into: request_parameter
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - channel_id
+            value: '{{ stream_partition[''channel_id''] }}'
 
 streams:
   - "#/definitions/users_stream"
