@@ -33,6 +33,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -56,7 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Execution(ExecutionMode.CONCURRENT)
-public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<BigqueryState> {
+public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<MinimumDestinationState.Impl> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
 
@@ -81,7 +82,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   @Override
   protected BigQueryDestinationHandler getDestinationHandler() {
-    return new BigQueryDestinationHandler(bq, "US", namespace);
+    return new BigQueryDestinationHandler(bq, "US");
   }
 
   @Override
@@ -362,7 +363,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   @Test
   public void testCreateTableInOtherRegion() throws InterruptedException {
-    final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1", namespace);
+    final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
     // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
     bq.getDataset(namespace).delete();
     final var sqlGenerator = new BigQuerySqlGenerator(projectId, "asia-east1");

@@ -22,7 +22,6 @@ import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
-import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
@@ -239,7 +238,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation, rawNamespaceOverride);
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper =
-        buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe, rawNamespaceOverride);
+        buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
 
     AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
     final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
@@ -446,14 +445,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                          final ParsedCatalog parsedCatalog,
                                          final BigQuery bigquery,
                                          final String datasetLocation,
-                                         final boolean disableTypeDedupe,
-                                         final Optional<String> rawNamespaceOverride) {
+                                         final boolean disableTypeDedupe) {
     final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
     final BigQueryV2TableMigrator v2RawTableMigrator = new BigQueryV2TableMigrator(bigquery);
     final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(
         bigquery,
-        datasetLocation,
-        rawNamespaceOverride.orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
+        datasetLocation
+    );
 
     if (disableTypeDedupe) {
       return new NoOpTyperDeduperWithV1V2Migrations<>(
