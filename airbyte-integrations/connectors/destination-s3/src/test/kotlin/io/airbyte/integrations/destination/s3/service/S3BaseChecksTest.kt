@@ -24,7 +24,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
-@MicronautTest(environments = [Environment.TEST])
+@MicronautTest(environments = [Environment.TEST, "destination"])
 class S3BaseChecksTest {
     companion object {
         @JvmStatic

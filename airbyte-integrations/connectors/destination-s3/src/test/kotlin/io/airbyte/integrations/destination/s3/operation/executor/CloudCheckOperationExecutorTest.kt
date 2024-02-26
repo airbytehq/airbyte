@@ -24,7 +24,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-@MicronautTest(environments = [Environment.TEST, "cloud"])
+@MicronautTest(environments = [Environment.TEST, "cloud", "destination"])
+@Property(name = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION, value = "check")
 class CloudCheckOperationExecutorTest {
     @Inject
     lateinit var cloudCheckOperationExecutor: CloudCheckOperationExecutor
@@ -55,6 +56,7 @@ class CloudCheckOperationExecutorTest {
     }
 
     @Test
+    @Property(name = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION, value = "check")
     @Property(name = "${ConnectorConfigurationPropertySource.CONNECTOR_CONFIG_PREFIX}.s3-endpoint", value = "http://unsecured")
     internal fun `test that if the configured endpoint is not secure, a successful response with a failed status is returned`() {
         val result = cloudCheckOperationExecutor.execute()

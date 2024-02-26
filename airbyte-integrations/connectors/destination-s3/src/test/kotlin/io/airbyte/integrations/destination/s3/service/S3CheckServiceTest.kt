@@ -13,6 +13,7 @@ import com.amazonaws.services.s3.model.ObjectListing
 import com.amazonaws.services.s3.model.PartETag
 import com.amazonaws.services.s3.model.PutObjectResult
 import com.amazonaws.services.s3.model.UploadPartResult
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource.Companion.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.micronaut.context.annotation.Property
@@ -27,7 +28,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-@MicronautTest(environments = [Environment.TEST])
+@MicronautTest(environments = [Environment.TEST, "destination"])
+@Property(name = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION, value = "check")
 class S3CheckServiceTest {
     @Inject
     lateinit var s3CheckService: S3CheckService
