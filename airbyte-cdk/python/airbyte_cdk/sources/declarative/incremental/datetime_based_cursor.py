@@ -118,7 +118,7 @@ class DatetimeBasedCursor(Cursor):
         """
         self._cursor = stream_state.get(self._cursor_field.eval(self.config)) if stream_state else None
 
-    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
+    def close_slice(self, stream_slice: PerPartitionStreamSlice, most_recent_record: Optional[Record]) -> None:
         last_record_cursor_value = most_recent_record.get(self._cursor_field.eval(self.config)) if most_recent_record else None
         stream_slice_value_end = stream_slice.get(self._partition_field_end.eval(self.config))
         potential_cursor_values = [
@@ -129,7 +129,7 @@ class DatetimeBasedCursor(Cursor):
                 # we need to ensure the cursor value is preserved as is in the state else the CATs might complain of something like
                 # 2023-01-04T17:30:19.000Z' <= '2023-01-04T17:30:19.000000Z'
                 lambda datetime_str: (self.parse_date(datetime_str), datetime_str),
-                filter(lambda item: item, potential_cursor_values),
+                potential_cursor_values
             )
         )
         self._cursor = (
