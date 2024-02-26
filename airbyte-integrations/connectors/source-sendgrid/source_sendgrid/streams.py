@@ -8,6 +8,7 @@ import time
 import zlib
 from abc import ABC, abstractmethod
 from contextlib import closing
+from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
 
@@ -20,6 +21,10 @@ from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handl
 from numpy import nan
 from pendulum import DateTime
 from requests import codes, exceptions
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.core import StreamData
 
 
 class SendgridStream(HttpStream, ABC):
@@ -181,8 +186,144 @@ class Campaigns(SendgridStreamMetadataPagination):
     def initial_path() -> str:
         return "marketing/campaigns"
 
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.http_logger import format_http_message
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+class ContactsRetriever(Retriever):
 
-class Contacts(SendgridStream):
+    def __init__(self, config):
+        print(config)
+        path = "marketing/contacts/exports"
+        authenticator = BearerAuthenticator(
+            token_provider=InterpolatedStringTokenProvider(
+                config=config,
+                api_token="{{ config['apikey'] }}",
+                parameters={},
+            ),
+            config=config,
+            parameters={},
+        )
+        self._create_job_requester = HttpRequester(
+            url_base="https://api.sendgrid.com/v3/",
+            path=path,
+            name="create_job_requester",
+            config=config,
+            http_method="POST",
+            authenticator=authenticator,
+            parameters={},
+        )
+        self._polling_job_requester = HttpRequester(
+            url_base="https://api.sendgrid.com/v3/",
+            path= "marketing/contacts/exports/{{ job_create_response['id'] }}",
+            name="create_job_requester",
+            config=config,
+            http_method="GET",
+            authenticator=authenticator,
+            parameters={},
+        )
+        self._poll_success_condition = InterpolatedString(string="{{ poll_response['status'] == 'ready' }}", parameters={})
+        self._poll_fail_condition = InterpolatedString(string="{{ poll_response['error'] }}", parameters={})
+        self._download_url_selector = InterpolatedString(string="{{ poll_response['urls'] }}", parameters={})
+        self._download_requester = None
+        self._download_requester = HttpRequester(
+            url_base="",
+            path= "marketing/contacts/exports/{{ job_create_response['id'] }}",
+            name="create_job_requester",
+            config=config,
+            http_method="GET",
+            parameters={},
+        )
+
+    def read_records(
+            self,
+            stream_slice: Optional[StreamSlice] = None,
+    ) -> Iterable[StreamData]:
+        job_create_response = self._create_job_requester.send_request(
+            stream_state={},
+            stream_slice={},
+        )
+        job_id = job_create_response.json()["id"]
+
+        success = False
+        while not success:
+
+            polling_response = self._polling_job_requester.send_request(
+                stream_state={}, stream_slice={},
+                path=self._polling_job_requester._path.eval(config={}, job_create_response=job_create_response.json())
+            )
+
+            success_string = (self._poll_success_condition.eval(config={}, poll_response=polling_response.json()))
+            success = bool(success_string)
+
+        urls = self._download_url_selector.eval(config={}, poll_response=polling_response.json())
+
+        for url in urls:
+            url,path = url.split(".com", 1)
+            url = f"{url}.com"
+            decompressor = zlib.decompressobj(zlib.MAX_WBITS | 32)
+            self._download_requester._url_base = InterpolatedString(string=url, parameters={})
+            tmp_file = os.path.realpath(os.path.basename("test_filename"))
+            url_response = self._download_requester.send_request(stream_state={}, stream_slice={}, path=path)
+
+            #TODO need to stream the chunks
+            chunk = url_response.content
+            with open(tmp_file, "wb") as data_file:
+                try:
+                    # see if it's compressed. we are seeing some that are not all of a sudden.
+                    # but let's also guard against the case where sendgrid changes it back.
+                    data_file.write(decompressor.decompress(chunk))
+                except zlib.error as e:
+                    # it's not actually compressed!
+                    data_file.write(chunk)
+            with open(tmp_file, "r") as data:
+                chunks = pd.read_csv(data, chunksize=1024, iterator=True, dialect="unix", dtype=str)
+                for chunk in chunks:
+                    chunk = ({k.lower(): v for k, v in x.items()} for x in chunk.replace({nan: None}).to_dict(orient="records"))
+                    for row in chunk:
+                        yield row
+
+
+        yield from [{"hello": "world"}]
+
+    @abstractmethod
+    def stream_slices(self) -> Iterable[Optional[StreamSlice]]:
+        yield from [None]
+
+    @property
+    @abstractmethod
+    def state(self) -> StreamState:
+        return {}
+
+    @state.setter
+    @abstractmethod
+    def state(self, value: StreamState) -> None:
+        pass
+
+@dataclass
+class Contacts(DeclarativeStream):
+    def __init__(self, config):
+        name = "contacts"
+        retriever = ContactsRetriever(config)
+        super().__init__(retriever=retriever,
+                         config=config,
+                         parameters={},
+                         name=name,
+                         stream_cursor_field="maybenone",
+                         )
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: Optional[List[str]] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        yield from self.retriever.read_records(stream_slice)
+
+class OldContacts(SendgridStream):
     primary_key = "contact_id"
     MAX_RETRY_NUMBER = 3
     DEFAULT_WAIT_TIMEOUT_SECONDS = 60

@@ -25,6 +25,9 @@ class StripeRequestBuilder:
     def customers_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls("customers", account_id, client_secret)
 
+    def any_endpoint(self, endpoint, acouunt, client_secret):
+        pass
+
     @classmethod
     def customers_bank_accounts_endpoint(cls, customer_id: str, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls(f"customers/{customer_id}/bank_accounts", account_id, client_secret)
@@ -112,6 +115,10 @@ class StripeRequestBuilder:
 
     def with_expands(self, expands: List[str]) -> "StripeRequestBuilder":
         self._expands = expands
+        return self
+
+    def with_request_param(self, param: str, value: str) -> "StripeRequestBuilder":
+        self._request_params[param] = value
         return self
 
     def build(self) -> HttpRequest:

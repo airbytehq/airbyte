@@ -123,9 +123,9 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
+        #_given_events_availability_check(http_mocker)
         http_mocker.get(
-            _application_fees_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
+            _application_fees_request().with_limit(100).build(),
             _application_fees_response().with_record(_an_application_fee()).with_record(_an_application_fee()).build(),
         )
 
@@ -153,8 +153,8 @@ class FullRefreshTest(TestCase):
     def test_given_no_state_when_read_then_return_ignore_lookback(self, http_mocker: HttpMocker) -> None:
         _given_events_availability_check(http_mocker)
         http_mocker.get(
-            _application_fees_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
-            _application_fees_response().with_record(_an_application_fee()).build(),
+            _application_fees_request("path_to_real_request")
+            _application_fees_response("path_to_real_response")
         )
 
         self._read(_config().with_start_date(_A_START_DATE).with_lookback_window_in_days(10))

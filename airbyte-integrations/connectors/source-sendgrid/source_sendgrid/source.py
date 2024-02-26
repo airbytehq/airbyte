@@ -51,21 +51,8 @@ class SourceSendgrid(AbstractSource):
         start_time = config.get("start_time")
 
         streams = [
-            Lists(authenticator=authenticator),
-            Campaigns(authenticator=authenticator),
-            Contacts(authenticator=authenticator),
-            StatsAutomations(authenticator=authenticator),
-            Segments(authenticator=authenticator),
-            SingleSends(authenticator=authenticator),
-            Templates(authenticator=authenticator),
-            GlobalSuppressions(authenticator=authenticator, start_time=start_time),
-            SuppressionGroups(authenticator=authenticator),
-            SuppressionGroupMembers(authenticator=authenticator),
-            Blocks(authenticator=authenticator, start_time=start_time),
-            Bounces(authenticator=authenticator, start_time=start_time),
-            InvalidEmails(authenticator=authenticator, start_time=start_time),
-            SpamReports(authenticator=authenticator, start_time=start_time),
-            UnsubscribeGroups(authenticator=authenticator),
+            #Contacts(authenticator=authenticator),
+            Contacts(config),
         ]
 
         return streams
