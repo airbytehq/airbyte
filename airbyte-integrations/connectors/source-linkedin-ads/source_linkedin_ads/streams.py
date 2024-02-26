@@ -354,6 +354,49 @@ class Creatives(LinkedInAdsStreamSlicing):
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
 
 
+class AdDirectSponsoredContents(LinkedInAdsStreamSlicing):
+    """
+    Get AdDirectSponsoredContents data using `account_id` slicing.
+    More info about LinkedIn Ads / adDirectSponsoredContents:
+    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/advertising-targeting/create-and-manage-video?tabs=http#finders
+    """
+
+    endpoint = "adDirectSponsoredContents"
+    # AdDirectSponsoredContents stream doesn't have `id` property, so the "account" is used instead.
+    primary_key = "account"
+    parent_values_map = {"account_id": "id", "reference_id": "reference"}
+    search_param = "account"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params["owner"] = stream_slice.get("reference_id")
+        params["account"] = stream_slice.get("account_id")
+        params["q"] = self.search_param
+        return params
+
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        parent_stream = self.parent_stream(config=self.config)
+        for record in parent_stream.read_records(**kwargs):
+
+            if record.get("reference", "").startswith("urn:li:person"):
+                self.logger.warn(
+                    f'Skip {record.get("name")} account, ORGANIZATION permissions required, but referenced to PERSON {record.get("reference")}'
+                )
+                continue
+
+            child_stream_slice = super(LinkedInAdsStreamSlicing, self).read_records(
+                stream_slice=get_parent_stream_values(record, self.parent_values_map), **kwargs
+            )
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
+
 class Conversions(LinkedInAdsStreamSlicing):
     """
     Get Conversions data using `account_id` slicing.
