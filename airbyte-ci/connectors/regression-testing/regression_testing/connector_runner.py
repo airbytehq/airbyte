@@ -14,7 +14,6 @@ import dagger
 import docker
 import pytest
 from airbyte_protocol.models import AirbyteMessage, ConfiguredAirbyteCatalog, OrchestratorType
-from airbyte_protocol.models import Type as AirbyteMessageType
 from anyio import Path as AnyioPath
 from pydantic import ValidationError
 from .backends import BaseBackend
@@ -218,10 +217,8 @@ class ConnectorRunner:
     IN_CONTAINER_CONFIG_PATH = "/data/config.json"
     IN_CONTAINER_CATALOG_PATH = "/data/catalog.json"
     IN_CONTAINER_STATE_PATH = "/data/state.json"
-    BASE_CONTAINER_DIRECTORY = "/tmp"
-    IN_CONTAINER_OUTPUT_PATH = f"{BASE_CONTAINER_DIRECTORY}/raw_output.txt"
-    RELATIVE_RECORDS_PATH = "records.json"
-    RELATIVE_STATES_PATH = "states.json"
+    BASE_IN_CONTAINER_OUTPUT_DIRECTORY = "/tmp"
+    IN_CONTAINER_OUTPUT_PATH = f"{BASE_IN_CONTAINER_OUTPUT_DIRECTORY}/raw_output.txt"
     RELATIVE_ERRORS_PATH = "errors.txt"
 
     def __init__(
@@ -229,9 +226,10 @@ class ConnectorRunner:
         connector_container: dagger.Container,
         backend: BaseBackend,
         output_directory: str,
-        custom_environment_variables: Optional[Mapping] = {},
+        custom_environment_variables: Optional[Mapping] = None,
         deployment_mode: Optional[str] = None,
     ):
+        custom_environment_variables = custom_environment_variables or {}
         env_vars = (
             custom_environment_variables
             if deployment_mode is None
@@ -239,7 +237,7 @@ class ConnectorRunner:
         )
         self._connector_under_test_container = self.set_env_vars(connector_container, env_vars)
         self._backend = backend
-        os.makedirs(self.BASE_CONTAINER_DIRECTORY, exist_ok=True)
+        os.makedirs(self.BASE_IN_CONTAINER_OUTPUT_DIRECTORY, exist_ok=True)
         os.makedirs(output_directory, exist_ok=True)
         self._output_directory = output_directory
 
@@ -369,17 +367,12 @@ class ConnectorRunner:
 
     async def _write_comparable_records_and_state(self, filepath: str):
         raw_output = await AnyioPath(filepath).read_text()
+        await self._backend.write(self._raw_output_iter(raw_output))
 
-        with open(f"{self._output_directory}/{self.RELATIVE_RECORDS_PATH}", "w") as records_file:
-            with open(f"{self._output_directory}/{self.RELATIVE_STATES_PATH}", "w") as states_file:
-                with open(f"{self._output_directory}/{self.RELATIVE_ERRORS_PATH}", "w") as errors:
-                    for line in raw_output.splitlines():
-                        try:
-                            airbyte_message = AirbyteMessage.parse_raw(line)
-                            if airbyte_message.type == AirbyteMessageType.RECORD:
-                                # TODO: sort & filter out things like timestamp
-                                records_file.write(f"{airbyte_message.record.json()}\n")
-                            elif airbyte_message.type == AirbyteMessageType.STATE:
-                                states_file.write(f"{airbyte_message.state.json()}\n")
-                        except ValidationError as exc:
-                            errors.write(f"Unable to parse connector's output {line}, error: {exc}\n")
+    def _raw_output_iter(self, raw_output):
+        with open(f"{self._output_directory}/{self.RELATIVE_ERRORS_PATH}", "w") as errors:
+            for line in raw_output.splitlines():
+                try:
+                    yield AirbyteMessage.parse_raw(line)
+                except ValidationError as exc:
+                    errors.write(f"Unable to parse connector's output {line}, error: {exc}\n")

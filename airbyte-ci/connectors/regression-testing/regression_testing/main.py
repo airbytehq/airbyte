@@ -33,9 +33,7 @@ async def _main(
         target_image_name = f"airbyte/{connector_name}:{target_image_name}"
 
     # TODO: add backend options
-    if output_directory:
-        backend = FileBackend(output_directory)
-    else:
+    if not output_directory:
         raise NotImplementedError(f"An output directory is required; only file backends are currently supported.")
 
     config = get_connector_config(config_path)
@@ -49,12 +47,12 @@ async def _main(
         target_container = await get_connector(client, target_image_name)
         target_version = target_image_name.split(":")[-1]
 
-        # TODO: maybe use vcrpy to cache the response from the first round and use the cassette for the second round
+        # TODO: maybe use proxy to cache the response from the first round and use the cache for the second round
         #   (this may only make sense for syncs with an input state)
         tasks = [
             dispatch(
                 container,
-                backend,
+                FileBackend(f"{output_directory}/{version}"),
                 f"{output_directory}/{version}",
                 command,
                 config,

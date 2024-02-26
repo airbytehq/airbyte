@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import Any, Generator
+
+from airbyte_protocol.models import AirbyteMessage
 
 
 class BaseBackend(ABC):  # TODO
@@ -7,13 +10,13 @@ class BaseBackend(ABC):  # TODO
     """
 
     @abstractmethod
-    def write(self):
+    async def write(self, raw_output: Generator[AirbyteMessage, Any, None]) -> None:
         ...
 
     @abstractmethod
-    def read(self):
+    async def read(self) -> None:
         ...
 
     @abstractmethod
-    def compare(self):
+    async def compare(self) -> None:
         ...
