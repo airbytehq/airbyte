@@ -61,7 +61,6 @@ class AdCreatives(FBMarketingStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Read with super method and append thumbnail_data_url if enabled"""
-        logger.info("Stream state : {}".format(stream_state))
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if self._fetch_thumbnail_images:
                 thumbnail_url = record.get("thumbnail_url")
@@ -70,11 +69,7 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
-        if stream_slice.get("account").get("dolead_type") != "GEOLOC":
-            yield from stream_slice.get("account").get_ad_creatives(fields=self.fields, params=params)
-        else:
-            logger.info("Account number {} is a geoloc account. Not parsing its Creatives".
-                        format(stream_slice.get("account").get("account_id")))
+        yield from stream_slice.get("account").get_ad_creatives(fields=self.fields, params=params)
 
 
 class CustomConversions(FBMarketingStream):

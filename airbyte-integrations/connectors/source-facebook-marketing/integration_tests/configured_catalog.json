@@ -2,6 +2,17 @@
   "streams": [
     {
       "stream": {
+        "name": "ad_creatives",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "activities",
         "json_schema": {},
         "supported_sync_modes": [
