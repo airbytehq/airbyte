@@ -18,17 +18,8 @@ definitions:
       api_token: "{{ config['access_token'] }}"
     request_headers:
       GoCardless-Version: "{{ config['gocardless_version'] }}"
-    request_parameters:
-      created_at[gte]: "{{ config['start_date'] }}"
-  date_incremental_sync:
-    type: DatetimeBasedCursor
-    start_datetime:
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    cursor_granularity: PT1S
-    step: P30D # Step should reflect the actual time granularity you need
-    cursor_field: "created_at"
+    # request_parameters:
+    #   created_at[gte]: "{{ config['start_date'] }}"
   retriever:
     type: SimpleRetriever
     $parameters:
@@ -51,6 +42,20 @@ definitions:
       page_size_option:
         field_name: "limit"
         inject_into: "request_parameter"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: created_at
+    cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%S.%fZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config[''start_date''] }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_time_option:
+      inject_into: request_parameter
+      field_name: created_at[gte]
+      type: RequestOption
 
 streams:
   - type: DeclarativeStream
@@ -65,7 +70,7 @@ streams:
         $ref: "#/definitions/requester"
         path: "/payments"
     incremental_sync:
-      $ref: "#/definitions/date_incremental_sync"
+      $ref: "#/definitions/incremental_sync"
   - type: DeclarativeStream
     $parameters:
       name: "refunds"
@@ -78,7 +83,7 @@ streams:
         $ref: "#/definitions/requester"
         path: "/refunds"
     incremental_sync:
-      $ref: "#/definitions/date_incremental_sync"
+      $ref: "#/definitions/incremental_sync"
   - type: DeclarativeStream
     $parameters:
       name: "mandates"
@@ -91,7 +96,7 @@ streams:
         $ref: "#/definitions/requester"
         path: "/mandates"
     incremental_sync:
-      $ref: "#/definitions/date_incremental_sync"
+      $ref: "#/definitions/incremental_sync"
   - type: DeclarativeStream
     $parameters:
       name: "payouts"
@@ -104,7 +109,7 @@ streams:
         $ref: "#/definitions/requester"
         path: "/payouts"
     incremental_sync:
-      $ref: "#/definitions/date_incremental_sync"
+      $ref: "#/definitions/incremental_sync"
 check:
   type: CheckStream
   stream_names:
