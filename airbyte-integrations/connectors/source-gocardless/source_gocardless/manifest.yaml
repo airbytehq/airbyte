@@ -20,6 +20,15 @@ definitions:
       GoCardless-Version: "{{ config['gocardless_version'] }}"
     request_parameters:
       created_at[gte]: "{{ config['start_date'] }}"
+  date_incremental_sync:
+    type: DatetimeBasedCursor
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    cursor_granularity: PT1S
+    step: P30D # Step should reflect the actual time granularity you need
+    cursor_field: "created_at"
   retriever:
     type: SimpleRetriever
     $parameters:
@@ -55,6 +64,8 @@ streams:
       requester:
         $ref: "#/definitions/requester"
         path: "/payments"
+    incremental_sync:
+      $ref: "#/definitions/date_incremental_sync"
   - type: DeclarativeStream
     $parameters:
       name: "refunds"
@@ -66,6 +77,8 @@ streams:
       requester:
         $ref: "#/definitions/requester"
         path: "/refunds"
+    incremental_sync:
+      $ref: "#/definitions/date_incremental_sync"
   - type: DeclarativeStream
     $parameters:
       name: "mandates"
@@ -77,6 +90,8 @@ streams:
       requester:
         $ref: "#/definitions/requester"
         path: "/mandates"
+    incremental_sync:
+      $ref: "#/definitions/date_incremental_sync"
   - type: DeclarativeStream
     $parameters:
       name: "payouts"
@@ -88,39 +103,8 @@ streams:
       requester:
         $ref: "#/definitions/requester"
         path: "/payouts"
-  - type: DeclarativeStream
-    $parameters:
-      name: "customer_bank_accounts"
-    primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/customer_bank_accounts"
-  - type: DeclarativeStream
-    $parameters:
-      name: "payouts"
-    primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/payouts"
-  - type: DeclarativeStream
-    $parameters:
-      name: "payouts"
-    primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/payouts"
+    incremental_sync:
+      $ref: "#/definitions/date_incremental_sync"
 check:
   type: CheckStream
   stream_names:
