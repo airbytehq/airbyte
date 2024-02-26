@@ -1152,7 +1152,7 @@ def test_checkpoint_state_from_stream_instance():
 
     # The stream_state passed to checkpoint_state() should be used since the stream does not implement state function
     actual_message = managers_stream._checkpoint_state({"updated": "expected_here"}, state_manager)
-    assert actual_message == _as_state( "managers", {"updated": "expected_here"})
+    assert actual_message == _as_state("managers", {"updated": "expected_here"})
 
 
 @pytest.mark.parametrize(

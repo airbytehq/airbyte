@@ -63,14 +63,18 @@ class RequestBuilder:
             query_params=query_params,
         )
 
+
 def _create_catalog(stream_name: str, sync_mode: SyncMode = SyncMode.full_refresh):
     return CatalogBuilder().with_stream(name=stream_name, sync_mode=sync_mode).build()
+
 
 def _create_legacies_request() -> RequestBuilder:
     return RequestBuilder.legacies_endpoint()
 
+
 def _create_planets_request() -> RequestBuilder:
     return RequestBuilder.planets_endpoint()
+
 
 def _create_users_request() -> RequestBuilder:
     return RequestBuilder.users_endpoint()
@@ -124,11 +128,13 @@ LEGACY_TEMPLATE = {
     ]
 }
 
+
 RESOURCE_TO_TEMPLATE = {
     "legacies": LEGACY_TEMPLATE,
     "planets": PLANET_TEMPLATE,
     "users": USER_TEMPLATE,
 }
+
 
 def _create_response() -> HttpResponseBuilder:
     return create_response_builder(
@@ -137,6 +143,7 @@ def _create_response() -> HttpResponseBuilder:
         # pagination_strategy=StripePaginationStrategy()
     )
 
+
 def _create_record(resource: str) -> RecordBuilder:
     return create_record_builder(
         response_template=RESOURCE_TO_TEMPLATE.get(resource),
@@ -144,6 +151,7 @@ def _create_record(resource: str) -> RecordBuilder:
         record_id_path=FieldPath("id"),
         record_cursor_path=FieldPath("created_at"),
     )
+
 
 class FullRefreshStreamTest(TestCase):
     @HttpMocker()
@@ -201,7 +209,6 @@ class IncrementalStreamTest(TestCase):
         assert actual_messages.state_messages[0].state.stream.stream_state == {"created_at": (start_datetime + timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")}
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": _NOW.strftime("%Y-%m-%dT%H:%M:%SZ")}
-
 
     @HttpMocker()
     def test_incremental_running_as_full_refresh(self, http_mocker):

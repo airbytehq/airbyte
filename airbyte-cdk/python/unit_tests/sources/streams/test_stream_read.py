@@ -114,15 +114,18 @@ def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message
     stream.logger.setLevel(logger.level)
     return stream
 
+
 def _incremental_stream(slice_to_partition_mapping, slice_logger, logger, message_repository, timestamp):
     stream = _stream(slice_to_partition_mapping, slice_logger, logger, message_repository)
     stream.state = {"created_at": timestamp}
     return stream
 
+
 def _incremental_concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message_repository, cursor):
     stream = _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message_repository, cursor)
     # stream.state = {"created_at": timestamp}
     return stream
+
 
 @pytest.mark.parametrize(
     "constructor",

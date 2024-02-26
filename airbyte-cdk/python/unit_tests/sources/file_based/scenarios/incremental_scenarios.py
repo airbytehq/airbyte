@@ -479,7 +479,7 @@ multi_csv_same_timestamp_scenario = (
                 },
                 "stream": "stream1",
             },
-        {
+            {
                 "history": {"a.csv": "2023-06-05T03:54:07.000000Z", "b.csv": "2023-06-05T03:54:07.000000Z"},
                 "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.csv",
             },
