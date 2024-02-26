@@ -126,7 +126,8 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
-                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))))
+                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))))
             .stream()
             .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
             .map(Jsons::deserialize)

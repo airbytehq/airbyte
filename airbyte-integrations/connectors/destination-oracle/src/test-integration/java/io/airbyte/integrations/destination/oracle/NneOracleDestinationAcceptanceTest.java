@@ -43,12 +43,9 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("sid").asText()
-            ),
+                config.get("sid").asText()),
             getAdditionalProperties(algorithm),
-            Duration.ofMinutes(5)
-        )
-    );
+            Duration.ofMinutes(5)));
 
     final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
