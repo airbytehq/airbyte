@@ -56,20 +56,6 @@ definitions:
       request_parameters:
         exclude_fields: "{{ parameters.get('data_field') }}._links"
 
-  #  datetime_incremental_sync:
-  #    type: DatetimeBasedCursor
-  #    start_datetime:
-  #      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}" #
-  #    end_datetime:
-  #      datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-  #    datetime_format: "%Y-%m-%d"
-  #    cursor_datetime_formats:
-  #      - "%Y-%m-%d"
-  #      - "%Y-%m-%dT%H:%M:%S"
-  #    cursor_granularity: P1D
-  #    step: P15D
-  #    cursor_field: "{{ parameters['stream_cursor_field'] }}"
-
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -270,12 +256,13 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_field: "{{ parameters['cursor_field'] }}"
-      #      cursor_datetime_formats: [ ]
       start_datetime:
         type: MinMaxDatetime
         # TODO: ref to use datetime as optional parameter if possible
         datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S.%fZ')) }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      step: "P100Y"
+      cursor_granularity: "PT0.1S"
     transformations:
       - type: AddFields
         fields:
@@ -311,12 +298,13 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_field: "{{ parameters['cursor_field'] }}"
-      #      cursor_datetime_formats: [ ]
       start_datetime:
         type: MinMaxDatetime
         # TODO: ref to use datetime as optional parameter if possible
         datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S.%fZ')) }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      step: "P100Y"
+      cursor_granularity: "PT0.1S"
     $parameters:
       name: "unsubscribes"
       primary_key: ["campaign_id", "email_id", "timestamp"]
@@ -344,9 +332,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        # TODO: check if needed
         cursor_field: "{{ parameters['cursor_field'] }}"
-        #      cursor_datetime_formats: [ ]
         start_datetime:
           type: MinMaxDatetime
           # TODO: ref to use datetime as optional parameter if possible
@@ -356,18 +342,8 @@ definitions:
           inject_into: request_parameter
           field_name: "since"
           type: RequestOption
-    #          step: P1M
-    #          cursor_granularity: PT1S
-    #    incremental_sync:
-    #      type: DatetimeBasedCursor
-    #      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    #      cursor_field: "{{ parameters['cursor_field'] }}"
-    #      #      cursor_datetime_formats: [ ]
-    #      start_datetime:
-    #        type: MinMaxDatetime
-    #        # TODO: ref to use datetime as optional parameter if possible
-    #        datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S%z')) }}"
-    #        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: "P100Y"
+        cursor_granularity: "PT0.1S"
     $parameters:
       name: "email_activity"
       primary_key: ["timestamp", "email_id", "action"]
