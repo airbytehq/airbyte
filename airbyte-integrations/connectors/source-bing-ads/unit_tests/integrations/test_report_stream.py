@@ -3,6 +3,7 @@
 from pathlib import Path
 from typing import Any, Optional
 
+import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from base_test import BaseTest
@@ -42,6 +43,7 @@ class TestSuiteReportStream(TestReportStream):
     second_read_state: dict
     transform_field: str = "AccountId"
     account_id: str = "180535609"
+    cursor_field = "TimePeriod"
 
     def setUp(self):
         if not self.stream_name:
@@ -50,7 +52,7 @@ class TestSuiteReportStream(TestReportStream):
     @HttpMocker()
     def test_return_records_from_given_csv_file(self, http_mocker: HttpMocker):
         self.auth_client(http_mocker)
-        output = self.read_stream(
+        output, _ = self.read_stream(
             self.stream_name,
             SyncMode.full_refresh,
             self._config,
@@ -61,7 +63,7 @@ class TestSuiteReportStream(TestReportStream):
     @HttpMocker()
     def test_transform_records_from_given_csv_file(self, http_mocker: HttpMocker):
         self.auth_client(http_mocker)
-        output = self.read_stream(
+        output, _ = self.read_stream(
             self.stream_name,
             SyncMode.full_refresh,
             self._config,
@@ -75,7 +77,7 @@ class TestSuiteReportStream(TestReportStream):
     @HttpMocker()
     def test_incremental_read_returns_records(self, http_mocker: HttpMocker):
         self.auth_client(http_mocker)
-        output = self.read_stream(
+        output, _ = self.read_stream(
             self.stream_name,
             SyncMode.incremental,
             self._config,
@@ -88,7 +90,7 @@ class TestSuiteReportStream(TestReportStream):
     def test_incremental_read_with_state_returns_records(self, http_mocker: HttpMocker):
         state = self._state(self.state_file, self.stream_name)
         self.auth_client(http_mocker)
-        output = self.read_stream(
+        output, service_call_mock = self.read_stream(
             self.stream_name,
             SyncMode.incremental,
             self._config,
@@ -101,6 +103,10 @@ class TestSuiteReportStream(TestReportStream):
         expected_cursor = self.second_read_state.get(self.stream_name).get(self.account_id)
         assert actual_cursor == expected_cursor
 
-        used_state = output.state_messages[0].state.stream.stream_state.dict().get(self.stream_name)
-        provided_state = state[0].stream.stream_state.dict().get(self.stream_name)
-        assert used_state == provided_state
+        provided_state = state[0].stream.stream_state.dict()[self.account_id][self.cursor_field]
+        # gets ReportDownloadParams object
+        request_start_date = service_call_mock.call_args.args[0].report_request.Time.CustomDateRangeStart
+        year = request_start_date.Year
+        month = request_start_date.Month
+        day = request_start_date.Day
+        assert pendulum.DateTime(year, month, day, tzinfo=pendulum.UTC) == pendulum.parse(provided_state)

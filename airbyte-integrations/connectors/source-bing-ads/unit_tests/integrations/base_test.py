@@ -1,9 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -53,8 +53,8 @@ class BaseTest(TestCase):
             stream_data_file: str = None,
             state: Optional[Dict[str, Any]] = None,
             expecting_exception: bool = False,
-    ) -> EntrypointOutput:
+    ) -> Tuple[EntrypointOutput, MagicMock]:
         with patch.object(HttpAuthenticated, "send", mock_http_authenticated_send):
-            with patch.object(self.service_manager, "download_file", return_value=self._download_file(stream_data_file)):
+            with patch.object(self.service_manager, "download_file", return_value=self._download_file(stream_data_file)) as service_call_mock:
                 catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-                return read(SourceBingAds(), config, catalog, state, expecting_exception)
+                return read(SourceBingAds(), config, catalog, state, expecting_exception), service_call_mock
