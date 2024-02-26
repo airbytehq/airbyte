@@ -204,9 +204,14 @@ class ArchivedRecordsStream(IncrementalKlaviyoStream):
     def path(self, **kwargs) -> str:
         return self._path
 
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
         archived_stream_state = stream_state.get("archived") if stream_state else None
-        params = super().request_params(archived_stream_state, next_page_token, **kwargs)
+        params = super().request_params(stream_state=archived_stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         archived_filter = "equals(archived,true)"
         if "filter" in params and archived_filter not in params["filter"]:
             params["filter"] = f"and({params['filter']},{archived_filter})"
