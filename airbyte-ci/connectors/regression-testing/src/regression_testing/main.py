@@ -9,13 +9,13 @@ from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
 from .backends import BaseBackend, FileBackend
 from .connector_runner import ConnectorRunner, SecretDict
-from .utils import ConnectorUnderTest, get_connector, get_connector_config, get_state
+from .utils import get_connector, get_connector_config, get_state
 
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-COMMANDS = ["check", "discover", "read", "spec"]
+COMMANDS = ["check", "discover", "read", "read-with-state", "spec"]
 
 
 async def _main(
@@ -71,21 +71,21 @@ async def dispatch(
     catalog: Optional[ConfiguredAirbyteCatalog],
     state: Optional[Dict],
 ):
+    runner = ConnectorRunner(container, backend, f"{output_directory}/{command}")
+
     if command == "check":
-        runner = ConnectorRunner(container, backend, f"{output_directory}/check")
         await runner.call_check(config)
 
     elif command == "discover":
-        runner = ConnectorRunner(container, backend, f"{output_directory}/discover")
         await runner.call_discover(config)
 
     elif command == "read":
-        if state:
-            runner = ConnectorRunner(container, backend, f"{output_directory}/read-with-state")
-            await runner.call_read_with_state(config, catalog, state)
-        else:
-            runner = ConnectorRunner(container, backend, f"{output_directory}/read")
-            await runner.call_read(config, catalog)
+        runner = ConnectorRunner(container, backend, f"{output_directory}/read")
+        await runner.call_read(config, catalog)
+
+    elif command == "read-with-state":
+        runner = ConnectorRunner(container, backend, f"{output_directory}/read-with-state")
+        await runner.call_read_with_state(config, catalog, state)
 
     elif command == "spec":
         runner = ConnectorRunner(container, backend, f"{output_directory}/spec")
