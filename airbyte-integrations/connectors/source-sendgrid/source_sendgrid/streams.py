@@ -192,6 +192,17 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+
+class GzipDecompressor:
+    def __init__(self):
+        self.decompressor = zlib.decompressobj(zlib.MAX_WBITS | 32)
+
+    def decompress(self, data):
+        try:
+            return self.decompressor.decompress(data)
+        except zlib.error as e:
+            return data
+
 class ContactsRetriever(Retriever):
 
     def __init__(self, config):
@@ -236,6 +247,7 @@ class ContactsRetriever(Retriever):
             http_method="GET",
             parameters={},
         )
+        self._decompressor = GzipDecompressor()
 
     def read_records(
             self,
@@ -263,7 +275,6 @@ class ContactsRetriever(Retriever):
         for url in urls:
             url,path = url.split(".com", 1)
             url = f"{url}.com"
-            decompressor = zlib.decompressobj(zlib.MAX_WBITS | 32)
             self._download_requester._url_base = InterpolatedString(string=url, parameters={})
             tmp_file = os.path.realpath(os.path.basename("test_filename"))
             url_response = self._download_requester.send_request(stream_state={}, stream_slice={}, path=path)
@@ -271,13 +282,7 @@ class ContactsRetriever(Retriever):
             #TODO need to stream the chunks
             chunk = url_response.content
             with open(tmp_file, "wb") as data_file:
-                try:
-                    # see if it's compressed. we are seeing some that are not all of a sudden.
-                    # but let's also guard against the case where sendgrid changes it back.
-                    data_file.write(decompressor.decompress(chunk))
-                except zlib.error as e:
-                    # it's not actually compressed!
-                    data_file.write(chunk)
+                data_file.write(self._decompressor.decompress(chunk))
             with open(tmp_file, "r") as data:
                 chunks = pd.read_csv(data, chunksize=1024, iterator=True, dialect="unix", dtype=str)
                 for chunk in chunks:
