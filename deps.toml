@@ -92,7 +92,8 @@ log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3" }
 micronaut-jackson-databind = { module = "io.micronaut:micronaut-jackson-databind", version.ref = "micronaut" }
-micronaut-inject = { module = "io.micronaut:micronaut-inject-java", version = "4.2.4" }
+micronaut-inject-java = { module = "io.micronaut:micronaut-inject-java", version = "4.2.4" }
+micronaut-inject-kotlin = { module = "io.micronaut:micronaut-inject-kotlin", version = "4.2.4" }
 micronaut-runtime = { module = "io.micronaut:micronaut-runtime", version.ref = "micronaut" }
 micronaut-picocli = { module = "io.micronaut.picocli:micronaut-picocli", version = "5.2.0" }
 micronaut-test-core = { module = "io.micronaut.test:micronaut-test-core", version.ref = "micronaut-test" }
@@ -132,12 +133,12 @@ datadog = ["datadog-trace-api", "datadog-trace-ot"]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
 junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
 log4j = ["log4j-api", "log4j-core", "log4j-slf4j-impl", "log4j-slf4j2-impl", "log4j-web"]
-micronaut-annotation-processor = ["picocli-codegen", "micronaut-inject"]
-micronaut-cli = ["picocli", "micronaut-runtime", "micronaut-picocli", "micronaut-inject"]
+micronaut-annotation-processor = ["picocli-codegen", "micronaut-inject-java", "micronaut-inject-kotlin"]
+micronaut-cli = ["picocli", "micronaut-runtime", "micronaut-picocli", "micronaut-inject-java"]
 micronaut-test = ["micronaut-test-core", "micronaut-test-junit5"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 temporal = ["temporal-sdk", "temporal-serviceclient"]
 
 [plugins]
-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version = "1.9.22-1.0.17" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

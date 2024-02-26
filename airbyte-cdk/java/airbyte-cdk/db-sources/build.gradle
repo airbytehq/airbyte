@@ -47,17 +47,9 @@ dependencies {
     testFixturesImplementation 'org.hamcrest:hamcrest-all:1.3'
     testFixturesImplementation 'org.junit.platform:junit-platform-launcher:1.10.1'
 
-
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:datastore-postgres')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:datastore-postgres'))
 
     testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
-}
-
-// uses afterEvaluate because at configuration time, the kaptGenerateStubsKotlin task does not exist.
-afterEvaluate {
-    tasks.named('kaptGenerateStubsKotlin').configure {
-        mustRunAfter generateJsonSchema2Pojo
-    }
 }

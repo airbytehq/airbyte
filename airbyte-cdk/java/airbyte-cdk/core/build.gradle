@@ -15,7 +15,7 @@ dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    kapt libs.bundles.micronaut.annotation.processor
+    ksp libs.bundles.micronaut.annotation.processor
 
     api 'com.datadoghq:dd-trace-api:1.28.0'
     api 'com.datadoghq:dd-trace-ot:1.28.0'
@@ -45,7 +45,7 @@ dependencies {
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 
-    kaptTest libs.bundles.micronaut.annotation.processor
+    kspTest libs.bundles.micronaut.annotation.processor
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources'))
