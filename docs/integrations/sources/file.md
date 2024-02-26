@@ -104,6 +104,7 @@ For example, if the format `CSV` is selected, then options from the [read_csv](h
 
 - It is therefore possible to customize the `delimiter` (or `sep`) to in case of tab separated files.
 - Header line can be ignored with `header=0` and customized with `names`
+- If a file has no header, it is required to set `header=null`; otherwise, the first record will be missing
 - Parse dates for in specified columns
 - etc
 
