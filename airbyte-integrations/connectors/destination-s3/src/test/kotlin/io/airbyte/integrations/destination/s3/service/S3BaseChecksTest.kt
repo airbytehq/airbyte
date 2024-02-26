@@ -26,7 +26,6 @@ import java.util.stream.Stream
 
 @MicronautTest(environments = [Environment.TEST])
 class S3BaseChecksTest {
-
     companion object {
         @JvmStatic
         fun getCustomEndpointArguments(): Stream<Arguments> {
@@ -51,7 +50,10 @@ class S3BaseChecksTest {
 
     @ParameterizedTest
     @MethodSource("getCustomEndpointArguments")
-    internal fun `test that when a custom endpoint is tested, the appropriate response is returned`(endpoint:String?, expected:Boolean) {
+    internal fun `test that when a custom endpoint is tested, the appropriate response is returned`(
+        endpoint: String?,
+        expected: Boolean,
+    ) {
         assertEquals(expected, s3BaseChecks.testCustomEndpointSecured(endpoint))
     }
 
@@ -66,7 +68,7 @@ class S3BaseChecksTest {
             s3BaseChecks.testIAMUserHasListObjectPermission(bucketName)
         }
 
-        verify(exactly=1) { amazonS3Client.listObjects(capture(listObjectRequest)) }
+        verify(exactly = 1) { amazonS3Client.listObjects(capture(listObjectRequest)) }
         assertEquals(bucketName, listObjectRequest.captured.bucketName)
     }
 
@@ -81,7 +83,7 @@ class S3BaseChecksTest {
             s3BaseChecks.testIAMUserHasListObjectPermission(bucketName)
         }
 
-        verify(exactly=1) { amazonS3Client.listObjects(capture(listObjectRequest)) }
+        verify(exactly = 1) { amazonS3Client.listObjects(capture(listObjectRequest)) }
         assertEquals(bucketName, listObjectRequest.captured.bucketName)
     }
 
@@ -104,8 +106,8 @@ class S3BaseChecksTest {
             s3BaseChecks.testMultipartUpload(bucketName, "/test/path")
         }
 
-        verify(exactly=1) { amazonS3Client.initiateMultipartUpload(capture(initialMultipartUploadRequest)) }
-        verify(exactly=1) { amazonS3Client.deleteObject(bucketName, any()) }
+        verify(exactly = 1) { amazonS3Client.initiateMultipartUpload(capture(initialMultipartUploadRequest)) }
+        verify(exactly = 1) { amazonS3Client.deleteObject(bucketName, any()) }
         assertEquals(bucketName, initialMultipartUploadRequest.captured.bucketName)
     }
 
@@ -124,8 +126,8 @@ class S3BaseChecksTest {
             s3BaseChecks.testMultipartUpload(bucketName, "/test/path")
         }
 
-        verify(exactly=1) { amazonS3Client.initiateMultipartUpload(capture(initialMultipartUploadRequest)) }
-        verify(exactly=1) { amazonS3Client.deleteObject(bucketName, any()) }
+        verify(exactly = 1) { amazonS3Client.initiateMultipartUpload(capture(initialMultipartUploadRequest)) }
+        verify(exactly = 1) { amazonS3Client.deleteObject(bucketName, any()) }
         assertEquals(bucketName, initialMultipartUploadRequest.captured.bucketName)
     }
 
@@ -140,8 +142,8 @@ class S3BaseChecksTest {
             s3BaseChecks.testSingleUpload(bucketName, "/test/path")
         }
 
-        verify(exactly=1) { amazonS3Client.putObject(bucketName, any(String::class), any(String::class)) }
-        verify(exactly=1) { amazonS3Client.deleteObject(bucketName, any()) }
+        verify(exactly = 1) { amazonS3Client.putObject(bucketName, any(String::class), any(String::class)) }
+        verify(exactly = 1) { amazonS3Client.deleteObject(bucketName, any()) }
     }
 
     @Test
@@ -155,7 +157,7 @@ class S3BaseChecksTest {
             s3BaseChecks.testSingleUpload(bucketName, "/test/path")
         }
 
-        verify(exactly=1) { amazonS3Client.putObject(bucketName, any(String::class), any(String::class)) }
-        verify(exactly=1) { amazonS3Client.deleteObject(bucketName, any()) }
+        verify(exactly = 1) { amazonS3Client.putObject(bucketName, any(String::class), any(String::class)) }
+        verify(exactly = 1) { amazonS3Client.deleteObject(bucketName, any()) }
     }
 }

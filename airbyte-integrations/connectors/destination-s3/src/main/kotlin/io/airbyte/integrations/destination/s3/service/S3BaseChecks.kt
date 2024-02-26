@@ -17,7 +17,6 @@ import java.nio.charset.StandardCharsets
 
 @Singleton
 class S3BaseChecks(private val s3Client: AmazonS3) {
-
     private val logger = KotlinLogging.logger {}
 
     /**
@@ -35,15 +34,18 @@ class S3BaseChecks(private val s3Client: AmazonS3) {
     }
 
     fun testIAMUserHasListObjectPermission(bucketName: String) {
-        logger.info {"Started testing if IAM user can call listObjects on the destination bucket '${bucketName}'..." }
+        logger.info { "Started testing if IAM user can call listObjects on the destination bucket '$bucketName'..." }
         val request = ListObjectsRequest().withBucketName(bucketName).withMaxKeys(1)
         s3Client.listObjects(request)
         logger.info { "Finished checking for listObjects permission" }
     }
 
     @Throws(IOException::class)
-    fun testMultipartUpload(bucketName: String, bucketPath: String) {
-        logger.info {"Started testing if all required credentials assigned to user for multipart upload" }
+    fun testMultipartUpload(
+        bucketName: String,
+        bucketPath: String,
+    ) {
+        logger.info { "Started testing if all required credentials assigned to user for multipart upload" }
         val prefix = if (bucketPath.endsWith("/")) bucketPath else "$bucketPath/"
         val testFile = prefix + "test_" + System.currentTimeMillis()
         val manager = StreamTransferManagerFactory.create(bucketName, testFile, s3Client).get()
@@ -52,7 +54,7 @@ class S3BaseChecks(private val s3Client: AmazonS3) {
             manager.multiPartOutputStreams[0].use { outputStream ->
                 CSVPrinter(
                     PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-                    CSVFormat.DEFAULT
+                    CSVFormat.DEFAULT,
                 ).use { csvPrinter ->
                     val oneMegaByteString = "a".repeat(500000)
                     // write a file larger than the 5 MB, which is the default part size, to make sure it is a multipart
@@ -71,10 +73,13 @@ class S3BaseChecks(private val s3Client: AmazonS3) {
             }
             s3Client.deleteObject(bucketName, testFile)
         }
-        logger.info {"Finished verification for multipart upload mode" }
+        logger.info { "Finished verification for multipart upload mode" }
     }
 
-    fun testSingleUpload(bucketName: String, bucketPath: String) {
+    fun testSingleUpload(
+        bucketName: String,
+        bucketPath: String,
+    ) {
         logger.info { "Started testing if all required credentials assigned to user for single file uploading" }
         val prefix = if (bucketPath.endsWith("/")) bucketPath else "$bucketPath/"
         val testFile = prefix + "test_" + System.currentTimeMillis()

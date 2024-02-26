@@ -14,7 +14,6 @@ private val logger = KotlinLogging.logger {}
 
 @Singleton
 open class S3CheckService(private val configuration: S3ConnectorConfiguration, private val s3BaseChecks: S3BaseChecks) {
-
     fun check(): Result<AirbyteMessage?> {
         try {
             configuration.s3BucketName?.let { bucketName ->

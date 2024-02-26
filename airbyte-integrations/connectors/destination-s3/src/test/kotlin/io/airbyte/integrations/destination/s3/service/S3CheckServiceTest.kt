@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = [Environment.TEST])
 class S3CheckServiceTest {
-
     @Inject
     lateinit var s3CheckService: S3CheckService
 
@@ -61,10 +60,10 @@ class S3CheckServiceTest {
 
         assertTrue(result.isSuccess)
         assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, result.getOrNull()?.connectionStatus?.status)
-        verify(exactly=1) { amazonS3Client.listObjects(any(ListObjectsRequest::class)) }
-        verify(exactly=1) { amazonS3Client.putObject("test-bucket", any(String::class), any(String::class)) }
-        verify(exactly=2) { amazonS3Client.deleteObject("test-bucket", any()) }
-        verify(exactly=1) { amazonS3Client.completeMultipartUpload(any()) }
+        verify(exactly = 1) { amazonS3Client.listObjects(any(ListObjectsRequest::class)) }
+        verify(exactly = 1) { amazonS3Client.putObject("test-bucket", any(String::class), any(String::class)) }
+        verify(exactly = 2) { amazonS3Client.deleteObject("test-bucket", any()) }
+        verify(exactly = 1) { amazonS3Client.completeMultipartUpload(any()) }
     }
 
     @Test
@@ -89,7 +88,9 @@ class S3CheckServiceTest {
 
         assertTrue(result.isSuccess)
         assertEquals(AirbyteConnectionStatus.Status.FAILED, result.getOrNull()?.connectionStatus?.status)
-        assertEquals("Could not connect to the S3 bucket with the provided configuration. \n ${e.message}",
-            result.getOrNull()?.connectionStatus?.message)
+        assertEquals(
+            "Could not connect to the S3 bucket with the provided configuration. \n ${e.message}",
+            result.getOrNull()?.connectionStatus?.message,
+        )
     }
 }

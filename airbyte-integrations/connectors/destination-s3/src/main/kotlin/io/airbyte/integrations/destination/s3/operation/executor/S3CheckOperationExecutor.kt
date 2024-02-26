@@ -17,7 +17,6 @@ import jakarta.inject.Singleton
 @Primary
 @Named("checkOperationExecutor")
 class S3CheckOperationExecutor(private val checkService: S3CheckService) : OperationExecutor {
-
     override fun execute(): Result<AirbyteMessage?> {
         return checkService.check()
     }

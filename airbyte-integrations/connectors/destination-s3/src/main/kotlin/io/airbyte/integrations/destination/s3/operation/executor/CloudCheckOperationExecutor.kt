@@ -24,7 +24,6 @@ class CloudCheckOperationExecutor(
     private val checkService: S3CheckService,
     private val configuration: S3ConnectorConfiguration,
 ) : OperationExecutor {
-
     companion object {
         const val UNSECURED_ENDPOINT_FAILURE_MESSAGE = "Custom endpoint does not use HTTPS"
     }

@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = [Environment.TEST, "cloud"])
 class CloudCheckOperationExecutorTest {
-
     @Inject
     lateinit var cloudCheckOperationExecutor: CloudCheckOperationExecutor
 
@@ -52,7 +51,7 @@ class CloudCheckOperationExecutorTest {
         val result = cloudCheckOperationExecutor.execute()
 
         assertTrue(result.isSuccess)
-        verify(exactly=1) { checkService.check() }
+        verify(exactly = 1) { checkService.check() }
     }
 
     @Test
@@ -64,6 +63,6 @@ class CloudCheckOperationExecutorTest {
         assertEquals(AirbyteConnectionStatus.Status.FAILED, result.getOrNull()?.connectionStatus?.status)
         assertEquals(UNSECURED_ENDPOINT_FAILURE_MESSAGE, result.getOrNull()?.connectionStatus?.message)
 
-        verify(exactly=0) { checkService.check() }
+        verify(exactly = 0) { checkService.check() }
     }
 }

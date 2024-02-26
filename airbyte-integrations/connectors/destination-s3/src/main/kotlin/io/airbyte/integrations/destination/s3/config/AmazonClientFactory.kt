@@ -21,7 +21,6 @@ import jakarta.inject.Singleton
 
 @Factory
 class AmazonClientFactory {
-
     @Singleton
     @Requires(notEnv = [Environment.TEST])
     fun awsCredentialsProvider(configuration: S3ConnectorConfiguration): AWSCredentialsProvider {

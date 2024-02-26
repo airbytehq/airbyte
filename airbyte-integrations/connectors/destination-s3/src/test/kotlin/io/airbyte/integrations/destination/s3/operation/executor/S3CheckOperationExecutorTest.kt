@@ -21,7 +21,6 @@ import org.junit.jupiter.api.assertDoesNotThrow
 
 @MicronautTest(environments = [Environment.TEST])
 class S3CheckOperationExecutorTest {
-
     @Inject
     lateinit var s3CheckOperationExecutor: S3CheckOperationExecutor
 
@@ -47,6 +46,6 @@ class S3CheckOperationExecutorTest {
             s3CheckOperationExecutor.execute()
         }
 
-        verify(exactly=1) { checkService.check() }
+        verify(exactly = 1) { checkService.check() }
     }
 }
