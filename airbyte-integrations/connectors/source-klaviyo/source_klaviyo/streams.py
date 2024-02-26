@@ -60,7 +60,10 @@ class KlaviyoStream(HttpStream, ABC):
         return {str(k): str(v) for (k, v) in urllib.parse.parse_qsl(next_url.query)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         # If next_page_token is set, all the parameters are already provided
         if next_page_token:
@@ -131,11 +134,16 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
         :return str: The name of the cursor field.
         """
 
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
         """Add incremental filters"""
 
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
         if not params.get("filter"):
             stream_state_cursor_value = stream_state.get(self.cursor_field)
@@ -252,6 +260,16 @@ class Profiles(IncrementalKlaviyoStream):
 
     def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "profiles"
+
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params.update({"additional-fields[profile]": "predictive_analytics"})
+        return params
 
 
 class Campaigns(ArchivedRecordsMixin, IncrementalKlaviyoStream):
