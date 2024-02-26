@@ -101,6 +101,8 @@ class DeclarativeStream(Stream):
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
+        if not isinstance(stream_slice, PerPartitionStreamSlice):
+            raise ValueError(f"DeclarativeStream does not support stream_slices that are not PerPartitionStreamSlice. Got {stream_slice}")
         yield from self.retriever.read_records(self.get_json_schema(), stream_slice)
 
     def get_json_schema(self) -> Mapping[str, Any]:  # type: ignore

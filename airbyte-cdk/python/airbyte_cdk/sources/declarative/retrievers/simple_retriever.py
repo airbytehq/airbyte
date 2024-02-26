@@ -22,6 +22,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
 
 
 @dataclass
@@ -301,7 +302,7 @@ class SimpleRetriever(Retriever):
     def read_records(
         self,
         records_schema: Mapping[str, Any],
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[PerPartitionStreamSlice] = None,
     ) -> Iterable[StreamData]:
         """
         Fetch a stream's records from an HTTP API source
@@ -310,7 +311,7 @@ class SimpleRetriever(Retriever):
         :param stream_slice: The stream slice to read data for
         :return: The records read from the API source
         """
-        stream_slice = stream_slice or {}  # None-check
+        _slice = stream_slice or PerPartitionStreamSlice(partition={}, cursor_slice={})  # None-check
         # Fixing paginator types has a long tail of dependencies
         self._paginator.reset()
 
@@ -318,19 +319,19 @@ class SimpleRetriever(Retriever):
         record_generator = partial(
             self._parse_records,
             stream_state=self.state or {},
-            stream_slice=stream_slice,
+            stream_slice=_slice,
             records_schema=records_schema,
         )
-        for stream_data in self._read_pages(record_generator, self.state, stream_slice):
-            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, stream_data, stream_slice)
+        for stream_data in self._read_pages(record_generator, self.state, _slice):
+            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, stream_data, _slice)
             yield stream_data
 
         if self.cursor:
-            self.cursor.close_slice(stream_slice, most_recent_record_from_slice)
+            self.cursor.close_slice(_slice, most_recent_record_from_slice)
         return
 
     def _get_most_recent_record(
-        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice
+        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: PerPartitionStreamSlice
     ) -> Optional[Record]:
         if self.cursor and (record := self._extract_record(stream_data, stream_slice)):
             if not current_most_recent:
@@ -341,7 +342,7 @@ class SimpleRetriever(Retriever):
             return None
 
     @staticmethod
-    def _extract_record(stream_data: StreamData, stream_slice: StreamSlice) -> Optional[Record]:
+    def _extract_record(stream_data: StreamData, stream_slice: PerPartitionStreamSlice) -> Optional[Record]:
         """
         As we allow the output of _read_pages to be StreamData, it can be multiple things. Therefore, we need to filter out and normalize
         to data to streamline the rest of the process.
@@ -356,7 +357,7 @@ class SimpleRetriever(Retriever):
         return None
 
     # stream_slices is defined with arguments on http stream and fixing this has a long tail of dependencies. Will be resolved by the decoupling of http stream and simple retriever
-    def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:  # type: ignore
+    def stream_slices(self) -> Iterable[Optional[PerPartitionStreamSlice]]:  # type: ignore
         """
         Specifies the slices for this stream. See the stream slicing section of the docs for more information.
 
@@ -412,7 +413,7 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
             )
 
     # stream_slices is defined with arguments on http stream and fixing this has a long tail of dependencies. Will be resolved by the decoupling of http stream and simple retriever
-    def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:  # type: ignore
+    def stream_slices(self) -> Iterable[Optional[PerPartitionStreamSlice]]:  # type: ignore
         return islice(super().stream_slices(), self.maximum_number_of_slices)
 
     def _fetch_next_page(

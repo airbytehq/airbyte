@@ -21,7 +21,7 @@ class Retriever:
     def read_records(
         self,
         records_schema: Mapping[str, Any],
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: Optional[PerPartitionStreamSlice] = None,
     ) -> Iterable[StreamData]:
         """
         Fetch a stream's records from an HTTP API source
