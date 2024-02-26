@@ -3,6 +3,7 @@
 #
 
 import logging
+from abc import ABC
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -30,7 +31,7 @@ class FixtureAvailabilityStrategy(HttpAvailabilityStrategy):
         return reasons_for_codes
 
 
-class IntegrationStream(HttpStream):
+class IntegrationStream(HttpStream, ABC):
 
     url_base = "https://api.airbyte-test.com/v1/"
     primary_key = "id"
@@ -57,8 +58,9 @@ class IntegrationStream(HttpStream):
             return {"next_page": self.current_page}
 
 
-class IncrementalIntegrationStream(IntegrationStream, IncrementalMixin):
+class IncrementalIntegrationStream(IntegrationStream, IncrementalMixin, ABC):
     cursor_field = "created_at"
+    _state = {}
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -75,8 +77,9 @@ class IncrementalIntegrationStream(IntegrationStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-        self.state = {self.cursor_field: stream_slice.get("end_date")}
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            self.state = {self.cursor_field: record.get(self.cursor_field)}
+            yield record
 
 
 class Users(IntegrationStream):
@@ -257,12 +260,52 @@ class Legacies(IntegrationStream):
         return date_slices
 
 
+class Dividers(IntegrationStream):
+    def path(self, **kwargs) -> str:
+        return "dividers"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": True,
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "divide_category": {
+                    "type": "string"
+                }
+            }
+        }
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [{"divide_category": "dukes"}, {"divide_category": "mentats"}]
+
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        return {"category": stream_slice.get("divide_category")}
+
+
 class SourceFixture(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [Legacies(config=config), Planets(config=config), Users(config=config)]
+        return [Dividers(config=config), Legacies(config=config), Planets(config=config), Users(config=config)]
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         return ConnectorSpecification(
