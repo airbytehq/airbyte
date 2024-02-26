@@ -154,8 +154,12 @@ class Stream(ABC):
                         checkpoint_interval = self.state_checkpoint_interval
                         if checkpoint_interval and record_counter % checkpoint_interval == 0:
                             airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
-                            state_value = airbyte_state_message.state.stream.stream_state.dict() if airbyte_state_message.state.stream else {}
-                            logger.info(f"Emitting checkpoint interval state message for stream {self.name} running in {sync_mode} with value {state_value}")
+                            state_value = (
+                                airbyte_state_message.state.stream.stream_state.dict() if airbyte_state_message.state.stream else {}
+                            )
+                            logger.info(
+                                f"Emitting checkpoint interval state message for stream {self.name} running in {sync_mode} with value {state_value}"
+                            )
                             yield airbyte_state_message
 
                     if internal_config.is_limit_reached(record_counter):
@@ -167,7 +171,9 @@ class Stream(ABC):
                 # periodic checkpoints in full refresh mode it can be done here
                 airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
                 state_value = airbyte_state_message.state.stream.stream_state.dict() if airbyte_state_message.state.stream else {}
-                logger.info(f"Emitting completed slice state message for stream {self.name} running in {sync_mode} with value {state_value}")
+                logger.info(
+                    f"Emitting completed slice state message for stream {self.name} running in {sync_mode} with value {state_value}"
+                )
                 yield airbyte_state_message
 
         if not has_slices or sync_mode == SyncMode.full_refresh:
@@ -379,5 +385,4 @@ class Stream(ABC):
 
         except AttributeError:
             state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
-        self.logger
         return state_manager.create_state_message(self.name, self.namespace)
