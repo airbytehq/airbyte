@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-COMMANDS = ["all", "check", "discover", "read", "read-with-state", "spec"]
+COMMANDS = ["check", "discover", "read", "read-with-state", "spec"]
 
 
 async def _main(
@@ -50,13 +50,13 @@ async def _main(
         #   (this may only make sense for syncs with an input state)
         if command == "all":
             tasks = []
-            for command in COMMANDS:
+            for _command in COMMANDS:
                 tasks.extend([
                     dispatch(
                         connector.container,
-                        FileBackend(f"{output_directory}/{connector.version}/{command}"),
+                        FileBackend(f"{output_directory}/{connector.version}/{_command}"),
                         f"{output_directory}/{connector.version}",
-                        command,
+                        _command,
                         config,
                         catalog,
                         state,
@@ -142,8 +142,8 @@ async def dispatch(
 @click.option(
     "--command",
     help=("Airbyte command."),
-    default="read",
-    type=click.Choice(COMMANDS),
+    default="all",
+    type=click.Choice(COMMANDS + ["all"]),
     required=True
 )
 @click.option(
