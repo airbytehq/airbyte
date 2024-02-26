@@ -153,7 +153,10 @@ class Stream(ABC):
                         # Checkpoint intervals are a bit controversial, but see below comment about why we're gating it right now
                         checkpoint_interval = self.state_checkpoint_interval
                         if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                            yield self._checkpoint_state(stream_state, state_manager)
+                            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+                            state_value = airbyte_state_message.state.stream.stream_state.dict() if airbyte_state_message.state.stream else {}
+                            logger.info(f"Emitting checkpoint interval state message for stream {self.name} running in {sync_mode} with value {state_value}")
+                            yield airbyte_state_message
 
                     if internal_config.is_limit_reached(record_counter):
                         break
@@ -162,7 +165,10 @@ class Stream(ABC):
                 # Even though right now, only incremental streams running as incremental mode will emit periodic checkpoints. Rather than
                 # overhaul how refresh interacts with the platform, this positions the code so that once we want to start emitting
                 # periodic checkpoints in full refresh mode it can be done here
-                yield self._checkpoint_state(stream_state, state_manager)
+                airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+                state_value = airbyte_state_message.state.stream.stream_state.dict() if airbyte_state_message.state.stream else {}
+                logger.info(f"Emitting completed slice state message for stream {self.name} running in {sync_mode} with value {state_value}")
+                yield airbyte_state_message
 
         if not has_slices or sync_mode == SyncMode.full_refresh:
             if sync_mode == SyncMode.full_refresh:
@@ -171,8 +177,10 @@ class Stream(ABC):
                 stream_state = stream_state or {"sync_mode": "full_refresh"}
 
             # Safety net to ensure we always emit at least one state message even if there are no slices
-            checkpoint = self._checkpoint_state(stream_state, state_manager)
-            yield checkpoint
+            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+            state_value = airbyte_state_message.state.stream.stream_state.dict() if airbyte_state_message.state.stream else {}
+            logger.info(f"Emitting final state message for stream {self.name} running in {sync_mode} with value {state_value}")
+            yield airbyte_state_message
 
     @abstractmethod
     def read_records(
@@ -371,4 +379,5 @@ class Stream(ABC):
 
         except AttributeError:
             state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
+        self.logger
         return state_manager.create_state_message(self.name, self.namespace)
