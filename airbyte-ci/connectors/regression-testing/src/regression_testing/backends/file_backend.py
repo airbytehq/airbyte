@@ -1,6 +1,6 @@
 import os
 from collections import defaultdict
-from typing import Any, Dict, Generator, Tuple
+from typing import Any, Dict, Generator
 
 from airbyte_protocol.models import AirbyteMessage
 from airbyte_protocol.models import Type as AirbyteMessageType
@@ -80,9 +80,3 @@ class FileBackend(BaseBackend):
                 messages_by_type["records"][key].append(message.state)
 
         return messages_by_type
-
-    async def read(self):
-        raise NotImplementedError
-
-    async def compare(self):
-        raise NotImplementedError

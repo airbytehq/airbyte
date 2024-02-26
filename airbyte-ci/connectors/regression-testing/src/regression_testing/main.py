@@ -95,15 +95,12 @@ async def dispatch(
         await runner.call_discover(config)
 
     elif command == "read":
-        runner = ConnectorRunner(container, backend, f"{output_directory}/read")
         await runner.call_read(config, catalog)
 
     elif command == "read-with-state":
-        runner = ConnectorRunner(container, backend, f"{output_directory}/read-with-state")
         await runner.call_read_with_state(config, catalog, state)
 
     elif command == "spec":
-        runner = ConnectorRunner(container, backend, f"{output_directory}/spec")
         await runner.call_spec()
 
     else:
