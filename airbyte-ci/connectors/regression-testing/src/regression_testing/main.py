@@ -15,6 +15,8 @@ logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
+COMMANDS = ["check", "discover", "read", "spec"]
+
 
 async def _main(
     connector_name: str,
@@ -69,7 +71,15 @@ async def dispatch(
     catalog: Optional[ConfiguredAirbyteCatalog],
     state: Optional[Dict],
 ):
-    if command == "read":
+    if command == "check":
+        runner = ConnectorRunner(container, backend, f"{output_directory}/check")
+        await runner.call_check(config)
+
+    elif command == "discover":
+        runner = ConnectorRunner(container, backend, f"{output_directory}/discover")
+        await runner.call_discover(config)
+
+    elif command == "read":
         if state:
             runner = ConnectorRunner(container, backend, f"{output_directory}/read-with-state")
             await runner.call_read_with_state(config, catalog, state)
@@ -77,8 +87,12 @@ async def dispatch(
             runner = ConnectorRunner(container, backend, f"{output_directory}/read")
             await runner.call_read(config, catalog)
 
+    elif command == "spec":
+        runner = ConnectorRunner(container, backend, f"{output_directory}/spec")
+        await runner.call_spec()
+
     else:
-        raise NotImplementedError(f"{command} is not yet implemented")
+        raise NotImplementedError(f"{command} is not recognized. Must be one of {', '.join(COMMANDS)}")
 
 
 @click.command()
@@ -114,7 +128,7 @@ async def dispatch(
     "--command",
     help=("Airbyte command."),
     default="read",
-    type=click.Choice(["spec", "check", "discover", "read"]),
+    type=click.Choice(COMMANDS),
     required=True
 )
 @click.option(
