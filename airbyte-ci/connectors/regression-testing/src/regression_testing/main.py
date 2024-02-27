@@ -8,6 +8,7 @@ import dagger
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
 from .backends import BaseBackend, FileBackend
+from .comparators import DiffComparator
 from .connector_runner import ConnectorRunner, SecretDict
 from .utils import get_connector, get_connector_config, get_state
 
@@ -75,6 +76,8 @@ async def _main(
                 ) for connector in [control_connector, target_connector]
             ]
         await asyncio.gather(*tasks)
+
+        await DiffComparator(client, output_directory).compare(control_connector, target_connector)
 
 
 async def dispatch(

@@ -51,7 +51,8 @@ class FileBackend(BaseBackend):
                 for state in states:
                     states_file.write(f"{state.json()}\n")
 
-    def _get_messages_by_type(self, messages: Generator[AirbyteMessage, Any, None]) -> Dict[str, Dict]:
+    @staticmethod
+    def _get_messages_by_type(messages: Generator[AirbyteMessage, Any, None]) -> Dict[str, Dict]:
         messages_by_type = {
             "catalog": [],
             "connection_status": [],
