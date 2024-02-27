@@ -115,11 +115,6 @@ class IgnoredFieldsConfiguration(BaseConfig):
     bypass_reason: Optional[str] = Field(default=None, description="Reason why this field is considered ignored.")
 
 
-ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field(
-    description="For each stream, list of fields path ignoring in sequential reads test"
-)
-
-
 class NoPrimaryKeyConfiguration(BaseConfig):
     name: str
     bypass_reason: Optional[str] = Field(default=None, description="Reason why this stream does not support a primary key")
@@ -179,7 +174,6 @@ class BasicReadTestConfig(BaseConfig):
     )
     expect_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
-    ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
     file_types: Optional[FileTypesConfig] = Field(
         default_factory=FileTypesConfig,
         description="For file-based connectors, unsupported by source file types can be configured or a test can be skipped at all",
@@ -197,7 +191,9 @@ class FullRefreshConfig(BaseConfig):
     configured_catalog_path: Optional[str] = configured_catalog_path
     timeout_seconds: int = timeout_seconds
     deployment_mode: Optional[str] = deployment_mode
-    ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
+    ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field(
+        description="For each stream, list of fields path ignoring in sequential reads test"
+    )
 
 
 class FutureStateConfig(BaseConfig):
@@ -324,11 +320,6 @@ class Config(BaseConfig):
                 basic_read_tests["empty_streams"] = [
                     {"name": empty_stream_name} for empty_stream_name in basic_read_tests.get("empty_streams", [])
                 ]
-            if "ignored_fields" in basic_read_tests:
-                basic_read_tests["ignored_fields"] = {
-                    stream: [{"name": field_name} for field_name in ignore_fields]
-                    for stream, ignore_fields in basic_read_tests["ignored_fields"].items()
-                }
         for full_refresh_test in migrated_config["acceptance_tests"].get("full_refresh", {}).get("tests", []):
             if "ignored_fields" in full_refresh_test:
                 full_refresh_test["ignored_fields"] = {
