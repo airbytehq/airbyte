@@ -375,7 +375,7 @@ class AdDirectSponsoredContents(LinkedInAdsStreamSlicing):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["owner"] = stream_slice.get("reference_id")
-        params["account"] = stream_slice.get("account_id")
+        params["account"] = f'urn:li:sponsoredAccount:{stream_slice.get("account_id")}'
         params["q"] = self.search_param
         return params
 
