@@ -92,7 +92,7 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
       if (jsonNodes.get(0).get("max_lsn") != null) {
         maxLsn = Lsn.valueOf(jsonNodes.get(0).get("max_lsn").binaryValue());
       } else {
-        maxLsn = Lsn.NULL;
+        throw new RuntimeException ("SGX NULL LSN!");
       }
       LOGGER.info("identified target lsn: " + maxLsn);
       return new MssqlCdcTargetPosition(maxLsn);

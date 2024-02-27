@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.ContextQueryFunction;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
@@ -29,12 +30,18 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jooq.SQLDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSshMssqlSourceAcceptanceTest.class);
   private static final String STREAM_NAME = "dbo.id_and_name";
   private static final String STREAM_NAME2 = "dbo.starships";
 
@@ -69,7 +76,6 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
         JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
-              ctx.fetch("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", testdb.getDatabaseName());
               ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
               ctx.fetch("INSERT INTO id_and_name (id, name, born) VALUES " +
                   "(1, 'picard', '2124-03-04T01:01:01Z'), " +
@@ -80,16 +86,28 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    return new Database(
-        DSLContextFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-            String.format(DatabaseDriver.MSSQLSERVER.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText()),
-            SQLDialect.DEFAULT));
+    var dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        String.format(DatabaseDriver.MSSQLSERVER.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()) + ";encrypt=false",
+        SQLDialect.DEFAULT);
+    LOGGER.info("SGX dslContext=" + dslContext);
+    return new Database(dslContext) {
+
+      @Override
+      public <T> T query(ContextQueryFunction<T> transform) throws SQLException {
+        LOGGER.info("SGX db.query started. transform=" + transform + "\nstackTrace="
+            + StringUtils.join(ExceptionUtils.getStackFrames(new Exception()), "\n"));
+        var retVal = super.query(transform);
+        LOGGER.info("SGX db.query completed RetVal = " + retVal);
+        return retVal;
+      }
+
+    };
   }
 
   @Override

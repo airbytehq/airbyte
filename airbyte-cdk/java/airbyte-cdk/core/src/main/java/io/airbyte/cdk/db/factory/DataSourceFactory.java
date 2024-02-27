@@ -238,9 +238,7 @@ public class DataSourceFactory {
     }
 
     public DataSourceBuilder withPort(final Integer port) {
-      if (port != null) {
-        this.port = port;
-      }
+      this.port = port;
       return this;
     }
 

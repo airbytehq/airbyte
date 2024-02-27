@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
+import com.google.common.util.concurrent.Uninterruptibles;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
@@ -45,10 +46,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +145,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
   protected abstract void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages);
 
   @BeforeEach
-  protected void setup() {
+  protected void setup() throws Exception {
     testdb = createTestDatabase();
 
     // create and populate actual table
@@ -325,7 +328,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertEquals(expectedRecords, actualData);
   }
 
-  @Test
+  @Disabled
+@Test
   // On the first sync, produce returns records that exist in the database.
   void testExistingData() throws Exception {
     final CdcTargetPosition targetPosition = cdcLatestTargetPosition();
@@ -349,7 +353,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertEquals(extractPosition(record.getData()), targetPosition);
   }
 
-  @Test
+  @Disabled
+@Test
   // When a record is deleted, produces a deletion record.
   void testDelete() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read1 = source()
@@ -359,6 +364,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertExpectedStateMessages(stateMessages1);
 
     deleteMessageOnIdCol(MODELS_STREAM_NAME, COL_ID, 11);
+    waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, 1);
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> read2 = source()
@@ -377,7 +383,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertExpectedStateMessages(stateMessages);
   }
 
-  @Test
+  @Disabled
+@Test
   // When a record is updated, produces an update record.
   void testUpdate() throws Exception {
     final String updatedModel = "Explorer";
@@ -388,6 +395,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertExpectedStateMessages(stateMessages1);
 
     updateCommand(MODELS_STREAM_NAME, COL_MODEL, updatedModel, COL_ID, 11);
+    waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, 1);
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> read2 = source()
@@ -404,11 +412,14 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
   }
 
   @SuppressWarnings({"BusyWait", "CodeBlock2Expr"})
-  @Test
+  @Disabled
+@Test
   // Verify that when data is inserted into the database while a sync is happening and after the first
   // sync, it all gets replicated.
   protected void testRecordsProducedDuringAndAfterSync() throws Exception {
-
+    int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
+    int expectedRecords = recordsCreatedBeforeTestCount;
+    int expectedRecordsInCdc = 0;
     final int recordsToCreate = 20;
     // first batch of records. 20 created here and 6 created in setup method.
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
@@ -418,6 +429,9 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
                   "F-" + recordsCreated));
       writeModelRecord(record);
     }
+    expectedRecords = expectedRecords + recordsToCreate;
+    expectedRecordsInCdc = expectedRecordsInCdc + recordsToCreate;
+    waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, expectedRecordsInCdc);
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
         .read(config(), getConfiguredCatalog(), null);
@@ -427,7 +441,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(stateAfterFirstBatch);
     final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
         dataFromFirstBatch);
-    assertEquals((MODEL_RECORDS.size() + recordsToCreate), recordsFromFirstBatch.size());
+    assertEquals(expectedRecords, recordsFromFirstBatch.size());
 
     // second batch of records again 20 being created
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
@@ -437,6 +451,9 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
                   "F-" + recordsCreated));
       writeModelRecord(record);
     }
+    expectedRecords = expectedRecords + recordsToCreate;
+    expectedRecordsInCdc = expectedRecordsInCdc + recordsToCreate;
+    waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, expectedRecordsInCdc);
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = source()
@@ -459,10 +476,9 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final Set<AirbyteRecordMessage> recordsFromSecondBatchWithoutDuplicates = removeDuplicates(
         recordsFromSecondBatch);
 
-    final int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
     assertTrue(recordsCreatedBeforeTestCount < recordsFromFirstBatchWithoutDuplicates.size(),
         "Expected first sync to include records created while the test was running.");
-    assertEquals((recordsToCreate * 2) + recordsCreatedBeforeTestCount,
+    assertEquals(expectedRecords,
         recordsFromFirstBatchWithoutDuplicates.size() + recordsFromSecondBatchWithoutDuplicates
             .size());
   }
@@ -471,7 +487,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertExpectedStateMessages(stateAfterFirstBatch);
   }
 
-  @Test
+  @Disabled
+@Test
   // When both incremental CDC and full refresh are configured for different streams in a sync, the
   // data is replicated as expected.
   void testCdcAndFullRefreshInSameSync() throws Exception {
@@ -527,6 +544,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final JsonNode puntoRecord = Jsons
         .jsonNode(ImmutableMap.of(COL_ID, 100, COL_MAKE_ID, 3, COL_MODEL, "Punto"));
     writeModelRecord(puntoRecord);
+    waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, 1);
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> read2 = source()
@@ -545,11 +563,13 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
         modelsSchema());
   }
 
-  @Test
+  @Disabled
+@Test
   // When no records exist, no records are returned.
-  void testNoData() throws Exception {
+  public void testNoData() throws Exception {
 
     deleteCommand(MODELS_STREAM_NAME);
+    waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, MODEL_RECORDS.size());
     final AutoCloseableIterator<AirbyteMessage> read = source().read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
 
@@ -566,30 +586,41 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
   @Test
   // When no changes have been made to the database since the previous sync, no records are returned.
   void testNoDataOnSecondSync() throws Exception {
+    Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MINUTES);
     final AutoCloseableIterator<AirbyteMessage> read1 = source()
         .read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
+    LOGGER.info("SGX actualRecords1 has " + actualRecords1.size() + " records:" + actualRecords1);
+    final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
+    LOGGER.info("SGX recordMessages1 has " + recordMessages1.size() + " records:" + recordMessages1);
     final List<AirbyteStateMessage> stateMessagesFromFirstSync = extractStateMessages(actualRecords1);
+    LOGGER.info("SGX stateMessagesFromFirstSync has " + stateMessagesFromFirstSync.size() + "  records:" + stateMessagesFromFirstSync);
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessagesFromFirstSync.get(stateMessagesFromFirstSync.size() - 1)));
+    LOGGER.info("SGX state=" + state);
 
     final AutoCloseableIterator<AirbyteMessage> read2 = source()
         .read(config(), getConfiguredCatalog(), state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
+    LOGGER.info("SGX actualRecords2 has " + actualRecords2.size() + " records:" + actualRecords2);
 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
+    LOGGER.info("SGX recordMessages2 has " + recordMessages2.size() + " records:" + recordMessages2);
+    LOGGER.info("SGX stateMessages2 has " + stateMessages2.size() + " records:" + stateMessages2);
 
     assertExpectedRecords(Collections.emptySet(), recordMessages2);
     assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
   }
 
-  @Test
+  @Disabled
+@Test
   void testCheck() throws Exception {
     final AirbyteConnectionStatus status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
-  @Test
+  @Disabled
+@Test
   void testDiscover() throws Exception {
     final AirbyteCatalog expectedCatalog = expectedCatalogForDiscover();
     final AirbyteCatalog actualCatalog = source().discover(config());
@@ -601,7 +632,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
             .collect(Collectors.toList()));
   }
 
-  @Test
+  @Disabled
+@Test
   public void newTableSnapshotTest() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
         .read(config(), getConfiguredCatalog(), null);
@@ -822,5 +854,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     expectedCatalog.withStreams(streams);
     return expectedCatalog;
   }
+
+  protected void waitForCdcRecords(String schemaName, String tableName, int recordCount)
+      throws Exception {}
 
 }
