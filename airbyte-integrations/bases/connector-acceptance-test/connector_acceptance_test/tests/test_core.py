@@ -1125,21 +1125,6 @@ class TestBasicRead(BaseTest):
         assert len(error_trace_messages) >= 1, "Connector should emit at least one error trace message"
 
     @staticmethod
-    def remove_extra_fields(record: Any, spec: Any) -> Any:
-        """Remove keys from record that spec doesn't have, works recursively"""
-        if not isinstance(spec, Mapping):
-            return record
-
-        assert isinstance(record, Mapping), "Record or part of it is not a dictionary, but expected record is."
-        result = {}
-
-        for k, v in spec.items():
-            assert k in record, "Record or part of it doesn't have attribute that has expected record."
-            result[k] = TestBasicRead.remove_extra_fields(record[k], v)
-
-        return result
-
-    @staticmethod
     def compare_records(
         stream_name: str,
         actual: List[Mapping[str, Any]],
