@@ -168,6 +168,7 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
             pa.map_(pa.string(), pa.int32()), _default_parquet_format, {"hello": 1, "world": 2}, {"hello": 1, "world": 2}, id="test_map"
         ),
         pytest.param(pa.null(), _default_parquet_format, None, None, id="test_null"),
+        pytest.param(pa.date32(), _default_parquet_format, None, None, id="test_null_datetime"),
     ],
 )
 def test_value_transformation(
