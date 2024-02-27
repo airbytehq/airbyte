@@ -44,6 +44,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   public static final String CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} END ";
   private static final String COLUMN_ERROR_MESSAGE_FORMAT = "Problem with `%s`";
   private static final String AIRBYTE_META_COLUMN_ERRORS_KEY = "errors";
+  public static final DefaultDataType<String> SUPER_DATA_TYPE = new DefaultDataType<>(null, String.class, "super");
 
   public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
@@ -56,7 +57,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * @return
    */
   private DataType<?> getSuperType() {
-    return new DefaultDataType<>(null, String.class, "super");
+    return SUPER_DATA_TYPE;
   }
 
   @Override

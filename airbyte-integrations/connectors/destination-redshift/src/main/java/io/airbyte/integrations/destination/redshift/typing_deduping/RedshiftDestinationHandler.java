@@ -73,7 +73,8 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler<RedshiftS
   @Override
   protected RedshiftState toDestinationState(JsonNode json) {
     return new RedshiftState(
-        json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean());
+        json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean(),
+        json.hasNonNull("rawTableHasAirbyteMeta") && json.get("rawTableHasAirbyteMeta").asBoolean());
   }
 
   private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {
