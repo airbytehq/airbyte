@@ -301,13 +301,15 @@ public abstract class JdbcSqlGenerator implements SqlGenerator {
         DSL.createTable(rawTableName)
             .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
             .column(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false))
-            .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType().nullable(false))
+            .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType().nullable(true))
             .column(COLUMN_NAME_DATA, getStructType().nullable(false))
+            .column(COLUMN_NAME_AB_META, getStructType().nullable(true))
             .as(select(
                 field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
                 field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
                 cast(null, getTimestampWithTimeZoneType()).as(COLUMN_NAME_AB_LOADED_AT),
-                field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(table(name(namespace, tableName))))
+                field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA),
+                cast(null, getStructType()).as(COLUMN_NAME_AB_META)).from(table(name(namespace, tableName))))
             .getSQL(ParamType.INLINED));
   }
 
