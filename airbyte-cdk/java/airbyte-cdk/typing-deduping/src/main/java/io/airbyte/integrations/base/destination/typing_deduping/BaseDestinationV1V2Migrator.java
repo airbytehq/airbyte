@@ -5,7 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
-import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Collection;
@@ -89,7 +89,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param existingV2AirbyteRawTable the v2 raw table
    */
   private void validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(final DialectTableDefinition existingV2AirbyteRawTable) {
-    if (!schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES)) {
+    if (!schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META)) {
       throw new UnexpectedSchemaException("Destination V2 Raw Table does not match expected Schema");
     }
   }
