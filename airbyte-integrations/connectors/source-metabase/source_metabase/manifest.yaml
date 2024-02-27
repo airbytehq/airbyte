@@ -60,6 +60,9 @@ definitions:
             stream: "#/definitions/collections_items_dashboards_stream"
             parent_key: "id"
             partition_field: "id"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_metabase.components.CustomFieldTransformation
     $parameters:
       name: "dashboards"
       path: "/dashboard/{{stream_slice.id}}"
