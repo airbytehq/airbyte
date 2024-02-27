@@ -24,7 +24,7 @@ public interface CsvSheetGenerator {
 
   List<Object> getDataRow(JsonNode formattedData);
 
-  List<Object> getDataRow(UUID id, String formattedString, long emittedAt);
+  List<Object> getDataRow(UUID id, String formattedString, String formattedAirbyteMetaString, long emittedAt);
 
   final class Factory {
 

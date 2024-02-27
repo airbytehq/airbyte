@@ -43,11 +43,12 @@ public interface SerializableBuffer extends AutoCloseable {
    * the entire AirbyteRecordMessage
    *
    * @param recordString serialized record
+   * @param airbyteMetaString The serialized airbyte_meta entry
    * @param emittedAt timestamp of the record in milliseconds
    * @return number of bytes written to the buffer
    * @throws Exception
    */
-  long accept(String recordString, long emittedAt) throws Exception;
+  long accept(String recordString, String airbyteMetaString, long emittedAt) throws Exception;
 
   /**
    * Flush a buffer implementation.

@@ -65,11 +65,14 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    * TODO: (ryankfu) move destination to use serialized record string instead of passing entire
    * AirbyteRecord
    *
-   * @param recordString serialized record
-   * @param emittedAt timestamp of the record in milliseconds
+   * @param recordString      serialized record
+   * @param airbyteMetaString
+   * @param emittedAt         timestamp of the record in milliseconds
    * @throws IOException
    */
-  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
+  protected void writeRecord(final String recordString, String airbyteMetaString, final long emittedAt) throws IOException {
+    // TODO Why are we deserializing as an airbyte record message? recordString should just be a naked data blob.
+    // is this code ever actually called? do we always override it? can we make this method abstract?
     writeRecord(Jsons.deserialize(recordString, AirbyteRecordMessage.class).withEmittedAt(emittedAt));
   }
 
@@ -111,7 +114,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final String recordString, final long emittedAt) throws Exception {
+  public long accept(final String recordString, final String airbyteMetaString, final long emittedAt) throws Exception {
     if (!isStarted) {
       if (useCompression) {
         compressedBuffer = new GzipCompressorOutputStream(byteCounter);
@@ -123,7 +126,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     }
     if (inputStream == null && !isClosed) {
       final long startCount = byteCounter.getCount();
-      writeRecord(recordString, emittedAt);
+      writeRecord(recordString, airbyteMetaString, emittedAt);
       return byteCounter.getCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");
