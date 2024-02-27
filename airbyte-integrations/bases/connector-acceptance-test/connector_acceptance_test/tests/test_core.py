@@ -12,7 +12,7 @@ from logging import Logger
 from os.path import splitext
 from pathlib import Path
 from threading import Thread
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 from xmlrpc.client import Boolean
 
 import connector_acceptance_test.utils.docs as docs_utils
@@ -21,6 +21,7 @@ import jsonschema
 import pytest
 import requests
 from airbyte_protocol.models import (
+    AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
     AirbyteStreamStatus,
@@ -838,12 +839,21 @@ def primary_keys_for_records(streams, records):
     for stream in streams_with_primary_key:
         stream_records = [r for r in records if r.stream == stream.stream.name]
         for stream_record in stream_records:
-            pk_values = {}
-            for pk_path in stream.stream.source_defined_primary_key:
-                pk_value = reduce(lambda data, key: data.get(key) if isinstance(data, dict) else None, pk_path, stream_record.data)
-                pk_values[tuple(pk_path)] = pk_value
-
+            pk_values = _extract_primary_key_value(stream_record.data, stream.stream.source_defined_primary_key)
             yield pk_values, stream_record
+
+
+def _extract_pk_values(records: Iterable[Mapping[str, Any]], primary_key: List[List[str]]) -> Iterable[dict[Tuple[str], Any]]:
+    for record in records:
+        yield _extract_primary_key_value(record, primary_key)
+
+
+def _extract_primary_key_value(record: Mapping[str, Any], primary_key: List[List[str]]) -> dict[Tuple[str], Any]:
+    pk_values = {}
+    for pk_path in primary_key:
+        pk_value: Any = reduce(lambda data, key: data.get(key) if isinstance(data, dict) else None, pk_path, record)
+        pk_values[tuple(pk_path)] = pk_value
+    return pk_values
 
 
 @pytest.mark.default_timeout(TEN_MINUTES)
@@ -953,6 +963,7 @@ class TestBasicRead(BaseTest):
         flags,
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         detailed_logger: Logger,
+        configured_catalog: ConfiguredAirbyteCatalog,
     ):
         """
         We expect some records from stream to match expected_records, partially or fully, in exact or any order.
@@ -972,6 +983,7 @@ class TestBasicRead(BaseTest):
                 extra_records=flags.extra_records,
                 ignored_fields=ignored_field_names,
                 detailed_logger=detailed_logger,
+                configured_catalog=configured_catalog,
             )
 
     @pytest.fixture(name="should_validate_schema")
@@ -1081,6 +1093,7 @@ class TestBasicRead(BaseTest):
                 flags=expect_records_config,
                 ignored_fields=ignored_fields,
                 detailed_logger=detailed_logger,
+                configured_catalog=configured_catalog,
             )
 
         if should_validate_stream_statuses:
@@ -1142,8 +1155,45 @@ class TestBasicRead(BaseTest):
         extra_records: bool,
         ignored_fields: List[str],
         detailed_logger: Logger,
+        configured_catalog: ConfiguredAirbyteCatalog,
     ):
         """Compare records using combination of restrictions"""
+        configured_streams = [stream for stream in configured_catalog.streams if stream.stream.name == stream_name]
+        if len(configured_streams) != 1:
+            raise ValueError(f"Expected exactly one stream matching name {stream_name} but got {len(configured_streams)}")
+
+        configured_stream = configured_streams[0]
+        if configured_stream.stream.source_defined_primary_key:
+            # as part of the migration for relaxing CATs, we are starting only with the streams that defines primary keys
+            expected_primary_keys = list(_extract_pk_values(expected, configured_stream.stream.source_defined_primary_key))
+            actual_primary_keys = list(_extract_pk_values(actual, configured_stream.stream.source_defined_primary_key))
+            if exact_order:
+                assert (
+                    actual_primary_keys[: len(expected_primary_keys)] == expected_primary_keys
+                ), f"Expected to see those primary keys in order in the actual response for stream {stream_name}."
+            else:
+                expected_but_not_found = set(map(make_hashable, expected_primary_keys)).difference(
+                    set(map(make_hashable, actual_primary_keys))
+                )
+                assert (
+                    not expected_but_not_found
+                ), f"Expected to see those primary keys in the actual response for stream {stream_name} but they were not found."
+        else:
+            TestBasicRead.legacy_compare_records(
+                stream_name, actual, expected, extra_fields, exact_order, extra_records, ignored_fields, detailed_logger
+            )
+
+    @staticmethod
+    def legacy_compare_records(
+        stream_name: str,
+        actual: List[Mapping[str, Any]],
+        expected: List[Mapping[str, Any]],
+        extra_fields: bool,
+        exact_order: bool,
+        extra_records: bool,
+        ignored_fields: List[str],
+        detailed_logger: Logger,
+    ):
         if exact_order:
             if ignored_fields:
                 for item in actual:

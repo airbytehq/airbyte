@@ -1,19 +1,18 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import html
-import re
 from abc import ABC
-from typing import Any, ClassVar, List, Optional, Tuple
+from datetime import datetime
+from typing import Any, ClassVar, List, Optional, Tuple, cast
 
 import pipelines.dagger.actions.system.docker
-import xmltodict
-from dagger import CacheSharingMode, CacheVolume, Container, QueryError
+from dagger import CacheSharingMode, CacheVolume, Container, ExecError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.hacks import never_fail_exec
-from pipelines.helpers.utils import sh_dash_c
+from pipelines.helpers.utils import dagger_directory_as_zip_file, sh_dash_c
+from pipelines.models.artifacts import Artifact
 from pipelines.models.steps import Step, StepResult
 
 
@@ -36,7 +35,7 @@ class GradleTask(Step, ABC):
     gradle_task_name: ClassVar[str]
     bind_to_docker_host: ClassVar[bool] = False
     mount_connector_secrets: ClassVar[bool] = False
-    with_test_report: ClassVar[bool] = False
+    with_test_artifacts: ClassVar[bool] = False
     accept_extra_params = True
 
     @property
@@ -193,9 +192,18 @@ class GradleTask(Step, ABC):
         connector_gradle_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
         gradle_command = self._get_gradle_command(connector_gradle_task, task_options=self.params_as_cli_options)
         gradle_container = gradle_container.with_(never_fail_exec([gradle_command]))
-        return await self.get_step_result(gradle_container)
 
-    async def get_step_result(self, container: Container) -> StepResult:
+        # Collect the test artifacts, if applicable.
+        artifacts = []
+        if self.with_test_artifacts:
+            if test_logs := await self._collect_test_logs(gradle_container):
+                artifacts.append(test_logs)
+            if test_results := await self._collect_test_results(gradle_container):
+                artifacts.append(test_results)
+
+        return await self.get_step_result(gradle_container, artifacts)
+
+    async def get_step_result(self, container: Container, outputs: List[Artifact]) -> StepResult:
         step_result = await super().get_step_result(container)
         # Decorate with test report, if applicable.
         return StepResult(
@@ -203,76 +211,75 @@ class GradleTask(Step, ABC):
             status=step_result.status,
             stdout=step_result.stdout,
             stderr=step_result.stderr,
-            report=await self._collect_test_report(container),
-            output_artifact=step_result.output_artifact,
+            output=step_result.output,
+            artifacts=outputs,
         )
 
-    async def _collect_test_report(self, gradle_container: Container) -> Optional[str]:
-        if not self.with_test_report:
+    async def _collect_test_logs(self, gradle_container: Container) -> Optional[Artifact]:
+        """
+        Exports the java docs from the container into the host filesystem.
+        The docs in the container are expected to be in build/test-logs, and will end up test-artifact directory by default
+        One can change the destination directory by setting the outputs
+        """
+        test_logs_dir_name_in_container = "test-logs"
+        test_logs_dir_name_in_zip = f"test-logs-{datetime.fromtimestamp(cast(float, self.context.pipeline_start_timestamp)).isoformat()}-{self.context.git_branch}-{self.gradle_task_name}".replace(
+            "/", "_"
+        )
+        if (
+            test_logs_dir_name_in_container
+            not in await gradle_container.directory(f"{self.context.connector.code_directory}/build").entries()
+        ):
+            self.context.logger.warn(f"No {test_logs_dir_name_in_container} found directory in the build folder")
             return None
-
-        junit_xml_path = f"{self.context.connector.code_directory}/build/test-results/{self.gradle_task_name}"
-        testsuites = []
         try:
-            junit_xml_dir = await gradle_container.directory(junit_xml_path)
-            for file_name in await junit_xml_dir.entries():
-                if file_name.endswith(".xml"):
-                    junit_xml = await junit_xml_dir.file(file_name).contents()
-                    # This will be embedded in the HTML report in a <pre lang="xml"> block.
-                    # The java logging backend will have already taken care of masking any secrets.
-                    # Nothing to do in that regard.
-                    try:
-                        if testsuite := xmltodict.parse(junit_xml):
-                            testsuites.append(testsuite)
-                    except Exception as e:
-                        self.context.logger.error(str(e))
-                        self.context.logger.warn(f"Failed to parse junit xml file {file_name}.")
-        except QueryError as e:
+            zip_file = await (
+                dagger_directory_as_zip_file(
+                    self.dagger_client,
+                    await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_logs_dir_name_in_container}"),
+                    test_logs_dir_name_in_zip,
+                )
+            )
+            return Artifact(
+                name=f"{test_logs_dir_name_in_zip}.zip",
+                content=zip_file,
+                content_type="application/zip",
+                to_upload=True,
+            )
+        except ExecError as e:
             self.context.logger.error(str(e))
-            self.context.logger.warn(f"Failed to retrieve junit test results from {junit_xml_path} gradle container.")
+        return None
+
+    async def _collect_test_results(self, gradle_container: Container) -> Optional[Artifact]:
+        """
+        Exports the junit test reports from the container into the host filesystem.
+        The docs in the container are expected to be in build/test-results, and will end up test-artifact directory by default
+        Only the XML files generated by junit are downloaded into the host filesystem
+        One can change the destination directory by setting the outputs
+        """
+        test_results_dir_name_in_container = "test-results"
+        test_results_dir_name_in_zip = f"test-results-{datetime.fromtimestamp(cast(float, self.context.pipeline_start_timestamp)).isoformat()}-{self.context.git_branch}-{self.gradle_task_name}".replace(
+            "/", "_"
+        )
+        if (
+            test_results_dir_name_in_container
+            not in await gradle_container.directory(f"{self.context.connector.code_directory}/build").entries()
+        ):
+            self.context.logger.warn(f"No {test_results_dir_name_in_container} found directory in the build folder")
             return None
-        return render_junit_xml(testsuites)
-
-
-MAYBE_STARTS_WITH_XML_TAG = re.compile("^ *<")
-ESCAPED_ANSI_COLOR_PATTERN = re.compile(r"\?\[0?m|\?\[[34][0-9]m")
-
-
-def render_junit_xml(testsuites: List[Any]) -> str:
-    """Renders the JUnit XML report as something readable in the HTML test report."""
-    # Transform the dict contents.
-    indent = "  "
-    for testsuite in testsuites:
-        testsuite = testsuite.get("testsuite")
-        massage_system_out_and_err(testsuite, indent, 4)
-        if testcases := testsuite.get("testcase"):
-            if not isinstance(testcases, list):
-                testcases = [testcases]
-            for testcase in testcases:
-                massage_system_out_and_err(testcase, indent, 5)
-    # Transform back to XML string.
-    # Try to respect the JUnit XML test result schema.
-    root = {"testsuites": {"testsuite": testsuites}}
-    xml = xmltodict.unparse(root, pretty=True, short_empty_elements=True, indent=indent)
-    # Escape < and > and so forth to make them render properly, but not in the log messages.
-    # These lines will already have been escaped by xmltodict.unparse.
-    lines = xml.splitlines()
-    for idx, line in enumerate(lines):
-        if MAYBE_STARTS_WITH_XML_TAG.match(line):
-            lines[idx] = html.escape(line)
-    return "\n".join(lines)
-
-
-def massage_system_out_and_err(d: dict, indent: str, indent_levels: int) -> None:
-    """Makes the system-out and system-err text prettier."""
-    if d:
-        for key in ["system-out", "system-err"]:
-            if s := d.get(key):
-                lines = s.splitlines()
-                s = ""
-                for line in lines:
-                    stripped = line.strip()
-                    if stripped:
-                        s += "\n" + indent * indent_levels + ESCAPED_ANSI_COLOR_PATTERN.sub("", line.strip())
-                s = s + "\n" + indent * (indent_levels - 1) if s else None
-                d[key] = s
+        try:
+            zip_file = await (
+                dagger_directory_as_zip_file(
+                    self.dagger_client,
+                    await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_results_dir_name_in_container}"),
+                    test_results_dir_name_in_zip,
+                )
+            )
+            return Artifact(
+                name=f"{test_results_dir_name_in_zip}.zip",
+                content=zip_file,
+                content_type="application/zip",
+                to_upload=True,
+            )
+        except ExecError as e:
+            self.context.logger.error(str(e))
+            return None

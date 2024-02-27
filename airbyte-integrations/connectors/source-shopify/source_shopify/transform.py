@@ -41,6 +41,9 @@ class DataTypeEnforcer:
             type(None): [
                 "null",
             ],
+            # overflow, when we need to read nested entity from the parent record,
+            # that has been already transformed.
+            Decimal: ["number"],
         }
         return json_types.get(value_type)
 

@@ -2,13 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from typing import Optional
 
 import sgqlc.operation
 
-from . import shopify_schema
+from . import schema
 
-_schema = shopify_schema
+_schema = schema
 _schema_root = _schema.shopify_schema
 
 
