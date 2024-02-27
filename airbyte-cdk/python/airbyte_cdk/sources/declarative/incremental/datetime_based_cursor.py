@@ -10,11 +10,10 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamState
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamState, PerPartitionStreamSlice
 from airbyte_cdk.sources.message import MessageRepository
 from isodate import Duration, parse_duration
 
@@ -119,6 +118,8 @@ class DatetimeBasedCursor(Cursor):
         self._cursor = stream_state.get(self._cursor_field.eval(self.config)) if stream_state else None
 
     def close_slice(self, stream_slice: PerPartitionStreamSlice, most_recent_record: Optional[Record]) -> None:
+        if stream_slice.partition:
+            raise ValueError(f"Stream slice {stream_slice} should not have a partition. Got {stream_slice.partition}.")
         last_record_cursor_value = most_recent_record.get(self._cursor_field.eval(self.config)) if most_recent_record else None
         stream_slice_value_end = stream_slice.get(self._partition_field_end.eval(self.config))
         potential_cursor_values = [
