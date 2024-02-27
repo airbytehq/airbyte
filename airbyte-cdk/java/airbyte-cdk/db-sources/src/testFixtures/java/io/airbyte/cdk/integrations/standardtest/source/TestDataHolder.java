@@ -210,6 +210,10 @@ public class TestDataHolder {
     return values;
   }
 
+  public String getNameSpace() {
+    return nameSpace;
+  }
+
   public String getNameWithTestPrefix() {
     // source type may include space (e.g. "character varying")
     return nameSpace + "_" + testNumber + "_" + sourceType.replaceAll("\\s", "_");

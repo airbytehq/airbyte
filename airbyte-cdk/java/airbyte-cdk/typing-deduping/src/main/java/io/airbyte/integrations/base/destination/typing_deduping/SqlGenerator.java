@@ -9,7 +9,7 @@ import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDe
 import java.time.Instant;
 import java.util.Optional;
 
-public interface SqlGenerator<DialectTableDefinition> {
+public interface SqlGenerator {
 
   StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
 
@@ -23,9 +23,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    * Generate a SQL statement to create a fresh table to match the given stream.
    * <p>
    * The generated SQL should throw an exception if the table already exists and {@code force} is
-   * false. Callers should use
-   * {@link #existingSchemaMatchesStreamConfig(StreamConfig, java.lang.Object)} if the table is known
-   * to exist, and potentially softReset
+   * false.
    *
    * @param suffix A suffix to add to the stream name. Useful for full refresh overwrite syncs, where
    *        we write the entire sync to a temp table.
@@ -42,15 +40,6 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @return SQL to create the schema if it does not exist
    */
   Sql createSchema(final String schema);
-
-  /**
-   * Check the final table's schema and compare it to what the stream config would generate.
-   *
-   * @param stream the stream/stable in question
-   * @param existingTable the existing table mapped to the stream
-   * @return whether the existing table matches the expected schema
-   */
-  boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
@@ -95,8 +84,8 @@ public interface SqlGenerator<DialectTableDefinition> {
    * reset.
    *
    * @param streamId the stream to migrate
-   * @param namespace
-   * @param tableName
+   * @param namespace the namespace of the v1 raw table
+   * @param tableName name of the v2 raw table
    * @return a string containing the necessary sql to migrate
    */
   Sql migrateFromV1toV2(StreamId streamId, String namespace, String tableName);

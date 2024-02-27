@@ -324,9 +324,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                 "processing": {
                                                     "title": "Processing",
                                                     "description": "Processing configuration",
-                                                    "default": {
-                                                        "mode": "local"
-                                                    },
+                                                    "default": {"mode": "local"},
                                                     "type": "object",
                                                     "oneOf": [
                                                         {
@@ -337,16 +335,12 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                                     "title": "Mode",
                                                                     "default": "local",
                                                                     "const": "local",
-                                                                    "enum": [
-                                                                        "local"
-                                                                    ],
-                                                                    "type": "string"
+                                                                    "enum": ["local"],
+                                                                    "type": "string",
                                                                 }
                                                             },
                                                             "description": "Process files locally, supporting `fast` and `ocr` modes. This is the default option.",
-                                                            "required": [
-                                                                "mode"
-                                                            ]
+                                                            "required": ["mode"],
                                                         },
                                                         {
                                                             "title": "via API",
@@ -356,10 +350,8 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                                     "title": "Mode",
                                                                     "default": "api",
                                                                     "const": "api",
-                                                                    "enum": [
-                                                                        "api"
-                                                                    ],
-                                                                    "type": "string"
+                                                                    "enum": ["api"],
+                                                                    "type": "string",
                                                                 },
                                                                 "api_key": {
                                                                     "title": "API Key",
@@ -367,17 +359,15 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                                     "default": "",
                                                                     "always_show": True,
                                                                     "airbyte_secret": True,
-                                                                    "type": "string"
+                                                                    "type": "string",
                                                                 },
                                                                 "api_url": {
                                                                     "title": "API URL",
                                                                     "description": "The URL of the unstructured API to use",
                                                                     "default": "https://api.unstructured.io",
                                                                     "always_show": True,
-                                                                    "examples": [
-                                                                        "https://api.unstructured.com"
-                                                                    ],
-                                                                    "type": "string"
+                                                                    "examples": ["https://api.unstructured.com"],
+                                                                    "type": "string",
                                                                 },
                                                                 "parameters": {
                                                                     "title": "Additional URL Parameters",
@@ -392,35 +382,24 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                                             "name": {
                                                                                 "title": "Parameter name",
                                                                                 "description": "The name of the unstructured API parameter to use",
-                                                                                "examples": [
-                                                                                    "combine_under_n_chars",
-                                                                                    "languages"
-                                                                                ],
-                                                                                "type": "string"
+                                                                                "examples": ["combine_under_n_chars", "languages"],
+                                                                                "type": "string",
                                                                             },
                                                                             "value": {
                                                                                 "title": "Value",
                                                                                 "description": "The value of the parameter",
-                                                                                "examples": [
-                                                                                    "true",
-                                                                                    "hi_res"
-                                                                                ],
-                                                                                "type": "string"
-                                                                            }
+                                                                                "examples": ["true", "hi_res"],
+                                                                                "type": "string",
+                                                                            },
                                                                         },
-                                                                        "required": [
-                                                                            "name",
-                                                                            "value"
-                                                                        ]
-                                                                    }
-                                                                }
+                                                                        "required": ["name", "value"],
+                                                                    },
+                                                                },
                                                             },
                                                             "description": "Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured.",
-                                                            "required": [
-                                                                "mode"
-                                                            ]
-                                                        }
-                                                    ]
+                                                            "required": ["mode"],
+                                                        },
+                                                    ],
                                                 },
                                             },
                                             "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
