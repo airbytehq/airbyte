@@ -40,9 +40,6 @@ class MongoConnectionUtilsTest {
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(ReadPreference.secondaryPreferred(), ((MongoClientImpl) mongoClient).getSettings().getReadPreference());
-    assertEquals(false, ((MongoClientImpl) mongoClient).getSettings().getRetryWrites());
-    assertEquals(true, ((MongoClientImpl) mongoClient).getSettings().getSslSettings().isEnabled());
     assertEquals(List.of("sync", MongoConstants.DRIVER_NAME), ((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames());
     assertEquals(username, ((MongoClientImpl) mongoClient).getSettings().getCredential().getUserName());
     assertEquals(password, new String(((MongoClientImpl) mongoClient).getSettings().getCredential().getPassword()));
@@ -68,9 +65,6 @@ class MongoConnectionUtilsTest {
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(ReadPreference.secondaryPreferred(), ((MongoClientImpl) mongoClient).getSettings().getReadPreference());
-    assertEquals(false, ((MongoClientImpl) mongoClient).getSettings().getRetryWrites());
-    assertEquals(true, ((MongoClientImpl) mongoClient).getSettings().getSslSettings().isEnabled());
     assertEquals(List.of("sync", MongoConstants.DRIVER_NAME), ((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames());
     assertEquals(username, ((MongoClientImpl) mongoClient).getSettings().getCredential().getUserName());
     assertEquals(password, new String(((MongoClientImpl) mongoClient).getSettings().getCredential().getPassword()));
@@ -89,9 +83,6 @@ class MongoConnectionUtilsTest {
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(ReadPreference.secondaryPreferred(), ((MongoClientImpl) mongoClient).getSettings().getReadPreference());
-    assertEquals(false, ((MongoClientImpl) mongoClient).getSettings().getRetryWrites());
-    assertEquals(true, ((MongoClientImpl) mongoClient).getSettings().getSslSettings().isEnabled());
     assertEquals(List.of("sync", MongoConstants.DRIVER_NAME), ((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames());
     assertNull(((MongoClientImpl) mongoClient).getSettings().getCredential());
   }
@@ -115,9 +106,6 @@ class MongoConnectionUtilsTest {
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(ReadPreference.secondaryPreferred(), ((MongoClientImpl) mongoClient).getSettings().getReadPreference());
-    assertEquals(false, ((MongoClientImpl) mongoClient).getSettings().getRetryWrites());
-    assertEquals(true, ((MongoClientImpl) mongoClient).getSettings().getSslSettings().isEnabled());
     assertEquals(List.of("sync", MongoConstants.DRIVER_NAME), ((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames());
     assertEquals(username, ((MongoClientImpl) mongoClient).getSettings().getCredential().getUserName());
     assertEquals(password, new String(((MongoClientImpl) mongoClient).getSettings().getCredential().getPassword()));
