@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.source.relationaldb.state;
 
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Instant;
 
 public interface SourceStateIteratorManager<T> {
@@ -13,12 +14,12 @@ public interface SourceStateIteratorManager<T> {
   /**
    * Returns a state message that should be emitted at checkpoint.
    */
-  AirbyteStateMessage generateStateMessageAtCheckpoint();
+  AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream);
 
   /**
    * For the incoming record message, this method defines how the connector will consume it.
    */
-  AirbyteMessage processRecordMessage(final T message);
+  AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final T message);
 
   /**
    * At the end of the iteration, this method will be called and it will generate the final state
@@ -26,7 +27,7 @@ public interface SourceStateIteratorManager<T> {
    *
    * @return
    */
-  AirbyteStateMessage createFinalStateMessage();
+  AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream);
 
   /**
    * Determines if the iterator has reached checkpoint or not, based on the time and number of record

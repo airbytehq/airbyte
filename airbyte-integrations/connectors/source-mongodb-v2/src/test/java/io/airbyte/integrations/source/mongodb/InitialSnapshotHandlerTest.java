@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -74,21 +75,21 @@ class InitialSnapshotHandlerTest {
 
   private static final List<ConfiguredAirbyteStream> STREAMS = List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
-          COLLECTION1,
-          NAMESPACE,
-          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
-          Field.of(NAME_FIELD, JsonSchemaType.STRING))
+              COLLECTION1,
+              NAMESPACE,
+              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+              Field.of(NAME_FIELD, JsonSchemaType.STRING))
           .withSyncMode(SyncMode.INCREMENTAL),
       CatalogHelpers.createConfiguredAirbyteStream(
-          COLLECTION2,
-          NAMESPACE,
-          Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
+              COLLECTION2,
+              NAMESPACE,
+              Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
           .withSyncMode(SyncMode.INCREMENTAL),
       CatalogHelpers.createConfiguredAirbyteStream(
-          COLLECTION3,
-          NAMESPACE,
-          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
-          Field.of(NAME_FIELD, JsonSchemaType.STRING))
+              COLLECTION3,
+              NAMESPACE,
+              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+              Field.of(NAME_FIELD, JsonSchemaType.STRING))
           .withSyncMode(SyncMode.FULL_REFRESH));
 
   private static MongoDBContainer MONGO_DB;
@@ -143,7 +144,7 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME6))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
+    final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
             MongoConstants.CHECKPOINT_INTERVAL, true);
@@ -215,7 +216,7 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME3))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
+    final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
     when(stateManager.getStreamState(COLLECTION1, NAMESPACE))
         .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.OBJECT_ID)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
@@ -280,7 +281,7 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME1))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
+    final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
 
     final var thrown = assertThrows(ConfigErrorException.class,
         () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
@@ -307,7 +308,7 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME1))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
+    final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
             MongoConstants.CHECKPOINT_INTERVAL, true);
@@ -330,10 +331,12 @@ class InitialSnapshotHandlerTest {
 
     assertFalse(collection1.hasNext());
 
-    // collection2
-    assertFalse(collection2.hasNext());
-  }
+    // collection2 will generate a final state.
 
+    final AirbyteMessage collection2StateMessage = collection2.next();
+    assertEquals(Type.STATE, collection2StateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    assertFalse(collection2.hasNext());
+}
   @Test
   void testGetIteratorsWithInitialStateNonDefaultIdType() {
     insertDocuments(COLLECTION1, List.of(
@@ -350,7 +353,7 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME3))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
+    final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
     when(stateManager.getStreamState(COLLECTION1, NAMESPACE))
         .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.STRING)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
@@ -364,6 +367,10 @@ class InitialSnapshotHandlerTest {
 
     // collection1, first document should be skipped
     final AirbyteMessage collection1StreamMessage1 = collection1.next();
+    System.out.println("message 1: " + collection1StreamMessage1);
+    final AirbyteMessage collection2StreamMessage1 = collection2.next();
+    System.out.println("message 2: " + collection2StreamMessage1);
+
     assertEquals(Type.RECORD, collection1StreamMessage1.getType());
     assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
     assertEquals(OBJECT_ID2.toString(), collection1StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
@@ -376,7 +383,6 @@ class InitialSnapshotHandlerTest {
     assertFalse(collection1.hasNext());
 
     // collection2, no documents should be skipped
-    final AirbyteMessage collection2StreamMessage1 = collection2.next();
     assertEquals(Type.RECORD, collection2StreamMessage1.getType());
     assertEquals(COLLECTION2, collection2StreamMessage1.getRecord().getStream());
     assertEquals(OBJECT_ID3.toString(), collection2StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());

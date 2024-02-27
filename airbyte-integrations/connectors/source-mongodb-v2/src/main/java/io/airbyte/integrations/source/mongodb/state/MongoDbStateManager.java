@@ -48,7 +48,6 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
    * The global CDC state.
    */
   private MongoDbCdcState cdcState;
-  private ConfiguredAirbyteStream stream;
 
   private Object lastId;
   private Set<String> fields;
@@ -238,7 +237,6 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
                                  final long checkpointInterval,
                                  final Duration checkpointDuration,
                                  final boolean isEnforceSchema) {
-    this.stream = stream;
     this.lastId = this.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
     this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
     this.emittedAt = emittedAt;
@@ -252,7 +250,7 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
    * @return
    */
   @Override
-  public AirbyteStateMessage generateStateMessageAtCheckpoint() {
+  public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
     if (lastId != null) {
       final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
           .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
@@ -267,7 +265,7 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
    * @return
    */
   @Override
-  public AirbyteMessage processRecordMessage(final Document document) {
+  public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final Document document) {
     final var fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
 
     final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
@@ -295,7 +293,7 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
    * @return
    */
   @Override
-  public AirbyteStateMessage createFinalStateMessage() {
+  public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {
     if (lastId != null) {
       LOGGER.debug("Emitting final state status for stream {}:{}...", stream.getStream().getNamespace(), stream.getStream().getName());
       final var finalStateStatus = InitialSnapshotStatus.COMPLETE;

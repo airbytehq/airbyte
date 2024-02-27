@@ -182,8 +182,6 @@ class MongoDbCdcInitializerTest {
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
     assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
-    assertFalse(iterators.get(0).hasNext(),
-        "Initial snapshot iterator should have no messages if there's no initial snapshot state and collections are empty");
   }
 
   @Test
