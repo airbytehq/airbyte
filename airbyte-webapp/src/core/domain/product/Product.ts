@@ -2,6 +2,12 @@ export interface ProductItem {
   id: string;
   itemName: string;
   price: number;
+  cloudProviderName?: string;
+  instanceSizeName?: string;
+  region?: string;
+  regionItemId?: string;
+  instanceItemId?: string;
+  cloudItemId?: string;
 }
 
 export interface ProductItemsList {

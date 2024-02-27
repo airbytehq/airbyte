@@ -17,6 +17,7 @@ interface IProps {
   selectPlanBtnDisability: boolean;
   paymentLoading: boolean;
   onSelectPlan?: () => void;
+  selectedProduct?: any;
 }
 
 const Container = styled.div`
@@ -58,7 +59,13 @@ const Message = styled.div`
   color: #6b6b6f;
 `;
 
-const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability, paymentLoading, onSelectPlan }) => {
+const ProfessionalCell: React.FC<IProps> = ({
+  price = 0,
+  selectPlanBtnDisability,
+  paymentLoading,
+  onSelectPlan,
+  selectedProduct,
+}) => {
   const { user } = useUser();
   const { formatMessage } = useIntl();
   const userPlanDetail = useUserPlanDetail();
@@ -103,9 +110,9 @@ const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
           size="lg"
           onClick={onSelectPlan}
           disabled={
-            ((Number(price) > 0 ? false : true) || remainingDaysForFreeTrial(expiresTime) <= 0
-              ? false
-              : selectPlanBtnDisability) && getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription
+            ((remainingDaysForFreeTrial(expiresTime) <= 0 ? false : selectPlanBtnDisability) &&
+              getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription) ||
+            selectedProduct?.price === Number(price)
           }
           isLoading={paymentLoading}
         >

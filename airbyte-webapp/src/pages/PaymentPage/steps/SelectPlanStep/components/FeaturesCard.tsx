@@ -19,6 +19,9 @@ interface IProps {
   product?: ProductOptionItem;
   paymentLoading: boolean;
   packagesMap: ProcessedPackageMap;
+  price?: any;
+  planDetail?: any;
+  selectedProduct?: any;
 }
 
 const CardContainer = styled.div`
@@ -63,9 +66,10 @@ const FeatureBodyCell = styled(Cell)`
 const FeaturesCard: React.FC<IProps> = ({
   onSelectPlan,
   selectPlanBtnDisability,
-  product,
   paymentLoading,
   packagesMap,
+  price,
+  selectedProduct,
 }) => {
   return (
     <CardContainer>
@@ -86,10 +90,11 @@ const FeaturesCard: React.FC<IProps> = ({
         </BodyCell>
         <BodyCell>
           <ProfessionalCell
-            price={product?.price}
+            price={price}
             selectPlanBtnDisability={selectPlanBtnDisability}
             paymentLoading={paymentLoading}
             onSelectPlan={onSelectPlan}
+            selectedProduct={selectedProduct}
           />
         </BodyCell>
         <BodyCell>

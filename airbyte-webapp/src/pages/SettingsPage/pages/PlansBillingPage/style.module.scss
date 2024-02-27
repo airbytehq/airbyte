@@ -66,6 +66,12 @@
   flex-direction: column;
 }
 
+.planRowContainer {
+  width: 89%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .footer {
   width: 100%;
   display: flex;

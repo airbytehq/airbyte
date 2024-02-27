@@ -5,7 +5,6 @@ import styled from "styled-components";
 import { Separator } from "components/Separator";
 
 import { GetUpgradeSubscriptionDetail } from "core/domain/payment";
-import { convert_M_To_Million } from "pages/SettingsPage/pages/PlansBillingPage/PlansBillingPage";
 
 interface IProps {
   productPrice?: number;
@@ -86,13 +85,7 @@ const BillingPaymentStep: React.FC<IProps> = ({ productPrice = 0, selectedProduc
         <PlanName>
           <FormattedMessage id="payment.planName" values={{ planName: planDetail?.planName }} />
         </PlanName>
-        <Separator height={seperatorHeight} />
-        <ContentItem>
-          <ContentHeading>
-            <FormattedMessage id="plan.detail.rows" />
-          </ContentHeading>
-          <ContentText>{convert_M_To_Million(planDetail?.productItemName as string)}</ContentText>
-        </ContentItem>
+
         <Separator height={seperatorHeight} />
         <ContentItem>
           <ContentHeading>
@@ -102,6 +95,27 @@ const BillingPaymentStep: React.FC<IProps> = ({ productPrice = 0, selectedProduc
             US ${planDetail?.productItemPrice}&nbsp;/&nbsp;
             <FormattedMessage id="payment.planDeductionTime" />
           </ContentText>
+        </ContentItem>
+        <Separator height={seperatorHeight} />
+        <ContentItem>
+          <ContentHeading>
+            <FormattedMessage id="plan.type.cloudProvider" />
+          </ContentHeading>
+          <ContentText>{planDetail?.cloudProviderName}</ContentText>
+        </ContentItem>
+        <Separator height={seperatorHeight} />
+        <ContentItem>
+          <ContentHeading>
+            <FormattedMessage id="plan.type.cloudRegion" />
+          </ContentHeading>
+          <ContentText>{planDetail?.region}</ContentText>
+        </ContentItem>
+        <Separator height={seperatorHeight} />
+        <ContentItem>
+          <ContentHeading>
+            <FormattedMessage id="plan.type.instanceSize" />
+          </ContentHeading>
+          <ContentText>{planDetail?.instanceSizeName}</ContentText>
         </ContentItem>
         <Separator height={seperatorHeight} />
         <ContentItem>
