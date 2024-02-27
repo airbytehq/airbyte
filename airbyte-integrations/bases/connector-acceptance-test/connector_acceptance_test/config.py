@@ -92,10 +92,6 @@ class ExpectedRecordsConfig(BaseModel):
     bypass_reason: Optional[str] = Field(description="Reason why this test is bypassed.")
     path: Optional[Path] = Field(description="File with expected records")
     exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
-    extra_records: bool = Field(
-        True,
-        description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced",
-    )
 
     @validator("path", always=True)
     def no_bypass_reason_when_path_is_set(cls, path, values):
