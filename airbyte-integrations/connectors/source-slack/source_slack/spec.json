@@ -1,5 +1,4 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/slack",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Slack Spec",
@@ -107,6 +106,7 @@
     "predicate_key": ["credentials", "option_title"],
     "predicate_value": "Default OAuth2.0 authorization",
     "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": null,
       "complete_oauth_output_specification": {
         "type": "object",
         "additionalProperties": false,
