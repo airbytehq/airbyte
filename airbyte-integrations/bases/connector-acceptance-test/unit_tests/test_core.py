@@ -676,7 +676,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
         (
             {"type": "object"},
             {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
-            ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
+            ExpectedRecordsConfig(exact_order=True, extra_records=True, path="foobar"),
             [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}],
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}]},
             None,
