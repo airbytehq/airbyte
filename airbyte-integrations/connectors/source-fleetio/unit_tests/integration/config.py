@@ -4,7 +4,7 @@ class ConfigBuilder:
     def __init__(self) -> None:
         self._config: Dict[str, Any] = {
             "account_token": "Fleetio Account Token",
-            "api_token": "Fleetio API Token"
+            "api_key": "Fleetio API Token"
         }
     
     def with_account_token(
@@ -14,11 +14,11 @@ class ConfigBuilder:
         self._config["account_token"] = account_token
         return self
 
-    def with_api_token(
+    def with_api_key(
             self,
-            api_token: str
+            api_key: str
     ) -> "ConfigBuilder":
-        self._config["api_token"] = api_token
+        self._config["api_key"] = api_key
         return self
     
     def build(self) -> Dict[str, Any]:

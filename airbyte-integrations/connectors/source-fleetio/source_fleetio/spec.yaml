@@ -4,14 +4,14 @@ connectionSpecification:
     title: Fleetio Spec
     type: object
     required:
-      - api_token
+      - api_key
       - account_token
     additionalProperties: true
     properties:
-      api_token:
+      api_key:
         type: string
         order: 0
-        title: api_token
+        title: api_key
         airbyte_secret: true
       account_token:
         type: string

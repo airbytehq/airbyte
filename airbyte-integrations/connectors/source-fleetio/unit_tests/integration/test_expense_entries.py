@@ -19,7 +19,7 @@ from integration.config import ConfigBuilder
 from source_fleetio import SourceFleetio
 
 _AN_ACCOUNT_TOKEN = "example_account_token" # used from our dev docs as an example
-_AN_API_TOKEN = "example_api_token" # used from our dev docs as an example
+_AN_API_KEY = "example_api_key" # used from our dev docs as an example
 _STREAM_NAME = "expense_entries"
 _TEMPLATE_NAME = "expense_entries"
 _RECORDS_PATH = FieldPath("expense_entries")
@@ -65,7 +65,7 @@ class ExpenseEntriesTest(TestCase):
                     "per_page": "100",
                 },
                 headers={
-                    "Authorization": f"Token {_AN_API_TOKEN}",
+                    "Authorization": f"Token {_AN_API_KEY}",
                     "Account-Token": _AN_ACCOUNT_TOKEN,
                     "X-Client-Name": "data_connector",
                     "X-Client-Platform": "fleetio_airbyte",
@@ -75,4 +75,4 @@ class ExpenseEntriesTest(TestCase):
             _expense_entries_response().build()
         )
 
-        _read(ConfigBuilder().with_account_token(_AN_ACCOUNT_TOKEN).with_api_token(_AN_API_TOKEN))
+        _read(ConfigBuilder().with_account_token(_AN_ACCOUNT_TOKEN).with_api_key(_AN_API_KEY))
