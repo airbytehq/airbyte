@@ -8,12 +8,17 @@ View the Fleetio website [here](https://fleetio.com). For for information the Fl
 
 ## Local development
 
-#### Building via Gradle
-You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
+## Local development
 
-To build using Gradle, from the Airbyte repository root, run:
-```
-./gradlew :airbyte-integrations:connectors:source-fleetio:build
+### Prerequisites
+* Python (~=3.9)
+* Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
+
+
+### Installing the connector
+From this connector directory, run:
+```bash
+poetry install --with dev
 ```
 
 #### Create credentials
@@ -25,22 +30,30 @@ See `integration_tests/sample_config.json` for a sample config file.
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source fleetio test creds`
 and place them into `secrets/config.json`.
 
-### Locally running the connector docker image
+### Locally running the connector
+```
+poetry run source-fleetio spec
+poetry run source-fleetio check --config secrets/config.json
+poetry run source-fleetio discover --config secrets/config.json
+poetry run source-fleetio read --config secrets/config.json --catalog sample_files/configured_catalog.json
+```
 
-#### Build
-First, make sure you build the latest Docker image:
+### Running unit tests
+To run unit tests locally, from the connector directory run:
 ```
-docker build . -t airbyte/source-fleetio:dev
+poetry run pytest unit_tests
 ```
 
-You can also build the connector image via Gradle:
+### Building the docker image
+1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+2. Run the following command to build the docker image:
+```bash
+airbyte-ci connectors --name=source-fleetio build
 ```
-./gradlew :airbyte-integrations:connectors:source-fleetio:airbyteDocker
-```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
 
-#### Run
+An image will be available on your host with the tag `airbyte/source-fleetio:dev`.
+
+### Running as a docker container
 Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/source-fleetio:dev spec
@@ -48,33 +61,28 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-fleetio:dev check --co
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-fleetio:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-fleetio:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
+
+### Running our CI test suite
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+```bash
+airbyte-ci connectors --name=source-fleetio test
+```
+
 ## Testing
 
 #### Acceptance Tests
 Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
-To run your integration tests with Docker, run:
-```
-./acceptance-test-docker.sh
+
+### Dependency Management
+All of your dependencies should be managed via Poetry. 
+To add a new dependency, run:
+```bash
+poetry add <package-name>
 ```
 
-### Using gradle to run tests
-All commands should be run from airbyte project root.
-To run unit tests:
-```
-./gradlew :airbyte-integrations:connectors:source-fleetio:unitTest
-```
-To run acceptance and custom integration tests:
-```
-./gradlew :airbyte-integrations:connectors:source-fleetio:integrationTest
-```
-
-## Dependency Management
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
-We split dependencies between two groups, dependencies that are:
-* required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
-* required for the testing need to go to `TEST_REQUIREMENTS` list
+Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
