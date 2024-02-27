@@ -214,6 +214,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 1.2.15 | 2024-02-27 | [35673](https://github.com/airbytehq/airbyte/pull/35673) | Consume user provided connection string. |
 | 1.2.14  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message.                                                                            |
 | 1.2.13  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug.                                                                                          |
 | 1.2.12  | 2024-02-21 | [35526](https://github.com/airbytehq/airbyte/pull/35526) | Improve error handling.                                                                                   |
