@@ -190,6 +190,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
   }
 
   @Override
+  protected List<Migration<RedshiftState>> getMigrations(JdbcDatabase database, String databaseName, SqlGenerator sqlGenerator, DestinationHandler<RedshiftState> destinationHandler) {
+    return List.of(new RedshiftRawTableAirbyteMetaMigration(database, databaseName));
+  }
+
+  @Override
   @Deprecated
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
