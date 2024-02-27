@@ -6,16 +6,32 @@ package io.airbyte.integrations.source.mongodb.state;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.util.Set;
+import org.bson.Document;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcEventUtils;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -24,7 +40,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A state manager for MongoDB CDC syncs.
  */
-public class MongoDbStateManager {
+public class MongoDbStateManager implements SourceStateIteratorManager<Document> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateManager.class);
 
@@ -32,6 +48,15 @@ public class MongoDbStateManager {
    * The global CDC state.
    */
   private MongoDbCdcState cdcState;
+  private ConfiguredAirbyteStream stream;
+
+  private Object lastId;
+  private Set<String> fields;
+  private Instant emittedAt;
+  private Optional<CdcMetadataInjector> cdcMetadataInjector;
+  private long checkpointInterval;
+  private Duration checkpointDuration;
+
 
   /**
    * Map of streams (name/namespace tuple) to the current stream state information stored in the
@@ -206,4 +231,91 @@ public class MongoDbStateManager {
     }
   }
 
+  // Required when using stateIterator related functions below.
+  public void withIteratorFields(final ConfiguredAirbyteStream stream,
+      final Instant emittedAt,
+      final Optional<CdcMetadataInjector> cdcMetadataInjector,
+      final long checkpointInterval,
+      final Duration checkpointDuration) {
+    this.stream = stream;
+    this.lastId = this.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
+    this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
+    this.emittedAt = emittedAt;
+    this.cdcMetadataInjector = cdcMetadataInjector;
+    this.checkpointInterval = checkpointInterval;
+    this.checkpointDuration = checkpointDuration;
+  }
+
+  /**
+   * @return
+   */
+  @Override
+  public AirbyteStateMessage generateStateMessageAtCheckpoint() {
+    if (lastId != null) {
+      final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
+          .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+      final var state = new MongoDbStreamState(lastId.toString(), InitialSnapshotStatus.IN_PROGRESS, idType);
+      updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
+    }
+    return toState();
+  }
+
+  /**
+   * @param
+   * @return
+   */
+  @Override
+  public AirbyteMessage processRecordMessage(final Document document) {
+    final var fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
+
+    final var jsonNode = MongoDbCdcEventUtils.toJsonNode(document, fields);
+
+    lastId = document.get(MongoConstants.ID_FIELD);
+
+    return new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(stream.getStream().getName())
+            .withNamespace(stream.getStream().getNamespace())
+            .withEmittedAt(emittedAt.toEpochMilli())
+            .withData(injectMetadata(jsonNode)));
+  }
+
+  private JsonNode injectMetadata(final JsonNode jsonNode) {
+    if (Objects.nonNull(cdcMetadataInjector) && cdcMetadataInjector.isPresent() && jsonNode instanceof ObjectNode) {
+      cdcMetadataInjector.get().addMetaDataToRowsFetchedOutsideDebezium((ObjectNode) jsonNode, emittedAt.toString(), null);
+    }
+
+    return jsonNode;
+  }
+  /**
+   * @return
+   */
+  @Override
+  public AirbyteStateMessage createFinalStateMessage() {
+    if (lastId != null) {
+      LOGGER.debug("Emitting final state status for stream {}:{}...", stream.getStream().getNamespace(), stream.getStream().getName());
+      final var finalStateStatus = InitialSnapshotStatus.COMPLETE;
+      final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
+          .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+      final var state = new MongoDbStreamState(lastId.toString(), finalStateStatus, idType);
+
+      updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
+    }
+    return toState();
+  }
+
+  /**
+   * @param recordCount
+   * @param lastCheckpoint
+   * @return
+   */
+  @Override
+  public boolean shouldEmitStateMessage(long recordCount, Instant lastCheckpoint) {
+    // Should a state message be emitted based on the number of messages we've seen?
+    final var emitStateDueToMessageCount = recordCount > 0 && recordCount % checkpointInterval == 0;
+    // Should a state message be emitted based on then last time a state message was emitted?
+    final var emitStateDueToDuration = recordCount > 0 && Duration.between(lastCheckpoint, Instant.now()).compareTo(checkpointDuration) > 0;
+    return emitStateDueToMessageCount || emitStateDueToDuration;
+  }
 }

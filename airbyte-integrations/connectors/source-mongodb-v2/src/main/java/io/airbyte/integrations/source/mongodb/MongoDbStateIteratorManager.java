@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcEventUtils;
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorProcessor;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -27,9 +27,9 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MongoDbStateIteratorProcessor implements SourceStateIteratorProcessor<AirbyteMessage> {
+public class MongoDbStateIteratorManager implements SourceStateIteratorManager<AirbyteMessage> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateIterator.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateIteratorManager.class);
 
   private final MongoCursor<Document> iter;
   private final Optional<CdcMetadataInjector<?>> cdcMetadataInjector;
@@ -70,7 +70,7 @@ public class MongoDbStateIteratorProcessor implements SourceStateIteratorProcess
    *        messages.
    * @param checkpointDuration how often a state message should be emitted based on time.
    */
-  public MongoDbStateIteratorProcessor(final MongoCursor<Document> iter,
+  public MongoDbStateIteratorManager(final MongoCursor<Document> iter,
       final MongoDbStateManager stateManager,
       final Optional<CdcMetadataInjector<?>> cdcMetadataInjector,
       final ConfiguredAirbyteStream stream,

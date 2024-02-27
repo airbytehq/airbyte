@@ -114,14 +114,14 @@ public class InitialSnapshotHandler {
                   .allowDiskUse(true)
                   .cursor();
 
-          final var stateIteratorProcessor = new MongoDbStateIteratorProcessor(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
+
+          final var stateIteratorProcessor = new MongoDbStateIteratorManager(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
               airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION);
 
+          stateManager.withIteratorFields(airbyteStream, emittedAt, Optional.ofNullable(cdcConnectorMetadataInjector),  checkpointInterval, MongoConstants.CHECKPOINT_DURATION);
+
           final var stateIterator =
-              new SourceStateIterator<>(cursor, stateIteratorProcessor);
-          final var stateIterator =
-              new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
-                  airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION, isEnforceSchema);
+              new SourceStateIterator<>(cursor, stateManager);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
