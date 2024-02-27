@@ -54,6 +54,10 @@ class TestFullRefresh(BaseTest):
     def assert_two_sequential_reads_produce_same_or_subset_records(
         self, records_1, records_2, configured_catalog, ignored_fields, detailed_logger
     ):
+        # should we re-use how we compare records at this point or just completely remove this assertion? Implications:
+        # * remove `exclude_fields` from `make_hashable`
+        # * remove `delete_fields`
+        # Pending on: https://airbytehq-team.slack.com/archives/C02UF50V9HA/p1708989100802379
         records_by_stream_1 = defaultdict(list)
         for record in records_1:
             records_by_stream_1[record.stream].append(record.data)
