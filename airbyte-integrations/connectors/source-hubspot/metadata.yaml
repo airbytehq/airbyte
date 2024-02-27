@@ -49,7 +49,7 @@ data:
         upgradeDeadline: 2024-03-10
         scopedImpact:
           - scopeType: stream
-            impactedScopes: [ "deals_property_history" ]
+            impactedScopes: ["deals_property_history"]
   suggestedStreams:
     streams:
       - contacts
