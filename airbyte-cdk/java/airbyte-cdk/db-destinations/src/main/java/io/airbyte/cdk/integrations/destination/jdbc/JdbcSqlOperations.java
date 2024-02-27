@@ -115,12 +115,18 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         CREATE TABLE IF NOT EXISTS %s.%s (
           %s VARCHAR PRIMARY KEY,
           %s JSONB,
+          %s JSONB,
           %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           %s TIMESTAMP WITH TIME ZONE DEFAULT NULL
         );
         """,
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT);
+        schemaName,
+        tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_AB_META,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT);
   }
 
   // TODO: This method seems to be used by Postgres and others while staging to local temp files.
@@ -133,9 +139,10 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         // TODO we only need to do this is formatData is overridden. If not, we can just do jsonData =
         // record.getSerialized()
         final var jsonData = Jsons.serialize(formatData(Jsons.deserializeExact(record.getSerialized())));
+        final var airbyteMeta = Jsons.serialize(record.getRecord().getMeta());
         final var extractedAt = Timestamp.from(Instant.ofEpochMilli(record.getRecord().getEmittedAt()));
         if (TypingAndDedupingFlag.isDestinationV2()) {
-          csvPrinter.printRecord(uuid, jsonData, extractedAt, null);
+          csvPrinter.printRecord(uuid, jsonData, airbyteMeta, extractedAt, null);
         } else {
           csvPrinter.printRecord(uuid, jsonData, extractedAt);
         }
