@@ -247,7 +247,9 @@ def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock)
     assert spec_mock.called
 
 
-def test_given_message_emitted_during_config_when_read_then_emit_message_before_next_steps(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+def test_given_message_emitted_during_config_when_read_then_emit_message_before_next_steps(
+    entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock
+):
     parsed_args = Namespace(command="read", config="config_path", state="statepath", catalog="catalogpath")
     mocker.patch.object(MockSource, "read_catalog", side_effect=ValueError)
 

@@ -19,11 +19,15 @@ import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
@@ -51,12 +55,30 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
   final private ArrayList<String> cleanupSQL = new ArrayList<>();
   final private Map<String, String> connectionProperties = new HashMap<>();
 
-  private DataSource dataSource;
-  private DSLContext dslContext;
+  private volatile DataSource dataSource;
+  private volatile DSLContext dslContext;
 
+  protected final int databaseId;
+  private static final AtomicInteger nextDatabaseId = new AtomicInteger(0);
+
+  protected final int containerId;
+  private static final AtomicInteger nextContainerId = new AtomicInteger(0);
+  private static final Map<String, Integer> containerUidToId = new ConcurrentHashMap<>();
+
+  @SuppressWarnings("this-escape")
   protected TestDatabase(C container) {
     this.container = container;
     this.suffix = Strings.addRandomSuffix("", "_", 10);
+    this.databaseId = nextDatabaseId.getAndIncrement();
+    this.containerId = containerUidToId.computeIfAbsent(container.getContainerId(), k -> nextContainerId.getAndIncrement());
+    LOGGER.info(formatLogLine("creating database " + getDatabaseName()));
+  }
+
+  private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+  protected String formatLogLine(String logLine) {
+    String retVal = "TestDatabase databaseId=" + databaseId + ", containerId=" + containerId + " - " + logLine;
+    return retVal;
   }
 
   @SuppressWarnings("unchecked")
@@ -187,12 +209,13 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
       return;
     }
     try {
-      LOGGER.debug("executing {}", Strings.join(cmd, " "));
+      LOGGER.info(formatLogLine(String.format("executing command %s", Strings.join(cmd, " "))));
       final var exec = getContainer().execInContainer(cmd.toArray(new String[0]));
       if (exec.getExitCode() == 0) {
-        LOGGER.debug("execution success\nstdout:\n{}\nstderr:\n{}", exec.getStdout(), exec.getStderr());
+        LOGGER.info(formatLogLine(String.format("execution success\nstdout:\n%s\nstderr:\n%s", exec.getStdout(), exec.getStderr())));
       } else {
-        LOGGER.error("execution failure, code {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
+        LOGGER.error(formatLogLine(
+            String.format("execution failure, code %s\nstdout:\n%s\nstderr:\n%s", exec.getExitCode(), exec.getStdout(), exec.getStderr())));
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
@@ -234,6 +257,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
   public void close() {
     execSQL(this.cleanupSQL.stream());
     execInContainer(inContainerUndoBootstrapCmd());
+    LOGGER.info("closing database databaseId=" + databaseId);
   }
 
   static public class ConfigBuilder<T extends TestDatabase<?, ?, ?>, B extends ConfigBuilder<T, B>> {
