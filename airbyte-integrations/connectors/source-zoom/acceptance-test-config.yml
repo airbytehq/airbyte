@@ -51,8 +51,5 @@ acceptance_tests:
         ignored_fields:
           meetings:
             - name: "start_url"
-              bypass_reason: "Not sure"
-          webinars:
-            - name: "start_url"
-              bypass_reason: "Not sure"
+              bypass_reason: "Causes sequential_read test to fail as the value is unique upon each read"
         timeout_seconds: 3600
