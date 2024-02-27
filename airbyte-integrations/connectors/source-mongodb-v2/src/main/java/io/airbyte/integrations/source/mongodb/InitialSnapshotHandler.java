@@ -70,11 +70,13 @@ public class InitialSnapshotHandler {
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
           final var idTypes = aggregateIdField(collection);
+          boolean multipleIdTypes = false;
           if (idTypes.size() > 1) {
-            throw new ConfigErrorException("The _id fields in a collection must be consistently typed (collection = " + collectionName + ").");
+            multipleIdTypes = true;
+            LOGGER.info("Multiple ID types found: " + idTypes.toString());
           }
 
-          idTypes.stream().findFirst().ifPresent(idType -> {
+          idTypes.stream().forEach(idType -> {
             if (IdType.findByBsonType(idType).isEmpty()) {
               throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED
                   + " (collection = " + collectionName + ").");
@@ -89,7 +91,7 @@ public class InitialSnapshotHandler {
           // If a state exists, it will use that state to create a query akin to
           // "where _id > [last saved state] order by _id ASC".
           // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
-          final Bson filter = existingState
+          final Bson filter = multipleIdTypes ? new BsonDocument() : existingState
               .map(state -> Filters.gt(MongoConstants.ID_FIELD,
                   switch (state.idType()) {
             case STRING -> new BsonString(state.id());
