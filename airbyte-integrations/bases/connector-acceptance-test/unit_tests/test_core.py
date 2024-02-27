@@ -651,16 +651,16 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
         ),
         # Given stream without primary key and more actual than expected
         (
-                {"type": "object"},
-                {},
-                _DEFAULT_RECORD_CONFIG,
-                [
-                    {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
-                    {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}
-                ],
-                {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
-                None,
-                does_not_raise(),
+            {"type": "object"},
+            {},
+            _DEFAULT_RECORD_CONFIG,
+            [
+                {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
+                {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}
+            ],
+            {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+            None,
+            does_not_raise(),
         ),
         # Expected and Actual records are not equal but we ignore fast changing field
         (
@@ -681,6 +681,16 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}]},
             None,
             does_not_raise(),
+        ),
+        # Expected is in actual but not in order (for case when exact_order=True)
+        (
+                {"type": "object"},
+                {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
+                ExpectedRecordsConfig(exact_order=True, path="foobar"),
+                [{"constant_field": "not in order"}, {"constant_field": "must equal"}],
+                {"test_stream": [{"constant_field": "must equal"}]},
+                None,
+                does_not_raise(),
         ),
         # Match by primary key
         (
