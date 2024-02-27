@@ -36,20 +36,22 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
   base_stream:
-    primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
   cards_stream:
+    primary_key: "id"
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "cards"
       path: "card"
   collections_stream:
+    primary_key: "id"
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "collections"
       path: "collection"
   dashboards_stream:
+    primary_key: "id"
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
@@ -60,13 +62,11 @@ definitions:
             stream: "#/definitions/collections_items_dashboards_stream"
             parent_key: "id"
             partition_field: "id"
-    transformations:
-      - type: CustomTransformation
-        class_name: source_metabase.components.CustomFieldTransformation
     $parameters:
       name: "dashboards"
       path: "/dashboard/{{stream_slice.id}}"
   collections_items_dashboards_stream:
+    primary_key: "id"
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/data_field_retriever"
@@ -89,6 +89,7 @@ definitions:
       path: "database"
 
   native_query_snippets_stream:
+    primary_key: "id"
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "native_query_snippets"
