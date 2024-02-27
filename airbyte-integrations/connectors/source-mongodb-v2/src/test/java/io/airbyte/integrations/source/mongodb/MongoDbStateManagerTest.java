@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mongodb.state.IdType;
@@ -41,7 +42,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-class MongoDbStateIteratorTest {
+class MongoDbStateManagerTest {
 
   private static final int CHECKPOINT_INTERVAL = 2;
   @Mock
@@ -94,8 +95,9 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, Optional.of(cdcConnectorMetadataInjector), stream, Instant.now(),
-        CHECKPOINT_INTERVAL, MongoConstants.CHECKPOINT_DURATION, true);
+    stateManager.withIteratorFields(stream, Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), CHECKPOINT_INTERVAL,
+        MongoConstants.CHECKPOINT_DURATION, true);
+    final var iter = new SourceStateIterator<Document>(mongoCursor, stateManager);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -161,8 +163,9 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, Optional.of(cdcConnectorMetadataInjector), stream, Instant.now(),
-        CHECKPOINT_INTERVAL, MongoConstants.CHECKPOINT_DURATION, true);
+    stateManager.withIteratorFields(stream, Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), CHECKPOINT_INTERVAL,
+        MongoConstants.CHECKPOINT_DURATION, true);
+    final var iter = new SourceStateIterator<Document>(mongoCursor, stateManager);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -202,8 +205,9 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, Optional.of(cdcConnectorMetadataInjector), stream, Instant.now(),
-        CHECKPOINT_INTERVAL, MongoConstants.CHECKPOINT_DURATION, true);
+    stateManager.withIteratorFields(stream, Instant.now(), Optional.of(cdcConnectorMetadataInjector), CHECKPOINT_INTERVAL,
+        MongoConstants.CHECKPOINT_DURATION, true);
+    final var iter = new SourceStateIterator<Document>(mongoCursor, stateManager);
 
     assertTrue(iter.hasNext(), "air force blue should be next");
     // first next call should return the document
@@ -224,8 +228,9 @@ class MongoDbStateIteratorTest {
     stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
         new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID));
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, Optional.of(cdcConnectorMetadataInjector), stream, Instant.now(),
-        CHECKPOINT_INTERVAL, MongoConstants.CHECKPOINT_DURATION, true);
+    stateManager.withIteratorFields(stream, Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), CHECKPOINT_INTERVAL,
+        MongoConstants.CHECKPOINT_DURATION, true);
+    final var iter = new SourceStateIterator<Document>(mongoCursor, stateManager);
 
     // the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -262,8 +267,8 @@ class MongoDbStateIteratorTest {
     stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
         new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID));
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, Optional.of(cdcConnectorMetadataInjector), stream, Instant.now(), 1000000,
-        Duration.of(1, SECONDS), true);
+    stateManager.withIteratorFields(stream, Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), 1000000, Duration.of(1, SECONDS), true);
+    final var iter = new SourceStateIterator<Document>(mongoCursor, stateManager);
 
     // with a batch size of 1,000,000 and a 1.5s sleep between hasNext calls, the expected results
     // should be
@@ -332,8 +337,9 @@ class MongoDbStateIteratorTest {
   void hasNextNoInitialStateAndNoMoreRecordsInCursor() {
     when(mongoCursor.hasNext()).thenReturn(false);
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
-    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, Optional.of(cdcConnectorMetadataInjector), stream, Instant.now(), 1000000,
-        Duration.of(1, SECONDS), true);
+
+    stateManager.withIteratorFields(stream, Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), 1000000, Duration.of(1, SECONDS), true);
+    final var iter = new SourceStateIterator<Document>(mongoCursor, stateManager);
 
     assertFalse(iter.hasNext());
   }

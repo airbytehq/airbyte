@@ -9,10 +9,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import java.util.Set;
-import org.bson.Document;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mongodb.MongoConstants;
@@ -25,6 +21,8 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Duration;
 import java.time.Instant;
@@ -33,7 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,10 +53,10 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
   private Object lastId;
   private Set<String> fields;
   private Instant emittedAt;
-  private Optional<CdcMetadataInjector> cdcMetadataInjector;
+  private Optional<CdcMetadataInjector<?>> cdcMetadataInjector;
   private long checkpointInterval;
   private Duration checkpointDuration;
-
+  private boolean isEnforceSchema;
 
   /**
    * Map of streams (name/namespace tuple) to the current stream state information stored in the
@@ -233,10 +233,11 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
 
   // Required when using stateIterator related functions below.
   public void withIteratorFields(final ConfiguredAirbyteStream stream,
-      final Instant emittedAt,
-      final Optional<CdcMetadataInjector> cdcMetadataInjector,
-      final long checkpointInterval,
-      final Duration checkpointDuration) {
+                                 final Instant emittedAt,
+                                 final Optional<CdcMetadataInjector<?>> cdcMetadataInjector,
+                                 final long checkpointInterval,
+                                 final Duration checkpointDuration,
+                                 final boolean isEnforceSchema) {
     this.stream = stream;
     this.lastId = this.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
     this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
@@ -244,6 +245,7 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
     this.cdcMetadataInjector = cdcMetadataInjector;
     this.checkpointInterval = checkpointInterval;
     this.checkpointDuration = checkpointDuration;
+    this.isEnforceSchema = isEnforceSchema;
   }
 
   /**
@@ -268,7 +270,7 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
   public AirbyteMessage processRecordMessage(final Document document) {
     final var fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
 
-    final var jsonNode = MongoDbCdcEventUtils.toJsonNode(document, fields);
+    final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
 
     lastId = document.get(MongoConstants.ID_FIELD);
 
@@ -288,6 +290,7 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
 
     return jsonNode;
   }
+
   /**
    * @return
    */
@@ -318,4 +321,5 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
     final var emitStateDueToDuration = recordCount > 0 && Duration.between(lastCheckpoint, Instant.now()).compareTo(checkpointDuration) > 0;
     return emitStateDueToMessageCount || emitStateDueToDuration;
   }
+
 }
