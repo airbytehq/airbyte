@@ -12,12 +12,14 @@ import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 public abstract class MySqlInitialLoadStateManager implements SourceStateIteratorManager<AirbyteMessage> {
 
@@ -25,21 +27,17 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
   public static String STATE_TYPE_KEY = "state_type";
   public static String PRIMARY_KEY_STATE_TYPE = "primary_key";
 
-  protected AirbyteStreamNameNamespacePair pair;
-  protected PrimaryKeyLoadStatus pkStatus;
   protected JsonNode streamStateForIncrementalRun;
   protected Duration syncCheckpointDuration;
   protected Long syncCheckpointRecords;
-  protected String pkFieldName;
+  protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
-  void setStreamNameNamespacePair(final AirbyteStreamNameNamespacePair pair) {
-    this.pair = pair;
-    this.pkStatus = this.getPrimaryKeyLoadStatus(pair);
-    this.pkFieldName = this.getPrimaryKeyInfo(pair).pkFieldName();
-  }
+  protected Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPrimaryKeyLoadStatus;
 
-  void setStreamStateForIncrementalRun(final JsonNode streamStateForIncrementalRun) {
-    this.streamStateForIncrementalRun = streamStateForIncrementalRun;
+  // Map of pair to the primary key info (field name & data type) associated with it.
+  protected Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo;
+  void setStreamStateForIncrementalRunSupplier(final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
+    this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
   }
 
   void setSyncCheckpointDuration(final Duration syncCheckpointDuration) {
@@ -64,10 +62,12 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
 
 
   @Override
-  public AirbyteMessage processRecordMessage(final AirbyteMessage message) {
+  public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final AirbyteMessage message) {
     if (Objects.nonNull(message)) {
+      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+      final String pkFieldName = this.getPrimaryKeyInfo(pair).pkFieldName();
       final String lastPk = message.getRecord().getData().get(pkFieldName).asText();
-      pkStatus = new PrimaryKeyLoadStatus()
+      final PrimaryKeyLoadStatus pkStatus = new PrimaryKeyLoadStatus()
           .withVersion(MYSQL_STATUS_VERSION)
           .withStateType(StateType.PRIMARY_KEY)
           .withPkName(pkFieldName)
@@ -80,8 +80,7 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
 
   @Override
   public boolean shouldEmitStateMessage(long recordCount, Instant lastCheckpoint) {
-    return (recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
-        && Objects.nonNull(pkStatus);
+    return (recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0);
   }
 
 

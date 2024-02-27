@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
@@ -29,9 +30,6 @@ import java.util.Set;
 
 public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateManager {
 
-  private final Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPrimaryKeyLoadStatus;
-  // Map of pair to the primary key info (field name & data type) associated with it.
-  private final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo;
   private final CdcState cdcState;
 
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
@@ -63,13 +61,15 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
   }
 
   @Override
-  public AirbyteStateMessage generateStateMessageAtCheckpoint() {
+  public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream airbyteStream) {
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
 
     });
+    AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+    var pkStatus = getPrimaryKeyLoadStatus(pair);
     streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkStatus))));
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(cdcState));
@@ -86,7 +86,8 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
   }
 
   @Override
-  public AirbyteStateMessage createFinalStateMessage() {
+  public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream airbyteStream) {
+    AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
     streamsThatHaveCompletedSnapshot.add(pair);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {

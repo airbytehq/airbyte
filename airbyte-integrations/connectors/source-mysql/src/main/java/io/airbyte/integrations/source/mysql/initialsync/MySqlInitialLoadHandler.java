@@ -115,7 +115,7 @@ public class MySqlInitialLoadHandler {
                 calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
+        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);
 
         iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
 
@@ -174,6 +174,7 @@ public class MySqlInitialLoadHandler {
   }
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
+                                                                 final ConfiguredAirbyteStream airbyteStream,
                                                                  final AirbyteStreamNameNamespacePair pair) {
 
     final PrimaryKeyLoadStatus currentPkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
@@ -187,13 +188,12 @@ public class MySqlInitialLoadHandler {
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
-    initialLoadStateManager.setStreamNameNamespacePair(pair);
-    initialLoadStateManager.setStreamStateForIncrementalRun(incrementalState);
+    initialLoadStateManager.setStreamStateForIncrementalRunSupplier(streamStateForIncrementalRunSupplier);
     initialLoadStateManager.setSyncCheckpointDuration(syncCheckpointDuration);
     initialLoadStateManager.setSyncCheckpointRecords(syncCheckpointRecords);
 
     return AutoCloseableIterators.transformIterator(
-        r -> new SourceStateIterator<>(r, initialLoadStateManager),
+        r -> new SourceStateIterator<>(r, airbyteStream, initialLoadStateManager),
         recordIterator, pair);
   }
 

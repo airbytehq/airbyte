@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateStats;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Iterator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,14 +29,17 @@ public class SourceStateIteratorTest {
 
   SourceStateIteratorManager mockProcessor;
   Iterator<AirbyteMessage> messageIterator;
+  ConfiguredAirbyteStream stream;
+
 
   SourceStateIterator sourceStateIterator;
 
   @BeforeEach
   void setup() {
     mockProcessor = mock(SourceStateIteratorManager.class);
+    stream = mock(ConfiguredAirbyteStream.class);
     messageIterator = mock(Iterator.class);
-    sourceStateIterator = new SourceStateIterator(messageIterator, mockProcessor);
+    sourceStateIterator = new SourceStateIterator(messageIterator, stream, mockProcessor);
   }
 
   // Provides a way to generate a record message and will verify corresponding spied functions have
@@ -44,11 +48,11 @@ public class SourceStateIteratorTest {
     doReturn(true).when(messageIterator).hasNext();
     doReturn(false).when(mockProcessor).shouldEmitStateMessage(anyLong(), any());
     AirbyteMessage message = new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage());
-    doReturn(message).when(mockProcessor).processRecordMessage(any());
+    doReturn(message).when(mockProcessor).processRecordMessage(eq(stream), any());
     doReturn(message).when(messageIterator).next();
 
     assertEquals(message, sourceStateIterator.computeNext());
-    verify(mockProcessor, atLeastOnce()).processRecordMessage(message);
+    verify(mockProcessor, atLeastOnce()).processRecordMessage(eq(stream), eq(message));
     verify(mockProcessor, atLeastOnce()).shouldEmitStateMessage(eq(0L), any());
   }
 
@@ -62,7 +66,7 @@ public class SourceStateIteratorTest {
     processRecordMessage();
     doReturn(true).when(mockProcessor).shouldEmitStateMessage(anyLong(), any());
     final AirbyteStateMessage stateMessage = new AirbyteStateMessage();
-    doReturn(stateMessage).when(mockProcessor).generateStateMessageAtCheckpoint();
+    doReturn(stateMessage).when(mockProcessor).generateStateMessageAtCheckpoint(stream);
     AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
     expectedMessage.getState().withSourceStats(new AirbyteStateStats().withRecordCount(1.0));
     assertEquals(expectedMessage, sourceStateIterator.computeNext());
@@ -74,7 +78,7 @@ public class SourceStateIteratorTest {
     processRecordMessage();
     doReturn(false).when(messageIterator).hasNext();
     final AirbyteStateMessage stateMessage = new AirbyteStateMessage();
-    doReturn(stateMessage).when(mockProcessor).createFinalStateMessage();
+    doReturn(stateMessage).when(mockProcessor).createFinalStateMessage(stream);
     AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
     expectedMessage.getState().withSourceStats(new AirbyteStateStats().withRecordCount(2.0));
     assertEquals(expectedMessage, sourceStateIterator.computeNext());
@@ -84,7 +88,7 @@ public class SourceStateIteratorTest {
   void testShouldSendEndOfData() {
     processRecordMessage();
     doReturn(false).when(messageIterator).hasNext();
-    doReturn(new AirbyteStateMessage()).when(mockProcessor).createFinalStateMessage();
+    doReturn(new AirbyteStateMessage()).when(mockProcessor).createFinalStateMessage(stream);
     sourceStateIterator.computeNext();
 
     // After sending the final state, if iterator was called again, we will return null.

@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.Map;
@@ -28,11 +29,6 @@ import org.slf4j.LoggerFactory;
  * expanding StreamStateManager itself to include this functionality, this class will be removed
  */
 public class MySqlInitialLoadStreamStateManager extends MySqlInitialLoadStateManager {
-
-  private final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPrimaryKeyLoadStatus;
-
-  // Map of pair to the primary key info (field name & data type) associated with it.
-  private final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialLoadStreamStateManager.class);
 
@@ -57,11 +53,16 @@ public class MySqlInitialLoadStreamStateManager extends MySqlInitialLoadStateMan
   }
 
   @Override
-  public AirbyteStateMessage createFinalStateMessage() {
+  public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {
+    AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+    final PrimaryKeyLoadStatus currentPkLoadStatus = getPrimaryKeyLoadStatus(pair);
+    final JsonNode incrementalState =
+        (currentPkLoadStatus == null || currentPkLoadStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
+            : currentPkLoadStatus.getIncrementalState();
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
-        .withStream(getAirbyteStreamState(pair, streamStateForIncrementalRun));
+        .withStream(getAirbyteStreamState(pair, incrementalState));
   }
 
 
@@ -76,7 +77,9 @@ public class MySqlInitialLoadStreamStateManager extends MySqlInitialLoadStateMan
   }
 
   @Override
-  public AirbyteStateMessage generateStateMessageAtCheckpoint() {
+  public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
+    AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+    var pkStatus = getPrimaryKeyLoadStatus(pair);
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(getAirbyteStreamState(pair, Jsons.jsonNode(pkStatus)));
