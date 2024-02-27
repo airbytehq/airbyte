@@ -5,7 +5,7 @@ data:
     oss:
       enabled: true
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0sha256:9a1835a40f221aac8bae19f8422132949ff045164a0d448a60750c5370bffc9f
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:9a1835a40f221aac8bae19f8422132949ff045164a0d448a60750c5370bffc9f
   connectorSubtype: api
   connectorType: source
   definitionId: 13a7652d-1d94-4033-931a-613d22d3cbb3

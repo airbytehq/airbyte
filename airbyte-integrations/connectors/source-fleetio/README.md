@@ -8,8 +8,6 @@ View the Fleetio website [here](https://fleetio.com). For for information the Fl
 
 ## Local development
 
-## Local development
-
 ### Prerequisites
 * Python (~=3.9)
 * Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
@@ -21,7 +19,7 @@ From this connector directory, run:
 poetry install --with dev
 ```
 
-#### Create credentials
+### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/fleetio)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_fleetio/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
@@ -41,7 +39,7 @@ poetry run source-fleetio read --config secrets/config.json --catalog sample_fil
 ### Running unit tests
 To run unit tests locally, from the connector directory run:
 ```
-poetry run pytest unit_tests
+poetry run pytest
 ```
 
 ### Building the docker image
