@@ -35,6 +35,21 @@ sample_catalog = {
                     },
                 },
             },
+            {
+                "name": "always-empty-stream",
+                "description": "This stream always emits zero records, to test handling of empty datasets.",
+                "supported_sync_modes": ["full_refresh", "incremental"],
+                "source_defined_cursor": False,
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "column1": {"type": "string"},
+                        "column2": {"type": "number"},
+                        "empty_column": {"type": "string"},
+                    },
+                },
+            },
         ]
     },
 }

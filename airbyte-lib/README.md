@@ -21,8 +21,9 @@ airbyte-lib is a library that allows to run Airbyte syncs embedded into any Pyth
 AirbyteLib can auto-import secrets from the following sources:
 
 1. Environment variables.
-2. [Google Colab secrets](https://medium.com/@parthdasawant/how-to-use-secrets-in-google-colab-450c38e3ec75).
-3. Manual entry via [`getpass`](https://docs.python.org/3.9/library/getpass.html).
+2. Variables defined in a local `.env` ("Dotenv") file.
+3. [Google Colab secrets](https://medium.com/@parthdasawant/how-to-use-secrets-in-google-colab-450c38e3ec75).
+4. Manual entry via [`getpass`](https://docs.python.org/3.9/library/getpass.html).
 
 _Note: Additional secret store options may be supported in the future. [More info here.](https://github.com/airbytehq/airbyte-lib-private-beta/discussions/5)_
 

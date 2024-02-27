@@ -101,6 +101,9 @@ acceptance_tests:
           - name: campaign_labels
             bypass_reason: "This stream is tested without start date"
         ignored_fields:
+          campaigns:
+            - name: Status
+              bypass_reason: "Status can be changed"
           ads:
             - name: Descriptions/AssetLink/*/AssetPerformanceLabel
               bypass_reason: "This field indicates the asset's performance and is dynamically updated by the API."
@@ -146,6 +149,12 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: FirstPageBid
               bypass_reason: "dynamic field"
+            - name: FirstPageBid
+              bypass_reason: "dynamic field"
+            - name: QualityScore
+              bypass_reason: "dynamic field"
+            - name: AdRelevance
+              bypass_reason: "dynamic field"
           campaign_impression_performance_report_weekly:
             - name: Impressions
               bypass_reason: "dynamic field"
@@ -170,6 +179,16 @@ acceptance_tests:
             - name: AverageCpm
               bypass_reason: "dynamic field"
             - name: LandingPageExperience
+              bypass_reason: "dynamic field"
+            - name: CampaignStatus
+              bypass_reason: "dynamic field"
+            - name: ReturnOnAdSpend
+              bypass_reason: "dynamic field"
+            - name: AllReturnOnAdSpend
+              bypass_reason: "dynamic field"
+            - name: QualityScore
+              bypass_reason: "dynamic field"
+            - name: AdRelevance
               bypass_reason: "dynamic field"
           campaign_performance_report_weekly:
             - name: Impressions
@@ -197,6 +216,12 @@ acceptance_tests:
             - name: AverageCpm
               bypass_reason: "dynamic field"
             - name: LowQualityClicksPercent
+              bypass_reason: "dynamic field"
+            - name: CampaignStatus
+              bypass_reason: "dynamic field"
+            - name: QualityScore
+              bypass_reason: "dynamic field"
+            - name: AdRelevance
               bypass_reason: "dynamic field"
           ad_group_impression_performance_report_weekly:
             - name: Impressions
@@ -231,6 +256,16 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: LandingPageExperience
               bypass_reason: "dynamic field"
+            - name: AdRelevance
+              bypass_reason: "dynamic field"
+            - name: CampaignStatus
+              bypass_reason: "dynamic field"
+            - name: QualityScore
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionRatePercent
+              bypass_reason: "dynamic field"
+            - name: TopImpressionRatePercent
+              bypass_reason: "dynamic field"
           ad_group_performance_report_weekly:
             - name: Impressions
               bypass_reason: "dynamic field"
@@ -251,6 +286,10 @@ acceptance_tests:
             - name: ConversionRate
               bypass_reason: "dynamic field"
             - name: LandingPageExperience
+              bypass_reason: "dynamic field"
+            - name: QualityScore
+              bypass_reason: "dynamic field"
+            - name: AdRelevance
               bypass_reason: "dynamic field"
           ad_performance_report_daily:
             - name: TimePeriod
@@ -337,6 +376,10 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: LandingPageExperience
               bypass_reason: "dynamic field"
+            - name: QualityScore
+              bypass_reason: "dynamic field"
+            - name: AdRelevance
+              bypass_reason: "dynamic field"
           budget_summary_report:
             - name: Date
               bypass_reason: "dynamic field"
@@ -404,6 +447,16 @@ acceptance_tests:
             - name: LandingPageExperience
               bypass_reason: "dynamic field"
             - name: LowQualityGeneralClicks
+              bypass_reason: "dynamic field"
+            - name: CampaignStatus
+              bypass_reason: "dynamic field"
+            - name: ReturnOnAdSpend
+              bypass_reason: "dynamic field"
+            - name: AllReturnOnAdSpend
+              bypass_reason: "dynamic field"
+            - name: QualityScore
+              bypass_reason: "dynamic field"
+            - name: AdRelevance
               bypass_reason: "dynamic field"
           account_performance_report_daily:
             - name: Ctr
@@ -487,6 +540,16 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: ExactMatchImpressionSharePercent
               bypass_reason: "dynamic field"
+            - name: AdRelevance
+              bypass_reason: "dynamic field"
+            - name: CampaignStatus
+              bypass_reason: "dynamic field"
+            - name: QualityScore
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionRatePercent
+              bypass_reason: "dynamic field"
+            - name: TopImpressionRatePercent
+              bypass_reason: "dynamic field"
           campaign_performance_report_daily:
             - name: Ctr
               bypass_reason: "dynamic field"
@@ -503,6 +566,12 @@ acceptance_tests:
             - name: HistoricalLandingPageExperience
               bypass_reason: "dynamic field"
             - name: LandingPageExperience
+              bypass_reason: "dynamic field"
+            - name: CampaignStatus
+              bypass_reason: "dynamic field"
+            - name: QualityScore
+              bypass_reason: "dynamic field"
+            - name: AdRelevance
               bypass_reason: "dynamic field"
           keyword_performance_report_daily:
             - name: Language
@@ -546,6 +615,10 @@ acceptance_tests:
             - name: HistoricalQualityScore
               bypass_reason: "dynamic field"
             - name: FirstPageBid
+              bypass_reason: "dynamic field"
+            - name: QualityScore
+              bypass_reason: "dynamic field"
+            - name: AdRelevance
               bypass_reason: "dynamic field"
         timeout_seconds: 9000
       - config_path: secrets/config_no_date.json

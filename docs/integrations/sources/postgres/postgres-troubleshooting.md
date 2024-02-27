@@ -78,7 +78,7 @@ Normally under the CDC mode, the Postgres source will first run a full refresh s
 The root causes is that the WALs needed for the incremental sync has been removed by Postgres. This can occur under the following scenarios:
 
 - When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
-    - Sync the data source more frequently. The downside is that more computation resources will be consumed, leading to a higher Airbyte bill.
+    - Sync the data source more frequently.
     - Set a higher `wal_keep_size`. If no unit is provided, it is in megabytes, and the default is `0`. See detailed documentation [here](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-WAL-KEEP-SIZE). The downside of this approach is that more disk space will be needed.
 - When the Postgres connector successfully reads the WAL and acknowledges it to Postgres, but the destination connector fails to consume the data, the Postgres connector will try to read the same WAL again, which may have been removed by Postgres, since the WAL record is already acknowledged. This scenario is rare, because it can happen, and currently there is no way to prevent it. The correct behavior is to perform a full refresh.
 

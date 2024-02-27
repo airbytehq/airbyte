@@ -130,6 +130,8 @@ acceptance_tests:
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_VENDOR_TRAFFIC_REPORT
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: VendorOrders
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
   incremental:
     tests:
       - config_path: "secrets/config.json"

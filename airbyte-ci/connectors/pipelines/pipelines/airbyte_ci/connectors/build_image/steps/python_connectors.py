@@ -45,7 +45,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         Returns:
             Container: The builder container, with installed dependencies.
         """
-        ONLY_BUILD_FILES = ["pyproject.toml", "poetry.lock", "poetry.toml", "setup.py", "requirements.txt"]
+        ONLY_BUILD_FILES = ["pyproject.toml", "poetry.lock", "poetry.toml", "setup.py", "requirements.txt", "README.md"]
         
         builder = await with_python_connector_installed(
             self.context,
@@ -54,7 +54,6 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             install_root_package=False,
             include=ONLY_BUILD_FILES
         )
-
         return builder
 
     async def _build_from_base_image(self, platform: Platform) -> Container:

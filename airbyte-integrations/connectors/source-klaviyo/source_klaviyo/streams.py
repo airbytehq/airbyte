@@ -12,6 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 from .exceptions import KlaviyoBackoffError
@@ -59,7 +60,10 @@ class KlaviyoStream(HttpStream, ABC):
         return {str(k): str(v) for (k, v) in urllib.parse.parse_qsl(next_url.query)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         # If next_page_token is set, all the parameters are already provided
         if next_page_token:
@@ -130,11 +134,16 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
         :return str: The name of the cursor field.
         """
 
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
         """Add incremental filters"""
 
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
         if not params.get("filter"):
             stream_state_cursor_value = stream_state.get(self.cursor_field)
@@ -195,9 +204,14 @@ class ArchivedRecordsStream(IncrementalKlaviyoStream):
     def path(self, **kwargs) -> str:
         return self._path
 
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
         archived_stream_state = stream_state.get("archived") if stream_state else None
-        params = super().request_params(archived_stream_state, next_page_token, **kwargs)
+        params = super().request_params(stream_state=archived_stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         archived_filter = "equals(archived,true)"
         if "filter" in params and archived_filter not in params["filter"]:
             params["filter"] = f"and({params['filter']},{archived_filter})"
@@ -242,6 +256,8 @@ class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
 class Profiles(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles"""
 
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     cursor_field = "updated"
     api_revision = "2023-02-22"
     page_size = 100
@@ -249,6 +265,16 @@ class Profiles(IncrementalKlaviyoStream):
 
     def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "profiles"
+
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params.update({"additional-fields[profile]": "predictive_analytics"})
+        return params
 
 
 class Campaigns(ArchivedRecordsMixin, IncrementalKlaviyoStream):

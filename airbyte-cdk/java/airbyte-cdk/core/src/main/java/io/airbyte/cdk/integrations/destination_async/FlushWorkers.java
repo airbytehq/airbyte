@@ -8,11 +8,8 @@ import io.airbyte.cdk.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.cdk.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
 import io.airbyte.cdk.integrations.destination_async.state.FlushFailure;
 import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
-import io.airbyte.cdk.integrations.destination_async.state.PartialStateWithDestinationStats;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -66,8 +63,6 @@ public class FlushWorkers implements AutoCloseable {
 
   private final AtomicBoolean isClosing;
   private final GlobalAsyncStateManager stateManager;
-
-  private final Object LOCK = new Object();
 
   public FlushWorkers(final BufferDequeue bufferDequeue,
                       final DestinationFlushFunction flushFunction,
@@ -172,7 +167,7 @@ public class FlushWorkers implements AutoCloseable {
               AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
 
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
-          emitStateMessages(batch.flushStates(stateIdToCount));
+          batch.flushStates(stateIdToCount, outputRecordCollector);
         }
 
         log.info("Flush Worker ({}) -- Worker finished flushing. Current queue size: {}",
@@ -222,7 +217,7 @@ public class FlushWorkers implements AutoCloseable {
     log.info("Closing flush workers -- all buffers flushed");
 
     // before shutting down the supervisor, flush all state.
-    emitStateMessages(stateManager.flushStates());
+    stateManager.flushStates(outputRecordCollector);
     supervisorThread.shutdown();
     while (!supervisorThread.awaitTermination(5L, TimeUnit.MINUTES)) {
       log.info("Waiting for flush worker supervisor to shut down");
@@ -237,17 +232,6 @@ public class FlushWorkers implements AutoCloseable {
     log.info("Closing flush workers  -- workers shut down");
 
     debugLoop.shutdownNow();
-  }
-
-  private void emitStateMessages(final List<PartialStateWithDestinationStats> partials) {
-    synchronized (LOCK) {
-      for (final PartialStateWithDestinationStats partial : partials) {
-        final AirbyteMessage message = Jsons.deserialize(partial.stateMessage().getSerialized(), AirbyteMessage.class);
-        message.getState().setDestinationStats(partial.stats());
-        log.info("State with arrival number {} emitted from thread {}", partial.stateArrivalNumber(), Thread.currentThread().getName());
-        outputRecordCollector.accept(message);
-      }
-    }
   }
 
   private static String humanReadableFlushWorkerId(final UUID flushWorkerId) {
