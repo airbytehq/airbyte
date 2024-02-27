@@ -22,9 +22,9 @@ import java.util.function.Function;
 
 public abstract class MySqlInitialLoadStateManager implements SourceStateIteratorManager<AirbyteMessage> {
 
-  public static long MYSQL_STATUS_VERSION = 2;
-  public static String STATE_TYPE_KEY = "state_type";
-  public static String PRIMARY_KEY_STATE_TYPE = "primary_key";
+  public static final long MYSQL_STATUS_VERSION = 2;
+  public static final String STATE_TYPE_KEY = "state_type";
+  public static final String PRIMARY_KEY_STATE_TYPE = "primary_key";
 
   protected JsonNode streamStateForIncrementalRun;
   protected Duration syncCheckpointDuration;
