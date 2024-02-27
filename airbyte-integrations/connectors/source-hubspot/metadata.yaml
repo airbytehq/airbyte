@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 3.3.0
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   githubIssueLabel: source-hubspot
@@ -42,6 +42,14 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["marketing_emails"]
+      4.0.0:
+        message: >-
+          This update brings extended schema with data type changes for the Deals Property History stream.
+          Users will need to refresh it and reset this stream after upgrading.
+        upgradeDeadline: 2024-03-10
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: [ "deals_property_history" ]
   suggestedStreams:
     streams:
       - contacts
