@@ -133,7 +133,7 @@ class TestAllStreams:
             (CampaignGroups, {"account_id": 123}, "adAccounts/123/adCampaignGroups"),
             (Campaigns, {"account_id": 123}, "adAccounts/123/adCampaigns"),
             (Creatives, {"account_id": 123}, "adAccounts/123/creatives"),
-            (AdDirectSponsoredContents, {"account_id": 123}, "adAccounts/123/adDirectSponsoredContents"),
+            (AdDirectSponsoredContents, {"account_id": 123}, "adDirectSponsoredContents"),
             (AdCampaignAnalytics, None, "adAnalytics"),
             (AdCreativeAnalytics, None, "adAnalytics"),
         ],
