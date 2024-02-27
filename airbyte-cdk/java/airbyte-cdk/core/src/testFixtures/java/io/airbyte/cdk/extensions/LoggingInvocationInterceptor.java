@@ -10,10 +10,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.extension.DynamicTestInvocationContext;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -71,8 +72,21 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
         LOGGER.info("Junit completed {} in {} ms", logLineSuffix, elapsedMs);
         return retVal;
       } catch (Throwable t) {
-        String stackTrace = Arrays.stream(ExceptionUtils.getStackFrames(t)).takeWhile(s -> !s.startsWith("\tat org.junit")).collect(
-            Collectors.joining("\n  "));
+        boolean belowCurrentCall = false;
+        List<String> stackToDisplay = new LinkedList<String>();
+        for (String stackString : ExceptionUtils.getStackFrames(t)) {
+          if (stackString.startsWith("\tat ")) {
+            if (!belowCurrentCall && stackString.contains(LoggingInvocationInterceptor.class.getCanonicalName())) {
+              belowCurrentCall = true;
+            }
+          } else {
+            belowCurrentCall = false;
+          }
+          if (!belowCurrentCall) {
+            stackToDisplay.add(stackString);
+          }
+        }
+        String stackTrace = StringUtils.join(stackToDisplay, "\n    ");
         LOGGER.warn("Junit exception throw during {}:\n{}", logLineSuffix, stackTrace);
         throw t;
       }

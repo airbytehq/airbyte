@@ -13,14 +13,13 @@ import io.airbyte.cdk.integrations.destination.s3.util.CompressionType;
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening;
 import io.airbyte.commons.json.Jsons;
 import java.util.Map;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("S3FormatConfigs")
+// S3FormatConfigs
 public class S3FormatConfigsTest {
 
   @Test
-  @DisplayName("When CSV format is specified, it returns CSV format config")
+  // When CSV format is specified, it returns CSV format config
   public void testGetCsvS3FormatConfig() {
     final JsonNode configJson = Jsons.jsonNode(Map.of(
         "format", Jsons.jsonNode(Map.of(
