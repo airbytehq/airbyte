@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.postgres.xmin;
 
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -14,11 +13,16 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class XminStateIterator extends SourceStateIterator<AirbyteMessage> {
+public class XminStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(XminStateIterator.class);
 
+  private final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator;
+  private final AirbyteStreamNameNamespacePair pair;
+  private boolean hasEmittedFinalState;
+
   private boolean hasCaughtException = false;
+  private final XminStatus xminStatus;
 
   /**
    * @param pair Stream Name and Namespace (e.g. public.users)
@@ -26,7 +30,9 @@ public class XminStateIterator extends SourceStateIterator<AirbyteMessage> {
   public XminStateIterator(final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator,
                            final AirbyteStreamNameNamespacePair pair,
                            final XminStatus xminStatus) {
-    super(messageIterator, new XminStateIteratorProcessor(pair, xminStatus));
+    this.messageIterator = messageIterator;
+    this.pair = pair;
+    this.xminStatus = xminStatus;
   }
 
   /**
@@ -51,15 +57,25 @@ public class XminStateIterator extends SourceStateIterator<AirbyteMessage> {
       hasCaughtException = false;
       return endOfData();
     }
-    try {
-      return super.computeNext();
-    } catch (final RuntimeException ex) {
-      hasCaughtException = true;
-      LOGGER.error("Message iterator failed to read next record.", ex);
-      // We want to still continue attempting to sync future streams, so the exception is caught. When
-      // frequent state emission is introduced, this
-      // will result in a partial success.
+
+    if (messageIterator.hasNext()) {
+      // Use try-catch to catch Exception that could occur when connection to the database fails
+      try {
+        return messageIterator.next();
+      } catch (final Exception e) {
+        hasCaughtException = true;
+        LOGGER.error("Message iterator failed to read next record.", e);
+        // We want to still continue attempting to sync future streams, so the exception is caught. When
+        // frequent state emission is introduced, this
+        // will result in a partial success.
+        return endOfData();
+      }
+    } else if (!hasEmittedFinalState) {
+      hasEmittedFinalState = true;
+      return XminStateManager.createStateMessage(pair, xminStatus);
+    } else {
       return endOfData();
     }
   }
+
 }

@@ -14,15 +14,11 @@ data:
   icon: recurly.svg
   license: MIT
   name: Recurly
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-recurly
-  registries: # Removed from registries due to LEGACY STATE
+  registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   remoteRegistries:
     pypi:

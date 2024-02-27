@@ -56,7 +56,8 @@ public class InitialSnapshotHandler {
                                                                   final MongoDatabase database,
                                                                   final MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector,
                                                                   final Instant emittedAt,
-                                                                  final int checkpointInterval) {
+                                                                  final int checkpointInterval,
+                                                                  final boolean isEnforceSchema) {
     return streams
         .stream()
         .peek(airbyteStream -> {
