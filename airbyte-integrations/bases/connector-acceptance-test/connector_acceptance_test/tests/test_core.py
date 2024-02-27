@@ -838,19 +838,19 @@ def primary_keys_for_records(streams, records):
     for stream in streams_with_primary_key:
         stream_records = [r for r in records if r.stream == stream.stream.name]
         for stream_record in stream_records:
-            pk_values = _extract_primary_key(stream_record.data, stream.stream.source_defined_primary_key)
+            pk_values = _extract_primary_key_value(stream_record.data, stream.stream.source_defined_primary_key)
             yield pk_values, stream_record
 
 
-def _extract_primary_keys(records: Iterable[Mapping[str, Any]], primary_key: List[str]) -> Iterable[Tuple[Any, Mapping[str, Any]]]:
+def _extract_pk_values(records: Iterable[Mapping[str, Any]], primary_key: List[List[str]]) -> Iterable[dict[Tuple[str], Any]]:
     for record in records:
-        yield _extract_primary_key(record, primary_key)
+        yield _extract_primary_key_value(record, primary_key)
 
 
-def _extract_primary_key(record: Mapping[str, Any], primary_key: List[str]):
+def _extract_primary_key_value(record: Mapping[str, Any], primary_key: List[List[str]]) -> dict[Tuple[str], Any]:
     pk_values = {}
     for pk_path in primary_key:
-        pk_value = reduce(lambda data, key: record.get(key) if isinstance(data, dict) else None, pk_path, record)  # type: ignore  # we assume that the path define by the primary key exists
+        pk_value: Any = reduce(lambda data, key: data.get(key) if isinstance(data, dict) else None, pk_path, record)
         pk_values[tuple(pk_path)] = pk_value
     return pk_values
 
@@ -1141,8 +1141,8 @@ class TestBasicRead(BaseTest):
         configured_stream = configured_streams[0]
         if configured_stream.stream.source_defined_primary_key:
             # as part of the migration for relaxing CATs, we are starting only with the streams that defines primary keys
-            expected_primary_keys = list(_extract_primary_keys(expected, configured_stream.stream.source_defined_primary_key))
-            actual_primary_keys = list(_extract_primary_keys(actual, configured_stream.stream.source_defined_primary_key))
+            expected_primary_keys = list(_extract_pk_values(expected, configured_stream.stream.source_defined_primary_key))
+            actual_primary_keys = list(_extract_pk_values(actual, configured_stream.stream.source_defined_primary_key))
             if exact_order:
                 assert (
                     actual_primary_keys[: len(expected_primary_keys)] == expected_primary_keys
