@@ -34,14 +34,22 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: In this release, for 'events' stream changed type of 'event_properties/items/quantity' field from integer to number. Users will need to refresh the source schema and reset events streams after upgrading.
+        message:
+          In this release, for 'events' stream changed type of 'event_properties/items/quantity'
+          field from integer to number. Users will need to refresh the source schema
+          and reset events streams after upgrading.
         upgradeDeadline: "2023-11-30"
       2.0.0:
-        message: In this release, streams 'campaigns', 'email_templates', 'events', 'flows', 'global_exclusions', 'lists', and 'metrics' are now pulling data using latest API which has a different schema. Users will need to refresh the source schemas and reset these streams after upgrading.
+        message:
+          In this release, streams 'campaigns', 'email_templates', 'events',
+          'flows', 'global_exclusions', 'lists', and 'metrics' are now pulling data
+          using latest API which has a different schema. Users will need to refresh
+          the source schemas and reset these streams after upgrading.
         upgradeDeadline: "2023-11-30"
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 200
     ql: 400
