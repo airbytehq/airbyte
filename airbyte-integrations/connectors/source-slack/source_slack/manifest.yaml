@@ -194,7 +194,6 @@ definitions:
     record_selector:
       type: RecordSelector
       extractor:
-#        type: DpathExtractor
         class_name: "source_slack.components.SlackDpathExtractor"
         field_path:
         - "{{ parameters['field_path'] }}"
@@ -209,7 +208,6 @@ definitions:
     record_selector:
       type: RecordSelector
       extractor:
-#        type: DpathExtractor
         class_name: "source_slack.components.SlackDpathExtractor"
         field_path:
         - "{{ parameters['field_path'] }}"
@@ -362,7 +360,6 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-#          type: DpathExtractor
           class_name: "source_slack.components.SlackDpathExtractor"
           field_path:
           - "{{ parameters['field_path'] }}"
