@@ -7,12 +7,15 @@ package io.airbyte.integrations.destination.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.NoOpJdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.RawOnlySqlGenerator;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
@@ -155,6 +158,11 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
+  }
+
+  @Override
+  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
+    return new NoOpJdbcDestinationHandler(databaseName, database);
   }
 
   public static void main(final String[] args) throws Exception {
