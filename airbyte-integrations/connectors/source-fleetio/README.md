@@ -86,7 +86,7 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing unit and integration tests: ```airbyte-ci connectors --name=source-fleetio test```
+1. Make sure your changes are passing unit and integration tests: `airbyte-ci connectors --name=source-fleetio test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
