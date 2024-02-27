@@ -110,7 +110,8 @@ public class DbConverter {
         .withTombstone(record.get(WORKSPACE.TOMBSTONE))
         .withNotifications(notificationList)
         .withFirstCompletedSync(record.get(WORKSPACE.FIRST_SYNC_COMPLETE))
-        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE));
+        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE))
+        .withToken(record.get(WORKSPACE.TOKEN));
   }
 
   public static StandardSourceDefinition buildStandardSourceDefinition(final Record record) {

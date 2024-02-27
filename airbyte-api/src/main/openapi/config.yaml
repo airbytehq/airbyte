@@ -2501,6 +2501,8 @@ components:
             $ref: "#/components/schemas/Notification"
         displaySetupWizard:
           type: boolean
+        token:
+          type: string
     Notification:
       type: object
       required:
@@ -4943,6 +4945,8 @@ components:
         params:
           type: object
           additionalProperties: true
+        token:
+          type: string
     SetInstancewideDestinationOauthParamsRequestBody:
       type: object
       required:
@@ -4954,6 +4958,8 @@ components:
         params:
           type: object
           additionalProperties: true
+        token:
+          type: string
     # Web Backend
     WebBackendConnectionFilterParamItem:
       type: object

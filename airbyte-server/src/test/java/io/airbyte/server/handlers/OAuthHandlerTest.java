@@ -38,6 +38,7 @@ class OAuthHandlerTest {
   private static final String CLIENT_ID_KEY = "client_id";
   private static final String CLIENT_SECRET_KEY = "client_secret";
   private static final String CLIENT_SECRET = "hunter2";
+  private static final String token = "abc123";
 
   @BeforeEach
   public void init() {
@@ -61,7 +62,7 @@ class OAuthHandlerTest {
     handler.setSourceInstancewideOauthParams(actualRequest);
 
     final ArgumentCaptor<SourceOAuthParameter> argument = ArgumentCaptor.forClass(SourceOAuthParameter.class);
-    Mockito.verify(configRepository).writeSourceOAuthParam(argument.capture());
+    Mockito.verify(configRepository).writeSourceOAuthParam(argument.capture(), token);
     assertEquals(Jsons.jsonNode(params), argument.getValue().getConfiguration());
     assertEquals(sourceDefId, argument.getValue().getSourceDefinitionId());
   }
@@ -90,7 +91,7 @@ class OAuthHandlerTest {
     handler.setSourceInstancewideOauthParams(secondRequest);
 
     final ArgumentCaptor<SourceOAuthParameter> argument = ArgumentCaptor.forClass(SourceOAuthParameter.class);
-    Mockito.verify(configRepository, Mockito.times(2)).writeSourceOAuthParam(argument.capture());
+    Mockito.verify(configRepository, Mockito.times(2)).writeSourceOAuthParam(argument.capture(), token);
     final List<SourceOAuthParameter> capturedValues = argument.getAllValues();
     assertEquals(Jsons.jsonNode(firstParams), capturedValues.get(0).getConfiguration());
     assertEquals(Jsons.jsonNode(secondParams), capturedValues.get(1).getConfiguration());
@@ -113,7 +114,7 @@ class OAuthHandlerTest {
     handler.setDestinationInstancewideOauthParams(actualRequest);
 
     final ArgumentCaptor<DestinationOAuthParameter> argument = ArgumentCaptor.forClass(DestinationOAuthParameter.class);
-    Mockito.verify(configRepository).writeDestinationOAuthParam(argument.capture());
+    Mockito.verify(configRepository).writeDestinationOAuthParam(argument.capture(), token);
     assertEquals(Jsons.jsonNode(params), argument.getValue().getConfiguration());
     assertEquals(destinationDefId, argument.getValue().getDestinationDefinitionId());
   }
@@ -142,7 +143,7 @@ class OAuthHandlerTest {
     handler.setDestinationInstancewideOauthParams(secondRequest);
 
     final ArgumentCaptor<DestinationOAuthParameter> argument = ArgumentCaptor.forClass(DestinationOAuthParameter.class);
-    Mockito.verify(configRepository, Mockito.times(2)).writeDestinationOAuthParam(argument.capture());
+    Mockito.verify(configRepository, Mockito.times(2)).writeDestinationOAuthParam(argument.capture(), token);
     final List<DestinationOAuthParameter> capturedValues = argument.getAllValues();
     assertEquals(Jsons.jsonNode(firstParams), capturedValues.get(0).getConfiguration());
     assertEquals(Jsons.jsonNode(secondParams), capturedValues.get(1).getConfiguration());
