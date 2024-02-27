@@ -22,7 +22,6 @@ public class BufferDequeueTest {
 
   private static final int RECORD_SIZE_20_BYTES = 20;
   private static final String DEFAULT_NAMESPACE = "foo_namespace";
-  public static final String RECORD_20_BYTES = "abc";
   private static final String STREAM_NAME = "stream1";
   private static final StreamDescriptor STREAM_DESC = new StreamDescriptor().withName(STREAM_NAME);
   private static final PartialAirbyteMessage RECORD_MSG_20_BYTES = new PartialAirbyteMessage()

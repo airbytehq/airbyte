@@ -700,6 +700,18 @@
     },
     "rssEmailEntryTemplateEnabled": {
       "type": ["null", "boolean"]
+    },
+    "mailingIlsListsExcluded": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "mailingIlsListsIncluded": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
     }
   }
 }

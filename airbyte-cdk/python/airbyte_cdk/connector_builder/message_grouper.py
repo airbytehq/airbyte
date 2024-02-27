@@ -52,8 +52,8 @@ class MessageGrouper:
         configured_catalog: ConfiguredAirbyteCatalog,
         record_limit: Optional[int] = None,
     ) -> StreamRead:
-        if record_limit is not None and not (1 <= record_limit <= 1000):
-            raise ValueError(f"Record limit must be between 1 and 1000. Got {record_limit}")
+        if record_limit is not None and not (1 <= record_limit <= self._max_record_limit):
+            raise ValueError(f"Record limit must be between 1 and {self._max_record_limit}. Got {record_limit}")
         schema_inferrer = SchemaInferrer()
         datetime_format_inferrer = DatetimeFormatInferrer()
 
