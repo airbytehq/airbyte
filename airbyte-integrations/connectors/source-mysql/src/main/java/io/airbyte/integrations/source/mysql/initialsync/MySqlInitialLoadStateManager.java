@@ -11,7 +11,6 @@ import io.airbyte.integrations.source.mysql.internal.models.InternalModels.State
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
 import java.time.Instant;
@@ -36,6 +35,7 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
 
   // Map of pair to the primary key info (field name & data type) associated with it.
   protected Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo;
+
   void setStreamStateForIncrementalRunSupplier(final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
   }
@@ -48,7 +48,6 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
     this.syncCheckpointRecords = syncCheckpointRecords;
   }
 
-
   // Updates the {@link PrimaryKeyLoadStatus} for the state associated with the given pair
   public abstract void updatePrimaryKeyLoadState(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus);
 
@@ -59,7 +58,6 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
   // Returns the current {@PrimaryKeyInfo}, associated with the stream. This includes the data type &
   // the column name associated with the stream.
   public abstract PrimaryKeyInfo getPrimaryKeyInfo(final AirbyteStreamNameNamespacePair pair);
-
 
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final AirbyteMessage message) {
@@ -83,9 +81,8 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
     return (recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0);
   }
 
-
   public static Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> initPairToPrimaryKeyLoadStatusMap(
-                                                                                                     final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPkStatus) {
+                                                                                                            final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPkStatus) {
     final Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> map = new HashMap<>();
     pairToPkStatus.forEach((pair, pkStatus) -> {
       final AirbyteStreamNameNamespacePair updatedPair = new AirbyteStreamNameNamespacePair(pair.getName(), pair.getNamespace());

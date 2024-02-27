@@ -10,14 +10,12 @@ import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.Ini
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -45,7 +43,6 @@ public class MySqlInitialLoadStreamStateManager extends MySqlInitialLoadStateMan
    * @return
    */
 
-
   @Override
   public void updatePrimaryKeyLoadState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
                                         final PrimaryKeyLoadStatus pkLoadStatus) {
@@ -65,7 +62,6 @@ public class MySqlInitialLoadStreamStateManager extends MySqlInitialLoadStateMan
         .withStream(getAirbyteStreamState(pair, incrementalState));
   }
 
-
   @Override
   public PrimaryKeyInfo getPrimaryKeyInfo(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair) {
     return pairToPrimaryKeyInfo.get(pair);
@@ -84,7 +80,6 @@ public class MySqlInitialLoadStreamStateManager extends MySqlInitialLoadStateMan
         .withType(AirbyteStateType.STREAM)
         .withStream(getAirbyteStreamState(pair, Jsons.jsonNode(pkStatus)));
   }
-
 
   private AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     LOGGER.info("STATE DATA FOR {}: {}", pair.getNamespace().concat("_").concat(pair.getName()), stateData);

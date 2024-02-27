@@ -68,7 +68,8 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
 
     });
-    AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+    AirbyteStreamNameNamespacePair pair =
+        new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
     var pkStatus = getPrimaryKeyLoadStatus(pair);
     streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkStatus))));
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
@@ -87,7 +88,8 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
 
   @Override
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream airbyteStream) {
-    AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+    AirbyteStreamNameNamespacePair pair =
+        new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
     streamsThatHaveCompletedSnapshot.add(pair);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {

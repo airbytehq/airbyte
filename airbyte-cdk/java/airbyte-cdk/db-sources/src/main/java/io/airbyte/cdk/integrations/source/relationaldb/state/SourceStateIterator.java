@@ -28,7 +28,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   private final SourceStateIteratorManager sourceStateIteratorManager;
 
   public SourceStateIterator(final Iterator<T> messageIterator,
-      final ConfiguredAirbyteStream stream,
+                             final ConfiguredAirbyteStream stream,
                              final SourceStateIteratorManager sourceStateIteratorManager) {
     this.messageIterator = messageIterator;
     this.stream = stream;

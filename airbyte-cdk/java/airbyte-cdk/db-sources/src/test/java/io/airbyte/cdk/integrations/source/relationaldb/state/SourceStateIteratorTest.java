@@ -31,7 +31,6 @@ public class SourceStateIteratorTest {
   Iterator<AirbyteMessage> messageIterator;
   ConfiguredAirbyteStream stream;
 
-
   SourceStateIterator sourceStateIterator;
 
   @BeforeEach
