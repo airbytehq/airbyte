@@ -17,6 +17,7 @@ _primary_key = "pk"
 _cursor_field = "created_at"
 _json_schema = {"name": {"type": "string"}}
 
+
 def test_declarative_stream():
     schema_loader = _schema_loader()
 
@@ -59,6 +60,7 @@ def test_declarative_stream():
     assert stream.cursor_field == _cursor_field
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=_cursor_field, stream_state=None) == stream_slices
 
+
 def test_read_records_raises_exception_if_stream_slice_is_not_per_partition_stream_slice():
     schema_loader = _schema_loader()
 
@@ -66,28 +68,6 @@ def test_read_records_raises_exception_if_stream_slice_is_not_per_partition_stre
     retriever.state = MagicMock()
     retriever.read_records.return_value = []
     stream_slice = {"date": "2021-01-01"}
-    retriever.stream_slices.return_value = [stream_slice]
-
-    stream = DeclarativeStream(
-        name=_name,
-        primary_key=_primary_key,
-        stream_cursor_field="{{ parameters['cursor_field'] }}",
-        schema_loader=schema_loader,
-        retriever=retriever,
-        config={},
-        parameters={"cursor_field": "created_at"},
-    )
-
-    with pytest.raises(ValueError):
-        list(stream.read_records(SyncMode.full_refresh, _cursor_field, stream_slice, MagicMock()))
-
-def test_read_records_raises_exception_if_stream_slice_is_not_per_partition_stream_slice():
-    schema_loader = _schema_loader()
-
-    retriever = MagicMock()
-    retriever.state = MagicMock()
-    retriever.read_records.return_value = []
-    stream_slice = {}
     retriever.stream_slices.return_value = [stream_slice]
 
     stream = DeclarativeStream(

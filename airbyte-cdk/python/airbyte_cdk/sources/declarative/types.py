@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, ItemsView, Iterable, Iterator, KeysView, List, Mapping, Optional, ValuesView
+from typing import Any, ItemsView, Iterator, KeysView, List, Mapping, Optional, ValuesView
 
 # A FieldPointer designates a path to a field inside a mapping. For example, retrieving ["k1", "k1.2"] in the object {"k1" :{"k1.2":
 # "hello"}] returns "hello"
