@@ -12,7 +12,7 @@
     "requestId": {
       "type": ["null", "string"]
     },
-    "source": {
+    "sourceType": {
       "type": ["null", "string"]
     },
     "portalId": {
@@ -22,16 +22,14 @@
       "type": ["null", "boolean"]
     },
     "timestamp": {
-      "type": ["null", "number"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "property": {
       "type": ["null", "string"]
     },
     "persistenceTimestamp": {
       "type": ["null", "number"]
-    },
-    "name": {
-      "type": ["null", "string"]
     },
     "sourceVid": {
       "type": ["null", "array"]
@@ -43,7 +41,7 @@
       "type": ["null", "string"]
     },
     "dealId": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "sourceId": {
       "type": ["null", "string"]
