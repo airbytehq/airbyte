@@ -39,5 +39,5 @@ class TestProductDimensionPerformanceReportMonthlyStream(TestSuiteReportStream):
     records_number = 8
     state_file = "product_dimension_performance_report_monthly_state"
     incremental_report_file = "product_dimension_performance_report_monthly_incremental"
-    first_read_state = {"product_dimension_performance_report_monthly": {"180535609": {"TimePeriod": "2023-12-17"}}}
-    second_read_state = {"product_dimension_performance_report_monthly": {"180535609": {"TimePeriod": "2023-12-25"}}}
+    first_read_state = {"product_dimension_performance_report_monthly": {"180535609": {"TimePeriod": "2023-12-01"}}}
+    second_read_state = {"product_dimension_performance_report_monthly": {"180535609": {"TimePeriod": "2024-01-01"}}}
