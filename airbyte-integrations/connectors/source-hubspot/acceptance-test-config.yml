@@ -71,6 +71,10 @@ acceptance_tests:
               bypass_reason: Floating value
             - name: properties_hs_object_source
               bypass_reason: Floating value
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
           contact_lists:
             - name: ilsFilterBranch
               bypass_reason: Floating fields order
@@ -196,11 +200,6 @@ acceptance_tests:
               bypass_reason: Hubspot time depend on current time
             - name: updatedAt
               bypass_reason: field changes too often
-          engagements_tasks:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
   full_refresh:
     tests:
       - config_path: secrets/config.json
