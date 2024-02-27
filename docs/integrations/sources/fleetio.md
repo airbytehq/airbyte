@@ -37,7 +37,7 @@ Our source connector adheres to the standard rate limiting with the Airbyte low-
 ### Requirements
 
 - An active Fleetio account
-- A Fleetio `api_token` and `account_token`
+- A Fleetio `api_key` and `account_token`
 
 ### Setup guide:
 
