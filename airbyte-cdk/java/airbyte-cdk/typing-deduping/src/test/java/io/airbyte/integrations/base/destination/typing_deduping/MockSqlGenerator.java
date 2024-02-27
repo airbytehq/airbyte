@@ -10,7 +10,7 @@ import java.util.Optional;
 /**
  * Basic SqlGenerator mock. See {@link DefaultTyperDeduperTest} for example usage.
  */
-class MockSqlGenerator implements SqlGenerator<String> {
+class MockSqlGenerator implements SqlGenerator {
 
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
@@ -30,11 +30,6 @@ class MockSqlGenerator implements SqlGenerator<String> {
   @Override
   public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
     return Sql.of("CREATE TABLE " + stream.id().finalTableId("", suffix));
-  }
-
-  @Override
-  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final String existingTable) throws TableNotMigratedException {
-    return false;
   }
 
   @Override
