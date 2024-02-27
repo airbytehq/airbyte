@@ -234,11 +234,11 @@ public class PostgresXminHandler {
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
                                                                  final AirbyteStreamNameNamespacePair pair) {
+    xminStateManager.setStreamStateIteratorFields(pair, currentXminStatus);
     return AutoCloseableIterators.transform(
         autoCloseableIterator -> new XminStateIterator(
             autoCloseableIterator,
-            pair,
-            currentXminStatus),
+            xminStateManager),
         recordIterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
   }

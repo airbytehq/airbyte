@@ -53,10 +53,11 @@ public class XminStateIteratorTest {
   @Test
   void testSuccessfulSync() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
+    final XminStateManager manager = new XminStateManager(null);
+    manager.setStreamStateIteratorFields(PAIR1, XMIN_STATUS1);
     final XminStateIterator iterator = new XminStateIterator(
         messageIterator,
-        PAIR1,
-        XMIN_STATUS1);
+        manager);
 
     var expectedStateMessage =
         XMIN_STATE_MESSAGE_1.withState(XMIN_STATE_MESSAGE_1.getState().withSourceStats(new AirbyteStateStats().withRecordCount(2.0)));
@@ -70,10 +71,11 @@ public class XminStateIteratorTest {
   @Test
   void testSyncFail() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
+    final XminStateManager manager = new XminStateManager(null);
+    manager.setStreamStateIteratorFields(PAIR1, XMIN_STATUS1);
     final XminStateIterator iterator = new XminStateIterator(
         createExceptionIterator(),
-        PAIR1,
-        XMIN_STATUS1);
+        manager);
 
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());

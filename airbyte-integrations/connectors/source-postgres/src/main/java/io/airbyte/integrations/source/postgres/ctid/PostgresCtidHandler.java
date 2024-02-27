@@ -179,11 +179,10 @@ public class PostgresCtidHandler {
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
-    final CtidStateIteratorManager iteratorManager = new CtidStateIteratorManager(pair, fileNodeHandler, ctidStateManager, incrementalState,
-        syncCheckpointDuration, syncCheckpointRecords);
+    ctidStateManager.setStreamStateIteratorFields(pair, incrementalState, fileNodeHandler, syncCheckpointDuration, syncCheckpointRecords);
 
     return AutoCloseableIterators.transformIterator(
-        r -> new SourceStateIterator(r, iteratorManager),
+        r -> new SourceStateIterator(r, ctidStateManager),
         recordIterator, pair);
   }
 

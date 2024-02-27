@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.xmin;
 
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
@@ -14,21 +15,25 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Utility class to manage xmin state.
  */
-public class XminStateManager {
+public class XminStateManager implements SourceStateIteratorManager<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(XminStateManager.class);
   public static final long XMIN_STATE_VERSION = 2L;
 
   private final Map<AirbyteStreamNameNamespacePair, XminStatus> pairToXminStatus;
+  private XminStatus xminStatus;
+  private AirbyteStreamNameNamespacePair pair;
 
   private final static AirbyteStateMessage EMPTY_STATE = new AirbyteStateMessage()
       .withType(AirbyteStateType.STREAM)
@@ -93,6 +98,32 @@ public class XminStateManager {
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(airbyteStreamState);
+  }
+
+  public void setStreamStateIteratorFields(AirbyteStreamNameNamespacePair pair, XminStatus xminStatus) {
+    this.pair = pair;
+    this.xminStatus = xminStatus;
+  }
+
+  @Override
+  public AirbyteStateMessage generateStateMessageAtCheckpoint() {
+    // This is not expected to be called.
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public AirbyteMessage processRecordMessage(AirbyteMessage message) {
+    return message;
+  }
+
+  @Override
+  public AirbyteStateMessage createFinalStateMessage() {
+    return XminStateManager.createStateMessage(pair, xminStatus).getState();
+  }
+
+  @Override
+  public boolean shouldEmitStateMessage(long recordCount, Instant lastCheckpoint) {
+    return false;
   }
 
 }
