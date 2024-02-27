@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.67.1
+Fixes bug in parquet_parser.py triggered by null values in datetime columns.
+
 ## 0.67.0
 Low-code: Add CustomRecordFilter
 
