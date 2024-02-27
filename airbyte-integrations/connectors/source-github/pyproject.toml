@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 version = "1.6.3"
 name = "source-github"
-description = "Source implementation for Github."
+description = "Source implementation for GitHub."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
