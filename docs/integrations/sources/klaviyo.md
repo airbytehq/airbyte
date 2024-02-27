@@ -36,9 +36,12 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 ## Supported Streams
 
 - [Campaigns](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
+- [Campaign Messages](https://developers.klaviyo.com/en/reference/get_campaign_campaign_messages)
 - [Email Templates](https://developers.klaviyo.com/en/reference/get_templates)
 - [Events](https://developers.klaviyo.com/en/reference/get_events)
 - [Flows](https://developers.klaviyo.com/en/reference/get_flows)
+- [Flow Actions](https://developers.klaviyo.com/en/reference/get_flow_flow_actions)
+- [Flow Messages](https://developers.klaviyo.com/en/reference/get_flow_action_messages)
 - [GlobalExclusions](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
 - [Lists](https://developers.klaviyo.com/en/reference/get_lists)
 - [Metrics](https://developers.klaviyo.com/en/reference/get_metrics)
@@ -63,6 +66,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 | :------- | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
+| `2.1.4`  | 2024-02-05 | [34902](https://github.com/airbytehq/airbyte/pull/34902)   | Add `Campaign Messages` `Flow Actions` `Flow Messages` streams                                                                |
 | `2.1.3`  | 2024-02-15 | [35336](https://github.com/airbytehq/airbyte/pull/35336)   | Added type transformer for the `profiles` stream.                                                                             |
 | `2.1.2`  | 2024-02-09 | [35088](https://github.com/airbytehq/airbyte/pull/35088)   | Manage dependencies with Poetry.                                                                                              |
 | `2.1.1`  | 2024-02-07 | [34998](https://github.com/airbytehq/airbyte/pull/34998)   | Add missing fields to stream schemas                                                                                          |

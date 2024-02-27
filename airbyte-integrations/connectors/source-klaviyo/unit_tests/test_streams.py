@@ -14,6 +14,7 @@ from source_klaviyo.exceptions import KlaviyoBackoffError
 from source_klaviyo.streams import (
     ArchivedRecordsStream,
     Campaigns,
+    CampaignMessages,
     GlobalExclusions,
     IncrementalKlaviyoStream,
     KlaviyoStream,
@@ -394,44 +395,114 @@ class TestGlobalExclusionsStream:
         ]
 
 
-class TestCampaignsStream:
+class TestCampaignsAndCampaignMessagesStream:
     def test_read_records(self, requests_mock):
-        input_records = [
-            {"attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"}},
-            {"attributes": {"name": "Some name 2", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"}},
+        campaigns_input_records = [
+            {"id": "1", "attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"}},
+            {"id": "2", "attributes": {"name": "Some name 2", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"}},
         ]
-        input_records_archived = [
-            {"attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"}},
+        campaigns_input_records_archived = [
+            {"id": "3", "attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"}},
         ]
 
-        stream = Campaigns(api_key=API_KEY)
+        campaign_1_messages_input_records = [
+            {"id": "11", "attributes": {"name": "Campaign message 11", "updated_at": "2021-05-12T20:45:47+00:00"}},
+            {"id": "12", "attributes": {"name": "Campaign message 12", "updated_at": "2021-05-12T20:45:47+00:00"}},
+        ]
+        campaign_2_messages_input_records = [
+            {"id": "21", "attributes": {"name": "Campaign message 21", "updated_at": "2021-05-12T20:45:47+00:00"}},
+            {"id": "22", "attributes": {"name": "Campaign message 22", "updated_at": "2021-05-12T20:45:47+00:00"}},
+        ]
+        campaign_3_messages_input_records = [
+            {"id": "31", "attributes": {"name": "Campaign message 31", "updated_at": "2021-05-12T20:45:47+00:00"}},
+            {"id": "32", "attributes": {"name": "Campaign message 32", "updated_at": "2021-05-12T20:45:47+00:00"}},
+        ]
+
+        campaigns_stream = Campaigns(api_key=API_KEY)
+        campaign_messages_stream = CampaignMessages(parent=campaigns_stream, api_key=API_KEY)
+
         requests_mock.register_uri(
-            "GET", "https://a.klaviyo.com/api/campaigns?sort=updated_at", status_code=200, json={"data": input_records}, complete_qs=True
+            "GET", "https://a.klaviyo.com/api/campaigns?sort=updated_at", status_code=200, json={"data": campaigns_input_records}, complete_qs=True
         )
         requests_mock.register_uri(
             "GET",
             "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=equals(archived,true)",
             status_code=200,
-            json={"data": input_records_archived},
+            json={"data": campaigns_input_records_archived},
             complete_qs=True,
         )
+        requests_mock.register_uri(
+            "GET", "https://a.klaviyo.com/api/campaigns/1/campaign-messages?sort=updated_at", status_code=200, json={"data": campaign_1_messages_input_records}, complete_qs=True
+        )
+        requests_mock.register_uri(
+            "GET", "https://a.klaviyo.com/api/campaigns/2/campaign-messages?sort=updated_at", status_code=200, json={"data": campaign_2_messages_input_records}, complete_qs=True
+        )
+        requests_mock.register_uri(
+            "GET", "https://a.klaviyo.com/api/campaigns/3/campaign-messages?sort=updated_at", status_code=200, json={"data": campaign_3_messages_input_records}, complete_qs=True
+        )
 
-        inputs = {"sync_mode": SyncMode.full_refresh, "cursor_field": stream.cursor_field, "stream_slice": None, "stream_state": None}
+        inputs = {"sync_mode": SyncMode.full_refresh, "cursor_field": campaigns_stream.cursor_field, "stream_slice": None, "stream_state": None}
         expected_records = [
             {
+                "id": "1",
                 "attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
                 "updated_at": "2021-05-12T20:45:47+00:00",
             },
             {
+                "id": "2",
                 "attributes": {"name": "Some name 2", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
                 "updated_at": "2021-05-12T20:45:47+00:00",
             },
             {
+                "id": "3",
                 "attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"},
                 "updated_at": "2021-05-12T20:45:47+00:00",
             },
         ]
-        assert list(stream.read_records(**inputs)) == expected_records
+        assert list(campaigns_stream.read_records(**inputs)) == expected_records
+
+        inputs = {"sync_mode": SyncMode.full_refresh, "cursor_field": campaign_messages_stream.cursor_field, "stream_state": None}
+        expected_records = [
+            {
+                "id": "11",
+                "campaign_id": "1",
+                "attributes": {"name": "Campaign message 11", "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+            {
+                "id": "12",
+                "campaign_id": "1",
+                "attributes": {"name": "Campaign message 12", "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+            {
+                "id": "21",
+                "campaign_id": "2",
+                "attributes": {"name": "Campaign message 21", "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+            {
+                "id": "22",
+                "campaign_id": "2",
+                "attributes": {"name": "Campaign message 22", "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+            {
+                "id": "31",
+                "campaign_id": "3",
+                "attributes": {"name": "Campaign message 31", "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+            {
+                "id": "32",
+                "campaign_id": "3",
+                "attributes": {"name": "Campaign message 32", "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+        ]
+        records = [_record for _slice in campaign_messages_stream.stream_slices(**inputs) for _record in campaign_messages_stream.read_records(stream_slice=_slice, **inputs)]
+        assert records == expected_records
+
 
     @pytest.mark.parametrize(
         ("latest_record", "current_stream_state", "expected_state"),
