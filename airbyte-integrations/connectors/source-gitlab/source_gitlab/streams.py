@@ -92,7 +92,7 @@ class GitlabStream(HttpStream, ABC):
         elif isinstance(response_data, dict):
             yield self.transform(response_data, **kwargs)
         else:
-            Exception(f"Unsupported type of response data for stream {self.name}")
+            self.logger.info(f"Unsupported type of response data for stream {self.name}")
 
     def transform(self, record: Dict[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs):
         for key in self.flatten_id_keys:
@@ -166,7 +166,7 @@ class IncrementalGitlabChildStream(GitlabChildStream):
             current_state = current_state.get(self.cursor_field)
         current_state_value = current_state or latest_cursor_value
         max_value = max(pendulum.parse(current_state_value), pendulum.parse(latest_cursor_value))
-        current_stream_state[str(project_id)] = {self.cursor_field: str(max_value)}
+        current_stream_state[str(project_id)] = {self.cursor_field: max_value.to_iso8601_string()}
         return current_stream_state
 
     @staticmethod
@@ -339,8 +339,10 @@ class MergeRequests(IncrementalGitlabChildStream):
 
 
 class MergeRequestCommits(GitlabChildStream):
+    """Docs: https://docs.gitlab.com/ee/api/merge_requests.html#get-single-merge-request-commits"""
+
     path_list = ["project_id", "iid"]
-    path_template = "projects/{project_id}/merge_requests/{iid}"
+    path_template = "projects/{project_id}/merge_requests/{iid}/commits"
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         super().transform(record, stream_slice, **kwargs)

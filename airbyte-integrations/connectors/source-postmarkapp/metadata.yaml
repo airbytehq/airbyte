@@ -8,6 +8,10 @@ data:
   icon: postmark.svg
   license: MIT
   name: Postmark App
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-postmarkapp
   registries:
     cloud:
       enabled: true

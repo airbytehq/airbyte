@@ -3,9 +3,12 @@
 #
 
 
+from unittest.mock import patch
+
 import pytest
 import requests
-from source_shopify.source import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules, SourceShopify
+from source_shopify.source import ConnectionCheckTest, SourceShopify
+from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules
 
 
 def test_get_next_page_token(requests_mock, auth_config):
@@ -30,28 +33,54 @@ def test_get_next_page_token(requests_mock, auth_config):
     assert test == expected_output_token
 
 
-def test_privileges_validation(requests_mock, basic_config):
+@pytest.mark.parametrize(
+    "fetch_transactions_user_id, expected",
+    [
+        (
+            True,
+            [
+                "abandoned_checkouts",
+                "fulfillments",
+                "metafield_orders",
+                "metafield_shops",
+                "order_refunds",
+                "order_risks",
+                "orders",
+                "shop",
+                "tender_transactions",
+                "transactions",
+                "countries",
+            ],
+        ),
+        (
+            False,
+            [
+                "abandoned_checkouts",
+                "fulfillments",
+                "metafield_orders",
+                "metafield_shops",
+                "order_refunds",
+                "order_risks",
+                "orders",
+                "shop",
+                "tender_transactions",
+                "transactions",
+                "countries",
+            ],
+        ),
+    ],
+)
+def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_config, expected):
     requests_mock.get(
         "https://test_shop.myshopify.com/admin/oauth/access_scopes.json",
         json={"access_scopes": [{"handle": "read_orders"}]},
     )
-    source = SourceShopify()
-
-    expected = [
-        "abandoned_checkouts",
-        "fulfillments",
-        "metafield_orders",
-        "metafield_shops",
-        "order_refunds",
-        "order_risks",
-        "orders",
-        "shop",
-        "tender_transactions",
-        "transactions",
-        "countries",
-    ]
-
-    assert [stream.name for stream in source.streams(basic_config)] == expected
+    basic_config["fetch_transactions_user_id"] = fetch_transactions_user_id
+    # mock the get_shop_id method
+    with patch.object(ConnectionCheckTest, "get_shop_id", return_value=123) as mock:
+        source = SourceShopify()
+        streams = source.streams(basic_config)
+    assert [stream.name for stream in streams] == expected
 
 
 @pytest.mark.parametrize(

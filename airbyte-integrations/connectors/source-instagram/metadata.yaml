@@ -7,12 +7,16 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
-  dockerImageTag: 2.0.0
+  dockerImageTag: 3.0.3
   dockerRepository: airbyte/source-instagram
   githubIssueLabel: source-instagram
   icon: instagram.svg
   license: MIT
   name: Instagram
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-instagram
   registries:
     cloud:
       enabled: true
@@ -21,6 +25,13 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      3.0.0:
+        message: "The existing Instagram API (v11) has been deprecated. Customers who use streams `Media Insights`, `Story Insights` or `User Lifetime Insights` must take action with their connections. Please follow the to update to the latest Instagram API (v18). For more details, see our <a href='https://docs.airbyte.com/integrations/sources/instagram-migrations'>migration guide</a>."
+        upgradeDeadline: "2024-01-05"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              ["media_insights", "story_insights", "user_lifetime_insights"]
       2.0.0:
         message:
           This release introduces a default primary key for the streams UserLifetimeInsights and UserInsights.

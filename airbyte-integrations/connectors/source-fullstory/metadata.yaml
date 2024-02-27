@@ -8,6 +8,10 @@ data:
   icon: fullstory.svg
   license: MIT
   name: Fullstory
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-fullstory
   registries:
     cloud:
       enabled: false

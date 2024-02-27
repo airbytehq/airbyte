@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import pendulum
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.logger import AirbyteLogFormatter
@@ -14,13 +15,16 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSo
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from dateutil.relativedelta import relativedelta
+from pendulum.parsing.exceptions import ParserError
 from requests import codes, exceptions  # type: ignore[import]
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -47,10 +51,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
     MAX_WORKERS = 5
-
+    stop_sync_on_stream_failure = True
     message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[logger.level]))
 
-    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], **kwargs):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState], **kwargs):
         if config:
             concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
         else:
@@ -61,6 +65,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         )
         super().__init__(concurrent_source)
         self.catalog = catalog
+        self.state = state
 
     @staticmethod
     def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:
@@ -68,7 +73,24 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         sf.login()
         return sf
 
+    @staticmethod
+    def _validate_stream_slice_step(stream_slice_step: str):
+        if stream_slice_step:
+            try:
+                duration = pendulum.parse(stream_slice_step)
+                if not isinstance(duration, pendulum.Duration):
+                    message = "Stream slice step Interval should be provided in ISO 8601 format."
+                elif duration < pendulum.Duration(seconds=1):
+                    message = "Stream slice step Interval is too small. It should be no less than 1 second. Please set higher value and try again."
+                else:
+                    return
+                raise ParserError(message)
+            except ParserError as e:
+                internal_message = "Incorrect stream slice step"
+                raise AirbyteTracedException(failure_type=FailureType.config_error, internal_message=internal_message, message=e.args[0])
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
+        self._validate_stream_slice_step(config.get("stream_slice_step"))
         try:
             salesforce = self._get_sf_object(config)
             salesforce.describe()
@@ -144,6 +166,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
             stream_class = incremental
             stream_kwargs["replication_key"] = replication_key
+            stream_kwargs["stream_slice_step"] = config.get("stream_slice_step", "P30D")
         else:
             stream_class = full_refresh
 
@@ -192,15 +215,39 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
         streams = self.generate_streams(config, stream_objects, sf)
         streams.append(Describe(sf_api=sf, catalog=self.catalog))
-        # TODO: incorporate state & ConcurrentCursor when we support incremental
+        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self.state)
+
         configured_streams = []
+
         for stream in streams:
             sync_mode = self._get_sync_mode_from_catalog(stream)
             if sync_mode == SyncMode.full_refresh:
-                configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, None, NoopCursor()))
+                cursor = NoopCursor()
+                state = None
             else:
-                configured_streams.append(stream)
+                cursor_field_key = stream.cursor_field or ""
+                if not isinstance(cursor_field_key, str):
+                    raise AssertionError(f"A string cursor field key is required, but got {cursor_field_key}.")
+                cursor_field = CursorField(cursor_field_key)
+                legacy_state = state_manager.get_stream_state(stream.name, stream.namespace)
+                cursor = ConcurrentCursor(
+                    stream.name,
+                    stream.namespace,
+                    legacy_state,
+                    self.message_repository,
+                    state_manager,
+                    stream.state_converter,
+                    cursor_field,
+                    self._get_slice_boundary_fields(stream, state_manager),
+                    config["start_date"],
+                )
+                state = cursor.state
+
+            configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, state, cursor))
         return configured_streams
+
+    def _get_slice_boundary_fields(self, stream: Stream, state_manager: ConnectorStateManager) -> Optional[Tuple[str, str]]:
+        return ("start_date", "end_date")
 
     def _get_sync_mode_from_catalog(self, stream: Stream) -> Optional[SyncMode]:
         if self.catalog:

@@ -27,6 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonInt64;
+import org.bson.BsonObjectId;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -86,8 +90,13 @@ public class InitialSnapshotHandler {
           // "where _id > [last saved state] order by _id ASC".
           // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
           final Bson filter = existingState
-              // TODO add type support here when we add support for _id fields that are not ObjectId types
-              .map(state -> Filters.gt(MongoConstants.ID_FIELD, new ObjectId(state.id())))
+              .map(state -> Filters.gt(MongoConstants.ID_FIELD,
+                  switch (state.idType()) {
+            case STRING -> new BsonString(state.id());
+            case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
+            case INT -> new BsonInt32(Integer.parseInt(state.id()));
+            case LONG -> new BsonInt64(Long.parseLong(state.id()));
+          }))
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 

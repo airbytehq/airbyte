@@ -11,6 +11,10 @@ data:
   icon: everhour.svg
   license: MIT
   name: Everhour
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-everhour
   registries:
     cloud:
       enabled: false

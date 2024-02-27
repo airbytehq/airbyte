@@ -8,6 +8,10 @@ data:
   icon: getlago.svg
   license: MIT
   name: Lago
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-getlago
   registries:
     cloud:
       enabled: true

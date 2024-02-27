@@ -12,8 +12,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
@@ -41,11 +39,6 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected static final String STREAM_NAME2 = "starships";
 
   protected MsSQLTestDatabase testdb;
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {

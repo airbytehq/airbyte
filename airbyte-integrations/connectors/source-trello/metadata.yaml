@@ -5,6 +5,10 @@ data:
   allowedHosts:
     hosts:
       - api.trello.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-trello
   registries:
     oss:
       enabled: true

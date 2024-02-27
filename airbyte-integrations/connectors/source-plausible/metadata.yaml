@@ -8,6 +8,10 @@ data:
   icon: plausible.svg
   license: MIT
   name: Plausible
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-plausible
   registries:
     cloud:
       enabled: false

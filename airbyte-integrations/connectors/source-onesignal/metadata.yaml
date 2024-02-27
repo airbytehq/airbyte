@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "onesignal.com"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-onesignal
   registries:
     oss:
       enabled: true
@@ -20,6 +24,6 @@ data:
   releaseDate: 2023-08-31
   releaseStage: alpha
   tags:
-    - language:lowcode
+    - language:low-code
   supportLevel: community
 metadataSpecVersion: "1.0"

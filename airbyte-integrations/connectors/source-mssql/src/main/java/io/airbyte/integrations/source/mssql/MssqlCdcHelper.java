@@ -27,8 +27,6 @@ public class MssqlCdcHelper {
   private static final String REPLICATION_FIELD = "replication";
   private static final String REPLICATION_TYPE_FIELD = "replication_type";
   private static final String METHOD_FIELD = "method";
-  private static final String CDC_SNAPSHOT_ISOLATION_FIELD = "snapshot_isolation";
-  private static final String CDC_DATA_TO_SYNC_FIELD = "data_to_sync";
 
   private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
 
@@ -38,69 +36,6 @@ public class MssqlCdcHelper {
   public enum ReplicationMethod {
     STANDARD,
     CDC
-  }
-
-  /**
-   * The default "SNAPSHOT" mode can prevent other (non-Airbyte) transactions from updating table rows
-   * while we snapshot. References:
-   * https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
-   * https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
-   */
-  public enum SnapshotIsolation {
-
-    SNAPSHOT("Snapshot", "snapshot"),
-    READ_COMMITTED("Read Committed", "read_committed");
-
-    private final String snapshotIsolationLevel;
-    private final String debeziumIsolationMode;
-
-    SnapshotIsolation(final String snapshotIsolationLevel, final String debeziumIsolationMode) {
-      this.snapshotIsolationLevel = snapshotIsolationLevel;
-      this.debeziumIsolationMode = debeziumIsolationMode;
-    }
-
-    public String getDebeziumIsolationMode() {
-      return debeziumIsolationMode;
-    }
-
-    public static SnapshotIsolation from(final String jsonValue) {
-      for (final SnapshotIsolation value : values()) {
-        if (value.snapshotIsolationLevel.equalsIgnoreCase(jsonValue)) {
-          return value;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected snapshot isolation level: " + jsonValue);
-    }
-
-  }
-
-  // https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-property-snapshot-mode
-  public enum DataToSync {
-
-    EXISTING_AND_NEW("Existing and New", "initial"),
-    NEW_CHANGES_ONLY("New Changes Only", "schema_only");
-
-    private final String dataToSyncConfig;
-    private final String debeziumSnapshotMode;
-
-    DataToSync(final String value, final String debeziumSnapshotMode) {
-      this.dataToSyncConfig = value;
-      this.debeziumSnapshotMode = debeziumSnapshotMode;
-    }
-
-    public String getDebeziumSnapshotMode() {
-      return debeziumSnapshotMode;
-    }
-
-    public static DataToSync from(final String value) {
-      for (final DataToSync s : values()) {
-        if (s.dataToSyncConfig.equalsIgnoreCase(value)) {
-          return s;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected data to sync setting: " + value);
-    }
-
   }
 
   @VisibleForTesting
@@ -122,29 +57,7 @@ public class MssqlCdcHelper {
     return false;
   }
 
-  @VisibleForTesting
-  static SnapshotIsolation getSnapshotIsolationConfig(final JsonNode config) {
-    // new replication method config since version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
-      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
-      final JsonNode snapshotIsolation = replicationConfig.get(CDC_SNAPSHOT_ISOLATION_FIELD);
-      return SnapshotIsolation.from(snapshotIsolation.asText());
-    }
-    return SnapshotIsolation.SNAPSHOT;
-  }
-
-  @VisibleForTesting
-  static DataToSync getDataToSyncConfig(final JsonNode config) {
-    // new replication method config since version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
-      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
-      final JsonNode dataToSync = replicationConfig.get(CDC_DATA_TO_SYNC_FIELD);
-      return DataToSync.from(dataToSync.asText());
-    }
-    return DataToSync.EXISTING_AND_NEW;
-  }
-
-  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
+  public static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
     final JsonNode config = database.getSourceConfig();
     final JsonNode dbConfig = database.getDatabaseConfig();
 
@@ -157,6 +70,7 @@ public class MssqlCdcHelper {
     props.setProperty("provide.transaction.metadata", "false");
 
     props.setProperty("converters", "mssql_converter");
+
     props.setProperty("mssql_converter.type", MssqlDebeziumConverter.class.getName());
 
     // If new stream(s) are added after a previously successful sync,
@@ -165,10 +79,12 @@ public class MssqlCdcHelper {
     if (isSnapshot) {
       props.setProperty("snapshot.mode", "initial_only");
     } else {
-      props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
+      // If not in snapshot mode, initial will make sure that a snapshot is taken if the transaction log
+      // is rotated out. This will also end up read streaming changes from the transaction_log.
+      props.setProperty("snapshot.mode", "initial");
     }
 
-    props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
+    props.setProperty("snapshot.isolation.mode", "read_committed");
 
     props.setProperty("schema.include.list", getSchema(catalog));
     props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
@@ -178,8 +94,6 @@ public class MssqlCdcHelper {
             ? HEARTBEAT_INTERVAL_IN_TESTS
             : HEARTBEAT_INTERVAL;
     props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
-    // TODO: enable heartbeats in MS SQL Server.
-    props.setProperty("heartbeat.interval.ms", "0");
 
     if (config.has("ssl_method")) {
       final JsonNode sslConfig = config.get("ssl_method");
@@ -191,16 +105,17 @@ public class MssqlCdcHelper {
         props.setProperty("driver.trustServerCertificate", "true");
       } else if ("encrypted_verify_certificate".equals(sslMethod)) {
         props.setProperty("driver.encrypt", "true");
+        props.setProperty("driver.trustServerCertificate", "false");
         if (dbConfig.has("trustStore") && !dbConfig.get("trustStore").asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore", dbConfig.get("trustStore").asText());
+          props.setProperty("database.trustStore", dbConfig.get("trustStore").asText());
         }
 
         if (dbConfig.has("trustStorePassword") && !dbConfig.get("trustStorePassword").asText().isEmpty()) {
-          props.setProperty("database.ssl.truststore.password", dbConfig.get("trustStorePassword").asText());
+          props.setProperty("database.trustStorePassword", dbConfig.get("trustStorePassword").asText());
         }
 
         if (dbConfig.has("hostNameInCertificate") && !dbConfig.get("hostNameInCertificate").asText().isEmpty()) {
-          props.setProperty("driver.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
+          props.setProperty("database.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
         }
       }
     }

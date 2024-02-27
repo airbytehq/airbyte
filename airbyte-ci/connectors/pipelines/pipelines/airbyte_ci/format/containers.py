@@ -17,7 +17,7 @@ def build_container(
     dir_to_format: dagger.Directory,
     warmup_dir: Optional[dagger.Directory] = None,
     install_commands: Optional[List[str]] = None,
-    env_vars: Optional[Dict[str, Any]] = {},
+    env_vars: Dict[str, Any] = {},
     cache_volume: Optional[dagger.CacheVolume] = None,
 ) -> dagger.Container:
     """Build a container for formatting code.

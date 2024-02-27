@@ -27,4 +27,9 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
+    entry_points={
+        "console_scripts": [
+            "source-{{dashCase name}}=source_{{snakeCase name}}.run:run",
+        ],
+    },
 )

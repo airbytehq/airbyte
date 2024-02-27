@@ -31,6 +31,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -50,7 +51,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -137,7 +138,14 @@ class AsyncStreamConsumerTest {
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
 
-    verify(outputRecordCollector).accept(STATE_MESSAGE1);
+    final AirbyteMessage stateMessageWithDestinationStatsUpdated = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1)))
+            .withDestinationStats(new AirbyteStateStats().withRecordCount((double) expectedRecords.size())));
+
+    verify(outputRecordCollector).accept(stateMessageWithDestinationStatsUpdated);
   }
 
   @Test
@@ -154,7 +162,14 @@ class AsyncStreamConsumerTest {
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
 
-    verify(outputRecordCollector, times(1)).accept(STATE_MESSAGE2);
+    final AirbyteMessage stateMessageWithDestinationStatsUpdated = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(2)))
+            .withDestinationStats(new AirbyteStateStats().withRecordCount(0.0)));
+
+    verify(outputRecordCollector, times(1)).accept(stateMessageWithDestinationStatsUpdated);
   }
 
   @Test

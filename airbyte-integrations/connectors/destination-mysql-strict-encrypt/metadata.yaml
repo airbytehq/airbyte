@@ -1,13 +1,15 @@
 data:
   registries:
     cloud:
+      dockerImageTag: 0.2.0
       enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
     oss:
+      dockerImageTag: 0.2.0
       enabled: false # strict encrypt connectors are not used on OSS.
   connectorSubtype: database
   connectorType: destination
   definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/destination-mysql-strict-encrypt
   githubIssueLabel: destination-mysql
   icon: mysql.svg

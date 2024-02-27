@@ -50,6 +50,8 @@ acceptance_tests:
             - name: online_followers
               bypass_reason: Depend on each online user
           media:
+            - name: like_count
+              bypass_reason: Auto updated field
             - name: media_url
               bypass_reason: Contains auto generated hash
             - name: thumbnail_url

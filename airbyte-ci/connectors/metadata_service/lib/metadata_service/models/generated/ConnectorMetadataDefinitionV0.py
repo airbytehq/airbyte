@@ -27,7 +27,7 @@ class ReleaseStage(BaseModel):
 
 
 class SupportLevel(BaseModel):
-    __root__: Literal["community", "certified"] = Field(
+    __root__: Literal["community", "certified", "archived"] = Field(
         ...,
         description="enum that describes a connector's release stage",
         title="SupportLevel",
@@ -118,6 +118,14 @@ class AirbyteInternal(BaseModel):
     ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
 
 
+class PyPi(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    enabled: bool
+    packageName: str = Field(..., description="The name of the package on PyPi.")
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -131,6 +139,13 @@ class BreakingChangeScope(BaseModel):
         ...,
         description="A scope that can be used to limit the impact of a breaking change.",
     )
+
+
+class RemoteRegistries(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    pypi: Optional[PyPi] = None
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -264,6 +279,7 @@ class Data(BaseModel):
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
     ab_internal: Optional[AirbyteInternal] = None
+    remoteRegistries: Optional[RemoteRegistries] = None
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

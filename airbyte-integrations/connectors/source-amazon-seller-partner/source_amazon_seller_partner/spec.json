@@ -109,7 +109,7 @@
       "period_in_days": {
         "title": "Period In Days",
         "type": "integer",
-        "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        "description": "For syncs spanning a large date range, this option is used to request data in a smaller fixed window to improve sync reliability. This time window can be configured granularly by day.",
         "default": 90,
         "minimum": 1,
         "order": 9
@@ -132,8 +132,6 @@
                 "GET_AFN_INVENTORY_DATA",
                 "GET_AFN_INVENTORY_DATA_BY_COUNTRY",
                 "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
-                "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT",
-                "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT",
                 "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT",
                 "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT",
                 "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT",

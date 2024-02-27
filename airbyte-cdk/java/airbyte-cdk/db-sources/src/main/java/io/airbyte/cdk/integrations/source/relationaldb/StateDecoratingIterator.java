@@ -11,6 +11,7 @@ import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Iterator;
 import java.util.Objects;
@@ -53,6 +54,8 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    */
   private final int stateEmissionFrequency;
   private int totalRecordCount = 0;
+  // In between each state message, recordCountInStateMessage will be reset to 0.
+  private int recordCountInStateMessage = 0;
   private boolean emitIntermediateState = false;
   private AirbyteMessage intermediateStateMessage = null;
   private boolean hasCaughtException = false;
@@ -128,6 +131,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
       }
 
       totalRecordCount++;
+      recordCountInStateMessage++;
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
         final AirbyteMessage message = messageIterator.next();
@@ -139,7 +143,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
             if (stateEmissionFrequency > 0 && !Objects.equals(currentMaxCursor, initialCursor) && messageIterator.hasNext()) {
               // Only create an intermediate state when it is not the first or last record message.
               // The last state message will be processed seperately.
-              intermediateStateMessage = createStateMessage(false, totalRecordCount);
+              intermediateStateMessage = createStateMessage(false, recordCountInStateMessage);
             }
             currentMaxCursor = cursorCandidate;
             currentMaxCursorRecordCount = 1L;
@@ -164,7 +168,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         return optionalIntermediateMessage.orElse(endOfData());
       }
     } else if (!hasEmittedFinalState) {
-      return createStateMessage(true, totalRecordCount);
+      return createStateMessage(true, recordCountInStateMessage);
     } else {
       return endOfData();
     }
@@ -184,7 +188,12 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   protected final Optional<AirbyteMessage> getIntermediateMessage() {
     if (emitIntermediateState && intermediateStateMessage != null) {
       final AirbyteMessage message = intermediateStateMessage;
+      if (message.getState() != null) {
+        message.getState().setSourceStats(new AirbyteStateStats().withRecordCount((double) recordCountInStateMessage));
+      }
+
       intermediateStateMessage = null;
+      recordCountInStateMessage = 0;
       emitIntermediateState = false;
       return Optional.of(message);
     }
@@ -196,14 +205,15 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    * read up so far
    *
    * @param isFinalState marker for if the final state of the iterator has been reached
-   * @param totalRecordCount count of read messages
+   * @param recordCount count of read messages
    * @return AirbyteMessage which includes information on state of records read so far
    */
-  public AirbyteMessage createStateMessage(final boolean isFinalState, final int totalRecordCount) {
+  public AirbyteMessage createStateMessage(final boolean isFinalState, final int recordCount) {
     final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
+
     // logging once every 100 messages to reduce log verbosity
-    if (totalRecordCount % 100 == 0) {
+    if (recordCount % 100 == 0) {
       LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
           pair,
           cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
@@ -212,6 +222,10 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
           cursorInfo.map(CursorInfo::getCursorField).orElse(null),
           cursorInfo.map(CursorInfo::getCursor).orElse(null),
           cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
+    }
+
+    if (stateMessage != null) {
+      stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
     }
     if (isFinalState) {
       hasEmittedFinalState = true;

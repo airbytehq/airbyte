@@ -56,9 +56,11 @@ class InitialSnapshotHandlerTest {
   private static final String COLLECTION3 = "collection3";
 
   private static final String OBJECT_ID1_STRING = "64c0029d95ad260d69ef28a1";
+  private static final String OBJECT_ID2_STRING = "64c0029d95ad260d69ef28a2";
+  private static final String OBJECT_ID3_STRING = "64c0029d95ad260d69ef28a3";
   private static final ObjectId OBJECT_ID1 = new ObjectId(OBJECT_ID1_STRING);
-  private static final ObjectId OBJECT_ID2 = new ObjectId("64c0029d95ad260d69ef28a2");
-  private static final ObjectId OBJECT_ID3 = new ObjectId("64c0029d95ad260d69ef28a3");
+  private static final ObjectId OBJECT_ID2 = new ObjectId(OBJECT_ID2_STRING);
+  private static final ObjectId OBJECT_ID3 = new ObjectId(OBJECT_ID3_STRING);
   private static final ObjectId OBJECT_ID4 = new ObjectId("64c0029d95ad260d69ef28a4");
   private static final ObjectId OBJECT_ID5 = new ObjectId("64c0029d95ad260d69ef28a5");
   private static final ObjectId OBJECT_ID6 = new ObjectId("64c0029d95ad260d69ef28a6");
@@ -329,6 +331,60 @@ class InitialSnapshotHandlerTest {
     assertFalse(collection1.hasNext());
 
     // collection2
+    assertFalse(collection2.hasNext());
+  }
+
+  @Test
+  void testGetIteratorsWithInitialStateNonDefaultIdType() {
+    insertDocuments(COLLECTION1, List.of(
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID1_STRING,
+            NAME_FIELD, NAME1)),
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID2_STRING,
+            NAME_FIELD, NAME2))));
+
+    insertDocuments(COLLECTION2, List.of(
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID3_STRING,
+            NAME_FIELD, NAME3))));
+
+    final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
+    final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
+    when(stateManager.getStreamState(COLLECTION1, NAMESPACE))
+        .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.STRING)));
+    final List<AutoCloseableIterator<AirbyteMessage>> iterators =
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
+            MongoConstants.CHECKPOINT_INTERVAL, true);
+
+    assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
+
+    final AutoCloseableIterator<AirbyteMessage> collection1 = iterators.get(0);
+    final AutoCloseableIterator<AirbyteMessage> collection2 = iterators.get(1);
+
+    // collection1, first document should be skipped
+    final AirbyteMessage collection1StreamMessage1 = collection1.next();
+    assertEquals(Type.RECORD, collection1StreamMessage1.getType());
+    assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
+    assertEquals(OBJECT_ID2.toString(), collection1StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+    assertEquals(NAME2, collection1StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD), collection1StreamMessage1.getRecord().getData());
+
+    final AirbyteMessage collection1SateMessage = collection1.next();
+    assertEquals(Type.STATE, collection1SateMessage.getType(), "State message is expected after all records in a stream are emitted");
+
+    assertFalse(collection1.hasNext());
+
+    // collection2, no documents should be skipped
+    final AirbyteMessage collection2StreamMessage1 = collection2.next();
+    assertEquals(Type.RECORD, collection2StreamMessage1.getType());
+    assertEquals(COLLECTION2, collection2StreamMessage1.getRecord().getStream());
+    assertEquals(OBJECT_ID3.toString(), collection2StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD), collection2StreamMessage1.getRecord().getData());
+
+    final AirbyteMessage collection2SateMessage = collection2.next();
+    assertEquals(Type.STATE, collection2SateMessage.getType(), "State message is expected after all records in a stream are emitted");
+
     assertFalse(collection2.hasNext());
   }
 

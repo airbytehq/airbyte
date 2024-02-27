@@ -8,6 +8,10 @@ data:
   icon: zapiersupportedstorage.svg
   license: MIT
   name: Zapier Supported Storage
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zapier-supported-storage
   registries:
     cloud:
       enabled: false

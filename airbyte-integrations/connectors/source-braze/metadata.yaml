@@ -12,6 +12,10 @@ data:
   icon: braze.svg
   license: MIT
   name: Braze
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-braze
   registries:
     cloud:
       enabled: true

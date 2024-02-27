@@ -119,7 +119,12 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject            |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------|
-| 0.1.1   | 2021-12-15 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | Fix for docs name  |
-| 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source         |
+| Version | Date       | Pull Request                                             | Subject                   |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------|
+| 0.1.6   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936)  | Bump CDK version to avoid missing SyncMode errors                      |
+| 0.1.5   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681)  | Unpin CDK version to make compatible with the Concurrent CDK                      |
+| 0.1.4   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661)  | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
+| 0.1.3   | 2024-01-24 | [34478](https://github.com/airbytehq/airbyte/pull/34478) | Fix OAuth                 |
+| 0.1.2   | 2021-12-22 | [33745](https://github.com/airbytehq/airbyte/pull/33745) | Add ql and sl to metadata |
+| 0.1.1   | 2021-12-15 | [33758](https://github.com/airbytehq/airbyte/pull/33758) | Fix for docs name         |
+| 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source                |

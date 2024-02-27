@@ -9,8 +9,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
@@ -40,11 +38,6 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
         .with("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-  }
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
   }
 
   protected ContainerModifier[] getContainerModifiers() {
@@ -100,11 +93,6 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }

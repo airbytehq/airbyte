@@ -26,7 +26,16 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.sources import Source
-from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog, Level, TraceType, Type
+from airbyte_protocol.models import (
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStreamStatus,
+    ConfiguredAirbyteCatalog,
+    Level,
+    TraceType,
+    Type,
+)
 from pydantic.error_wrappers import ValidationError
 
 
@@ -104,7 +113,7 @@ def read(
     source: Source,
     config: Mapping[str, Any],
     catalog: ConfiguredAirbyteCatalog,
-    state: Optional[Any] = None,
+    state: Optional[List[AirbyteStateMessage]] = None,
     expecting_exception: bool = False,
 ) -> EntrypointOutput:
     """
@@ -133,9 +142,10 @@ def read(
             args.extend(
                 [
                     "--state",
-                    make_file(tmp_directory_path / "state.json", state),
+                    make_file(tmp_directory_path / "state.json", f"[{','.join([stream_state.json() for stream_state in state])}]"),
                 ]
             )
+        args.append("--debug")
         source_entrypoint = AirbyteEntrypoint(source)
         parsed_args = source_entrypoint.parse_args(args)
 

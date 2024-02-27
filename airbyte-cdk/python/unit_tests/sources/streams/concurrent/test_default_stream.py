@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 
 
@@ -28,6 +28,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._primary_key,
             self._cursor_field,
             self._logger,
+            NoopCursor(),
         )
 
     def test_get_json_schema(self):
@@ -88,6 +89,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             ["id"],
             self._cursor_field,
             self._logger,
+            NoopCursor(),
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -119,6 +121,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             ["id_a", "id_b"],
             self._cursor_field,
             self._logger,
+            NoopCursor(),
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -150,6 +153,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._primary_key,
             "date",
             self._logger,
+            NoopCursor(),
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -174,6 +178,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._primary_key,
             self._cursor_field,
             self._logger,
+            NoopCursor(),
             namespace="test",
         )
         expected_airbyte_stream = AirbyteStream(

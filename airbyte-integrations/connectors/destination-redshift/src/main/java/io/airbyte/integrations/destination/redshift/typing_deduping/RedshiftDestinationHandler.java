@@ -4,94 +4,87 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.*;
+
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import java.sql.ResultSet;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
+import io.airbyte.integrations.base.destination.typing_deduping.Array;
+import io.airbyte.integrations.base.destination.typing_deduping.Sql;
+import io.airbyte.integrations.base.destination.typing_deduping.Struct;
+import io.airbyte.integrations.base.destination.typing_deduping.Union;
+import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import org.jooq.impl.DSL;
+import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class RedshiftDestinationHandler extends JdbcDestinationHandler {
-
-  // Redshift doesn't seem to let you actually specify HH:MM TZ offsets, so we have
-  // build our own formatter rather than just use Instant.parse
-  private static final DateTimeFormatter TIMESTAMPTZ_FORMAT = new DateTimeFormatterBuilder()
-      .append(DateTimeFormatter.ISO_LOCAL_DATE)
-      .appendLiteral(' ')
-      .append(DateTimeFormatter.ISO_LOCAL_TIME)
-      .append(DateTimeFormatter.ofPattern("X"))
-      .toFormatter();
 
   public RedshiftDestinationHandler(final String databaseName, final JdbcDatabase jdbcDatabase) {
     super(databaseName, jdbcDatabase);
   }
 
   @Override
-  public boolean isFinalTableEmpty(final StreamId id) throws Exception {
-    // Redshift doesn't have an information_schema.tables table, so we have to use SVV_TABLE_INFO.
-    // From https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html:
-    // > The SVV_TABLE_INFO view doesn't return any information for empty tables.
-    // So we just query for our specific table, and if we get no rows back,
-    // then we assume the table is empty.
-    // Note that because the column names are reserved words (table, schema, database),
-    // we need to enquote them.
-    final List<JsonNode> query = jdbcDatabase.queryJsons(
-        """
-        SELECT 1
-        FROM SVV_TABLE_INFO
-        WHERE "database" = ?
-          AND "schema" = ?
-          AND "table" = ?
-        """,
-        databaseName,
-        id.finalNamespace(),
-        id.finalName());
-    return query.isEmpty();
+  public void execute(final Sql sql) throws Exception {
+    final List<List<String>> transactions = sql.transactions();
+    final UUID queryId = UUID.randomUUID();
+    for (final List<String> transaction : transactions) {
+      final UUID transactionId = UUID.randomUUID();
+      log.info("Executing sql {}-{}: {}", queryId, transactionId, String.join("\n", transaction));
+      final long startTime = System.currentTimeMillis();
+
+      try {
+        // Original list is immutable, so copying it into a different list.
+        final List<String> modifiedStatements = new ArrayList<>();
+        // This is required for Redshift to retrieve Json path query with upper case characters, even after
+        // specifying quotes.
+        // see https://github.com/airbytehq/airbyte/issues/33900
+        modifiedStatements.add("SET enable_case_sensitive_identifier to TRUE;\n");
+        modifiedStatements.addAll(transaction);
+        jdbcDatabase.executeWithinTransaction(modifiedStatements);
+      } catch (final SQLException e) {
+        log.error("Sql {}-{} failed", queryId, transactionId, e);
+        throw e;
+      }
+
+      log.info("Sql {}-{} completed in {} ms", queryId, transactionId, System.currentTimeMillis() - startTime);
+    }
   }
 
   @Override
-  public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
-    final ResultSet tables = jdbcDatabase.getMetaData().getTables(
-        databaseName,
-        id.rawNamespace(),
-        id.rawName(),
-        null);
-    if (!tables.next()) {
-      return Optional.empty();
+  protected String toJdbcTypeName(AirbyteType airbyteType) {
+    // This is mostly identical to the postgres implementation, but swaps jsonb to super
+    if (airbyteType instanceof final AirbyteProtocolType airbyteProtocolType) {
+      return toJdbcTypeName(airbyteProtocolType);
     }
-    // Redshift timestamps have microsecond precision, but it's basically impossible to work with that.
-    // Decrement by 1 second instead.
-    // And use two explicit queries because docs don't specify whether COALESCE
-    // short-circuits evaluation.
-    // This first query tries to find the oldest raw record with loaded_at = NULL
-    Optional<String> minUnloadedTimestamp = Optional.ofNullable(jdbcDatabase.queryStrings(
-        conn -> conn.createStatement().executeQuery(
-            DSL.select(DSL.field("MIN(_airbyte_extracted_at) - INTERVAL '1 second'").as("min_timestamp"))
-                .from(DSL.name(id.rawNamespace(), id.rawName()))
-                .where(DSL.condition("_airbyte_loaded_at IS NULL"))
-                .getSQL()),
-        // The query will always return exactly one record, so use .get(0)
-        record -> record.getString("min_timestamp")).get(0));
-    if (minUnloadedTimestamp.isEmpty()) {
-      // If there are no unloaded raw records, then we can safely skip all existing raw records.
-      // This second query just finds the newest raw record.
-      minUnloadedTimestamp = Optional.ofNullable(jdbcDatabase.queryStrings(
-          conn -> conn.createStatement().executeQuery(
-              DSL.select(DSL.field("MAX(_airbyte_extracted_at)").as("min_timestamp"))
-                  .from(DSL.name(id.rawNamespace(), id.rawName()))
-                  .getSQL()),
-          record -> record.getString("min_timestamp")).get(0));
-    }
-    return minUnloadedTimestamp.map(RedshiftDestinationHandler::parseInstant);
+    return switch (airbyteType.getTypeName()) {
+      case Struct.TYPE, UnsupportedOneOf.TYPE, Array.TYPE -> "super";
+      // No nested Unions supported so this will definitely not result in infinite recursion.
+      case Union.TYPE -> toJdbcTypeName(((Union) airbyteType).chooseType());
+      default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + airbyteType);
+    };
   }
 
-  private static Instant parseInstant(final String ts) {
-    return TIMESTAMPTZ_FORMAT.parse(ts, Instant::from);
+  private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {
+    return switch (airbyteProtocolType) {
+      case STRING -> "varchar";
+      case NUMBER -> "numeric";
+      case INTEGER -> "int8";
+      case BOOLEAN -> "bool";
+      case TIMESTAMP_WITH_TIMEZONE -> "timestamptz";
+      case TIMESTAMP_WITHOUT_TIMEZONE -> "timestamp";
+      case TIME_WITH_TIMEZONE -> "timetz";
+      case TIME_WITHOUT_TIMEZONE -> "time";
+      case DATE -> "date";
+      case UNKNOWN -> "super";
+    };
   }
+
+  // Do not use SVV_TABLE_INFO to get isFinalTableEmpty.
+  // See https://github.com/airbytehq/airbyte/issues/34357
 
 }

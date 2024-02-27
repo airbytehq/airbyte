@@ -8,6 +8,10 @@ data:
   icon: datascope.svg
   license: MIT
   name: Datascope
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-datascope
   registries:
     cloud:
       enabled: true

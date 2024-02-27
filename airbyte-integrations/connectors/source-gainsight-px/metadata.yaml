@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.aptrinsic.com/v1
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gainsight-px
   registries:
     cloud:
       enabled: true

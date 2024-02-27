@@ -10,13 +10,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
-  dockerImageTag: 1.3.6
+  dockerImageTag: 1.3.7
   dockerRepository: airbyte/source-google-search-console
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   githubIssueLabel: source-google-search-console
   icon: googlesearchconsole.svg
   license: Elv2
   name: Google Search Console
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-google-search-console
   registries:
     cloud:
       enabled: true

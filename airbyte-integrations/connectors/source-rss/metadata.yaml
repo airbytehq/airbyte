@@ -8,6 +8,10 @@ data:
   icon: rss.svg
   license: MIT
   name: RSS
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-rss
   registries:
     cloud:
       enabled: true

@@ -8,11 +8,15 @@ data:
   icon: courier.svg
   license: MIT
   name: Courier
-  registries:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-courier
+  registries: # Removed from registries due to LEGACY STATE
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/courier
   tags:

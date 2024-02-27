@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - ${domain}
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-chargify
   registries:
     oss:
       enabled: true
@@ -21,7 +25,7 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/chargify
   tags:
-    - language:lowcode
+    - language:low-code
   ab_internal:
     sl: 100
     ql: 100

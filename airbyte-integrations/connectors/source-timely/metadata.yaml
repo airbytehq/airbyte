@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.timelyapp.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-timely
   registries:
     oss:
       enabled: true

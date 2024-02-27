@@ -8,6 +8,10 @@ data:
   icon: google-pagespeed-insights.svg
   license: MIT
   name: Google PageSpeed Insights
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-pagespeed-insights
   registries:
     cloud:
       enabled: true

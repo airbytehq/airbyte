@@ -530,6 +530,14 @@
         }
       }
     },
+    "issuer": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "latest_revision": {
       "type": ["null", "string"]
     },

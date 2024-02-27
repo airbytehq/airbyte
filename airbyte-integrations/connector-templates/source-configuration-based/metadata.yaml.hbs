@@ -4,9 +4,13 @@ data:
       - TODO # Please change to the hostname of the source.
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
       enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-{{dashCase name}}
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
@@ -26,5 +30,5 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/{{dashCase name}}
   tags:
-    - language:lowcode
+    - language:low-code
 metadataSpecVersion: "1.0"

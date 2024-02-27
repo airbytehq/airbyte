@@ -8,6 +8,10 @@ data:
   icon: gocardless.svg
   license: MIT
   name: GoCardless
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gocardless
   registries:
     cloud:
       enabled: false

@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcEventUtils;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
@@ -69,10 +69,15 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private boolean finalStateNext = false;
 
   /**
-   * Tracks if the underlying iterator threw an exception. This helps to determine the final state
-   * status emitted from the final next call.
+   * Tracks if the underlying iterator threw an exception, indicating that the snapshot for this
+   * stream failed. This helps to determine the final state status emitted from the final next call.
    */
-  private boolean iterThrewException = false;
+  private boolean initialSnapshotFailed = false;
+
+  /**
+   * Tracks the exception thrown if there initial snapshot has failed.
+   */
+  private Exception initialSnapshotException;
 
   /**
    * Constructor.
@@ -111,14 +116,24 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   @Override
   public boolean hasNext() {
     LOGGER.debug("Checking hasNext() for stream {}...", getStream());
+    if (initialSnapshotFailed) {
+      // If the initial snapshot is incomplete for this stream, throw an exception failing the sync. This
+      // will ensure the platform retry logic
+      // kicks in and keeps retrying the sync until the initial snapshot is complete.
+      throw new RuntimeException(initialSnapshotException);
+    }
     try {
       if (iter.hasNext()) {
         return true;
       }
     } catch (final MongoException e) {
-      // If hasNext throws an exception, log it and then treat it as if hasNext returned false.
-      iterThrewException = true;
+      // If hasNext throws an exception, log it and set the flag to indicate that the initial snapshot
+      // failed. This indicates to the main iterator
+      // to emit state associated with what has been processed so far.
+      initialSnapshotFailed = true;
+      initialSnapshotException = e;
       LOGGER.info("hasNext threw an exception for stream {}: {}", getStream(), e.getMessage(), e);
+      return true;
     }
 
     // no more records in cursor + no record messages have been emitted => collection is empty
@@ -145,9 +160,9 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     // Should a state message be emitted based on then last time a state message was emitted?
     final var emitStateDueToDuration = count > 0 && Duration.between(lastCheckpoint, Instant.now()).compareTo(checkpointDuration) > 0;
 
-    if (finalStateNext) {
+    if (finalStateNext || initialSnapshotFailed) {
       LOGGER.debug("Emitting final state status for stream {}:{}...", stream.getStream().getNamespace(), stream.getStream().getName());
-      final var finalStateStatus = iterThrewException ? InitialSnapshotStatus.IN_PROGRESS : InitialSnapshotStatus.COMPLETE;
+      final var finalStateStatus = initialSnapshotFailed ? InitialSnapshotStatus.IN_PROGRESS : InitialSnapshotStatus.COMPLETE;
       final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
           .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
       final var state = new MongoDbStreamState(lastId.toString(), finalStateStatus, idType);

@@ -4,15 +4,15 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -27,11 +27,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.function.Supplier;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,15 +83,19 @@ public class MongoDbCdcInitializer {
                                                                         final Instant emittedAt,
                                                                         final MongoDbSourceConfig config) {
 
-    final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(config.rawConfig());
-    final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(config.rawConfig());
-    final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
+    final Duration firstRecordWaitTime = Duration.ofSeconds(config.getInitialWaitingTimeSeconds());
+    // #35059: debezium heartbeats are not sent on the expected interval. this is
+    // a worksaround to allow making subsequent wait time configurable.
+    final Duration subsequentRecordWaitTime = firstRecordWaitTime;
+    LOGGER.info("Subsequent cdc record wait time: {} seconds", subsequentRecordWaitTime);
+    final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.getDatabaseName();
     final boolean isEnforceSchema = config.getEnforceSchema();
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
+    logOplogInfo(mongoClient);
+    final BsonDocument initialResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, catalog);
     final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeToken, mongoClient, databaseName);
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, mongoClient, databaseName);
     final MongoDbCdcState cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null)
         ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
         : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
@@ -99,7 +103,7 @@ public class MongoDbCdcInitializer {
         Jsons.clone(defaultDebeziumProperties),
         catalog,
         cdcState.state(),
-        config.rawConfig(),
+        config.getDatabaseConfig(),
         mongoClient);
 
     // We should always be able to extract offset out of state if it's not null
@@ -112,6 +116,11 @@ public class MongoDbCdcInitializer {
         optSavedOffset.filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient)).isPresent();
 
     if (!savedOffsetIsValid) {
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
+      if (config.shouldFailSyncOnInvalidCursor()) {
+        throw new ConfigErrorException(
+            "Saved offset is not valid. Please reset the connection, and then increase oplog retention or reduce sync frequency to prevent his from happening in the future. See https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-oplog-and-change-streams for more details");
+      }
       LOGGER.info("Saved offset is not valid. Airbyte will trigger a full refresh.");
       // If the offset in the state is invalid, reset the state to the initial STATE
       stateManager.resetState(new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema()));
@@ -133,19 +142,15 @@ public class MongoDbCdcInitializer {
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), cdcMetadataInjector,
             emittedAt, config.getCheckpointInterval(), isEnforceSchema);
 
-    final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
-        new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
+    final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.getDatabaseConfig(),
+        new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
+    final var propertiesManager = new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), catalog);
+    final var eventConverter = new MongoDbDebeziumEventConverter(cdcMetadataInjector, catalog, emittedAt, config.getDatabaseConfig());
 
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-        cdcSavedInfoFetcher,
-        mongoDbCdcStateHandler,
-        cdcMetadataInjector,
-        defaultDebeziumProperties,
-        DebeziumPropertiesManager.DebeziumConnectorType.MONGODB,
-        emittedAt,
-        false);
+    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+        propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
 
     // We can close the client after the initial snapshot is complete, incremental
     // iterator does not make use of the client.
@@ -153,6 +158,20 @@ public class MongoDbCdcInitializer {
         AutoCloseableIterators.concatWithEagerClose(initialSnapshotIterators), mongoClient::close);
 
     return List.of(initialSnapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null));
+  }
+
+  private void logOplogInfo(final MongoClient mongoClient) {
+    try {
+      final MongoDatabase localDatabase = mongoClient.getDatabase("local");
+      final Document command = new Document("collStats", "oplog.rs");
+      final Document result = localDatabase.runCommand(command);
+      if (result != null) {
+        LOGGER.info("Max oplog size is {} bytes", result.getLong("maxSize"));
+        LOGGER.info("Free space in oplog is {} bytes", result.getLong("freeStorageSize"));
+      }
+    } catch (final Exception e) {
+      LOGGER.warn("Unable to query for op log stats, exception: {}" + e.getMessage());
+    }
   }
 
 }

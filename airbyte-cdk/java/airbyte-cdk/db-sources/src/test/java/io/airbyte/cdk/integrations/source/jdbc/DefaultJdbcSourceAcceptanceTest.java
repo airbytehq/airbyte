@@ -17,8 +17,6 @@ import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.cdk.testutils.TestDatabase;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import java.sql.JDBCType;
@@ -59,9 +57,7 @@ class DefaultJdbcSourceAcceptanceTest
 
   @Override
   protected PostgresTestSource source() {
-    final var source = new PostgresTestSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new PostgresTestSource();
   }
 
   @Override
@@ -84,11 +80,6 @@ class DefaultJdbcSourceAcceptanceTest
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParameters)
         .build());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
   @AfterAll

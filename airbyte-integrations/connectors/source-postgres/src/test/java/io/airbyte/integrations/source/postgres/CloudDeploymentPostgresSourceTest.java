@@ -14,7 +14,6 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
@@ -67,10 +66,7 @@ public class CloudDeploymentPostgresSourceTest {
     PostgresSource source = new PostgresSource();
     source.setFeatureFlags(
         FeatureFlagsWrapper.overridingDeploymentMode(
-            FeatureFlagsWrapper.overridingUseStreamCapableState(
-                new EnvVariableFeatureFlags(),
-                true),
-            AdaptiveSourceRunner.CLOUD_MODE));
+            new EnvVariableFeatureFlags(), AdaptiveSourceRunner.CLOUD_MODE));
     return PostgresSource.sshWrappedSource(source);
   }
 
@@ -126,8 +122,8 @@ public class CloudDeploymentPostgresSourceTest {
                                                                               final String sslMode,
                                                                               final boolean innerAddress) {
     final var containerAddress = innerAddress
-        ? SshHelpers.getInnerContainerAddress(db.getContainer())
-        : SshHelpers.getOuterContainerAddress(db.getContainer());
+        ? SshBastionContainer.getInnerContainerAddress(db.getContainer())
+        : SshBastionContainer.getOuterContainerAddress(db.getContainer());
     return db.configBuilder()
         .with(JdbcUtils.HOST_KEY, Objects.requireNonNull(containerAddress.left))
         .with(JdbcUtils.PORT_KEY, containerAddress.right)

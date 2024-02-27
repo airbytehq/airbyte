@@ -6,17 +6,10 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
 
 public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
 
   @Override
   protected JsonNode getConfig() {

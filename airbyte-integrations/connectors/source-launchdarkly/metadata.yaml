@@ -8,6 +8,10 @@ data:
   icon: launchdarkly.svg
   license: MIT
   name: LaunchDarkly
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-launchdarkly
   registries:
     cloud:
       enabled: true

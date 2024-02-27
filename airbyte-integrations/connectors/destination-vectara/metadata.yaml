@@ -1,0 +1,26 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.vectara.io
+      - "vectara-prod-${self.customer_id}.auth.us-west-2.amazoncognito.com"
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 102900e7-a236-4c94-83e4-a4189b99adc2
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/destination-vectara
+  githubIssueLabel: destination-vectara
+  icon: vectara.svg
+  license: MIT
+  name: Vectara
+  releaseDate: 2023-12-16
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/vectara
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

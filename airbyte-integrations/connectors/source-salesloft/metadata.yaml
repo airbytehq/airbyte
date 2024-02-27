@@ -15,6 +15,10 @@ data:
   icon: salesloft.svg
   license: MIT
   name: SalesLoft
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-salesloft
   registries:
     cloud:
       enabled: true

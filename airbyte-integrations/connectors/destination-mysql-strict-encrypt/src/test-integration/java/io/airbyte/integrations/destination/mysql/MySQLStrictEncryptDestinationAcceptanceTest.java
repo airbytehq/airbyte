@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.mysql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.Database;
@@ -17,6 +18,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -73,23 +75,19 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
         .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .build());
+    final JsonNode clone = Jsons.clone(getConfig());
+    ((ObjectNode) clone).put("password", "wrong password");
+    return clone;
   }
 
   @Override
@@ -141,7 +139,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
     setLocalInFileToTrue();

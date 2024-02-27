@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, Optional
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 
@@ -23,6 +24,7 @@ class DefaultStream(AbstractStream):
         primary_key: List[str],
         cursor_field: Optional[str],
         logger: Logger,
+        cursor: Optional[Cursor],
         namespace: Optional[str] = None,
     ) -> None:
         self._stream_partition_generator = partition_generator
@@ -32,6 +34,7 @@ class DefaultStream(AbstractStream):
         self._primary_key = primary_key
         self._cursor_field = cursor_field
         self._logger = logger
+        self._cursor = cursor or NoopCursor()
         self._namespace = namespace
 
     def generate_partitions(self) -> Iterable[Partition]:
@@ -77,3 +80,7 @@ class DefaultStream(AbstractStream):
                 "cursor_field": self.cursor_field,
             },
         )
+
+    @property
+    def cursor(self) -> Cursor:
+        return self._cursor

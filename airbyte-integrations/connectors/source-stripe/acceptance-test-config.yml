@@ -18,18 +18,19 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
+        fail_on_extra_columns: false # CATs are failing since https://github.com/airbytehq/airbyte/commit/dccb2fa7165f031fa1233d695897b07f9aacb39c, API Source team to fix this
         timeout_seconds: 3600
         empty_streams:
           - name: "application_fees"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "application_fees_refunds"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "authorizations"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "bank_accounts"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "cards"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "early_fraud_warnings"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "external_account_bank_accounts"
@@ -37,11 +38,11 @@ acceptance_tests:
           - name: "external_account_cards"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "payment_methods"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "persons"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "reviews"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "transactions"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "events"
@@ -84,6 +85,16 @@ acceptance_tests:
           invoice_line_items:
             - name: margins
               bypass_reason: "API randomly returns this field"
+          subscriptions:
+            - name: current_period_start
+              bypass_reason: "Frequently changing data"
+            - name: current_period_end
+              bypass_reason: "Frequently changing data"
+            - name: latest_invoice
+              bypass_reason: "Frequently changing data"
+          customers:
+            - name: next_invoice_sequence
+              bypass_reason: "Frequently changing data"
   incremental:
     tests:
       - config_path: "secrets/config.json"

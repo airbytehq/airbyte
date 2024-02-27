@@ -8,6 +8,10 @@ data:
   icon: gridly.svg
   license: MIT
   name: Gridly
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gridly
   registries:
     cloud:
       enabled: true

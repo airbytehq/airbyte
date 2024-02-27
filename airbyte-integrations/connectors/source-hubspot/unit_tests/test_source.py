@@ -93,7 +93,7 @@ def test_streams(requests_mock, config_experimental):
 
     streams = SourceHubspot().streams(config_experimental)
 
-    assert len(streams) == 44
+    assert len(streams) == 45
 
 
 def test_custom_streams(config_experimental):
@@ -135,18 +135,18 @@ def test_convert_datetime_to_string():
 
 def test_cast_datetime(common_params, caplog):
     field_value = pendulum.now()
-    field_name = "curent_time"
+    field_name = "current_time"
 
     Companies(**common_params)._cast_datetime(field_name, field_value)
 
-    expected_warining_message = {
+    expected_warning_message = {
         "type": "LOG",
         "log": {
             "level": "WARN",
             "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: argument of type 'DateTime' is not iterable",
         },
     }
-    assert expected_warining_message["log"]["message"] in caplog.text
+    assert expected_warning_message["log"]["message"] in caplog.text
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):

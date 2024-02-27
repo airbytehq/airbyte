@@ -12,11 +12,15 @@ data:
   icon: zuora.svg
   license: MIT
   name: Zuora
-  registries:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zuora
+  registries: # Removed from registries due to LEGACY STATE
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   supportLevel: community
   tags:

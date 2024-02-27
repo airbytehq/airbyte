@@ -8,6 +8,10 @@ data:
   icon: ashby.svg
   license: MIT
   name: Ashby
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-ashby
   registries:
     cloud:
       enabled: false

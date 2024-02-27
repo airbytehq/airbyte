@@ -10,8 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
@@ -41,11 +39,6 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
   private static final String STREAM_NAME2 = "starships";
 
   protected PostgresTestDatabase testdb;
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {

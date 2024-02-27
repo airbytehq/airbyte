@@ -13,11 +13,11 @@ This page contains the setup guide and reference information for the Amazon Ads 
 
 ## Setup guide
 ### Step 1: Set up Amazon Ads
-Create an [Amazon user](https://www.amazon.com) with access to [Amazon Ads account](https://advertising.amazon.com).
+Create an [Amazon user](https://www.amazon.com) with access to an [Amazon Ads account](https://advertising.amazon.com).
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
-To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get Amazon client application `Client ID`, `Client Secret` and `Refresh Token`.
+To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get the Amazon client application's `Client ID`, `Client Secret` and `Refresh Token`.
 <!-- /env:oss -->
 
 ### Step 2: Set up the Amazon Ads connector in Airbyte
@@ -28,13 +28,13 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Amazon Ads** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your Amazon Ads account`.
+4. Click **Authenticate your Amazon Ads account**.
 5. Log in and Authorize to the Amazon account.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
+7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 8. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
-10. Click `Set up source`.
+10. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -44,7 +44,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 3. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 4. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-5. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
+5. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 6. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 7. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 <!-- /env:oss -->
@@ -85,15 +85,15 @@ This source is capable of syncing the following streams:
 
 ## Connector-specific features and highlights
 
-All the reports are generated relative to the target profile' timezone.
+All the reports are generated relative to the target profile's timezone.
 
-Campaign reports may sometimes have no data or not presenting in records. This can occur when there are no clicks or views associated with the campaigns on the requested day - [details](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty).
+Campaign reports may sometimes have no data or may not be presenting in records. This can occur when there are no clicks or views associated with the campaigns on the requested day - [details](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty).
 
-Report data synchronization only cover the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
+Report data synchronization only covers the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
 
 ## Performance considerations
 
-Information about expected report generation waiting time you may find [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
+Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
 
 ### Data type mapping
 
@@ -110,6 +110,10 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 4.0.3 | 2024-02-12 | [35180](https://github.com/airbytehq/airbyte/pull/35180) | Manage dependencies with Poetry. |
+| 4.0.2   | 2024-02-08 | [35013](https://github.com/airbytehq/airbyte/pull/35013) | Add missing field to `sponsored_display_budget_rules` stream                                                    |
+| 4.0.1   | 2023-12-28 | [33833](https://github.com/airbytehq/airbyte/pull/33833) | Updated oauth spec to put region, so we can choose oauth consent url based on it                                |
+| 4.0.0   | 2023-12-28 | [33817](https://github.com/airbytehq/airbyte/pull/33817) | Fix schema for streams: `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords`                                 |
 | 3.4.2   | 2023-12-12 | [33361](https://github.com/airbytehq/airbyte/pull/33361) | Fix unexpected crash when handling error messages which don't have `requestId` field                            |
 | 3.4.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                 |
 | 3.4.0   | 2023-06-09 | [25913](https://github.com/airbytehq/airbyte/pull/26203) | Add Stream `DisplayCreatives`                                                                                   |

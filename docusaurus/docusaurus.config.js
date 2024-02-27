@@ -9,9 +9,10 @@ const { themes } = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
-
-
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
+const productInformation = require("./src/remark/productInformation");
+const connectorList = require("./src/remark/connectorList");
+const specDecoration = require("./src/remark/specDecoration");
 
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
@@ -66,6 +67,10 @@ const config = {
                 test: /\.ya?ml$/,
                 use: "yaml-loader",
               },
+              {
+                test: /\.html$/i,
+                loader: "html-loader",
+              },
             ],
           },
         };
@@ -73,7 +78,10 @@ const config = {
     }),
   ],
 
-  clientModules: [require.resolve("./src/scripts/cloudStatus.js")],
+  clientModules: [
+    require.resolve("./src/scripts/fontAwesomeIcons.js"),
+    require.resolve("./src/scripts/cloudStatus.js"),
+  ],
 
   presets: [
     [
@@ -87,7 +95,8 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
-          remarkPlugins: [docsHeaderDecoration],
+          beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
+          remarkPlugins: [docsHeaderDecoration, productInformation],
         },
         blog: false,
         theme: {

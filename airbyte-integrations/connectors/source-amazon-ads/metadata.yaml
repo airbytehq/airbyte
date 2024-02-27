@@ -9,17 +9,21 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 3.4.2
+  dockerImageTag: 4.0.3
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
   license: MIT
   name: Amazon Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-amazon-ads
   registries:
     cloud:
       enabled: true
@@ -28,6 +32,13 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      4.0.0:
+        message: "Streams `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` now have updated schemas."
+        upgradeDeadline: "2024-01-17"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              ["sponsored_brands_ad_groups", "sponsored_brands_keywords"]
       3.0.0:
         message: Attribution report stream schemas fix.
         upgradeDeadline: "2023-07-24"
