@@ -6,14 +6,15 @@ data:
       enabled: true
   allowedHosts:
     hosts:
-      - "${indexing.url}"
+      - ${indexing.url}
       - api.openai.com
       - api.cohere.ai
-      - "${embedding.api_base}"
+      - ${embedding.api_base}
   resourceRequirements:
     jobSpecific:
-      - jobType: sync
-        # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
+      - jobType:
+          sync
+          # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
         resourceRequirements:
           memory_limit: 2Gi
           memory_request: 2Gi
@@ -31,6 +32,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/qdrant
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100

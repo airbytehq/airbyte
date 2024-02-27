@@ -28,10 +28,13 @@ data:
     breakingChanges:
       2.0.0:
         upgradeDeadline: 2023-10-04
-        message: "This version removes the `pipeline_ids` field from the `deal_fields` stream. Config has changed to only use API key. Please update your config."
+        message:
+          This version removes the `pipeline_ids` field from the `deal_fields`
+          stream. Config has changed to only use API key. Please update your config.
   releaseDate: 2021-07-19
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"
