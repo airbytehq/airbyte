@@ -214,7 +214,8 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 1.2.13 | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug. |
+| 1.2.14  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message.                                                                            |
+| 1.2.13  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug.                                                                                          |
 | 1.2.12  | 2024-02-21 | [35526](https://github.com/airbytehq/airbyte/pull/35526) | Improve error handling.                                                                                   |
 | 1.2.11  | 2024-02-20 | [35375](https://github.com/airbytehq/airbyte/pull/35375) | Add config to throw an error on invalid CDC position and enable it by default.                            |
 | 1.2.10  | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751) | Emit analytics message for invalid CDC cursor.                                                            |
