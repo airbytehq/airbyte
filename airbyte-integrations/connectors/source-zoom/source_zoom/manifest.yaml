@@ -215,6 +215,11 @@ definitions:
           - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "id"
             partition_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["meeting_id"]
+            value: "{{ stream_partition.parent_id }}"
 
   meeting_registration_questions_stream:
     # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingRegistrantsQuestionsGet
