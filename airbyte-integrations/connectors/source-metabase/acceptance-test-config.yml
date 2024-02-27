@@ -29,6 +29,8 @@ acceptance_tests:
             bypass_reason: "data changes very fast"
           - name: users
             bypass_reason: "data changes very fast"
+          - name: collections_items_dashboards
+            bypass_reason: "data changes very fast"
         fail_on_extra_columns: false
   full_refresh:
     tests:
