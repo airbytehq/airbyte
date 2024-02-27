@@ -114,8 +114,8 @@ observers. This is done for a number of reasons, including:
   column order and data types of each column.
 - **Transactional Full Refresh** - In order to keep your final tables consistently useful, when a
   refresh or reset occurs, airbyte will erase the raw tables, and then build a new tmp final table
-  first. Only at hte last second will Airbyte swap the old and tmp final tables, usually via a
-  rename. Otherwise, there would be a period of time where the final table is empty, which could
+  first. Airbyte attempts to do an atomic swap of old and tmp final tables, usually via a
+  rename at the last second. Otherwise, there would be a period of time where the final table is empty, which could
   cause downstream issues.
 
 This means that additional permissions, constraints, views, or other rules you apply to the final

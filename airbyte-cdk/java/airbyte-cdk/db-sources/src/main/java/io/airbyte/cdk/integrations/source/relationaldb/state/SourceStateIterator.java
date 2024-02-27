@@ -20,8 +20,6 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceStateIterator.class);
   private final Iterator<T> messageIterator;
   private boolean hasEmittedFinalState = false;
-  private boolean hasEncounteredFailure = false;
-  private Exception failureException;
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();
 
@@ -37,10 +35,6 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   @Override
   protected AirbyteMessage computeNext() {
 
-    if (hasEncounteredFailure) {
-      throw new RuntimeException(failureException);
-    }
-
     boolean iteratorHasNextValue = false;
     try {
       iteratorHasNextValue = messageIterator.hasNext();
@@ -52,7 +46,14 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
     }
     if (iteratorHasNextValue) {
       if (sourceStateIteratorManager.shouldEmitStateMessage(recordCount, lastCheckpoint)) {
-        return generateInProgressStateMessage();
+        final AirbyteStateMessage stateMessage = sourceStateIteratorManager.generateStateMessageAtCheckpoint();
+        stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
+
+        recordCount = 0L;
+        lastCheckpoint = Instant.now();
+        return new AirbyteMessage()
+            .withType(Type.STATE)
+            .withState(stateMessage);
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
@@ -61,9 +62,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
         recordCount++;
         return processedMessage;
       } catch (final Exception e) {
-        this.hasEncounteredFailure = true;
-        this.failureException = e;
-        return generateInProgressStateMessage();
+        throw new RuntimeException(e);
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
@@ -77,17 +76,5 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       return endOfData();
     }
   }
-
-  private AirbyteMessage generateInProgressStateMessage() {
-    final AirbyteStateMessage stateMessage = sourceStateIteratorManager.generateStateMessageAtCheckpoint();
-    stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
-
-    recordCount = 0L;
-    lastCheckpoint = Instant.now();
-    return new AirbyteMessage()
-        .withType(Type.STATE)
-        .withState(stateMessage);
-  }
-
 
 }
