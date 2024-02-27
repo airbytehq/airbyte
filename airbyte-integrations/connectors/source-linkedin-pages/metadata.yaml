@@ -12,17 +12,18 @@ data:
   icon: linkedin.svg
   license: MIT
   name: LinkedIn Pages
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-linkedin-pages
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-linkedin-pages
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

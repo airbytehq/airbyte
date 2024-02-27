@@ -15,18 +15,18 @@ data:
   icon: facebook.svg
   license: ELv2
   name: Facebook Pages
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: beta
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-facebook-pages
-  registries:
-    cloud:
-      enabled: false # hide from cloud until https://github.com/airbytehq/airbyte/issues/25515 is finished
-    oss:
-      enabled: true
-  releaseStage: beta
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

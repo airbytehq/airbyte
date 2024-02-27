@@ -1,16 +1,10 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
-      - "*" # Please change to the hostname of the source.
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-klaus-api
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: false
+      - "*"
   connectorSubtype: api
   connectorType: source
   definitionId: aad35903-2c0d-4e25-8010-d62ed909e0b7
@@ -21,11 +15,18 @@ data:
   icon: klaus-api.svg
   license: MIT
   name: Klaus Api
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-klaus-api
   supportLevel: community
-  ab_internal:
-    ql: 300
-    sl: 100
   tags:
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

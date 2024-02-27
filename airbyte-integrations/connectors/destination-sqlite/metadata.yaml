@@ -1,9 +1,13 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: database
   connectorType: destination
   definitionId: b76be0a6-27dc-4560-95f6-2623da0bd7b6
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-sqlite
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/sqlite
   githubIssueLabel: destination-sqlite
   icon: sqlite.svg
   license: MIT
@@ -14,11 +18,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/sqlite
-  tags:
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
   supportLevel: community
+  tags:
+    - cdk:python
+    - language:python
 metadataSpecVersion: "1.0"

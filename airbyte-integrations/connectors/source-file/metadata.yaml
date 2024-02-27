@@ -17,17 +17,18 @@ data:
   icon: file.svg
   license: MIT
   name: File (CSV, JSON, Excel, Feather, Parquet)
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-file
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-file
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

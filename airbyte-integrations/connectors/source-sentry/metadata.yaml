@@ -18,17 +18,18 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 64800
   name: Sentry
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-sentry
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sentry
   supportLevel: certified
   tags:
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

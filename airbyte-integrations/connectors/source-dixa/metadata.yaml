@@ -1,32 +1,33 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - exports.dixa.io
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-dixa
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
   dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-dixa
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dixa
   githubIssueLabel: source-dixa
   icon: dixa.svg
   license: MIT
   name: Dixa
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2021-07-07
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-dixa
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/dixa
   tags:
-    - language:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -1,29 +1,29 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 3b046ac7-d8d3-4eb3-b122-f96b2a16d8a8
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-recruitee
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recruitee
   githubIssueLabel: source-recruitee
   icon: recruitee.svg
   license: MIT
   name: Recruitee
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-recruitee
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/recruitee
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-recruitee
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

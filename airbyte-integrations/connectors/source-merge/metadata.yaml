@@ -1,29 +1,29 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 23240e9e-d14a-43bc-899f-72ea304d1994
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-merge
+  documentationUrl: https://docs.airbyte.com/integrations/sources/merge
   githubIssueLabel: source-merge
   icon: merge.svg
   license: MIT
   name: Merge
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-merge
   registries:
     cloud:
       enabled: false
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/merge
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-merge
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

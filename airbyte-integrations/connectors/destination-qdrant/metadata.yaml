@@ -1,38 +1,38 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
-      - "${indexing.url}"
+      - ${indexing.url}
       - api.openai.com
       - api.cohere.ai
-      - "${embedding.api_base}"
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
-        resourceRequirements:
-          memory_limit: 2Gi
-          memory_request: 2Gi
+      - ${embedding.api_base}
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 6eb1198a-6d38-43e5-aaaa-dccd8f71db2b
   dockerImageTag: 0.0.10
   dockerRepository: airbyte/destination-qdrant
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/qdrant
   githubIssueLabel: destination-qdrant
   icon: qdrant.svg
   license: MIT
   name: Qdrant
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2023-09-22
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/qdrant
-  tags:
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   supportLevel: community
+  tags:
+    - cdk:python
+    - language:python
 metadataSpecVersion: "1.0"

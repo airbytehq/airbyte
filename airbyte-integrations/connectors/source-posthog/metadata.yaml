@@ -16,25 +16,26 @@ data:
   icon: posthog.svg
   license: MIT
   name: PostHog
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-posthog
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: beta
-  supportLevel: community
   releases:
     breakingChanges:
       1.0.0:
         message:
-          The `event` field in the `events` stream has been corrected to the proper data type.
-          To apply this change, refresh the schema for the `events` stream and reset your data. For more information [visit](https://docs.airbyte.com/integrations/sources/posthog-migrations)
+          The `event` field in the `events` stream has been corrected to the
+          proper data type. To apply this change, refresh the schema for the `events`
+          stream and reset your data. For more information [visit](https://docs.airbyte.com/integrations/sources/posthog-migrations)
         upgradeDeadline: "2024-01-15"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-posthog
+  supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

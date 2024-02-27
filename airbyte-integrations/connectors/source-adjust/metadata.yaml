@@ -12,17 +12,18 @@ data:
   icon: adjust.svg
   license: MIT
   name: Adjust
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-adjust
   registries:
     cloud:
       enabled: false
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-adjust
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

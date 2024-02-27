@@ -14,17 +14,18 @@ data:
   icon: kyriba.svg
   license: MIT
   name: Kyriba
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-kyriba
   registries:
     cloud:
       enabled: false
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-kyriba
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

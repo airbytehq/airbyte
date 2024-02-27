@@ -15,18 +15,18 @@ data:
   icon: close.svg
   license: MIT
   name: Close.com
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-close-com
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-close-com
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

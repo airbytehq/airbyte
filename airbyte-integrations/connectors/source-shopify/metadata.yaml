@@ -18,10 +18,6 @@ data:
   icon: shopify.svg
   license: ELv2
   name: Shopify
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-shopify
   registries:
     cloud:
       enabled: true
@@ -36,31 +32,35 @@ data:
           Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
         upgradeDeadline: "2023-09-17"
       2.0.0:
-        message: "This upgrade brings perfomance impovements and stream schema changes. Details are available here: https://github.com/airbytehq/airbyte/pull/32345#issue-1985556333."
-        upgradeDeadline: "2024-03-18"
+        message:
+          "This upgrade brings perfomance impovements and stream schema changes.
+          Details are available here: https://github.com/airbytehq/airbyte/pull/32345#issue-1985556333."
         scopedImpact:
-          - scopeType: stream
-            impactedScopes:
-              [
-                "collections",
-                "customer_address",
-                "discount_codes",
-                "fulfillment_orders",
-                "fulfillments",
-                "inventory_items",
-                "inventory_levels",
-                "metafield_collections",
-                "metafield_customers",
-                "metafield_draft_orders",
-                "metafield_locations",
-                "metafield_orders",
-                "metafield_product_images",
-                "metafield_product_variants",
-                "order_refunds",
-                "product_images",
-                "product_variants",
-                "transactions",
-              ]
+          - impactedScopes:
+              - collections
+              - customer_address
+              - discount_codes
+              - fulfillment_orders
+              - fulfillments
+              - inventory_items
+              - inventory_levels
+              - metafield_collections
+              - metafield_customers
+              - metafield_draft_orders
+              - metafield_locations
+              - metafield_orders
+              - metafield_product_images
+              - metafield_product_variants
+              - order_refunds
+              - product_images
+              - product_variants
+              - transactions
+            scopeType: stream
+        upgradeDeadline: "2024-03-18"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-shopify
   suggestedStreams:
     streams:
       - customers
@@ -96,5 +96,6 @@ data:
       - metafield_locations
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

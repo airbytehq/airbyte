@@ -23,10 +23,6 @@ data:
   icon: bingads.svg
   license: MIT
   name: Bing Ads
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-bing-ads
   registries:
     cloud:
       enabled: true
@@ -44,10 +40,19 @@ data:
           is required for the changes to take effect.
         upgradeDeadline: "2023-10-25"
       2.0.0:
-        message: >
-          Version 2.0.0 updates schemas for all hourly reports (end in report_hourly), and the following streams: Accounts, Campaigns, Search Query Performance Report, AppInstallAds, AppInstallAdLabels, Labels, Campaign Labels, Keyword Labels, Ad Group Labels, Keywords, and Budget Summary Report.
-          Users will need to refresh the source schema and reset affected streams after upgrading.
+        message:
+          "Version 2.0.0 updates schemas for all hourly reports (end in report_hourly),
+          and the following streams: Accounts, Campaigns, Search Query Performance
+          Report, AppInstallAds, AppInstallAdLabels, Labels, Campaign Labels, Keyword
+          Labels, Ad Group Labels, Keywords, and Budget Summary Report. Users will
+          need to refresh the source schema and reset affected streams after upgrading.
+
+          "
         upgradeDeadline: "2023-12-11"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-bing-ads
   suggestedStreams:
     streams:
       - campaigns
@@ -59,5 +64,6 @@ data:
       - ad_groups
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

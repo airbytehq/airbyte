@@ -17,17 +17,16 @@ data:
   icon: googlesearchconsole.svg
   license: Elv2
   name: Google Search Console
-  remoteRegistries:
-    pypi:
-      enabled: false
-      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
-      packageName: airbyte-source-google-search-console
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-google-search-console
   suggestedStreams:
     streams:
       - search_analytics_by_page
@@ -39,5 +38,6 @@ data:
       - search_analytics_all_fields
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

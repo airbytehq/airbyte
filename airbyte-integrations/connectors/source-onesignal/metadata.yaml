@@ -1,16 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - "onesignal.com"
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-onesignal
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
+      - onesignal.com
   connectorSubtype: api
   connectorType: source
   definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
@@ -21,9 +12,19 @@ data:
   icon: onesignal.svg
   license: MIT
   name: OneSignal
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2023-08-31
   releaseStage: alpha
-  tags:
-    - language:low-code
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-onesignal
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

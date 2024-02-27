@@ -17,16 +17,16 @@ data:
   icon: intercom.svg
   license: MIT
   name: Intercom
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-intercom
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-intercom
   suggestedStreams:
     streams:
       - conversations
@@ -36,5 +36,6 @@ data:
       - companies
   supportLevel: certified
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

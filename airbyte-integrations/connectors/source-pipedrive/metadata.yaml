@@ -4,16 +4,7 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-      - api.pipedrive.com # Please change to the hostname of the source.
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-pipedrive
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+      - api.pipedrive.com
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
@@ -24,14 +15,26 @@ data:
   icon: pipedrive.svg
   license: MIT
   name: Pipedrive
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: 2021-07-19
+  releaseStage: alpha
   releases:
     breakingChanges:
       2.0.0:
+        message:
+          This version removes the `pipeline_ids` field from the `deal_fields`
+          stream. Config has changed to only use API key. Please update your config.
         upgradeDeadline: 2023-10-04
-        message: "This version removes the `pipeline_ids` field from the `deal_fields` stream. Config has changed to only use API key. Please update your config."
-  releaseDate: 2021-07-19
-  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pipedrive
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

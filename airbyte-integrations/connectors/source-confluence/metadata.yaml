@@ -5,15 +5,6 @@ data:
   allowedHosts:
     hosts:
       - ${subdomain}.atlassian.net
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-confluence
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
@@ -24,9 +15,19 @@ data:
   icon: confluence.svg
   license: MIT
   name: Confluence
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2021-11-05
   releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-confluence
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

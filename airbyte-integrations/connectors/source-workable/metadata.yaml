@@ -1,29 +1,29 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: ef3c99c6-9e90-43c8-9517-926cfd978517
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-workable
+  documentationUrl: https://docs.airbyte.com/integrations/sources/workable
   githubIssueLabel: source-workable
   icon: workable.svg
   license: MIT
   name: Workable
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-workable
   registries:
     cloud:
       enabled: false
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/workable
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-workable
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

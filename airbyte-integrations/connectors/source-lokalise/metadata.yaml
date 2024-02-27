@@ -1,29 +1,29 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 45e0b135-615c-40ac-b38e-e65b0944197f
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-lokalise
+  documentationUrl: https://docs.airbyte.com/integrations/sources/lokalise
   githubIssueLabel: source-lokalise
   icon: lokalise.svg
   license: MIT
   name: Lokalise
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-lokalise
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/lokalise
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-lokalise
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

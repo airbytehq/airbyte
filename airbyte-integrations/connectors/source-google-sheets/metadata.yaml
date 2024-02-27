@@ -17,17 +17,18 @@ data:
   icon: google-sheets.svg
   license: Elv2
   name: Google Sheets
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-google-sheets
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-sheets
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

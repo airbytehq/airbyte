@@ -35,5 +35,6 @@ data:
           memory_request: 2Gi
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

@@ -12,17 +12,18 @@ data:
   icon: okta.svg
   license: MIT
   name: Okta
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-okta
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-okta
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

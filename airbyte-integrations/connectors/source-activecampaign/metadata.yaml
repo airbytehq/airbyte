@@ -12,18 +12,18 @@ data:
   icon: activecampaign.svg
   license: MIT
   name: ActiveCampaign
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-activecampaign
   registries:
     cloud:
       enabled: false
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-activecampaign
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

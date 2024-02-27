@@ -5,15 +5,6 @@ data:
   allowedHosts:
     hosts:
       - api.trello.com
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-trello
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 8da67652-004c-11ec-9a03-0242ac130003
@@ -24,14 +15,29 @@ data:
   icon: trello.svg
   license: MIT
   name: Trello
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: 2021-08-18
+  releaseStage: beta
   releases:
     breakingChanges:
       1.0.0:
+        message:
+          The verison migrates the Trello connector to the low-code framework
+          for greater maintainability. This introduces a breaking change to the state
+          format for the `response` stream. If you are using the incremental sync
+          mode for this stream, you will need to reset the affected connection after
+          upgrading to prevent sync failures.
         upgradeDeadline: "2023-09-28"
-        message: "The verison migrates the Trello connector to the low-code framework for greater maintainability. This introduces a breaking change to the state format for the `response` stream. If you are using the incremental sync mode for this stream, you will need to reset the affected connection after upgrading to prevent sync failures."
-  releaseDate: 2021-08-18
-  releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-trello
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

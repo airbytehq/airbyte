@@ -1,29 +1,29 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 1901024c-0249-45d0-bcac-31a954652927
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-instatus
+  documentationUrl: https://docs.airbyte.com/integrations/sources/instatus
   githubIssueLabel: source-instatus
   icon: instatus.svg
   license: MIT
   name: Instatus
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-instatus
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/instatus
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-instatus
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

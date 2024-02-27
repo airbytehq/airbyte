@@ -18,19 +18,16 @@ data:
   icon: tiktok.svg
   license: MIT
   name: TikTok Marketing
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-tiktok-marketing
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
-  supportLevel: certified
-  tags:
-    - language:python
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-tiktok-marketing
   suggestedStreams:
     streams:
       - ads_reports_daily
@@ -40,4 +37,8 @@ data:
       - ad_groups
       - ad_groups_reports_daily
       - advertisers_reports_daily
+  supportLevel: certified
+  tags:
+    - cdk:python
+    - language:python
 metadataSpecVersion: "1.0"

@@ -17,10 +17,6 @@ data:
   icon: notion.svg
   license: MIT
   name: Notion
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-notion
   registries:
     cloud:
       enabled: true
@@ -36,6 +32,10 @@ data:
           to reflect updates to the Notion API. A full schema refresh and data reset
           are required to upgrade to this version.
         upgradeDeadline: "2023-11-09"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-notion
   suggestedStreams:
     streams:
       - blocks
@@ -44,5 +44,6 @@ data:
       - users
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

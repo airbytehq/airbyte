@@ -2,28 +2,29 @@ data:
   allowedHosts:
     hosts:
       - "*"
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-fastbill
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: eb3e9c1c-0467-4eb7-a172-5265e04ccd0a
   dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-fastbill
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fastbill
   githubIssueLabel: source-fastbill
   icon: fastbill.svg
   license: MIT
   name: Fastbill
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseDate: "2022-11-08"
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-fastbill
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/fastbill
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

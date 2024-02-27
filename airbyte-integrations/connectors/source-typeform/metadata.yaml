@@ -17,10 +17,6 @@ data:
   icon: typeform.svg
   license: MIT
   name: Typeform
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-typeform
   registries:
     cloud:
       enabled: true
@@ -38,7 +34,12 @@ data:
           mode for this stream, you will need to reset affected connections after
           upgrading to prevent sync failures.
         upgradeDeadline: "2023-09-25"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-typeform
   supportLevel: certified
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

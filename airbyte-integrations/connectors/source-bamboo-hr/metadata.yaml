@@ -12,17 +12,18 @@ data:
   icon: bamboohr.svg
   license: MIT
   name: BambooHR
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-bamboo-hr
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-bamboo-hr
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

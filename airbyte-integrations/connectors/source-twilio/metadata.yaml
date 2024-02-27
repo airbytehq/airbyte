@@ -20,17 +20,18 @@ data:
   icon: twilio.svg
   license: MIT
   name: Twilio
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-twilio
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-twilio
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

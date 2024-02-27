@@ -18,16 +18,16 @@ data:
   icon: amplitude.svg
   license: MIT
   name: Amplitude
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-amplitude
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-amplitude
   suggestedStreams:
     streams:
       - events
@@ -36,6 +36,6 @@ data:
       - cohorts
   supportLevel: certified
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

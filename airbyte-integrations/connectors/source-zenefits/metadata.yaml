@@ -1,32 +1,33 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - api.zenefits.com
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-zenefits
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 8baba53d-2fe3-4e33-bc85-210d0eb62884
   dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-zenefits
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zenefits
   githubIssueLabel: source-zenefits
   icon: icon.svg
   license: MIT
   name: Zenefits
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseDate: 2022-08-24
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/zenefits
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zenefits
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

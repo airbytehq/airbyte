@@ -17,16 +17,16 @@ data:
   icon: chargebee.svg
   license: MIT
   name: Chargebee
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-chargebee
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-chargebee
   suggestedStreams:
     streams:
       - subscription
@@ -42,6 +42,6 @@ data:
       - addon
   supportLevel: certified
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

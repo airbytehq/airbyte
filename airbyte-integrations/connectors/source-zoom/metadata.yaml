@@ -1,30 +1,29 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
   dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-zoom
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
   githubIssueLabel: source-zoom
   icon: zoom.svg
   license: MIT
   name: Zoom
-  remoteRegistries:
-    pypi:
-      # TODO: Enable once build problems are fixed
-      enabled: false
-      packageName: airbyte-source-zoom
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 200
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-zoom
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

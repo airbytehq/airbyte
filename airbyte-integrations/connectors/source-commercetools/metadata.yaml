@@ -1,32 +1,33 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - auth.${region}.${host}.commercetools.com
       - api.${region}.${host}.commercetools.com
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-commercetools
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: false
   connectorSubtype: api
   connectorType: source
   definitionId: 008b2e26-11a3-11ec-82a8-0242ac130003
   dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-commercetools
+  documentationUrl: https://docs.airbyte.com/integrations/sources/commercetools
   githubIssueLabel: source-commercetools
   icon: commercetools.svg
   license: MIT
   name: Commercetools
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/commercetools
-  tags:
-    - language:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-commercetools
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

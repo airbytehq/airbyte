@@ -1,29 +1,29 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 781f8b1d-4e20-4842-a2c3-cd9b119d65fa
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-smaily
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smaily
   githubIssueLabel: source-smaily
   icon: smaily.svg
   license: MIT
   name: Smaily
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-smaily
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/smaily
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-smaily
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -19,10 +19,6 @@ data:
   icon: google-analytics.svg
   license: Elv2
   name: Google Analytics 4 (GA4)
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-google-analytics-data-api
   registries:
     cloud:
       enabled: true
@@ -38,6 +34,10 @@ data:
           to sync successfully. Please upgrade the connector to enable this additional
           functionality.
         upgradeDeadline: "2023-10-16"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-analytics-data-api
   suggestedStreams:
     streams:
       - website_overview
@@ -51,5 +51,6 @@ data:
       - sessions
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

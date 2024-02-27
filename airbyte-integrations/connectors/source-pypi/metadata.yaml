@@ -1,29 +1,29 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 88ecd3a8-5f5b-11ed-9b6a-0242ac120002
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-pypi
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pypi
   githubIssueLabel: source-pypi
   icon: pypi.svg
   license: MIT
   name: PyPI
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-pypi
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/pypi
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pypi
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -1,28 +1,29 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: dd4632f4-15e0-4649-9b71-41719fb1fdee
   dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-surveycto
+  documentationUrl: https://docs.airbyte.com/integrations/sources/surveycto
   githubIssueLabel: source-surveycto
   icon: surveycto.svg
   license: MIT
   name: SurveyCTO
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-surveycto
   registries:
     cloud:
       enabled: false
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/surveycto
-  tags:
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-surveycto
   supportLevel: community
+  tags:
+    - cdk:python
+    - language:python
 metadataSpecVersion: "1.0"

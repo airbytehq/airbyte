@@ -18,10 +18,6 @@ data:
   icon: google-adwords.svg
   license: Elv2
   name: Google Ads
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-google-ads
   registries:
     cloud:
       enabled: true
@@ -44,10 +40,16 @@ data:
           upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2023-11-30"
       3.0.0:
-        message: Google is deprecating v13 of the Google Ads API in January.
-          This release upgrades the Google Ads API to the latest version (v15), which causes changes in several schemas.
-          Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
+        message:
+          Google is deprecating v13 of the Google Ads API in January. This
+          release upgrades the Google Ads API to the latest version (v15), which causes
+          changes in several schemas. Users should refresh the source schema and reset
+          affected streams after upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2024-01-12"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-ads
   suggestedStreams:
     streams:
       - campaigns
@@ -68,5 +70,6 @@ data:
       - display_topics_performance_report
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

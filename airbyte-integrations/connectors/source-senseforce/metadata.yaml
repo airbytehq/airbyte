@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - galaxyapi.senseforce.io
@@ -8,26 +11,23 @@ data:
   definitionId: 39de93cb-1511-473e-a673-5cbedb9436af
   dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-senseforce
+  documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
   githubIssueLabel: source-senseforce
   icon: senseforce.svg
   license: MIT
   name: Senseforce
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-senseforce
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-senseforce
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

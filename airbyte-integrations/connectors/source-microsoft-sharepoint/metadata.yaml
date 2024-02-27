@@ -6,26 +6,27 @@ data:
     hosts:
       - graph.microsoft.com
       - login.microsoftonline.com
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
-  connectorSubtype: api
+  connectorSubtype: file
   connectorType: source
   definitionId: 59353119-f0f2-4e5a-a8ba-15d887bc34f6
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-microsoft-sharepoint
+  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-sharepoint
   githubIssueLabel: source-microsoft-sharepoint
   icon: microsoft-sharepoint.svg
   license: MIT
   name: Microsoft SharePoint
-  supportLevel: community
-  releaseStage: alpha
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2024-02-02
-  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-sharepoint
+  releaseStage: alpha
+  supportLevel: community
   tags:
+    - cdk:python-file-based
     - language:python
 metadataSpecVersion: "1.0"

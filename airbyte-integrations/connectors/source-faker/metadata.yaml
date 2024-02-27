@@ -52,5 +52,6 @@ data:
       - purchases
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

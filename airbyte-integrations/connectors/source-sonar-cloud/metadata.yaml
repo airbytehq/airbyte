@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - sonarcloud.io
@@ -7,26 +10,23 @@ data:
   definitionId: 3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2
   dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-sonar-cloud
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
   githubIssueLabel: source-sonar-cloud
   icon: sonarcloud.svg
   license: MIT
   name: Sonar Cloud
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-sonar-cloud
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sonar-cloud
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

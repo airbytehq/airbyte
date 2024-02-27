@@ -18,10 +18,6 @@ data:
   icon: paypal.svg
   license: MIT
   name: Paypal Transaction
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-paypal-transaction
   registries:
     cloud:
       enabled: true
@@ -32,8 +28,17 @@ data:
   releases:
     breakingChanges:
       2.1.0:
-        message: 'Version 2.1.0 changes the format of the state. The format of the cursor changed from "2021-06-18T16:24:13+03:00" to "2021-06-18T16:24:13Z". The state key for the transactions stream changed to "transaction_updated_date" and the key for the balances stream change to "as_of_time". The upgrade is safe, but rolling back is not.'
+        message:
+          Version 2.1.0 changes the format of the state. The format of the
+          cursor changed from "2021-06-18T16:24:13+03:00" to "2021-06-18T16:24:13Z".
+          The state key for the transactions stream changed to "transaction_updated_date"
+          and the key for the balances stream change to "as_of_time". The upgrade
+          is safe, but rolling back is not.
         upgradeDeadline: "2023-09-18"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-paypal-transaction
   suggestedStreams:
     streams:
       - transactions
@@ -41,5 +46,6 @@ data:
       - list_payments
   supportLevel: certified
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

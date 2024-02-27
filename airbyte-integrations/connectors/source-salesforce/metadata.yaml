@@ -17,17 +17,18 @@ data:
   icon: salesforce.svg
   license: ELv2
   name: Salesforce
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-salesforce
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-salesforce
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

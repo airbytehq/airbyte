@@ -14,7 +14,7 @@ data:
   icon: linnworks.svg
   license: MIT
   name: Linnworks
-  registries: # Removed from registries due to LEGACY STATE
+  registries:
     cloud:
       enabled: false
     oss:
@@ -26,5 +26,6 @@ data:
       packageName: airbyte-source-linnworks
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

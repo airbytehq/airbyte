@@ -1,28 +1,29 @@
 data:
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-outbrain-amplify
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 4fe962d0-a70e-4516-aa99-c551abf46352
   dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-outbrain-amplify
+  documentationUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
   githubIssueLabel: source-outbrain-amplify
   icon: icon.svg
   license: MIT
   name: Outbrain Amplify
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
-  tags:
-    - language:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-outbrain-amplify
   supportLevel: community
+  tags:
+    - cdk:python
+    - language:python
 metadataSpecVersion: "1.0"

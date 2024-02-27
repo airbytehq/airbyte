@@ -18,10 +18,6 @@ data:
   icon: airtable.svg
   license: MIT
   name: Airtable
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-airtable
   registries:
     cloud:
       enabled: true
@@ -37,7 +33,12 @@ data:
           Users should refresh the source schema and reset affected streams after
           upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2023-10-23"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-airtable
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

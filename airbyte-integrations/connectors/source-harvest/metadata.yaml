@@ -17,17 +17,18 @@ data:
   icon: harvest.svg
   license: MIT
   name: Harvest
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-harvest
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-harvest
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

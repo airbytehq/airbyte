@@ -1,10 +1,14 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorSubtype: api
   connectorType: destination
   definitionId: e088acb6-9780-4568-880c-54c2dd7f431b
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-cumulio
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/cumulio
   githubIssueLabel: destination-cumulio
-  connectorSubtype: api
   icon: cumulio.svg
   license: MIT
   name: Cumul.io
@@ -14,11 +18,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/cumulio
-  tags:
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
   supportLevel: community
+  tags:
+    - cdk:python
+    - language:python
 metadataSpecVersion: "1.0"

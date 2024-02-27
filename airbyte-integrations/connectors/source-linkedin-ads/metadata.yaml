@@ -19,16 +19,16 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 86400
   name: LinkedIn Ads
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-linkedin-ads
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-linkedin-ads
   suggestedStreams:
     streams:
       - accounts
@@ -40,5 +40,6 @@ data:
       - creatives
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

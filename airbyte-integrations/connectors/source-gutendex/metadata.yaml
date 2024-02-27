@@ -1,28 +1,28 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: bff9a277-e01d-420d-81ee-80f28a307318
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-gutendex
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gutendex
   githubIssueLabel: source-gutendex
   license: MIT
   name: Gutendex
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-gutendex
   registries:
     cloud:
       enabled: false
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/gutendex
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gutendex
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

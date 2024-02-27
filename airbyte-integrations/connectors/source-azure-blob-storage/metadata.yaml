@@ -14,17 +14,18 @@ data:
   icon: azureblobstorage.svg
   license: MIT
   name: Azure Blob Storage
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-azure-blob-storage
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-azure-blob-storage
   supportLevel: community
   tags:
+    - cdk:python-file-based
     - language:python
 metadataSpecVersion: "1.0"

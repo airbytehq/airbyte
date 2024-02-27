@@ -12,17 +12,18 @@ data:
   icon: netsuite.svg
   license: MIT
   name: Netsuite
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-netsuite
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-netsuite
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

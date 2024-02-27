@@ -1,29 +1,29 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 263fd456-02d1-4a26-a35e-52ccaedad778
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-fullstory
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fullstory
   githubIssueLabel: source-fullstory
   icon: fullstory.svg
   license: MIT
   name: Fullstory
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-fullstory
   registries:
     cloud:
       enabled: false
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/fullstory
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-fullstory
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

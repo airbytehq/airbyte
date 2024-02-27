@@ -15,18 +15,18 @@ data:
   icon: twitter.svg
   license: MIT
   name: Twitter
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-twitter
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-twitter
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

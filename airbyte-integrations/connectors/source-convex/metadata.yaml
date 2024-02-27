@@ -1,28 +1,29 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: c332628c-f55c-4017-8222-378cfafda9b2
   dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-convex
+  documentationUrl: https://docs.airbyte.com/integrations/sources/convex
   githubIssueLabel: source-convex
   icon: convex.svg
   license: MIT
   name: Convex
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-convex
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/convex
-  tags:
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-convex
   supportLevel: community
+  tags:
+    - cdk:python
+    - language:python
 metadataSpecVersion: "1.0"

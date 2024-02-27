@@ -15,17 +15,18 @@ data:
   icon: yandexmetrica.svg
   license: MIT
   name: Yandex Metrica
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-yandex-metrica
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-yandex-metrica
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

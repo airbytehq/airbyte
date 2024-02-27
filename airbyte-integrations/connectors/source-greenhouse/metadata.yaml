@@ -17,18 +17,18 @@ data:
   icon: greenhouse.svg
   license: MIT
   name: Greenhouse
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-greenhouse
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-greenhouse
   supportLevel: certified
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

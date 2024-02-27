@@ -19,10 +19,6 @@ data:
   license: ELv2
   maxSecondsBetweenMessages: 10800
   name: Zendesk Support
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-zendesk-support
   registries:
     cloud:
       enabled: true
@@ -39,6 +35,10 @@ data:
           The `Deleted Tickets` stream was removed. Deleted tickets are still
           available from the Tickets stream.
         upgradeDeadline: "2023-10-04"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zendesk-support
   suggestedStreams:
     streams:
       - brands
@@ -56,5 +56,6 @@ data:
       - users
   supportLevel: certified
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

@@ -4,6 +4,7 @@ data:
   definitionId: ccd3901d-edf3-4e58-900c-942d6990aa59
   dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-qonto
+  documentationUrl: https://docs.airbyte.com/integrations/sources/qonto
   githubIssueLabel: source-qonto
   icon: qonto.svg
   license: MIT
@@ -11,7 +12,7 @@ data:
   releaseDate: "2023-10-19"
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/qonto
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

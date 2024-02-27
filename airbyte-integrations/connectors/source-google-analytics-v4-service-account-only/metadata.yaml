@@ -28,5 +28,6 @@ data:
   releaseStage: generally_available
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

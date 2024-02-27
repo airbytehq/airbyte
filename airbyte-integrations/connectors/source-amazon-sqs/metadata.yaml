@@ -12,17 +12,18 @@ data:
   icon: awssqs.svg
   license: MIT
   name: Amazon SQS
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-amazon-sqs
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-amazon-sqs
   supportLevel: community
   tags:
+    - cdk:python
     - language:python
 metadataSpecVersion: "1.0"

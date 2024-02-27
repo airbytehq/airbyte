@@ -18,24 +18,25 @@ data:
   name: Microsoft SQL Server (MSSQL)
   registries:
     cloud:
-      # CI pipeline is broken for mssql
       dockerImageTag: 3.6.1
       enabled: true
     oss:
-      # CI pipeline is broken for mssql
       dockerImageTag: 3.6.1
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: Add default cursor for cdc
+        upgradeDeadline: "2023-08-23"
+      3.0.0:
+        message:
+          "Remapped columns of types: date, datetime, datetime2, datetimeoffset,
+          smalldatetime, and time from `String` to their appropriate Airbyte types.
+          Customers whose streams have columns with the affected data types must take
+          action with their connections."
+        upgradeDeadline: "2023-12-07"
   supportLevel: community
   tags:
     - language:java
-    - language:python
-  releases:
-    breakingChanges:
-      3.0.0:
-        message: "Remapped columns of types: date, datetime, datetime2, datetimeoffset, smalldatetime, and time from `String` to their appropriate Airbyte types. Customers whose streams have columns with the affected data types must take action with their connections."
-        upgradeDeadline: "2023-12-07"
-      2.0.0:
-        message: "Add default cursor for cdc"
-        upgradeDeadline: "2023-08-23"
 metadataSpecVersion: "1.0"

@@ -15,18 +15,18 @@ data:
   icon: woocommerce.svg
   license: MIT
   name: WooCommerce
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-woocommerce
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-woocommerce
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"
