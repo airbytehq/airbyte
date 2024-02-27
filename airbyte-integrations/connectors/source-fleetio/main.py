@@ -3,11 +3,7 @@
 #
 
 
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_fleetio import SourceFleetio
+from source_fleetio.run import run
 
 if __name__ == "__main__":
-    source = SourceFleetio()
-    launch(source, sys.argv[1:])
+    run()
