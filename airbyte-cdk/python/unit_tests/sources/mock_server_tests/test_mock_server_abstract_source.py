@@ -20,7 +20,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
 )
 from airbyte_protocol.models import AirbyteStreamStatus
-from unit_tests.sources.integration_tests.integration_source_fixture import SourceFixture
+from unit_tests.sources.mock_server_tests.mock_source_fixture import SourceFixture
 
 _NOW = datetime.now(timezone.utc)
 
