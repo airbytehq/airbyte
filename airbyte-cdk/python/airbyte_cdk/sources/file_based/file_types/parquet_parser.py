@@ -99,26 +99,6 @@ class ParquetParser(FileTypeParser):
         """
         Convert a pyarrow scalar to a value that can be output by the source.
         """
-        # Convert date and datetime objects to isoformat strings
-        if pa.types.is_time(parquet_value.type) or pa.types.is_timestamp(parquet_value.type) or pa.types.is_date(parquet_value.type):
-            return parquet_value.as_py().isoformat()
-
-        # Convert month_day_nano_interval to array
-        if parquet_value.type == pa.month_day_nano_interval():
-            return json.loads(json.dumps(parquet_value.as_py()))
-
-        # Decode binary strings to utf-8
-        if ParquetParser._is_binary(parquet_value.type):
-            py_value = parquet_value.as_py()
-            if py_value is None:
-                return py_value
-            return py_value.decode("utf-8")
-        if pa.types.is_decimal(parquet_value.type):
-            if parquet_format.decimal_as_float:
-                return parquet_value.as_py()
-            else:
-                return str(parquet_value.as_py())
-
         # Dictionaries are stored as two columns: indices and values
         # The indices column is an array of integers that maps to the values column
         if pa.types.is_dictionary(parquet_value.type):
@@ -126,15 +106,38 @@ class ParquetParser(FileTypeParser):
                 "indices": parquet_value.indices.tolist(),
                 "values": parquet_value.dictionary.tolist(),
             }
-        if pa.types.is_map(parquet_value.type):
-            return {k: v for k, v in parquet_value.as_py()}
 
         if pa.types.is_null(parquet_value.type):
             return None
 
+        # All if statements below assume there is a valid py_value and test against it.
+        py_value = parquet_value.as_py()
+        if py_value is None:
+            return py_value
+
+        # Convert date and datetime objects to isoformat strings
+        if pa.types.is_time(parquet_value.type) or pa.types.is_timestamp(parquet_value.type) or pa.types.is_date(parquet_value.type):
+            return py_value.isoformat()
+
+        # Convert month_day_nano_interval to array
+        if parquet_value.type == pa.month_day_nano_interval():
+            return json.loads(json.dumps(py_value))
+
+        # Decode binary strings to utf-8
+        if ParquetParser._is_binary(parquet_value.type):
+            return py_value.decode("utf-8")
+        if pa.types.is_decimal(parquet_value.type):
+            if parquet_format.decimal_as_float:
+                return py_value
+            else:
+                return str(py_value)
+
+        if pa.types.is_map(parquet_value.type):
+            return {k: v for k, v in py_value}
+
         # Convert duration to seconds, then convert to the appropriate unit
         if pa.types.is_duration(parquet_value.type):
-            duration = parquet_value.as_py()
+            duration = py_value
             duration_seconds = duration.total_seconds()
             if parquet_value.type.unit == "s":
                 return duration_seconds
@@ -147,7 +150,7 @@ class ParquetParser(FileTypeParser):
             else:
                 raise ValueError(f"Unknown duration unit: {parquet_value.type.unit}")
         else:
-            return parquet_value.as_py()
+            return py_value
 
     @staticmethod
     def parquet_type_to_schema_type(parquet_type: pa.DataType, parquet_format: ParquetFormat) -> Mapping[str, str]:
