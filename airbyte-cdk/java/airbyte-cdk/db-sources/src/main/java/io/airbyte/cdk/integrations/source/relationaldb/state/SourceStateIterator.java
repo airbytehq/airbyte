@@ -30,15 +30,15 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
 
   public record StateEmitFrequency(long syncCheckpointRecords, Duration syncCheckpointDuration) {}
 
-  private final SourceStateIteratorManager sourceStateIteratorManager;
+  private final SourceStateMessageProducer sourceStateMessageProducer;
 
   public SourceStateIterator(final Iterator<T> messageIterator,
                              final ConfiguredAirbyteStream stream,
-                             final SourceStateIteratorManager sourceStateIteratorManager,
+                             final SourceStateMessageProducer sourceStateMessageProducer,
                              final StateEmitFrequency stateEmitFrequency) {
     this.messageIterator = messageIterator;
     this.stream = stream;
-    this.sourceStateIteratorManager = sourceStateIteratorManager;
+    this.sourceStateMessageProducer = sourceStateMessageProducer;
     this.stateEmitFrequency = stateEmitFrequency;
   }
 
@@ -56,8 +56,8 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       throw new RuntimeException(ex);
     }
     if (iteratorHasNextValue) {
-      if (shouldEmitStateMessage() && sourceStateIteratorManager.shouldEmitStateMessage(stream)) {
-        final AirbyteStateMessage stateMessage = sourceStateIteratorManager.generateStateMessageAtCheckpoint(stream);
+      if (shouldEmitStateMessage() && sourceStateMessageProducer.shouldEmitStateMessage(stream)) {
+        final AirbyteStateMessage stateMessage = sourceStateMessageProducer.generateStateMessageAtCheckpoint(stream);
         stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
 
         recordCount = 0L;
@@ -69,7 +69,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
         final T message = messageIterator.next();
-        final AirbyteMessage processedMessage = sourceStateIteratorManager.processRecordMessage(stream, message);
+        final AirbyteMessage processedMessage = sourceStateMessageProducer.processRecordMessage(stream, message);
         recordCount++;
         return processedMessage;
       } catch (final Exception e) {
@@ -77,7 +77,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      final AirbyteStateMessage finalStateMessageForStream = sourceStateIteratorManager.createFinalStateMessage(stream);
+      final AirbyteStateMessage finalStateMessageForStream = sourceStateMessageProducer.createFinalStateMessage(stream);
       finalStateMessageForStream.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
       recordCount = 0L;
       return new AirbyteMessage()

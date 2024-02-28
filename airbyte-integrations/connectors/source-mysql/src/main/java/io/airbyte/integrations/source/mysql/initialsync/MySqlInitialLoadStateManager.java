@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-public abstract class MySqlInitialLoadStateManager implements SourceStateIteratorManager<AirbyteMessage> {
+public abstract class MySqlInitialLoadStateManager implements SourceStateMessageProducer<AirbyteMessage> {
 
   public static final long MYSQL_STATUS_VERSION = 2;
   public static final String STATE_TYPE_KEY = "state_type";

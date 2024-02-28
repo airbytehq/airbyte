@@ -8,7 +8,14 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 
-public interface SourceStateIteratorManager<T> {
+/**
+ * To be used with SourceStateIterator. SourceStateIterator will iterate over the records and
+ * generate state messages when needed. This interface defines how would those state messages be
+ * generated, and how the incoming record messages will be processed.
+ *
+ * @param <T>
+ */
+public interface SourceStateMessageProducer<T> {
 
   /**
    * Returns a state message that should be emitted at checkpoint.
