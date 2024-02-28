@@ -56,7 +56,7 @@ def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
 
 
 def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[List[AirbyteStateMessage]]) -> SourceStripe:
-    return SourceStripe(catalog, config, state)
+    return SourceStripe(catalog=catalog, config=config, state=state)
 
 
 def _an_event() -> RecordBuilder:

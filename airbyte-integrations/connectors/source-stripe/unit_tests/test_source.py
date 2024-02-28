@@ -52,11 +52,11 @@ def _a_valid_config():
 
 @patch.object(source_stripe.source, "stripe")
 def test_source_check_connection_ok(mocked_client, config):
-    assert SourceStripe(_ANY_CATALOG, _ANY_CONFIG, _NO_STATE).check_connection(logger, config=config) == (True, None)
+    assert SourceStripe(catalog=_ANY_CATALOG, config=_ANY_CONFIG, state=_NO_STATE).check_connection(logger, config=config) == (True, None)
 
 
 def test_streams_are_unique(config):
-    stream_names = [s.name for s in SourceStripe(_ANY_CATALOG, _ANY_CONFIG, _NO_STATE).streams(config=config)]
+    stream_names = [s.name for s in SourceStripe(catalog=_ANY_CATALOG, config=_ANY_CONFIG, state=_NO_STATE).streams(config=config)]
     assert len(stream_names) == len(set(stream_names)) == 46
 
 
@@ -73,7 +73,7 @@ def test_streams_are_unique(config):
 def test_config_validation(mocked_client, input_config, expected_error_msg):
     context = pytest.raises(AirbyteTracedException, match=expected_error_msg) if expected_error_msg else does_not_raise()
     with context:
-        SourceStripe(_ANY_CATALOG, _ANY_CONFIG, _NO_STATE).check_connection(logger, config=input_config)
+        SourceStripe(catalog=_ANY_CATALOG, config=_ANY_CONFIG, state=_NO_STATE).check_connection(logger, config=input_config)
 
 
 @pytest.mark.parametrize(
@@ -86,15 +86,15 @@ def test_config_validation(mocked_client, input_config, expected_error_msg):
 @patch.object(source_stripe.source.stripe, "Account")
 def test_given_stripe_error_when_check_connection_then_connection_not_available(mocked_client, exception):
     mocked_client.retrieve.side_effect = exception
-    is_available, _ = SourceStripe(_ANY_CATALOG, _ANY_CONFIG, _NO_STATE).check_connection(logger, config=_a_valid_config())
+    is_available, _ = SourceStripe(catalog=_ANY_CATALOG, config=_ANY_CONFIG, state=_NO_STATE).check_connection(logger, config=_a_valid_config())
     assert not is_available
 
 
 def test_when_streams_return_full_refresh_as_concurrent():
     streams = SourceStripe(
-        CatalogBuilder().with_stream("bank_accounts", SyncMode.full_refresh).with_stream("customers", SyncMode.incremental).build(),
-        _a_valid_config(),
-        _NO_STATE,
+        catalog=CatalogBuilder().with_stream("bank_accounts", SyncMode.full_refresh).with_stream("customers", SyncMode.incremental).build(),
+        config=_a_valid_config(),
+        state=_NO_STATE,
     ).streams(_a_valid_config())
 
     # bank_accounts (as it is defined as full_refresh)

@@ -8,6 +8,7 @@ from typing import Any, Mapping, Optional, Tuple
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from requests import HTTPError
 
@@ -29,8 +30,9 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
         sync_mode: SyncMode,
         logger: logging.Logger,
         source: Optional["Source"],
-        stream_state: Optional[Mapping[str, Any]],
+        stream_state: Optional[Mapping[Any, Any]],
     ) -> Tuple[bool, Optional[str]]:
+        reason: Optional[str] = None
         try:
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamPartitionRouter)
             # Streams that don't need a stream slice will return `None` as their first stream slice.
@@ -90,7 +92,12 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
             raise error
         doc_ref = self._visit_docs_message(logger, source)
         reason = f"The endpoint {error.response.url} returned {status_code}: {error.response.reason}. {error_message}. {doc_ref} "
-        response_error_message = stream.parse_response_error_message(error.response)
+        # TODO alafanechere
+        # Can we make the HTTPAvailabilityStrategy handle HttpStream instead of Stream?
+        # The parse_response_error_message method is only available on HttpStream
+        response_error_message = None
+        if isinstance(stream, HttpStream):
+            response_error_message = stream.parse_response_error_message(error.response)
         if response_error_message:
             reason += response_error_message
         return False, reason
