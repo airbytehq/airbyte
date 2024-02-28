@@ -226,6 +226,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.5 | 2024-02-20 | [34966](https://github.com/airbytehq/airbyte/pull/34966) | Add support for Performance Max campaigns. |
 | 2.1.4 | 2024-02-12 | [35179](https://github.com/airbytehq/airbyte/pull/35179) | Manage dependencies with Poetry. |
 | 2.1.3   | 2024-01-31 | [34712](https://github.com/airbytehq/airbyte/pull/34712)                                                                         | Fix duplicated records for report-based streams                                                                                                 |
 | 2.1.2   | 2024-01-09 | [34045](https://github.com/airbytehq/airbyte/pull/34045)                                                                         | Speed up record transformation                                                                                                                  |
