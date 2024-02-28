@@ -1,13 +1,18 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+
+from http import HTTPStatus
+from typing import Any, List, Mapping, MutableMapping
 
 import pytest
-from typing import Any, Mapping, MutableMapping
-from source_recharge.source import RechargeTokenAuthenticator, Orders
 import requests
-from http import HTTPStatus
+from source_recharge.source import Orders, RechargeTokenAuthenticator, SourceRecharge
 
 
 def use_orders_deprecated_api_config(
-    config: Mapping[str, Any] = None, 
+    config: Mapping[str, Any] = None,
     use_deprecated_api: bool = False,
 ) -> MutableMapping[str, Any]:
     test_config = config
@@ -15,10 +20,16 @@ def use_orders_deprecated_api_config(
         test_config["use_orders_deprecated_api"] = use_deprecated_api
     return test_config
 
-def test_get_auth_header(config):
+
+def test_get_auth_header(config) -> None:
     expected = {"X-Recharge-Access-Token": config.get("access_token")}
     actual = RechargeTokenAuthenticator(token=config["access_token"]).get_auth_header()
     assert actual == expected
+
+
+def test_streams(config) -> None:
+    streams = SourceRecharge().streams(config)
+    assert len(streams) == 11
 
 
 class TestCommon:
@@ -28,7 +39,7 @@ class TestCommon:
             (Orders, "id"),
         ],
     )
-    def test_primary_key(self, stream_cls, expected):
+    def test_primary_key(self, stream_cls, expected) -> None:
         assert expected == stream_cls.primary_key
 
     @pytest.mark.parametrize(
@@ -37,7 +48,7 @@ class TestCommon:
             (Orders, "incremental", "orders"),
         ],
     )
-    def test_data_path(self, config, stream_cls, stream_type, expected):
+    def test_data_path(self, config, stream_cls, stream_type, expected) -> None:
         if stream_type == "incremental":
             result = stream_cls(config, authenticator=None).data_path
         else:
@@ -50,7 +61,7 @@ class TestCommon:
             (Orders, "incremental", "orders"),
         ],
     )
-    def test_path(self, config, stream_cls, stream_type, expected):
+    def test_path(self, config, stream_cls, stream_type, expected) -> None:
         if stream_type == "incremental":
             result = stream_cls(config, authenticator=None).path()
         else:
@@ -67,7 +78,7 @@ class TestCommon:
             (HTTPStatus.FORBIDDEN, {}, False),
         ],
     )
-    def test_should_retry(self, config, http_status, headers, should_retry):
+    def test_should_retry(self, config, http_status, headers, should_retry) -> None:
         response = requests.Response()
         response.status_code = http_status
         response._content = b""
@@ -77,7 +88,7 @@ class TestCommon:
 
 
 class TestFullRefreshStreams:
-    def generate_records(self, stream_name, count):
+    def generate_records(self, stream_name, count) -> Mapping[str, List[Mapping[str, Any]]] | Mapping[str, Any]:
         if not stream_name:
             return {f"record_{1}": f"test_{1}"}
         result = []
@@ -92,7 +103,7 @@ class TestFullRefreshStreams:
             (Orders, False, {"next_cursor": "some next cursor"}, {"cursor": "some next cursor"}),
         ],
     )
-    def test_next_page_token(self, config, use_deprecated_api, stream_cls, cursor_response, requests_mock, expected):
+    def test_next_page_token(self, config, use_deprecated_api, stream_cls, cursor_response, requests_mock, expected) -> None:
         test_config = use_orders_deprecated_api_config(config, use_deprecated_api)
         stream = stream_cls(test_config, authenticator=None)
         stream.page_size = 2
@@ -106,22 +117,22 @@ class TestFullRefreshStreams:
         "stream_cls, use_deprecated_api, next_page_token, stream_slice, expected",
         [
             (
-                Orders, 
-                True, 
-                None, 
-                {"start_date":"2023-01-01 00:00:01","end_date":"2023-01-31 00:00:01"},
-                {'limit': 250, 'updated_at_min': '2023-01-01 00:00:01', 'updated_at_max': '2023-01-31 00:00:01'},
+                Orders,
+                True,
+                None,
+                {"start_date": "2023-01-01 00:00:01", "end_date": "2023-01-31 00:00:01"},
+                {"limit": 250, "updated_at_min": "2023-01-01 00:00:01", "updated_at_max": "2023-01-31 00:00:01"},
             ),
             (
-                Orders, 
-                False, 
-                None, 
-                {"start_date":"2023-01-01 00:00:01","end_date":"2023-01-31 00:00:01"},
-                {'limit': 250, 'updated_at_min': '2023-01-01 00:00:01', 'updated_at_max': '2023-01-31 00:00:01'},
+                Orders,
+                False,
+                None,
+                {"start_date": "2023-01-01 00:00:01", "end_date": "2023-01-31 00:00:01"},
+                {"limit": 250, "updated_at_min": "2023-01-01 00:00:01", "updated_at_max": "2023-01-31 00:00:01"},
             ),
         ],
     )
-    def test_request_params(self, config, stream_cls, use_deprecated_api, next_page_token, stream_slice, expected):
+    def test_request_params(self, config, stream_cls, use_deprecated_api, next_page_token, stream_slice, expected) -> None:
         test_config = use_orders_deprecated_api_config(config, use_deprecated_api)
         stream = stream_cls(test_config, authenticator=None)
         result = stream.request_params(stream_slice, next_page_token)
@@ -134,7 +145,7 @@ class TestFullRefreshStreams:
             (Orders, False, [{"test": 123}], [{"test": 123}]),
         ],
     )
-    def test_parse_response(self, config, stream_cls, use_deprecated_api, data, requests_mock, expected):
+    def test_parse_response(self, config, stream_cls, use_deprecated_api, data, requests_mock, expected) -> None:
         test_config = use_orders_deprecated_api_config(config, use_deprecated_api)
         stream = stream_cls(test_config, authenticator=None)
         url = f"{stream.url_base}{stream.path()}"
@@ -150,7 +161,7 @@ class TestFullRefreshStreams:
             (Orders, False, [{"test": 123}], [{"test": 123}]),
         ],
     )
-    def get_stream_data(self, config, stream_cls, use_deprecated_api, data, requests_mock, expected):
+    def get_stream_data(self, config, stream_cls, use_deprecated_api, data, requests_mock, expected) -> None:
         test_config = use_orders_deprecated_api_config(config, use_deprecated_api)
         stream = stream_cls(test_config, authenticator=None)
         url = f"{stream.url_base}{stream.path()}"
@@ -161,7 +172,7 @@ class TestFullRefreshStreams:
 
 
 class TestIncrementalStreams:
-    def generate_records(self, stream_name, count):
+    def generate_records(self, stream_name, count) -> Mapping[str, List[Mapping[str, Any]]]:
         result = []
         for i in range(0, count):
             result.append({f"record_{i}": f"test_{i}"})
@@ -174,7 +185,7 @@ class TestIncrementalStreams:
             (Orders, False, "updated_at"),
         ],
     )
-    def test_cursor_field(self, config, stream_cls, use_deprecated_api, expected):
+    def test_cursor_field(self, config, stream_cls, use_deprecated_api, expected) -> None:
         test_config = use_orders_deprecated_api_config(config, use_deprecated_api)
         stream = stream_cls(test_config, authenticator=None)
         result = stream.cursor_field
@@ -187,7 +198,7 @@ class TestIncrementalStreams:
             (Orders, False, {"next_cursor": "some next cursor"}, {"cursor": "some next cursor"}),
         ],
     )
-    def test_next_page_token(self, config, stream_cls, use_deprecated_api, cursor_response, requests_mock, expected):
+    def test_next_page_token(self, config, stream_cls, use_deprecated_api, cursor_response, requests_mock, expected) -> None:
         test_config = use_orders_deprecated_api_config(config, use_deprecated_api)
         stream = stream_cls(test_config, authenticator=None)
         stream.page_size = 2
@@ -205,23 +216,22 @@ class TestIncrementalStreams:
                 True,
                 None,
                 {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
-                {'limit': 250, 'updated_at_min': '2020-01-01T00:00:00Z', 'updated_at_max': '2020-02-01T00:00:00Z'},
+                {"limit": 250, "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
             ),
             (
                 Orders,
                 False,
                 None,
                 {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
-                {'limit': 250, 'updated_at_min': '2020-01-01T00:00:00Z', 'updated_at_max': '2020-02-01T00:00:00Z'},
+                {"limit": 250, "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
             ),
         ],
     )
-    def test_request_params(self, config, stream_cls, use_deprecated_api, next_page_token, stream_slice, expected):
+    def test_request_params(self, config, stream_cls, use_deprecated_api, next_page_token, stream_slice, expected) -> None:
         test_config = use_orders_deprecated_api_config(config, use_deprecated_api)
         stream = stream_cls(test_config, authenticator=None)
         result = stream.request_params(stream_slice, next_page_token)
         assert result == expected
-
 
     @pytest.mark.parametrize(
         "stream_cls, use_deprecated_api, current_state, latest_record, expected",
@@ -230,19 +240,19 @@ class TestIncrementalStreams:
             (Orders, False, {"updated_at": 5}, {"updated_at": 5}, {"updated_at": 5}),
         ],
     )
-    def test_get_updated_state(self, config, stream_cls,use_deprecated_api, current_state, latest_record, expected):
+    def test_get_updated_state(self, config, stream_cls, use_deprecated_api, current_state, latest_record, expected) -> None:
         test_config = use_orders_deprecated_api_config(config, use_deprecated_api)
         stream = stream_cls(test_config, authenticator=None)
         result = stream.get_updated_state(current_state, latest_record)
         assert result == expected
-        
+
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (Orders, {'start_date': '2021-08-15 00:00:01', 'end_date': '2021-09-14 00:00:01'}),
+            (Orders, {"start_date": "2021-08-15 00:00:01", "end_date": "2021-09-14 00:00:01"}),
         ],
     )
-    def test_stream_slices(self, config, stream_cls, expected):
+    def test_stream_slices(self, config, stream_cls, expected) -> None:
         stream = stream_cls(config, authenticator=None)
         result = list(stream.stream_slices(sync_mode=None, cursor_field=stream.cursor_field, stream_state=None))
         assert result[0] == expected

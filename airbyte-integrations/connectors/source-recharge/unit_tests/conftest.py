@@ -1,5 +1,6 @@
 from typing import Any, Mapping
 from unittest.mock import patch
+
 import pytest
 
 
