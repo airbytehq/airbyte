@@ -125,7 +125,7 @@ server:
 
 2. Add your Airbyte Self-Managed Enterprise license key to your `airbyte.yml` in the `license-key` field.
 
-4. To enable SSO authentication, add [SSO auth details](/access-management/sso) to your `airbyte.yml` file. 
+3. To enable SSO authentication, add [SSO auth details](/access-management/sso) to your `airbyte.yml` file. 
 
 <details>
     <summary>Configuring auth in your airbyte.yml file</summary>
@@ -166,9 +166,9 @@ See the [following guide](/access-management/sso-providers/azure-entra-id) on ho
 </TabItem>
 </Tabs>
 
-To configure basic auth (deploy without SSO), exclude the entire `auth:` section from your airbyte.yml config file. You will authenticate with the instance admin user and password included in your `airbyte.yml`.
+To modify auth configurations on an existing deployment (after Airbyte has been installed at least once), you will need to `helm upgrade` Airbyte with the additional environment variable `--set keycloak-setup.env_vars.KEYCLOAK_RESET_REALM=true`. As this also resets the list of Airbyte users and permissions, please use this with caution.
 
-To modify auth configurations after Airbyte is installed, you will need to `helm upgrade` Airbyte with the additional environment variable `--set keycloak-setup.env_vars.KEYCLOAK_RESET_REALM=true`. As this also resets the list of Airbyte users and permissions, please use this with caution.
+To deploy Self-Managed Enterprise without SSO, exclude the entire `auth:` section from your airbyte.yml config file. You will authenticate with the instance admin user and password included in your `airbyte.yml`. Without SSO, you cannot currently have unique logins for multiple users.
 
 </details>
 
@@ -431,7 +431,7 @@ You may configure ingress using a load balancer or an API Gateway. We do not cur
 Install Airbyte Self-Managed Enterprise on helm using the following command:
 
 ```sh
-helm upgrade \
+helm install \
   --namespace airbyte \
   --install "airbyte-enterprise" \ 
   "airbyte/airbyte" \
@@ -463,6 +463,7 @@ After specifying your own configuration, run the following command:
 
 ```sh
 helm upgrade \ 
+--namespace airbyte \
 --install "airbyte-enterprise" \ 
 "airbyte/airbyte" \
  --set-file airbyteYml="./airbyte.yml" \
