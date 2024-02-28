@@ -91,6 +91,7 @@ class DestinationAmazonSqs(Destination):
         # send_as_batch = config.get("send_as_batch", False)
         message_delay = config.get("message_delay")
         message_body_key = config.get("message_body_key")
+        endpoint_url = config.get("endpoint_url", None)
 
         # FIFO Properties
         message_group_id = config.get("message_group_id")
@@ -100,7 +101,9 @@ class DestinationAmazonSqs(Destination):
         secret_key = config["secret_key"]
 
         session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
-        sqs = session.resource("sqs")
+        
+        sqs = self.initialize_sqs_client(endpoint_url, session)
+        
         queue = sqs.Queue(url=queue_url)
 
         # TODO: Make access/secret key optional, support public access & profiles
@@ -138,9 +141,16 @@ class DestinationAmazonSqs(Destination):
             secret_key = config["secret_key"]
             logger.debug("Amazon SQS Destination Config Check - secret_key (ends with): " + secret_key[-1])
 
+            # Optional Properties
+            endpoint_url = config.get("endpoint_url", None)
+            if endpoint_url:
+                logger.debug("Amazon SQS Destination Config Check - endpoint_url: " + endpoint_url)
+            
             logger.debug("Amazon SQS Destination Config Check - Starting connection test ---")
             session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
-            sqs = session.resource("sqs")
+
+            sqs = self.initialize_sqs_client(endpoint_url, session)
+
             queue = sqs.Queue(url=queue_url)
             if hasattr(queue, "attributes"):
                 logger.debug("Amazon SQS Destination Config Check - Connection test successful ---")
@@ -174,3 +184,11 @@ class DestinationAmazonSqs(Destination):
             return AirbyteConnectionStatus(
                 status=Status.FAILED, message=f"Amazon SQS Destination Config Check - An exception occurred: {str(e)}"
             )
+
+    def initialize_sqs_client(self, endpoint_url, session):
+        # If endpoint_url is provided, use it; otherwise, let boto3 use the default
+        if endpoint_url:
+            sqs = session.resource("sqs", endpoint_url=endpoint_url)
+        else:
+            sqs = session.resource("sqs")
+        return sqs
