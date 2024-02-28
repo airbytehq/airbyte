@@ -5,6 +5,9 @@
     "meeting_uuid": {
       "type": "string"
     },
+    "meeting_id": {
+      "type": "integer"
+    },
     "customer_key": {
       "type": "string"
     },
@@ -39,6 +42,12 @@
       "type": "string"
     },
     "bo_mtg_id": {
+      "type": "string"
+    },
+    "participant_user_id": {
+      "type": "string"
+    },
+    "attentiveness_score": {
       "type": "string"
     }
   },
