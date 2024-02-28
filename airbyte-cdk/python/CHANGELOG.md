@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.67.1
+Fix handling of tab-separated CSVs
+
 ## 0.67.0
 Low-code: Add CustomRecordFilter
 

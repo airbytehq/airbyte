@@ -80,7 +80,7 @@ class CustomFormatChecker(FormatChecker):
 
 
 def verify_records_schema(
-    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: bool
+    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog
 ) -> Mapping[str, Mapping[str, ValidationError]]:
     """Check records against their schemas from the catalog, yield error messages.
     Only first record with error will be yielded for each stream.
