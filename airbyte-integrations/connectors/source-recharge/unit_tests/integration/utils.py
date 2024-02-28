@@ -3,7 +3,7 @@
 #
 
 
-from typing import List, Optional, Mapping, Any
+from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
@@ -16,11 +16,14 @@ from .config import ConfigBuilder
 def config() -> ConfigBuilder:
     return ConfigBuilder()
 
+
 def catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(stream_name, sync_mode).build()
 
+
 def source() -> SourceRecharge:
     return SourceRecharge()
+
 
 def read_output(
     config_builder: ConfigBuilder,
@@ -33,9 +36,10 @@ def read_output(
     _config = config_builder.build()
     return read(source(), _config, _catalog, state, expected_exception)
 
+
 def read_full_refresh(
-    config_: ConfigBuilder, 
-    stream_name: str, 
+    config_: ConfigBuilder,
+    stream_name: str,
     expected_exception: bool = False,
 ) -> EntrypointOutput:
     return read_output(
@@ -44,11 +48,12 @@ def read_full_refresh(
         sync_mode=SyncMode.full_refresh,
         expected_exception=expected_exception,
     )
-    
+
+
 def read_incremental(
-    config_: ConfigBuilder, 
-    stream_name: str, 
-    state: Optional[List[AirbyteStateMessage]] = None, 
+    config_: ConfigBuilder,
+    stream_name: str,
+    state: Optional[List[AirbyteStateMessage]] = None,
     expected_exception: bool = False,
 ) -> EntrypointOutput:
     return read_output(
@@ -58,7 +63,8 @@ def read_incremental(
         state=state,
         expected_exception=expected_exception,
     )
-    
+
+
 def get_cursor_value_from_state_message(
     test_output: Mapping[str, Any],
     stream_name: str,

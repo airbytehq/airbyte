@@ -3,19 +3,14 @@
 #
 
 from unittest import TestCase
+
 import freezegun
 from airbyte_cdk.test.mock_http import HttpMocker
 
 from ..config import NOW
 from ..request_builder import get_stream_request
-from ..response_builder import (
-    NEXT_PAGE_TOKEN,
-    successfull_incomplete_response, 
-    get_stream_response, 
-    get_stream_record,
-)
+from ..response_builder import NEXT_PAGE_TOKEN, get_stream_record, get_stream_response, successfull_incomplete_response
 from ..utils import config, read_full_refresh
-
 
 _STREAM_NAME = "collections"
 
@@ -52,6 +47,6 @@ class TestFullRefresh(TestCase):
             [
                 successfull_incomplete_response(_STREAM_NAME),
                 get_stream_response(_STREAM_NAME).with_record(get_stream_record(_STREAM_NAME, "id")).build(),
-            ]
+            ],
         )
         read_full_refresh(config(), _STREAM_NAME, expected_exception=True)

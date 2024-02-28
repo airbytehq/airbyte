@@ -5,15 +5,17 @@
 
 from __future__ import annotations
 
+import datetime as dt
 from typing import Any, MutableMapping
 
 from airbyte_cdk.test.mock_http.request import HttpRequest
-import datetime as dt
+
 from .config import ACCESS_TOKEN, DATE_TIME_FORMAT
 
 
 def get_stream_request(stream_name: str) -> RequestBuilder:
     return RequestBuilder.get_endpoint(stream_name).with_limit(250)
+
 
 class RequestBuilder:
 
@@ -29,7 +31,7 @@ class RequestBuilder:
     def with_limit(self, limit: int) -> RequestBuilder:
         self._query_params["limit"] = limit
         return self
-    
+
     def with_updated_at_min(self, value: str) -> RequestBuilder:
         self._query_params["updated_at_min"] = dt.datetime.strptime(value, DATE_TIME_FORMAT).strftime(DATE_TIME_FORMAT)
         return self
@@ -45,5 +47,5 @@ class RequestBuilder:
             headers={
                 "X-Recharge-Version": self._api_version,
                 "X-Recharge-Access-Token": ACCESS_TOKEN,
-            }
+            },
         )
