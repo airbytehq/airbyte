@@ -29,8 +29,7 @@ definitions:
               error_message: "Stream is available only for Product Catalog 1.0"
         - type: DefaultErrorHandler
           backoff_strategies:
-            - type: CustomBackoffStrategy
-              class_name: source_chargebee.components.CustomBackoffStrategy
+            - type: WaitTimeFromHeader
               header: "Retry-After"
   date_stream_slicer:
     type: DatetimeBasedCursor
@@ -152,8 +151,7 @@ definitions:
                   error_message: "Stream is available only for Product Catalog 1.0"
             - type: DefaultErrorHandler
               backoff_strategies:
-                - type: CustomBackoffStrategy
-                  class_name: source_chargebee.components.CustomBackoffStrategy
+                - type: WaitTimeFromHeader
                   header: "Retry-After"
     transformations:
       - type: AddFields

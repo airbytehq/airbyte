@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 from unittest import TestCase
-from pytest import mark
 
 import freezegun
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -25,7 +24,7 @@ from source_chargebee import SourceChargebee
 from .config import ConfigBuilder
 from .pagination import ChargebeePaginationStrategy
 from .request_builder import ChargebeeRequestBuilder
-from .response_builder import a_response_with_status
+from .response_builder import a_response_with_status, a_response_with_status_and_header
 
 _STREAM_NAME = "plan"
 _SITE = "test-site"
@@ -73,7 +72,6 @@ def _read(
     config = config_builder.build()
     return read(_source(), config, catalog, state, expecting_exception)
 
-@mark.usefixtures("setup_deployment_mode")
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):
 
@@ -135,7 +133,7 @@ class FullRefreshTest(TestCase):
         http_mocker.get(
             _a_request().with_any_query_params().build(),
             [
-                a_response_with_status(429),
+                a_response_with_status_and_header(429, {"Retry-After": "0.01"}),
                 _a_response().with_record(_a_record()).build(),
             ],
         )
@@ -147,7 +145,7 @@ class FullRefreshTest(TestCase):
         # Tests retry with 500 status
         http_mocker.get(
             _a_request().with_any_query_params().build(),
-            [a_response_with_status(500), _a_response().with_record(_a_record()).build()],
+            [a_response_with_status_and_header(500, {"Retry-After": "0.01"}), _a_response().with_record(_a_record()).build()],
         )
         output = self._read(_config().with_start_date(self._start_date))
         assert len(output.records) == 1
@@ -157,7 +155,7 @@ class FullRefreshTest(TestCase):
         # Tests 500 status error handling
         http_mocker.get(
             _a_request().with_any_query_params().build(),
-            a_response_with_status(500),
+            a_response_with_status_and_header(500, {"Retry-After": "0.01"}),
         )
         output = self._read(_config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.system_error
