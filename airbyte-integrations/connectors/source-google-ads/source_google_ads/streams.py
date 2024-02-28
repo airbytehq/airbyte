@@ -27,6 +27,7 @@ from .utils import ExpiredPageTokenError, chunk_date_range, detached, generator_
 
 class GoogleAdsStream(Stream, ABC):
     CATCH_CUSTOMER_NOT_ENABLED_ERROR = True
+    ignore_manager_accounts: bool = False
 
     def __init__(self, api: GoogleAds, customers: List[CustomerModel]):
         self.google_ads_client = api
@@ -44,6 +45,8 @@ class GoogleAdsStream(Stream, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
+            if customer.is_manager_account and self.ignore_manager_accounts:
+                continue
             yield {"customer_id": customer.id, "login_customer_id": customer.login_customer_id}
 
     @generator_backoff(
@@ -133,6 +136,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         for customer in self.customers:
+            if customer.is_manager_account and self.ignore_manager_accounts:
+                continue
             stream_state = stream_state or {}
             if stream_state.get(customer.id):
                 start_date = stream_state[customer.id].get(self.cursor_field) or self._start_date
@@ -375,6 +380,7 @@ class AdGroup(GoogleAdsStream):
         return query
     """
 
+
 class AdGroupLabel(GoogleAdsStream):
     """
     Ad Group Labels stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_label
@@ -415,8 +421,10 @@ class AdGroupAdAssetView(IncrementalGoogleAdsStream):
     Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
     """
     backfill_days = 10
+    ignore_manager_accounts = True
 
     primary_key = ["asset.id", "customer.id", "campaign.id", "ad_group.id", "ad_group_ad.ad.id", "segments.date"]
+
 
 class AdGroupAdLabel(GoogleAdsStream):
     """
