@@ -223,6 +223,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.12  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message.                                                                            |
 | 3.3.11  | 2024-02-23 | [35527](https://github.com/airbytehq/airbyte/pull/35527)   | Adopt 0.23.1 and shutdown timeouts.                                                                                                             |
 | 3.3.10  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569)   | Fix logging bug. |
 | 3.3.9   | 2024-02-21 | [35525](https://github.com/airbytehq/airbyte/pull/35338)   | Adopt 0.21.4 and reduce cdc state compression threshold to 1MB.                                                                                                  |

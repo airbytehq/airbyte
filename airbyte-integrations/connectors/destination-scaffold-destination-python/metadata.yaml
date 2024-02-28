@@ -23,7 +23,7 @@ data:
   name: Scaffold Destination Python
   releaseDate: TODO
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: archived
   documentationUrl: https://docs.airbyte.com/integrations/destinations/scaffold-destination-python
   tags:
     - language:python
