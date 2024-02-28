@@ -25,42 +25,9 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         timeout_seconds: 3600
-        ignored_fields:
-          GET_MERCHANT_LISTINGS_ALL_DATA:
-            - name: "dataEndTime"
-              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
-          GET_FLAT_FILE_OPEN_LISTINGS_DATA:
-            - name: "dataEndTime"
-              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
-          GET_MERCHANTS_LISTINGS_FYP_REPORT:
-            - name: "dataEndTime"
-              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
-          GET_MERCHANT_LISTINGS_DATA:
-            - name: "dataEndTime"
-              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
-          GET_MERCHANT_LISTINGS_INACTIVE_DATA:
-            - name: "dataEndTime"
-              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
-          GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT:
-            - name: "dataEndTime"
-              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
-          GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE:
-            - name: "dataEndTime"
-              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
-          GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT:
-            - name: "dataEndTime"
-              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
-          GET_XML_BROWSE_TREE_DATA:
-            - name: "dataEndTime"
-              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
-          ListFinancialEvents:
-            - name: "PostedBefore"
-              bypass_reason: "This field is used as a cursor field and depends on today's date, so it changes every day"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         empty_streams:
           - name: GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
