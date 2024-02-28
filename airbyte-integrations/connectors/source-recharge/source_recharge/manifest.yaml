@@ -67,14 +67,7 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       description: >-
-        We should retry the SUCCESSFULL request (200), with incomplete response.content
-        Case when: `data declared to receive` bigger than `actually received`
-      backoff_strategies:
-        - type: ConstantBackoffStrategy
-          backoff_time_in_seconds: "{{ 1 if config.get('is_testing') else 10 }}"
-      response_filters:
-        - action: RETRY
-          predicate: "{{ headers.get('Content-Length', '0')|int > (response.content|length > 0)}}"
+        The default error handler
   requester_deprecated_api:
     $ref: "#/definitions/requester_base"
     # for deprecated retriever we should use `2021-01` api version

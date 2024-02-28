@@ -9,7 +9,7 @@ from airbyte_cdk.test.mock_http import HttpMocker
 
 from ..config import NOW
 from ..request_builder import get_stream_request
-from ..response_builder import NEXT_PAGE_TOKEN, get_stream_record, get_stream_response, successfull_incomplete_response
+from ..response_builder import NEXT_PAGE_TOKEN, get_stream_record, get_stream_response
 from ..utils import config, read_full_refresh
 
 _STREAM_NAME = "collections"
@@ -39,14 +39,3 @@ class TestFullRefresh(TestCase):
 
         output = read_full_refresh(config(), _STREAM_NAME)
         assert len(output.records) == 2
-
-    @HttpMocker()
-    def test_retry_incomplete_response_with_success_status(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(
-            get_stream_request(_STREAM_NAME).build(),
-            [
-                successfull_incomplete_response(_STREAM_NAME),
-                get_stream_response(_STREAM_NAME).with_record(get_stream_record(_STREAM_NAME, "id")).build(),
-            ],
-        )
-        read_full_refresh(config(), _STREAM_NAME, expected_exception=True)

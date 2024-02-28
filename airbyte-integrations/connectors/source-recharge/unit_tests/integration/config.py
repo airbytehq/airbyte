@@ -21,9 +21,6 @@ class ConfigBuilder:
         self._config: MutableMapping[str, Any] = {
             "access_token": ACCESS_TOKEN,
             "start_date": START_DATE,
-            # `is_testing` is needed to minimize the backoff time
-            # see `manifest.yaml > definitions > requester_base > error_handler`
-            "is_testing": True,
         }
 
     def with_start_date(self, start_date: str) -> ConfigBuilder:

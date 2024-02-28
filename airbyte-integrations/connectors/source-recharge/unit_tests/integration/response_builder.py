@@ -56,16 +56,3 @@ def get_stream_record(
         record_id_path=FieldPath(record_id_path),
         record_cursor_path=FieldPath(cursor_field) if cursor_field else None,
     )
-
-
-def successfull_incomplete_response(stream_name: str) -> HttpResponse:
-    body = {stream_name: [{"a": "b"}]}
-    response = build_response(
-        body=body,
-        # the `Content-Length` must be bigger than the actual len(data) returned
-        headers={"Content-Length": "10000"},
-        status_code=HTTPStatus.OK,
-    )
-    # add `content` to `response`
-    response.content = f"{body}"
-    return response
