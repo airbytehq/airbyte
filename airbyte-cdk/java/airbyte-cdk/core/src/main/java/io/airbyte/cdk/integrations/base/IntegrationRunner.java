@@ -67,8 +67,8 @@ public class IntegrationRunner {
   static final Predicate<Thread> ORPHANED_THREAD_FILTER = runningThread -> !runningThread.getName().equals(Thread.currentThread().getName())
       && !runningThread.isDaemon() && !TYPE_AND_DEDUPE_THREAD_NAME.equals(runningThread.getName());
 
-  public static final int INTERRUPT_THREAD_DELAY_MINUTES = 60;
-  public static final int EXIT_THREAD_DELAY_MINUTES = 70;
+  public static final int INTERRUPT_THREAD_DELAY_MINUTES = 1;
+  public static final int EXIT_THREAD_DELAY_MINUTES = 2;
 
   public static final int FORCED_EXIT_CODE = 2;
 
@@ -189,11 +189,7 @@ public class IntegrationRunner {
           try (final SerializedAirbyteMessageConsumer consumer = destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)) {
             consumeWriteStream(consumer);
           } finally {
-            stopOrphanedThreads(EXIT_HOOK,
-                INTERRUPT_THREAD_DELAY_MINUTES,
-                TimeUnit.MINUTES,
-                EXIT_THREAD_DELAY_MINUTES,
-                TimeUnit.MINUTES);
+            stopOrphanedThreads();
           }
         }
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
@@ -263,11 +259,7 @@ public class IntegrationRunner {
       LOGGER.error("Unable to perform concurrent read.", e);
       throw e;
     } finally {
-      stopOrphanedThreads(EXIT_HOOK,
-          INTERRUPT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES,
-          EXIT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES);
+      stopOrphanedThreads();
     }
   }
 
@@ -275,11 +267,7 @@ public class IntegrationRunner {
     try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
       produceMessages(messageIterator, outputRecordCollector);
     } finally {
-      stopOrphanedThreads(EXIT_HOOK,
-          INTERRUPT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES,
-          EXIT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES);
+      stopOrphanedThreads();
     }
   }
 
@@ -337,12 +325,30 @@ public class IntegrationRunner {
 
   /**
    * Stops any non-daemon threads that could block the JVM from exiting when the main thread is done.
+   *
+   * If any active non-daemon threads would be left as orphans, this method will schedule some
+   * interrupt/exit hooks after giving it some time delay to close up properly. It is generally
+   * preferred to have a proper closing sequence from children threads instead of interrupting or
+   * force exiting the process, so this mechanism serve as a fallback while surfacing warnings in logs
+   * for maintainers to fix the code behavior instead.
+   */
+  static void stopOrphanedThreads() {
+    stopOrphanedThreads(EXIT_HOOK,
+        INTERRUPT_THREAD_DELAY_MINUTES,
+        TimeUnit.MINUTES,
+        EXIT_THREAD_DELAY_MINUTES,
+        TimeUnit.MINUTES);
+  }
+
+  /**
+   * Stops any non-daemon threads that could block the JVM from exiting when the main thread is done.
    * <p>
    * If any active non-daemon threads would be left as orphans, this method will schedule some
    * interrupt/exit hooks after giving it some time delay to close up properly. It is generally
    * preferred to have a proper closing sequence from children threads instead of interrupting or
    * force exiting the process, so this mechanism serve as a fallback while surfacing warnings in logs
    * for maintainers to fix the code behavior instead.
+   * </p>
    *
    * @param exitHook The {@link Runnable} exit hook to execute for any orphaned threads.
    * @param interruptTimeDelay The time to delay execution of the orphaned thread interrupt attempt.
