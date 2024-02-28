@@ -240,7 +240,7 @@ def test_value_dictionary() -> None:
     ])
 def test_null_value_does_not_throw(parquet_type, parquet_format) -> None:
     pyarrow_value = pa.scalar(None, type=parquet_type)
-    assert ParquetParser._to_output_value(pyarrow_value, _default_parquet_format) is None
+    assert ParquetParser._to_output_value(pyarrow_value, parquet_format) is None
 
 
 @pytest.mark.parametrize(
