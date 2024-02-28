@@ -239,7 +239,7 @@ def test_value_dictionary() -> None:
         pytest.param(pa.null(), _default_parquet_format, id="test_null"),
     ])
 def test_null_value_does_not_throw(parquet_type, parquet_format) -> None:
-    pyarrow_value = pa.array([None], type=parquet_type)[0]
+    pyarrow_value = pa.scalar(None, type=parquet_type)
     assert ParquetParser._to_output_value(pyarrow_value, _default_parquet_format) is None
 
 
