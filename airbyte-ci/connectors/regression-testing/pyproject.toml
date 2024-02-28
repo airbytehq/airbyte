@@ -48,7 +48,7 @@ requests = "<2.29.0"
 pytest-xdist = "^3.3.1"
 
 [tool.poe.tasks]
-test = "pytest unit_tests"
+test = "pytest tests"
 ci = ["test"]
 
 [tool.airbyte_ci]
@@ -59,4 +59,5 @@ mount_docker_socket = true
 run-regression-tests = "regression_testing.main:main"
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 pythonpath = ["src"]
