@@ -40,7 +40,7 @@ public class GeneralStagingFunctions {
     return () -> {
       log.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
 
-      typerDeduper.prepareSchemasAndRawTables();
+      typerDeduper.prepareSchemasAndRunMigrations();
 
       // Create raw tables
       final List<String> queryList = new ArrayList<>();

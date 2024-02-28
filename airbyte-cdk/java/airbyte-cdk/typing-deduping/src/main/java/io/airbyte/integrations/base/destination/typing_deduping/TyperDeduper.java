@@ -44,7 +44,7 @@ public interface TyperDeduper {
    * raw table may require us to run a soft reset. However, we should defer that soft reset until
    * {@link #prepareFinalTables()}.
    */
-  void prepareSchemasAndRawTables() throws Exception;
+  void prepareSchemasAndRunMigrations() throws Exception;
 
   /**
    * Create the tables that T+D will write to during the sync. In OVERWRITE mode, these might not be

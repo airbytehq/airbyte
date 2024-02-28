@@ -46,7 +46,7 @@ public class NoOpTyperDeduperWithV1V2Migrations implements TyperDeduper {
   }
 
   @Override
-  public void prepareSchemasAndRawTables() {
+  public void prepareSchemasAndRunMigrations() {
     TyperDeduperUtil.prepareSchemas(sqlGenerator, destinationHandler, parsedCatalog);
     TyperDeduperUtil.executeRawTableMigrations(executorService, sqlGenerator, destinationHandler, v1V2Migrator, v2TableMigrator, parsedCatalog);
   }

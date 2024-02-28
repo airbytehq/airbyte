@@ -19,7 +19,7 @@ import java.util.concurrent.locks.Lock;
 public class NoopTyperDeduper implements TyperDeduper {
 
   @Override
-  public void prepareSchemasAndRawTables() throws Exception {
+  public void prepareSchemasAndRunMigrations() throws Exception {
 
   }
 

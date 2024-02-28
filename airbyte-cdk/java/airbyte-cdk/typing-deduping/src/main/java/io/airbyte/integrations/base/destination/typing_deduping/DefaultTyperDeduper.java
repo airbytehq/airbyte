@@ -104,7 +104,7 @@ public class DefaultTyperDeduper implements TyperDeduper {
   }
 
   @Override
-  public void prepareSchemasAndRawTables() {
+  public void prepareSchemasAndRunMigrations() {
     // Technically kind of weird to call this here, but it's the best place we have.
     // Ideally, we'd create just airbyte_internal here, and defer creating the final table schemas
     // until prepareFinalTables... but it doesn't really matter.

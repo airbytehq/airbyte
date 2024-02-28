@@ -93,7 +93,7 @@ public class DefaultTyperDeduperTest {
   void emptyDestination() throws Exception {
     initialStates.forEach(initialState -> when(initialState.isFinalTablePresent()).thenReturn(false));
 
-    typerDeduper.prepareSchemasAndRawTables();
+    typerDeduper.prepareSchemasAndRunMigrations();
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
 
     typerDeduper.prepareFinalTables();
@@ -128,7 +128,7 @@ public class DefaultTyperDeduperTest {
       when(initialState.isSchemaMismatch()).thenReturn(true);
     });
 
-    typerDeduper.prepareSchemasAndRawTables();
+    typerDeduper.prepareSchemasAndRunMigrations();
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
 
     typerDeduper.prepareFinalTables();
@@ -168,7 +168,7 @@ public class DefaultTyperDeduperTest {
       when(initialState.isSchemaMismatch()).thenReturn(false);
     });
 
-    typerDeduper.prepareSchemasAndRawTables();
+    typerDeduper.prepareSchemasAndRunMigrations();
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
     clearInvocations(destinationHandler);
 
@@ -189,7 +189,7 @@ public class DefaultTyperDeduperTest {
       when(initialState.initialRawTableState()).thenReturn(new InitialRawTableState(true, Optional.of(Instant.parse("2023-01-01T12:34:56Z"))));
     });
 
-    typerDeduper.prepareSchemasAndRawTables();
+    typerDeduper.prepareSchemasAndRunMigrations();
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
 
     typerDeduper.prepareFinalTables();
@@ -236,7 +236,7 @@ public class DefaultTyperDeduperTest {
       when(initialState.initialRawTableState()).thenReturn(new InitialRawTableState(true, Optional.of(Instant.now())));
     });
 
-    typerDeduper.prepareSchemasAndRawTables();
+    typerDeduper.prepareSchemasAndRunMigrations();
     verify(destinationHandler).execute(separately("CREATE SCHEMA overwrite_ns", "CREATE SCHEMA append_ns", "CREATE SCHEMA dedup_ns"));
 
     typerDeduper.prepareFinalTables();
