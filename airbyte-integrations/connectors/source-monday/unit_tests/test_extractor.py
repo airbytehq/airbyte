@@ -36,6 +36,17 @@ def test_extract_records():
     assert records[0]["created_at_int"] == 1636738688
 
 
+def test_empty_activity_logs_extract_records():
+    response = MagicMock()
+    response_body = {"data": {"boards": [{"activity_logs": None}]}}
+
+    response.json.return_value = response_body
+    extractor = MondayActivityExtractor(parameters={})
+    records = extractor.extract_records(response)
+
+    assert len(records) == 0
+
+
 def test_extract_records_incremental():
     # Mock the response
     response = MagicMock()
