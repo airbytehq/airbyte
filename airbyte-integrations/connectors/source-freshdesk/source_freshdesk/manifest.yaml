@@ -1,0 +1,399 @@
+version: 0.57.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - agents
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - domain
+    properties:
+      domain:
+        type: string
+        order: 3
+        title: Domain
+      api_key:
+        type: string
+        order: 2
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_freshdesk/schemas/{{ parameters['name'] }}.json"
+
+  basic_authenticator:
+    type: BasicHttpAuthenticator
+    username: "{{ config.get('api_key')}}"
+    password: "X"
+
+  requester:
+    type: HttpRequester
+    path: "{{ parameters['path'] or parameters['name'] }}"
+    url_base: "https://{{ config['domain'] }}/api/v2/"
+    http_method: GET
+    request_headers: { }
+    authenticator:
+      $ref: '#/definitions/basic_authenticator'
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: [ ]
+    paginator:
+      type: "DefaultPaginator"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 10
+        start_from_page: 1
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "per_page"
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+
+  base_stream:
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  base_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_field: "updated_at"
+      start_datetime:
+        datetime: "{{ config.get('start_date') or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: "{{ parameters['cursor_filter'] }}"
+        type: RequestOption
+
+  agents:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "agents"
+      primary_key: "id"
+
+  business_hours:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "business_hours"
+      primary_key: "id"
+
+  canned_response_folders:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "canned_response_folders"
+      primary_key: "id"
+
+  companies:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "companies"
+      primary_key: "id"
+
+  discussion_categories:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "discussion_categories"
+      path: "discussions/categories"
+      primary_key: "id"
+
+  email_configs:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "email_configs"
+      primary_key: "id"
+
+  email_mailboxes:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "email_mailboxes"
+      path: "email/mailboxes"
+      primary_key: "id"
+
+  groups:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "groups"
+      primary_key: "id"
+
+  products:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "products"
+      primary_key: "id"
+
+  roles:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "roles"
+      primary_key: "id"
+
+  scenario_automations:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "scenario_automations"
+      primary_key: "id"
+
+  settings:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "settings"
+      path: "settings/helpdesk"
+      primary_key: "primary_language"
+
+  skills:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "skills"
+      primary_key: "id"
+
+  sla_policies:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "sla_policies"
+      primary_key: "id"
+
+  solution_categories:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "solution_categories"
+      path: "solutions/categories"
+      primary_key: "id"
+
+  surveys:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "surveys"
+      primary_key: "id"
+
+  time_entries:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "time_entries"
+      primary_key: "id"
+
+  ticket_fields:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "ticket_fields"
+      primary_key: "id"
+
+  contacts:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "contacts"
+      cursor_filter: "_updated_since"
+
+  satisfaction_ratings:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "satisfaction_ratings"
+      path: "surveys/satisfaction_ratings"
+      cursor_filter: "created_since"
+
+  tickets:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "tickets"
+      cursor_filter: "updated_since"
+
+  canned_responses:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "canned_response_folders/{{ stream_slice.id }}/responses"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/canned_response_folders"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "canned_responses"
+
+  conversations:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "tickets/{{ stream_slice.id }}/conversations"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/tickets"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "conversations"
+
+  discussion_forums:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "discussions/categories/{{ stream_slice.id }}/forums"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/discussion_categories"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "discussion_forums"
+
+  discussion_topics:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "discussions/forums/{{ stream_slice.id }}/topics"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/discussion_forums"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "discussion_forums"
+
+  discussion_comments:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "discussions/topics/{{ stream_slice.id }}/comments"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/discussion_topics"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "discussion_comments"
+
+  solution_folders:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "solutions/categories/{{ stream_slice.id }}/folders"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/solution_categories"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "solution_folders"
+
+  solution_articles:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "solutions/folders/{{ stream_slice.id }}/articles/folders"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/solution_folders"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "solution_articles"
+
+streams:
+  - $ref: "#/definitions/agents"
+  - $ref: "#/definitions/business_hours"
+  - $ref: "#/definitions/canned_response_folders"
+  - $ref: "#/definitions/canned_responses"
+  - $ref: "#/definitions/companies"
+  - $ref: "#/definitions/conversations"
+  - $ref: "#/definitions/contacts"
+  - $ref: "#/definitions/discussion_categories"
+  - $ref: "#/definitions/discussion_comments"
+  - $ref: "#/definitions/discussion_forums"
+  - $ref: "#/definitions/discussion_topics"
+  - $ref: "#/definitions/email_configs"
+  - $ref: "#/definitions/email_mailboxes"
+  - $ref: "#/definitions/groups"
+  - $ref: "#/definitions/products"
+  - $ref: "#/definitions/roles"
+  - $ref: "#/definitions/satisfaction_ratings"
+  - $ref: "#/definitions/scenario_automations"
+  - $ref: "#/definitions/settings"
+  - $ref: "#/definitions/skills"
+  - $ref: "#/definitions/sla_policies"
+  - $ref: "#/definitions/solution_articles"
+  - $ref: "#/definitions/solution_categories"
+  - $ref: "#/definitions/solution_folders"
+  - $ref: "#/definitions/surveys"
+  - $ref: "#/definitions/ticket_fields"
+  - $ref: "#/definitions/tickets"
+  - $ref: "#/definitions/time_entries"
