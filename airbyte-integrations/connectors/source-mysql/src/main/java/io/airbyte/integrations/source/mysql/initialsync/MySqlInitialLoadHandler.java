@@ -188,7 +188,7 @@ public class MySqlInitialLoadHandler {
 
     return AutoCloseableIterators.transformIterator(
         r -> new SourceStateIterator<>(r, airbyteStream, initialLoadStateManager,
-            new SourceStateIterator.StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
+            new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
         recordIterator, pair);
   }
 
