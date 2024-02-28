@@ -11,8 +11,9 @@ const isDocsPage = (vfile) => {
   let response = { isDocsPage: false, isTrueDocsPage: false };
 
   if (
-    vfile.path.includes("integrations/sources") ||
-    vfile.path.includes("integrations/destinations")
+    (vfile.path.includes("integrations/sources") ||
+      vfile.path.includes("integrations/destinations")) &&
+    !vfile.path.toLowerCase().includes("readme.md")
   ) {
     response.isDocsPage = true;
     response.isTrueDocsPage = true;
