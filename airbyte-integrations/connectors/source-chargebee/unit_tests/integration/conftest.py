@@ -3,10 +3,12 @@
 #
 
 import os
+import pytest
 
-
-def pytest_configure(config):
+@pytest.fixture
+def setup_deployment_mode():
     os.environ["DEPLOYMENT_MODE"] = "testing"
 
-def pytest_unconfigure(config):
+    yield
+
     os.environ.pop("DEPLOYMENT_MODE", None)

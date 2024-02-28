@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 from unittest import TestCase
+from pytest import mark
 
 import freezegun
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -72,6 +73,7 @@ def _read(
     config = config_builder.build()
     return read(_source(), config, catalog, state, expecting_exception)
 
+@mark.usefixtures("setup_deployment_mode")
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):
 
@@ -98,16 +100,14 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_multiple_pages_of_records_read_and_returned(self, http_mocker: HttpMocker) -> None:
         # Tests pagination
+        request = _a_request().with_any_query_params().build()
         http_mocker.get(
-            _a_request().with_any_query_params().build(),
-            _a_response().with_pagination().with_record(_a_record()).build()
-        )
-        http_mocker.get(
-            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).with_offset('[1707076198000,57873868]').build(),
-            _a_response().with_record(_a_record()).with_record(_a_record()).build()
+            request,
+            [_a_response().with_record(_a_record()).with_pagination().build(), _a_response().with_record(_a_record()).build()]
         )
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
-        assert len(output.records) == 3
+        http_mocker.assert_number_of_calls(request, 2)
+        assert len(output.records) == 2
 
     @HttpMocker()
     def test_given_http_status_400_when_read_then_stream_is_ignored(self, http_mocker: HttpMocker) -> None:
@@ -152,7 +152,6 @@ class FullRefreshTest(TestCase):
         )
         output = self._read(_config().with_start_date(self._start_date))
         assert len(output.records) == 1
-
 
     @HttpMocker()
     def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
