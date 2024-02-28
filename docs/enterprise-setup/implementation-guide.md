@@ -432,10 +432,10 @@ Install Airbyte Self-Managed Enterprise on helm using the following command:
 
 ```sh
 helm install \
-  --namespace airbyte \
-  --install "airbyte-enterprise" \ 
-  "airbyte/airbyte" \
-  --set-file airbyteYml="./airbyte.yml"
+--namespace airbyte \
+"airbyte-enterprise" \ 
+"airbyte/airbyte" \
+--set-file airbyteYml="./airbyte.yml"
 ```
 
 The default release name is `airbyte-enterprise`. You can change this by modifying the above `helm upgrade` command.
@@ -449,10 +449,10 @@ Upgrade Airbyte Self-Managed Enterprise by:
 
 ```sh
 helm upgrade \
-  --namespace airbyte \
-  --install "airbyte-enterprise" \ 
-  "airbyte/airbyte" \
-  --set-file airbyteYml="./airbyte.yml"
+--namespace airbyte \
+--install "airbyte-enterprise" \ 
+"airbyte/airbyte" \
+--set-file airbyteYml="./airbyte.yml"
 ```
 
 ## Customizing your Deployment
