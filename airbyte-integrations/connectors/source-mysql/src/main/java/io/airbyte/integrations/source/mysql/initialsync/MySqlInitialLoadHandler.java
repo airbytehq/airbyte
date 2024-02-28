@@ -185,11 +185,10 @@ public class MySqlInitialLoadHandler {
         : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
     initialLoadStateManager.setStreamStateForIncrementalRunSupplier(streamStateForIncrementalRunSupplier);
-    initialLoadStateManager.setSyncCheckpointDuration(syncCheckpointDuration);
-    initialLoadStateManager.setSyncCheckpointRecords(syncCheckpointRecords);
 
     return AutoCloseableIterators.transformIterator(
-        r -> new SourceStateIterator<>(r, airbyteStream, initialLoadStateManager),
+        r -> new SourceStateIterator<>(r, airbyteStream, initialLoadStateManager,
+            new SourceStateIterator.StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
         recordIterator, pair);
   }
 

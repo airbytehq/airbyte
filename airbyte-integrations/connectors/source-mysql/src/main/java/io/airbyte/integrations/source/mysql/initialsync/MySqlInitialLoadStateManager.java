@@ -12,9 +12,6 @@ import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,8 +23,6 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
   public static final String STATE_TYPE_KEY = "state_type";
   public static final String PRIMARY_KEY_STATE_TYPE = "primary_key";
 
-  protected Duration syncCheckpointDuration;
-  protected Long syncCheckpointRecords;
   protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
   protected Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPrimaryKeyLoadStatus;
@@ -37,14 +32,6 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
 
   void setStreamStateForIncrementalRunSupplier(final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
-  }
-
-  void setSyncCheckpointDuration(final Duration syncCheckpointDuration) {
-    this.syncCheckpointDuration = syncCheckpointDuration;
-  }
-
-  void setSyncCheckpointRecords(final Long syncCheckpointRecords) {
-    this.syncCheckpointRecords = syncCheckpointRecords;
   }
 
   // Updates the {@link PrimaryKeyLoadStatus} for the state associated with the given pair
@@ -82,8 +69,8 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
   }
 
   @Override
-  public boolean shouldEmitStateMessage(long recordCount, Instant lastCheckpoint) {
-    return (recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0);
+  public boolean shouldEmitStateMessage(final ConfiguredAirbyteStream stream) {
+    return true;
   }
 
   public static Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> initPairToPrimaryKeyLoadStatusMap(

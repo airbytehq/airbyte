@@ -10,7 +10,9 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Iterator;
 import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
@@ -21,18 +23,23 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceStateIterator.class);
   private final Iterator<T> messageIterator;
   private final ConfiguredAirbyteStream stream;
+  private final StateEmitFrequency stateEmitFrequency;
   private boolean hasEmittedFinalState = false;
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();
+
+  public record StateEmitFrequency(long syncCheckpointRecords, Duration syncCheckpointDuration) {}
 
   private final SourceStateIteratorManager sourceStateIteratorManager;
 
   public SourceStateIterator(final Iterator<T> messageIterator,
                              final ConfiguredAirbyteStream stream,
-                             final SourceStateIteratorManager sourceStateIteratorManager) {
+                             final SourceStateIteratorManager sourceStateIteratorManager,
+                             final StateEmitFrequency stateEmitFrequency) {
     this.messageIterator = messageIterator;
     this.stream = stream;
     this.sourceStateIteratorManager = sourceStateIteratorManager;
+    this.stateEmitFrequency = stateEmitFrequency;
   }
 
   @CheckForNull
@@ -49,7 +56,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
       throw new RuntimeException(ex);
     }
     if (iteratorHasNextValue) {
-      if (sourceStateIteratorManager.shouldEmitStateMessage(recordCount, lastCheckpoint)) {
+      if (shouldEmitStateMessage() && sourceStateIteratorManager.shouldEmitStateMessage(stream)) {
         final AirbyteStateMessage stateMessage = sourceStateIteratorManager.generateStateMessageAtCheckpoint(stream);
         stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
 
@@ -79,6 +86,12 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
     } else {
       return endOfData();
     }
+  }
+
+  private boolean shouldEmitStateMessage() {
+    return (recordCount >= stateEmitFrequency.syncCheckpointRecords
+        || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(stateEmitFrequency.syncCheckpointDuration) > 0);
+
   }
 
 }
