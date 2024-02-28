@@ -1,5 +1,4 @@
 const visit = require("unist-util-visit").visit;
-const { isPypiConnector } = require("../connector_registry");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const toAttributes = (props) =>
@@ -11,7 +10,8 @@ const toAttributes = (props) =>
 
 const plugin = () => {
   const transformer = async (ast, vfile) => {
-    if (!isDocsPage(vfile)) return;
+    const docsPageInfo = isDocsPage(vfile);
+    if (!docsPageInfo.isDocsPage) return;
 
     const registryEntry = await getRegistryEntry(vfile);
 

@@ -14,7 +14,9 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISC
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INITIAL_RECORD_WAITING_TIME_SEC;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
 
@@ -93,6 +95,15 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
       return rawConfig.get(INITIAL_RECORD_WAITING_TIME_SEC).asInt(DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC);
     } else {
       return DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC;
+    }
+  }
+
+  public boolean shouldFailSyncOnInvalidCursor() {
+    if (rawConfig.has(INVALID_CDC_CURSOR_POSITION_PROPERTY)
+        && rawConfig.get(INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(RESYNC_DATA_OPTION)) {
+      return false;
+    } else {
+      return true;
     }
   }
 
