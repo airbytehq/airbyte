@@ -10,7 +10,7 @@ from airbyte_protocol.models import ConfiguredAirbyteCatalog
 from .backends import BaseBackend, FileBackend
 from .comparators import DiffComparator
 from .connector_runner import ConnectorRunner, SecretDict
-from .utils import get_connector, get_connector_config, get_state
+from .utils import ConnectorUnderTest, get_connector, get_connector_config, get_state
 
 logging.basicConfig(level=logging.INFO)
 
@@ -46,41 +46,53 @@ async def _main(
     async with (dagger.Connection(config=dagger.Config(log_output=sys.stderr)) as client):
         control_connector = await get_connector(client, connector_name, control_image_name)
         target_connector = await get_connector(client, connector_name, target_image_name)
+        await _do_test_run(
+            control_connector, target_connector, output_directory, command, config, catalog, state
+        )
+        await DiffComparator(client, output_directory).compare(control_connector, target_connector)
 
-        # TODO: maybe use proxy to cache the response from the first round and use the cache for the second round
-        #   (this may only make sense for syncs with an input state)
-        if command == "all":
-            tasks = []
-            for _command in COMMANDS:
-                tasks.extend([
-                    dispatch(
-                        connector.container,
-                        FileBackend(f"{output_directory}/{connector.version}/{_command}"),
-                        f"{output_directory}/{connector.version}",
-                        _command,
-                        config,
-                        catalog,
-                        state,
-                    ) for connector in [control_connector, target_connector]
-                ])
-        else:
-            tasks = [
-                dispatch(
+
+async def _do_test_run(
+    control_connector: ConnectorUnderTest,
+    target_connector: ConnectorUnderTest,
+    output_directory: str,
+    command: str,
+    config: Optional[SecretDict],
+    catalog: Optional[ConfiguredAirbyteCatalog],
+    state: Optional[Dict],
+):
+    # TODO: maybe use proxy to cache the response from the first round and use the cache for the second round
+    #   (this may only make sense for syncs with an input state)
+    if command == "all":
+        tasks = []
+        for _command in COMMANDS:
+            tasks.extend([
+                _dispatch(
                     connector.container,
-                    FileBackend(f"{output_directory}/{connector.version}/{command}"),
+                    FileBackend(f"{output_directory}/{connector.version}/{_command}"),
                     f"{output_directory}/{connector.version}",
-                    command,
+                    _command,
                     config,
                     catalog,
                     state,
                 ) for connector in [control_connector, target_connector]
-            ]
-        await asyncio.gather(*tasks)
+            ])
+    else:
+        tasks = [
+            _dispatch(
+                connector.container,
+                FileBackend(f"{output_directory}/{connector.version}/{command}"),
+                f"{output_directory}/{connector.version}",
+                command,
+                config,
+                catalog,
+                state,
+            ) for connector in [control_connector, target_connector]
+        ]
+    await asyncio.gather(*tasks)
 
-        await DiffComparator(client, output_directory).compare(control_connector, target_connector)
 
-
-async def dispatch(
+async def _dispatch(
     container: dagger.Container,
     backend: BaseBackend,
     output_directory: str,
