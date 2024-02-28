@@ -14,7 +14,7 @@ from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests, Unauthenticated
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import AdGroup, ClickView, Customer, CustomerLabel
+from source_google_ads.streams import AdGroups, ClickView, Accounts, AccountLabels
 
 # EXPIRED_PAGE_TOKEN exception will be raised when page token has expired.
 exception = GoogleAdsException(
@@ -255,7 +255,7 @@ def test_parse_response(mocker, customers, config):
     )
 
     # Create an instance of the Customer class
-    accounts = Customer(**incremental_stream_config)
+    accounts = Accounts(**incremental_stream_config)
 
     # Use the parse_response method and get the output
     output = list(accounts.parse_response(response))
@@ -280,7 +280,7 @@ def test_read_records_unauthenticated(mocker, customers, config):
         api=api,
         customers=customers,
     )
-    stream = CustomerLabel(**stream_config)
+    stream = AccountLabels(**stream_config)
     with pytest.raises(AirbyteTracedException) as exc_info:
         list(stream.read_records(SyncMode.full_refresh, {"customer_id": "customer_id", "login_customer_id": "default"}))
 
@@ -293,8 +293,8 @@ def test_ad_group_stream_query_removes_metrics_field_for_manager(customers_manag
     credentials = config["credentials"]
     api = GoogleAds(credentials=credentials)
     stream_config = dict(api=api, customers=customers_manager, start_date="2020-01-01", conversion_window_days=10)
-    stream = AdGroup(**stream_config)
+    stream = AdGroups(**stream_config)
     assert "metrics" not in stream.get_query(stream_slice={"customer_id": "123"})
     stream_config = dict(api=api, customers=customers, start_date="2020-01-01", conversion_window_days=10)
-    stream = AdGroup(**stream_config)
+    stream = AdGroups(**stream_config)
     assert "metrics" in stream.get_query(stream_slice={"customer_id": "123"})
