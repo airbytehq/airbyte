@@ -34,7 +34,7 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
   }
 
   @Override
-  protected SqlGenerator<?> getSqlGenerator() {
+  protected SqlGenerator getSqlGenerator() {
     return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
 
       // Override only for tests to print formatted SQL. The actual implementation should use unformatted
