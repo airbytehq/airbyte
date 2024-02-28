@@ -87,8 +87,8 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   }
 
   private boolean shouldEmitStateMessage() {
-    return (recordCount >= stateEmitFrequency.syncCheckpointRecords
-        || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(stateEmitFrequency.syncCheckpointDuration) > 0);
+    return (recordCount >= stateEmitFrequency.syncCheckpointRecords()
+        || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(stateEmitFrequency.syncCheckpointDuration()) > 0);
 
   }
 
