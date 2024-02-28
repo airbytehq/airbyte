@@ -198,6 +198,12 @@ def test_value_none_binary() -> None:
     except AttributeError:
         assert False, "`None` type binary should be handled properly"
 
+def test_not_a_timestamp() -> None:
+    not_a_timestamp_scalar = pa.scalar(None, type=pa.timestamp("s"))
+    try:
+        ParquetParser._to_output_value(not_a_timestamp_scalar, _default_parquet_format)
+    except AttributeError:
+        assert False, "`NaT` timestamp should be handled properly"
 
 @pytest.mark.parametrize(
     "file_format",
