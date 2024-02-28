@@ -97,11 +97,18 @@ class ParquetParser(FileTypeParser):
     @staticmethod
     def _to_output_value(parquet_value: Union[Scalar, DictionaryArray], parquet_format: ParquetFormat) -> Any:
         """
-        Convert a pyarrow scalar to a value that can be output by the source.
+        Convert an entry in a pyarrow table to a value that can be output by the source.
         """
         if isinstance(parquet_value, DictionaryArray):
-            return ParquetParser._to_python_dict(parquet_value)
+            return ParquetParser._dictionary_array_to_python_value(parquet_value)
+        else:
+            return ParquetParser._scalar_to_python_value(parquet_value, parquet_format)
 
+    @staticmethod
+    def _scalar_to_python_value(parquet_value: Scalar, parquet_format: ParquetFormat) -> Any:
+        """
+        Convert a pyarrow scalar to a value that can be output by the source.
+        """
         # Convert date and datetime objects to isoformat strings
         if pa.types.is_time(parquet_value.type) or pa.types.is_timestamp(parquet_value.type) or pa.types.is_date(parquet_value.type):
             return parquet_value.as_py().isoformat()
@@ -146,7 +153,7 @@ class ParquetParser(FileTypeParser):
             return parquet_value.as_py()
 
     @staticmethod
-    def _to_python_dict(parquet_value: DictionaryArray) -> Dict[str, Any]:
+    def _dictionary_array_to_python_value(parquet_value: DictionaryArray) -> Dict[str, Any]:
         """
         Convert a pyarrow dictionary array to a value that can be output by the source.
 
