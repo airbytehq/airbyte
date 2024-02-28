@@ -206,19 +206,6 @@ acceptance_tests:
             bypass_reason: "This stream is tested with config with start date"
           - name: account_impression_performance_report_weekly
             bypass_reason: "This stream is tested with config with start date"
-        ignored_fields:
-          campaign_labels:
-            - name: Modified Time
-              bypass_reason: "dynamic field"
-          keyword_labels:
-            - name: Modified Time
-              bypass_reason: "dynamic field"
-          ad_group_labels:
-            - name: Modified Time
-              bypass_reason: "dynamic field"
-          labels:
-            - name: Modified Time
-              bypass_reason: "dynamic field"
         timeout_seconds: 9000
   full_refresh:
     tests:
