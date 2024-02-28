@@ -69,9 +69,12 @@ definitions:
       description: >-
         We should retry the SUCCESSFULL request (200), with incomplete response.content
         Case when: `data declared to receive` bigger than `actually received`
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: "{{ 1 if config.get('is_testing') else 10 }}"
       response_filters:
         - action: RETRY
-          predicate: "{{ response.content|length > 0 and headers.get('Content-Length', 0)|int > response.content|length }}"
+          predicate: "{{ headers.get('Content-Length', '0')|int > (response.content|length > 0)}}"
   requester_deprecated_api:
     $ref: "#/definitions/requester_base"
     # for deprecated retriever we should use `2021-01` api version
@@ -123,10 +126,6 @@ definitions:
         inject_into: request_parameter
         type: RequestOption
         field_name: owner_resource
-    # requester:
-    #   $ref: "#/definitions/requester_modern_api"
-    #   request_parameters:
-    #     owner_resource: "{{ stream_partition['owner_resource'] }}"
 
   # BASE STREAMS
   # FULL-REFRESH
