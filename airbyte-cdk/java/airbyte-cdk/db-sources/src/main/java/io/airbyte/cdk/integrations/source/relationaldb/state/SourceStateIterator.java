@@ -28,8 +28,6 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();
 
-  public record StateEmitFrequency(long syncCheckpointRecords, Duration syncCheckpointDuration) {}
-
   private final SourceStateMessageProducer sourceStateMessageProducer;
 
   public SourceStateIterator(final Iterator<T> messageIterator,

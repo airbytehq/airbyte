@@ -38,7 +38,7 @@ public class SourceStateIteratorTest {
     mockProducer = mock(SourceStateMessageProducer.class);
     stream = mock(ConfiguredAirbyteStream.class);
     messageIterator = mock(Iterator.class);
-    SourceStateIterator.StateEmitFrequency stateEmitFrequency = new SourceStateIterator.StateEmitFrequency(1L, Duration.ofSeconds(100L));
+    StateEmitFrequency stateEmitFrequency = new StateEmitFrequency(1L, Duration.ofSeconds(100L));
     sourceStateIterator = new SourceStateIterator(messageIterator, stream, mockProducer, stateEmitFrequency);
   }
 
