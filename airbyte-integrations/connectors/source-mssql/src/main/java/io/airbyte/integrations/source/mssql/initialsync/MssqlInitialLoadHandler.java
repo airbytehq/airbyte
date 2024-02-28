@@ -20,6 +20,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -176,7 +177,7 @@ public class MssqlInitialLoadHandler {
                 calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
+        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
         iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
       }
     }
@@ -215,12 +216,8 @@ public class MssqlInitialLoadHandler {
   }
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
-                                                                 final AirbyteStreamNameNamespacePair pair) {
-    final OrderedColumnLoadStatus currentOcLoadStatus = initialLoadStateManager.getOrderedColumnLoadStatus(pair);
-    final JsonNode incrementalState =
-        (currentOcLoadStatus == null || currentOcLoadStatus.getIncrementalState() == null)
-            ? streamStateForIncrementalRunSupplier.apply(pair)
-            : currentOcLoadStatus.getIncrementalState();
+                                                                 final ConfiguredAirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
 
     final Duration syncCheckpointDuration =
         config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null
@@ -229,8 +226,12 @@ public class MssqlInitialLoadHandler {
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : MssqlInitialSyncStateIterator.SYNC_CHECKPOINT_RECORDS;
 
+    initialLoadStateManager.setStreamStateForIncrementalRunSupplier(streamStateForIncrementalRunSupplier);
+    initialLoadStateManager.setCheckpointFrequency(syncCheckpointRecords, syncCheckpointDuration);
+
+
     return AutoCloseableIterators.transformIterator(
-        r -> new MssqlInitialSyncStateIterator(r, pair, initialLoadStateManager, incrementalState, syncCheckpointDuration, syncCheckpointRecords),
+        r -> new SourceStateIterator<>(r, stream, initialLoadStateManager),
         recordIterator, pair);
   }
 

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MssqlInitialLoadGlobalStateManager implements MssqlInitialLoadStateManager {
+public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateManager {
 
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOrderedColLoadStatus;
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;

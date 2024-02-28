@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * keys to the stream state when they're going through the iterator Once we have verified that
  * expanding StreamStateManager itself to include this functionality, this class will be removed
  */
-public class MssqlInitialLoadStreamStateManager implements MssqlInitialLoadStateManager {
+public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadStateManager.class);
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOrderedColLoadStatus;
