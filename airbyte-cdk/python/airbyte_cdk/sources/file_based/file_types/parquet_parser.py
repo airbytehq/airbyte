@@ -16,7 +16,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
-from pyarrow import Scalar, DictionaryArray
+from pyarrow import DictionaryArray, Scalar
 
 
 class ParquetParser(FileTypeParser):
@@ -165,7 +165,6 @@ class ParquetParser(FileTypeParser):
             "indices": parquet_value.indices.tolist(),
             "values": parquet_value.dictionary.tolist(),
         }
-
 
     @staticmethod
     def parquet_type_to_schema_type(parquet_type: pa.DataType, parquet_format: ParquetFormat) -> Mapping[str, str]:
