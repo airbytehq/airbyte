@@ -62,6 +62,9 @@ class FileBackend(BaseBackend):
         }
 
         for message in messages:
+            if not isinstance(message, AirbyteMessage):
+                continue
+
             if message.type == AirbyteMessageType.CATALOG:
                 messages_by_type["catalog"].append(message.catalog)
 
@@ -75,9 +78,12 @@ class FileBackend(BaseBackend):
                 messages_by_type["spec"].append(message.spec)
 
             elif message.type == AirbyteMessageType.STATE:
-                stream_name = message.state.stream.stream_descriptor.name
-                stream_namespace = message.state.stream.stream_descriptor.namespace
-                key = f"{stream_name}_{stream_namespace}" if stream_namespace else stream_name
-                messages_by_type["records"][key].append(message.state)
+                if message.state.stream and message.state.stream.stream_descriptor:
+                    stream_name = message.state.stream.stream_descriptor.name
+                    stream_namespace = message.state.stream.stream_descriptor.namespace
+                    key = f"{stream_name}_{stream_namespace}" if stream_namespace else stream_name
+                else:
+                    key = "_global_states"
+                messages_by_type["states"][key].append(message.state)
 
         return messages_by_type
