@@ -29,7 +29,5 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:low-code:
-        custom-components: true
-        partially-low-code: true
+    - language:low-code
 metadataSpecVersion: "1.0"
