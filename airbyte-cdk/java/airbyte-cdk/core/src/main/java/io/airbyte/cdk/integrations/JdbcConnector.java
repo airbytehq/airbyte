@@ -8,7 +8,6 @@ import static io.airbyte.cdk.db.factory.DatabaseDriver.MSSQLSERVER;
 import static io.airbyte.cdk.db.factory.DatabaseDriver.MYSQL;
 import static io.airbyte.cdk.db.factory.DatabaseDriver.POSTGRESQL;
 
-import io.airbyte.cdk.db.factory.DatabaseDriver;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;

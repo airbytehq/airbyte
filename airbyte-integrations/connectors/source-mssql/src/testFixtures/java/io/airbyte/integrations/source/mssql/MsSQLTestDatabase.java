@@ -259,7 +259,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   @Override
   public DatabaseDriver getDatabaseDriver() {
-    return DatabaseDriver.MSSQLSERVER;
+    return MssqlSource.driver;
   }
 
   @Override

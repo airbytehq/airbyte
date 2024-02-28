@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -102,6 +103,7 @@ import org.slf4j.LoggerFactory;
 public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
+  public static DatabaseDriver driver = new DatabaseDriver (SQLServerDriver.class, "jdbc:sqlserver://%s:%d;databaseName=%s");
   public static final String DESCRIBE_TABLE_QUERY =
       """
       sp_columns "%s"
@@ -110,7 +112,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       """
         SELECT CASE WHEN (SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL)=1 then 1 else 0 end as %s
       """;
-  public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.driverClassName();
+  public static final String DRIVER_CLASS = driver.driverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String IS_COMPRESSED = "is_compressed";

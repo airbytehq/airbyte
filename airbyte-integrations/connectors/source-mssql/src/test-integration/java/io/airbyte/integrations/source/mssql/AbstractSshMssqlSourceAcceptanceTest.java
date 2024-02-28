@@ -89,8 +89,8 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
     var dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.driverClassName(),
-        String.format(DatabaseDriver.MSSQLSERVER.urlFormatString(),
+        MssqlSource.driver.driverClassName(),
+        String.format(MssqlSource.driver.urlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()) + ";encrypt=false",
