@@ -109,8 +109,6 @@ class Stream(ABC):
 
     def read(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,
-        # cursor_field: Optional[List[str]],
-        # sync_mode: SyncMode,
         configured_stream: ConfiguredAirbyteStream,
         logger: logging.Logger,
         slice_logger: SliceLogger,
