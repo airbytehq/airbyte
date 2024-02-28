@@ -557,8 +557,9 @@ class ChangeStatus(IncrementalGoogleAdsStream):
         return 10000
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
+        """Modifies the original stream_slices to return one empty slice for new customers that doesn't have state yet"""
+        stream_state = stream_state or {}
         for customer in self.customers:
-            stream_state = stream_state or {}
             if stream_state.get(customer.id):
                 start_date = stream_state[customer.id].get(self.cursor_field) or self._start_date
             # We should keep backward compatibility with the previous version
@@ -688,8 +689,11 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         """
         If state exists read updates from parent stream otherwise return slices with only customer id to sync all records for stream
         """
+        stream_state = stream_state or {}
         for parent_slice in self.parent_stream.stream_slices(
-            sync_mode=SyncMode.incremental, cursor_field=self.parent_cursor_field, stream_state=stream_state.get(self.parent_stream_name)
+            sync_mode=SyncMode.incremental,
+            cursor_field=self.parent_cursor_field,
+            stream_state=stream_state.get(self.parent_stream_name, {}),
         ):
             customer_id = parent_slice.get("customer_id")
             child_slice = {
