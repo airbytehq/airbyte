@@ -102,7 +102,7 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
     :::
     - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
-   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
+   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
 6. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
@@ -116,7 +116,7 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
     - **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
     - **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
-   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
+   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
 6. Click **Set up source** and wait for the tests to complete.
 
 <FieldAnchor field="enable_experimental_streams">
@@ -322,6 +322,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.0   | 2024-02-16 | [34597](https://github.com/airbytehq/airbyte/pull/34597) | Make start date not required, sync all data from default value if it's not provided                                                                                              |
 | 3.2.0   | 2024-02-15 | [35328](https://github.com/airbytehq/airbyte/pull/35328) | Add mailingIlsListsIncluded and mailingIlsListsExcluded fields to Marketing emails stream schema                                                                                 |
 | 3.1.1   | 2024-02-12 | [35165](https://github.com/airbytehq/airbyte/pull/35165) | Manage dependencies with Poetry.                                                                                                                                                 |
 | 3.1.0   | 2024-02-05 | [34829](https://github.com/airbytehq/airbyte/pull/34829) | Add `Contacts Form Submissions` stream                                                                                                                                           |
