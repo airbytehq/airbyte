@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.HashMap;
@@ -31,9 +32,9 @@ public class XminStateManager implements SourceStateIteratorManager<AirbyteMessa
   private static final Logger LOGGER = LoggerFactory.getLogger(XminStateManager.class);
   public static final long XMIN_STATE_VERSION = 2L;
 
+  private XminStatus currentXminStatus;
+
   private final Map<AirbyteStreamNameNamespacePair, XminStatus> pairToXminStatus;
-  private XminStatus xminStatus;
-  private AirbyteStreamNameNamespacePair pair;
 
   private final static AirbyteStateMessage EMPTY_STATE = new AirbyteStateMessage()
       .withType(AirbyteStateType.STREAM)
@@ -100,25 +101,25 @@ public class XminStateManager implements SourceStateIteratorManager<AirbyteMessa
         .withStream(airbyteStreamState);
   }
 
-  public void setStreamStateIteratorFields(AirbyteStreamNameNamespacePair pair, XminStatus xminStatus) {
-    this.pair = pair;
-    this.xminStatus = xminStatus;
+  public void setCurrentXminStatus(final XminStatus currentXminStatus) {
+    this.currentXminStatus = currentXminStatus;
   }
 
   @Override
-  public AirbyteStateMessage generateStateMessageAtCheckpoint() {
+  public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
     // This is not expected to be called.
     throw new NotImplementedException();
   }
 
   @Override
-  public AirbyteMessage processRecordMessage(AirbyteMessage message) {
+  public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, AirbyteMessage message) {
     return message;
   }
 
   @Override
-  public AirbyteStateMessage createFinalStateMessage() {
-    return XminStateManager.createStateMessage(pair, xminStatus).getState();
+  public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+    return XminStateManager.createStateMessage(pair, currentXminStatus).getState();
   }
 
   @Override

@@ -99,7 +99,7 @@ public class PostgresXminHandler {
         final AutoCloseableIterator<JsonNode> queryStream = queryTableXmin(selectedDatabaseFields, table.getNameSpace(), table.getName());
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
+        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);
 
         iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
       }
@@ -233,11 +233,13 @@ public class PostgresXminHandler {
   }
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
+                                                                 final ConfiguredAirbyteStream airbyteStream,
                                                                  final AirbyteStreamNameNamespacePair pair) {
-    xminStateManager.setStreamStateIteratorFields(pair, currentXminStatus);
+    xminStateManager.setCurrentXminStatus(currentXminStatus);
     return AutoCloseableIterators.transform(
         autoCloseableIterator -> new XminStateIterator(
             autoCloseableIterator,
+            airbyteStream,
             xminStateManager),
         recordIterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));

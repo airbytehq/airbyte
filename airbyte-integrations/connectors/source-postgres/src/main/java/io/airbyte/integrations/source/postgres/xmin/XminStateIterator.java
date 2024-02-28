@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres.xmin;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +22,9 @@ public class XminStateIterator extends SourceStateIterator<AirbyteMessage> {
    * @param manager XminStateManager with stream info(pair) set up in it.
    */
   public XminStateIterator(final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator,
+                           final ConfiguredAirbyteStream stream,
                            final XminStateManager manager) {
-    super(messageIterator, manager);
+    super(messageIterator, stream, manager);
   }
 
   /**
