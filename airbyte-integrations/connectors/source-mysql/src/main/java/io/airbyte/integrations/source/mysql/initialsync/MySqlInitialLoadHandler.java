@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
