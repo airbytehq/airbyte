@@ -29,5 +29,7 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:python
+    - language:low-code:
+        custom-components: true
+        partially-low-code: true
 metadataSpecVersion: "1.0"
