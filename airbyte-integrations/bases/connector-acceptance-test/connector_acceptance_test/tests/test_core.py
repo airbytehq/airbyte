@@ -50,7 +50,7 @@ from connector_acceptance_test.config import (
     SpecTestConfig,
     UnsupportedFileTypeConfig,
 )
-from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
+from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from connector_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from connector_acceptance_test.utils.common import (
     build_configured_catalog_from_custom_catalog,
@@ -58,7 +58,6 @@ from connector_acceptance_test.utils.common import (
     find_all_values_for_key_in_schema,
     find_keyword_schema,
 )
-from connector_acceptance_test.utils.compare import diff_dicts
 from connector_acceptance_test.utils.json_schema_helper import (
     JsonSchemaHelper,
     flatten_tuples,
@@ -888,13 +887,13 @@ class TestBasicRead(BaseTest):
             ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
 
     @staticmethod
-    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: Boolean):
+    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
         """
         Check if data type and structure in records matches the one in json_schema of the stream in catalog
         """
         TestBasicRead._validate_records_structure(records, configured_catalog)
         bar = "-" * 80
-        streams_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns)
+        streams_errors = verify_records_schema(records, configured_catalog)
         for stream_name, errors in streams_errors.items():
             errors = map(str, errors.values())
             str_errors = f"\n{bar}\n".join(errors)
@@ -978,10 +977,7 @@ class TestBasicRead(BaseTest):
                 stream_name=stream_name,
                 actual=actual,
                 expected=expected,
-                extra_fields=flags.extra_fields,
                 exact_order=flags.exact_order,
-                extra_records=flags.extra_records,
-                ignored_fields=ignored_field_names,
                 detailed_logger=detailed_logger,
                 configured_catalog=configured_catalog,
             )
@@ -1071,9 +1067,7 @@ class TestBasicRead(BaseTest):
         assert records, "At least one record should be read using provided catalog"
 
         if should_validate_schema:
-            self._validate_schema(
-                records=records, configured_catalog=configured_catalog, fail_on_extra_columns=should_fail_on_extra_columns
-            )
+            self._validate_schema(records=records, configured_catalog=configured_catalog)
 
         self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
@@ -1131,29 +1125,11 @@ class TestBasicRead(BaseTest):
         assert len(error_trace_messages) >= 1, "Connector should emit at least one error trace message"
 
     @staticmethod
-    def remove_extra_fields(record: Any, spec: Any) -> Any:
-        """Remove keys from record that spec doesn't have, works recursively"""
-        if not isinstance(spec, Mapping):
-            return record
-
-        assert isinstance(record, Mapping), "Record or part of it is not a dictionary, but expected record is."
-        result = {}
-
-        for k, v in spec.items():
-            assert k in record, "Record or part of it doesn't have attribute that has expected record."
-            result[k] = TestBasicRead.remove_extra_fields(record[k], v)
-
-        return result
-
-    @staticmethod
     def compare_records(
         stream_name: str,
         actual: List[Mapping[str, Any]],
         expected: List[Mapping[str, Any]],
-        extra_fields: bool,
         exact_order: bool,
-        extra_records: bool,
-        ignored_fields: List[str],
         detailed_logger: Logger,
         configured_catalog: ConfiguredAirbyteCatalog,
     ):
@@ -1178,76 +1154,26 @@ class TestBasicRead(BaseTest):
                 assert (
                     not expected_but_not_found
                 ), f"Expected to see those primary keys in the actual response for stream {stream_name} but they were not found."
-        else:
-            TestBasicRead.legacy_compare_records(
-                stream_name, actual, expected, extra_fields, exact_order, extra_records, ignored_fields, detailed_logger
-            )
+        elif len(expected) > len(actual):
+            if exact_order:
+                detailed_logger.warning("exact_order is `True` but validation without primary key does not consider order")
 
-    @staticmethod
-    def legacy_compare_records(
-        stream_name: str,
-        actual: List[Mapping[str, Any]],
-        expected: List[Mapping[str, Any]],
-        extra_fields: bool,
-        exact_order: bool,
-        extra_records: bool,
-        ignored_fields: List[str],
-        detailed_logger: Logger,
-    ):
-        if exact_order:
-            if ignored_fields:
-                for item in actual:
-                    delete_fields(item, ignored_fields)
-                for item in expected:
-                    delete_fields(item, ignored_fields)
-
-            cleaned_actual = []
-            if extra_fields:
-                for r1, r2 in zip(expected, actual):
-                    if r1 and r2:
-                        cleaned_actual.append(TestBasicRead.remove_extra_fields(r2, r1))
-                    else:
-                        break
-
-            cleaned_actual = cleaned_actual or actual
-            complete_diff = "\n".join(
-                diff_dicts(cleaned_actual if not extra_records else cleaned_actual[: len(expected)], expected, use_markup=False)
-            )
-            for r1, r2 in zip(expected, cleaned_actual):
-                if r1 is None:
-                    assert extra_records, f"Stream {stream_name}: There are more records than expected, but extra_records is off"
-                    break
-
-                # to avoid printing the diff twice, we avoid the == operator here (see plugin.pytest_assertrepr_compare)
-                equals = r1 == r2
-                assert equals, f"Stream {stream_name}: Mismatch of record order or values\nDiff actual vs expected:{complete_diff}"
-        else:
-            _make_hashable = functools.partial(make_hashable, exclude_fields=ignored_fields) if ignored_fields else make_hashable
-            expected = set(map(_make_hashable, expected))
-            actual = set(map(_make_hashable, actual))
+            expected = set(map(make_hashable, expected))
+            actual = set(map(make_hashable, actual))
             missing_expected = set(expected) - set(actual)
 
-            if missing_expected:
-                extra = set(actual) - set(expected)
-                msg = f"Stream {stream_name}: All expected records must be produced"
-                detailed_logger.info(msg)
-                detailed_logger.info("missing:")
-                detailed_logger.log_json_list(sorted(missing_expected, key=lambda record: str(record.get("ID", "0"))))
-                detailed_logger.info("expected:")
-                detailed_logger.log_json_list(sorted(expected, key=lambda record: str(record.get("ID", "0"))))
-                detailed_logger.info("actual:")
-                detailed_logger.log_json_list(sorted(actual, key=lambda record: str(record.get("ID", "0"))))
-                detailed_logger.info("extra:")
-                detailed_logger.log_json_list(sorted(extra, key=lambda record: str(record.get("ID", "0"))))
-                pytest.fail(msg)
-
-            if not extra_records:
-                extra_actual = set(actual) - set(expected)
-                if extra_actual:
-                    msg = f"Stream {stream_name}: There are more records than expected, but extra_records is off"
-                    detailed_logger.info(msg)
-                    detailed_logger.log_json_list(extra_actual)
-                    pytest.fail(msg)
+            extra = set(actual) - set(expected)
+            msg = f"Expected to have at least as many records than expected for stream {stream_name}."
+            detailed_logger.info(msg)
+            detailed_logger.info("missing:")
+            detailed_logger.log_json_list(sorted(missing_expected))
+            detailed_logger.info("expected:")
+            detailed_logger.log_json_list(sorted(expected))
+            detailed_logger.info("actual:")
+            detailed_logger.log_json_list(sorted(actual))
+            detailed_logger.info("extra:")
+            detailed_logger.log_json_list(sorted(extra))
+            pytest.fail(msg)
 
     @staticmethod
     def group_by_stream(records: List[AirbyteRecordMessage]) -> MutableMapping[str, List[MutableMapping]]:
