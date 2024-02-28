@@ -4,6 +4,10 @@
 
 package io.airbyte.cdk.integrations;
 
+import static io.airbyte.cdk.db.factory.DatabaseDriver.MSSQLSERVER;
+import static io.airbyte.cdk.db.factory.DatabaseDriver.MYSQL;
+import static io.airbyte.cdk.db.factory.DatabaseDriver.POSTGRESQL;
+
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -44,12 +48,19 @@ public abstract class JdbcConnector extends BaseConnector {
    * @return DataSourceBuilder class used to create dynamic fields for DataSource
    */
   public static Duration getConnectionTimeout(final Map<String, String> connectionProperties, String driverClassName) {
-    final Optional<Duration> parsedConnectionTimeout = switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
-      case POSTGRESQL -> maybeParseDuration(connectionProperties.get(POSTGRES_CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
+    final Optional<Duration> parsedConnectionTimeout;
+    if (driverClassName.equals(POSTGRESQL.driverClassName())) {
+      parsedConnectionTimeout = maybeParseDuration(
+          connectionProperties.get(POSTGRES_CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
           .or(() -> Optional.of(POSTGRES_CONNECT_TIMEOUT_DEFAULT_DURATION));
-      case MYSQL -> maybeParseDuration(connectionProperties.get("connectTimeout"), ChronoUnit.MILLIS);
-      case MSSQLSERVER -> maybeParseDuration(connectionProperties.get("loginTimeout"), ChronoUnit.SECONDS);
-      default -> maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
+    } else if (driverClassName.equals(MYSQL.driverClassName())) {
+        parsedConnectionTimeout = maybeParseDuration(connectionProperties.get("connectTimeout"),
+            ChronoUnit.MILLIS);
+    } else if (driverClassName.equals(MSSQLSERVER.driverClassName())) {
+      parsedConnectionTimeout = maybeParseDuration(connectionProperties.get("loginTimeout"),
+          ChronoUnit.SECONDS);
+    } else {
+        parsedConnectionTimeout = maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
           // Enforce minimum timeout duration for unspecified data sources.
           .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0);
     };

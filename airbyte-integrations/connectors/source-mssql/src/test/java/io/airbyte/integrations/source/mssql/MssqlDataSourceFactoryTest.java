@@ -24,7 +24,7 @@ public class MssqlDataSourceFactoryTest {
       final DataSource dataSource = DataSourceFactory.create(
           testdb.getUserName(),
           testdb.getPassword(),
-          testdb.getDatabaseDriver().getDriverClassName(),
+          testdb.getDatabaseDriver().driverClassName(),
           testdb.getJdbcUrl(),
           connectionProperties,
           new MssqlSource().getConnectionTimeoutMssql(connectionProperties));

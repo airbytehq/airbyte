@@ -149,7 +149,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     return DataSourceFactory.create(
         testUserName(),
         testdb.getPassword(),
-        testdb.getDatabaseDriver().getDriverClassName(),
+        testdb.getDatabaseDriver().driverClassName(),
         testdb.getJdbcUrl(),
         Map.of("encrypt", "false"),
         JdbcConnector.CONNECT_TIMEOUT_DEFAULT);

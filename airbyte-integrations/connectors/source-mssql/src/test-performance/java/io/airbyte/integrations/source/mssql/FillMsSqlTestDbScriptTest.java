@@ -53,7 +53,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
     dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        DatabaseDriver.MSSQLSERVER.driverClassName(),
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),

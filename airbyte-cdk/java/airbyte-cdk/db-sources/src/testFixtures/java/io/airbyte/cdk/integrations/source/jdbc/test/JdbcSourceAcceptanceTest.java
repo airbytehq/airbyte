@@ -4,6 +4,11 @@
 
 package io.airbyte.cdk.integrations.source.jdbc.test;
 
+import static io.airbyte.cdk.db.factory.DatabaseDriver.CLICKHOUSE;
+import static io.airbyte.cdk.db.factory.DatabaseDriver.MYSQL;
+import static io.airbyte.cdk.db.factory.DatabaseDriver.ORACLE;
+import static io.airbyte.cdk.db.factory.DatabaseDriver.SNOWFLAKE;
+import static io.airbyte.cdk.db.factory.DatabaseDriver.TERADATA;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -290,9 +295,8 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   @Test
   protected void testDiscoverWithMultipleSchemas() throws Exception {
     // clickhouse and mysql do not have a concept of schemas, so this test does not make sense for them.
-    switch (testdb.getDatabaseDriver()) {
-      case MYSQL, CLICKHOUSE, TERADATA:
-        return;
+    if (testdb.getDatabaseDriver() == MYSQL || testdb.getDatabaseDriver() == CLICKHOUSE || testdb.getDatabaseDriver() == TERADATA) {
+      return;
     }
 
     // add table and data to a separate schema.
@@ -750,7 +754,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
     // some databases don't make insertion order guarantee when equal ordering value
-    if (testdb.getDatabaseDriver().equals(DatabaseDriver.TERADATA) || testdb.getDatabaseDriver().equals(DatabaseDriver.ORACLE)) {
+    if (testdb.getDatabaseDriver().equals(TERADATA) || testdb.getDatabaseDriver().equals(DatabaseDriver.ORACLE)) {
       assertThat(List.of("a", "b"), Matchers.containsInAnyOrder(firstSyncNames.toArray()));
     } else {
       assertEquals(List.of("a", "b"), firstSyncNames);
@@ -802,7 +806,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         .toList();
 
     // teradata doesn't make insertion order guarantee when equal ordering value
-    if (testdb.getDatabaseDriver().equals(DatabaseDriver.TERADATA)) {
+    if (testdb.getDatabaseDriver().equals(TERADATA)) {
       assertThat(List.of("c", "d", "e", "f"), Matchers.containsInAnyOrder(thirdSyncExpectedNames.toArray()));
     } else {
       assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
@@ -1009,10 +1013,10 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   private JsonNode convertIdBasedOnDatabase(final int idValue) {
-    return switch (testdb.getDatabaseDriver()) {
-      case ORACLE, SNOWFLAKE -> Jsons.jsonNode(BigDecimal.valueOf(idValue));
-      default -> Jsons.jsonNode(idValue);
-    };
+    if (testdb.getDatabaseDriver() == ORACLE || testdb.getDatabaseDriver() == SNOWFLAKE) {
+      return Jsons.jsonNode(BigDecimal.valueOf(idValue));
+    }
+    return Jsons.jsonNode(idValue);
   }
 
   private String getDefaultSchemaName() {
@@ -1020,11 +1024,11 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   protected String getDefaultNamespace() {
-    return switch (testdb.getDatabaseDriver()) {
+    if (testdb.getDatabaseDriver() == MYSQL || testdb.getDatabaseDriver() == CLICKHOUSE || testdb.getDatabaseDriver() == TERADATA) {
       // mysql does not support schemas, it namespaces using database names instead.
-      case MYSQL, CLICKHOUSE, TERADATA -> testdb.getDatabaseName();
-      default -> SCHEMA_NAME;
-    };
+      return testdb.getDatabaseName();
+    }
+    return SCHEMA_NAME;
   }
 
   protected static void setEmittedAtToNull(final Iterable<AirbyteMessage> messages) {

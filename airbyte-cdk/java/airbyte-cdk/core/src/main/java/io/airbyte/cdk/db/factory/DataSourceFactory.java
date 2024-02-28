@@ -259,8 +259,8 @@ public class DataSourceFactory {
 
       final HikariConfig config = new HikariConfig();
 
-      config.setDriverClassName(databaseDriver.getDriverClassName());
-      config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(databaseDriver.getUrlFormatString(), host, port, database));
+      config.setDriverClassName(databaseDriver.driverClassName());
+      config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(databaseDriver.urlFormatString(), host, port, database));
       config.setMaximumPoolSize(maximumPoolSize);
       config.setMinimumIdle(minimumPoolSize);
       // HikariCP uses milliseconds for all time values:

@@ -44,7 +44,7 @@ public class MssqlAgentStateTest {
     testDataSource = DataSourceFactory.create(
         testdb.getUserName(),
         testdb.getPassword(),
-        testdb.getDatabaseDriver().getDriverClassName(),
+        testdb.getDatabaseDriver().driverClassName(),
         testdb.getJdbcUrl(),
         Map.of("encrypt", "false"),
         JdbcConnector.CONNECT_TIMEOUT_DEFAULT);

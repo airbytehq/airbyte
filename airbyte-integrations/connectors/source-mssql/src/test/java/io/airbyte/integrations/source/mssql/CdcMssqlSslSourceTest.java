@@ -41,7 +41,7 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
     return DataSourceFactory.create(
         testUserName(),
         testdb.getPassword(),
-        testdb.getDatabaseDriver().getDriverClassName(),
+        testdb.getDatabaseDriver().driverClassName(),
         testdb.getJdbcUrl(),
         Map.of("encrypt", "true", "databaseName", testdb.getDatabaseName(), "trustServerCertificate", "true"),
         JdbcConnector.CONNECT_TIMEOUT_DEFAULT);

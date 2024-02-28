@@ -123,10 +123,10 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     this.dataSource = DataSourceFactory.create(
         getUserName(),
         getPassword(),
-        getDatabaseDriver().getDriverClassName(),
+        getDatabaseDriver().driverClassName(),
         getJdbcUrl(),
         connectionProperties,
-        JdbcConnector.getConnectionTimeout(connectionProperties, getDatabaseDriver().getDriverClassName()));
+        JdbcConnector.getConnectionTimeout(connectionProperties, getDatabaseDriver().driverClassName()));
     this.dslContext = DSLContextFactory.create(dataSource, getSqlDialect());
     return self();
   }
@@ -179,7 +179,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
 
   public String getJdbcUrl() {
     return String.format(
-        getDatabaseDriver().getUrlFormatString(),
+        getDatabaseDriver().urlFormatString(),
         getContainer().getHost(),
         getContainer().getFirstMappedPort(),
         getDatabaseName());
