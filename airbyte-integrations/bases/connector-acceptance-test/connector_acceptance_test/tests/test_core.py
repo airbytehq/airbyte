@@ -50,7 +50,7 @@ from connector_acceptance_test.config import (
     SpecTestConfig,
     UnsupportedFileTypeConfig,
 )
-from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
+from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from connector_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from connector_acceptance_test.utils.common import (
     build_configured_catalog_from_custom_catalog,
@@ -1154,27 +1154,26 @@ class TestBasicRead(BaseTest):
                 assert (
                     not expected_but_not_found
                 ), f"Expected to see those primary keys in the actual response for stream {stream_name} but they were not found."
-        else:
-            if len(expected) > len(actual):
-                if exact_order:
-                    detailed_logger.warning("exact_order is `True` but validation without primary key does not consider order")
+        elif len(expected) > len(actual):
+            if exact_order:
+                detailed_logger.warning("exact_order is `True` but validation without primary key does not consider order")
 
-                expected = set(map(make_hashable, expected))
-                actual = set(map(make_hashable, actual))
-                missing_expected = set(expected) - set(actual)
+            expected = set(map(make_hashable, expected))
+            actual = set(map(make_hashable, actual))
+            missing_expected = set(expected) - set(actual)
 
-                extra = set(actual) - set(expected)
-                msg = f"Expected to have at least as many records than expected for stream {stream_name}."
-                detailed_logger.info(msg)
-                detailed_logger.info("missing:")
-                detailed_logger.log_json_list(sorted(missing_expected))
-                detailed_logger.info("expected:")
-                detailed_logger.log_json_list(sorted(expected))
-                detailed_logger.info("actual:")
-                detailed_logger.log_json_list(sorted(actual))
-                detailed_logger.info("extra:")
-                detailed_logger.log_json_list(sorted(extra))
-                pytest.fail(msg)
+            extra = set(actual) - set(expected)
+            msg = f"Expected to have at least as many records than expected for stream {stream_name}."
+            detailed_logger.info(msg)
+            detailed_logger.info("missing:")
+            detailed_logger.log_json_list(sorted(missing_expected))
+            detailed_logger.info("expected:")
+            detailed_logger.log_json_list(sorted(expected))
+            detailed_logger.info("actual:")
+            detailed_logger.log_json_list(sorted(actual))
+            detailed_logger.info("extra:")
+            detailed_logger.log_json_list(sorted(extra))
+            pytest.fail(msg)
 
     @staticmethod
     def group_by_stream(records: List[AirbyteRecordMessage]) -> MutableMapping[str, List[MutableMapping]]:
