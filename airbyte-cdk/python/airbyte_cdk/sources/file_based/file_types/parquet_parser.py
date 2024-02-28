@@ -109,6 +109,9 @@ class ParquetParser(FileTypeParser):
         """
         Convert a pyarrow scalar to a value that can be output by the source.
         """
+        if parquet_value.as_py() is None:
+            return None
+
         # Convert date and datetime objects to isoformat strings
         if pa.types.is_time(parquet_value.type) or pa.types.is_timestamp(parquet_value.type) or pa.types.is_date(parquet_value.type):
             return parquet_value.as_py().isoformat()
