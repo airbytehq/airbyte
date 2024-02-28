@@ -177,9 +177,6 @@ public class MySqlInitialLoadHandler {
                                                                  final AirbyteStreamNameNamespacePair pair) {
 
     final PrimaryKeyLoadStatus currentPkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
-    final JsonNode incrementalState =
-        (currentPkLoadStatus == null || currentPkLoadStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
-            : currentPkLoadStatus.getIncrementalState();
 
     final Duration syncCheckpointDuration =
         config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())

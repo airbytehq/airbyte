@@ -26,7 +26,6 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
   public static final String STATE_TYPE_KEY = "state_type";
   public static final String PRIMARY_KEY_STATE_TYPE = "primary_key";
 
-  protected JsonNode streamStateForIncrementalRun;
   protected Duration syncCheckpointDuration;
   protected Long syncCheckpointRecords;
   protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
@@ -59,6 +58,12 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
   // the column name associated with the stream.
   public abstract PrimaryKeyInfo getPrimaryKeyInfo(final AirbyteStreamNameNamespacePair pair);
 
+  protected JsonNode getIncrementalState(final AirbyteStreamNameNamespacePair pair) {
+    final PrimaryKeyLoadStatus currentPkLoadStatus = getPrimaryKeyLoadStatus(pair);
+    return (currentPkLoadStatus == null || currentPkLoadStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
+        : currentPkLoadStatus.getIncrementalState();
+  }
+
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final AirbyteMessage message) {
     if (Objects.nonNull(message)) {
@@ -70,7 +75,7 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateIterato
           .withStateType(StateType.PRIMARY_KEY)
           .withPkName(pkFieldName)
           .withPkVal(lastPk)
-          .withIncrementalState(streamStateForIncrementalRun);
+          .withIncrementalState(getIncrementalState(pair));
       this.updatePrimaryKeyLoadState(pair, pkStatus);
     }
     return message;
