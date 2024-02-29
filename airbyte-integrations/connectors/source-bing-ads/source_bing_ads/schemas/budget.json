@@ -21,7 +21,9 @@
       "type": ["null", "integer"]
     },
     "Modified Time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "Budget Id": {
       "type": ["null", "integer"]
@@ -30,7 +32,7 @@
       "type": ["null", "string"]
     },
     "Budget": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "Budget Type": {
       "type": ["null", "string"]
