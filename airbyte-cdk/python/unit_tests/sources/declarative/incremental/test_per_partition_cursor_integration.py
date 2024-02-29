@@ -18,20 +18,20 @@ SYNC_MODE = SyncMode.incremental
 
 class ManifestBuilder:
     def __init__(self):
-        self._incremental_sync = None
-        self._partition_router = None
-        self._substream_partition_router = None
+        self._incremental_sync = {}
+        self._partition_router = {}
+        self._substream_partition_router = {}
 
-    def with_list_partition_router(self, cursor_field, partitions):
-        self._partition_router = {
+    def with_list_partition_router(self, stream_name, cursor_field, partitions):
+        self._partition_router[stream_name] = {
             "type": "ListPartitionRouter",
             "cursor_field": cursor_field,
             "values": partitions,
         }
         return self
 
-    def with_substream_partition_router(self):
-        self._substream_partition_router = {
+    def with_substream_partition_router(self, stream_name):
+        self._substream_partition_router[stream_name] = {
             "type": "SubstreamPartitionRouter",
             "parent_stream_configs": [
                 {
@@ -45,8 +45,8 @@ class ManifestBuilder:
         }
         return self
 
-    def with_incremental_sync(self, start_datetime, end_datetime, datetime_format, cursor_field, step, cursor_granularity):
-        self._incremental_sync = {
+    def with_incremental_sync(self, stream_name, start_datetime, end_datetime, datetime_format, cursor_field, step, cursor_granularity):
+        self._incremental_sync[stream_name] = {
             "type": "DatetimeBasedCursor",
             "start_datetime": start_datetime,
             "end_datetime": end_datetime,
@@ -118,21 +118,21 @@ class ManifestBuilder:
                 "type": "Spec",
             },
         }
-        if self._incremental_sync:
-            manifest["definitions"]["Rates"]["incremental_sync"] = self._incremental_sync
-            manifest["definitions"]["AnotherStream"]["incremental_sync"] = self._incremental_sync
-        if self._partition_router:
-            manifest["definitions"]["Rates"]["retriever"]["partition_router"] = self._partition_router
-        if self._substream_partition_router:
-            manifest["definitions"]["AnotherStream"]["retriever"]["partition_router"] = self._substream_partition_router
+        for stream_name, incremental_sync_definition in self._incremental_sync.items():
+            manifest["definitions"][stream_name]["incremental_sync"] = incremental_sync_definition
+        for stream_name, partition_router_definition in self._partition_router.items():
+            manifest["definitions"][stream_name]["retriever"]["partition_router"] = partition_router_definition
+        for stream_name, partition_router_definition in self._substream_partition_router.items():
+            manifest["definitions"][stream_name]["retriever"]["partition_router"] = partition_router_definition
         return manifest
 
 
 def test_given_state_for_only_some_partition_when_stream_slices_then_create_slices_using_state_or_start_from_start_datetime():
     source = ManifestDeclarativeSource(
         source_config=ManifestBuilder()
-        .with_list_partition_router("partition_field", ["1", "2"])
+        .with_list_partition_router("Rates", "partition_field", ["1", "2"])
         .with_incremental_sync(
+            "Rates",
             start_datetime="2022-01-01",
             end_datetime="2022-02-28",
             datetime_format="%Y-%m-%d",
@@ -167,8 +167,9 @@ def test_given_state_for_only_some_partition_when_stream_slices_then_create_slic
 def test_given_record_for_partition_when_read_then_update_state():
     source = ManifestDeclarativeSource(
         source_config=ManifestBuilder()
-        .with_list_partition_router("partition_field", ["1", "2"])
+        .with_list_partition_router("Rates", "partition_field", ["1", "2"])
         .with_incremental_sync(
+            "Rates",
             start_datetime="2022-01-01",
             end_datetime="2022-02-28",
             datetime_format="%Y-%m-%d",
@@ -209,8 +210,18 @@ def test_given_record_for_partition_when_read_then_update_state():
 def test_substream_without_input_state():
     source = ManifestDeclarativeSource(
         source_config=ManifestBuilder()
-        .with_substream_partition_router()
+        .with_substream_partition_router("AnotherStream")
         .with_incremental_sync(
+            "Rates",
+            start_datetime="2022-01-01",
+            end_datetime="2022-02-28",
+            datetime_format="%Y-%m-%d",
+            cursor_field=CURSOR_FIELD,
+            step="P1M",
+            cursor_granularity="P1D",
+        )
+        .with_incremental_sync(
+            "AnotherStream",
             start_datetime="2022-01-01",
             end_datetime="2022-02-28",
             datetime_format="%Y-%m-%d",
@@ -232,15 +243,26 @@ def test_substream_without_input_state():
     ):
         slices = list(stream_instance.stream_slices(sync_mode=SYNC_MODE))
         assert list(slices) == [
-            PerPartitionStreamSlice(partition={"parent_id": "1", "parent_slice": {}}, cursor_slice={}),
+            PerPartitionStreamSlice(partition={"parent_id": "1", "parent_slice": {}, }, cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"}),
+            PerPartitionStreamSlice(partition={"parent_id": "1", "parent_slice": {}, }, cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"}),
         ]
 
 
 def test_substream_with_legacy_input_state():
     source = ManifestDeclarativeSource(
         source_config=ManifestBuilder()
-        .with_substream_partition_router()
+        .with_substream_partition_router("AnotherStream")
         .with_incremental_sync(
+            "Rates",
+            start_datetime="2022-01-01",
+            end_datetime="2022-02-28",
+            datetime_format="%Y-%m-%d",
+            cursor_field=CURSOR_FIELD,
+            step="P1M",
+            cursor_granularity="P1D",
+        )
+        .with_incremental_sync(
+            "AnotherStream",
             start_datetime="2022-01-01",
             end_datetime="2022-02-28",
             datetime_format="%Y-%m-%d",
