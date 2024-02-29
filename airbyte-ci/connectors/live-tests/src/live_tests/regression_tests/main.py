@@ -18,6 +18,10 @@ logger = logging.getLogger(__name__)
 
 COMMANDS = ["check", "discover", "read", "read-with-state", "spec"]
 
+# from enum import Enum
+# class Command(Enum):
+
+
 
 async def _main(
     connector_name: str,

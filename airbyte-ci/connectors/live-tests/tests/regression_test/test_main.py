@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from regression_testing.main import COMMANDS, _dispatch, _do_test_run
+from live_tests.regression_tests.main import COMMANDS, _dispatch, _do_test_run
 
 
 @pytest.mark.asyncio
