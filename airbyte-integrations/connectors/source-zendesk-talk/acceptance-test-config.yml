@@ -28,19 +28,6 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        ignored_fields:
-          greetings:
-            - name: audio_url
-              bypass_reason: In url present auto generated hash
-          account_overview:
-            - name: current_timestamp
-              bypass_reason: Depend on current time
-          agents_overview:
-            - name: current_timestamp
-              bypass_reason: Depend on current time
-          current_queue_activity:
-            - name: current_timestamp
-              bypass_reason: Depend on current time
         fail_on_extra_columns: false
   incremental:
     tests:
