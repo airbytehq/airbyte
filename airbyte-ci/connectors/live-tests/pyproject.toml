@@ -5,15 +5,15 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "regression-testing"
+name = "live-tests"
 version = "0.0.1"
-description = "Contains regression tests for connectors."
+description = "Contains utilities for testing connectors against live data."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
 homepage = "https://github.com/airbytehq/airbyte"
 readme = "README.md"
 packages = [
-    { include = "regression_testing", from = "src" },
+    { include = "live_tests", from = "src" },
 ]
 
 [tool.poetry.dependencies]
@@ -56,7 +56,7 @@ poe_tasks = ["test"]
 mount_docker_socket = true
 
 [tool.poetry.scripts]
-run-regression-tests = "regression_testing.main:main"
+run-regression-tests = "live_tests.regression_tests.main:main"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
