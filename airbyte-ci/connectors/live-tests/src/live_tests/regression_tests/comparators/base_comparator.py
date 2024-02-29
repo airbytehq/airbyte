@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
 from dagger import Container
-from ..utils import ConnectorUnderTest
+
+from live_tests.utils.common import ConnectorUnderTest
 
 
 class BaseComparator(ABC):

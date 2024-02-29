@@ -5,7 +5,7 @@ from typing import Any, Dict, Generator
 from airbyte_protocol.models import AirbyteMessage
 from airbyte_protocol.models import Type as AirbyteMessageType
 
-from .base_backend import BaseBackend
+from live_tests.backends.base_backend import BaseBackend
 
 
 class FileBackend(BaseBackend):
