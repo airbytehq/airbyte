@@ -6,22 +6,14 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.getCountOfTypeAndDedupeThreads;
-import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
-import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtilKt.prepareAllSchemas;
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
-import kotlin.NotImplementedError;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 /**
@@ -54,31 +46,14 @@ public class NoOpTyperDeduperWithV1V2Migrations implements TyperDeduper {
   }
 
   @Override
-  public void prepareTables() throws Exception {
-    try {
-      log.info("Ensuring schemas exist for prepareTables with V1V2 migrations");
-      prepareAllSchemas(parsedCatalog, sqlGenerator, destinationHandler);
-      final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
-      for (final StreamConfig stream : parsedCatalog.streams()) {
-        prepareTablesTasks.add(CompletableFuture.supplyAsync(() -> {
-          // Migrate the Raw Tables if this is the first v2 sync after a v1 sync
-          try {
-            log.info("Migrating V1->V2 for stream {}", stream.id());
-            v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream);
-            log.info("Migrating V2 legacy for stream {}", stream.id());
-            v2TableMigrator.migrateIfNecessary(stream);
-            return Optional.empty();
-          } catch (final Exception e) {
-            return Optional.of(e);
-          }
-        }, executorService));
-      }
-      CompletableFuture.allOf(prepareTablesTasks.toArray(CompletableFuture[]::new)).join();
-      reduceExceptions(prepareTablesTasks, "The following exceptions were thrown attempting to prepare tables:\n");
-    } catch (NotImplementedError | NotImplementedException e) {
-      log.warn(
-          "Could not prepare schemas or tables because this is not implemented for this destination, this should not be required for this destination to succeed");
-    }
+  public void prepareSchemasAndRunMigrations() {
+    TyperDeduperUtil.prepareSchemas(sqlGenerator, destinationHandler, parsedCatalog);
+    TyperDeduperUtil.executeRawTableMigrations(executorService, sqlGenerator, destinationHandler, v1V2Migrator, v2TableMigrator, parsedCatalog);
+  }
+
+  @Override
+  public void prepareFinalTables() {
+    log.info("Skipping prepareFinalTables");
   }
 
   @Override

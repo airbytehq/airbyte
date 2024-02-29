@@ -596,15 +596,17 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
 
 
 @pytest.mark.parametrize(
-    "schema, ignored_fields, expect_records_config, record, expected_records_by_stream, primary_key, expectation",
+    "schema, ignored_fields, expect_records_config, records, expected_records_by_stream, primary_key, expectation",
     [
-        ({"type": "object"}, {}, _DEFAULT_RECORD_CONFIG, {"aa": 23}, {}, None, does_not_raise()),
-        ({"type": "object"}, {}, _DEFAULT_RECORD_CONFIG, {}, {}, None, does_not_raise()),
+        # given no expected records and actual has one empty record
+        ({"type": "object"}, {}, _DEFAULT_RECORD_CONFIG, [{}], {}, None, does_not_raise()),
+        # given no expected records but actual has one record that match schema
+        ({"type": "object"}, {}, _DEFAULT_RECORD_CONFIG, [{"aa": 23}], {}, None, does_not_raise()),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"aa": 23},
+            [{"aa": 23}],
             {},
             None,
             pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
@@ -613,7 +615,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             {"type": "object", "properties": {"created": {"type": "string"}}},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"created": "23"},
+            [{"created": "23"}],
             {},
             None,
             does_not_raise(),
@@ -622,7 +624,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             {"type": "object", "properties": {"created": {"type": "string"}}},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"root": {"created": "23"}},
+            [{"root": {"created": "23"}}],
             {},
             None,
             pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
@@ -632,57 +634,70 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             {"type": "object", "properties": {"shop": {"type": ["null", "object"]}, "store": {"type": ["null", "object"]}}},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"shop": {"a": "23"}, "store": {"b": "23"}},
+            [{"shop": {"a": "23"}, "store": {"b": "23"}}],
             {},
             None,
             does_not_raise(),
         ),
-        # Fail when expected and actual records are not equal
+        # Given stream without primary key with different record
         (
             {"type": "object"},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
+            [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}],
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
             None,
-            pytest.raises(Failed, match="Stream test_stream: All expected records must be produced"),
+            does_not_raise(),
+        ),
+        # Given stream without primary key and more actual than expected
+        (
+            {"type": "object"},
+            {},
+            _DEFAULT_RECORD_CONFIG,
+            [
+                {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
+                {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}
+            ],
+            {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+            None,
+            does_not_raise(),
         ),
         # Expected and Actual records are not equal but we ignore fast changing field
         (
             {"type": "object"},
             {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
             _DEFAULT_RECORD_CONFIG,
-            {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
+            [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}],
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
             None,
             does_not_raise(),
-        ),
-        # Fail when expected and actual records are not equal and exact_order=True
-        (
-            {"type": "object"},
-            {},
-            ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
-            {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
-            {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
-            None,
-            pytest.raises(AssertionError, match="Stream test_stream: Mismatch of record order or values"),
         ),
         # Expected and Actual records are not equal but we ignore fast changing field (for case when exact_order=True)
         (
             {"type": "object"},
             {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
-            ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
-            {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
+            ExpectedRecordsConfig(exact_order=True, path="foobar"),
+            [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}],
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}]},
             None,
             does_not_raise(),
+        ),
+        # Expected is in actual but not in order (for case when exact_order=True)
+        (
+                {"type": "object"},
+                {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
+                ExpectedRecordsConfig(exact_order=True, path="foobar"),
+                [{"constant_field": "not in order"}, {"constant_field": "must equal"}],
+                {"test_stream": [{"constant_field": "must equal"}]},
+                None,
+                does_not_raise(),
         ),
         # Match by primary key
         (
             {"type": "object"},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"primary_key": "a primary_key"},
+            [{"primary_key": "a primary_key"}],
             {"test_stream": [{"primary_key": "a primary_key"}]},
             [["primary_key"]],
             does_not_raise(),
@@ -692,7 +707,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             {"type": "object"},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"primary_key": "a primary_key", "a field that should be ignored": "ignored value"},
+            [{"primary_key": "a primary_key", "a field that should be ignored": "ignored value"}],
             {"test_stream": [{"primary_key": "a primary_key"}]},
             [["primary_key"]],
             does_not_raise(),
@@ -702,7 +717,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             {"type": "object"},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"primary_key": "a primary_key", "matching key": "value 1"},
+            [{"primary_key": "a primary_key", "matching key": "value 1"}],
             {"test_stream": [{"primary_key": "a primary_key", "non matching key": "value 2"}]},
             [["primary_key"]],
             does_not_raise(),
@@ -712,7 +727,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             {"type": "object"},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"top_level_field": {"child_field": "a primary_key"}, "matching key": "value 1"},
+            [{"top_level_field": {"child_field": "a primary_key"}, "matching key": "value 1"}],
             {"test_stream": [{"top_level_field": {"child_field": "a primary_key"}, "matching key": "value 1"}]},
             [["top_level_field", "child_field"]],
             does_not_raise(),
@@ -722,7 +737,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             {"type": "object"},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"primary_key_1": "a primary_key_1", "primary_key_2": "a primary_key_2"},
+            [{"primary_key_1": "a primary_key_1", "primary_key_2": "a primary_key_2"}],
             {"test_stream": [{"primary_key_1": "a primary_key_1", "primary_key_2": "a primary_key_2"}]},
             [["primary_key_1"], ["primary_key_2"]],
             does_not_raise(),
@@ -732,14 +747,14 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             {"type": "object"},
             {},
             _DEFAULT_RECORD_CONFIG,
-            {"primary_key_1": "a primary_key_1", "primary_key_2_1": {"primary_key_2_2": "primary_key_2"}},
+            [{"primary_key_1": "a primary_key_1", "primary_key_2_1": {"primary_key_2_2": "primary_key_2"}}],
             {"test_stream": [{"primary_key_1": "a primary_key_1", "primary_key_2_1": {"primary_key_2_2": "primary_key_2"}}]},
             [["primary_key_1"], ["primary_key_2_1", "primary_key_2_2"]],
             does_not_raise(),
         ),
     ],
 )
-async def test_read(mocker, schema, ignored_fields, expect_records_config, record, expected_records_by_stream, primary_key, expectation):
+async def test_read(mocker, schema, ignored_fields, expect_records_config, records, expected_records_by_stream, primary_key, expectation):
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -756,7 +771,7 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
     )
     docker_runner_mock = mocker.MagicMock(
         call_read=mocker.AsyncMock(
-            return_value=[AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))]
+            return_value=[AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111)) for record in records]
         )
     )
     t = test_core.TestBasicRead()

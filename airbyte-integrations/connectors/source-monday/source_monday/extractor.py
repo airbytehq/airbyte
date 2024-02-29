@@ -41,9 +41,8 @@ class MondayActivityExtractor(RecordExtractor):
             return result
 
         for board_data in response_body["data"]["boards"]:
-            if not isinstance(board_data, dict):
+            if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
                 continue
-
             for record in board_data.get("activity_logs", []):
                 json_data = json.loads(record["data"])
                 new_record = record
