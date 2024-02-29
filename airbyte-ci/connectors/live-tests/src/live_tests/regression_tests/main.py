@@ -7,10 +7,10 @@ import click
 import dagger
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
-from .backends import BaseBackend, FileBackend
-from .comparators import DiffComparator
-from .connector_runner import ConnectorRunner, SecretDict
-from .utils import ConnectorUnderTest, get_connector, get_connector_config, get_state
+from live_tests.utils.connector_runner import ConnectorRunner, SecretDict
+from live_tests.backends import BaseBackend, FileBackend
+from live_tests.regression_tests.comparators import DiffComparator
+from live_tests.utils.common import ConnectorUnderTest, get_connector, get_connector_config, get_state
 
 logging.basicConfig(level=logging.INFO)
 

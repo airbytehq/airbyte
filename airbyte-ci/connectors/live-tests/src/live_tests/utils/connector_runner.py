@@ -16,7 +16,8 @@ import pytest
 from airbyte_protocol.models import AirbyteMessage, ConfiguredAirbyteCatalog, OrchestratorType
 from anyio import Path as AnyioPath
 from pydantic import ValidationError
-from .backends import BaseBackend
+
+from live_tests.backends import BaseBackend
 
 
 class UserDict(_collections_abc.MutableMapping):

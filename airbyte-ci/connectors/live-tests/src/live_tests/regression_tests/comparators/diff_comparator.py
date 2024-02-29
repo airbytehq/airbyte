@@ -1,7 +1,7 @@
 import os
 
-from .base_comparator import BaseComparator
-from ..utils import ConnectorUnderTest, sh_dash_c
+from live_tests.regression_tests.comparators import BaseComparator
+from live_tests.utils.common import ConnectorUnderTest, sh_dash_c
 from dagger import Client, Container
 
 
