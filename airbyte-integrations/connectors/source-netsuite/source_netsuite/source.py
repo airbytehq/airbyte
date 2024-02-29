@@ -106,7 +106,9 @@ class SourceNetsuite(AbstractSource):
         auth: OAuth1,
         base_url: str,
         start_datetime: str,
+        end_datetime: str,
         window_in_days: int,
+        retry_concurrency_limit : bool,
         max_retry: int = 3,
     ) -> Union[NetsuiteStream, IncrementalNetsuiteStream, CustomIncrementalNetsuiteStream]:
 
@@ -115,7 +117,9 @@ class SourceNetsuite(AbstractSource):
             "object_name": object_name,
             "base_url": base_url,
             "start_datetime": start_datetime,
+            "end_datetime": end_datetime,
             "window_in_days": window_in_days,
+            "retry_concurrency_limit": retry_concurrency_limit
         }
 
         schema = schemas[object_name]
@@ -161,6 +165,8 @@ class SourceNetsuite(AbstractSource):
                 "auth": auth,
                 "base_url": base_url,
                 "start_datetime": config["start_datetime"],
+                "end_datetime": config["end_datetime"],
+                "retry_concurrency_limit": config["retry_concurrency_limit"],
                 "window_in_days": config["window_in_days"],
                 "schemas": schemas,
             }
