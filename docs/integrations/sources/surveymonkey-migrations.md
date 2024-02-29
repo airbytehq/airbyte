@@ -1,4 +1,4 @@
-# Survey Monkey Migration Guide
+# SurveyMonkey Migration Guide
 
 ## Upgrading to 1.0.0
 
