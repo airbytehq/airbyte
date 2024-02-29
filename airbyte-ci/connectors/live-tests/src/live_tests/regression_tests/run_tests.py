@@ -16,8 +16,6 @@ logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-COMMANDS = ["check", "discover", "read", "read-with-state", "spec"]
-
 
 class Command(Enum):
     CHECK = "check"
@@ -59,13 +57,13 @@ async def _run(
     #   (this may only make sense for syncs with an input state)
     if command == "all":
         tasks = []
-        for _command in COMMANDS:
+        for _command in Command:
             tasks.extend([
                 _dispatch(
                     connector.container,
                     FileBackend(f"{output_directory}/{connector.version}/{_command}"),
                     f"{output_directory}/{connector.version}",
-                    _command,
+                    Command(_command),
                     config,
                     catalog,
                     state,
@@ -77,7 +75,7 @@ async def _run(
                 connector.container,
                 FileBackend(f"{output_directory}/{connector.version}/{command}"),
                 f"{output_directory}/{connector.version}",
-                command,
+                Command(command),
                 config,
                 catalog,
                 state,
@@ -90,26 +88,26 @@ async def _dispatch(
     container: dagger.Container,
     backend: BaseBackend,
     output_directory: str,
-    command: str,
+    command: Command,
     config: Optional[SecretDict],
     catalog: Optional[ConfiguredAirbyteCatalog],
     state: Optional[Dict],
 ):
     runner = ConnectorRunner(container, backend, f"{output_directory}/{command}")
 
-    if command == "check":
+    if command == Command.CHECK:
         await runner.call_check(config)
 
-    elif command == "discover":
+    elif command == Command.DISCOVER:
         await runner.call_discover(config)
 
-    elif command == "read":
+    elif command == Command.READ:
         await runner.call_read(config, catalog)
 
-    elif command == "read-with-state":
+    elif command == Command.READ_WITH_STATE:
         await runner.call_read_with_state(config, catalog, state)
 
-    elif command == "spec":
+    elif command == Command.SPEC:
         await runner.call_spec()
 
     else:
