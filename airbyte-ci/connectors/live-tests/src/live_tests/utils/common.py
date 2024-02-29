@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 import dagger
 
-from .connector_runner import SecretDict, get_connector_container
+from live_tests.utils.connector_runner import SecretDict, get_connector_container
 
 
 def get_connector_config(path: Optional[str]) -> Optional[SecretDict]:

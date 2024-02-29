@@ -15,7 +15,7 @@ from airbyte_protocol.models import (
     StreamDescriptor,
 )
 from airbyte_protocol.models import Type as AirbyteMessageType
-from live_tests.regression_tests.backends.file_backend import FileBackend
+from live_tests.backends.file_backend import FileBackend
 
 
 @pytest.mark.asyncio
