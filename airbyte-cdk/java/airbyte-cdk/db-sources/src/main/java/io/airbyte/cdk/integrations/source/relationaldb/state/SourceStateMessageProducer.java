@@ -7,9 +7,15 @@ package io.airbyte.cdk.integrations.source.relationaldb.state;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import java.time.Instant;
 
-public interface SourceStateIteratorManager<T> {
+/**
+ * To be used with SourceStateIterator. SourceStateIterator will iterate over the records and
+ * generate state messages when needed. This interface defines how would those state messages be
+ * generated, and how the incoming record messages will be processed.
+ *
+ * @param <T>
+ */
+public interface SourceStateMessageProducer<T> {
 
   /**
    * Returns a state message that should be emitted at checkpoint.
@@ -30,9 +36,10 @@ public interface SourceStateIteratorManager<T> {
   AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream);
 
   /**
-   * Determines if the iterator has reached checkpoint or not, based on the time and number of record
-   * messages it has been processed since the last checkpoint.
+   * Determines if the iterator has reached checkpoint or not per connector's definition. By default
+   * iterator will check if the number of records processed is greater than the checkpoint interval or
+   * last state message has already passed syncCheckpointDuration.
    */
-  boolean shouldEmitStateMessage(final long recordCount, final Instant lastCheckpoint);
+  boolean shouldEmitStateMessage(final ConfiguredAirbyteStream stream);
 
 }

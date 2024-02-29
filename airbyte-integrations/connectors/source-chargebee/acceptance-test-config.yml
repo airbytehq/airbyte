@@ -40,9 +40,7 @@ acceptance_tests:
             bypass_reason: "To be Tested with integration tests."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         fail_on_extra_columns: true
   incremental:
     tests:

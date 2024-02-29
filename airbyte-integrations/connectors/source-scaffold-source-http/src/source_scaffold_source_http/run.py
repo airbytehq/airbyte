@@ -6,7 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_scaffold_source_http import SourceScaffoldSourceHttp
+
+from .source import SourceScaffoldSourceHttp
 
 
 def run():

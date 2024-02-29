@@ -45,33 +45,8 @@ acceptance_tests:
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         fail_on_extra_columns: false
-        ignored_fields:
-          board_pins:
-            - name: "media"
-              bypass_reason: "urls may change"
-          board_section_pins:
-            - name: "media"
-              bypass_reason: "urls may change"
-          ads:
-            - name: "updated_time"
-              bypass_reason: "can be updated"
-          ad_groups:
-            - name: "updated_time"
-              bypass_reason: "can be updated"
-          campaigns:
-            - name: "updated_time"
-              bypass_reason: "can be updated"
-          audiences:
-            - name: "size"
-              bypass_reason: "can be changed"
-            - name: "updated_timestamp"
-              bypass_reason: "can be changed"
-            - name: "created_timestamp"
-              bypass_reason: "can be changed"
   incremental:
     tests:
       - config_path: secrets/config.json
