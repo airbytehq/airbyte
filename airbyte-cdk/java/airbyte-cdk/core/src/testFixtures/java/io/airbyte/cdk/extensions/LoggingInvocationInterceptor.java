@@ -59,8 +59,9 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
         logLineSuffix = "instance creation for %s".formatted(invocationContext.getTargetClass());
       } else if (methodMatcher.matches()) {
         String interceptedEvent = methodMatcher.group(1);
-        logLineSuffix = "execution of @%s method %s.%s".formatted(invocationContext.getExecutable().getDeclaringClass().getSimpleName(),
-            interceptedEvent, invocationContext.getExecutable().getName());
+        logLineSuffix = "execution of @%s method %s.%s".formatted(interceptedEvent,
+            invocationContext.getExecutable().getDeclaringClass().getSimpleName(),
+            invocationContext.getExecutable().getName());
       } else {
         logLineSuffix = "execution of unknown intercepted call %s".formatted(methodName);
       }
