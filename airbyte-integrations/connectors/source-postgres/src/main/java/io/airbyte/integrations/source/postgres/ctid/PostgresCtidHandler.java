@@ -14,6 +14,7 @@ import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -174,13 +175,12 @@ public class PostgresCtidHandler {
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
-    ctidStateManager.setStreamStateIteratorFields(streamStateForIncrementalRunSupplier, fileNodeHandler, syncCheckpointDuration,
-        syncCheckpointRecords);
+    ctidStateManager.setStreamStateIteratorFields(streamStateForIncrementalRunSupplier, fileNodeHandler);
 
     final AirbyteStreamNameNamespacePair pair =
         new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
     return AutoCloseableIterators.transformIterator(
-        r -> new SourceStateIterator(r, airbyteStream, ctidStateManager),
+        r -> new SourceStateIterator(r, airbyteStream, ctidStateManager, new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
         recordIterator, pair);
   }
 

@@ -5,9 +5,11 @@
 package io.airbyte.integrations.source.postgres.xmin;
 
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.time.Duration;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +26,10 @@ public class XminStateIterator extends SourceStateIterator<AirbyteMessage> {
   public XminStateIterator(final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator,
                            final ConfiguredAirbyteStream stream,
                            final XminStateManager manager) {
-    super(messageIterator, stream, manager);
+    // Emit frequency does not matter because we do not send state message for checkpointing in xmin
+    // mode.
+    // We only send state message at the end of the sync.
+    super(messageIterator, stream, manager, new StateEmitFrequency(0L, Duration.ofSeconds(1L)));
   }
 
   /**

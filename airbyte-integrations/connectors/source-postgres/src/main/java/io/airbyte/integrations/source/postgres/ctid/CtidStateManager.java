@@ -5,16 +5,13 @@
 package io.airbyte.integrations.source.postgres.ctid;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -22,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class CtidStateManager implements SourceStateIteratorManager<AirbyteMessageWithCtid> {
+public abstract class CtidStateManager implements SourceStateMessageProducer<AirbyteMessageWithCtid> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateManager.class);
 
@@ -34,8 +31,6 @@ public abstract class CtidStateManager implements SourceStateIteratorManager<Air
 
   private String lastCtid;
   private FileNodeHandler fileNodeHandler;
-  private Duration syncCheckpointDuration;
-  private Long syncCheckpointRecords;
 
   protected CtidStateManager(final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {
     this.pairToCtidStatus = pairToCtidStatus;
@@ -61,13 +56,9 @@ public abstract class CtidStateManager implements SourceStateIteratorManager<Air
   public abstract AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun);
 
   public void setStreamStateIteratorFields(Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
-                                           FileNodeHandler fileNodeHandler,
-                                           Duration syncCheckpointDuration,
-                                           Long syncCheckpointRecords) {
+                                           FileNodeHandler fileNodeHandler) {
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.fileNodeHandler = fileNodeHandler;
-    this.syncCheckpointDuration = syncCheckpointDuration;
-    this.syncCheckpointRecords = syncCheckpointRecords;
   }
 
   @Override
@@ -111,14 +102,11 @@ public abstract class CtidStateManager implements SourceStateIteratorManager<Air
   }
 
   /**
-   * @param recordCount
-   * @param lastCheckpoint
-   * @return
+   * Extra criteria(besides checking frequency) to check if we should emit state message.
    */
   @Override
-  public boolean shouldEmitStateMessage(long recordCount, Instant lastCheckpoint) {
-    return (recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
-        && Objects.nonNull(lastCtid)
+  public boolean shouldEmitStateMessage(final ConfiguredAirbyteStream stream) {
+    return Objects.nonNull(lastCtid)
         && StringUtils.isNotBlank(lastCtid);
   }
 
