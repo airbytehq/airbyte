@@ -78,7 +78,7 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   }
 
   /**
-   * @param message
+   * Stores the latest CTID.
    */
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, AirbyteMessageWithCtid message) {
@@ -89,7 +89,7 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   }
 
   /**
-   * @return
+   * Creates a final state message for the stream.
    */
   @Override
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {

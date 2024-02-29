@@ -20,9 +20,6 @@ public class XminStateIterator extends SourceStateIterator<AirbyteMessage> {
 
   private boolean hasCaughtException = false;
 
-  /**
-   * @param manager XminStateManager with stream info(pair) set up in it.
-   */
   public XminStateIterator(final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator,
                            final ConfiguredAirbyteStream stream,
                            final XminStateManager manager) {
