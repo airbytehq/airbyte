@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mongodb
 
 import com.mongodb.ConnectionString
@@ -8,9 +12,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.debezium.connector.mongodb.MongoDbConnector
 import io.debezium.connector.mongodb.ResumeTokens
 import io.debezium.engine.DebeziumEngine
-import org.bson.BsonDocument
-import org.bson.BsonTimestamp
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.ObjectInputStream
 import java.nio.ByteBuffer
@@ -31,13 +32,23 @@ import kotlin.collections.component2
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
+import org.bson.BsonDocument
+import org.bson.BsonTimestamp
+import org.slf4j.LoggerFactory
 
-
-class DebeziumMongoDbConnectorTest internal constructor(private val connectionString: String, private val databaseName: String, private val collectionName: String, private val username: String, private val password: String) {
+class DebeziumMongoDbConnectorTest
+internal constructor(
+    private val connectionString: String,
+    private val databaseName: String,
+    private val collectionName: String,
+    private val username: String,
+    private val password: String
+) {
 
     @Throws(InterruptedException::class, IOException::class)
     fun startTest() {
-        val queue: LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>> = LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>>(10000)
+        val queue: LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>> =
+            LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>>(10000)
         val path = path
         LOGGER.info("Using offset storage path '{}'.", path)
         testChangeEventStream()
@@ -45,13 +56,19 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
         // will do an initial sync cause offset is null
         initialSync(queue, path)
 
-        // will do an incremental processing cause after the initialSync run the offset must be updated
+        // will do an incremental processing cause after the initialSync run the offset must be
+        // updated
         engineWithIncrementalSnapshot(queue, path)
     }
 
     private fun testChangeEventStream() {
-        val mongoClientSettings = MongoClientSettings.builder()
-                .applyConnectionString(ConnectionString("mongodb+srv://$username:$password@cluster0.iqgf8.mongodb.net/"))
+        val mongoClientSettings =
+            MongoClientSettings.builder()
+                .applyConnectionString(
+                    ConnectionString(
+                        "mongodb+srv://$username:$password@cluster0.iqgf8.mongodb.net/"
+                    )
+                )
                 .readPreference(ReadPreference.secondaryPreferred())
                 .build()
         MongoClients.create(mongoClientSettings).use { client ->
@@ -77,26 +94,41 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
     }
 
     @Throws(InterruptedException::class, IOException::class)
-    private fun initialSync(queue: LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>>, path: Path) {
+    private fun initialSync(
+        queue: LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>>,
+        path: Path
+    ) {
         val executorService = Executors.newSingleThreadExecutor()
         val thrownError = AtomicReference<Throwable?>()
         val engineLatch = CountDownLatch(1)
-        val engine: DebeziumEngine<io.debezium.engine.ChangeEvent<String, String>> = DebeziumEngine.create<String>(io.debezium.engine.format.Json::class.java)
-                .using(getDebeziumProperties(path, listOf("$databaseName\\.$collectionName").stream().collect(Collectors.joining(","))))
+        val engine: DebeziumEngine<io.debezium.engine.ChangeEvent<String, String>> =
+            DebeziumEngine.create<String>(io.debezium.engine.format.Json::class.java)
+                .using(
+                    getDebeziumProperties(
+                        path,
+                        listOf("$databaseName\\.$collectionName")
+                            .stream()
+                            .collect(Collectors.joining(","))
+                    )
+                )
                 .using(io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
-                .notifying(Consumer<io.debezium.engine.ChangeEvent<String, String>> { e: io.debezium.engine.ChangeEvent<String, String> ->
-                    // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
-                    // interacts with kafka. we want to ignore it.
-                    // more on the tombstone:
-                    // https://debezium.io/documentation/reference/configuration/event-flattening.html
-                    if (e.value() != null) {
-                        LOGGER.debug("{}", e)
-                        var inserted = false
-                        while (!inserted) {
-                            inserted = queue.offer(e)
+                .notifying(
+                    Consumer<io.debezium.engine.ChangeEvent<String, String>> {
+                        e: io.debezium.engine.ChangeEvent<String, String> ->
+                        // debezium outputs a tombstone event that has a value of null. this is an
+                        // artifact of how it
+                        // interacts with kafka. we want to ignore it.
+                        // more on the tombstone:
+                        // https://debezium.io/documentation/reference/configuration/event-flattening.html
+                        if (e.value() != null) {
+                            LOGGER.debug("{}", e)
+                            var inserted = false
+                            while (!inserted) {
+                                inserted = queue.offer(e)
+                            }
                         }
                     }
-                })
+                )
                 .using { _: Boolean, message: String?, error: Throwable? ->
                     LOGGER.info("Initial sync Debezium engine shutdown.")
                     if (error != null) {
@@ -105,7 +137,7 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
                     engineLatch.countDown()
                     thrownError.set(error)
                 }
-            .build()
+                .build()
         executorService.execute(engine)
         Thread.sleep((45 * 1000).toLong())
         engine.close()
@@ -119,15 +151,27 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
     }
 
     @Throws(InterruptedException::class, IOException::class)
-    private fun engineWithIncrementalSnapshot(queue: LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>>, path: Path) {
+    private fun engineWithIncrementalSnapshot(
+        queue: LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>>,
+        path: Path
+    ) {
         val executorService2 = Executors.newSingleThreadExecutor()
         val thrownError2 = AtomicReference<Throwable?>()
         val engineLatch2 = CountDownLatch(1)
-        val engine2: DebeziumEngine<io.debezium.engine.ChangeEvent<String, String>> = DebeziumEngine.create<String>(io.debezium.engine.format.Json::class.java)
-                .using(getDebeziumProperties(path, listOf("$databaseName\\.$collectionName").stream().collect(Collectors.joining(","))))
+        val engine2: DebeziumEngine<io.debezium.engine.ChangeEvent<String, String>> =
+            DebeziumEngine.create<String>(io.debezium.engine.format.Json::class.java)
+                .using(
+                    getDebeziumProperties(
+                        path,
+                        listOf("$databaseName\\.$collectionName")
+                            .stream()
+                            .collect(Collectors.joining(","))
+                    )
+                )
                 .using(io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
                 .notifying { e: io.debezium.engine.ChangeEvent<String, String> ->
-                    // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
+                    // debezium outputs a tombstone event that has a value of null. this is an
+                    // artifact of how it
                     // interacts with kafka. we want to ignore it.
                     // more on the tombstone:
                     // https://debezium.io/documentation/reference/configuration/event-flattening.html
@@ -139,14 +183,19 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
                         }
                     }
                 }
-            .using(io.debezium.engine.DebeziumEngine.CompletionCallback { success: Boolean, message: String?, error: Throwable? ->
-                    LOGGER.info("Incremental snapshot Debezium engine shutdown.")
-                    if (error != null) {
-                        LOGGER.error("error occurred: {}", message, error)
+                .using(
+                    io.debezium.engine.DebeziumEngine.CompletionCallback {
+                        success: Boolean,
+                        message: String?,
+                        error: Throwable? ->
+                        LOGGER.info("Incremental snapshot Debezium engine shutdown.")
+                        if (error != null) {
+                            LOGGER.error("error occurred: {}", message, error)
+                        }
+                        engineLatch2.countDown()
+                        thrownError2.set(error)
                     }
-                    engineLatch2.countDown()
-                    thrownError2.set(error)
-                })
+                )
                 .build()
         executorService2.execute(engine2)
         Thread.sleep((180 * 1000).toLong())
@@ -160,7 +209,10 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
         }
     }
 
-    protected fun getDebeziumProperties(cdcOffsetFilePath: Path, collectionNames: String): Properties {
+    protected fun getDebeziumProperties(
+        cdcOffsetFilePath: Path,
+        collectionNames: String
+    ): Properties {
         val props = Properties()
         LOGGER.info("Included collection names regular expression: '{}'.", collectionNames)
         props.setProperty("connector.class", MongoDbConnector::class.java.getName())
@@ -180,7 +232,10 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
         props.setProperty("database.include.list", databaseName)
 
         // Offset storage configuration
-        props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore")
+        props.setProperty(
+            "offset.storage",
+            "org.apache.kafka.connect.storage.FileOffsetBackingStore"
+        )
         props.setProperty("offset.storage.file.filename", cdcOffsetFilePath.toString())
         props.setProperty("offset.flush.interval.ms", "1000")
 
@@ -193,7 +248,8 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
         props.setProperty("value.converter.schemas.enable", "false")
 
         // By default "decimal.handing.mode=precise" which caused returning this value as a binary.
-        // The "double" type may cause a loss of precision, so set Debezium's config to store it as a String
+        // The "double" type may cause a loss of precision, so set Debezium's config to store it as
+        // a String
         // explicitly in its Kafka messages for more details see:
         // https://debezium.io/documentation/reference/1.4/connectors/postgresql.html#postgresql-decimal-types
         // https://debezium.io/documentation/faq/#how_to_retrieve_decimal_field_from_binary_representation
@@ -206,11 +262,12 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
 
     private val path: Path
         get() {
-            val cdcWorkingDir: Path = try {
-                Files.createTempDirectory(Path.of("/tmp"), "cdc-state-offset")
-            } catch (e: IOException) {
-                throw RuntimeException(e)
-            }
+            val cdcWorkingDir: Path =
+                try {
+                    Files.createTempDirectory(Path.of("/tmp"), "cdc-state-offset")
+                } catch (e: IOException) {
+                    throw RuntimeException(e)
+                }
             return cdcWorkingDir.resolve("offset.txt")
         }
 
@@ -220,7 +277,15 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
         try {
             ObjectInputStream(Files.newInputStream(path)).use { ois ->
                 val raw = ois.readObject() as Map<ByteArray, ByteArray>
-                raw.entries.forEach(Consumer { (key, value): Map.Entry<ByteArray, ByteArray> -> LOGGER.info("{}:{}", String(ByteBuffer.wrap(key).array(), StandardCharsets.UTF_8), String(ByteBuffer.wrap(value).array(), StandardCharsets.UTF_8)) })
+                raw.entries.forEach(
+                    Consumer { (key, value): Map.Entry<ByteArray, ByteArray> ->
+                        LOGGER.info(
+                            "{}:{}",
+                            String(ByteBuffer.wrap(key).array(), StandardCharsets.UTF_8),
+                            String(ByteBuffer.wrap(value).array(), StandardCharsets.UTF_8)
+                        )
+                    }
+                )
             }
         } catch (e: IOException) {
             LOGGER.error("Unable to read offset file '{}'.", path, e)
@@ -235,17 +300,56 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
         @JvmStatic
         fun main(args: Array<String>) {
             val parser = ArgParser("Debezium MongoDb Connector Test Harness")
-            val connectionString by parser.option(ArgType.String, fullName = "connection-string", shortName = "cs", description = "MongoDB Connection String").required()
-            val databaseName by parser.option(ArgType.String, fullName = "database-name", shortName = "d", description = "Database Name").required()
-            val collectionName by parser.option(ArgType.String, fullName = "collection-name", shortName = "cn", description = "Collection Name").required()
-            val username by parser.option(ArgType.String, fullName = "username", shortName = "u", description = "Username").required()
+            val connectionString by
+                parser
+                    .option(
+                        ArgType.String,
+                        fullName = "connection-string",
+                        shortName = "cs",
+                        description = "MongoDB Connection String"
+                    )
+                    .required()
+            val databaseName by
+                parser
+                    .option(
+                        ArgType.String,
+                        fullName = "database-name",
+                        shortName = "d",
+                        description = "Database Name"
+                    )
+                    .required()
+            val collectionName by
+                parser
+                    .option(
+                        ArgType.String,
+                        fullName = "collection-name",
+                        shortName = "cn",
+                        description = "Collection Name"
+                    )
+                    .required()
+            val username by
+                parser
+                    .option(
+                        ArgType.String,
+                        fullName = "username",
+                        shortName = "u",
+                        description = "Username"
+                    )
+                    .required()
 
             parser.parse(args)
 
             println("Enter password: ")
             val password = readln()
 
-            val debeziumEngineTest = DebeziumMongoDbConnectorTest(connectionString, databaseName, collectionName, username, password)
+            val debeziumEngineTest =
+                DebeziumMongoDbConnectorTest(
+                    connectionString,
+                    databaseName,
+                    collectionName,
+                    username,
+                    password
+                )
             debeziumEngineTest.startTest()
         }
     }
