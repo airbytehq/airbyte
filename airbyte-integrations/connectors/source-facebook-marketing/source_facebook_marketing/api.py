@@ -49,7 +49,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         per_account: float
 
     # Insights async jobs throttle
-    _ads_insights_throttle: Throttle
+    _ads_insights_throttle: Throttle = Throttle(per_account=0, per_application=0)
 
     @property
     def ads_insights_throttle(self) -> Throttle:
