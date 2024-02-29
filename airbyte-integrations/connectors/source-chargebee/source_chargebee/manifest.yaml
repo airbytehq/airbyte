@@ -9,9 +9,6 @@ definitions:
   custom_field_transformation:
     type: CustomTransformation
     class_name: source_chargebee.components.CustomFieldTransformation
-  custom_backoff_strategy:
-    type: CustomBackoffStrategy
-    class_name: source_chargebee.components.CustomIntegrationTestingBackoffStrategy
   requester:
     type: HttpRequester
     url_base: "https://{{ config['site'] }}.chargebee.com/api/v2"
