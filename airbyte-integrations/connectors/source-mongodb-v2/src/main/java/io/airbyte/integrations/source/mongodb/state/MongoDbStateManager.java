@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mongodb.MongoConstants;
@@ -24,14 +24,12 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -40,7 +38,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A state manager for MongoDB CDC syncs.
  */
-public class MongoDbStateManager implements SourceStateIteratorManager<Document> {
+public class MongoDbStateManager implements SourceStateMessageProducer<Document> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateManager.class);
 
@@ -49,13 +47,11 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
    */
   private MongoDbCdcState cdcState;
 
-  private Object lastId;
-  private Set<String> fields;
   private Instant emittedAt;
   private Optional<CdcMetadataInjector<?>> cdcMetadataInjector;
-  private long checkpointInterval;
-  private Duration checkpointDuration;
   private boolean isEnforceSchema;
+
+  private Map<AirbyteStreamNameNamespacePair, Object> streamPairToLastIdMap;
 
   /**
    * Map of streams (name/namespace tuple) to the current stream state information stored in the
@@ -231,26 +227,28 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
   }
 
   // Required when using stateIterator related functions below.
-  public void withIteratorFields(final ConfiguredAirbyteStream stream,
+  public void withIteratorFields(
                                  final Instant emittedAt,
                                  final Optional<CdcMetadataInjector<?>> cdcMetadataInjector,
-                                 final long checkpointInterval,
-                                 final Duration checkpointDuration,
                                  final boolean isEnforceSchema) {
-    this.lastId = this.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
-    this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
+    // this.lastId = this.getStreamState(stream.getStream().getName(),
+    // stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
     this.emittedAt = emittedAt;
     this.cdcMetadataInjector = cdcMetadataInjector;
-    this.checkpointInterval = checkpointInterval;
-    this.checkpointDuration = checkpointDuration;
     this.isEnforceSchema = isEnforceSchema;
+    this.streamPairToLastIdMap = new HashMap<>();
   }
 
   /**
-   * @return
+   * Generates an intermediate state message for checkpointing purpose.
    */
   @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+
+    // Assuming we will always process at least 1 record message before sending out the state message.
+    // shouldEmitStateMessage should guard this.
+    var lastId = streamPairToLastIdMap.get(pair);
     if (lastId != null) {
       final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
           .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
@@ -261,8 +259,7 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
   }
 
   /**
-   * @param
-   * @return
+   * Process the record message and save last Id to the map.
    */
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final Document document) {
@@ -270,7 +267,9 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
 
     final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
 
-    lastId = document.get(MongoConstants.ID_FIELD);
+    var lastId = document.get(MongoConstants.ID_FIELD);
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+    streamPairToLastIdMap.put(pair, lastId);
 
     return new AirbyteMessage()
         .withType(Type.RECORD)
@@ -290,10 +289,16 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
   }
 
   /**
-   * @return
+   * @return final state message.
    */
   @Override
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+    if (!streamPairToLastIdMap.containsKey(pair)) {
+      var initialLastId = getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
+      streamPairToLastIdMap.put(pair, initialLastId);
+    }
+    var lastId = streamPairToLastIdMap.get(pair);
     if (lastId != null) {
       LOGGER.debug("Emitting final state status for stream {}:{}...", stream.getStream().getNamespace(), stream.getStream().getName());
       final var finalStateStatus = InitialSnapshotStatus.COMPLETE;
@@ -307,17 +312,11 @@ public class MongoDbStateManager implements SourceStateIteratorManager<Document>
   }
 
   /**
-   * @param recordCount
-   * @param lastCheckpoint
-   * @return
+   * Make sure we have processed at least 1 record from the stream.
    */
   @Override
-  public boolean shouldEmitStateMessage(long recordCount, Instant lastCheckpoint) {
-    // Should a state message be emitted based on the number of messages we've seen?
-    final var emitStateDueToMessageCount = recordCount > 0 && recordCount % checkpointInterval == 0;
-    // Should a state message be emitted based on then last time a state message was emitted?
-    final var emitStateDueToDuration = recordCount > 0 && Duration.between(lastCheckpoint, Instant.now()).compareTo(checkpointDuration) > 0;
-    return emitStateDueToMessageCount || emitStateDueToDuration;
+  public boolean shouldEmitStateMessage(final ConfiguredAirbyteStream stream) {
+    return streamPairToLastIdMap.get(new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace())) != null;
   }
 
 }

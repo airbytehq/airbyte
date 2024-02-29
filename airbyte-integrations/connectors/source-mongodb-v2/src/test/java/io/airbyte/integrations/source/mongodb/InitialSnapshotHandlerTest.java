@@ -75,21 +75,21 @@ class InitialSnapshotHandlerTest {
 
   private static final List<ConfiguredAirbyteStream> STREAMS = List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
-              COLLECTION1,
-              NAMESPACE,
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
-              Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          COLLECTION1,
+          NAMESPACE,
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+          Field.of(NAME_FIELD, JsonSchemaType.STRING))
           .withSyncMode(SyncMode.INCREMENTAL),
       CatalogHelpers.createConfiguredAirbyteStream(
-              COLLECTION2,
-              NAMESPACE,
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
+          COLLECTION2,
+          NAMESPACE,
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
           .withSyncMode(SyncMode.INCREMENTAL),
       CatalogHelpers.createConfiguredAirbyteStream(
-              COLLECTION3,
-              NAMESPACE,
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
-              Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          COLLECTION3,
+          NAMESPACE,
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+          Field.of(NAME_FIELD, JsonSchemaType.STRING))
           .withSyncMode(SyncMode.FULL_REFRESH));
 
   private static MongoDBContainer MONGO_DB;
@@ -336,7 +336,8 @@ class InitialSnapshotHandlerTest {
     final AirbyteMessage collection2StateMessage = collection2.next();
     assertEquals(Type.STATE, collection2StateMessage.getType(), "State message is expected after all records in a stream are emitted");
     assertFalse(collection2.hasNext());
-}
+  }
+
   @Test
   void testGetIteratorsWithInitialStateNonDefaultIdType() {
     insertDocuments(COLLECTION1, List.of(
