@@ -43,7 +43,7 @@ class Orders(HttpStream, ABC):
     # registering the default schema transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, config, **kwargs) -> None:
+    def __init__(self, config: Mapping[str, Any], **kwargs) -> None:
         super().__init__(**kwargs)
         self._start_date = config["start_date"]
         self.api_version = ApiVersion.DEPRECATED if config.get("use_orders_deprecated_api") else ApiVersion.MODERN
