@@ -70,20 +70,45 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   static public MsSQLTestDatabase in(final BaseImage imageName, final ContainerModifier... modifiers) {
     final var container = new MsSQLContainerFactory().shared(imageName.reference, modifiers);
-    final var testdb = new MsSQLTestDatabase(container);
+    final MsSQLTestDatabase testdb;
+    if (false) {
+      testdb = new MsSqlTestDatabaseWithBackgroundThreads(container);
+    } else {
+      testdb = new MsSQLTestDatabase(container);
+    }
     return testdb
         .withConnectionProperty("encrypt", "false")
         .withConnectionProperty("trustServerCertificate", "true")
         .withConnectionProperty("databaseName", testdb.getDatabaseName())
-        .initialized();
+        .initialized()
+        .initializedPostHook();
+  }
+
+  public MsSQLTestDatabase initializedPostHook() {
+    return this;
   }
 
   public MsSQLTestDatabase(final MSSQLServerContainer<?> container) {
     super(container);
+    LOGGER.info("creating new database. databaseId=" + this.databaseId + ", databaseName=" + getDatabaseName());
   }
 
   public MsSQLTestDatabase withCdc() {
-    return with("EXEC sys.sp_cdc_enable_db;");
+    LOGGER.info("enabling CDC on database {} with id {}", getDatabaseName(), databaseId);
+    with("EXEC sys.sp_cdc_enable_db;");
+    LOGGER.info("CDC enabled on database {} with id {}", getDatabaseName(), databaseId);
+    return this;
+  }
+
+  public synchronized MsSQLTestDatabase withCdcForTable(String schemaName, String tableName, String roleName) {
+    final var enableCdcSqlFmt = """
+                                EXEC sys.sp_cdc_enable_table
+                                \t@source_schema = N'%s',
+                                \t@source_name   = N'%s',
+                                \t@role_name     = %s,
+                                \t@supports_net_changes = 0""";
+    String sqlRoleName = roleName == null ? "NULL" : "N'%s'".formatted(roleName);
+    return with(enableCdcSqlFmt.formatted(schemaName, tableName, sqlRoleName));
   }
 
   public MsSQLTestDatabase withoutCdc() {
@@ -149,21 +174,21 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       }
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }
-    throw new RuntimeException("Exhausted retry attempts while polling for agent state");
+    throw new RuntimeException(formatLogLine("Exhausted retry attempts while polling for agent state"));
   }
 
   public MsSQLTestDatabase withWaitUntilMaxLsnAvailable() {
-    LOGGER.debug("Waiting for max LSN to become available for database {}.", getDatabaseName());
+    LOGGER.info(formatLogLine("Waiting for max LSN to become available for database {}."), getDatabaseName());
     for (int i = 0; i < MAX_RETRIES; i++) {
       try {
         final var maxLSN = query(ctx -> ctx.fetch("SELECT sys.fn_cdc_get_max_lsn();").get(0).get(0, byte[].class));
         if (maxLSN != null) {
-          LOGGER.debug("Max LSN available for database {}: {}", getDatabaseName(), Lsn.valueOf(maxLSN));
+          LOGGER.info(formatLogLine("Max LSN available for database {}: {}"), getDatabaseName(), Lsn.valueOf(maxLSN));
           return self();
         }
-        LOGGER.debug("Retrying, max LSN still not available for database {}.", getDatabaseName());
+        LOGGER.info(formatLogLine("Retrying, max LSN still not available for database {}."), getDatabaseName());
       } catch (final SQLException e) {
-        LOGGER.warn("Retrying max LSN query after catching exception {}", e.getMessage());
+        LOGGER.info(formatLogLine("Retrying max LSN query after catching exception {}"), e.getMessage());
       }
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }
