@@ -142,7 +142,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 ### Troubleshooting
 
 * If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
-* Connector setup will fail if the speadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
+* Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
 * Check out common troubleshooting issues for the Google Sheets source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
