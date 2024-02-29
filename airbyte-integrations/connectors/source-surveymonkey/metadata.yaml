@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: badc5925-0485-42be-8caa-b34096cb71b5
-  dockerImageTag: 0.3.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-surveymonkey
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   githubIssueLabel: source-surveymonkey
@@ -21,6 +21,11 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-surveymonkey
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "The state format has changed for the survey_responses stream. Users need to reset their connections."
+        upgradeDeadline: "2024-06-01"
   registries:
     cloud:
       enabled: true
