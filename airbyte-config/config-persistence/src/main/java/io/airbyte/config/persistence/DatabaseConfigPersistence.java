@@ -27,27 +27,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.config.ActorCatalog;
-import io.airbyte.config.ActorCatalogFetchEvent;
-import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.ConfigWithMetadata;
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.OperatorDbt;
-import io.airbyte.config.OperatorNormalization;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.*;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
-import io.airbyte.config.StandardSyncState;
-import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.State;
-import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
@@ -734,10 +716,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeSourceConnection(Collections.singletonList((SourceConnection) config));
     } else if (configType == ConfigSchema.DESTINATION_CONNECTION) {
       writeDestinationConnection(Collections.singletonList((DestinationConnection) config));
-    } else if (configType == ConfigSchema.SOURCE_OAUTH_PARAM) {
-      writeSourceOauthParameter(Collections.singletonList((SourceOAuthParameter) config));
-    } else if (configType == ConfigSchema.DESTINATION_OAUTH_PARAM) {
-      writeDestinationOauthParameter(Collections.singletonList((DestinationOAuthParameter) config));
     } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
       writeStandardSyncOperation(Collections.singletonList((StandardSyncOperation) config));
     } else if (configType == ConfigSchema.STANDARD_SYNC) {
@@ -752,6 +730,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeWorkspaceServiceAccount(Collections.singletonList((WorkspaceServiceAccount) config));
     } else {
       throw new IllegalArgumentException(UNKNOWN_CONFIG_TYPE + configType);
+    }
+  }
+
+  @Override
+  public <T> void writeConfig(AirbyteConfig configType, String configId, T config, String token) throws IOException {
+    if (configType == ConfigSchema.SOURCE_OAUTH_PARAM) {
+      writeSourceOauthParameter(Collections.singletonList((SourceOAuthParameter) config), token);
+    } else if (configType == ConfigSchema.DESTINATION_OAUTH_PARAM) {
+      writeDestinationOauthParameter(Collections.singletonList((DestinationOAuthParameter) config), token);
     }
   }
 
@@ -786,6 +773,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(WORKSPACE.FIRST_SYNC_COMPLETE, standardWorkspace.getFirstCompletedSync())
             .set(WORKSPACE.FEEDBACK_COMPLETE, standardWorkspace.getFeedbackDone())
             .set(WORKSPACE.UPDATED_AT, timestamp)
+            .set(WORKSPACE.TOKEN, standardWorkspace.getToken())
             .where(WORKSPACE.ID.eq(standardWorkspace.getWorkspaceId()))
             .execute();
       } else {
@@ -806,6 +794,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(WORKSPACE.FEEDBACK_COMPLETE, standardWorkspace.getFeedbackDone())
             .set(WORKSPACE.CREATED_AT, timestamp)
             .set(WORKSPACE.UPDATED_AT, timestamp)
+            .set(WORKSPACE.TOKEN, standardWorkspace.getToken())
             .execute();
       }
     });
@@ -948,14 +937,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
-  private void writeSourceOauthParameter(final List<SourceOAuthParameter> configs) throws IOException {
+  private void writeSourceOauthParameter(final List<SourceOAuthParameter> configs, String token) throws IOException {
     database.transaction(ctx -> {
-      writeSourceOauthParameter(configs, ctx);
+      writeSourceOauthParameter(configs, token, ctx);
       return null;
     });
   }
 
-  private void writeSourceOauthParameter(final List<SourceOAuthParameter> configs, final DSLContext ctx) {
+  private void writeSourceOauthParameter(final List<SourceOAuthParameter> configs, String token, final DSLContext ctx) {
     final OffsetDateTime timestamp = OffsetDateTime.now();
     configs.forEach((sourceOAuthParameter) -> {
       final boolean isExistingConfig = ctx.fetchExists(select()
@@ -967,7 +956,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(ACTOR_OAUTH_PARAMETER.ID, sourceOAuthParameter.getOauthParameterId())
             .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, sourceOAuthParameter.getWorkspaceId())
             .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, sourceOAuthParameter.getSourceDefinitionId())
-            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize(sourceOAuthParameter.getConfiguration())))
+            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize("")))
             .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.source)
             .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
             .where(ACTOR_OAUTH_PARAMETER.ID.eq(sourceOAuthParameter.getOauthParameterId()))
@@ -977,23 +966,31 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(ACTOR_OAUTH_PARAMETER.ID, sourceOAuthParameter.getOauthParameterId())
             .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, sourceOAuthParameter.getWorkspaceId())
             .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, sourceOAuthParameter.getSourceDefinitionId())
-            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize(sourceOAuthParameter.getConfiguration())))
+            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize("")))
             .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.source)
             .set(ACTOR_OAUTH_PARAMETER.CREATED_AT, timestamp)
             .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
             .execute();
       }
+      try {
+        DaspireOauthHttpUtil.writeDaspireOauthConfig(sourceOAuthParameter.getConfiguration(),
+            sourceOAuthParameter.getSourceDefinitionId().toString(), token);
+      } catch (IOException e) {
+        ctx.deleteFrom(ACTOR_OAUTH_PARAMETER)
+            .where(ACTOR_OAUTH_PARAMETER.ID.eq(sourceOAuthParameter.getOauthParameterId()))
+            .execute();
+      }
     });
   }
 
-  private void writeDestinationOauthParameter(final List<DestinationOAuthParameter> configs) throws IOException {
+  private void writeDestinationOauthParameter(final List<DestinationOAuthParameter> configs, String token) throws IOException {
     database.transaction(ctx -> {
-      writeDestinationOauthParameter(configs, ctx);
+      writeDestinationOauthParameter(configs, token, ctx);
       return null;
     });
   }
 
-  private void writeDestinationOauthParameter(final List<DestinationOAuthParameter> configs, final DSLContext ctx) {
+  private void writeDestinationOauthParameter(final List<DestinationOAuthParameter> configs, String token, final DSLContext ctx) {
     final OffsetDateTime timestamp = OffsetDateTime.now();
     configs.forEach((destinationOAuthParameter) -> {
       final boolean isExistingConfig = ctx.fetchExists(select()
@@ -1005,7 +1002,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(ACTOR_OAUTH_PARAMETER.ID, destinationOAuthParameter.getOauthParameterId())
             .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, destinationOAuthParameter.getWorkspaceId())
             .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, destinationOAuthParameter.getDestinationDefinitionId())
-            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize(destinationOAuthParameter.getConfiguration())))
+            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize("")))
             .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.destination)
             .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
             .where(ACTOR_OAUTH_PARAMETER.ID.eq(destinationOAuthParameter.getOauthParameterId()))
@@ -1016,14 +1013,21 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(ACTOR_OAUTH_PARAMETER.ID, destinationOAuthParameter.getOauthParameterId())
             .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, destinationOAuthParameter.getWorkspaceId())
             .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, destinationOAuthParameter.getDestinationDefinitionId())
-            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize(destinationOAuthParameter.getConfiguration())))
+            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize("")))
             .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.destination)
             .set(ACTOR_OAUTH_PARAMETER.CREATED_AT, timestamp)
             .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
             .execute();
       }
+      try {
+        DaspireOauthHttpUtil.writeDaspireOauthConfig(destinationOAuthParameter.getConfiguration(),
+            destinationOAuthParameter.getDestinationDefinitionId().toString(), token);
+      } catch (IOException e) {
+        ctx.deleteFrom(ACTOR_OAUTH_PARAMETER)
+            .where(ACTOR_OAUTH_PARAMETER.ID.eq(destinationOAuthParameter.getOauthParameterId()))
+            .execute();
+      }
     });
-
   }
 
   private void writeStandardSyncOperation(final List<StandardSyncOperation> configs) throws IOException {
@@ -1282,10 +1286,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeSourceConnection(configs.values().stream().map(c -> (SourceConnection) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.DESTINATION_CONNECTION) {
       writeDestinationConnection(configs.values().stream().map(c -> (DestinationConnection) c).collect(Collectors.toList()));
-    } else if (configType == ConfigSchema.SOURCE_OAUTH_PARAM) {
-      writeSourceOauthParameter(configs.values().stream().map(c -> (SourceOAuthParameter) c).collect(Collectors.toList()));
-    } else if (configType == ConfigSchema.DESTINATION_OAUTH_PARAM) {
-      writeDestinationOauthParameter(configs.values().stream().map(c -> (DestinationOAuthParameter) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
       writeStandardSyncOperation(configs.values().stream().map(c -> (StandardSyncOperation) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.STANDARD_SYNC) {
@@ -1431,7 +1431,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       if (configs.containsKey(ConfigSchema.SOURCE_OAUTH_PARAM)) {
         configs.get(ConfigSchema.SOURCE_OAUTH_PARAM).map(c -> (SourceOAuthParameter) c)
-            .forEach(c -> writeSourceOauthParameter(Collections.singletonList(c), ctx));
+            .forEach(c -> writeSourceOauthParameter(Collections.singletonList(c), null, ctx));
         originalConfigs.remove(ConfigSchema.SOURCE_OAUTH_PARAM);
       } else {
         LOGGER.warn(ConfigSchema.SOURCE_OAUTH_PARAM + NOT_FOUND);
@@ -1439,7 +1439,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       if (configs.containsKey(ConfigSchema.DESTINATION_OAUTH_PARAM)) {
         configs.get(ConfigSchema.DESTINATION_OAUTH_PARAM).map(c -> (DestinationOAuthParameter) c)
-            .forEach(c -> writeDestinationOauthParameter(Collections.singletonList(c), ctx));
+            .forEach(c -> writeDestinationOauthParameter(Collections.singletonList(c), null, ctx));
         originalConfigs.remove(ConfigSchema.DESTINATION_OAUTH_PARAM);
       } else {
         LOGGER.warn(ConfigSchema.DESTINATION_OAUTH_PARAM + NOT_FOUND);

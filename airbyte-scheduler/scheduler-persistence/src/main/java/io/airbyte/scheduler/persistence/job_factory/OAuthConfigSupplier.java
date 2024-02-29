@@ -14,8 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.*;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.MoreOAuthParameters;
@@ -25,10 +24,14 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class OAuthConfigSupplier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OAuthConfigSupplier.class);
@@ -51,14 +54,21 @@ public class OAuthConfigSupplier {
       throws IOException {
     try {
       final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
-      MoreOAuthParameters.getSourceOAuthParameter(configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId)
-          .ifPresent(sourceOAuthParameter -> {
-            if (injectOAuthParameters(sourceDefinition.getName(), sourceDefinition.getSpec(), sourceOAuthParameter.getConfiguration(),
-                sourceConnectorConfig)) {
-              final ImmutableMap<String, Object> metadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
-              Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
-            }
-          });
+      Optional<SourceOAuthParameter> sourceOAuthParameter =
+          MoreOAuthParameters.getSourceOAuthParameter(configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId);
+      if (sourceOAuthParameter.isPresent()) {
+        StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(workspaceId, Boolean.FALSE);
+        JsonNode config = DaspireOauthHttpUtil.getDaspireOauthConfig(String.valueOf(workspaceId),
+            String.valueOf(sourceOAuthParameter.get().getSourceDefinitionId()), standardWorkspace.getToken());
+        if (ObjectUtils.isNotEmpty(config)) {
+          if (injectOAuthParameters(sourceDefinition.getName(), sourceDefinition.getSpec(), config, sourceConnectorConfig)) {
+            final ImmutableMap<String, Object> metadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
+            Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
+          }
+        } else {
+          log.error("Daspire config not found for workspace -> {}", workspaceId);
+        }
+      }
       return sourceConnectorConfig;
     } catch (final JsonValidationException | ConfigNotFoundException e) {
       throw new IOException(e);
@@ -71,14 +81,21 @@ public class OAuthConfigSupplier {
       throws IOException {
     try {
       final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
-      MoreOAuthParameters.getDestinationOAuthParameter(configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId)
-          .ifPresent(destinationOAuthParameter -> {
-            if (injectOAuthParameters(destinationDefinition.getName(), destinationDefinition.getSpec(), destinationOAuthParameter.getConfiguration(),
-                destinationConnectorConfig)) {
-              final ImmutableMap<String, Object> metadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
-              Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
-            }
-          });
+      Optional<DestinationOAuthParameter> destinationOAuthParameter = MoreOAuthParameters
+          .getDestinationOAuthParameter(configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId);
+      if (destinationOAuthParameter.isPresent()) {
+        StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(workspaceId, Boolean.FALSE);
+        JsonNode config = DaspireOauthHttpUtil.getDaspireOauthConfig(String.valueOf(workspaceId),
+            String.valueOf(destinationOAuthParameter.get().getDestinationDefinitionId()), standardWorkspace.getToken());
+        if (ObjectUtils.isNotEmpty(config)) {
+          if (injectOAuthParameters(destinationDefinition.getName(), destinationDefinition.getSpec(), config, destinationConnectorConfig)) {
+            final ImmutableMap<String, Object> metadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
+            Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
+          }
+        } else {
+          log.error("Daspire config not found for workspace -> {}", workspaceId);
+        }
+      }
       return destinationConnectorConfig;
     } catch (final JsonValidationException | ConfigNotFoundException e) {
       throw new IOException(e);

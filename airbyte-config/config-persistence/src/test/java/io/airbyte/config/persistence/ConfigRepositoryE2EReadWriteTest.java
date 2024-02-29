@@ -74,6 +74,7 @@ class ConfigRepositoryE2EReadWriteTest {
   private Flyway flyway;
   private final static String DOCKER_IMAGE_TAG = "1.2.0";
   private final static String CONFIG_HASH = "ConfigHash";
+  private final static String token = "abc123";
 
   @BeforeAll
   public static void dbSetup() {
@@ -121,10 +122,10 @@ class ConfigRepositoryE2EReadWriteTest {
     }
 
     for (final SourceOAuthParameter oAuthParameter : MockData.sourceOauthParameters()) {
-      configRepository.writeSourceOAuthParam(oAuthParameter);
+      configRepository.writeSourceOAuthParam(oAuthParameter, token);
     }
     for (final DestinationOAuthParameter oAuthParameter : MockData.destinationOauthParameters()) {
-      configRepository.writeDestinationOAuthParam(oAuthParameter);
+      configRepository.writeDestinationOAuthParam(oAuthParameter, token);
     }
 
     database.transaction(ctx -> ctx.truncate(ACTOR_DEFINITION_WORKSPACE_GRANT).execute());

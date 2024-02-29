@@ -1015,8 +1015,8 @@ public class ConfigRepository {
     return Optional.of(DbConverter.buildSourceOAuthParameter(result.get(0)));
   }
 
-  public void writeSourceOAuthParam(final SourceOAuthParameter sourceOAuthParameter) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameter.getOauthParameterId().toString(), sourceOAuthParameter);
+  public void writeSourceOAuthParam(final SourceOAuthParameter sourceOAuthParameter, String token) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameter.getOauthParameterId().toString(), sourceOAuthParameter, token);
   }
 
   public List<SourceOAuthParameter> listSourceOAuthParam() throws JsonValidationException, IOException {
@@ -1044,9 +1044,10 @@ public class ConfigRepository {
     return Optional.of(DbConverter.buildDestinationOAuthParameter(result.get(0)));
   }
 
-  public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter) throws JsonValidationException, IOException {
+  public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter, String token)
+      throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.DESTINATION_OAUTH_PARAM, destinationOAuthParameter.getOauthParameterId().toString(),
-        destinationOAuthParameter);
+        destinationOAuthParameter, token);
   }
 
   public List<DestinationOAuthParameter> listDestinationOAuthParam() throws JsonValidationException, IOException {

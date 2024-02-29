@@ -186,6 +186,11 @@ final public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public <T> void writeConfig(AirbyteConfig configType, String configId, T config, String token) throws JsonValidationException, IOException {
+    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
+  }
+
+  @Override
   public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) {
     throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
   }
