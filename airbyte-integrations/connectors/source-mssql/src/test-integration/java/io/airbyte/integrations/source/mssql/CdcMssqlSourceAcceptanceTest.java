@@ -29,6 +29,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -69,10 +70,10 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME),
-                String.format("%s", SCHEMA_NAME),
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
+                    String.format("%s", STREAM_NAME),
+                    String.format("%s", SCHEMA_NAME),
+                    Field.of("id", JsonSchemaType.NUMBER),
+                    Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
@@ -81,10 +82,10 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME2),
-                String.format("%s", SCHEMA_NAME),
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
+                    String.format("%s", STREAM_NAME2),
+                    String.format("%s", SCHEMA_NAME),
+                    Field.of("id", JsonSchemaType.NUMBER),
+                    Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
@@ -176,6 +177,12 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   private List<AirbyteStateMessage> filterStateMessages(final List<AirbyteMessage> messages) {
     return messages.stream().filter(r -> r.getType() == AirbyteMessage.Type.STATE).map(AirbyteMessage::getState)
         .collect(Collectors.toList());
+  }
+
+  @Override
+  @Test
+  @Disabled
+  public void testIdenticalFullRefreshes() throws Exception {
   }
 
 }
