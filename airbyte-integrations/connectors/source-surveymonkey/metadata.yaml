@@ -28,7 +28,7 @@ data:
         upgradeDeadline: "2024-06-01"
         scopedImpact:
           - scopeType: stream
-            impactedScopes: [ "survey_responses" ]
+            impactedScopes: ["survey_responses"]
   registries:
     cloud:
       enabled: true
