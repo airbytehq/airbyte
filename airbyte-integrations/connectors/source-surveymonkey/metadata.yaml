@@ -26,6 +26,9 @@ data:
       1.0.0:
         message: "The state format has changed for the survey_responses stream. Users need to reset their connections."
         upgradeDeadline: "2024-06-01"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: [ "survey_responses" ]
   registries:
     cloud:
       enabled: true
