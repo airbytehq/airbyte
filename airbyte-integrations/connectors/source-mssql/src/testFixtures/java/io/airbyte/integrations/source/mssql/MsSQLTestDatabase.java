@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
+import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.RESYNC_DATA_OPTION;
+
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.TestDatabase;
@@ -259,7 +262,8 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       return with("is_test", true)
           .with("replication_method", Map.of(
               "method", "CDC",
-              "initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds()));
+              "initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds(),
+              INVALID_CDC_CURSOR_POSITION_PROPERTY, RESYNC_DATA_OPTION));
     }
 
     public MsSQLConfigBuilder withSchemas(final String... schemas) {

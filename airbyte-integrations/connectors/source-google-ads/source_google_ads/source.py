@@ -40,7 +40,6 @@ from .streams import (
     GeographicView,
     KeywordView,
     Label,
-    ServiceAccounts,
     ShoppingPerformanceView,
     TopicView,
     UserInterest,

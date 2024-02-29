@@ -8,7 +8,6 @@ import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE
 import static io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.*;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
-import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtilKt.prepareAllSchemas;
 import static java.util.Collections.singleton;
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
@@ -43,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * In a typical sync, destinations should call the methods:
  * <ol>
- * <li>{@link #prepareTables()} once at the start of the sync</li>
+ * <li>{@link #prepareFinalTables()} once at the start of the sync</li>
  * <li>{@link #typeAndDedupe(String, String, boolean)} as needed throughout the sync</li>
  * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
@@ -104,27 +103,23 @@ public class DefaultTyperDeduper implements TyperDeduper {
     this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator());
   }
 
-  private void prepareSchemas(final ParsedCatalog parsedCatalog) throws Exception {
-    prepareAllSchemas(parsedCatalog, sqlGenerator, destinationHandler);
+  @Override
+  public void prepareSchemasAndRunMigrations() {
+    // Technically kind of weird to call this here, but it's the best place we have.
+    // Ideally, we'd create just airbyte_internal here, and defer creating the final table schemas
+    // until prepareFinalTables... but it doesn't really matter.
+    TyperDeduperUtil.prepareSchemas(sqlGenerator, destinationHandler, parsedCatalog);
+    TyperDeduperUtil.executeRawTableMigrations(executorService, sqlGenerator, destinationHandler, v1V2Migrator, v2TableMigrator, parsedCatalog);
   }
 
   @Override
-  public void prepareTables() throws Exception {
+  public void prepareFinalTables() throws Exception {
     if (overwriteStreamsWithTmpTable != null) {
       throw new IllegalStateException("Tables were already prepared.");
     }
     overwriteStreamsWithTmpTable = ConcurrentHashMap.newKeySet();
     LOGGER.info("Preparing tables");
 
-    // This is intentionally not done in parallel to avoid rate limits in some destinations.
-    prepareSchemas(parsedCatalog);
-
-    // TODO: Either the migrations run the soft reset and create v2 tables or the actual prepare tables.
-    // unify the logic with current state of raw tables & final tables. This is done first before gather
-    // initial state to avoid recreating final tables later again.
-    final List<Either<? extends Exception, Void>> runMigrationsResult =
-        CompletableFutures.allOf(parsedCatalog.streams().stream().map(this::runMigrationsAsync).toList()).toCompletableFuture().join();
-    getResultsOrLogAndThrowFirst("The following exceptions were thrown attempting to run migrations:\n", runMigrationsResult);
     final List<DestinationInitialState> initialStates = destinationHandler.gatherInitialState(parsedCatalog.streams());
     final List<Either<? extends Exception, Void>> prepareTablesFutureResult = CompletableFutures.allOf(
         initialStates.stream().map(this::prepareTablesFuture).toList()).toCompletableFuture().join();

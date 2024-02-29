@@ -50,7 +50,7 @@ def test_check_connection_empty_config(config):
 
 
 def test_check_connection_invalid_config(config):
-    config.pop("start_date")
+    config.pop("credentials")
 
     with pytest.raises(KeyError):
         SourceHubspot().check_connection(logger, config=config)
