@@ -23,6 +23,13 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: >-
+          The upgrade is considered as a Breaking Change, because it's base was moved to the Airbyte CDK (Low-code) base,
+          more details in this PR: https://github.com/airbytehq/airbyte/pull/35450.
+        upgradeDeadline: "2024-04-01"
   documentationUrl: https://docs.airbyte.com/integrations/sources/recharge
   tags:
     - language:python

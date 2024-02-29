@@ -4,7 +4,7 @@
 
 
 from http import HTTPStatus
-from typing import Any, List, Mapping, MutableMapping
+from typing import Any, List, Mapping, MutableMapping, Union
 
 import pytest
 import requests
@@ -88,7 +88,7 @@ class TestCommon:
 
 
 class TestFullRefreshStreams:
-    def generate_records(self, stream_name, count) -> Mapping[str, List[Mapping[str, Any]]] | Mapping[str, Any]:
+    def generate_records(self, stream_name, count) -> Union[Mapping[str, List[Mapping[str, Any]]], Mapping[str, Any]]:
         if not stream_name:
             return {f"record_{1}": f"test_{1}"}
         result = []
