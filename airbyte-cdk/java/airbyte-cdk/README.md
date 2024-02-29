@@ -166,6 +166,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.23.8  | 2024-02-28 | [\#35529](https://github.com/airbytehq/airbyte/pull/35529) | Refactor on state iterators                                                                                                                                    |
 | 0.23.7  | 2024-02-28 | [\#35376](https://github.com/airbytehq/airbyte/pull/35376) | Add a getNamespace into TestDataHolder                                                                                                                         |
 | 0.23.6  | 2024-02-26 | [\#35647](https://github.com/airbytehq/airbyte/pull/35647) | Add a getNamespace into TestDataHolder                                                                                                                         |
 | 0.23.5  | 2024-02-26 | [\#35512](https://github.com/airbytehq/airbyte/pull/35512) | Remove @DisplayName from all CDK tests.                                                                                                                        |
