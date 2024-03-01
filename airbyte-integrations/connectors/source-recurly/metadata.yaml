@@ -18,7 +18,7 @@ data:
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   remoteRegistries:
     pypi:
