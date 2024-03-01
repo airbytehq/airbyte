@@ -121,10 +121,13 @@ The NetSuite source connector supports the following [sync modes](https://docs.a
 
 The connector is restricted by Netsuite [Concurrency Limit per Integration](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_156224824287.html).
 
+Especially for larger syncs of historical data, it is recommended to use the optional configuration field `End Date` to finish a certain chunk size of records successfully. Extending the end date and re-running the sync will only fetch new records (as long as replication mode is set to append).
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.1.4   | 2024-03-01 | [35747](https://github.com/airbytehq/airbyte/pull/35747) | Add upper cursor end to enable larger syncs in stages  |
 | 0.1.3   | 2023-01-20 | [21645](https://github.com/airbytehq/airbyte/pull/21645) | Minor issues fix, Setup Guide corrections for public docs |
 | 0.1.1   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state |
 | 0.1.0   | 2022-09-15 | [16093](https://github.com/airbytehq/airbyte/pull/16093) | Initial Alpha release       |
