@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Campaigns Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "impressions": {
+      "type": ["null", "number"]
+    },
+    "clicks": {
+      "type": ["null", "number"]
+    },
+    "ctr": {
+      "type": ["null", "number"]
+    },
+    "revenue": {
+      "type": ["null", "number"]
+    },
+    "ecpm": {
+      "type": ["null", "number"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "ad_type": {
+      "type": ["null", "string"]
+    },
+    "size": {
+      "type": ["null", "string"]
+    },
+    "device_type": {
+      "type": ["null", "string"]
+    },
+    "platform": {
+      "type": ["null", "string"]
+    },
+    "application": {
+      "type": ["null", "string"]
+    },
+    "package_name": {
+      "type": ["null", "string"]
+    },
+    "store_id": {
+      "type": ["null", "string"]
+    },
+    "placement": {
+      "type": ["null", "string"]
+    },
+    "application_is_hidden": {
+      "type": ["null", "string"]
+    },
+    "zone": {
+      "type": ["null", "string"]
+    },
+    "zone_id": {
+      "type": ["null", "string"]
+    },
+    "bidding_integration": {
+      "type": ["null", "string"]
+    },
+    "day": {
+      "type": ["null", "string"]
+    },
+    "hour": {
+      "type": ["null", "string"]
+    }
+  }
+}

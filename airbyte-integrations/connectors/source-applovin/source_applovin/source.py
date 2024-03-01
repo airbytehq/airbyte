@@ -8,22 +8,11 @@ from datetime import datetime
 from typing import Dict, Generator, Mapping, Any, List, Tuple
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    Status,
-    Type,
-)
 from airbyte_cdk.sources import Source, AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from source_applovin.streams import Campaigns, Creatives, Targets
+from source_applovin.streams import Campaigns, Creatives, Targets, PublisherReports, AdvertiserReports, ProbabilisticAdvertiserReports, ProbabilisticPublisherReports
 
 
 class SourceApplovin(AbstractSource):
@@ -73,6 +62,5 @@ class SourceApplovin(AbstractSource):
             "authenticator": auth,
             "config": config
         }
-        return [Campaigns(**args), Creatives(**args), Targets(**args)]
-
-
+        return [Campaigns(**args), Creatives(**args), Targets(**args), PublisherReports(**args), AdvertiserReports(**args),
+                ProbabilisticPublisherReports(**args), ProbabilisticAdvertiserReports(**args)]

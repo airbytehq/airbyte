@@ -1,10 +1,10 @@
 import logging
-from time import sleep
-from typing import Iterable, Mapping, Optional, Any, List, Union
-from itertools import islice
+from datetime import datetime
+from typing import Iterable, Mapping, Optional, Any, List, Union, MutableMapping
 
 import requests
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_protocol.models import SyncMode
@@ -21,6 +21,18 @@ class ApplovinStream(HttpStream):
         if response.text == "":
             return '{}'
         yield from response.json()
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: Optional[List[str]] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        if stream_state is None:  # Indicative of schema discovery, we will return our schema from json file
+            yield self.generate_dummy_record()
+        else:
+            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 500:
@@ -66,6 +78,22 @@ class ApplovinStream(HttpStream):
         else:
             return False
 
+    def generate_dummy_record(self):
+        """
+        During schema checks (when `read_records` is called just to compare schemas) we may return the
+        already existing schema that is hardcoded into json file, this avoids a useless API call
+        :return:
+        """
+        schema = self.get_json_schema()
+        dummy_record = {}
+        for field, details in schema['properties'].items():
+            if 'string' in details['type']:
+                dummy_record[field] = 'dummy_string'
+            elif 'integer' in details['type'] or 'number' in details['type']:
+                dummy_record[field] = 123
+            elif 'boolean' in details['type']:
+                dummy_record[field] = True
+        return dummy_record
 
 class Campaigns(ApplovinStream):
     primary_key = "campaign_id"
@@ -136,3 +164,104 @@ class Targets(CampaignsSubStream):
         record = response.json()
         record["campaign_id"] = stream_slice["campaign_id"]
         yield record
+
+
+class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
+    url_base = "https://r.applovin.com/"
+    report_type = ""
+    columns = ""
+    cursor_field = "day"
+
+    def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
+        print("init")
+        print(datetime.now())
+
+        self.config = config
+        self._state = {}
+        super().__init__(
+            authenticator=authenticator,
+        )
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state[self.cursor_field] = value[self.cursor_field]
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: Optional[List[str]] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        print("read")
+        print(datetime.now())
+        default_start_date = self.config["start_date"]
+
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            record_date = record[self.cursor_field]
+            state_date = self.state.get(self.cursor_field)
+            self.state = {self.cursor_field: max(record_date, state_date or default_start_date)}
+            yield record
+
+    def request_params(
+            self,
+            stream_state: Optional[Mapping[str, Any]],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        start_date = self.state[self.cursor_field] if stream_state.get(self.cursor_field) else self.config["start_date"]
+        return {
+            "api_key": self.config["reporting_api_key"],
+            "start": start_date,
+            "end": "now",
+            "format": "json",
+            "report_type": self.report_type,
+            "columns": self.columns,
+            "limit": 1
+        }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.text == "":
+            return '{}'
+        response_json = response.json()
+        yield from response_json["results"]
+
+    @property
+    def columns(self):
+        schema = self.get_json_schema()
+        return ",".join(schema['properties'].keys())
+
+
+class PublisherReports(ApplovinIncrementalMetricsStream):
+    report_type = "publisher"
+    primary_key = ["application","package_name", "store_id"]
+
+    def path(self, **kwargs) -> str:
+        return "report"
+
+
+class AdvertiserReports(ApplovinIncrementalMetricsStream):
+    report_type = "advertiser"
+    primary_key = ["ad_id"]
+
+    def path(self, **kwargs) -> str:
+        return "report"
+
+class ProbabilisticPublisherReports(ApplovinIncrementalMetricsStream):
+    report_type = "publisher"
+    primary_key = ["application","package_name", "store_id"]
+
+    def path(self, **kwargs) -> str:
+        return "probabilisticReport"
+
+
+class ProbabilisticAdvertiserReports(ApplovinIncrementalMetricsStream):
+    report_type = "advertiser"
+    primary_key = ["ad_id"]
+
+    def path(self, **kwargs) -> str:
+        return "probabilisticReport"
