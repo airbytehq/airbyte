@@ -2,7 +2,7 @@ import asyncio
 import logging
 import sys
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import dagger
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
@@ -30,7 +30,7 @@ async def run(
     control_image_name: str,
     target_image_name: str,
     output_directory: str,
-    command: str,
+    commands: List[Command],
     config: Optional[SecretDict],
     catalog: Optional[ConfiguredAirbyteCatalog],
     state: Optional[Dict],
@@ -39,7 +39,7 @@ async def run(
         control_connector = await get_connector(client, connector_name, control_image_name)
         target_connector = await get_connector(client, connector_name, target_image_name)
         await _run(
-            control_connector, target_connector, output_directory, command, config, catalog, state
+            control_connector, target_connector, output_directory, commands, config, catalog, state
         )
         await DiffComparator(client, output_directory).compare(control_connector, target_connector)
 
@@ -48,29 +48,16 @@ async def _run(
     control_connector: ConnectorUnderTest,
     target_connector: ConnectorUnderTest,
     output_directory: str,
-    command: str,
+    commands: List[Command],
     config: Optional[SecretDict],
     catalog: Optional[ConfiguredAirbyteCatalog],
     state: Optional[Dict],
 ):
     # TODO: maybe use proxy to cache the response from the first round and use the cache for the second round
     #   (this may only make sense for syncs with an input state)
-    if command == "all":
-        tasks = []
-        for _command in Command:
-            tasks.extend([
-                _dispatch(
-                    connector.container,
-                    FileBackend(f"{output_directory}/{connector.version}/{_command}"),
-                    f"{output_directory}/{connector.version}",
-                    Command(_command),
-                    config,
-                    catalog,
-                    state,
-                ) for connector in [control_connector, target_connector]
-            ])
-    else:
-        tasks = [
+    tasks = []
+    for command in commands:
+        tasks.extend([
             _dispatch(
                 connector.container,
                 FileBackend(f"{output_directory}/{connector.version}/{command}"),
@@ -80,7 +67,7 @@ async def _run(
                 catalog,
                 state,
             ) for connector in [control_connector, target_connector]
-        ]
+        ])
     await asyncio.gather(*tasks)
 
 
