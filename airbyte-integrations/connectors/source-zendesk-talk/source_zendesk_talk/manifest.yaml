@@ -91,8 +91,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -157,8 +157,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -286,8 +286,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -406,8 +406,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -448,8 +448,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -537,8 +537,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -690,8 +690,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -778,14 +778,14 @@ streams:
               - string
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: '{{ config[''start_date''] }}'
+      cursor_field: "{{ config['start_date'] }}"
       end_datetime:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
+        datetime: "{{ config['start_date'] }}"
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       datetime_format: '%s'
       end_time_option:
@@ -817,8 +817,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -949,10 +949,10 @@ streams:
               - 'null'
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: '{{ config[''start_date''] }}'
+      cursor_field: "{{ config['start_date'] }}"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
+        datetime: "{{ config['start_date'] }}"
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       datetime_format: '%s'
       start_time_option:
@@ -974,8 +974,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1030,8 +1030,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1152,8 +1152,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1259,8 +1259,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1308,8 +1308,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
+          password: "{{ config['credentials']['api_token'] }}"
+          username: "{{ config['credentials']['email'] }}/token"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
