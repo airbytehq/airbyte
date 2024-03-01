@@ -190,7 +190,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 ## Data type mapping
 
 | Integration Type | Airbyte Type |
-| :--------------: | :----------: |
+|:----------------:|:------------:|
 |      string      |    string    |
 |      number      |    number    |
 |      array       |    array     |
