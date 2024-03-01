@@ -72,7 +72,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @Override
   protected SnowflakeDestinationHandler getDestinationHandler() {
-    return new SnowflakeDestinationHandler(databaseName, database, namespace.toUpperCase());
+    return new SnowflakeDestinationHandler(databaseName, database, namespace);
   }
 
   @Override
