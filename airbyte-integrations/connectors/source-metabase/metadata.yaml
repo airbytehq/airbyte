@@ -22,6 +22,14 @@ data:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "The `dashboards` stream's endpoint has been updated due to the previous endpoint being deprecated by the service. The new version no longer returns the `creator` field for the `Dashboards` stream. After upgrading, please reset the schema for the stream. Additionally, the destination may require updating to handle the updated schema."
+        upgradeDeadline: "2024-04-01"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["dashboards"]
   releaseStage: beta
   remoteRegistries:
     pypi:

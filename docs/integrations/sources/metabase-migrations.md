@@ -34,7 +34,7 @@ Each instance of the connector must be updated separately. If you have created m
 
 ### Refresh affected schemas and reset data
 
-1. Select **Connections** in the main navb nar.
+1. Select **Connections** in the main navbar.
     1. Select the connection(s) affected by the update.
 2. Select the **Replication** tab.
     1. Select **Refresh source schema**.
