@@ -47,20 +47,11 @@ acceptance_tests:
           #Have to add for testing PR CI.
           - name: list_disputes
             bypass_reason: "Disputes may not exist."
-        ignored_fields:
-          balances:
-            - name: last_refresh_time
-              bypass_reason: "field changes during every read"
-          list_products:
-            - name: description
-              bypass_reason: "Sometimes it is not contained in the response"
         timeout_seconds: 3200
         expect_records:
           path: "integration_tests/sample_files/expected_records_sandbox.jsonl"
           #path: "integration_tests/sample_files/expected_records.jsonl"
-          extra_fields: yes
           exact_order: yes
-          extra_records: no
         fail_on_extra_columns: False
   incremental:
     tests:

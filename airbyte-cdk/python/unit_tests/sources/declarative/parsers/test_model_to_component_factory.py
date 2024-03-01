@@ -232,7 +232,7 @@ spec:
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
     assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
-    assert stream.retriever.paginator.page_size_option.field_name == "page_size"
+    assert stream.retriever.paginator.page_size_option.field_name.eval(input_config) == "page_size"
     assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
     assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com/v3/"
@@ -422,7 +422,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     assert isinstance(partition_router, ListPartitionRouter)
     assert partition_router.values == ["airbyte", "airbyte-cloud"]
     assert partition_router.request_option.inject_into == RequestOptionType.header
-    assert partition_router.request_option.field_name == "repository"
+    assert partition_router.request_option.field_name.eval(config=input_config) == "repository"
 
 
 def test_create_substream_partition_router():
@@ -484,7 +484,7 @@ def test_create_substream_partition_router():
     assert partition_router.parent_stream_configs[0].parent_key.eval({}) == "id"
     assert partition_router.parent_stream_configs[0].partition_field.eval({}) == "repository_id"
     assert partition_router.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert partition_router.parent_stream_configs[0].request_option.field_name == "repository_id"
+    assert partition_router.parent_stream_configs[0].request_option.field_name.eval(config=input_config) == "repository_id"
 
     assert partition_router.parent_stream_configs[1].parent_key.eval({}) == "someid"
     assert partition_router.parent_stream_configs[1].partition_field.eval({}) == "word_id"
@@ -509,17 +509,17 @@ def test_datetime_based_cursor():
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: created[gte]
+          field_name: "since_{{ config['cursor_field'] }}"
         end_time_option:
           type: RequestOption
           inject_into: body_json
-          field_name: end_time
+          field_name: "before_{{ parameters['cursor_field'] }}"
         partition_field_start: star
         partition_field_end: en
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["incremental"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["incremental"], {"cursor_field": "created_at"})
 
     stream_slicer = factory.create_component(model_type=DatetimeBasedCursorModel, component_definition=slicer_manifest, config=input_config)
 
@@ -529,9 +529,9 @@ def test_datetime_based_cursor():
     assert stream_slicer.cursor_granularity == "PT0.000001S"
     assert stream_slicer.lookback_window.string == "P5D"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
-    assert stream_slicer.start_time_option.field_name == "created[gte]"
+    assert stream_slicer.start_time_option.field_name.eval(config=input_config | {"cursor_field": "updated_at"}) == "since_updated_at"
     assert stream_slicer.end_time_option.inject_into == RequestOptionType.body_json
-    assert stream_slicer.end_time_option.field_name == "end_time"
+    assert stream_slicer.end_time_option.field_name.eval({}) == "before_created_at"
     assert stream_slicer.partition_field_start.eval({}) == "star"
     assert stream_slicer.partition_field_end.eval({}) == "en"
 
@@ -937,18 +937,20 @@ requester:
     }
 
 
-@pytest.mark.parametrize("input_config, expected_authenticator_class", [
-    pytest.param(
-        {"auth": {"type": "token"}, "credentials": {"api_key": "some_key"}},
-        ApiKeyAuthenticator,
-        id="test_create_requester_with_selective_authenticator_and_token_selected",
-    ),
-    pytest.param(
-        {"auth": {"type": "oauth"}, "credentials": {"client_id": "ABC"}},
-        DeclarativeOauth2Authenticator,
-        id="test_create_requester_with_selective_authenticator_and_oauth_selected",
-    ),
-]
+@pytest.mark.parametrize(
+    "input_config, expected_authenticator_class",
+    [
+        pytest.param(
+            {"auth": {"type": "token"}, "credentials": {"api_key": "some_key"}},
+            ApiKeyAuthenticator,
+            id="test_create_requester_with_selective_authenticator_and_token_selected",
+        ),
+        pytest.param(
+            {"auth": {"type": "oauth"}, "credentials": {"client_id": "ABC"}},
+            DeclarativeOauth2Authenticator,
+            id="test_create_requester_with_selective_authenticator_and_oauth_selected",
+        ),
+    ],
 )
 def test_create_requester_with_selective_authenticator(input_config, expected_authenticator_class):
     content = """
@@ -1121,7 +1123,7 @@ def test_create_default_paginator():
 
     assert isinstance(paginator.page_size_option, RequestOption)
     assert paginator.page_size_option.inject_into == RequestOptionType.request_parameter
-    assert paginator.page_size_option.field_name == "page_size"
+    assert paginator.page_size_option.field_name.eval(config=input_config) == "page_size"
 
     assert isinstance(paginator.page_token_option, RequestPath)
 
@@ -1294,7 +1296,7 @@ def test_custom_components_do_not_contain_extra_fields():
     assert custom_substream_partition_router.parent_stream_configs[0].parent_key.eval({}) == "id"
     assert custom_substream_partition_router.parent_stream_configs[0].partition_field.eval({}) == "repository_id"
     assert custom_substream_partition_router.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert custom_substream_partition_router.parent_stream_configs[0].request_option.field_name == "repository_id"
+    assert custom_substream_partition_router.parent_stream_configs[0].request_option.field_name.eval(config=input_config) == "repository_id"
 
     assert isinstance(custom_substream_partition_router.custom_pagination_strategy, PageIncrement)
     assert custom_substream_partition_router.custom_pagination_strategy.page_size == 100
@@ -1343,7 +1345,7 @@ def test_parse_custom_component_fields_if_subcomponent():
     assert custom_substream_partition_router.parent_stream_configs[0].parent_key.eval({}) == "id"
     assert custom_substream_partition_router.parent_stream_configs[0].partition_field.eval({}) == "repository_id"
     assert custom_substream_partition_router.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert custom_substream_partition_router.parent_stream_configs[0].request_option.field_name == "repository_id"
+    assert custom_substream_partition_router.parent_stream_configs[0].request_option.field_name.eval(config=input_config) == "repository_id"
 
     assert isinstance(custom_substream_partition_router.custom_pagination_strategy, PageIncrement)
     assert custom_substream_partition_router.custom_pagination_strategy.page_size == 100
