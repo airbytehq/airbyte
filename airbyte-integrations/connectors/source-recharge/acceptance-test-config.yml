@@ -9,18 +9,10 @@ acceptance_tests:
             bypass_reason: "volatile data"
           - name: onetimes
             bypass_reason: "no data from stream"
-        ignored_fields:
-          shop:
-            - name: shop/updated_at
-              bypass_reason: "updated after login"
-            - name: store/updated_at
-              bypass_reason: "updated after login"
         timeout_seconds: 7200
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         fail_on_extra_columns: false
       - config_path: secrets/config_order_modern_api.json
         empty_streams:
@@ -30,18 +22,10 @@ acceptance_tests:
             bypass_reason: "volatile data"
           - name: onetimes
             bypass_reason: "no data from stream"
-        ignored_fields:
-          shop:
-            - name: shop/updated_at
-              bypass_reason: "updated after login"
-            - name: store/updated_at
-              bypass_reason: "updated after login"
         timeout_seconds: 7200
         expect_records:
           path: "integration_tests/expected_records_orders_modern_api.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         fail_on_extra_columns: false
   connection:
     tests:

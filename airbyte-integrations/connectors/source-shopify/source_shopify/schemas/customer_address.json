@@ -55,6 +55,10 @@
     },
     "shop_url": {
       "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

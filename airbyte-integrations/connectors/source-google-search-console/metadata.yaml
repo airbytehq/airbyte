@@ -19,8 +19,7 @@ data:
   name: Google Search Console
   remoteRegistries:
     pypi:
-      enabled: false
-      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      enabled: true
       packageName: airbyte-source-google-search-console
   registries:
     cloud:

@@ -193,6 +193,7 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.0.1   | 2024-02-22 | [35385](https://github.com/airbytehq/airbyte/pull/35385)   | Upgrade CDK to 0.23.0; Gathering required initial state upfront                                     |
 | 2.0.0   | 2024-02-09 | [35042](https://github.com/airbytehq/airbyte/pull/35042)   | GA release V2 destinations format.                                                                  |
 | 0.6.3   | 2024-02-06 | [34891](https://github.com/airbytehq/airbyte/pull/34891)   | Remove varchar limit, use system defaults                                                           |
 | 0.6.2   | 2024-01-30 | [34683](https://github.com/airbytehq/airbyte/pull/34683)   | CDK Upgrade 0.16.3; Fix dependency mismatches in slf4j lib                                          |
