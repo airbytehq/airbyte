@@ -8,7 +8,7 @@ import pytest
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, Level, SyncMode, TraceType, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 SLICE_NOT_CONSIDERED_FOR_EQUALITY = {}
 
@@ -96,6 +96,7 @@ def test_state_checkpoint_interval():
     )
 
     assert stream.state_checkpoint_interval is None
+
 
 def _schema_loader():
     schema_loader = MagicMock()

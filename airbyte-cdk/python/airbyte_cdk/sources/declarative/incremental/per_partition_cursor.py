@@ -7,7 +7,7 @@ from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, U
 
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import StreamSlice, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
 class PerPartitionKeySerializer:
