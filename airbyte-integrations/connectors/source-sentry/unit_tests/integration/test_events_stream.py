@@ -1,14 +1,15 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import json
 from unittest import TestCase
 
-from airbyte_protocol.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.entrypoint_wrapper import read
-from source_sentry.source import SourceSentry
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-
+from airbyte_protocol.models import SyncMode
 from config_builder import ConfigBuilder
+from source_sentry.source import SourceSentry
 
 
 class TestEvents(TestCase):
