@@ -10,25 +10,6 @@ acceptance_tests:
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        ignored_fields:
-          project_detail:
-            - name: access
-              bypass_reason: "Order access return randomly"
-            - name: features
-              bypass_reason: "Order features return randomly"
-            - name: options
-              bypass_reason: "Order options return randomly"
-            - name: organization/features
-              bypass_reason: "Order features return randomly"
-            - name: plugins/*/features
-              bypass_reason: "Order features return randomly"
-          projects:
-            - name: access
-              bypass_reason: "Order access return randomly"
-            - name: features
-              bypass_reason: "Order features return randomly"
-            - name: organization/features
-              bypass_reason: "Order features return randomly"
   connection:
     tests:
       - config_path: secrets/config.json
