@@ -66,7 +66,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @Override
   protected SnowflakeSqlGenerator getSqlGenerator() {
-    return new SnowflakeSqlGenerator();
+    return new SnowflakeSqlGenerator(0);
   }
 
   @Override

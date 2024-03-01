@@ -49,6 +49,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
       "LOCALTIME",
       "LOCALTIMESTAMP");
 
+  private final int retentionPeriodDays;
+
+  public SnowflakeSqlGenerator(int retentionPeriodDays) {
+    this.retentionPeriodDays = retentionPeriodDays;
+  }
+
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     return new StreamId(
@@ -119,14 +125,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
     return Sql.of(new StringSubstitutor(Map.of(
         "final_table_id", stream.id().finalTableId(QUOTE, suffix.toUpperCase()),
         "force_create_table", forceCreateTable,
-        "column_declarations", columnDeclarations)).replace(
+        "column_declarations", columnDeclarations,
+        "retention_period_days", retentionPeriodDays)).replace(
             """
             CREATE ${force_create_table} TABLE ${final_table_id} (
               "_AIRBYTE_RAW_ID" TEXT NOT NULL,
               "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
               "_AIRBYTE_META" VARIANT NOT NULL
               ${column_declarations}
-            );
+            ) data_retention_time_in_days = ${retention_period_days};
             """));
   }
 
