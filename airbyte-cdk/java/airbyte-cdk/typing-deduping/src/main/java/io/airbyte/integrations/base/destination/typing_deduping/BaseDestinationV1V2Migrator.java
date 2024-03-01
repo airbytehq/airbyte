@@ -20,7 +20,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
   @Override
   public void migrateIfNecessary(
                                  final SqlGenerator sqlGenerator,
-                                 final DestinationHandler destinationHandler,
+                                 final DestinationHandler<?> destinationHandler,
                                  final StreamConfig streamConfig)
       throws Exception {
     LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
@@ -60,7 +60,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param streamConfig the stream to migrate the raw table of
    */
   public void migrate(final SqlGenerator sqlGenerator,
-                      final DestinationHandler destinationHandler,
+                      final DestinationHandler<?> destinationHandler,
                       final StreamConfig streamConfig)
       throws TableNotMigratedException {
     final var namespacedTableName = convertToV1RawName(streamConfig);
