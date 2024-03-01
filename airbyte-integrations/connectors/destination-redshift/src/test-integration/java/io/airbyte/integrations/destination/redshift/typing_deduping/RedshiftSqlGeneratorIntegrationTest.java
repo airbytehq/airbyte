@@ -21,7 +21,6 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
