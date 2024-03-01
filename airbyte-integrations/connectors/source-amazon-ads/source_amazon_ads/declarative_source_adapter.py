@@ -33,6 +33,11 @@ class DeclarativeSourceAdapter(YamlDeclarativeSource):
         return
 
     def _set_adapted_methods(self) -> None:
+        """
+        Since the adapter is intended to smoothly migrate the connector,
+        this method determines whether each of methods `spec`, `check`, and `streams` was declared in the manifest file
+        and if yes, makes the source use it, otherwise the method defined in the source will be used
+        """
         adapted_methods = ("spec", "check", "streams")
         for method in adapted_methods:
             if method in self.resolved_manifest:
