@@ -146,7 +146,10 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
       }
     }
 
-    final SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator(SnowflakeSqlOperations.getRetentionPeriodDays(config));
+    final int retentionPeriodDays = SnowflakeSqlOperations.getRetentionPeriodDays(
+        config.get(SnowflakeSqlOperations.RETENTION_PERIOD_DAYS_CONFIG_KEY));
+
+    final SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator(retentionPeriodDays);
     final ParsedCatalog parsedCatalog;
     final TyperDeduper typerDeduper;
     final JdbcDatabase database = getDatabase(getDataSource(config));

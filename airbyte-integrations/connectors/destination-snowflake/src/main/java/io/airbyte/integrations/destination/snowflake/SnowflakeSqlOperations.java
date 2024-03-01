@@ -77,12 +77,12 @@ public class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOper
     return getRetentionPeriodDays(DestinationConfig.getInstance().getNodeValue(RETENTION_PERIOD_DAYS_CONFIG_KEY));
   }
 
-  public static int getRetentionPeriodDays(final JsonNode config) {
+  public static int getRetentionPeriodDays(final JsonNode node) {
     int retentionPeriodDays;
-    if (config == null || config.isNull()) {
+    if (node == null || node.isNull()) {
       retentionPeriodDays = 0;
     } else {
-      retentionPeriodDays = config.asInt();
+      retentionPeriodDays = node.asInt();
     }
     return retentionPeriodDays;
   }
