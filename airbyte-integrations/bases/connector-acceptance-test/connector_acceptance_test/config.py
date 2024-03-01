@@ -91,24 +91,7 @@ class ExpectedRecordsConfig(BaseModel):
 
     bypass_reason: Optional[str] = Field(description="Reason why this test is bypassed.")
     path: Optional[Path] = Field(description="File with expected records")
-    extra_fields: bool = Field(False, description="Allow records to have other fields")
     exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
-    extra_records: bool = Field(
-        True,
-        description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced",
-    )
-
-    @validator("exact_order", always=True)
-    def validate_exact_order(cls, exact_order, values):
-        if "extra_fields" in values and values["extra_fields"] and not exact_order:
-            raise ValueError("exact_order must be on if extra_fields enabled")
-        return exact_order
-
-    @validator("extra_records", always=True)
-    def validate_extra_records(cls, extra_records, values):
-        if "extra_fields" in values and values["extra_fields"] and extra_records:
-            raise ValueError("extra_records must be off if extra_fields enabled")
-        return extra_records
 
     @validator("path", always=True)
     def no_bypass_reason_when_path_is_set(cls, path, values):
@@ -130,11 +113,6 @@ class EmptyStreamConfiguration(BaseConfig):
 class IgnoredFieldsConfiguration(BaseConfig):
     name: str
     bypass_reason: Optional[str] = Field(default=None, description="Reason why this field is considered ignored.")
-
-
-ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field(
-    description="For each stream, list of fields path ignoring in sequential reads test"
-)
 
 
 class NoPrimaryKeyConfiguration(BaseConfig):
@@ -196,7 +174,6 @@ class BasicReadTestConfig(BaseConfig):
     )
     expect_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
-    ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
     file_types: Optional[FileTypesConfig] = Field(
         default_factory=FileTypesConfig,
         description="For file-based connectors, unsupported by source file types can be configured or a test can be skipped at all",
@@ -214,7 +191,9 @@ class FullRefreshConfig(BaseConfig):
     configured_catalog_path: Optional[str] = configured_catalog_path
     timeout_seconds: int = timeout_seconds
     deployment_mode: Optional[str] = deployment_mode
-    ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
+    ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field(
+        description="For each stream, list of fields path ignoring in sequential reads test"
+    )
 
 
 class FutureStateConfig(BaseConfig):
@@ -341,11 +320,6 @@ class Config(BaseConfig):
                 basic_read_tests["empty_streams"] = [
                     {"name": empty_stream_name} for empty_stream_name in basic_read_tests.get("empty_streams", [])
                 ]
-            if "ignored_fields" in basic_read_tests:
-                basic_read_tests["ignored_fields"] = {
-                    stream: [{"name": field_name} for field_name in ignore_fields]
-                    for stream, ignore_fields in basic_read_tests["ignored_fields"].items()
-                }
         for full_refresh_test in migrated_config["acceptance_tests"].get("full_refresh", {}).get("tests", []):
             if "ignored_fields" in full_refresh_test:
                 full_refresh_test["ignored_fields"] = {

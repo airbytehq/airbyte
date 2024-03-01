@@ -35,16 +35,16 @@ acceptance_tests:
           - name: "hosted_page"
             bypass_reason: "Test data is not persistent."
           - name: "customer"
-            bypass_reason: "To be Tested with integration tests."
+            bypass_reason: "To be tested with integration tests."
           - name: "subscription"
-            bypass_reason: "To be Tested with integration tests."
+            bypass_reason: "To be tested with integration tests."
           - name: "coupon"
-            bypass_reason: "To be Tested with integration tests."
+            bypass_reason: "To be tested with integration tests."
+          - name: "hosted_page"
+            bypass_reason: "To be tested with integration tests."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         fail_on_extra_columns: true
   incremental:
     tests:
