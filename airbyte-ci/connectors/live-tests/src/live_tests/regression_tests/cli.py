@@ -1,10 +1,18 @@
-from typing import Optional
+from typing import List, Optional
 
 import asyncclick as click
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
 from live_tests.regression_tests.run_tests import Command, run
 from live_tests.utils.common import get_connector_config, get_state
+
+
+def validate_commands(ctx, param, value):
+    command_strings = value.split(",")
+    try:
+        return [Command(cmd.strip()) for cmd in command_strings]
+    except ValueError as e:
+        raise click.BadParameter(f"Invalid command: {e}")
 
 
 @click.command()
@@ -15,6 +23,7 @@ from live_tests.utils.common import get_connector_config, get_state
     ),
     default="latest",
     type=str,
+    required=True,
 )
 @click.option(
     "--control-image-name",
@@ -37,11 +46,12 @@ from live_tests.utils.common import get_connector_config, get_state
     type=str,
 )
 @click.option(
-    "--command",
-    help=("Airbyte command."),
-    default="all",
-    type=click.Choice([c.value for c in Command] + ["all"]),
-    required=True
+    "--commands",
+    help=("Comma-separated list of airbyte commands to run. By default, all commands are run (check, discover, read, read-with-state, and spec)."),
+    type=str,
+    callback=validate_commands,
+    default="check,discover,read,read-with-state,spec",
+    required=True,
 )
 @click.option(
     "--config-path",
@@ -66,7 +76,7 @@ async def main(
     control_image_name: str,
     target_image_name: str,
     output_directory: str,
-    command: Optional[str],
+    commands: List[Command],
     config_path: Optional[str],
     catalog_path: Optional[str],
     state_path: Optional[str],
@@ -85,4 +95,4 @@ async def main(
     catalog = ConfiguredAirbyteCatalog.parse_file(catalog_path) if catalog_path else None
     state = get_state(state_path) if state_path else None
 
-    await run(connector_name, control_image_name, target_image_name, output_directory, command, config, catalog, state)
+    await run(connector_name, control_image_name, target_image_name, output_directory, commands, config, catalog, state)
