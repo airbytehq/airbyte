@@ -6,7 +6,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
 from airbyte_cdk.sources.declarative.types import StreamState
 from airbyte_cdk.sources.streams.core import StreamData
 
@@ -21,7 +21,7 @@ class Retriever:
     def read_records(
         self,
         records_schema: Mapping[str, Any],
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
         """
         Fetch a stream's records from an HTTP API source
@@ -32,7 +32,7 @@ class Retriever:
         """
 
     @abstractmethod
-    def stream_slices(self) -> Iterable[Optional[PerPartitionStreamSlice]]:
+    def stream_slices(self) -> Iterable[Optional[StreamSlice]]:
         """Returns the stream slices"""
 
     @property

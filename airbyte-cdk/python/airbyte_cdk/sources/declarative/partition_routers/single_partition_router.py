@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState, PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState, StreamSlice
 
 
 @dataclass
@@ -47,5 +47,5 @@ class SinglePartitionRouter(StreamSlicer):
     ) -> Mapping[str, Any]:
         return {}
 
-    def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
-        yield PerPartitionStreamSlice(partition={}, cursor_slice={})
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        yield StreamSlice(partition={}, cursor_slice={})

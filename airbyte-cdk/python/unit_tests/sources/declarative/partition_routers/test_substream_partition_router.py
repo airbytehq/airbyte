@@ -6,7 +6,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import pytest as pytest
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Record
@@ -21,7 +21,7 @@ data_second_parent_slice = [{"id": 2, "slice": "second", "data": "C"}]
 data_third_parent_slice = []
 all_parent_data = data_first_parent_slice + data_second_parent_slice + data_third_parent_slice
 parent_slices = [{"slice": "first"}, {"slice": "second"}, {"slice": "third"}]
-second_parent_stream_slice = [PerPartitionStreamSlice(partition={"slice": "second_parent"}, cursor_slice={})]
+second_parent_stream_slice = [StreamSlice(partition={"slice": "second_parent"}, cursor_slice={})]
 
 
 class MockStream(DeclarativeStream):
@@ -40,12 +40,12 @@ class MockStream(DeclarativeStream):
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[PerPartitionStreamSlice]]:
+    ) -> Iterable[Optional[StreamSlice]]:
         for s in self._slices:
-            if isinstance(s, PerPartitionStreamSlice):
+            if isinstance(s, StreamSlice):
                 yield s
             else:
-                yield PerPartitionStreamSlice(partition=s, cursor_slice={})
+                yield StreamSlice(partition=s, cursor_slice={})
 
     def read_records(
         self,
@@ -109,7 +109,7 @@ class MockStream(DeclarativeStream):
         (
                 [
                     ParentStreamConfig(
-                        stream=MockStream([PerPartitionStreamSlice(partition=p, cursor_slice={"start": 0, "end": 1}) for p in parent_slices], all_parent_data, "first_stream"),
+                        stream=MockStream([StreamSlice(partition=p, cursor_slice={"start": 0, "end": 1}) for p in parent_slices], all_parent_data, "first_stream"),
                         parent_key="id",
                         partition_field="first_stream_id",
                         parameters={},

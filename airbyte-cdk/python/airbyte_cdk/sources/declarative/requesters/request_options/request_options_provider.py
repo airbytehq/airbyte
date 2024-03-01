@@ -6,7 +6,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Mapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.types import PerPartitionStreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 @dataclass
@@ -26,7 +26,7 @@ class RequestOptionsProvider:
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """
@@ -41,7 +41,7 @@ class RequestOptionsProvider:
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method."""
@@ -51,7 +51,7 @@ class RequestOptionsProvider:
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Union[Mapping[str, Any], str]:
         """
@@ -69,7 +69,7 @@ class RequestOptionsProvider:
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """

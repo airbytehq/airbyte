@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamState, PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamState, StreamSlice
 from airbyte_cdk.sources.message import MessageRepository
 from isodate import Duration, parse_duration
 
@@ -117,7 +117,7 @@ class DatetimeBasedCursor(Cursor):
         """
         self._cursor = stream_state.get(self._cursor_field.eval(self.config)) if stream_state else None
 
-    def close_slice(self, stream_slice: PerPartitionStreamSlice, most_recent_record: Optional[Record]) -> None:
+    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         if stream_slice.partition:
             raise ValueError(f"Stream slice {stream_slice} should not have a partition. Got {stream_slice.partition}.")
         last_record_cursor_value = most_recent_record.get(self._cursor_field.eval(self.config)) if most_recent_record else None
@@ -139,7 +139,7 @@ class DatetimeBasedCursor(Cursor):
             else None
         )
 
-    def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Partition the daterange into slices of size = step.
 
@@ -174,7 +174,7 @@ class DatetimeBasedCursor(Cursor):
 
     def _partition_daterange(
         self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]
-    ) -> List[PerPartitionStreamSlice]:
+    ) -> List[StreamSlice]:
         start_field = self._partition_field_start.eval(self.config)
         end_field = self._partition_field_end.eval(self.config)
         dates = []
@@ -182,7 +182,7 @@ class DatetimeBasedCursor(Cursor):
             next_start = self._evaluate_next_start_date_safely(start, step)
             end_date = self._get_date(next_start - self._cursor_granularity, end, min)
             dates.append(
-                PerPartitionStreamSlice(
+                StreamSlice(
                     partition={}, cursor_slice={start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)}
                 )
             )
@@ -230,7 +230,7 @@ class DatetimeBasedCursor(Cursor):
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.request_parameter, stream_slice)
@@ -239,7 +239,7 @@ class DatetimeBasedCursor(Cursor):
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.header, stream_slice)
@@ -248,7 +248,7 @@ class DatetimeBasedCursor(Cursor):
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_data, stream_slice)
@@ -257,7 +257,7 @@ class DatetimeBasedCursor(Cursor):
         self,
         *,
         stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[PerPartitionStreamSlice] = None,
+        stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json, stream_slice)
@@ -266,7 +266,7 @@ class DatetimeBasedCursor(Cursor):
         # Never update kwargs
         return {}
 
-    def _get_request_options(self, option_type: RequestOptionType, stream_slice: Optional[PerPartitionStreamSlice]) -> Mapping[str, Any]:
+    def _get_request_options(self, option_type: RequestOptionType, stream_slice: Optional[StreamSlice]) -> Mapping[str, Any]:
         options: MutableMapping[str, Any] = {}
         if not stream_slice:
             return options

@@ -5,7 +5,7 @@
 import pytest as pytest
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Config, PerPartitionStreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 partition_values = ["customer", "store", "subscription"]
 cursor_field = "owner_resource"
@@ -18,23 +18,23 @@ parameters = {"cursor_field": "owner_resource"}
         (
             ["customer", "store", "subscription"],
             "owner_resource",
-            [PerPartitionStreamSlice(partition={"owner_resource": "customer"}, cursor_slice={}),
-             PerPartitionStreamSlice(partition={"owner_resource": "store"}, cursor_slice={}),
-             PerPartitionStreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={})],
+            [StreamSlice(partition={"owner_resource": "customer"}, cursor_slice={}),
+             StreamSlice(partition={"owner_resource": "store"}, cursor_slice={}),
+             StreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={})],
         ),
         (
             '["customer", "store", "subscription"]',
             "owner_resource",
-            [PerPartitionStreamSlice(partition={"owner_resource": "customer"}, cursor_slice={}),
-             PerPartitionStreamSlice(partition={"owner_resource": "store"}, cursor_slice={}),
-             PerPartitionStreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={})],
+            [StreamSlice(partition={"owner_resource": "customer"}, cursor_slice={}),
+             StreamSlice(partition={"owner_resource": "store"}, cursor_slice={}),
+             StreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={})],
         ),
         (
             '["customer", "store", "subscription"]',
             "{{ parameters['cursor_field'] }}",
-            [PerPartitionStreamSlice(partition={"owner_resource": "customer"}, cursor_slice={}),
-             PerPartitionStreamSlice(partition={"owner_resource": "store"}, cursor_slice={}),
-                PerPartitionStreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={})],
+            [StreamSlice(partition={"owner_resource": "customer"}, cursor_slice={}),
+             StreamSlice(partition={"owner_resource": "store"}, cursor_slice={}),
+                StreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={})],
         ),
     ],
     ids=[
@@ -47,7 +47,7 @@ def test_list_partition_router(partition_values, cursor_field, expected_slices):
     slicer = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, parameters=parameters)
     slices = [s for s in slicer.stream_slices()]
     assert slices == expected_slices
-    assert all(isinstance(s, PerPartitionStreamSlice) for s in slices)
+    assert all(isinstance(s, StreamSlice) for s in slices)
 
 
 @pytest.mark.parametrize(

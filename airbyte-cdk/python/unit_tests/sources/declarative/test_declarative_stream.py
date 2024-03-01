@@ -8,7 +8,7 @@ import pytest
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, Level, SyncMode, TraceType, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.types import Config, PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 
 SLICE_NOT_CONSIDERED_FOR_EQUALITY = {}
 
@@ -29,9 +29,9 @@ def test_declarative_stream():
         AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345)),
     ]
     stream_slices = [
-        PerPartitionStreamSlice(partition={}, cursor_slice={"date": "2021-01-01"}),
-        PerPartitionStreamSlice(partition={}, cursor_slice={"date": "2021-01-02"}),
-        PerPartitionStreamSlice(partition={}, cursor_slice={"date": "2021-01-03"}),
+        StreamSlice(partition={}, cursor_slice={"date": "2021-01-01"}),
+        StreamSlice(partition={}, cursor_slice={"date": "2021-01-02"}),
+        StreamSlice(partition={}, cursor_slice={"date": "2021-01-03"}),
     ]
 
     retriever = MagicMock()
