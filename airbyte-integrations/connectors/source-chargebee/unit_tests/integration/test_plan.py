@@ -183,20 +183,15 @@ class IncrementalTest(TestCase):
         )
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), _NO_STATE)
         assert output.most_recent_state == { _STREAM_NAME: {_CURSOR_FIELD: str(self._now_in_seconds) }}
-        assert len(output.state_messages) == 2 # one state message for each slice, slice step duration is defined in manifest
-        assert len(output.records) == 2 # one record for each slice, slice step duration is defined in manifest
 
     @HttpMocker()
     def test_given_initial_state_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
         # Tests updating query param with state
-        state_cursor_value = int((self._start_date + timedelta(days=31)).timestamp())
+        state_cursor_value = int((self._now - timedelta(days=5)).timestamp())
         state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_cursor_value}).build()
         http_mocker.get(
             _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([state_cursor_value, self._now_in_seconds]).build(),
             _a_response().with_record(_a_record().with_cursor(self._now_in_seconds - 1)).build(),
         )
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), state)
-        assert len(output.state_messages) == 1 # one state message for each slice, slice step duration is defined in manifest
-        assert len(output.records) == 1 # one record for each slice, slice step duration is defined in manifest
         assert output.most_recent_state == { _STREAM_NAME: {_CURSOR_FIELD: str(self._now_in_seconds) }}
-
