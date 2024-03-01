@@ -22,6 +22,7 @@ import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.Jdbc
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
@@ -180,11 +181,11 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   public void testCreateTableIncremental() throws Exception {
     final Sql sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
-    List<DestinationInitialState<RedshiftState>> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
-    assertEquals(1, initialStates.size());
-    final DestinationInitialState<RedshiftState> initialState = initialStates.getFirst();
-    assertTrue(initialState.isFinalTablePresent());
-    assertFalse(initialState.isSchemaMismatch());
+    List<DestinationInitialStatus<RedshiftState>> initialStatuses = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    assertEquals(1, initialStatuses.size());
+    final DestinationInitialStatus<RedshiftState> initialStatus = initialStatuses.getFirst();
+    assertTrue(initialStatus.isFinalTablePresent());
+    assertFalse(initialStatus.isSchemaMismatch());
     // TODO assert on table clustering, etc.
   }
 
