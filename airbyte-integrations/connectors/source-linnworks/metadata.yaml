@@ -16,15 +16,15 @@ data:
   name: Linnworks
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-linnworks
-  supportLevel: archived
+  supportLevel: community
   tags:
     - language:python
 metadataSpecVersion: "1.0"
