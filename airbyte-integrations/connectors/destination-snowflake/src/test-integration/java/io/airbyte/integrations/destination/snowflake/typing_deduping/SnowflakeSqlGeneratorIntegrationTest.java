@@ -22,7 +22,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
@@ -413,9 +413,9 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     // should be OK with new tables
     destinationHandler.execute(createTable);
-    List<DestinationInitialState<SnowflakeState>> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    List<DestinationInitialStatus<SnowflakeState>> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
     assertEquals(1, initialStates.size());
-    assertFalse(initialStates.get(0).isSchemaMismatch());
+    assertFalse(initialStates.getFirst().isSchemaMismatch());
     destinationHandler.execute(Sql.of("DROP TABLE " + streamId.finalTableId("")));
 
     // Hack the create query to add NOT NULLs to emulate the old behavior
