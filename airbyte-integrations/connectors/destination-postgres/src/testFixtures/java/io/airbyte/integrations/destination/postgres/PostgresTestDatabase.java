@@ -7,9 +7,7 @@ package io.airbyte.integrations.destination.postgres;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.testutils.ContainerFactory;
 import io.airbyte.cdk.testutils.ContainerFactory.NamedContainerModifier;
-import io.airbyte.cdk.testutils.ContainerFactory.NamedContainerModifierImpl;
 import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
@@ -62,6 +60,7 @@ public class PostgresTestDatabase extends
     public Consumer<PostgreSQLContainer<?>> modifier() {
       return modifer;
     }
+
   }
 
   static public PostgresTestDatabase in(BaseImage baseImage, ContainerModifier... modifiers) {
