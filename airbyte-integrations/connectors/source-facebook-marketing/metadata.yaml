@@ -27,6 +27,22 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "All Ads-Insights-* streams now have updated schemas."
+        upgradeDeadline: "2024-03-17"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "ads_insights"
+              - "ads_insights_age_and_gender"
+              - "ads_insights_action_type"
+              - "ads_insights_country"
+              - "ads_insights_platform_and_device"
+              - "ads_insights_region"
+              - "ads_insights_dma"
+              - "ads_insights_action_product_id"
   suggestedStreams:
     streams:
       - ads_insights
