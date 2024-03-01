@@ -16,9 +16,9 @@ data:
   name: Recurly
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   remoteRegistries:
     pypi:
