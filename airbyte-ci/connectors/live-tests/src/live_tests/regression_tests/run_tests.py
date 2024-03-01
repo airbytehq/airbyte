@@ -25,7 +25,7 @@ class Command(Enum):
     SPEC = "spec"
 
 
-async def run(
+async def run_tests(
     connector_name: str,
     control_image_name: str,
     target_image_name: str,
@@ -38,13 +38,13 @@ async def run(
     async with (dagger.Connection(config=dagger.Config(log_output=sys.stderr)) as client):
         control_connector = await get_connector(client, connector_name, control_image_name)
         target_connector = await get_connector(client, connector_name, target_image_name)
-        await _run(
+        await _run_tests(
             control_connector, target_connector, output_directory, commands, config, catalog, state
         )
         await DiffComparator(client, output_directory).compare(control_connector, target_connector)
 
 
-async def _run(
+async def _run_tests(
     control_connector: ConnectorUnderTest,
     target_connector: ConnectorUnderTest,
     output_directory: str,
@@ -98,4 +98,4 @@ async def _dispatch(
         await runner.call_spec()
 
     else:
-        raise NotImplementedError(f"{command} is not recognized. Must be one of {', '.join(COMMANDS)}")
+        raise NotImplementedError(f"{command} is not recognized. Must be one of {', '.join(c.value for c in Command)}")

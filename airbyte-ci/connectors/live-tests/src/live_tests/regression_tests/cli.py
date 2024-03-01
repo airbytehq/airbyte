@@ -3,7 +3,7 @@ from typing import List, Optional
 import asyncclick as click
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
-from live_tests.regression_tests.run_tests import Command, run
+from live_tests.regression_tests.run_tests import Command, run_tests
 from live_tests.utils.common import get_connector_config, get_state
 
 
@@ -15,7 +15,12 @@ def validate_commands(ctx, param, value):
         raise click.BadParameter(f"Invalid command: {e}")
 
 
-@click.command()
+@click.group
+async def regression_tests() -> None:
+    pass
+
+
+@regression_tests.command("run", help="Run the regression tests on the given connector versions.")
 @click.option(
     "--connector-name",
     help=(
@@ -71,7 +76,7 @@ def validate_commands(ctx, param, value):
     default=None,
     type=str,
 )
-async def main(
+async def run(
     connector_name: str,
     control_image_name: str,
     target_image_name: str,
@@ -95,4 +100,4 @@ async def main(
     catalog = ConfiguredAirbyteCatalog.parse_file(catalog_path) if catalog_path else None
     state = get_state(state_path) if state_path else None
 
-    await run(connector_name, control_image_name, target_image_name, output_directory, commands, config, catalog, state)
+    await run_tests(connector_name, control_image_name, target_image_name, output_directory, commands, config, catalog, state)
