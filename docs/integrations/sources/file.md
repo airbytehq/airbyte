@@ -104,13 +104,14 @@ For example, if the format `CSV` is selected, then options from the [read_csv](h
 
 - It is therefore possible to customize the `delimiter` (or `sep`) to in case of tab separated files.
 - Header line can be ignored with `header=0` and customized with `names`
+- If a file has no header, it is required to set `header=null`; otherwise, the first record will be missing
 - Parse dates for in specified columns
 - etc
 
 We would therefore provide in the `reader_options` the following json:
 
 ```
-{ "sep" : "\t", "header" : 0, "names": ["column1", "column2"], "parse_dates": ["column2"]}
+{ "sep" : "\t", "header" : null, "names": ["column1", "column2"], "parse_dates": ["column2"]}
 ```
 
 In case you select `JSON` format, then options from the [read_json](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-json-reader) reader are available.
