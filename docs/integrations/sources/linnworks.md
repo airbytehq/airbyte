@@ -71,6 +71,7 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| 0.1.7   | 2024-02-22 | [35557](https://github.com/airbytehq/airbyte/pull/35557) | Manage dependencies with Poetry                                             |
 | 0.1.6   | 2024-01-31 | [34717](https://github.com/airbytehq/airbyte/pull/34717) | Update CDK and migrate to base image                                        |
 | 0.1.5   | 2022-11-20 | [19865](https://github.com/airbytehq/airbyte/pull/19865) | Bump Version                                                                |
 | 0.1.4   | 2021-11-24 | [8226](https://github.com/airbytehq/airbyte/pull/8226)   | Source Linnworks: improve streams ProcessedOrders and ProcessedOrderDetails |

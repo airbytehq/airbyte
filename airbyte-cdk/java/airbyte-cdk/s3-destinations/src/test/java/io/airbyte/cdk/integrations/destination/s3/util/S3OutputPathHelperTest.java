@@ -9,13 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.google.common.collect.Lists;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class S3OutputPathHelperTest {
 
   @Test
-  @DisplayName("getOutputPrefix")
+  // getOutputPrefix
   public void testGetOutputPrefix() {
     // No namespace
     assertEquals("bucket_path/stream_name", S3OutputPathHelper
