@@ -58,7 +58,6 @@ public class MssqlInitialLoadHandler {
   private final MssqlInitialLoadStateManager initialLoadStateManager;
   private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
   private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
-
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
@@ -247,4 +246,5 @@ public class MssqlInitialLoadHandler {
     LOGGER.info("Chunk size determined for pair: {}, is {}", pair, chunkSize);
     return chunkSize;
   }
+
 }

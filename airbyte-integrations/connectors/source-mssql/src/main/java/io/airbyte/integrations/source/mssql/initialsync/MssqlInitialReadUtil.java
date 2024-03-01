@@ -68,6 +68,7 @@ public class MssqlInitialReadUtil {
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialReadUtil.class);
   private static final int MIN_QUEUE_SIZE = 1000;
   private static final int MAX_QUEUE_SIZE = 10000;
+
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,
                                    Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToInitialLoadStatus) {
 
@@ -349,15 +350,16 @@ public class MssqlInitialReadUtil {
       final int size = sizeFromConfig.getAsInt();
       if (size < MIN_QUEUE_SIZE) {
         LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
-                MIN_QUEUE_SIZE);
+            MIN_QUEUE_SIZE);
         return MIN_QUEUE_SIZE;
       } else if (size > MAX_QUEUE_SIZE) {
         LOGGER.warn("Queue size is overridden to {} , which is the max allowed for safety.",
-                MAX_QUEUE_SIZE);
+            MAX_QUEUE_SIZE);
         return MAX_QUEUE_SIZE;
       }
       return size;
     }
     return MAX_QUEUE_SIZE;
   }
+
 }
