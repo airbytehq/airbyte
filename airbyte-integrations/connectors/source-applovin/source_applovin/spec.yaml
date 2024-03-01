@@ -6,6 +6,8 @@ connectionSpecification:
   required:
     - client_id
     - client_secret
+    - reporting_api_key
+    - start_date
   properties:
     client_id:
       type: string
@@ -15,6 +17,13 @@ connectionSpecification:
       type: string
       description: API access key client secret
       airbyte_secret: true
+    reporting_api_key:
+      type: string
+      description: API access key for reporting api
+      airbyte_secret: true
+    start_date:
+      type: string
+      description: start date for REPORTS only
     filter_campaigns_tracking_methods:
       type: array
       description: If present, only campaigns having this tracking methods will be used to fetch Creatives and Targets

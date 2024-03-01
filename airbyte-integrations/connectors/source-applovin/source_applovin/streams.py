@@ -22,18 +22,6 @@ class ApplovinStream(HttpStream):
             return '{}'
         yield from response.json()
 
-    def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: Optional[List[str]] = None,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        if stream_state is None:  # Indicative of schema discovery, we will return our schema from json file
-            yield self.generate_dummy_record()
-        else:
-            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 500:
             logging.warning("Received error: " + str(response.status_code) + " " + response.text)
@@ -169,13 +157,9 @@ class Targets(CampaignsSubStream):
 class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     url_base = "https://r.applovin.com/"
     report_type = ""
-    columns = ""
     cursor_field = "day"
 
     def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
-        print("init")
-        print(datetime.now())
-
         self.config = config
         self._state = {}
         super().__init__(
@@ -197,8 +181,6 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             stream_slice: Optional[Mapping[str, Any]] = None,
             stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        print("read")
-        print(datetime.now())
         default_start_date = self.config["start_date"]
 
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
@@ -220,8 +202,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             "end": "now",
             "format": "json",
             "report_type": self.report_type,
-            "columns": self.columns,
-            "limit": 1
+            "columns": self.columns
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -250,6 +231,7 @@ class AdvertiserReports(ApplovinIncrementalMetricsStream):
 
     def path(self, **kwargs) -> str:
         return "report"
+
 
 class ProbabilisticPublisherReports(ApplovinIncrementalMetricsStream):
     report_type = "publisher"
