@@ -72,7 +72,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------|
-| 1.2.0   | 2024-02-28 | [35680](https://github.com/airbytehq/airbyte/pull/35680) | Updates `dashboards` stream and adds `collections_items_dashboards` streams       |
+| 2.0.0   | 2024-03-01 | [35680](https://github.com/airbytehq/airbyte/pull/35680) | Updates `dashboards` stream, Base image migration: remove Dockerfile and use the python-connector-base image, migrated to poetry       |
 | 1.1.0   | 2023-10-31 | [31909](https://github.com/airbytehq/airbyte/pull/31909) | Add `databases` and `native_query_snippets` streams       |
 | 1.0.1   | 2023-07-20 | [28470](https://github.com/airbytehq/airbyte/pull/27777) | Update CDK to 0.47.0       |
 | 1.0.0   | 2023-06-27 | [27777](https://github.com/airbytehq/airbyte/pull/27777) | Remove Activity Stream     |

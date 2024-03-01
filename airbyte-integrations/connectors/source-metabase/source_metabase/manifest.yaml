@@ -105,7 +105,6 @@ streams:
   - "#/definitions/users_stream"
   - "#/definitions/databases_stream"
   - "#/definitions/native_query_snippets_stream"
-  - "#/definitions/collections_items_dashboards_stream"
 
 check:
   stream_names:
