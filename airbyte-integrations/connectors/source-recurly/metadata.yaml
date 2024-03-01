@@ -22,7 +22,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: 
+        message:
           Version 1.0.0 introduces a number of schema updates to the Recurly connector.
           To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.
         upgradeDeadline: "2024-03-05"
