@@ -19,13 +19,7 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              [
-                "events",
-                "issues",
-                "projects",
-                "project_detail",
-                "releases",
-              ]
+              ["events", "issues", "projects", "project_detail", "releases"]
   dockerRepository: airbyte/source-sentry
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   githubIssueLabel: source-sentry
