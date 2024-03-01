@@ -1248,53 +1248,86 @@ streams:
               - number
               - 'null'
           name:
-          menus:
-            type: array
-            items:
-              type: object
-              properties:
-                id:
-                  type: number
-                name:
-                  type: string
-                routes:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: number
-                      action:
-                        type: string
-                      options:
-                        type: object
-                        properties:
-                          menu_id:
-                            type: number
-                          group_ids:
-                            type: array
-                            items:
-                              type: number
-                      keypress:
-                        type: string
-                      option_text:
-                        type:
-                          - 'null'
-                          - string
-                      overflow_options:
-                        type: array
-                default:
-                  type: boolean
-          phone_number_ids:
-            type: array
-          phone_number_names:
-            type: array
-    transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - ivr_id
-            value: '{{ response["ivrs"]'
+            type:
+              - string
+              - 'null'
+          ivr_id:
+            type:
+              - number
+              - 'null'
+          default:
+            type:
+              - boolean
+              - 'null'
+  - name: ivr routes
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /ivr
+        type: HttpRequester
+        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - ivrs
+            - '*'
+      partition_router: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          action:
+            type:
+              - string
+              - 'null'
+          greeting:
+            type:
+              - string
+              - 'null'
+          id:
+            type:
+              - number
+              - 'null'
+          ivr_id:
+            type:
+              - number
+              - 'null'
+          ivr_menu_id:
+            type:
+              - number
+              - 'null'
+          keypress:
+            type:
+              - string
+              - 'null'
+          option_text:
+            type:
+              - string
+              - 'null'
+          options:
+            type:
+              - object
+              - 'null'
+          overflow_options:
+            type:
+              - array
+              - 'null'
 version: 0.65.0
 metadata:
   autoImportSchema:
