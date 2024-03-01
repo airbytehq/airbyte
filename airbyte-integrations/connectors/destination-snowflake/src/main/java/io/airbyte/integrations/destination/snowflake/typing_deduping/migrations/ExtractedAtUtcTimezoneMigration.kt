@@ -26,12 +26,8 @@ actual migration.
 class ExtractedAtUtcTimezoneMigration(private val database: JdbcDatabase) : Migration<SnowflakeState> {
   private val logger: Logger = LoggerFactory.getLogger(ExtractedAtUtcTimezoneMigration::class.java)
 
-  override fun requireMigration(state: SnowflakeState): Boolean {
-    return !state.extractedAtInUtc
-  }
-
-  override fun migrateIfNecessary(destinationHandler: DestinationHandler<SnowflakeState>, stream: StreamConfig, state: DestinationInitialState<SnowflakeState>): Migration.MigrationResult<SnowflakeState> {
-    if (!state.initialRawTableState.rawTableExists) {
+  override fun migrateIfNecessary(destinationHandler: DestinationHandler<SnowflakeState>, stream: StreamConfig, state: DestinationInitialStatus<SnowflakeState>): Migration.MigrationResult<SnowflakeState> {
+    if (!state.initialRawTableStatus.rawTableExists) {
       // The raw table doesn't exist. No migration necessary. Update the state.
       logger.info("Skipping ExtractedAtUtcTimezoneMigration for ${stream.id.originalNamespace}.${stream.id.originalName} because the raw table doesn't exist")
       return Migration.MigrationResult(state.destinationState.copy(extractedAtInUtc = true), false)
@@ -41,7 +37,10 @@ class ExtractedAtUtcTimezoneMigration(private val database: JdbcDatabase) : Migr
       logger.info("Skipping ExtractedAtUtcTimezoneMigration for ${stream.id.originalNamespace}.${stream.id.originalName} because the sync mode is OVERWRITE.")
       return Migration.MigrationResult(state.destinationState.copy(extractedAtInUtc = true), false)
     }
-
+    if (state.destinationState.extractedAtInUtc) {
+        logger.info("Skipping ExtractedAtUtcTimezoneMigration for ${stream.id.originalNamespace}.${stream.id.originalName}, already done.")
+        return Migration.MigrationResult(state.destinationState, false)
+    }
     val rawRecordTimezone: JsonNode? = database.queryJsons(
         { connection ->
           connection.prepareStatement(

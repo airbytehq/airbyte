@@ -19,8 +19,8 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
-import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableState;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
+import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
@@ -125,14 +125,14 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     return tableRowCounts;
   }
 
-  public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
+  public InitialRawTableStatus getInitialRawTableState(final StreamId id) throws Exception {
     final ResultSet tables = database.getMetaData().getTables(
         databaseName,
         id.rawNamespace(),
         id.rawName(),
         null);
     if (!tables.next()) {
-      return new InitialRawTableState(false, false, Optional.empty());
+      return new InitialRawTableStatus(false, false, Optional.empty());
     }
     // Snowflake timestamps have nanosecond precision, so decrement by 1ns
     // And use two explicit queries because COALESCE doesn't short-circuit.
@@ -151,7 +151,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
         // The query will always return exactly one record, so use .get(0)
         record -> record.getString("MIN_TIMESTAMP")).get(0));
     if (minUnloadedTimestamp.isPresent()) {
-      return new InitialRawTableState(true, true, minUnloadedTimestamp.map(Instant::parse));
+      return new InitialRawTableStatus(true, true, minUnloadedTimestamp.map(Instant::parse));
     }
 
     // If there are no unloaded raw records, then we can safely skip all existing raw records.
@@ -167,7 +167,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
                 FROM ${raw_table}
                 """)),
         record -> record.getString("MIN_TIMESTAMP")).get(0));
-    return new InitialRawTableState(true, false, maxTimestamp.map(Instant::parse));
+    return new InitialRawTableStatus(true, false, maxTimestamp.map(Instant::parse));
   }
 
   @Override
@@ -255,7 +255,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
   }
 
   @Override
-  public List<DestinationInitialState<SnowflakeState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
+  public List<DestinationInitialStatus<SnowflakeState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
     final Map<AirbyteStreamNameNamespacePair, SnowflakeState> destinationStates = super.getAllDestinationStates();
 
     List<StreamId> streamIds = streamConfigs.stream().map(StreamConfig::id).toList();
@@ -274,9 +274,9 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
           isSchemaMismatch = !existingSchemaMatchesStreamConfig(streamConfig, existingTable);
           isFinalTableEmpty = hasRowCount && tableRowCounts.get(namespace).get(name) == 0;
         }
-        final InitialRawTableState initialRawTableState = getInitialRawTableState(streamConfig.id());
+        final InitialRawTableStatus initialRawTableState = getInitialRawTableState(streamConfig.id());
         final SnowflakeState destinationState = destinationStates.getOrDefault(streamConfig.id().asPair(), toDestinationState(Jsons.emptyObject()));
-        return new DestinationInitialState<>(
+        return new DestinationInitialStatus<>(
             streamConfig,
             isFinalTablePresent,
             initialRawTableState,
