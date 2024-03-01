@@ -33,9 +33,6 @@
     "adset_name": {
       "type": ["null", "string"]
     },
-    "age_targeting": {
-      "type": ["null", "string"]
-    },
     "attribution_setting": {
       "type": ["null", "string"]
     },
@@ -165,22 +162,7 @@
     "engagement_rate_ranking": {
       "type": ["null", "string"]
     },
-    "estimated_ad_recall_rate": {
-      "type": ["null", "number"]
-    },
-    "estimated_ad_recall_rate_lower_bound": {
-      "type": ["null", "number"]
-    },
-    "estimated_ad_recall_rate_upper_bound": {
-      "type": ["null", "number"]
-    },
     "estimated_ad_recallers": {
-      "type": ["null", "number"]
-    },
-    "estimated_ad_recallers_lower_bound": {
-      "type": ["null", "number"]
-    },
-    "estimated_ad_recallers_upper_bound": {
       "type": ["null", "number"]
     },
     "frequency": {
@@ -191,9 +173,6 @@
     },
     "full_view_reach": {
       "type": ["null", "number"]
-    },
-    "gender_targeting": {
-      "type": ["null", "string"]
     },
     "impressions": {
       "type": ["null", "integer"]
@@ -215,12 +194,6 @@
     },
     "instant_experience_outbound_clicks": {
       "$ref": "ads_action_stats.json"
-    },
-    "labels": {
-      "type": ["null", "string"]
-    },
-    "location": {
-      "type": ["null", "string"]
     },
     "mobile_app_purchase_roas": {
       "$ref": "ads_action_stats.json"
