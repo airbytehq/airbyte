@@ -374,7 +374,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return new BigQueryRecordStandardConsumer(
         outputRecordCollector,
         () -> {
-          typerDeduper.prepareSchemasAndRawTables();
+          typerDeduper.prepareSchemasAndRunMigrations();
 
           // Set up our raw tables
           writeConfigs.get().forEach((streamId, uploader) -> {

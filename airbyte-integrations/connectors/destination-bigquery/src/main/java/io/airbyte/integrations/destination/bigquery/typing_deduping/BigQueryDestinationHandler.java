@@ -36,13 +36,14 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
-import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableState;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
+import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState.Impl;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,11 +83,11 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
     return BigInteger.ZERO.equals(bq.getTable(TableId.of(id.finalNamespace(), id.finalName())).getNumRows());
   }
 
-  public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
+  public InitialRawTableStatus getInitialRawTableState(final StreamId id) throws Exception {
     final Table rawTable = bq.getTable(TableId.of(id.rawNamespace(), id.rawName()));
     if (rawTable == null) {
       // Table doesn't exist. There are no unprocessed records, and no timestamp.
-      return new InitialRawTableState(false, false, Optional.empty());
+      return new InitialRawTableStatus(false, false, Optional.empty());
     }
 
     final FieldValue unloadedRecordTimestamp = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
@@ -102,7 +103,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
     // If it's not null, then we can return immediately - we've found some unprocessed records and their
     // timestamp.
     if (!unloadedRecordTimestamp.isNull()) {
-      return new InitialRawTableState(true, true, Optional.of(unloadedRecordTimestamp.getTimestampInstant()));
+      return new InitialRawTableStatus(true, true, Optional.of(unloadedRecordTimestamp.getTimestampInstant()));
     }
 
     final FieldValue loadedRecordTimestamp = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
@@ -116,10 +117,10 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
     // So we just need to get the timestamp of the most recent record.
     if (loadedRecordTimestamp.isNull()) {
       // Null timestamp because the table is empty. T+D can process the entire raw table during this sync.
-      return new InitialRawTableState(true, false, Optional.empty());
+      return new InitialRawTableStatus(true, false, Optional.empty());
     } else {
       // The raw table already has some records. T+D can skip all records with timestamp <= this value.
-      return new InitialRawTableState(true, false, Optional.of(loadedRecordTimestamp.getTimestampInstant()));
+      return new InitialRawTableStatus(true, false, Optional.of(loadedRecordTimestamp.getTimestampInstant()));
     }
   }
 
@@ -191,18 +192,18 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
   }
 
   @Override
-  public List<DestinationInitialState<MinimumDestinationState.Impl>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
-    final List<DestinationInitialState<MinimumDestinationState.Impl>> initialStates = new ArrayList<>();
+  public List<DestinationInitialStatus<Impl>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
+    final List<DestinationInitialStatus<MinimumDestinationState.Impl>> initialStates = new ArrayList<>();
     for (final StreamConfig streamConfig : streamConfigs) {
       final StreamId id = streamConfig.id();
       final Optional<TableDefinition> finalTable = findExistingTable(id);
-      final InitialRawTableState rawTableState = getInitialRawTableState(id);
-      initialStates.add(new DestinationInitialState<>(
+      final InitialRawTableStatus rawTableState = getInitialRawTableState(id);
+      initialStates.add(new DestinationInitialStatus<>(
           streamConfig,
           finalTable.isPresent(),
           rawTableState,
           finalTable.isPresent() && !existingSchemaMatchesStreamConfig(streamConfig, finalTable.get()),
-          !finalTable.isPresent() || isFinalTableEmpty(id),
+          finalTable.isEmpty() || isFinalTableEmpty(id),
           // Return a default state blob since we don't actually track state.
           new MinimumDestinationState.Impl(false)));
     }
