@@ -1329,17 +1329,3 @@ streams:
               - array
               - 'null'
 version: 0.65.0
-metadata:
-  autoImportSchema:
-    ivrs: true
-    calls: true
-    addresses: true
-    call legs: true
-    greetings: true
-    ivr menus: true
-    phone numbers: true
-    agents activity: true
-    agents overview: true
-    account overview: true
-    greeting categories: true
-    current queue activity: true
