@@ -40,20 +40,10 @@ public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateMan
   }
 
   @Override
-  public void updateOrderedColumnLoadState(final AirbyteStreamNameNamespacePair pair, final OrderedColumnLoadStatus ocLoadStatus) {
-    pairToOrderedColLoadStatus.put(pair, ocLoadStatus);
-  }
-
-  @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(getAirbyteStreamState(pair, streamStateForIncrementalRun));
-  }
-
-  @Override
-  public OrderedColumnLoadStatus getOrderedColumnLoadStatus(final AirbyteStreamNameNamespacePair pair) {
-    return pairToOrderedColLoadStatus.get(pair);
   }
 
   @Override

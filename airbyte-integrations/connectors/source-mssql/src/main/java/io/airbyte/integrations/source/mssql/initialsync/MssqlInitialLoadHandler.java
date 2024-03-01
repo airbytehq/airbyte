@@ -19,8 +19,8 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
-import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -227,11 +227,9 @@ public class MssqlInitialLoadHandler {
         : MssqlInitialSyncStateIterator.SYNC_CHECKPOINT_RECORDS;
 
     initialLoadStateManager.setStreamStateForIncrementalRunSupplier(streamStateForIncrementalRunSupplier);
-    initialLoadStateManager.setCheckpointFrequency(syncCheckpointRecords, syncCheckpointDuration);
-
 
     return AutoCloseableIterators.transformIterator(
-        r -> new SourceStateIterator<>(r, stream, initialLoadStateManager),
+        r -> new SourceStateIterator<>(r, stream, initialLoadStateManager, new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
         recordIterator, pair);
   }
 

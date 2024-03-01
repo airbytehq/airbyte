@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateManager {
 
-  private final Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOrderedColLoadStatus;
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
   private final CdcState cdcState;
 
@@ -84,11 +83,6 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
   }
 
   @Override
-  public void updateOrderedColumnLoadState(final AirbyteStreamNameNamespacePair pair, final OrderedColumnLoadStatus ocLoadStatus) {
-    pairToOrderedColLoadStatus.put(pair, ocLoadStatus);
-  }
-
-  @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     streamsThatHaveCompletedSnapshot.add(pair);
 
@@ -103,11 +97,6 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(globalState);
-  }
-
-  @Override
-  public OrderedColumnLoadStatus getOrderedColumnLoadStatus(final AirbyteStreamNameNamespacePair pair) {
-    return pairToOrderedColLoadStatus.get(pair);
   }
 
   @Override
