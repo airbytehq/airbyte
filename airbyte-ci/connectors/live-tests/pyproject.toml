@@ -56,7 +56,7 @@ poe_tasks = ["test"]
 mount_docker_socket = true
 
 [tool.poetry.scripts]
-run-regression-tests = "live_tests.regression_tests.cli:main"
+run-regression-tests = "live_tests.regression_tests.cli:run"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
