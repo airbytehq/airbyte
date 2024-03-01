@@ -14,17 +14,41 @@ spec:
       - api_key
       - domain
     properties:
-      domain:
-        type: string
-        order: 3
-        title: Domain
       api_key:
         type: string
-        order: 2
+        order: 1
         title: API Key
+        description: 'Freshdesk API Key. See the <a href="https://docs.airbyte.com/integrations/sources/freshdesk">docs</a> for more information on how to obtain this key.'
         airbyte_secret: true
+      domain:
+        type: string
+        order: 2
+        title: Domain
+        description: "Freshdesk domain"
+        examples:
+          - "myaccount.freshdesk.com"
+        pattern: "^[a-zA-Z0-9._-]*\\.freshdesk\\.com$"
+      start_date:
+        title: "Start Date"
+        type: "string"
+        order: 3
+        description: "UTC date and time. Any data created after this date will be replicated. If this parameter is not set, all data will be replicated."
+        format: "date-time"
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2020-12-01T00:00:00Z"
+      requests_per_minute:
+        type: integer
+        order: 4
+        title: "Requests per minute"
+        description: "The number of requests per minute that this source allowed to use. There is a rate limit of 50 requests per minute per app per account."
+      lookback_window:
+        type: integer
+        order: 5
+        title: Lookback Window
+        default: 14
+        description: Number of days for lookback window for the stream Satisfaction Ratings
     additionalProperties: true
-
 
 definitions:
   schema_loader:
@@ -36,66 +60,77 @@ definitions:
     username: "{{ config.get('api_key')}}"
     password: "X"
 
+  record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  paginator:
+    type: "DefaultPaginator"
+    pagination_strategy:
+      type: "PageIncrement"
+      page_size: 100
+      start_from_page: 1
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "per_page"
+    page_token_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "page"
+
+  error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: Retry-After
+
   requester:
-    type: HttpRequester
+    # This requester is used to count call credits used for requests to Freshdesk
+    type: CustomRequester
+    class_name: source_freshdesk.components.FreshdeskRequester
     path: "{{ parameters['path'] or parameters['name'] }}"
     url_base: "https://{{ config['domain'] }}/api/v2/"
     http_method: GET
-    request_headers: { }
+    request_headers: {}
     authenticator:
-      $ref: '#/definitions/basic_authenticator'
-
-  retriever:
-    type: SimpleRetriever
-    requester:
-      $ref: "#/definitions/requester"
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path: [ ]
-    paginator:
-      type: "DefaultPaginator"
-      pagination_strategy:
-        type: "PageIncrement"
-        page_size: 10
-        start_from_page: 1
-      page_size_option:
-        type: "RequestOption"
-        inject_into: "request_parameter"
-        field_name: "per_page"
-      page_token_option:
-        type: "RequestOption"
-        inject_into: "request_parameter"
-        field_name: "page"
+      $ref: "#/definitions/basic_authenticator"
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: Retry-After
+      $ref: "#/definitions/error_handler"
 
   base_stream:
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "#/definitions/retriever"
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator"
+
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_field: "{{ parameters['cursor_field'] }}"
+    start_datetime:
+      datetime: "{{ config.get('start_date') or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
+    start_time_option:
+      inject_into: request_parameter
+      field_name: "{{ parameters['cursor_filter'] }}"
+      type: RequestOption
 
   base_incremental_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      cursor_field: "updated_at"
-      start_datetime:
-        datetime: "{{ config.get('start_date') or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: "{{ parameters['cursor_filter'] }}"
-        type: RequestOption
+      $ref: "#/definitions/incremental_sync"
 
   agents:
     type: DeclarativeStream
@@ -230,32 +265,79 @@ definitions:
   contacts:
     type: DeclarativeStream
     $ref: "#/definitions/base_incremental_stream"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/incremental_sync/start_time_option"
+        field_name: "_updated_since"
     $parameters:
       name: "contacts"
+      cursor_field: "updated_at"
+      primary_key: "id"
       cursor_filter: "_updated_since"
 
   satisfaction_ratings:
     type: DeclarativeStream
     $ref: "#/definitions/base_incremental_stream"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/incremental_sync/start_time_option"
+        field_name: "created_since"
+      lookback_window: "P{{ config['lookback_window'] or 14 }}D"
     $parameters:
       name: "satisfaction_ratings"
+      primary_key: "id"
       path: "surveys/satisfaction_ratings"
+      cursor_field: "created_at"
       cursor_filter: "created_since"
 
   tickets:
     type: DeclarativeStream
-    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_stream/retriever/requester"
+        class_name: source_freshdesk.components.FreshdeskTicketsIncrementalRequester
+        request_parameters:
+          order_type: "asc"
+          order_by: "updated_at"
+          include: "description,requester,stats"
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "CustomPaginationStrategy"
+          class_name: source_freshdesk.components.FreshdeskTicketsPaginationStrategy
+          page_size: 2
+          start_from_page: 1
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      type: CustomIncrementalSync
+      class_name: source_freshdesk.components.FreshdeskTicketsIncrementalSync
+      start_time_option:
+        $ref: "#/definitions/incremental_sync/start_time_option"
+        field_name: "updated_since"
     $parameters:
       name: "tickets"
+      primary_key: "id"
+      cursor_field: "updated_at"
       cursor_filter: "updated_since"
 
   canned_responses:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "#/definitions/base_stream/retriever"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "#/definitions/base_stream/retriever/requester"
         path: "canned_response_folders/{{ stream_slice.id }}/responses"
       partition_router:
         type: SubstreamPartitionRouter
@@ -265,12 +347,13 @@ definitions:
             partition_field: id
     $parameters:
       name: "canned_responses"
+      primary_key: "id"
 
   conversations:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "#/definitions/base_stream/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "tickets/{{ stream_slice.id }}/conversations"
@@ -282,12 +365,13 @@ definitions:
             partition_field: id
     $parameters:
       name: "conversations"
+      primary_key: "id"
 
   discussion_forums:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "#/definitions/base_stream/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "discussions/categories/{{ stream_slice.id }}/forums"
@@ -299,12 +383,13 @@ definitions:
             partition_field: id
     $parameters:
       name: "discussion_forums"
+      primary_key: "id"
 
   discussion_topics:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "#/definitions/base_stream/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "discussions/forums/{{ stream_slice.id }}/topics"
@@ -315,13 +400,14 @@ definitions:
             parent_key: id
             partition_field: id
     $parameters:
-      name: "discussion_forums"
+      name: "discussion_topics"
+      primary_key: "id"
 
   discussion_comments:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "#/definitions/base_stream/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "discussions/topics/{{ stream_slice.id }}/comments"
@@ -333,12 +419,13 @@ definitions:
             partition_field: id
     $parameters:
       name: "discussion_comments"
+      primary_key: "id"
 
   solution_folders:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "#/definitions/base_stream/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "solutions/categories/{{ stream_slice.id }}/folders"
@@ -350,15 +437,16 @@ definitions:
             partition_field: id
     $parameters:
       name: "solution_folders"
+      primary_key: "id"
 
   solution_articles:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "#/definitions/base_stream/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "solutions/folders/{{ stream_slice.id }}/articles/folders"
+        path: "solutions/folders/{{ stream_slice.id }}/articles"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -367,6 +455,7 @@ definitions:
             partition_field: id
     $parameters:
       name: "solution_articles"
+      primary_key: "id"
 
 streams:
   - $ref: "#/definitions/agents"
