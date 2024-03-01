@@ -79,21 +79,37 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           id:
-            type: number
+            type:
+              - 'null'
+              - number
           zip:
-            type: string
+            type:
+              - 'null'
+              - string
           city:
-            type: string
+            type:
+              - 'null'
+              - string
           name:
-            type: string
+            type:
+              - 'null'
+              - string
           street:
-            type: string
+            type:
+              - 'null'
+              - string
           province:
-            type: string
+            type:
+              - 'null'
+              - string
           country_code:
-            type: string
+            type:
+              - 'null'
+              - string
           provider_reference:
-            type: string
+            type:
+              - 'null'
+              - string
   - name: agents activity
     type: DeclarativeStream
     retriever:
@@ -128,53 +144,101 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           via:
-            type: string
+            type:
+              - 'null'
+              - string
           name:
-            type: string
+            type:
+              - 'null'
+              - string
           agent_id:
-            type: number
+            type:
+              - 'null'
+              - number
           away_time:
-            type: number
+            type:
+              - 'null'
+              - number
           avatar_url:
-            type: string
+            type:
+              - 'null'
+              - string
           agent_state:
-            type: string
+            type:
+              - 'null'
+              - string
           online_time:
-            type: number
+            type:
+              - 'null'
+              - number
           calls_denied:
-            type: number
+            type:
+              - 'null'
+              - number
           calls_missed:
-            type: number
+            type:
+              - 'null'
+              - number
           available_time:
-            type: number
+            type:
+              - 'null'
+              - number
           calls_accepted:
-            type: number
+            type:
+              - 'null'
+              - number
           total_hold_time:
-            type: number
+            type:
+              - 'null'
+              - number
           total_talk_time:
-            type: number
+            type:
+              - 'null'
+              - number
           average_hold_time:
-            type: number
+            type:
+              - 'null'
+              - number
           average_talk_time:
-            type: number
+            type:
+              - 'null'
+              - number
           calls_put_on_hold:
-            type: number
+            type:
+              - 'null'
+              - number
           started_transfers:
-            type: number
+            type:
+              - 'null'
+              - number
           accepted_transfers:
-            type: number
+            type:
+              - 'null'
+              - number
           total_wrap_up_time:
-            type: number
+            type:
+              - 'null'
+              - number
           total_call_duration:
-            type: number
+            type:
+              - 'null'
+              - number
           transfers_only_time:
-            type: number
+            type:
+              - 'null'
+              - number
           average_wrap_up_time:
-            type: number
+            type:
+              - 'null'
+              - number
           started_third_party_conferences:
-            type: number
+            type:
+              - 'null'
+              - number
           accepted_third_party_conferences:
-            type: number
+            type:
+              - 'null'
+              - number
   - name: agents overview
     type: DeclarativeStream
     retriever:
@@ -208,49 +272,93 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           total_hold_time:
-            type: number
+            type:
+              - 'null'
+              - number
           total_talk_time:
-            type: number
+            type:
+              - 'null'
+              - number
           average_away_time:
-            type: number
+            type:
+              - 'null'
+              - number
           average_hold_time:
-            type: number
+            type:
+              - 'null'
+              - number
           average_talk_time:
-            type: number
+            type:
+              - 'null'
+              - number
           total_calls_denied:
-            type: number
+            type:
+              - 'null'
+              - number
           total_calls_missed:
-            type: number
+            type:
+              - 'null'
+              - number
           total_wrap_up_time:
-            type: number
+            type:
+              - 'null'
+              - number
           average_online_time:
-            type: number
+            type:
+              - 'null'
+              - number
           average_calls_denied:
-            type: number
+            type:
+              - 'null'
+              - number
           average_calls_missed:
-            type: number
+            type:
+              - 'null'
+              - number
           average_wrap_up_time:
-            type: number
+            type:
+              - 'null'
+              - number
           total_calls_accepted:
-            type: number
+            type:
+              - 'null'
+              - number
           average_available_time:
-            type: number
+            type:
+              - 'null'
+              - number
           average_calls_accepted:
-            type: number
+            type:
+              - 'null'
+              - number
           total_calls_put_on_hold:
-            type: number
+            type:
+              - 'null'
+              - number
           total_started_transfers:
-            type: number
+            type:
+              - 'null'
+              - number
           total_accepted_transfers:
-            type: number
+            type:
+              - 'null'
+              - number
           average_calls_put_on_hold:
-            type: number
+            type:
+              - 'null'
+              - number
           average_started_transfers:
-            type: number
+            type:
+              - 'null'
+              - number
           average_accepted_transfers:
-            type: number
+            type:
+              - 'null'
+              - number
           average_transfers_only_time:
-            type: number
+            type:
+              - 'null'
+              - number
   - name: greeting categories
     type: DeclarativeStream
     retriever:
@@ -286,9 +394,13 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           id:
-            type: number
+            type:
+              - 'null'
+              - number
           name:
-            type: string
+            type:
+              - 'null'
+              - string
   - name: greetings
     type: DeclarativeStream
     retriever:
@@ -323,31 +435,53 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           id:
-            type: string
+            type:
+              - 'null'
+              - string
           name:
-            type: string
+            type:
+              - 'null'
+              - string
           active:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           default:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           ivr_ids:
-            type: array
+            type:
+              - 'null'
+              - array
           pending:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           audio_url:
             type:
               - 'null'
               - string
           audio_name:
-            type: string
+            type:
+              - 'null'
+              - string
           category_id:
-            type: number
+            type:
+              - 'null'
+              - number
           default_lang:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           has_sub_settings:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           phone_number_ids:
-            type: array
+            type:
+              - 'null'
+              - array
             items:
               type: number
   - name: phone numbers
@@ -385,58 +519,107 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           id:
-            type: number
+            type:
+              - 'null'
+              - number
           name:
-            type: string
+            type:
+              - 'null'
+              - string
           number:
-            type: string
+            type:
+              - 'null'
+              - string
           external:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           location:
-            type: string
+            type:
+              - 'null'
+              - string
           priority:
-            type: number
+            type:
+              - 'null'
+              - number
           recorded:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           group_ids:
-            type: array
+            type:
+              - 'null'
+              - array
           line_type:
-            type: string
+            type:
+              - 'null'
+              - string
           toll_free:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           created_at:
-            type: string
+            type:
+              - 'null'
+              - string
           sms_enabled:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           capabilities:
-            type: object
+            type:
+              - 'null'
+              - object
             properties:
               mms:
-                type: boolean
+                type:
+                  - 'null'
+                  - boolean
               sms:
-                type: boolean
+                type:
+                  - 'null'
+                  - boolean
               voice:
-                type: boolean
+                type:
+                  - 'null'
+                  - boolean
               emergency_address:
-                type: boolean
+                type:
+                  - 'null'
+                  - boolean
           country_code:
-            type: string
+            type:
+              - 'null'
+              - string
           greeting_ids:
-            type: array
+            type:
+              - 'null'
+              - array
           transcription:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           voice_enabled:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           display_number:
-            type: string
+            type:
+              - 'null'
+              - string
           outbound_enabled:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           default_greeting_ids:
-            type: array
+            type:
+              - 'null'
+              - array
             items:
-              type: string
+              type:
+                - 'null'
+                - string
           categorised_greetings:
-            type: object
             properties:
               '1':
                 type: string
@@ -454,10 +637,14 @@ streams:
                 type: string
               '9':
                 type: string
+            type:
+              - 'null'
+              - object
           call_recording_consent:
-            type: string
+            type:
+              - 'null'
+              - string
           categorised_greetings_with_sub_settings:
-            type: object
             properties:
               '1':
                 type: object
@@ -489,6 +676,9 @@ streams:
                 type: string
               '9':
                 type: string
+            type:
+              - 'null'
+              - object
   - name: call legs
     type: DeclarativeStream
     retriever:
@@ -530,29 +720,49 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           id:
-            type: number
+            type:
+              - 'null'
+              - number
           type:
-            type: string
+            type:
+              - 'null'
+              - string
           call_id:
-            type: number
+            type:
+              - 'null'
+              - number
           user_id:
             type:
               - 'null'
               - number
           agent_id:
-            type: number
+            type:
+              - 'null'
+              - number
           duration:
-            type: number
+            type:
+              - 'null'
+              - number
           hold_time:
-            type: number
+            type:
+              - 'null'
+              - number
           talk_time:
-            type: number
+            type:
+              - 'null'
+              - number
           created_at:
-            type: string
+            type:
+              - 'null'
+              - string
           updated_at:
-            type: string
+            type:
+              - 'null'
+              - string
           call_charge:
-            type: string
+            type:
+              - 'null'
+              - string
           wrap_up_time:
             type:
               - 'null'
@@ -566,11 +776,15 @@ streams:
               - 'null'
               - number
           quality_issues:
-            type: array
             items:
               type: string
+            type:
+              - 'null'
+              - array
           completion_status:
-            type: string
+            type:
+              - 'null'
+              - string
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: '{{ config[''start_date''] }}'
@@ -634,59 +848,100 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           id:
-            type: number
+            type:
+              - number
+              - 'null'
           callback:
             type:
               - boolean
               - 'null'
           duration:
-            type: number
+            type:
+              - number
+              - 'null'
           direction:
-            type: string
+            type:
+              - string
+              - 'null'
           hold_time:
-            type: number
+            type:
+              - number
+              - 'null'
           talk_time:
             type:
-              - 'null'
               - number
+              - 'null'
           voicemail:
-            type: boolean
+            type:
+              - boolean
+              - 'null'
           wait_time:
-            type: number
+            type:
+              - number
+              - 'null'
           created_at:
-            type: string
+            type:
+              - string
+              - 'null'
           overflowed:
-            type: boolean
+            type:
+              - boolean
+              - 'null'
           updated_at:
-            type: string
+            type:
+              - string
+              - 'null'
+            format: date-time
           call_charge:
             type:
-              - 'null'
               - string
+              - 'null'
           phone_number:
-            type: string
+            type:
+              - string
+              - 'null'
           wrap_up_time:
-            type: number
+            type:
+              - number
+              - 'null'
           default_group:
-            type: boolean
+            type:
+              - boolean
+              - 'null'
           minutes_billed:
-            type: number
+            type:
+              - number
+              - 'null'
           quality_issues:
-            type: array
             items:
               type: string
+            type:
+              - array
+              - 'null'
           recording_time:
-            type: number
+            type:
+              - number
+              - 'null'
           phone_number_id:
-            type: number
+            type:
+              - number
+              - 'null'
           completion_status:
-            type: string
+            type:
+              - string
+              - 'null'
           consultation_time:
-            type: number
+            type:
+              - number
+              - 'null'
           not_recording_time:
-            type: number
+            type:
+              - number
+              - 'null'
           call_recording_consent:
-            type: string
+            type:
+              - string
+              - 'null'
           outside_business_hours:
             type:
               - boolean
@@ -746,17 +1001,29 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           agents_online:
-            type: number
+            type:
+              - number
+              - 'null'
           calls_waiting:
-            type: number
+            type:
+              - number
+              - 'null'
           average_wait_time:
-            type: number
+            type:
+              - number
+              - 'null'
           callbacks_waiting:
-            type: number
+            type:
+              - number
+              - 'null'
           longest_wait_time:
-            type: number
+            type:
+              - number
+              - 'null'
           embeddable_callbacks_waiting:
-            type: number
+            type:
+              - number
+              - 'null'
   - name: account overview
     type: DeclarativeStream
     retriever:
@@ -790,49 +1057,93 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           total_calls:
-            type: number
+            type:
+              - number
+              - 'null'
           total_hold_time:
-            type: number
+            type:
+              - number
+              - 'null'
           total_voicemails:
-            type: number
+            type:
+              - number
+              - 'null'
           average_hold_time:
-            type: number
+            type:
+              - number
+              - 'null'
           max_calls_waiting:
-            type: number
+            type:
+              - number
+              - 'null'
           total_wrap_up_time:
-            type: number
+            type:
+              - number
+              - 'null'
           max_queue_wait_time:
-            type: number
+            type:
+              - number
+              - 'null'
           total_call_duration:
-            type: number
+            type:
+              - number
+              - 'null'
           total_inbound_calls:
-            type: number
+            type:
+              - number
+              - 'null'
           average_wrap_up_time:
-            type: number
+            type:
+              - number
+              - 'null'
           total_callback_calls:
-            type: number
+            type:
+              - number
+              - 'null'
           total_outbound_calls:
-            type: number
+            type:
+              - number
+              - 'null'
           average_call_duration:
-            type: number
+            type:
+              - number
+              - 'null'
           average_time_to_answer:
-            type: number
+            type:
+              - number
+              - 'null'
           average_queue_wait_time:
-            type: number
+            type:
+              - number
+              - 'null'
           total_textback_requests:
-            type: number
+            type:
+              - number
+              - 'null'
           average_callback_wait_time:
-            type: number
+            type:
+              - number
+              - 'null'
           total_calls_abandoned_in_queue:
-            type: number
+            type:
+              - number
+              - 'null'
           total_embeddable_callback_calls:
-            type: number
+            type:
+              - number
+              - 'null'
           total_calls_outside_business_hours:
-            type: number
+            type:
+              - number
+              - 'null'
           total_calls_with_requested_voicemail:
-            type: number
+            type:
+              - number
+              - 'null'
           total_calls_with_exceeded_queue_wait_time:
-            type: number
+            type:
+              - number
+              - 'null'
   - name: ivrs
     type: DeclarativeStream
     retriever:
@@ -867,29 +1178,44 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           id:
-            type: number
+            type:
+              - number
+              - 'null'
           name:
-            type: string
+            type:
+              - string
+              - 'null'
           menus:
-            type: array
+            type:
+              - array
+              - 'null'
             items:
               type: object
               properties:
                 id:
-                  type: number
+                  type:
+                    - number
+                    - 'null'
                 name:
-                  type: string
+                  type:
+                    - string
+                    - 'null'
                 routes:
-                  type: array
+                  type:
+                    - array
+                    - 'null'
                   items:
                     type: object
                     properties:
                       id:
-                        type: number
+                        type:
+                          - number
+                          - 'null'
                       action:
-                        type: string
+                        type:
+                          - string
+                          - 'null'
                       options:
-                        type: object
                         properties:
                           menu_id:
                             type: number
@@ -897,20 +1223,33 @@ streams:
                             type: array
                             items:
                               type: number
+                        type:
+                          - object
+                          - 'null'
                       keypress:
-                        type: string
+                        type:
+                          - string
+                          - 'null'
                       option_text:
                         type:
-                          - 'null'
                           - string
+                          - 'null'
                       overflow_options:
-                        type: array
+                        type:
+                          - array
+                          - 'null'
                 default:
-                  type: boolean
+                  type:
+                    - boolean
+                    - 'null'
           phone_number_ids:
-            type: array
+            type:
+              - array
+              - 'null'
           phone_number_names:
-            type: array
+            type:
+              - array
+              - 'null'
   - name: ivr menus
     type: DeclarativeStream
     retriever:
@@ -945,9 +1284,10 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           id:
-            type: number
+            type:
+              - number
+              - 'null'
           name:
-            type: string
           menus:
             type: array
             items:
