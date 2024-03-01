@@ -106,36 +106,36 @@
       "type": ["null", "string"]
     },
     "dashcards": {
-        "type": ["null", "array"],
-        "items": {
-            "type": ["null", "object"],
-            "properties": {}
-        }
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {}
+      }
     },
     "param_fields": {
-        "type": ["null", "object"],
-        "properties": {}
+      "type": ["null", "object"],
+      "properties": {}
     },
     "param_values": {
-        "type": ["null", "object"],
-        "properties": {}
+      "type": ["null", "object"],
+      "properties": {}
     },
     "can_write": {
-        "type": ["null", "boolean"]
+      "type": ["null", "boolean"]
     },
     "tabs": {
-        "type": ["null", "array"],
-        "items": {
-            "type": ["null", "object"],
-            "properties": {}
-        }
-    },
-    "collection_authority_level": {
-        "type": ["null", "string"]
-    },
-    "collection": {
+      "type": ["null", "array"],
+      "items": {
         "type": ["null", "object"],
         "properties": {}
+      }
+    },
+    "collection_authority_level": {
+      "type": ["null", "string"]
+    },
+    "collection": {
+      "type": ["null", "object"],
+      "properties": {}
     }
   }
 }
