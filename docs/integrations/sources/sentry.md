@@ -47,7 +47,7 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|
-| 1.0.0   | 2024-01-01 |                                                          | Migrate to low-code.                                                                                               |
+| 1.0.0   | 2024-01-01 | [35755](https://github.com/airbytehq/airbyte/pull/35755) | Migrate to low-code.                                                                                               |
 | 0.4.1   | 2024-02-12 | [35145](https://github.com/airbytehq/airbyte/pull/35145) | Manage dependencies with Poetry.                                                                                   |
 | 0.4.0   | 2024-01-05 | [32957](https://github.com/airbytehq/airbyte/pull/32957) | Added undeclared fields to schema, Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.0   | 2023-09-05 | [30192](https://github.com/airbytehq/airbyte/pull/30192) | Added undeclared fields to schema                                                                                  |
