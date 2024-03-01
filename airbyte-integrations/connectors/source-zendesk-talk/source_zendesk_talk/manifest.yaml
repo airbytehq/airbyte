@@ -454,6 +454,10 @@ streams:
             type:
               - 'null'
               - array
+            items:
+              type:
+                - string
+                - number
           pending:
             type:
               - 'null'
@@ -483,7 +487,9 @@ streams:
               - 'null'
               - array
             items:
-              type: number
+              type:
+                - number
+                - string
   - name: phone numbers
     type: DeclarativeStream
     retriever:
@@ -620,23 +626,6 @@ streams:
                 - 'null'
                 - string
           categorised_greetings:
-            properties:
-              '1':
-                type: string
-              '2':
-                type: string
-              '3':
-                type: string
-              '4':
-                type: string
-              '6':
-                type: string
-              '7':
-                type: string
-              '8':
-                type: string
-              '9':
-                type: string
             type:
               - 'null'
               - object
@@ -645,37 +634,6 @@ streams:
               - 'null'
               - string
           categorised_greetings_with_sub_settings:
-            properties:
-              '1':
-                type: object
-                properties:
-                  voicemail_on_inside_business_hours:
-                    type: string
-                  voicemail_off_inside_business_hours:
-                    type: string
-                  voicemail_on_outside_business_hours:
-                    type: string
-                  voicemail_off_outside_business_hours:
-                    type: string
-              '2':
-                type: object
-                properties:
-                  voicemail_on:
-                    type: string
-                  voicemail_off:
-                    type: string
-              '3':
-                type: string
-              '4':
-                type: string
-              '6':
-                type: string
-              '7':
-                type: string
-              '8':
-                type: string
-              '9':
-                type: string
             type:
               - 'null'
               - object
@@ -759,6 +717,7 @@ streams:
             type:
               - 'null'
               - string
+            format: date-time
           call_charge:
             type:
               - 'null'
@@ -776,8 +735,6 @@ streams:
               - 'null'
               - number
           quality_issues:
-            items:
-              type: string
             type:
               - 'null'
               - array
@@ -913,8 +870,6 @@ streams:
               - number
               - 'null'
           quality_issues:
-            items:
-              type: string
             type:
               - array
               - 'null'
@@ -951,9 +906,13 @@ streams:
               - boolean
               - 'null'
           customer_requested_voicemail:
-            type: boolean
+            type:
+              - boolean
+              - 'null'
           recording_control_interactions:
-            type: number
+            type:
+              - number
+              - 'null'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: '{{ config[''start_date''] }}'
@@ -1216,13 +1175,6 @@ streams:
                           - string
                           - 'null'
                       options:
-                        properties:
-                          menu_id:
-                            type: number
-                          group_ids:
-                            type: array
-                            items:
-                              type: number
                         type:
                           - object
                           - 'null'
@@ -1246,10 +1198,18 @@ streams:
             type:
               - array
               - 'null'
+            items:
+              type:
+                - string
+                - number
           phone_number_names:
             type:
               - array
               - 'null'
+            items:
+              type:
+                - string
+                - number
   - name: ivr menus
     type: DeclarativeStream
     retriever:
