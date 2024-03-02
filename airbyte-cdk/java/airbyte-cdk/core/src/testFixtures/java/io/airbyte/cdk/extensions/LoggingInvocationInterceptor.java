@@ -7,15 +7,20 @@ package io.airbyte.cdk.extensions;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.Timeout.ThreadMode;
@@ -37,10 +42,11 @@ import org.slf4j.LoggerFactory;
 public class LoggingInvocationInterceptor implements InvocationInterceptor {
 
   private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(5);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingInvocationInterceptor.class);
 
   private static final class LoggingInvocationInterceptorHandler implements InvocationHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoggingInvocationInterceptor.class);
+    private static final Map<Integer, ExecutorService> executorByThread = new ConcurrentHashMap<>();
 
     private static final Pattern methodPattern = Pattern.compile("intercept(.*)Method");
 
@@ -70,22 +76,24 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
       } else {
         logLineSuffix = "execution of unknown intercepted call %s".formatted(methodName);
       }
-      LOGGER.info("Junit starting {}", logLineSuffix);
+      Instant start = Instant.now();
       try {
-        Instant start = Instant.now();
         final Object retVal;
         Duration timeout = getTimeout(invocationContext);
         if (timeout != null) {
+          LOGGER.info("Junit starting {} with timeout of {}", logLineSuffix, DurationFormatUtils.formatDurationWords(timeout.toMillis(), true, true));
           retVal = Assertions.assertTimeoutPreemptively(timeout, invocation::proceed);
         } else {
+          LOGGER.warn("Junit starting {} with no timeout", logLineSuffix);
           retVal = invocation.proceed();
         }
         long elapsedMs = Duration.between(start, Instant.now()).toMillis();
-        LOGGER.info("Junit completed {} in {} ms", logLineSuffix, elapsedMs);
+        LOGGER.info("Junit completed {} in {}", logLineSuffix, DurationFormatUtils.formatDurationWords(elapsedMs, true, true));
         return retVal;
       } catch (Throwable t) {
+        long elapsedMs = Duration.between(start, Instant.now()).toMillis();
         boolean belowCurrentCall = false;
-        List<String> stackToDisplay = new LinkedList<String>();
+        List<String> stackToDisplay = new LinkedList<>();
         for (String stackString : ExceptionUtils.getStackFrames(t)) {
           if (stackString.startsWith("\tat ")) {
             if (!belowCurrentCall && stackString.contains(LoggingInvocationInterceptor.class.getCanonicalName())) {
@@ -99,7 +107,8 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
           }
         }
         String stackTrace = StringUtils.join(stackToDisplay, "\n    ");
-        LOGGER.warn("Junit exception throw during {}:\n{}", logLineSuffix, stackTrace);
+        LOGGER.error("Junit exception throw during {} after {}:\n{}", logLineSuffix, DurationFormatUtils.formatDurationWords(elapsedMs, true, true),
+            stackTrace);
         throw t;
       }
     }
@@ -176,6 +185,10 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
                                   ReflectiveInvocationContext<Method> invocationContext,
                                   ExtensionContext extensionContext)
       throws Throwable {
+    if (!Modifier.isPublic(invocationContext.getExecutable().getModifiers())) {
+      LOGGER.warn("Junit method {}.{} is not declared as public", invocationContext.getExecutable().getDeclaringClass().getCanonicalName(),
+          invocationContext.getExecutable().getName());
+    }
     proxy.interceptTestMethod(invocation, invocationContext, extensionContext);
   }
 
