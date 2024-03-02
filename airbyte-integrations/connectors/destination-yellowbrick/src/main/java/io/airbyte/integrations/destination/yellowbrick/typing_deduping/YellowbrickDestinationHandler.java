@@ -51,7 +51,4 @@ public class YellowbrickDestinationHandler extends JdbcDestinationHandler {
     };
   }
 
-  // Do not use SVV_TABLE_INFO to get isFinalTableEmpty.
-  // See https://github.com/airbytehq/airbyte/issues/34357
-
 }
