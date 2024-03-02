@@ -1,4 +1,6 @@
-from unittest.mock import AsyncMock, MagicMock, mock_open, patch
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
+from pathlib import Path
 
 import pytest
 from airbyte_protocol.models import (
@@ -15,40 +17,62 @@ from airbyte_protocol.models import (
     StreamDescriptor,
 )
 from airbyte_protocol.models import Type as AirbyteMessageType
-from live_tests.backends.file_backend import FileBackend
+from live_tests.commons.backends import FileBackend
 
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize("messages, expected_writes", [
-    ([
-        AirbyteMessage(type=AirbyteMessageType.CATALOG, catalog=AirbyteCatalog(streams=[])),
-        AirbyteMessage(type=AirbyteMessageType.CONNECTION_STATUS, connectionStatus=AirbyteConnectionStatus(status=Status.SUCCEEDED)),
-        AirbyteMessage(type=AirbyteMessageType.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={}, emitted_at=123456789)),
-        AirbyteMessage(type=AirbyteMessageType.SPEC, spec=ConnectorSpecification(connectionSpecification={})),
-        AirbyteMessage(type=AirbyteMessageType.STATE, state=AirbyteStateMessage(data={"test": "value"})),
-    ],
+@pytest.mark.parametrize(
+    "messages, expected_writes",
     [
-        ("catalog.jsonl", '{"streams": []}\n'),
-        ("connection_status.jsonl", '{"status": "SUCCEEDED", "message": null}\n'),
-        ("test_stream/records.jsonl", '{"namespace": null, "stream": "test_stream", "data": {}, "emitted_at": 123456789, "meta": null}\n'),
-        ("spec.jsonl", '{"documentationUrl": null, "changelogUrl": null, "connectionSpecification": {}, "supportsIncremental": null, "supportsNormalization": false, "supportsDBT": false, "supported_destination_sync_modes": null, "advanced_auth": null, "protocol_version": null}\n'),
-        ("_global_states/states.jsonl", '{"type": null, "stream": null, "global_": null, "data": {"test": "value"}, "sourceStats": null, "destinationStats": null}\n'),
-    ]),
-])
-async def test_write(messages, expected_writes):
-    output_directory = "fake-output-directory"
-
-    m = mock_open()
-    with patch("builtins.open", m), patch("os.makedirs") as mock_makedirs:
-        backend = FileBackend(output_directory)
-        await backend.write((msg for msg in messages))  # Use a generator
-
-    for stream in {"test_stream"}:
-        mock_makedirs.assert_any_call(f"{output_directory}/{stream}", exist_ok=True)
-
-    for file_name, content in expected_writes:
-        m.assert_any_call(f"{output_directory}/{file_name}", "w")
-        m().write.assert_any_call(content)
+        (
+            [
+                AirbyteMessage(type=AirbyteMessageType.CATALOG, catalog=AirbyteCatalog(streams=[])),
+                AirbyteMessage(
+                    type=AirbyteMessageType.CONNECTION_STATUS,
+                    connectionStatus=AirbyteConnectionStatus(status=Status.SUCCEEDED),
+                ),
+                AirbyteMessage(
+                    type=AirbyteMessageType.RECORD,
+                    record=AirbyteRecordMessage(stream="test_stream", data={}, emitted_at=123456789),
+                ),
+                AirbyteMessage(
+                    type=AirbyteMessageType.SPEC,
+                    spec=ConnectorSpecification(connectionSpecification={}),
+                ),
+                AirbyteMessage(
+                    type=AirbyteMessageType.STATE,
+                    state=AirbyteStateMessage(data={"test": "value"}),
+                ),
+            ],
+            [
+                ("catalog.jsonl", '{"streams": []}\n'),
+                (
+                    "connection_status.jsonl",
+                    '{"status": "SUCCEEDED", "message": null}\n',
+                ),
+                (
+                    "test_stream_records.jsonl",
+                    '{"namespace": null, "stream": "test_stream", "data": {}, "emitted_at": 123456789, "meta": null}\n',
+                ),
+                (
+                    "spec.jsonl",
+                    '{"documentationUrl": null, "changelogUrl": null, "connectionSpecification": {}, "supportsIncremental": null, "supportsNormalization": false, "supportsDBT": false, "supported_destination_sync_modes": null, "advanced_auth": null, "protocol_version": null}\n',
+                ),
+                (
+                    "_global_states_states.jsonl",
+                    '{"type": null, "stream": null, "global_": null, "data": {"test": "value"}, "sourceStats": null, "destinationStats": null}\n',
+                ),
+            ],
+        ),
+    ],
+)
+def test_write(tmp_path, messages, expected_writes):
+    backend = FileBackend(tmp_path)
+    backend.write(messages)
+    for expected_file, expected_content in expected_writes:
+        expected_path = Path(tmp_path / expected_file)
+        assert expected_path.exists()
+        content = expected_path.read_text()
+        assert content == expected_content
 
 
 @pytest.mark.asyncio
@@ -66,17 +90,26 @@ async def test_write(messages, expected_writes):
             id="connection-status-is-in-messages-by-type",
         ),
         pytest.param(
-            AirbyteMessage(type=AirbyteMessageType.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={}, emitted_at=123456789)),
+            AirbyteMessage(
+                type=AirbyteMessageType.RECORD,
+                record=AirbyteRecordMessage(stream="test_stream", data={}, emitted_at=123456789),
+            ),
             {"records": {"test_stream": 1}},
             id="record-is-in-messages-by-type",
         ),
         pytest.param(
-            AirbyteMessage(type=AirbyteMessageType.SPEC, spec=ConnectorSpecification(connectionSpecification={})),
+            AirbyteMessage(
+                type=AirbyteMessageType.SPEC,
+                spec=ConnectorSpecification(connectionSpecification={}),
+            ),
             {"spec": 1},
             id="spec-is-in-messages-by-type",
         ),
         pytest.param(
-            AirbyteMessage(type=AirbyteMessageType.STATE, state=AirbyteStateMessage(data={"test": "value"})),
+            AirbyteMessage(
+                type=AirbyteMessageType.STATE,
+                state=AirbyteStateMessage(data={"test": "value"}),
+            ),
             {"states": {"_global_states": 1}},
             id="state-without-stream-descriptor-is-in-messages-by-type",
         ),
@@ -85,7 +118,9 @@ async def test_write(messages, expected_writes):
                 type=AirbyteMessageType.STATE,
                 state=AirbyteStateMessage(
                     data={"test": "value"},
-                    stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="test-name", namespace=None)))),
+                    stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="test-name", namespace=None)),
+                ),
+            ),
             {"states": {"test-name": 1}},
             id="state-with-stream-descriptor-and-no-namespace-is-in-messages-by-type",
         ),
@@ -94,20 +129,25 @@ async def test_write(messages, expected_writes):
                 type=AirbyteMessageType.STATE,
                 state=AirbyteStateMessage(
                     data={"test": "value"},
-                    stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="test-name", namespace="test-namespace")))),
+                    stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="test-name", namespace="test-namespace")),
+                ),
+            ),
             {"states": {"test-name_test-namespace": 1}},
             id="state-with-stream-descriptor-and-namespace-is-in-messages-by-type",
         ),
         pytest.param(
-            AirbyteMessage(type=AirbyteMessageType.LOG, log=AirbyteLogMessage(level=Level.WARN, message="")),
-            None,
-            id="log-is-not-in-messages-by-type",
+            AirbyteMessage(
+                type=AirbyteMessageType.LOG,
+                log=AirbyteLogMessage(level=Level.WARN, message=""),
+            ),
+            {"logs": 1},
+            id="log-is-in-messages-by-type",
         ),
         pytest.param("Not an AirbyteMessage", None, id="non-airbyte-message-is-ignored"),
     ],
 )
 def test_get_messages_by_type(message, expected):
-    messages_by_type = FileBackend._get_messages_by_type((msg for msg in [message]))  # Single-item generator
+    messages_by_type = FileBackend._get_messages_by_type([message])
 
     if expected is None:
         assert all(len(v) == 0 for v in messages_by_type.values() if isinstance(v, list))
