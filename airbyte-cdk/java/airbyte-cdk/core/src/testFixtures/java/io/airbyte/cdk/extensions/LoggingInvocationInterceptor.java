@@ -16,6 +16,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.Timeout.ThreadMode;
 import org.junit.jupiter.api.extension.DynamicTestInvocationContext;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.InvocationInterceptor;
@@ -32,6 +35,8 @@ import org.slf4j.LoggerFactory;
  * resources/META-INF/services/org.junit.jupiter.api.extension.Extension
  */
 public class LoggingInvocationInterceptor implements InvocationInterceptor {
+
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(5);
 
   private static final class LoggingInvocationInterceptorHandler implements InvocationHandler {
 
@@ -68,7 +73,13 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
       LOGGER.info("Junit starting {}", logLineSuffix);
       try {
         Instant start = Instant.now();
-        Object retVal = invocation.proceed();
+        final Object retVal;
+        Duration timeout = getTimeout(invocationContext);
+        if (timeout != null) {
+          retVal = Assertions.assertTimeoutPreemptively(timeout, invocation::proceed);
+        } else {
+          retVal = invocation.proceed();
+        }
         long elapsedMs = Duration.between(start, Instant.now()).toMillis();
         LOGGER.info("Junit completed {} in {} ms", logLineSuffix, elapsedMs);
         return retVal;
@@ -91,6 +102,26 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
         LOGGER.warn("Junit exception throw during {}:\n{}", logLineSuffix, stackTrace);
         throw t;
       }
+    }
+
+    private static Duration getTimeout(ReflectiveInvocationContext<Method> invocationContext) {
+      Duration timeout = DEFAULT_TIMEOUT;
+      if (invocationContext.getExecutable()instanceof Method m) {
+        Timeout timeoutAnnotation = m.getAnnotation(Timeout.class);
+        if (timeoutAnnotation == null) {
+          timeoutAnnotation = invocationContext.getTargetClass().getAnnotation(Timeout.class);
+        }
+        if (timeoutAnnotation != null) {
+          if (timeoutAnnotation.threadMode() == ThreadMode.SAME_THREAD) {
+            return null;
+          }
+          timeout = Duration.ofMillis(timeoutAnnotation.unit().toMillis(timeoutAnnotation.value()));
+        }
+      }
+      if (timeout.compareTo(Duration.ofHours(1)) > 0) {
+        return DEFAULT_TIMEOUT;
+      }
+      return timeout;
     }
 
   }

@@ -16,15 +16,15 @@ data:
   name: Recurly
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-recurly
-  supportLevel: community
+  supportLevel: archived
   tags:
     - language:python
 metadataSpecVersion: "1.0"
