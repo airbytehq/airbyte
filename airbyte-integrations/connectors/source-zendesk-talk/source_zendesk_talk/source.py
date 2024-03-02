@@ -9,6 +9,7 @@ import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from requests.auth import HTTPBasicAuth
@@ -75,3 +76,8 @@ class SourceZendeskTalk(AbstractSource):
             IVRs(**common_kwargs),
             PhoneNumbers(**common_kwargs),
         ]
+
+
+class SourceZendeskTalkTwo(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
