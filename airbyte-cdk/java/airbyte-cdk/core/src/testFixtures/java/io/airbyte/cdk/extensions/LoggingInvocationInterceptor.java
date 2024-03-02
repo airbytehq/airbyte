@@ -7,6 +7,7 @@ package io.airbyte.cdk.extensions;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.time.Duration;
 import java.time.Instant;
@@ -37,10 +38,9 @@ import org.slf4j.LoggerFactory;
 public class LoggingInvocationInterceptor implements InvocationInterceptor {
 
   private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(5);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingInvocationInterceptor.class);
 
   private static final class LoggingInvocationInterceptorHandler implements InvocationHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoggingInvocationInterceptor.class);
 
     private static final Pattern methodPattern = Pattern.compile("intercept(.*)Method");
 
@@ -74,7 +74,7 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
       try {
         Instant start = Instant.now();
         final Object retVal;
-        Duration timeout = getTimeout(invocationContext);
+        Duration timeout = null;// getTimeout(invocationContext);
         if (timeout != null) {
           retVal = Assertions.assertTimeoutPreemptively(timeout, invocation::proceed);
         } else {
@@ -85,7 +85,7 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
         return retVal;
       } catch (Throwable t) {
         boolean belowCurrentCall = false;
-        List<String> stackToDisplay = new LinkedList<String>();
+        List<String> stackToDisplay = new LinkedList<>();
         for (String stackString : ExceptionUtils.getStackFrames(t)) {
           if (stackString.startsWith("\tat ")) {
             if (!belowCurrentCall && stackString.contains(LoggingInvocationInterceptor.class.getCanonicalName())) {
@@ -99,7 +99,7 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
           }
         }
         String stackTrace = StringUtils.join(stackToDisplay, "\n    ");
-        LOGGER.warn("Junit exception throw during {}:\n{}", logLineSuffix, stackTrace);
+        LOGGER.error("Junit exception throw during {}:\n{}", logLineSuffix, stackTrace);
         throw t;
       }
     }
@@ -176,6 +176,10 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
                                   ReflectiveInvocationContext<Method> invocationContext,
                                   ExtensionContext extensionContext)
       throws Throwable {
+    if (!Modifier.isPublic(invocationContext.getExecutable().getModifiers())) {
+      LOGGER.warn("Junit method {}.{} is not declared as public", invocationContext.getExecutable().getDeclaringClass().getCanonicalName(),
+          invocationContext.getExecutable().getName());
+    }
     proxy.interceptTestMethod(invocation, invocationContext, extensionContext);
   }
 

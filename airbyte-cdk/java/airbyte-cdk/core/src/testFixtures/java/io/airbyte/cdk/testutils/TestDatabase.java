@@ -193,7 +193,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     try {
       getDatabase().query(ctx -> {
         sql.forEach(statement -> {
-          LOGGER.debug("{}", statement);
+          LOGGER.info("executing SQL statement {}", statement);
           ctx.execute(statement);
         });
         return null;
