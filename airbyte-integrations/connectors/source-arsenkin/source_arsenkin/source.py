@@ -101,11 +101,11 @@ class Ads(ArsenkinStream):
                     for position, ads_data in block_results.items():
                         record: dict[str, str | int] = {
                             "device": device,
-                            "region_yandex": region,
+                            "region_yandex": int(region),
                             "keyword": keywords[keyword_index],
                             "block": block,
                             "host": ads_data["host"],
-                            "position_in_block": position,
+                            "position_in_block": int(position),
                             "title": ads_data["title"],
                             "snippet": ads_data["snippet"]
                         }
