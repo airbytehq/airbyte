@@ -194,7 +194,7 @@ streams:
             type:
               - 'null'
               - string
-  - name: agents activity
+  - name: agents_activity
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
@@ -323,7 +323,7 @@ streams:
             type:
               - 'null'
               - number
-  - name: agents overview
+  - name: agents_overview
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
@@ -443,7 +443,7 @@ streams:
             type:
               - 'null'
               - number
-  - name: greeting categories
+  - name: greeting_categories
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
@@ -574,7 +574,7 @@ streams:
               type:
                 - number
                 - string
-  - name: phone numbers
+  - name: phone_numbers
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
@@ -721,7 +721,7 @@ streams:
             type:
               - 'null'
               - object
-  - name: call legs
+  - name: call_legs
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
@@ -1005,7 +1005,7 @@ streams:
         inject_into: request_parameter
       cursor_datetime_formats:
         - '%Y-%m-%dT%H:%M:%SZ'
-  - name: current queue activity
+  - name: current_queue_activity
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
@@ -1061,7 +1061,7 @@ streams:
             type:
               - number
               - 'null'
-  - name: account overview
+  - name: account_overview
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
@@ -1290,7 +1290,7 @@ streams:
               type:
                 - string
                 - number
-  - name: ivr menus
+  - name: ivr_menus
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
@@ -1339,7 +1339,7 @@ streams:
             type:
               - boolean
               - 'null'
-  - name: ivr routes
+  - name: ivr_routes
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
