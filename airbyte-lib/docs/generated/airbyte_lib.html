@@ -319,7 +319,7 @@ working directory.</p>
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_secret</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">secret_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">source</span><span class="p">:</span> <span class="n"><a href="#SecretSource">SecretSource</a></span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="#SecretSource">SecretSource</a></span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n"><a href="#SecretSource.ANY">SecretSource.ANY</a></span><span class="p">:</span> <span class="mi">3</span><span class="o">&gt;</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">prompt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+        <span class="name">get_secret</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">secret_name</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">source</span><span class="p">:</span> <span class="n"><a href="#SecretSource">SecretSource</a></span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="#SecretSource">SecretSource</a></span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n"><a href="#SecretSource.ANY">SecretSource.ANY</a></span><span class="p">:</span> <span class="mi">4</span><span class="o">&gt;</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">prompt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
 
         
     </div>
@@ -476,10 +476,22 @@ methods except for __getitem__, __iter__, and __len__.</p>
     
 
                             </div>
+                            <div id="SecretSource.DOTENV" class="classattr">
+                                <div class="attr variable">
+            <span class="name">DOTENV</span>        =
+<span class="default_value">&lt;<a href="#SecretSource.DOTENV">SecretSource.DOTENV</a>: 2&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SecretSource.DOTENV"></a>
+    
+    
+
+                            </div>
                             <div id="SecretSource.GOOGLE_COLAB" class="classattr">
                                 <div class="attr variable">
             <span class="name">GOOGLE_COLAB</span>        =
-<span class="default_value">&lt;<a href="#SecretSource.GOOGLE_COLAB">SecretSource.GOOGLE_COLAB</a>: 2&gt;</span>
+<span class="default_value">&lt;<a href="#SecretSource.GOOGLE_COLAB">SecretSource.GOOGLE_COLAB</a>: 3&gt;</span>
 
         
     </div>
@@ -491,7 +503,7 @@ methods except for __getitem__, __iter__, and __len__.</p>
                             <div id="SecretSource.ANY" class="classattr">
                                 <div class="attr variable">
             <span class="name">ANY</span>        =
-<span class="default_value">&lt;<a href="#SecretSource.ANY">SecretSource.ANY</a>: 3&gt;</span>
+<span class="default_value">&lt;<a href="#SecretSource.ANY">SecretSource.ANY</a>: 4&gt;</span>
 
         
     </div>
@@ -503,7 +515,7 @@ methods except for __getitem__, __iter__, and __len__.</p>
                             <div id="SecretSource.PROMPT" class="classattr">
                                 <div class="attr variable">
             <span class="name">PROMPT</span>        =
-<span class="default_value">&lt;<a href="#SecretSource.PROMPT">SecretSource.PROMPT</a>: 4&gt;</span>
+<span class="default_value">&lt;<a href="#SecretSource.PROMPT">SecretSource.PROMPT</a>: 5&gt;</span>
 
         
     </div>

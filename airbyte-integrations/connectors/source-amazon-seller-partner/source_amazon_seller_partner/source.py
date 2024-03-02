@@ -65,6 +65,7 @@ from source_amazon_seller_partner.streams import (
     StrandedInventoryUiReport,
     VendorDirectFulfillmentShipping,
     VendorInventoryReports,
+    VendorOrders,
     VendorSalesReports,
     VendorTrafficReport,
     XmlAllOrdersDataByOrderDataGeneral,
@@ -116,10 +117,11 @@ class SourceAmazonSellerPartner(AbstractSource):
 
             if config.get("account_type", "Seller") == "Seller":
                 stream_to_check = Orders(**stream_kwargs)
+                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
             else:
-                stream_to_check = VendorSalesReports(**stream_kwargs)
-
-            next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
+                stream_to_check = VendorOrders(**stream_kwargs)
+                stream_slices = list(stream_to_check.stream_slices(sync_mode=SyncMode.full_refresh))
+                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
 
             return True, None
         except Exception as e:
@@ -183,6 +185,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             FbaInventoryPlaningReport,
             LedgerSummaryViewReport,
             FbaReimbursementsReports,
+            VendorOrders,
         ]
 
         # TODO: Remove after Brand Analytics will be enabled in CLOUD: https://github.com/airbytehq/airbyte/issues/32353

@@ -14,13 +14,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDestinationHandler;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -28,6 +32,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,11 +133,17 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
+  protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database) {
+    return new PostgresDestinationHandler(databaseName, database);
+  }
+
+  @Override
   public boolean isV2Destination() {
     return true;
   }
 
   public static void main(final String[] args) throws Exception {
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(PSQLException.class);
     final Destination destination = PostgresDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", PostgresDestination.class);
     new IntegrationRunner(destination).run(args);

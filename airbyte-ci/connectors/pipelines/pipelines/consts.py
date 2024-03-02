@@ -88,6 +88,7 @@ class ContextState(Enum):
 class INTERNAL_TOOL_PATHS(str, Enum):
     CI_CREDENTIALS = "airbyte-ci/connectors/ci_credentials"
     CONNECTOR_OPS = "airbyte-ci/connectors/connector_ops"
+    CONNECTORS_QA = "airbyte-ci/connectors/connectors_qa"
     METADATA_SERVICE = "airbyte-ci/connectors/metadata_service/lib"
 
 

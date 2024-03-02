@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 """
@@ -10,7 +11,6 @@ source connector.
 
 WARNING: Do not modify this file.
 """
-
 
 # Declarative Source
 class SourcePaypalTransaction(YamlDeclarativeSource):

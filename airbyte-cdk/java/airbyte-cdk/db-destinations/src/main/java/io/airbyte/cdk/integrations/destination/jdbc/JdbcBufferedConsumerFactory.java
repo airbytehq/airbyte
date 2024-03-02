@@ -161,7 +161,7 @@ public class JdbcBufferedConsumerFactory {
                                                  final Collection<WriteConfig> writeConfigs,
                                                  final TyperDeduper typerDeduper) {
     return () -> {
-      typerDeduper.prepareTables();
+      typerDeduper.prepareSchemasAndRunMigrations();
       LOGGER.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
       final List<String> queryList = new ArrayList<>();
       for (final WriteConfig writeConfig : writeConfigs) {
@@ -181,6 +181,7 @@ public class JdbcBufferedConsumerFactory {
       }
       sqlOperations.executeTransaction(database, queryList);
       LOGGER.info("Preparing raw tables in destination completed.");
+      typerDeduper.prepareFinalTables();
     };
   }
 

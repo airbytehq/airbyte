@@ -789,7 +789,7 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
-    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, true);
+    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, supportsNormalization());
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
@@ -820,7 +820,7 @@ public abstract class DestinationAcceptanceTest {
             .withType(Type.STATE)
             .withState(new AirbyteStateMessage().withData(
                 Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
-    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, true);
+    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false);
 
     final List<AirbyteMessage> expectedMessagesAfterSecondSync = new ArrayList<>();
     expectedMessagesAfterSecondSync.addAll(firstSyncMessages);
@@ -853,22 +853,11 @@ public abstract class DestinationAcceptanceTest {
     final String defaultSchema = getDefaultSchema(config);
     retrieveRawRecordsAndAssertSameMessages(catalog, expectedMessagesAfterSecondSync,
         defaultSchema);
-    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog,
-        defaultSchema);
-    assertSameMessages(expectedMessages, actualMessages, true);
-  }
-
-  private String generateBigString(final int addExtraCharacters) {
-    final int length = getMaxRecordValueLimit() + addExtraCharacters;
-    return RANDOM
-        .ints('a', 'z' + 1)
-        .limit(length)
-        .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-        .toString();
-  }
-
-  protected int getGenerateBigStringAddExtraCharacters() {
-    return 0;
+    if (normalizationFromDefinition()) {
+      final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog,
+          defaultSchema);
+      assertSameMessages(expectedMessages, actualMessages, true);
+    }
   }
 
   /**
@@ -1347,7 +1336,7 @@ public abstract class DestinationAcceptanceTest {
 
     destination.close();
 
-    if (!runNormalization || (runNormalization && supportsInDestinationNormalization())) {
+    if (!runNormalization || (supportsInDestinationNormalization())) {
       return destinationOutput;
     }
 
@@ -1858,6 +1847,10 @@ public abstract class DestinationAcceptanceTest {
           });
     }
 
+  }
+
+  private boolean supportsNormalization() {
+    return supportsInDestinationNormalization() || normalizationFromDefinition();
   }
 
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
