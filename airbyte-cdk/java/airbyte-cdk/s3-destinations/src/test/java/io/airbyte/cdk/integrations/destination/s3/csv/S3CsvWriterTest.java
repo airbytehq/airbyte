@@ -45,8 +45,12 @@ import org.apache.commons.csv.CSVFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.Timeout.ThreadMode;
 import org.mockito.MockedConstruction;
 
+@Timeout(value = 1,
+         threadMode = ThreadMode.SAME_THREAD)
 class S3CsvWriterTest {
 
   public static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
