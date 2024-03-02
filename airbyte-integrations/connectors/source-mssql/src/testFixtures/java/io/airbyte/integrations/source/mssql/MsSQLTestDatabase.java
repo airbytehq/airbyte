@@ -74,7 +74,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   static public MsSQLTestDatabase in(final BaseImage imageName, final ContainerModifier... modifiers) {
     final var container = new MsSQLContainerFactory().shared(imageName.reference, modifiers);
     final MsSQLTestDatabase testdb;
-    if (false) {
+    if (true) {
       testdb = new MsSqlTestDatabaseWithBackgroundThreads(container);
     } else {
       testdb = new MsSQLTestDatabase(container);

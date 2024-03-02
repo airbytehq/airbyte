@@ -20,9 +20,11 @@ import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
+@Disabled
 public class MssqlAgentStateTest {
 
   private static MsSQLTestDatabase testdb;

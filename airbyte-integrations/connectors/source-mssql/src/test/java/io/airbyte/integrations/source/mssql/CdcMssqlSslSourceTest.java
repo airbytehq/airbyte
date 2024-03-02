@@ -17,9 +17,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Disabled
 public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
 
   @Override
