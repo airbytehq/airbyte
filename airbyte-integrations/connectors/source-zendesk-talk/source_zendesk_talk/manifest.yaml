@@ -348,6 +348,13 @@ streams:
           field_path:
             - agents_overview
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "current_timestamp"
+            # the python implementation didn't normalize to utc, could cause transient problems
+            value: "{{ now_utc().strftime('%s') }}"
     primary_key: []
     schema_loader:
       type: InlineSchemaLoader
@@ -1030,6 +1037,13 @@ streams:
           field_path:
             - current_queue_activity
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "current_timestamp"
+            # the python implementation didn't normalize to utc, could cause transient problems
+            value: "{{ now_utc().strftime('%s') }}"
     primary_key: []
     schema_loader:
       type: InlineSchemaLoader
@@ -1086,6 +1100,13 @@ streams:
           field_path:
             - account_overview
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "current_timestamp"
+            # the python implementation didn't normalize to utc, could cause transient problems
+            value: "{{ now_utc().strftime('%s') }}"
     primary_key: []
     schema_loader:
       type: InlineSchemaLoader
