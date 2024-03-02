@@ -1,8 +1,12 @@
+type: DeclarativeSource
+
 spec:
   type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/zendesk-talk
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
+    title: Source Zendesk Talk Spec
     required:
       - start_date
       - subdomain
@@ -16,11 +20,11 @@ spec:
         type: string
         order: 2
         title: Start Date
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        format: "date-time"
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         description: The date from which you'd like to replicate data for Zendesk Talk API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.
         examples:
-          - 2020-10-15T00:00:00Z
+          - "2020-10-15T00:00:00Z"
       credentials:
         title: Authentication
         type: object
@@ -71,12 +75,58 @@ spec:
                 title: Client Secret
                 description: "Client Secret"
                 airbyte_secret: true
-    additionalProperties: true
-type: DeclarativeSource
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          subdomain:
+            type: string
+            path_in_connector_config:
+              - subdomain
+
 check:
   type: CheckStream
   stream_names:
     - addresses
+
 streams:
   - name: addresses
     type: DeclarativeStream
@@ -87,7 +137,7 @@ streams:
       requester:
         path: addresses
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -153,7 +203,7 @@ streams:
       requester:
         path: /stats/agents_activity
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -175,7 +225,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           via:
             type:
@@ -282,7 +332,7 @@ streams:
       requester:
         path: /stats/agents_overview
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -303,7 +353,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           total_hold_time:
             type:
@@ -402,7 +452,7 @@ streams:
       requester:
         path: /greeting_categories
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -425,7 +475,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           id:
             type:
@@ -444,7 +494,7 @@ streams:
       requester:
         path: /greetings
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -466,7 +516,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           id:
             type:
@@ -533,7 +583,7 @@ streams:
       requester:
         path: phone_numbers
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -556,7 +606,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           id:
             type:
@@ -687,7 +737,7 @@ streams:
       requester:
         path: /stats/incremental/legs
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -710,7 +760,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           id:
             type:
@@ -752,7 +802,7 @@ streams:
             type:
               - 'null'
               - string
-            format: date-time
+            format: "date-time"
           call_charge:
             type:
               - 'null'
@@ -807,7 +857,7 @@ streams:
       requester:
         path: /stats/incremental/calls
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -830,7 +880,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           id:
             type:
@@ -876,7 +926,7 @@ streams:
             type:
               - string
               - 'null'
-            format: date-time
+            format: "date-time"
           call_charge:
             type:
               - string
@@ -964,7 +1014,7 @@ streams:
       requester:
         path: /stats/current_queue_activity
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -985,7 +1035,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           agents_online:
             type:
@@ -1020,7 +1070,7 @@ streams:
       requester:
         path: /stats/account_overview
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -1041,7 +1091,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           current_timestamp:
             type: number
@@ -1142,7 +1192,7 @@ streams:
       requester:
         path: /ivr
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -1164,7 +1214,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           id:
             type:
@@ -1249,7 +1299,7 @@ streams:
       requester:
         path: /ivr
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -1271,7 +1321,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           id:
             type:
@@ -1298,7 +1348,7 @@ streams:
       requester:
         path: /ivr
         type: HttpRequester
-        url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
@@ -1320,7 +1370,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: "http://json-schema.org/schema#"
         properties:
           action:
             type:
