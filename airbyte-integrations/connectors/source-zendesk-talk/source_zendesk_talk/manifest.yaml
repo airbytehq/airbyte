@@ -683,6 +683,7 @@ streams:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
           stop_condition: '{{ not response.get("next_page", {}) }}'
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         path: /stats/incremental/legs
         type: HttpRequester
@@ -779,22 +780,14 @@ streams:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "{{ config['start_date'] }}"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       datetime_format: '%s'
-      end_time_option:
-        type: RequestOption
-        field_name: end_time
-        inject_into: request_parameter
       start_time_option:
         type: RequestOption
-        field_name: start_date
+        field_name: start_time
         inject_into: request_parameter
       cursor_datetime_formats:
         - '%Y-%m-%dT%H:%M:%SZ'
@@ -810,6 +803,7 @@ streams:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
           stop_condition: '{{ not response.get("next_page", {}) }}'
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         path: /stats/incremental/calls
         type: HttpRequester
@@ -957,7 +951,7 @@ streams:
       datetime_format: '%s'
       start_time_option:
         type: RequestOption
-        field_name: start_date
+        field_name: start_time
         inject_into: request_parameter
       cursor_datetime_formats:
         - '%Y-%m-%dT%H:%M:%SZ'
