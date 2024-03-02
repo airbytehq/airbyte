@@ -29,7 +29,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -133,7 +132,6 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Test
-  @Disabled
   void testAddNewStreamToExistingSync() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalogWithOneStream =
         new ConfiguredAirbyteCatalog().withStreams(List.of(getConfiguredAirbyteStreams().get(0)));

@@ -39,7 +39,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class CdcStateCompressionTest {
@@ -164,7 +163,6 @@ public class CdcStateCompressionTest {
    * This test is similar in principle to CdcMysqlSourceTest.testCompressedSchemaHistory.
    */
   @Test
-  @Disabled
   public void testCompressedSchemaHistory() throws Exception {
     // First sync.
     final var firstBatchIterator = source().read(config(), getConfiguredCatalog(), null);
