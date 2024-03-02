@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "live-tests"
-version = "0.0.1"
+version = "0.1.0"
 description = "Contains utilities for testing connectors against live data."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -46,18 +46,22 @@ docker = ">=6,<7"
 urllib3 = "<2.0"
 requests = "<2.29.0"
 pytest-xdist = "^3.3.1"
+asyncclick = "^8.1.7.1"
+
+[tool.poetry.scripts]
+live-tests = "live_tests.cli:live_tests"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.3.0"
+mypy = "^1.8.0"
 
 [tool.poe.tasks]
 test = "pytest tests"
-ci = ["test"]
+lint = "ruff check src"
+type_check = "mypy src"
 
 [tool.airbyte_ci]
-poe_tasks = ["test"]
-mount_docker_socket = true
-
-[tool.poetry.scripts]
-run-regression-tests = "live_tests.regression_tests.cli:run"
+poe_tasks = ["test", "lint", "type_check"]
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
 pythonpath = ["src"]
