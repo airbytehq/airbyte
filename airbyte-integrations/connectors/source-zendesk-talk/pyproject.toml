@@ -21,7 +21,6 @@ airbyte-cdk = "==0.58.8"
 
 [tool.poetry.scripts]
 source-zendesk-talk = "source_zendesk_talk.run:run"
-source-zendesk-talk-two = "source_zendesk_talk.run:walk"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
