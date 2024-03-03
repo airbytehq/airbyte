@@ -1,5 +1,20 @@
 type: DeclarativeSource
 
+definitions:
+  authenticator:
+    class_name: source_zendesk_talk.components.ZendeskTalkAuthenticator
+    legacy_basic_auth:
+      type: BasicHttpAuthenticator
+      password: "{{ config['access_token'] }}"
+      username: "{{ config['credentials'] }}/token"
+    basic_auth:
+      type: BasicHttpAuthenticator
+      password: "{{ config['credentials']['api_token'] }}"
+      username: "{{ config['credentials']['email'] }}/token"
+    oauth:
+      type: BearerAuthenticator
+      api_token: "{{ config['credentials']['access_token'] }}"
+
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/zendesk-talk
@@ -139,10 +154,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -205,10 +217,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -334,10 +343,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -461,10 +467,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -503,10 +506,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -592,10 +592,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -746,10 +743,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -866,10 +860,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1023,10 +1014,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1086,10 +1074,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1215,10 +1200,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1322,10 +1304,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1369,10 +1348,7 @@ streams:
         type: HttpRequester
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: "{{ config['credentials']['api_token'] }}"
-          username: "{{ config['credentials']['email'] }}/token"
+        authenticator: "#/definitions/authenticator"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
