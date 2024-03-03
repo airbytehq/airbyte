@@ -17,6 +17,9 @@ public class MsSQLContainerFactory extends ContainerFactory<MSSQLServerContainer
     imageName = imageName.asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server");
     var container = new MSSQLServerContainer<>(imageName).acceptLicense();
     container.addEnv("MSSQL_MEMORY_LIMIT_MB", "384");
+    withNetwork(container);
+    withAgent(container);
+    withSslCertificates(container);
     return container;
   }
 

@@ -36,10 +36,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class CdcStateCompressionTest {
 
@@ -57,7 +59,7 @@ public class CdcStateCompressionTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    testdb = MsSQLTestDatabase.in(MsSQLTestDatabase.BaseImage.MSSQL_2022, MsSQLTestDatabase.ContainerModifier.AGENT)
+    testdb = MsSQLTestDatabase.in(MsSQLTestDatabase.BaseImage.MSSQL_2022)
         .withWaitUntilAgentRunning()
         .withCdc();
 
@@ -163,6 +165,8 @@ public class CdcStateCompressionTest {
    * This test is similar in principle to CdcMysqlSourceTest.testCompressedSchemaHistory.
    */
   @Test
+  @Timeout(value = 20,
+           unit = TimeUnit.MINUTES)
   public void testCompressedSchemaHistory() throws Exception {
     // First sync.
     final var firstBatchIterator = source().read(config(), getConfiguredCatalog(), null);

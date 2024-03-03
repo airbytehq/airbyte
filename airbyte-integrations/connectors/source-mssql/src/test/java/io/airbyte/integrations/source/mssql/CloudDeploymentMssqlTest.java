@@ -14,6 +14,7 @@ import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -23,14 +24,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 public class CloudDeploymentMssqlTest {
 
   private MsSQLTestDatabase createTestDatabase(String... containerFactoryMethods) {
-    final var container = new MsSQLContainerFactory().shared(
-        "mcr.microsoft.com/mssql/server:2022-latest", containerFactoryMethods);
-    final var testdb = new MsSQLTestDatabase(container);
-    return testdb
-        .withConnectionProperty("encrypt", "true")
-        .withConnectionProperty("trustServerCertificate", "true")
-        .withConnectionProperty("databaseName", testdb.getDatabaseName())
-        .initialized();
+    return MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
   }
 
   private Source source() {

@@ -12,7 +12,6 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.CertificateKey;
-import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
@@ -24,7 +23,7 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
 
   @Override
   final protected MsSQLTestDatabase createTestDatabase() {
-    final var testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT, ContainerModifier.WITH_SSL_CERTIFICATES);
+    final var testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
     return testdb.withWaitUntilAgentRunning()
         .withCdc();
   }

@@ -11,7 +11,6 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.CertificateKey;
-import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import java.net.InetAddress;
 import java.util.Map;
@@ -29,7 +28,7 @@ public class MssqlSslSourceTest {
 
   @BeforeEach
   void setup() {
-    testDb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.WITH_SSL_CERTIFICATES);
+    testDb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
   }
 
   @AfterEach

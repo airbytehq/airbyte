@@ -32,8 +32,7 @@ public class MssqlAgentStateTest {
   @BeforeAll
   public static void setup() {
     privateContainer = new MsSQLContainerFactory().exclusive(
-        MsSQLTestDatabase.BaseImage.MSSQL_2022.reference,
-        MsSQLTestDatabase.ContainerModifier.AGENT);
+        MsSQLTestDatabase.BaseImage.MSSQL_2022.reference);
     testdb = new MsSQLTestDatabase(privateContainer);
     testdb
         .withConnectionProperty("encrypt", "false")
