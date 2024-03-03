@@ -1332,10 +1332,8 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
-          field_path:
-            - ivrs
-            - '*'
+          type: CustomRecordExtractor
+          class_name: source_zendesk_talk.components.IVRMenusRecordExtractor
       partition_router: []
     primary_key: []
     schema_loader:
@@ -1381,10 +1379,8 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
-          field_path:
-            - ivrs
-            - '*'
+          type: CustomRecordExtractor
+          class_name: source_zendesk_talk.components.IVRRoutesRecordExtractor
       partition_router: []
     primary_key: []
     schema_loader:
