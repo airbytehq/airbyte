@@ -115,7 +115,7 @@ USER_TEMPLATE = {
     "data": [
         {
             "id": "123",
-            "created_at": "2024-01-01T07:04:28.000Z",
+            "created_at": "2024-01-01T07:04:28",
             "first_name": "Paul",
             "last_name": "Atreides",
         }
@@ -171,7 +171,6 @@ def _create_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=RESPONSE_TEMPLATE,
         records_path=FieldPath("data"),
-        # pagination_strategy=StripePaginationStrategy()
     )
 
 
@@ -189,7 +188,7 @@ class FullRefreshStreamTest(TestCase):
     def test_full_refresh_sync(self, http_mocker):
         start_datetime = _NOW - timedelta(days=14)
         config = {
-            "start_date": start_datetime.isoformat()[:-13]+"Z",
+            "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
         http_mocker.get(
@@ -205,13 +204,13 @@ class FullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 1
         validate_message_order([Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"sync_mode": "full_refresh"}
+        assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_full_refresh_state_message": True}
 
     @HttpMocker()
     def test_full_refresh_with_slices(self, http_mocker):
         start_datetime = _NOW - timedelta(days=14)
         config = {
-            "start_date": start_datetime.isoformat()[:-13]+"Z",
+            "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
         http_mocker.get(
@@ -232,7 +231,7 @@ class FullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 1
         validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "dividers"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"sync_mode": "full_refresh"}
+        assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_full_refresh_state_message": True}
 
 
 @freezegun.freeze_time(_NOW)
@@ -241,16 +240,16 @@ class IncrementalStreamTest(TestCase):
     def test_incremental_sync(self, http_mocker):
         start_datetime = _NOW - timedelta(days=14)
         config = {
-            "start_date": start_datetime.isoformat()[:-13] + "Z",
+            "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
-        last_record_date_0 = (start_datetime + timedelta(days=4)).isoformat()[:-13] + "Z"
+        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_planets_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
             _create_response().with_record(record=_create_record("planets").with_cursor(last_record_date_0)).with_record(record=_create_record("planets").with_cursor(last_record_date_0)).with_record(record=_create_record("planets").with_cursor(last_record_date_0)).build(),
         )
 
-        last_record_date_1 = (_NOW - timedelta(days=1)).isoformat()[:-13] + "Z"
+        last_record_date_1 = (_NOW - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_planets_request().with_start_date(start_datetime + timedelta(days=7)).with_end_date(_NOW).build(),
             _create_response().with_record(record=_create_record("planets").with_cursor(last_record_date_1)).with_record(record=_create_record("planets").with_cursor(last_record_date_1)).build(),
@@ -272,16 +271,16 @@ class IncrementalStreamTest(TestCase):
     def test_incremental_running_as_full_refresh(self, http_mocker):
         start_datetime = _NOW - timedelta(days=14)
         config = {
-            "start_date": start_datetime.isoformat()[:-13] + "Z",
+            "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
-        last_record_date_0 = (start_datetime + timedelta(days=4)).isoformat()[:-13] + "Z"
+        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_planets_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
             _create_response().with_record(record=_create_record("planets").with_cursor(last_record_date_0)).with_record(record=_create_record("planets").with_cursor(last_record_date_0)).with_record(record=_create_record("planets").with_cursor(last_record_date_0)).build(),
         )
 
-        last_record_date_1 = (_NOW - timedelta(days=1)).isoformat()[:-13] + "Z"
+        last_record_date_1 = (_NOW - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_planets_request().with_start_date(start_datetime + timedelta(days=7)).with_end_date(_NOW).build(),
             _create_response().with_record(record=_create_record("planets").with_cursor(last_record_date_1)).with_record(record=_create_record("planets").with_cursor(last_record_date_1)).build(),
@@ -301,16 +300,16 @@ class IncrementalStreamTest(TestCase):
     def test_legacy_incremental_sync(self, http_mocker):
         start_datetime = _NOW - timedelta(days=14)
         config = {
-            "start_date": start_datetime.isoformat()[:-13] + "Z",
+            "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
-        last_record_date_0 = (start_datetime + timedelta(days=4)).isoformat()[:-13] + "Z"
+        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_legacies_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
             _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).build(),
         )
 
-        last_record_date_1 = (_NOW - timedelta(days=1)).isoformat()[:-13] + "Z"
+        last_record_date_1 = (_NOW - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_legacies_request().with_start_date(start_datetime + timedelta(days=7)).with_end_date(_NOW).build(),
             _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_1)).with_record(record=_create_record("legacies").with_cursor(last_record_date_1)).build(),
@@ -335,7 +334,7 @@ class MultipleStreamTest(TestCase):
     def test_incremental_and_full_refresh_streams(self, http_mocker):
         start_datetime = _NOW - timedelta(days=14)
         config = {
-            "start_date": start_datetime.isoformat()[:-13] + "Z",
+            "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
         # Mocks for users full refresh stream
@@ -345,13 +344,13 @@ class MultipleStreamTest(TestCase):
         )
 
         # Mocks for planets incremental stream
-        last_record_date_0 = (start_datetime + timedelta(days=4)).isoformat()[:-13] + "Z"
+        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_planets_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
             _create_response().with_record(record=_create_record("planets").with_cursor(last_record_date_0)).with_record(record=_create_record("planets").with_cursor(last_record_date_0)).with_record(record=_create_record("planets").with_cursor(last_record_date_0)).build(),
         )
 
-        last_record_date_1 = (_NOW - timedelta(days=1)).isoformat()[:-13] + "Z"
+        last_record_date_1 = (_NOW - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_planets_request().with_start_date(start_datetime + timedelta(days=7)).with_end_date(_NOW).build(),
             _create_response().with_record(record=_create_record("planets").with_cursor(last_record_date_1)).with_record(record=_create_record("planets").with_cursor(last_record_date_1)).build(),
@@ -395,13 +394,13 @@ class MultipleStreamTest(TestCase):
             Type.STATE
         ], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"sync_mode": "full_refresh"}
+        assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_full_refresh_state_message": True}
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_0}
         assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[2].state.stream.stream_state == {"created_at": last_record_date_1}
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "dividers"
-        assert actual_messages.state_messages[3].state.stream.stream_state == {"sync_mode": "full_refresh"}
+        assert actual_messages.state_messages[3].state.stream.stream_state == {"__ab_full_refresh_state_message": True}
 
 
 def emits_successful_sync_status_messages(status_messages: List[AirbyteStreamStatus]) -> bool:

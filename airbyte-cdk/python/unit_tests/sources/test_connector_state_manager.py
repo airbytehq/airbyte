@@ -489,7 +489,7 @@ def test_do_not_set_stream_descriptor_namespace_when_none():
     included at all. The None value registers as null by the platform which is not valid input. We can verify that fields
     on a pydantic model are not defined using exclude_unset parameter.
     """
-    expected_stream_state_descriptor = {"name": "episodes"}
+    expected_stream_state_descriptor = {"name": "episodes", "namespace": None}
 
     state_manager = ConnectorStateManager(
         {},

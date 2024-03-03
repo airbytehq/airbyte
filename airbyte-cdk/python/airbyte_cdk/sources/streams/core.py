@@ -31,6 +31,8 @@ StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
 JsonSchema = Mapping[str, Any]
 
+FULL_REFRESH_SENTINEL_STATE_KEY = "__ab_full_refresh_state_message"
+
 
 def package_name_from_class(cls: object) -> str:
     """Find the package name given a class name"""
@@ -178,9 +180,9 @@ class Stream(ABC):
             if sync_mode == SyncMode.full_refresh:
                 # We use a dummy state if there is no suitable value provided by full_refresh streams that do not have a valid cursor.
                 # Incremental streams running full_refresh mode emit a meaningful state
-                stream_state = stream_state or {"sync_mode": "full_refresh"}
+                stream_state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
 
-            # Safety net to ensure we always emit at least one state message even if there are no slices
+            # We should always emit a final state message for full refresh sync or streams that do not have any slices
             airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
             state_value = airbyte_state_message.state.stream.stream_state.dict() if airbyte_state_message.state.stream else {}
             logger.info(f"Emitting final state message for stream {self.name} running in {sync_mode} with value {state_value}")
