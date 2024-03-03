@@ -739,7 +739,7 @@ streams:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ not response.get("next_page", {}) }}'
+          stop_condition: '{{ response.get("count", {}) <= 1 }}'
       ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         path: /stats/incremental/legs
@@ -859,7 +859,7 @@ streams:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ not response.get("next_page", {}) }}'
+          stop_condition: '{{ response.get("count", {}) <= 1 }}'
       ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         path: /stats/incremental/calls
