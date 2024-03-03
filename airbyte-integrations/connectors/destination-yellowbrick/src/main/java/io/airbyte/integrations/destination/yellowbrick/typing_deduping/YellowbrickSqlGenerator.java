@@ -26,7 +26,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.destination.yellowbrick.YellowbrickSqlOperations;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -161,32 +160,31 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
     return cast(field, toDialectType(type));
   }
 
-  @Override 
+  @Override
   protected Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
     // First, collect the fields to a List<Field<String>> to avoid unchecked conversion
     List<Field<String>> dataFieldErrorsList = columns
-            .entrySet()
-            .stream()
-            .map(column -> toCastingErrorCaseStmt(column.getKey(), column.getValue()))
-            .collect(Collectors.toList());
-          
+        .entrySet()
+        .stream()
+        .map(column -> toCastingErrorCaseStmt(column.getKey(), column.getValue()))
+        .collect(Collectors.toList());
+
     // Avoid using raw types by creating an array of Field<?> and casting it to Field<String>[]
     @SuppressWarnings("unchecked") // Suppress warnings for unchecked cast
     Field<String>[] dataFieldErrors = (Field<String>[]) dataFieldErrorsList.toArray(new Field<?>[dataFieldErrorsList.size()]);
-          
+
     // Constructing the JSON array string of errors
     Field<String> errorsArray = field(
         "json_array_str({0})",
         String.class,
         list(dataFieldErrors) // This uses DSL.list to create a dynamic list of fields for json_array_str
-    );    
-          
+    );
+
     // Constructing the JSON object with the "errors" key
     return field(
         "json_object_str('errors', {0})",
         String.class,
-        errorsArray
-    ).as(COLUMN_NAME_AB_META);
+        errorsArray).as(COLUMN_NAME_AB_META);
   }
 
   private Field<String> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
@@ -253,18 +251,17 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
    */
   private Field<Object> extractColumnAsJson(final ColumnId column) {
     return field("json_lookup({0}, '/' || {1}, 'jpointer_simdjson')", name(COLUMN_NAME_DATA), val(column.originalName()));
-  } 
+  }
 
-    private Field<String> jsonTypeof(Field<?> jsonField) {
-        Field<String> field = jsonField.cast(String.class); 
-        return
-            case_()
-                .when(field.like("{%}"), val("object"))
-                .when(field.like("[%]"), val("array"))
-                .when(field.like("\"%\""), val("string"))
-                .when(field.likeRegex("-?[0-9]+(\\.[0-9]+)?"), val("number"))
-                .when(field.equalIgnoreCase("true").or(field.equalIgnoreCase("false")), val("boolean"))
-                .when(field.equal("null"), val("null"));
-    }
+  private Field<String> jsonTypeof(Field<?> jsonField) {
+    Field<String> field = jsonField.cast(String.class);
+    return case_()
+        .when(field.like("{%}"), val("object"))
+        .when(field.like("[%]"), val("array"))
+        .when(field.like("\"%\""), val("string"))
+        .when(field.likeRegex("-?[0-9]+(\\.[0-9]+)?"), val("number"))
+        .when(field.equalIgnoreCase("true").or(field.equalIgnoreCase("false")), val("boolean"))
+        .when(field.equal("null"), val("null"));
+  }
 
 }

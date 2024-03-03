@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.yellowbrick;
 
-import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickDestinationHandler;
-import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickSqlGenerator;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.DISABLE;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
@@ -14,7 +12,6 @@ import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.obtain
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -23,6 +20,9 @@ import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickDestinationHandler;
+import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickSqlGenerator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;

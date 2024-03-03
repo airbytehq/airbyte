@@ -22,7 +22,7 @@ data:
     breakingChanges:
       0.0.1:
         message: >
-          This initial version implements [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures. 
+          This initial version implements [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures.
         upgradeDeadline: "2024-05-31"
   releaseStage: alpha
   supportLevel: community

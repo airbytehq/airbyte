@@ -9,7 +9,6 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.*;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -18,10 +17,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class YellowbrickSqlOperations extends JdbcSqlOperations {
 
@@ -97,7 +95,7 @@ public class YellowbrickSqlOperations extends JdbcSqlOperations {
             + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n"
             + "%s TIMESTAMP WITH TIME ZONE NULL\n"
             + ");\n",
-        schemaName, tableName, COLUMN_NAME_AB_RAW_ID, COLUMN_NAME_DATA, 
+        schemaName, tableName, COLUMN_NAME_AB_RAW_ID, COLUMN_NAME_DATA,
         YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE, COLUMN_NAME_AB_EXTRACTED_AT, COLUMN_NAME_AB_LOADED_AT);
   }
 

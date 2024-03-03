@@ -29,7 +29,7 @@ public class YellowbrickDestinationHandler extends JdbcDestinationHandler {
       return toJdbcTypeName(airbyteProtocolType);
     }
     return switch (airbyteType.getTypeName()) {
-      case Struct.TYPE, UnsupportedOneOf.TYPE, Array.TYPE -> "varchar("+ YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE + ")";
+      case Struct.TYPE, UnsupportedOneOf.TYPE, Array.TYPE -> "varchar(" + YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE + ")";
       // No nested Unions supported so this will definitely not result in infinite recursion.
       case Union.TYPE -> toJdbcTypeName(((Union) airbyteType).chooseType());
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + airbyteType);
@@ -38,7 +38,7 @@ public class YellowbrickDestinationHandler extends JdbcDestinationHandler {
 
   private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
-      case STRING -> "varchar("+YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE+")";
+      case STRING -> "varchar(" + YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE + ")";
       case NUMBER -> "numeric";
       case INTEGER -> "int8";
       case BOOLEAN -> "bool";
@@ -47,7 +47,7 @@ public class YellowbrickDestinationHandler extends JdbcDestinationHandler {
       case TIME_WITH_TIMEZONE -> "timetz";
       case TIME_WITHOUT_TIMEZONE -> "time";
       case DATE -> "date";
-      case UNKNOWN -> "varchar("+YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE+")";
+      case UNKNOWN -> "varchar(" + YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE + ")";
     };
   }
 

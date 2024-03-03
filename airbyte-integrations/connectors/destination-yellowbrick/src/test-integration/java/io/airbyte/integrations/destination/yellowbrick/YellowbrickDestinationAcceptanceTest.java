@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.yellowbrick;
 
-import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickSqlGenerator;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.Database;
@@ -19,7 +17,7 @@ import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataC
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-
+import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickSqlGenerator;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -28,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.parallel.Execution;
@@ -114,13 +111,14 @@ public abstract class YellowbrickDestinationAcceptanceTest extends JdbcDestinati
     return retrieveRecordsFromTable(tableName, schema);
   }
 
-    @Override
+  @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
                                            final String streamName,
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    final StreamId streamId = new YellowbrickSqlGenerator(new YellowbrickSQLNameTransformer()).buildStreamId(namespace, streamName, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
+    final StreamId streamId = new YellowbrickSqlGenerator(new YellowbrickSQLNameTransformer()).buildStreamId(namespace, streamName,
+        JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
     return retrieveRecordsFromTable(streamId.rawName(), streamId.rawNamespace())
         .stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
@@ -130,7 +128,8 @@ public abstract class YellowbrickDestinationAcceptanceTest extends JdbcDestinati
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return getDatabase().query(
         ctx -> ctx
-            .fetch(String.format("SELECT * FROM \"%s\".\"%s\" ORDER BY \"%s\" ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
+            .fetch(String.format("SELECT * FROM \"%s\".\"%s\" ORDER BY \"%s\" ASC;", schemaName, tableName,
+                JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
             .stream()
             .map(this::getJsonFromRecord)
             .collect(Collectors.toList()));

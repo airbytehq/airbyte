@@ -6,9 +6,9 @@ package io.airbyte.integrations.destination.yellowbrick;
 
 import java.sql.Connection;
 import java.sql.SQLException;
- 
+
 public class YellowbrickConnectionHandler {
- 
+
   /**
    * For to close a connection. Aimed to be use in test only.
    *
@@ -22,5 +22,5 @@ public class YellowbrickConnectionHandler {
       throw new RuntimeException(e);
     }
   }
- 
+
 }
