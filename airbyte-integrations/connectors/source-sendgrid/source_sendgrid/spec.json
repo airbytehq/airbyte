@@ -7,14 +7,14 @@
     "required": ["apikey"],
     "additionalProperties": true,
     "properties": {
-      "apikey": {
+      "api_key": {
         "title": "Sendgrid API key",
         "airbyte_secret": true,
         "type": "string",
         "description": "API Key, use <a href=\"https://app.sendgrid.com/settings/api_keys/\">admin</a> to generate this key.",
         "order": 0
       },
-      "start_time": {
+      "start_date": {
         "title": "Start time",
         "type": "string",
         "format": "date-time",
