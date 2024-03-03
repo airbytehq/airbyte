@@ -12,10 +12,3 @@ application {
     mainClass = 'io.airbyte.integrations.destination.yellowbrick.YellowbrickDestination'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
-
-dependencies {
-    implementation project(':airbyte-integrations:connectors:destination-postgres')
-
-    integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:destination-postgres'))
-}
-
