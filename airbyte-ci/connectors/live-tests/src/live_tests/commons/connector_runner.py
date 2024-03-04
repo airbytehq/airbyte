@@ -30,7 +30,7 @@ async def get_container_from_id(dagger_client: dagger.Client, container_id: str)
         pytest.exit(f"Failed to load connector container: {e}")
 
 
-async def get_container_from_tarball_path(dagger_client: dagger.Client, tarball_path: Path):
+async def get_container_from_tarball_path(dagger_client: dagger.Client, tarball_path: Path) -> dagger.Container:
     if not tarball_path.exists():
         pytest.exit(f"Connector image tarball {tarball_path} does not exist")
     container_under_test_tar_file = (
@@ -149,7 +149,7 @@ class ConnectorRunner:
     def _connector_under_test_container(self) -> dagger.Container:
         return self.connector_under_test.container
 
-    def _get_full_command(self, command: Command):
+    def _get_full_command(self, command: Command) -> List[str]:
         if command is Command.SPEC:
             return ["spec"]
         elif command is Command.CHECK:
@@ -180,11 +180,12 @@ class ConnectorRunner:
     async def get_container_env_variable_value(self, name: str) -> Optional[str]:
         return await self._connector_under_test_container.env_variable(name)
 
-    async def get_container_label(self, label: str):
+    async def get_container_label(self, label: str) -> Optional[str]:
         return await self._connector_under_test_container.label(label)
 
-    async def get_container_entrypoint(self):
+    async def get_container_entrypoint(self) -> str:
         entrypoint = await self._connector_under_test_container.entrypoint()
+        assert entrypoint, "The connector container has no entrypoint"
         return " ".join(entrypoint)
 
     async def run(
@@ -251,7 +252,7 @@ class ConnectorRunner:
 
         return proxy_container.with_exec(command)
 
-    async def _bind_connector_container_to_proxy(self, container: dagger.Container):
+    async def _bind_connector_container_to_proxy(self, container: dagger.Container) -> dagger.Container:
         proxy_srv = await self._get_proxy_container()
         proxy_host, proxy_port = "proxy_server", 8080
         cert_path_in_volume = "/mitmproxy_dir/mitmproxy-ca.pem"
