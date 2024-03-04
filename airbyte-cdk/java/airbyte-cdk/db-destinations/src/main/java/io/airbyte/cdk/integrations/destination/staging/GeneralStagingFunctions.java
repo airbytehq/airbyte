@@ -39,7 +39,10 @@ public class GeneralStagingFunctions {
                                                 final TyperDeduper typerDeduper) {
     return () -> {
       log.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
-      typerDeduper.prepareTables();
+
+      typerDeduper.prepareSchemasAndRunMigrations();
+
+      // Create raw tables
       final List<String> queryList = new ArrayList<>();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schema = writeConfig.getOutputSchemaName();
@@ -69,6 +72,9 @@ public class GeneralStagingFunctions {
 
         log.info("Preparing staging area in destination completed for schema {} stream {}", schema, stream);
       }
+
+      typerDeduper.prepareFinalTables();
+
       log.info("Executing finalization of tables.");
       stagingOperations.executeTransaction(database, queryList);
     };
