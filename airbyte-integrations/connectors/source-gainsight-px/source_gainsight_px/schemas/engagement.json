@@ -1,0 +1,119 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Engagement Schema",
+    "additionalProperties": true,
+    "type": [
+        "null",
+        "object"
+    ],
+    "properties": {
+        "defaultLanguage": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "languages": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "type": [
+                    "null",
+                    "object"
+                ],
+                "additionalProperties": true,
+                "properties": {
+                    "languageCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "translated": {
+                        "type": [
+                            "null",
+                            "boolean"
+                        ]
+                    },
+                    "translationState": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "name": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "description": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                }
+            }
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "enum": [
+                "EMAIL",
+                "IN_APP_DIALOG",
+                "IN_APP_CAROUSEL",
+                "IN_APP_GUIDE",
+                "IN_APP_NOTIFICATION",
+                "OUT_BOUND_EMAIL",
+                "IN_APP_NPS_SURVEY",
+                "IN_APP_CES_SURVEY",
+                "IN_APP_RATING_SURVEY",
+                "IN_APP_BOOLEAN_SURVEY",
+                "IN_APP_MULTIPLE_QUESTION_SURVEY"
+            ]
+        },
+        "state": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "enum": [
+                "IN_PROGRESS",
+                "STARTED",
+                "PAUSED",
+                "FAILED",
+                "EDITING",
+                "COMPLETED"
+            ]
+        },
+        "propertyKeys": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "envs": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        }
+    }
+}
