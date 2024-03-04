@@ -14,7 +14,7 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           created:
-            type: number
+            type: integer
           email:
             type: string
           reason:
@@ -161,7 +161,7 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           created:
-            type: number
+            type: integer
           email:
             type: string
         type: object
@@ -381,13 +381,13 @@ streams:
           description:
             type: string
           id:
-            type: number
+            type: integer
           is_default:
             type: boolean
           name:
             type: string
           unsubscribes:
-            type: number
+            type: integer
         type: object
     retriever:
       type: SimpleRetriever
@@ -421,11 +421,11 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           created_at:
-            type: number
+            type: integer
           email:
             type: string
           group_id:
-            type: number
+            type: integer
           group_name:
             type: string
         type: object
@@ -500,7 +500,7 @@ streams:
                 type: string
             type: object
           contact_count:
-            type: number
+            type: integer
           id:
             type: string
           name:
@@ -550,7 +550,7 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           contacts_count:
-            type: number
+            type: integer
           created_at:
             format: date-time
             type: string
@@ -623,29 +623,29 @@ streams:
           stats:
             properties:
               bounce_drops:
-                type: number
+                type: integer
               bounces:
-                type: number
+                type: integer
               clicks:
-                type: number
+                type: integer
               delivered:
-                type: number
+                type: integer
               invalid_emails:
-                type: number
+                type: integer
               opens:
-                type: number
+                type: integer
               requests:
-                type: number
+                type: integer
               spam_report_drops:
-                type: number
+                type: integer
               spam_reports:
-                type: number
+                type: integer
               unique_clicks:
-                type: number
+                type: integer
               unique_opens:
-                type: number
+                type: integer
               unsubscribes:
-                type: number
+                type: integer
             type: object
         type: object
     retriever:
@@ -698,29 +698,29 @@ streams:
           stats:
             properties:
               bounce_drops:
-                type: number
+                type: integer
               bounces:
-                type: number
+                type: integer
               clicks:
-                type: number
+                type: integer
               delivered:
-                type: number
+                type: integer
               invalid_emails:
-                type: number
+                type: integer
               opens:
-                type: number
+                type: integer
               requests:
-                type: number
+                type: integer
               spam_report_drops:
-                type: number
+                type: integer
               spam_reports:
-                type: number
+                type: integer
               unique_clicks:
-                type: number
+                type: integer
               unique_opens:
-                type: number
+                type: integer
               unsubscribes:
-                type: number
+                type: integer
             type: object
           step_id:
             type: string
@@ -971,17 +971,17 @@ spec:
   type: Spec
 metadata:
   autoImportSchema:
-    bounces: true
-    spam_reports: true
-    global_suppressions: true
-    blocks: true
-    invalid_emails: true
-    suppression_groups: true
-    suppression_group_members: true
-    lists: true
+    bounces: false
+    spam_reports: false
+    global_suppressions: false
+    blocks: false
+    invalid_emails: false
+    suppression_groups: false
+    suppression_group_members: false
+    lists: false
     segments: false
-    singlesend_stats: true
-    stats_automations: true
+    singlesend_stats: false
+    stats_automations: false
     singlesends: false
     templates: false
-    campaigns: true
+    campaigns: false
