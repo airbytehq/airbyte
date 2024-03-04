@@ -285,7 +285,7 @@ check:
     - "lead_events"
     - "pageview_events"
     - "segments"
-    - "segment_match_events"
+    - "segment_events"
     - "session_events"
     - "survey_responses"
     - "kcbot"
