@@ -2527,6 +2527,7 @@ streams:
                     datetime: '{{ config[''start_date''] }}'
                     datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   is_data_feed: true
+
   - type: DeclarativeStream
     name: blocks
     primary_key:
@@ -2835,7 +2836,26 @@ streams:
                   action: IGNORE
                   http_codes:
                     - 400
-                  error_message_contains: 'The start_cursor provided is invalid:'
+                  error_message_contains: The start_cursor provided is invalid
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+                  error_message: >-
+                    Encountered a 404 error due to an invalid block id.
+                    Skipping.
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  error_message_contains: ai_block is not supported
+                  http_codes:
+                    - 400
+                  error_message: >-
+                    Encountered an unsupported block of type `ai_block`.
+                    Skipping.
         request_body_json: {}
       record_selector:
         type: RecordSelector
