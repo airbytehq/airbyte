@@ -1,0 +1,37 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Testing Tool Spec",
+    "type": "object",
+    "required": [],
+    "additionalProperties": false,
+    "properties": {
+      "read": {
+        "type": "object",
+        "properties": {
+          "resourcesNumber": {
+            "type": "number",
+            "description": "The number of resources that will be exported. Default is 3"
+          },
+          "recordsPerResource": {
+            "type": "number",
+            "description": "The total records that will be exported per resource. Default is 5000"
+          },
+          "throwError": {
+            "type": "boolean",
+            "description": "If true, connector will throw an error after export few records"
+          },
+          "extractRate": {
+            "type": "number",
+            "description": "Defines a rate that will extract data. Default is 100/s"
+          },
+          "initDelay": {
+            "type": "number",
+            "description": "Defines a delay before start exporting. Default is 0 seconds"
+          }
+        }
+      }
+    }
+  }
+}
