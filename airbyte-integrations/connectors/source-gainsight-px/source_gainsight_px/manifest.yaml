@@ -216,7 +216,7 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/custom_retriever"
-    name: "session_match_events"
+    name: "session_events"
     primary_key: "eventId"
 
   survey_responses_stream:
@@ -262,7 +262,7 @@ streams:
   - "#/definitions/pageview_events_stream"
   - "#/definitions/segments_stream"
   - "#/definitions/segment_match_events_stream"
-  - "#/definitions/session_match_events_stream"
+  - "#/definitions/session_events_stream"
   - "#/definitions/survey_responses_stream"
   - "#/definitions/kcbot_stream"
   - "#/definitions/user_attributes_stream"
@@ -286,7 +286,7 @@ check:
     - "pageview_events"
     - "segments"
     - "segment_match_events"
-    - "session_match_events"
+    - "session_events"
     - "survey_responses"
     - "kcbot"
     - "user_attributes"
