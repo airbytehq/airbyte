@@ -80,6 +80,26 @@ definitions:
     name: "articles"
     primary_key: "id"
 
+  custom_events_stream:
+    $parameters:
+      path: "events/custom"
+      extractorPath: "customEvents"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "custom_events"
+    primary_key: "eventId"
+
+  email_events_stream:
+    $parameters:
+      path: "events/email"
+      extractorPath: "results"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "email_events"
+    primary_key: "eventId"
+
   engagement_stream:
     $parameters:
       path: "engagement"
@@ -89,6 +109,16 @@ definitions:
       $ref: "#/definitions/custom_retriever"
     name: "engagement"
     primary_key: "id"
+
+  engagement_view_events_stream:
+    $parameters:
+      path: "events/engagementView"
+      extractorPath: "results"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "engagement_view_events"
+    primary_key: "eventId"
 
   feature_stream:
     $parameters:
@@ -100,14 +130,35 @@ definitions:
     name: "feature"
     primary_key: "id"
 
-  segments_stream:
+  feature_match_events_stream:
     $parameters:
-      path: "segment"
-      extractorPath: "segments"
+      path: "events/feature_match"
+      extractorPath: "featureMatchEvents"
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/custom_retriever"
-    name: "segments"
+    name: "feature_match_events"
+    primary_key: "eventId"
+
+  form_submit_events_stream:
+    $parameters:
+      path: "events/formSubmit"
+      extractorPath: "results"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "form_submit_events"
+    primary_key: "eventId"
+
+  identify_events_stream:
+    $parameters:
+      path: "events/identify"
+      extractorPath: "identifyEvents"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "identify_events"
+    primary_key: "eventId"
 
   kcbot_stream:
     $parameters:
@@ -118,6 +169,65 @@ definitions:
       $ref: "#/definitions/custom_retriever"
     name: "kcbot"
     primary_key: "id"
+
+  lead_events_stream:
+    $parameters:
+      path: "events/lead"
+      extractorPath: "leadEvents"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "lead_events"
+    primary_key: "eventId"
+
+  pageview_events_stream:
+    $parameters:
+      path: "events/pageView"
+      extractorPath: "results"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "pageview_events"
+    primary_key: "eventId"
+
+  segments_stream:
+    $parameters:
+      path: "segment"
+      extractorPath: "segments"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "segments"
+
+  segment_match_events_stream:
+    $parameters:
+      path: "events/segment_match"
+      extractorPath: "featureMatchEvents"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "segment_match_events"
+    primary_key: "eventId"
+
+  session_events_stream:
+    $parameters:
+      path: "events/session"
+      extractorPath: "sessionInitializedEvents"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "session_match_events"
+    primary_key: "eventId"
+
+  survey_responses_stream:
+    $parameters:
+      path: "survey/responses"
+      extractorPath: "results"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "survey_responses"
+    primary_key: "eventId"
 
   user_attributes_stream:
     $parameters:
@@ -138,11 +248,22 @@ definitions:
 
 streams:
   - "#/definitions/accounts_stream"
-  - "#/definitions/admin_attributes_stream"
   - "#/definitions/articles_stream"
+  - "#/definitions/admin_attributes_stream"
+  - "#/definitions/custom_events_stream"
+  - "#/definitions/email_events_stream"
   - "#/definitions/engagement_stream"
+  - "#/definitions/engagement_view_events_stream"
   - "#/definitions/feature_stream"
+  - "#/definitions/feature_match_events_stream"
+  - "#/definitions/form_submit_events_stream"
+  - "#/definitions/identify_events_stream"
+  - "#/definitions/lead_events_stream"
+  - "#/definitions/pageview_events_stream"
   - "#/definitions/segments_stream"
+  - "#/definitions/segment_match_events_stream"
+  - "#/definitions/session_match_events_stream"
+  - "#/definitions/survey_responses_stream"
   - "#/definitions/kcbot_stream"
   - "#/definitions/user_attributes_stream"
   - "#/definitions/users_stream"
@@ -151,11 +272,22 @@ check:
   type: CheckStream
   stream_names:
     - "accounts"
-    - "admin_attributes"
     - "articles"
+    - "admin_attributes"
+    - "custom_events"
+    - "email_events"
     - "engagement"
+    - "engagement_view_events"
     - "feature"
+    - "feature_match_events"
+    - "form_submit_events"
+    - "identify_events"
+    - "lead_events"
+    - "pageview_events"
     - "segments"
+    - "segment_match_events"
+    - "session_match_events"
+    - "survey_responses"
     - "kcbot"
     - "user_attributes"
     - "users"

@@ -1,0 +1,228 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Survey Responses Schema",
+    "type": [
+        "null",
+        "object"
+    ],
+    "additionalProperties": true,
+    "properties": {
+        "eventId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "identifyId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "propertyKey": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date": {
+            "type": [
+                "null",
+                "number"
+            ],
+            "format": "int64"
+        },
+        "eventType": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "sessionId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "userType": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "enum": [
+                "LEAD",
+                "USER",
+                "VISITOR",
+                "EMPTY_USER_TYPE"
+            ]
+        },
+        "accountId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "globalContext": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "engagementId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "engagementTrackType": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "enum": [
+                        "ENGAGEMENT_VIEW",
+                        "ENGAGEMENT_CLICK"
+                    ]
+                },
+                "contentId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "contentType": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "enum": [
+                        "IN_APP_DIALOG",
+                        "IN_APP_GUIDE",
+                        "IN_APP_CAROUSEL",
+                        "IN_APP_SURVEY_NPS",
+                        "IN_APP_SURVEY_CES",
+                        "IN_APP_SURVEY_BOOLEAN",
+                        "IN_APP_SURVEY_RATING"
+                    ]
+                },
+                "executionDate": {
+                    "type": [
+                        "null",
+                        "number"
+                    ],
+                    "format": "int64"
+                },
+                "executionId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "viewEventId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "carouselState": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "enum": [
+                        "VIEWED",
+                        "COMPLETED"
+                    ]
+                },
+                "slideId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "sequenceNumber": {
+                    "type": [
+                        "null",
+                        "number"
+                    ],
+                    "format": "int64"
+                },
+                "linkUrl": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "guideState": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "enum": [
+                        "VIEWED",
+                        "COMPLETED"
+                    ]
+                },
+                "stepId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "surveyState": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "enum": [
+                        "VIEWED",
+                        "COMPLETED"
+                    ]
+                },
+                "contactMeAllowed": {
+                    "type": "boolean"
+                },
+                "score": {
+                    "type": [
+                        "null",
+                        "number"
+                    ],
+                    "format": "int32"
+                },
+                "comment": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "questionType": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "selectionIds": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                },
+                "path": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "required": [
+        "identifyId",
+        "propertyKey",
+        "userType"
+    ]
+}

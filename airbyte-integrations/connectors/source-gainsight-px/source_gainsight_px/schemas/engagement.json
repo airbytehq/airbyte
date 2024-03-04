@@ -103,7 +103,10 @@
                 "array"
             ],
             "items": {
-                "type": "string"
+                "type": [
+                    "null",
+                    "string"
+                ]
             }
         },
         "envs": {
@@ -112,7 +115,10 @@
                 "array"
             ],
             "items": {
-                "type": "string"
+                "type": [
+                    "null",
+                    "string"
+                ]
             }
         }
     }

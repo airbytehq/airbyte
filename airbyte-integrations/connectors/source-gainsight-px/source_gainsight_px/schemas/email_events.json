@@ -1,0 +1,242 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Email Events Schema",
+    "type": [
+        "null",
+        "object"
+    ],
+    "properties": {
+        "eventId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "identifyId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "propertyKey": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "eventType": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "userType": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "enum": [
+                "LEAD",
+                "USER",
+                "VISITOR",
+                "EMPTY_USER_TYPE"
+            ]
+        },
+        "globalContext": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "additionalProperties": true
+        },
+        "engagementId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "email": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "emailTrackType": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "enum": [
+                "EMPTY_EMAIL_TRACK_TYPE",
+                "EMAIL_TRACK_BOUNCE",
+                "EMAIL_TRACK_DEFERRED",
+                "EMAIL_TRACK_DELIVERED",
+                "EMAIL_TRACK_DROPPED",
+                "EMAIL_TRACK_PROCESSED",
+                "EMAIL_TRACK_OPEN",
+                "EMAIL_TRACK_CLICK",
+                "EMAIL_TRACK_UNSUBSCRIBE"
+            ]
+        },
+        "status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "reason": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "bounceType": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "enum": [
+                "EMPTY_BOUNCE_TYPE",
+                "DELIVER_BOUNCE",
+                "DELIVER_BLOCKED",
+                "DELIVER_EXPIRED"
+            ]
+        },
+        "mtaResponse": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "attempt": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "linkIndex": {
+            "type": [
+                "null",
+                "integer"
+            ],
+            "format": "int32"
+        },
+        "linkType": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "enum": [
+                "EMPTY_LINK_TYPE",
+                "HTML_LINK_TYPE",
+                "HEADER_LINK_TYPE",
+                "TEXT_LINK_TYPE"
+            ]
+        },
+        "linkUrl": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "inferredLocation": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "countryName": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "countryCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "stateName": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "stateCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "city": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "street": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "postalCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "continent": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "regionName": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "timeZone": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "coordinates": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "latitude": {
+                            "type": [
+                                "null",
+                                "number"
+                            ],
+                            "format": "double"
+                        },
+                        "longitude": {
+                            "type": [
+                                "null",
+                                "number"
+                            ],
+                            "format": "double"
+                        }
+                    },
+                    "additionalProperties": true
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}
