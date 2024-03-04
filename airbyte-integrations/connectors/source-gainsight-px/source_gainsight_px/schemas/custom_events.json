@@ -1,0 +1,105 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "CUstom Events Schema",
+    "type": [
+        "null",
+        "object"
+    ],
+    "properties": {
+        "eventId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "identifyId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "propertyKey": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "eventType": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "sessionId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "userType": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "enum": [
+                "LEAD",
+                "USER",
+                "VISITOR",
+                "EMPTY_USER_TYPE"
+            ]
+        },
+        "accountId": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "globalContext": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "additionalProperties": true
+        },
+        "eventName": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "attributes": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "url": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "referrer": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "remoteHost": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}

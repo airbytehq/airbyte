@@ -23,13 +23,39 @@ acceptance_tests:
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: articles
             bypass_reason: "Sandbox account cannot seed the stream"
+          - name: admin_attributes
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: custom_events
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: email_events
+            bypass_reason: "Sandbox account cannot seed the stream"
           - name: engagement
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: engagement_view_events
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: feature
             bypass_reason: "Sandbox account cannot seed the stream"
+          - name: feature_match_events
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: form_submit_events
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: identify_events
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: lead_events
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: pageview_events
+            bypass_reason: "Sandbox account cannot seed the stream"
           - name: segments
             bypass_reason: "Sandbox account cannot seed the stream"
+          - name: segment_match_events
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: session_match_events
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: survey_responses
+            bypass_reason: "Sandbox account cannot seed the stream"
           - name: kcbot
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: user_attributes
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: users
             bypass_reason: "Sandbox account cannot seed the stream"
