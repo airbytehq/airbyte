@@ -18,8 +18,12 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(Lifecycle.PER_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
 
   @Override
