@@ -43,39 +43,7 @@ class SendgridStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        json_response = response.json()
-        records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-
-        if records is not None:
-            for record in records:
-                yield record
-        else:
-            # TODO sendgrid's API is sending null responses at times. This seems like a bug on the API side, so we're adding
-            #  log statements to help reproduce and prevent the connector from failing.
-            err_msg = (
-                f"Response contained no valid JSON data. Response body: {response.text}\n"
-                f"Response status: {response.status_code}\n"
-                f"Response body: {response.text}\n"
-                f"Response headers: {response.headers}\n"
-                f"Request URL: {response.request.url}\n"
-                f"Request body: {response.request.body}\n"
-            )
-            # do NOT print request headers as it contains auth token
-            self.logger.info(err_msg)
-
-    def should_retry(self, response: requests.Response) -> bool:
-        """Override to provide skip the stream possibility"""
-
-        status = response.status_code
-        if status in self.permission_error_codes.keys():
-            for message in response.json().get("errors", []):
-                if message.get("message") == self.permission_error_codes.get(status):
-                    self.logger.error(
-                        f"Stream `{self.name}` is not available, due to subscription plan limitations or perrmission issues. Skipping."
-                    )
-                    setattr(self, "raise_on_http_errors", False)
-                    return False
-        return 500 <= response.status_code < 600
+        pass  # not actually used because Contacts does read_records
 
 
 class Contacts(SendgridStream):

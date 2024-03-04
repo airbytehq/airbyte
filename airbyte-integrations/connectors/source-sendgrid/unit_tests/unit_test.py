@@ -47,13 +47,6 @@ def mock_pendulum_now(monkeypatch):
     monkeypatch.setattr(pendulum, "now", pendulum_mock)
 
 
-def test_parse_response_gracefully_handles_nulls(mocker, sendgrid_stream: SendgridStream):
-    response = requests.Response()
-    mocker.patch.object(response, "json", return_value=None)
-    mocker.patch.object(response, "request", return_value=MagicMock())
-    assert [] == list(sendgrid_stream.parse_response(response))
-
-
 def test_source_wrong_credentials():
     source = SourceSendgrid()
     status, error = source.check_connection(logger=AirbyteLogger(), config={"api_key": "wrong.api.key123"})
