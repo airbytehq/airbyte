@@ -177,7 +177,7 @@ streams:
           id:
             type:
               - "null"
-              - number
+              - integer
           zip:
             type:
               - "null"
@@ -247,11 +247,11 @@ streams:
           agent_id:
             type:
               - "null"
-              - number
+              - integer
           away_time:
             type:
               - "null"
-              - number
+              - integer
           avatar_url:
             type:
               - "null"
@@ -263,75 +263,75 @@ streams:
           online_time:
             type:
               - "null"
-              - number
+              - integer
           calls_denied:
             type:
               - "null"
-              - number
+              - integer
           calls_missed:
             type:
               - "null"
-              - number
+              - integer
           available_time:
             type:
               - "null"
-              - number
+              - integer
           calls_accepted:
             type:
               - "null"
-              - number
+              - integer
           total_hold_time:
             type:
               - "null"
-              - number
+              - integer
           total_talk_time:
             type:
               - "null"
-              - number
+              - integer
           average_hold_time:
             type:
               - "null"
-              - number
+              - integer
           average_talk_time:
             type:
               - "null"
-              - number
+              - integer
           calls_put_on_hold:
             type:
               - "null"
-              - number
+              - integer
           started_transfers:
             type:
               - "null"
-              - number
+              - integer
           accepted_transfers:
             type:
               - "null"
-              - number
+              - integer
           total_wrap_up_time:
             type:
               - "null"
-              - number
+              - integer
           total_call_duration:
             type:
               - "null"
-              - number
+              - integer
           transfers_only_time:
             type:
               - "null"
-              - number
+              - integer
           average_wrap_up_time:
             type:
               - "null"
-              - number
+              - integer
           started_third_party_conferences:
             type:
               - "null"
-              - number
+              - integer
           accepted_third_party_conferences:
             type:
               - "null"
-              - number
+              - integer
   - name: agents_overview
     type: DeclarativeStream
     retriever:
@@ -371,91 +371,91 @@ streams:
           total_hold_time:
             type:
               - "null"
-              - number
+              - integer
           total_talk_time:
             type:
               - "null"
-              - number
+              - integer
           average_away_time:
             type:
               - "null"
-              - number
+              - integer
           average_hold_time:
             type:
               - "null"
-              - number
+              - integer
           average_talk_time:
             type:
               - "null"
-              - number
+              - integer
           total_calls_denied:
             type:
               - "null"
-              - number
+              - integer
           total_calls_missed:
             type:
               - "null"
-              - number
+              - integer
           total_wrap_up_time:
             type:
               - "null"
-              - number
+              - integer
           average_online_time:
             type:
               - "null"
-              - number
+              - integer
           average_calls_denied:
             type:
               - "null"
-              - number
+              - integer
           average_calls_missed:
             type:
               - "null"
-              - number
+              - integer
           average_wrap_up_time:
             type:
               - "null"
-              - number
+              - integer
           total_calls_accepted:
             type:
               - "null"
-              - number
+              - integer
           average_available_time:
             type:
               - "null"
-              - number
+              - integer
           average_calls_accepted:
             type:
               - "null"
-              - number
+              - integer
           total_calls_put_on_hold:
             type:
               - "null"
-              - number
+              - integer
           total_started_transfers:
             type:
               - "null"
-              - number
+              - integer
           total_accepted_transfers:
             type:
               - "null"
-              - number
+              - integer
           average_calls_put_on_hold:
             type:
               - "null"
-              - number
+              - integer
           average_started_transfers:
             type:
               - "null"
-              - number
+              - integer
           average_accepted_transfers:
             type:
               - "null"
-              - number
+              - integer
           average_transfers_only_time:
             type:
               - "null"
-              - number
+              - integer
   - name: greeting_categories
     type: DeclarativeStream
     retriever:
@@ -490,7 +490,7 @@ streams:
           id:
             type:
               - "null"
-              - number
+              - integer
           name:
             type:
               - "null"
@@ -548,7 +548,7 @@ streams:
             items:
               type:
                 - string
-                - number
+                - integer
           pending:
             type:
               - "null"
@@ -564,7 +564,7 @@ streams:
           category_id:
             type:
               - "null"
-              - number
+              - integer
           default_lang:
             type:
               - "null"
@@ -579,7 +579,7 @@ streams:
               - array
             items:
               type:
-                - number
+                - integer
                 - string
   - name: phone_numbers
     type: DeclarativeStream
@@ -615,7 +615,7 @@ streams:
           id:
             type:
               - "null"
-              - number
+              - integer
           name:
             type:
               - "null"
@@ -635,7 +635,7 @@ streams:
           priority:
             type:
               - "null"
-              - number
+              - integer
           recorded:
             type:
               - "null"
@@ -766,7 +766,7 @@ streams:
           id:
             type:
               - "null"
-              - number
+              - integer
           type:
             type:
               - "null"
@@ -774,27 +774,27 @@ streams:
           call_id:
             type:
               - "null"
-              - number
+              - integer
           user_id:
             type:
               - "null"
-              - number
+              - integer
           agent_id:
             type:
               - "null"
-              - number
+              - integer
           duration:
             type:
               - "null"
-              - number
+              - integer
           hold_time:
             type:
               - "null"
-              - number
+              - integer
           talk_time:
             type:
               - "null"
-              - number
+              - integer
           created_at:
             type:
               - "null"
@@ -811,7 +811,7 @@ streams:
           wrap_up_time:
             type:
               - "null"
-              - number
+              - integer
           available_via:
             type:
               - "null"
@@ -819,7 +819,7 @@ streams:
           minutes_billed:
             type:
               - "null"
-              - number
+              - integer
           quality_issues:
             type:
               - "null"
@@ -882,7 +882,7 @@ streams:
         properties:
           id:
             type:
-              - number
+              - integer
               - "null"
           callback:
             type:
@@ -890,7 +890,7 @@ streams:
               - "null"
           duration:
             type:
-              - number
+              - integer
               - "null"
           direction:
             type:
@@ -898,11 +898,11 @@ streams:
               - "null"
           hold_time:
             type:
-              - number
+              - integer
               - "null"
           talk_time:
             type:
-              - number
+              - integer
               - "null"
           voicemail:
             type:
@@ -910,7 +910,7 @@ streams:
               - "null"
           wait_time:
             type:
-              - number
+              - integer
               - "null"
           created_at:
             type:
@@ -935,7 +935,7 @@ streams:
               - "null"
           wrap_up_time:
             type:
-              - number
+              - integer
               - "null"
           default_group:
             type:
@@ -943,7 +943,7 @@ streams:
               - "null"
           minutes_billed:
             type:
-              - number
+              - integer
               - "null"
           quality_issues:
             type:
@@ -951,11 +951,11 @@ streams:
               - "null"
           recording_time:
             type:
-              - number
+              - integer
               - "null"
           phone_number_id:
             type:
-              - number
+              - integer
               - "null"
           completion_status:
             type:
@@ -963,11 +963,11 @@ streams:
               - "null"
           consultation_time:
             type:
-              - number
+              - integer
               - "null"
           not_recording_time:
             type:
-              - number
+              - integer
               - "null"
           call_recording_consent:
             type:
@@ -987,7 +987,7 @@ streams:
               - "null"
           recording_control_interactions:
             type:
-              - number
+              - integer
               - "null"
     incremental_sync:
       type: DatetimeBasedCursor
@@ -1041,27 +1041,27 @@ streams:
         properties:
           agents_online:
             type:
-              - number
+              - integer
               - "null"
           calls_waiting:
             type:
-              - number
+              - integer
               - "null"
           average_wait_time:
             type:
-              - number
+              - integer
               - "null"
           callbacks_waiting:
             type:
-              - number
+              - integer
               - "null"
           longest_wait_time:
             type:
-              - number
+              - integer
               - "null"
           embeddable_callbacks_waiting:
             type:
-              - number
+              - integer
               - "null"
   - name: account_overview
     type: DeclarativeStream
@@ -1100,94 +1100,94 @@ streams:
         $schema: "http://json-schema.org/schema#"
         properties:
           current_timestamp:
-            type: number
+            type: integer
           total_calls:
             type:
-              - number
+              - integer
               - "null"
           total_hold_time:
             type:
-              - number
+              - integer
               - "null"
           total_voicemails:
             type:
-              - number
+              - integer
               - "null"
           average_hold_time:
             type:
-              - number
+              - integer
               - "null"
           max_calls_waiting:
             type:
-              - number
+              - integer
               - "null"
           total_wrap_up_time:
             type:
-              - number
+              - integer
               - "null"
           max_queue_wait_time:
             type:
-              - number
+              - integer
               - "null"
           total_call_duration:
             type:
-              - number
+              - integer
               - "null"
           total_inbound_calls:
             type:
-              - number
+              - integer
               - "null"
           average_wrap_up_time:
             type:
-              - number
+              - integer
               - "null"
           total_callback_calls:
             type:
-              - number
+              - integer
               - "null"
           total_outbound_calls:
             type:
-              - number
+              - integer
               - "null"
           average_call_duration:
             type:
-              - number
+              - integer
               - "null"
           average_time_to_answer:
             type:
-              - number
+              - integer
               - "null"
           average_queue_wait_time:
             type:
-              - number
+              - integer
               - "null"
           total_textback_requests:
             type:
-              - number
+              - integer
               - "null"
           average_callback_wait_time:
             type:
-              - number
+              - integer
               - "null"
           total_calls_abandoned_in_queue:
             type:
-              - number
+              - integer
               - "null"
           total_embeddable_callback_calls:
             type:
-              - number
+              - integer
               - "null"
           total_calls_outside_business_hours:
             type:
-              - number
+              - integer
               - "null"
           total_calls_with_requested_voicemail:
             type:
-              - number
+              - integer
               - "null"
           total_calls_with_exceeded_queue_wait_time:
             type:
-              - number
+              - integer
               - "null"
   - name: ivrs
     type: DeclarativeStream
@@ -1221,7 +1221,7 @@ streams:
         properties:
           id:
             type:
-              - number
+              - integer
               - "null"
           name:
             type:
@@ -1236,7 +1236,7 @@ streams:
               properties:
                 id:
                   type:
-                    - number
+                    - integer
                     - "null"
                 name:
                   type:
@@ -1251,7 +1251,7 @@ streams:
                     properties:
                       id:
                         type:
-                          - number
+                          - integer
                           - "null"
                       action:
                         type:
@@ -1284,7 +1284,7 @@ streams:
             items:
               type:
                 - string
-                - number
+                - integer
           phone_number_names:
             type:
               - array
@@ -1292,7 +1292,7 @@ streams:
             items:
               type:
                 - string
-                - number
+                - integer
   - name: ivr_menus
     type: DeclarativeStream
     retriever:
@@ -1323,7 +1323,7 @@ streams:
         properties:
           id:
             type:
-              - number
+              - integer
               - "null"
           name:
             type:
@@ -1331,7 +1331,7 @@ streams:
               - "null"
           ivr_id:
             type:
-              - number
+              - integer
               - "null"
           default:
             type:
@@ -1375,15 +1375,15 @@ streams:
               - "null"
           id:
             type:
-              - number
+              - integer
               - "null"
           ivr_id:
             type:
-              - number
+              - integer
               - "null"
           ivr_menu_id:
             type:
-              - number
+              - integer
               - "null"
           keypress:
             type:
