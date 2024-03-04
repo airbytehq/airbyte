@@ -8,7 +8,7 @@ public class NoOpDestinationV1V2Migrator implements DestinationV1V2Migrator {
 
   @Override
   public void migrateIfNecessary(final SqlGenerator sqlGenerator,
-                                 final DestinationHandler destinationHandler,
+                                 final DestinationHandler<?> destinationHandler,
                                  final StreamConfig streamConfig)
       throws TableNotMigratedException, UnexpectedSchemaException {
     // Do nothing
