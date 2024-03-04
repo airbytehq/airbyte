@@ -30,7 +30,13 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@TestInstance(Lifecycle.PER_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "dbo";
