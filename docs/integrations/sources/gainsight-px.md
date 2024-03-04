@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the [Gainsight-
 
 ## Prerequisites
 
-Api key is mandate for this connector to work, It could be generated from the dashboard settings (ref - https://app.aptrinsic.com/settings/api-keys). 
+Api key is mandate for this connector to work, It could be generated from the dashboard settings (ref - https://app.aptrinsic.com/settings/api-keys).
 
 ## Setup guide
 
@@ -23,7 +23,7 @@ Api key is mandate for this connector to work, It could be generated from the da
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Gainsight-API connector and select **Gainsight-API** from the Source type dropdown.
 4. Enter your `api_key`.
-5. Enter the params configuration if needed. Supported params are: query, orientation, size, color, locale, collection_id \ 
+5. Enter the params configuration if needed. Supported params are: query, orientation, size, color, locale, collection_id \
 video_id, photo_id
 6. Click **Set up source**.
 
@@ -32,7 +32,7 @@ video_id, photo_id
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-4. Enter the params configuration if needed. Supported params are: query, orientation, size, color, locale, collection_id \ 
+4. Enter the params configuration if needed. Supported params are: query, orientation, size, color, locale, collection_id \
 video_id, photo_id
 5. Click **Set up source**.
 
@@ -53,6 +53,7 @@ The Gainsight-API source connector supports the following [sync modes](https://d
 - accounts
 - admin_attributes
 - articles
+- engagement
 - feature
 - kcbot
 - segments
@@ -71,4 +72,5 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
+| 0.1.1   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/35797)| Adds `engagement` stream     |
 | 0.1.0   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/26998)| Initial PR     |
