@@ -4,6 +4,14 @@
 
 Streams Ads-Insights-* streams now have updated schemas.
 
+### Update Custom Insights Reports (this step can be skipped if you did not define any)
+
+1. Select **Sources** in the main navbar.
+    1. Select the Facebook Marketing Connector.
+2. Select the **Retest saved source**.
+3. Remove unsupported fields from the list in Custom Insights section.
+4. Select **Test and Save**.
+
 ### Refresh affected schemas and reset data
 
 1. Select **Connections** in the main navbar.
