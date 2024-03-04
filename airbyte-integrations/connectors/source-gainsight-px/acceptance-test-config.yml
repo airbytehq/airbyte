@@ -49,7 +49,7 @@ acceptance_tests:
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: segment_match_events
             bypass_reason: "Sandbox account cannot seed the stream"
-          - name: session_match_events
+          - name: session_events
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: survey_responses
             bypass_reason: "Sandbox account cannot seed the stream"
