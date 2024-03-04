@@ -42,6 +42,15 @@ acceptance_tests:
             bypass_reason: Not possible to add data
           - name: keyword_report
             bypass_reason: Not possible to add data
+          # Remove when https://github.com/airbytehq/airbyte-internal-issues/issues/6438 completed
+          - name: ad_group_analytics
+            bypass_reason: Data needs to be added to account
+          - name: campaign_analytics
+            bypass_reason: Data needs to be added to account
+          - name: ad_analytics
+            bypass_reason: Data needs to be added to account
+          - name: ad_account_analytics
+            bypass_reason: Data needs to be added to account
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records.jsonl"
