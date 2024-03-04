@@ -59,26 +59,6 @@ def test_streams():
     assert len(streams) == 15
 
 
-# @patch.multiple(SendgridStreamOffsetPagination, __abstractmethods__=set(), data_field="result")
-# def test_pagination(mocker):
-#     stream = SendgridStreamOffsetPagination()
-#     state = {}
-#     response = requests.Response()
-#     mocker.patch.object(response, "json", return_value={"result": range(100)})
-#     mocker.patch.object(response, "request", return_value=MagicMock())
-#     next_page_token = stream.next_page_token(response)
-#     request_params = stream.request_params(stream_state=state, next_page_token=next_page_token)
-#     assert request_params == {"limit": 50, "offset": 50}
-
-
-# @patch.multiple(SendgridStreamIncrementalMixin, __abstractmethods__=set())
-# def test_stream_state():
-#     stream = SendgridStreamIncrementalMixin(start_date=FAKE_NOW_ISO_STRING)
-#     state = {}
-#     request_params = stream.request_params(stream_state=state)
-#     assert request_params == {"end_time": pendulum.now().int_timestamp, "start_date": int(FAKE_NOW.timestamp())}
-
-
 @pytest.mark.parametrize(
     "stream_name, url , expected",
     (
