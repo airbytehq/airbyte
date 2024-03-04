@@ -821,6 +821,10 @@ streams:
         datetime: '{{ config[''start_date''] }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       is_data_feed: true
+    transformations:
+      - type: CustomTransformation
+        class_name: source_notion.components.NotionPropertiesTransformation
+
   - type: DeclarativeStream
     name: pages
     primary_key:
@@ -1605,6 +1609,10 @@ streams:
         datetime: '{{ config[''start_date''] }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       is_data_feed: true
+    transformations:
+      - type: CustomTransformation
+        class_name: source_notion.components.NotionPropertiesTransformation
+
   - type: DeclarativeStream
     name: comments
     primary_key:

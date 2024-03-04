@@ -21,11 +21,22 @@ class NotionUserTransformation(RecordTransformation):
         record["bot"]["owner"]["info"] = owner_info
         del record["bot"]["owner"][owner_type]
     return record
-  
+
 
 @dataclass
-class NotionPageDatabaseTransformation(RecordTransformation):
-  pass
+class NotionPropertiesTransformation(RecordTransformation):
+  """
+  Custom transformation that normalizes nested 'properties' object by moving
+  unique named entities into 'name', 'value' mappings
+  """
+
+  def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    properties = record.get("properties", {})
+    transformed_properties = [
+      {"name": name, "value": value} for name, value in properties.items()
+    ]
+    record["properties"] = transformed_properties
+    return record
 
 
 @dataclass
