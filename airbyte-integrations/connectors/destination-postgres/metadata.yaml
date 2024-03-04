@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.0.2
   dockerRepository: airbyte/destination-postgres
   documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   githubIssueLabel: destination-postgres
@@ -27,8 +27,8 @@ data:
           These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
           Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync. For more controlled upgrade [see instructions](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#upgrading-connections-one-by-one-with-dual-writing).
         upgradeDeadline: "2024-05-31"
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   supportsDbt: true
   tags:
     - language:java
