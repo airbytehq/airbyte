@@ -19,6 +19,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.10"
 airbyte-protocol-models = "<1.0.0"
+cachetools = "~=5.3.3"
 dagger-io = "==0.9.6"
 PyYAML = "~=6.0"
 icdiff = "~=1.9"
