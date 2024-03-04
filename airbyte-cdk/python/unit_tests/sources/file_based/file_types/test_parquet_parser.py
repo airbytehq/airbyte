@@ -190,6 +190,7 @@ def test_value_dictionary() -> None:
     py_value = ParquetParser._to_output_value(dictionary, _default_parquet_format)
     assert py_value == {"indices": [0, 1, 2, 0, 1], "values": ["apple", "banana", "cherry"]}
 
+
 @pytest.mark.parametrize(
     "parquet_type, parquet_format",
     [
