@@ -29,6 +29,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -125,7 +126,11 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     return tableRowCounts;
   }
 
-  public InitialRawTableStatus getInitialRawTableState(final StreamId id) throws Exception {
+  private InitialRawTableStatus getInitialRawTableState(final StreamId id, final DestinationSyncMode destinationSyncMode) throws Exception {
+    // Short-circuit for overwrite, table will be truncated anyway
+    if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
+      return new InitialRawTableStatus(false, false, Optional.empty());
+    }
     final ResultSet tables = database.getMetaData().getTables(
         databaseName,
         id.rawNamespace(),
@@ -274,7 +279,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
           isSchemaMismatch = !existingSchemaMatchesStreamConfig(streamConfig, existingTable);
           isFinalTableEmpty = hasRowCount && tableRowCounts.get(namespace).get(name) == 0;
         }
-        final InitialRawTableStatus initialRawTableState = getInitialRawTableState(streamConfig.id());
+        final InitialRawTableStatus initialRawTableState = getInitialRawTableState(streamConfig.id(), streamConfig.destinationSyncMode());
         final SnowflakeState destinationState = destinationStates.getOrDefault(streamConfig.id().asPair(), toDestinationState(Jsons.emptyObject()));
         return new DestinationInitialStatus<>(
             streamConfig,
