@@ -1,0 +1,261 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "BillingIntervalBillingCount": {
+        "type": "string"
+      },
+      "CreatedAt": {
+        "type": "string"
+      },
+      "CurrencyCode": {
+        "type": "string"
+      },
+      "CustomAttributes": {
+        "items": {
+          "properties": {
+            "__typename": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "Customer": {
+        "properties": {
+          "acceptsMarketing": {
+            "type": "boolean"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "imageSrc": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "productSubscriberStatus": {
+            "type": "string"
+          },
+          "validEmailAddress": {
+            "type": "boolean"
+          },
+          "verifiedEmail": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "CustomerId": {
+        "type": "string"
+      },
+      "CustomerPaymentMethod": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "instrument": {
+            "properties": {
+              "__typename": {
+                "type": "string"
+              },
+              "billingAddress": {
+                "properties": {
+                  "address1": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "countryCode": {
+                    "type": "string"
+                  },
+                  "province": {
+                    "type": "string"
+                  },
+                  "provinceCode": {
+                    "type": "string"
+                  },
+                  "zip": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "brand": {
+                "type": "string"
+              },
+              "expiryMonth": {
+                "type": "string"
+              },
+              "expiryYear": {
+                "type": "string"
+              },
+              "lastDigits": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "revokedAt": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DeliveryBatchingAnchor": {
+        "type": "array"
+      },
+      "DeliveryIntervalDeliveryCount": {
+        "type": "string"
+      },
+      "DeliveryMethod": {
+        "properties": {
+          "address": {
+            "properties": {
+              "address1": {
+                "type": "string"
+              },
+              "address2": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "countryCode": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "province": {
+                "type": "string"
+              },
+              "provinceCode": {
+                "type": "string"
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "shippingOptions": {
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "presentmentTitle": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "DeliveryPriceAmount": {
+        "type": "number"
+      },
+      "DeliveryPriceCurrencyCode": {
+        "type": "string"
+      },
+      "Discounts": {
+        "type": "array"
+      },
+      "HasPrepaidLines": {
+        "type": "boolean"
+      },
+      "IsInDunning": {
+        "type": "boolean"
+      },
+      "IsUpdating": {
+        "type": "boolean"
+      },
+      "ItemTypeSubscriptionStatusNextBillingDate": {
+        "type": "string"
+      },
+      "LineCount": {
+        "type": "number"
+      },
+      "MarketOverrideCountryCode": {
+        "type": "string"
+      },
+      "NextBillingDate": {
+        "type": "string"
+      },
+      "NextBillingUpcomingDate": {
+        "type": "string"
+      },
+      "NextBillingUpcomingYearMonth": {
+        "type": "string"
+      },
+      "NextBillingYearMonth": {
+        "type": "string"
+      },
+      "OriginOrderId": {
+        "type": "string"
+      },
+      "PK": {
+        "type": "string"
+      },
+      "PauseDates": {
+        "items": {
+          "properties": {
+            "Date": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "SK": {
+        "type": "string"
+      },
+      "ShopDomain": {
+        "type": "string"
+      },
+      "SubscriptionContractNextBillingDate": {
+        "type": "string"
+      },
+      "SubscriptionId": {
+        "type": "string"
+      },
+      "SubscriptionStatus": {
+        "type": "string"
+      },
+      "UpdatedAt": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }
