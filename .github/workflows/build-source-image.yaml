@@ -186,6 +186,7 @@ on:
         - source-surveymonkey
         - source-talkdesk-explore
         - source-tempo
+        - source-test-connector
         - source-tidb
         - source-tiktok-marketing
         - source-timely
