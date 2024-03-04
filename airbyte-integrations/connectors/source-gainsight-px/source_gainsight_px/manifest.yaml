@@ -80,7 +80,7 @@ definitions:
     name: "articles"
     primary_key: "id"
 
-  articles_stream:
+  engagement_stream:
     $parameters:
       path: "engagement"
       extractorPath: "engagements"
