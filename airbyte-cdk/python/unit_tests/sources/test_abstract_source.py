@@ -423,12 +423,12 @@ def test_valid_full_refresh_read_no_slices(mocker):
             _as_stream_status("s1", AirbyteStreamStatus.STARTED),
             _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             *_as_records("s1", stream_output),
-            _as_state("s1", {"sync_mode": "full_refresh"}),
+            _as_state("s1", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             *_as_records("s2", stream_output),
-            _as_state("s2", {"sync_mode": "full_refresh"}),
+            _as_state("s2", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
         ]
     )
@@ -466,12 +466,12 @@ def test_valid_full_refresh_read_with_slices(mocker):
             _as_stream_status("s1", AirbyteStreamStatus.STARTED),
             _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             *_as_records("s1", slices),
-            _as_state("s1", {"sync_mode": "full_refresh"}),
+            _as_state("s1", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             *_as_records("s2", slices),
-            _as_state("s2", {"sync_mode": "full_refresh"}),
+            _as_state("s2", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
         ]
     )
@@ -479,6 +479,73 @@ def test_valid_full_refresh_read_with_slices(mocker):
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog)))
 
     assert expected == messages
+
+
+def test_full_refresh_does_not_use_incoming_state(mocker):
+    """Tests that running a full refresh sync does not use an incoming state message from the platform"""
+    slices = [{"1": "1"}, {"2": "2"}]
+    # When attempting to sync a slice, just output that slice as a record
+    s1 = MockStream(
+        [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+        name="s1",
+    )
+    s2 = MockStream(
+        [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+        name="s2",
+    )
+
+    def stream_slices_side_effect(stream_state: Mapping[str, Any], **kwargs) -> List[Mapping[str, Any]]:
+        if stream_state:
+            return slices[1:]
+        else:
+            return slices
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "stream_slices", side_effect=stream_slices_side_effect)
+
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="s1"),
+                stream_state=AirbyteStateBlob.parse_obj({"created_at": "2024-01-31"}),
+            ),
+        ),
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="s2"),
+                stream_state=AirbyteStateBlob.parse_obj({"__ab_full_refresh_state_message": True}),
+            ),
+        ),
+    ]
+
+    src = MockSource(streams=[s1, s2])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(s1, SyncMode.full_refresh),
+            _configured_stream(s2, SyncMode.full_refresh),
+        ]
+    )
+
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", slices),
+            _as_state("s1", {"__ab_full_refresh_state_message": True}),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
+            *_as_records("s2", slices),
+            _as_state("s2", {"__ab_full_refresh_state_message": True}),
+            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
+        ]
+    )
+
+    messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state)))
+
+    assert messages == expected
 
 
 @pytest.mark.parametrize(

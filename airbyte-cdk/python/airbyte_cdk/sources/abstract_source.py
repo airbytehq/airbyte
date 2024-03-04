@@ -274,7 +274,7 @@ class AbstractSource(Source, ABC):
         return f"During the sync, the following streams did not sync successfully: {failures}"
 
     @staticmethod
-    def _stream_state_is_full_refresh(stream_state: Mapping[str, Any]):
+    def _stream_state_is_full_refresh(stream_state: Mapping[str, Any]) -> bool:
         # For full refresh syncs that don't have a suitable cursor value, we emit a state that contains a sentinel key.
         # This key is never used by a connector and is needed during a read to skip assigning the incoming state.
         return FULL_REFRESH_SENTINEL_STATE_KEY in stream_state

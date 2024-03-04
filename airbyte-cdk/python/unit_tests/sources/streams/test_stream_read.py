@@ -169,7 +169,7 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                        stream_state=AirbyteStateBlob(sync_mode='full_refresh'),
+                        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
                     )
                 ),
             ),
@@ -215,7 +215,7 @@ def test_full_refresh_read_a_single_slice(constructor):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                        stream_state=AirbyteStateBlob(sync_mode='full_refresh'),
+                        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
                     )
                 ),
             ),
@@ -268,7 +268,7 @@ def test_full_refresh_read_a_two_slices(constructor):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                        stream_state=AirbyteStateBlob(sync_mode='full_refresh'),
+                        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
                     )
                 ),
             ),

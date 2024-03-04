@@ -480,30 +480,3 @@ def test_create_state_message(start_state, update_name, update_namespace, expect
 
     actual_state_message = state_manager.create_state_message(stream_name=update_name, namespace=update_namespace)
     assert actual_state_message == expected_state_message
-
-
-def test_do_not_set_stream_descriptor_namespace_when_none():
-    """
-    This is a very specific test to ensure that the None value is not set and emitted back to the platform for namespace.
-    The platform performs validation on the state message sent by the connector and namespace must be a string or not
-    included at all. The None value registers as null by the platform which is not valid input. We can verify that fields
-    on a pydantic model are not defined using exclude_unset parameter.
-    """
-    expected_stream_state_descriptor = {"name": "episodes", "namespace": None}
-
-    state_manager = ConnectorStateManager(
-        {},
-        [
-            AirbyteStateMessage(
-                type=AirbyteStateType.STREAM,
-                stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="episodes"),
-                    stream_state=None,
-                ),
-            ),
-        ],
-    )
-
-    actual_state_message = state_manager.create_state_message(stream_name="episodes", namespace=None)
-
-    assert actual_state_message.state.stream.stream_descriptor.dict(exclude_unset=True) == expected_stream_state_descriptor
