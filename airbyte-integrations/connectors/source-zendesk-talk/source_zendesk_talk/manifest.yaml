@@ -63,7 +63,7 @@ spec:
               api_token:
                 title: API Token
                 type: string
-                description: "The value of the API token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk-talk\">docs</a> for more information."
+                description: 'The value of the API token generated. See the <a href="https://docs.airbyte.com/integrations/sources/zendesk-talk">docs</a> for more information.'
                 airbyte_secret: true
           - title: OAuth2.0
             type: object
@@ -78,7 +78,7 @@ spec:
               access_token:
                 type: string
                 title: Access Token
-                description: "The value of the API token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk-talk\">docs</a> for more information."
+                description: 'The value of the API token generated. See the <a href="https://docs.airbyte.com/integrations/sources/zendesk-talk">docs</a> for more information.'
                 airbyte_secret: true
               client_id:
                 type: string
@@ -164,7 +164,7 @@ streams:
           type: DpathExtractor
           field_path:
             - addresses
-            - '*'
+            - "*"
       partition_router: []
     primary_key:
       - id
@@ -176,35 +176,35 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           zip:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           street:
             type:
-              - 'null'
+              - "null"
               - string
           province:
             type:
-              - 'null'
+              - "null"
               - string
           country_code:
             type:
-              - 'null'
+              - "null"
               - string
           provider_reference:
             type:
-              - 'null'
+              - "null"
               - string
   - name: agents_activity
     type: DeclarativeStream
@@ -227,7 +227,7 @@ streams:
           type: DpathExtractor
           field_path:
             - agents_activity
-            - '*'
+            - "*"
       partition_router: []
     primary_key: []
     schema_loader:
@@ -238,99 +238,99 @@ streams:
         properties:
           via:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           agent_id:
             type:
-              - 'null'
+              - "null"
               - number
           away_time:
             type:
-              - 'null'
+              - "null"
               - number
           avatar_url:
             type:
-              - 'null'
+              - "null"
               - string
           agent_state:
             type:
-              - 'null'
+              - "null"
               - string
           online_time:
             type:
-              - 'null'
+              - "null"
               - number
           calls_denied:
             type:
-              - 'null'
+              - "null"
               - number
           calls_missed:
             type:
-              - 'null'
+              - "null"
               - number
           available_time:
             type:
-              - 'null'
+              - "null"
               - number
           calls_accepted:
             type:
-              - 'null'
+              - "null"
               - number
           total_hold_time:
             type:
-              - 'null'
+              - "null"
               - number
           total_talk_time:
             type:
-              - 'null'
+              - "null"
               - number
           average_hold_time:
             type:
-              - 'null'
+              - "null"
               - number
           average_talk_time:
             type:
-              - 'null'
+              - "null"
               - number
           calls_put_on_hold:
             type:
-              - 'null'
+              - "null"
               - number
           started_transfers:
             type:
-              - 'null'
+              - "null"
               - number
           accepted_transfers:
             type:
-              - 'null'
+              - "null"
               - number
           total_wrap_up_time:
             type:
-              - 'null'
+              - "null"
               - number
           total_call_duration:
             type:
-              - 'null'
+              - "null"
               - number
           transfers_only_time:
             type:
-              - 'null'
+              - "null"
               - number
           average_wrap_up_time:
             type:
-              - 'null'
+              - "null"
               - number
           started_third_party_conferences:
             type:
-              - 'null'
+              - "null"
               - number
           accepted_third_party_conferences:
             type:
-              - 'null'
+              - "null"
               - number
   - name: agents_overview
     type: DeclarativeStream
@@ -370,91 +370,91 @@ streams:
         properties:
           total_hold_time:
             type:
-              - 'null'
+              - "null"
               - number
           total_talk_time:
             type:
-              - 'null'
+              - "null"
               - number
           average_away_time:
             type:
-              - 'null'
+              - "null"
               - number
           average_hold_time:
             type:
-              - 'null'
+              - "null"
               - number
           average_talk_time:
             type:
-              - 'null'
+              - "null"
               - number
           total_calls_denied:
             type:
-              - 'null'
+              - "null"
               - number
           total_calls_missed:
             type:
-              - 'null'
+              - "null"
               - number
           total_wrap_up_time:
             type:
-              - 'null'
+              - "null"
               - number
           average_online_time:
             type:
-              - 'null'
+              - "null"
               - number
           average_calls_denied:
             type:
-              - 'null'
+              - "null"
               - number
           average_calls_missed:
             type:
-              - 'null'
+              - "null"
               - number
           average_wrap_up_time:
             type:
-              - 'null'
+              - "null"
               - number
           total_calls_accepted:
             type:
-              - 'null'
+              - "null"
               - number
           average_available_time:
             type:
-              - 'null'
+              - "null"
               - number
           average_calls_accepted:
             type:
-              - 'null'
+              - "null"
               - number
           total_calls_put_on_hold:
             type:
-              - 'null'
+              - "null"
               - number
           total_started_transfers:
             type:
-              - 'null'
+              - "null"
               - number
           total_accepted_transfers:
             type:
-              - 'null'
+              - "null"
               - number
           average_calls_put_on_hold:
             type:
-              - 'null'
+              - "null"
               - number
           average_started_transfers:
             type:
-              - 'null'
+              - "null"
               - number
           average_accepted_transfers:
             type:
-              - 'null'
+              - "null"
               - number
           average_transfers_only_time:
             type:
-              - 'null'
+              - "null"
               - number
   - name: greeting_categories
     type: DeclarativeStream
@@ -477,7 +477,7 @@ streams:
           type: DpathExtractor
           field_path:
             - greeting_categories
-            - '*'
+            - "*"
       partition_router: []
     primary_key:
       - id
@@ -489,11 +489,11 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           name:
             type:
-              - 'null'
+              - "null"
               - string
   - name: greetings
     type: DeclarativeStream
@@ -516,7 +516,7 @@ streams:
           type: DpathExtractor
           field_path:
             - greetings
-            - '*'
+            - "*"
       partition_router: []
     primary_key: []
     schema_loader:
@@ -527,23 +527,23 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           active:
             type:
-              - 'null'
+              - "null"
               - boolean
           default:
             type:
-              - 'null'
+              - "null"
               - boolean
           ivr_ids:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
@@ -551,31 +551,31 @@ streams:
                 - number
           pending:
             type:
-              - 'null'
+              - "null"
               - boolean
           audio_url:
             type:
-              - 'null'
+              - "null"
               - string
           audio_name:
             type:
-              - 'null'
+              - "null"
               - string
           category_id:
             type:
-              - 'null'
+              - "null"
               - number
           default_lang:
             type:
-              - 'null'
+              - "null"
               - boolean
           has_sub_settings:
             type:
-              - 'null'
+              - "null"
               - boolean
           phone_number_ids:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
@@ -602,7 +602,7 @@ streams:
           type: DpathExtractor
           field_path:
             - phone_numbers
-            - '*'
+            - "*"
       partition_router: []
     primary_key:
       - id
@@ -614,116 +614,116 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           name:
             type:
-              - 'null'
+              - "null"
               - string
           number:
             type:
-              - 'null'
+              - "null"
               - string
           external:
             type:
-              - 'null'
+              - "null"
               - boolean
           location:
             type:
-              - 'null'
+              - "null"
               - string
           priority:
             type:
-              - 'null'
+              - "null"
               - number
           recorded:
             type:
-              - 'null'
+              - "null"
               - boolean
           group_ids:
             type:
-              - 'null'
+              - "null"
               - array
           line_type:
             type:
-              - 'null'
+              - "null"
               - string
           toll_free:
             type:
-              - 'null'
+              - "null"
               - boolean
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           sms_enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           capabilities:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               mms:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               sms:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               voice:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               emergency_address:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
           country_code:
             type:
-              - 'null'
+              - "null"
               - string
           greeting_ids:
             type:
-              - 'null'
+              - "null"
               - array
           transcription:
             type:
-              - 'null'
+              - "null"
               - boolean
           voice_enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           display_number:
             type:
-              - 'null'
+              - "null"
               - string
           outbound_enabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           default_greeting_ids:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           categorised_greetings:
             type:
-              - 'null'
+              - "null"
               - object
           call_recording_consent:
             type:
-              - 'null'
+              - "null"
               - string
           categorised_greetings_with_sub_settings:
             type:
-              - 'null'
+              - "null"
               - object
   - name: call_legs
     type: DeclarativeStream
@@ -753,7 +753,7 @@ streams:
           type: DpathExtractor
           field_path:
             - legs
-            - '*'
+            - "*"
       partition_router: []
     primary_key:
       - id
@@ -765,68 +765,68 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - number
           type:
             type:
-              - 'null'
+              - "null"
               - string
           call_id:
             type:
-              - 'null'
+              - "null"
               - number
           user_id:
             type:
-              - 'null'
+              - "null"
               - number
           agent_id:
             type:
-              - 'null'
+              - "null"
               - number
           duration:
             type:
-              - 'null'
+              - "null"
               - number
           hold_time:
             type:
-              - 'null'
+              - "null"
               - number
           talk_time:
             type:
-              - 'null'
+              - "null"
               - number
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: "date-time"
           call_charge:
             type:
-              - 'null'
+              - "null"
               - string
           wrap_up_time:
             type:
-              - 'null'
+              - "null"
               - number
           available_via:
             type:
-              - 'null'
+              - "null"
               - string
           minutes_billed:
             type:
-              - 'null'
+              - "null"
               - number
           quality_issues:
             type:
-              - 'null'
+              - "null"
               - array
           completion_status:
             type:
-              - 'null'
+              - "null"
               - string
     incremental_sync:
       type: DatetimeBasedCursor
@@ -834,14 +834,14 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%s'
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%s"
       start_time_option:
         type: RequestOption
         field_name: start_time
         inject_into: request_parameter
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
+        - "%Y-%m-%dT%H:%M:%SZ"
   - name: calls
     type: DeclarativeStream
     retriever:
@@ -870,7 +870,7 @@ streams:
           type: DpathExtractor
           field_path:
             - calls
-            - '*'
+            - "*"
       partition_router: []
     primary_key:
       - id
@@ -883,126 +883,126 @@ streams:
           id:
             type:
               - number
-              - 'null'
+              - "null"
           callback:
             type:
               - boolean
-              - 'null'
+              - "null"
           duration:
             type:
               - number
-              - 'null'
+              - "null"
           direction:
             type:
               - string
-              - 'null'
+              - "null"
           hold_time:
             type:
               - number
-              - 'null'
+              - "null"
           talk_time:
             type:
               - number
-              - 'null'
+              - "null"
           voicemail:
             type:
               - boolean
-              - 'null'
+              - "null"
           wait_time:
             type:
               - number
-              - 'null'
+              - "null"
           created_at:
             type:
               - string
-              - 'null'
+              - "null"
           overflowed:
             type:
               - boolean
-              - 'null'
+              - "null"
           updated_at:
             type:
               - string
-              - 'null'
+              - "null"
             format: "date-time"
           call_charge:
             type:
               - string
-              - 'null'
+              - "null"
           phone_number:
             type:
               - string
-              - 'null'
+              - "null"
           wrap_up_time:
             type:
               - number
-              - 'null'
+              - "null"
           default_group:
             type:
               - boolean
-              - 'null'
+              - "null"
           minutes_billed:
             type:
               - number
-              - 'null'
+              - "null"
           quality_issues:
             type:
               - array
-              - 'null'
+              - "null"
           recording_time:
             type:
               - number
-              - 'null'
+              - "null"
           phone_number_id:
             type:
               - number
-              - 'null'
+              - "null"
           completion_status:
             type:
               - string
-              - 'null'
+              - "null"
           consultation_time:
             type:
               - number
-              - 'null'
+              - "null"
           not_recording_time:
             type:
               - number
-              - 'null'
+              - "null"
           call_recording_consent:
             type:
               - string
-              - 'null'
+              - "null"
           outside_business_hours:
             type:
               - boolean
-              - 'null'
+              - "null"
           exceeded_queue_wait_time:
             type:
               - boolean
-              - 'null'
+              - "null"
           customer_requested_voicemail:
             type:
               - boolean
-              - 'null'
+              - "null"
           recording_control_interactions:
             type:
               - number
-              - 'null'
+              - "null"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "{{ config['start_date'] }}"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%s'
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%s"
       start_time_option:
         type: RequestOption
         field_name: start_time
         inject_into: request_parameter
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
+        - "%Y-%m-%dT%H:%M:%SZ"
   - name: current_queue_activity
     type: DeclarativeStream
     retriever:
@@ -1042,27 +1042,27 @@ streams:
           agents_online:
             type:
               - number
-              - 'null'
+              - "null"
           calls_waiting:
             type:
               - number
-              - 'null'
+              - "null"
           average_wait_time:
             type:
               - number
-              - 'null'
+              - "null"
           callbacks_waiting:
             type:
               - number
-              - 'null'
+              - "null"
           longest_wait_time:
             type:
               - number
-              - 'null'
+              - "null"
           embeddable_callbacks_waiting:
             type:
               - number
-              - 'null'
+              - "null"
   - name: account_overview
     type: DeclarativeStream
     retriever:
@@ -1104,91 +1104,91 @@ streams:
           total_calls:
             type:
               - number
-              - 'null'
+              - "null"
           total_hold_time:
             type:
               - number
-              - 'null'
+              - "null"
           total_voicemails:
             type:
               - number
-              - 'null'
+              - "null"
           average_hold_time:
             type:
               - number
-              - 'null'
+              - "null"
           max_calls_waiting:
             type:
               - number
-              - 'null'
+              - "null"
           total_wrap_up_time:
             type:
               - number
-              - 'null'
+              - "null"
           max_queue_wait_time:
             type:
               - number
-              - 'null'
+              - "null"
           total_call_duration:
             type:
               - number
-              - 'null'
+              - "null"
           total_inbound_calls:
             type:
               - number
-              - 'null'
+              - "null"
           average_wrap_up_time:
             type:
               - number
-              - 'null'
+              - "null"
           total_callback_calls:
             type:
               - number
-              - 'null'
+              - "null"
           total_outbound_calls:
             type:
               - number
-              - 'null'
+              - "null"
           average_call_duration:
             type:
               - number
-              - 'null'
+              - "null"
           average_time_to_answer:
             type:
               - number
-              - 'null'
+              - "null"
           average_queue_wait_time:
             type:
               - number
-              - 'null'
+              - "null"
           total_textback_requests:
             type:
               - number
-              - 'null'
+              - "null"
           average_callback_wait_time:
             type:
               - number
-              - 'null'
+              - "null"
           total_calls_abandoned_in_queue:
             type:
               - number
-              - 'null'
+              - "null"
           total_embeddable_callback_calls:
             type:
               - number
-              - 'null'
+              - "null"
           total_calls_outside_business_hours:
             type:
               - number
-              - 'null'
+              - "null"
           total_calls_with_requested_voicemail:
             type:
               - number
-              - 'null'
+              - "null"
           total_calls_with_exceeded_queue_wait_time:
             type:
               - number
-              - 'null'
+              - "null"
   - name: ivrs
     type: DeclarativeStream
     retriever:
@@ -1222,65 +1222,65 @@ streams:
           id:
             type:
               - number
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           menus:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type: object
               properties:
                 id:
                   type:
                     - number
-                    - 'null'
+                    - "null"
                 name:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 routes:
                   type:
                     - array
-                    - 'null'
+                    - "null"
                   items:
                     type: object
                     properties:
                       id:
                         type:
                           - number
-                          - 'null'
+                          - "null"
                       action:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       options:
                         type:
                           - object
-                          - 'null'
+                          - "null"
                       keypress:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       option_text:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       overflow_options:
                         type:
                           - array
-                          - 'null'
+                          - "null"
                 default:
                   type:
                     - boolean
-                    - 'null'
+                    - "null"
           phone_number_ids:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
@@ -1288,7 +1288,7 @@ streams:
           phone_number_names:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
@@ -1324,19 +1324,19 @@ streams:
           id:
             type:
               - number
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           ivr_id:
             type:
               - number
-              - 'null'
+              - "null"
           default:
             type:
               - boolean
-              - 'null'
+              - "null"
   - name: ivr_routes
     type: DeclarativeStream
     retriever:
@@ -1368,37 +1368,37 @@ streams:
           action:
             type:
               - string
-              - 'null'
+              - "null"
           greeting:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - number
-              - 'null'
+              - "null"
           ivr_id:
             type:
               - number
-              - 'null'
+              - "null"
           ivr_menu_id:
             type:
               - number
-              - 'null'
+              - "null"
           keypress:
             type:
               - string
-              - 'null'
+              - "null"
           option_text:
             type:
               - string
-              - 'null'
+              - "null"
           options:
             type:
               - object
-              - 'null'
+              - "null"
           overflow_options:
             type:
               - array
-              - 'null'
+              - "null"
 version: 0.65.0
