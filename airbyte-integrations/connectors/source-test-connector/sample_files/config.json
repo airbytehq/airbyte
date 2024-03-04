@@ -1,10 +1,11 @@
 {
     "read": {
         "resourcesNumber": 1,
-        "recordsPerResource": 1000,
+        "recordsPerResource": 100,
         "throwError": true,
         "extractRate": 100,
-        "triggerOOM": true,
-        "memoryLimit": 512
+        "triggerOOM": false,
+        "memoryLimit": 512,
+        "timeBetweenRecords": 0.5
     }
 }

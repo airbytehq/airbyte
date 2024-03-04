@@ -93,10 +93,12 @@ class SourceTestConnector(Source):
         initDelay = readConfig.get("initDelay")
         readConfig["triggerOOM"] = readConfig.get("triggerOOM", False)
         readConfig["memoryLimit"] = readConfig.get("memoryLimit", 512)
+        # In seconds
+        readConfig["timeBetweenRecords"] = readConfig.get("timeBetweenRecords", 0.5)
         if(resourcesNumber == None):
             readConfig["resourcesNumber"] = 3
         if(recordsPerResource == None):
-            readConfig["recordsPerResource"] = 5000
+            readConfig["recordsPerResource"] = 100
         if(throwError == None):
             readConfig["throwError"] = False
         if(extractRate == None):
@@ -138,6 +140,8 @@ class SourceTestConnector(Source):
                 if((round(recordsPerResource/2) == y) & throwError == True):
                     raise Exception("Expected Error")
                 record = self.getRecord(i, y)
+                # Simulate a gap between fetching records to simulate a real-world scenario
+                time.sleep(config["read"]["timeBetweenRecords"])
                 yield AirbyteMessage(
                     type=Type.RECORD,
                     record=AirbyteRecordMessage(stream=record["stream_name"], data=record["data"], emitted_at=int(
