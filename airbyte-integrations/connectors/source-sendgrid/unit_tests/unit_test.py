@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import os
 import unittest
 from unittest.mock import MagicMock, Mock, patch
-import json
 
 import pandas as pd
 import pendulum
@@ -16,10 +16,7 @@ from airbyte_cdk.models import SyncMode
 from numpy import nan
 from requests import codes
 from source_sendgrid.source import SourceSendgrid
-from source_sendgrid.streams import (
-    Contacts,
-    SendgridStream,
-)
+from source_sendgrid.streams import Contacts, SendgridStream
 
 FAKE_NOW = pendulum.DateTime(2022, 1, 1, tzinfo=pendulum.timezone("utc"))
 FAKE_NOW_ISO_STRING = FAKE_NOW.to_iso8601_string()

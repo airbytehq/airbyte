@@ -33,7 +33,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -59,12 +59,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: created
       cursor_datetime_formats:
-        - '%s'
-      datetime_format: '%s'
+        - "%s"
+      datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: start_time
@@ -75,8 +75,8 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       step: P1M
       cursor_granularity: PT1S
   - type: DeclarativeStream
@@ -105,7 +105,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -131,12 +131,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: created
       cursor_datetime_formats:
-        - '%s'
-      datetime_format: '%s'
+        - "%s"
+      datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: start_time
@@ -147,8 +147,8 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       step: P1M
       cursor_granularity: PT1S
   - type: DeclarativeStream
@@ -176,7 +176,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -202,12 +202,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: created
       cursor_datetime_formats:
-        - '%s'
-      datetime_format: '%s'
+        - "%s"
+      datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: start_time
@@ -218,8 +218,8 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       step: P1M
       cursor_granularity: PT1S
   - type: DeclarativeStream
@@ -251,7 +251,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -277,12 +277,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: created
       cursor_datetime_formats:
-        - '%s'
-      datetime_format: '%s'
+        - "%s"
+      datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: start_time
@@ -293,8 +293,8 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       step: P1M
       cursor_granularity: PT1S
   - type: DeclarativeStream
@@ -324,7 +324,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -350,12 +350,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: created
       cursor_datetime_formats:
-        - '%s'
-      datetime_format: '%s'
+        - "%s"
+      datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: start_time
@@ -366,8 +366,8 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       step: P1M
       cursor_granularity: PT1S
   - type: DeclarativeStream
@@ -400,7 +400,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -440,7 +440,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -465,12 +465,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: created_at
       cursor_datetime_formats:
-        - '%s'
-      datetime_format: '%s'
+        - "%s"
+      datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: start_time
@@ -481,8 +481,8 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       step: P1M
       cursor_granularity: PT1S
   - type: DeclarativeStream
@@ -517,7 +517,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -566,7 +566,7 @@ streams:
               type: string
             type:
               - array
-              - 'null'
+              - "null"
           query_version:
             type: string
           sample_updated_at:
@@ -592,7 +592,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -659,7 +659,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -736,7 +736,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -783,7 +783,7 @@ streams:
             type: string
           send_at:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           status:
@@ -803,7 +803,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -858,7 +858,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -918,7 +918,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
