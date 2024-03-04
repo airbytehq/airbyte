@@ -130,11 +130,11 @@ class ExtractedAtUtcTimezoneMigration(private val database: JdbcDatabase) :
                         field(
                             sql(
                                 """
-                                    cast(
+                                    to_timestamp_tz(
                                         to_varchar(
                                             cast("_airbyte_extracted_at" as timestampntz), 
                                         'YYYY-MM-DDTHH24:MI:SS.FF9') 
-                                    || 'Z' as timestamptz)
+                                    || 'Z', 'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM')
                                     """.trimIndent()
                             )
                         )
