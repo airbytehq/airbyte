@@ -23,6 +23,8 @@ acceptance_tests:
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: articles
             bypass_reason: "Sandbox account cannot seed the stream"
+          - name: engagement
+            bypass_reason: "Sandbox account cannot seed the stream"
           - name: feature
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: segments

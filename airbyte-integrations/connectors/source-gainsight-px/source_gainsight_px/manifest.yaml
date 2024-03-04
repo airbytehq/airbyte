@@ -80,6 +80,16 @@ definitions:
     name: "articles"
     primary_key: "id"
 
+  articles_stream:
+    $parameters:
+      path: "engagement"
+      extractorPath: "engagements"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "engagement"
+    primary_key: "id"
+
   feature_stream:
     $parameters:
       path: "feature"
