@@ -51,12 +51,23 @@ The Gainsight-API source connector supports the following [sync modes](https://d
 ## Supported Streams
 
 - accounts
-- admin_attributes
 - articles
+- admin_attributes
+- custom_events
+- email_events
 - engagement
+- engagement_view_events
 - feature
-- kcbot
+- feature_match_events
+- form_submit_events
+- identify_events
+- lead_events
+- pageview_events
 - segments
+- segment_match_events
+- session_match_events
+- survey_responses
+- kcbot
 - user_attributes
 - users
 
