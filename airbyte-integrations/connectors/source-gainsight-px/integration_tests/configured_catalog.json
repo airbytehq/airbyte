@@ -167,7 +167,7 @@
     },
     {
       "stream": {
-        "name": "session_match_events",
+        "name": "session_events",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh"
