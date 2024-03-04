@@ -26,8 +26,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /suppression/bounces
+        url_base: https://api.sendgrid.com
+        path: /v3/suppression/bounces
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -98,8 +98,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /suppression/spam_reports
+        url_base: https://api.sendgrid.com
+        path: /v3/suppression/spam_reports
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -169,8 +169,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /suppression/unsubscribes
+        url_base: https://api.sendgrid.com
+        path: /v3/suppression/unsubscribes
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -244,8 +244,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /suppression/blocks
+        url_base: https://api.sendgrid.com
+        path: /v3/suppression/blocks
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -317,8 +317,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /suppression/invalid_emails
+        url_base: https://api.sendgrid.com
+        path: /v3/suppression/invalid_emails
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -393,8 +393,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /asm/groups
+        url_base: https://api.sendgrid.com
+        path: /v3/asm/groups
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -433,8 +433,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /asm/suppressions
+        url_base: https://api.sendgrid.com
+        path: /v3/asm/suppressions
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -510,8 +510,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /marketing/lists
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/lists
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -530,15 +530,14 @@ streams:
         page_token_option:
           type: RequestPath
         page_size_option:
+          inject_into: request_parameter
           type: RequestOption
           field_name: page_size
-          inject_into: request_parameter
         pagination_strategy:
           type: CursorPagination
           page_size: 1000
-          cursor_value: >-
-            {{ response['_metadata']['next'].replace('https://api.sendgrid.com',
-            '') if response['_metadata'].get('next') else None }}
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
       partition_router: []
   - type: DeclarativeStream
     name: segments
@@ -585,8 +584,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /marketing/segments/2.0
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/segments/2.0
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -652,8 +651,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /marketing/stats/singlesends
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/stats/singlesends
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -678,9 +677,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 50
-          cursor_value: >-
-            {{ response['_metadata']['next'].replace('https://api.sendgrid.com',
-            '') if response['_metadata'].get('next') else None }}
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
       partition_router: []
   - type: DeclarativeStream
     name: stats_automations
@@ -729,8 +727,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /marketing/stats/automations
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/stats/automations
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -755,9 +753,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 50
-          cursor_value: >-
-            {{ response['_metadata']['next'].replace('https://api.sendgrid.com',
-            '') if response['_metadata'].get('next') else None }}
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
       partition_router: []
   - type: DeclarativeStream
     name: singlesends
@@ -796,8 +793,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /marketing/singlesends
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/singlesends
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -822,9 +819,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          cursor_value: >-
-            {{ response['_metadata']['next'].replace('https://api.sendgrid.com',
-            '') if response['_metadata'].get('next') else None }}
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
       partition_router: []
   - type: DeclarativeStream
     name: templates
@@ -850,8 +846,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /templates
+        url_base: https://api.sendgrid.com
+        path: /v3/templates
         http_method: GET
         request_parameters:
           generations: legacy,dynamic
@@ -877,9 +873,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 200
-          cursor_value: >-
-            {{ response['_metadata']['next'].replace('https://api.sendgrid.com',
-            '') if response['_metadata'].get('next') else None }}
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
       partition_router: []
   - type: DeclarativeStream
     name: campaigns
@@ -911,8 +906,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.sendgrid.com/v3
-        path: /marketing/campaigns
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/campaigns
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -937,9 +932,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          cursor_value: >-
-            {{ response['_metadata']['next'].replace('https://api.sendgrid.com',
-            '') if response['_metadata'].get('next') else None }}
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
       partition_router: []
 spec:
   connection_specification:
