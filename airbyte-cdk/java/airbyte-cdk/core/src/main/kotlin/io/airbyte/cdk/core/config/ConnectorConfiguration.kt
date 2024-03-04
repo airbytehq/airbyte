@@ -12,6 +12,8 @@ import java.util.Optional
  * Interface that defines a typed connector configuration.
  */
 interface ConnectorConfiguration {
+    fun getDefaultNamespace(): Optional<String>
+
     fun getRawNamespace(): Optional<String>
 
     fun toJson(): JsonNode {

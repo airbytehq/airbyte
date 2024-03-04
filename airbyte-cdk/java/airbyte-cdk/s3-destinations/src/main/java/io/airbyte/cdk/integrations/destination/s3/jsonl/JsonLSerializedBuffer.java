@@ -35,7 +35,7 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
 
   private final boolean flattenData;
 
-  protected JsonLSerializedBuffer(final BufferStorage bufferStorage, final boolean gzipCompression, final boolean flattenData) throws Exception {
+  public JsonLSerializedBuffer(final BufferStorage bufferStorage, final boolean gzipCompression, final boolean flattenData) throws Exception {
     super(bufferStorage);
     // we always want to compress jsonl files
     withCompression(gzipCompression);

@@ -22,6 +22,7 @@ dependencies {
     api 'com.zaxxer:HikariCP:5.1.0'
     api 'org.jooq:jooq:3.16.23'
     api 'org.apache.commons:commons-csv:1.10.0'
+    api 'com.github.victools:jsonschema-generator:4.33.1'
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
 

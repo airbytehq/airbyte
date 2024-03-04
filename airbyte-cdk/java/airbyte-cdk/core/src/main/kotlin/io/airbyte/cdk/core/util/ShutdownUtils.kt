@@ -26,6 +26,7 @@ private val logger = KotlinLogging.logger {}
 class ShutdownUtils {
     companion object {
         private const val TYPE_AND_DEDUPE_THREAD_NAME: String = "type-and-dedupe"
+        private const val MICRONAUT_SCHEDULER_THREAD_NAME: String = "scheduled-executor-thread"
         private const val FORCED_EXIT_CODE: Int = 2
         const val EXIT_THREAD_DELAY_MINUTES: Int = 70
         val EXIT_HOOK: Runnable = Runnable { exitProcess(FORCED_EXIT_CODE) }
@@ -46,7 +47,8 @@ class ShutdownUtils {
             Predicate<Thread> { runningThread: Thread ->
                 (
                     runningThread.name != Thread.currentThread().name &&
-                        !runningThread.isDaemon && TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name
+                        !runningThread.isDaemon && (TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name
+                            && !runningThread.name.startsWith(MICRONAUT_SCHEDULER_THREAD_NAME))
                 )
             }
     }

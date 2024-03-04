@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.s3.config.properties
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.airbyte.cdk.integrations.destination.s3.util.Flattening
+import io.micronaut.core.util.StringUtils
 
 class S3ConnectorOutputFormat private constructor(
     @JsonProperty("format_type") val formatType: String?,
@@ -58,5 +60,13 @@ class S3ConnectorOutputFormat private constructor(
                 blockSizeMb = blockSizeMb, maxPaddingSizeMb = maxPaddingSizeMb, pageSizeKb = pageSizeKb,
                 dictionaryPageSizeKb = dictionaryPageSizeKb, dictionaryEncoding = dictionaryEncoding,
             )
+    }
+
+    fun getFlattening(): Flattening {
+        return if(StringUtils.isNotEmpty(flattening)) {
+            Flattening.fromValue(flattening!!)
+        } else {
+            Flattening.NO
+        }
     }
 }

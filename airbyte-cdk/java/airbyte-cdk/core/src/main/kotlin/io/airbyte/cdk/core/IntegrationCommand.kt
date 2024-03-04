@@ -101,7 +101,7 @@ class IntegrationCommand : Runnable {
     override fun run() {
         val result = execute(command)
         result.onSuccess { airbyteMessage ->
-            if (airbyteMessage != null) {
+            airbyteMessage?.let {
                 outputRecordCollector.accept(airbyteMessage)
             }
         }
