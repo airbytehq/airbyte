@@ -231,6 +231,7 @@ export type SetInstancewideDestinationOauthParamsRequestBodyParams = { [key: str
 export interface SetInstancewideDestinationOauthParamsRequestBody {
   destinationDefinitionId: DestinationDefinitionId;
   params: SetInstancewideDestinationOauthParamsRequestBodyParams;
+  token?: string;
 }
 
 export type SetInstancewideSourceOauthParamsRequestBodyParams = { [key: string]: any };
@@ -238,6 +239,7 @@ export type SetInstancewideSourceOauthParamsRequestBodyParams = { [key: string]:
 export interface SetInstancewideSourceOauthParamsRequestBody {
   sourceDefinitionId: SourceDefinitionId;
   params: SetInstancewideSourceOauthParamsRequestBodyParams;
+  token?: string;
 }
 
 export interface CompleteOAuthResponse {
@@ -1760,6 +1762,7 @@ export interface WorkspaceCreate {
   securityUpdates?: boolean;
   notifications?: Notification[];
   displaySetupWizard?: boolean;
+  token?: string;
 }
 
 export type CustomerId = string;

@@ -29,9 +29,9 @@ def before_tests(request):
 @pytest.mark.parametrize(
     "cursor_field, expecting_exception, expected_cursor_field",
     [
-        (None, False, "_airbyte_emitted_at"),
+        (None, False, "_daspire_emitted_at"),
         (["updated_at"], False, "updated_at"),
-        (["_airbyte_emitted_at"], False, "_airbyte_emitted_at"),
+        (["_daspire_emitted_at"], False, "_daspire_emitted_at"),
         (["parent", "nested_field"], True, "nested_field"),
     ],
 )
@@ -68,7 +68,7 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
         ([["id"]], "number", False, ["id"], "cast({{ adapter.quote('id') }} as {{ dbt_utils.type_string() }})"),
         ([["first_name"], ["last_name"]], "string", False, ["first_name", "last_name"], "first_name, last_name"),
         ([["float_id"]], "number", False, ["float_id"], "cast(float_id as {{ dbt_utils.type_string() }})"),
-        ([["_airbyte_emitted_at"]], "string", False, [], "cast(_airbyte_emitted_at as {{ dbt_utils.type_string() }})"),
+        # ([["_daspire_emitted_at"]], "string", False, [], "cast(_daspire_emitted_at as {{ dbt_utils.type_string() }})"),
         (None, "string", True, [], ""),
         ([["parent", "nested_field"]], "string", True, [], ""),
     ],

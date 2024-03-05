@@ -16,14 +16,6 @@ spec:
     - host: app.daspire.com
       http:
         paths:
-          - path: /api/v1/
-            pathType: Prefix
-            backend:
-              service:
-                name: airbyte-server-svc
-                port:
-                  number: 8001
-
           - path: /
             pathType: Prefix
             backend:

@@ -1,3 +1,4 @@
+import { Box } from "@mui/material";
 import _ from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage, FormattedDate } from "react-intl";
@@ -62,7 +63,7 @@ const PlansBillingPage: React.FC = () => {
   const userPlanDetail = useUserPlanDetail();
   const prevUserPlanDetail = usePrevious(userPlanDetail);
   const { expiresTime } = userPlanDetail;
-
+  console.log(userPlanDetail, "userPlan");
   useEffect(() => {
     if (prevUserPlanDetail?.selectedProduct !== undefined) {
       if (!_.isEqual(userPlanDetail.selectedProduct, prevUserPlanDetail?.selectedProduct)) {
@@ -170,42 +171,79 @@ const PlansBillingPage: React.FC = () => {
           </div>
         </div>
         <div className={styles.body}>
-          <div className={styles.rowContainer}>
-            <div className={styles.planTitle}>
-              <FormattedMessage id="plan.type.heading" />
+          <Box display="flex" justifyContent="space-around">
+            <div className={styles.rowContainer}>
+              <div className={styles.planTitle}>
+                <FormattedMessage id="plan.type.heading" />
+              </div>
+              <div className={styles.planValue}>
+                {userPlanDetail.name === "Free trial" ? userPlanDetail.name : `${userPlanDetail.name}`}
+              </div>
             </div>
-            <div className={styles.planValue}>
-              {userPlanDetail.name === "Free trial" ? userPlanDetail.name : `${userPlanDetail.name}`}
+
+            <div className={styles.rowContainer}>
+              <div className={styles.planTitle}>
+                <FormattedMessage
+                  id={
+                    getPaymentStatus(user.status) === PAYMENT_STATUS.Cancel_Subscription ||
+                    (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial &&
+                      remainingDaysForFreeTrial(expiresTime) < 0)
+                      ? "plan.endedOn.heading"
+                      : getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial ||
+                        getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription
+                      ? "plan.endsOn.heading"
+                      : "plan.renewsOn.heading"
+                  }
+                />
+              </div>
+              <div className={styles.planValue}>
+                <FormattedDate value={userPlanDetail.expiresTime * 1000} day="numeric" month="long" year="numeric" />
+              </div>
             </div>
-          </div>
+          </Box>
+          <Separator height="30px" />
+          <Box display="flex" justifyContent="space-around">
+            <div className={styles.rowContainer}>
+              <div className={styles.planTitle}>
+                <FormattedMessage id="plan.type.cloudProvider" />
+              </div>
+              <div className={styles.planValue}>{userPlanDetail?.selectedProduct?.cloudProviderName}</div>
+            </div>
+
+            <div className={styles.rowContainer}>
+              <div className={styles.planTitle}>
+                <FormattedMessage id="plan.type.cloudRegion" />
+              </div>
+              <div className={styles.planValue}>{userPlanDetail?.selectedProduct?.region}</div>
+            </div>
+          </Box>
+
           <Separator height="40px" />
-          <div className={styles.rowContainer}>
-            <div className={styles.planTitle}>
-              <FormattedMessage
-                id={
-                  getPaymentStatus(user.status) === PAYMENT_STATUS.Cancel_Subscription ||
-                  (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial &&
-                    remainingDaysForFreeTrial(expiresTime) < 0)
-                    ? "plan.endedOn.heading"
-                    : getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial ||
-                      getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription
-                    ? "plan.endsOn.heading"
-                    : "plan.renewsOn.heading"
-                }
-              />
+          <Box display="flex" justifyContent="space-around">
+            <div className={styles.rowContainer}>
+              <div className={styles.planTitle}>
+                <FormattedMessage id="plan.type.deploymentMode" />
+              </div>
+              <div className={styles.planValue}>
+                <FormattedMessage id="plan.type.fullyManage" />
+              </div>
             </div>
-            <div className={styles.planValue}>
-              <FormattedDate value={userPlanDetail.expiresTime * 1000} day="numeric" month="long" year="numeric" />
+
+            <div className={styles.rowContainer}>
+              <div className={styles.planTitle}>
+                <FormattedMessage id="plan.type.instanceSize" />
+              </div>
+              <div className={styles.planValue}>{userPlanDetail?.selectedProduct?.instanceSizeName}</div>
             </div>
-          </div>
+          </Box>
           <Separator height="40px" />
           <div className={styles.planDetailContainer}>
             <div className={styles.planTitle}>
               <FormattedMessage id="plan.details.heading" />
             </div>
             <div className={styles.planDetailRowContainer}>
-              <div className={styles.rowContainer}>
-                {userPlanDetail.planDetail.map((item) => (
+              <div className={styles.planRowContainer}>
+                {userPlanDetail?.planDetail?.map((item: any) => (
                   <PlanClause planItem={item} clause={manipulatePlanDetail(item)} key={item.planItemid} />
                 ))}
               </div>

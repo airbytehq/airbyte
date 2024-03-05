@@ -81,6 +81,14 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public <T> void writeConfig(AirbyteConfig configType, String configId, T config, String token) throws JsonValidationException, IOException {
+
+    validateJson(Jsons.jsonNode(config), configType);
+
+    decoratedPersistence.writeConfig(configType, configId, config, token);
+  }
+
+  @Override
   public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs)
       throws IOException, JsonValidationException {
     for (final Map.Entry<String, T> config : configs.entrySet()) {
