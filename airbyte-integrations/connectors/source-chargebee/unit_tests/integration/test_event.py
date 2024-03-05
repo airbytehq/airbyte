@@ -86,7 +86,8 @@ class FullRefreshTest(TestCase):
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
 
     @HttpMocker()
-    def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
+    def test_given_valid_response_records_are_extracted_and_returned(self, http_mocker: HttpMocker) -> None:
+        # Tests simple read and record extraction
         http_mocker.get(
             _a_request().with_any_query_params().build(),
             _a_response().with_record(_a_record()).with_record(_a_record()).build()
