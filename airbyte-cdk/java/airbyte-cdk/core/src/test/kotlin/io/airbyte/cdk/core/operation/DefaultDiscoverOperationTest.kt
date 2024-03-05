@@ -44,4 +44,11 @@ class DefaultDiscoverOperationTest {
         val result = operation.execute()
         assertTrue(result.isFailure)
     }
+
+    @Test
+    internal fun testRequiresConfiguration() {
+        val operationExecutor: OperationExecutor = mockk()
+        val operation = DefaultDiscoverOperation(operationExecutor = operationExecutor)
+        assertTrue(operation.requiresConfiguration())
+    }
 }

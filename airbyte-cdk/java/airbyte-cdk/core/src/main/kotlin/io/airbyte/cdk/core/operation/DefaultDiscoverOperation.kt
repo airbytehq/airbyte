@@ -32,4 +32,8 @@ class DefaultDiscoverOperation(
         logger.info { "Using default check operation." }
         return operationExecutor.execute()
     }
+
+    override fun requiresConfiguration(): Boolean {
+        return true
+    }
 }
