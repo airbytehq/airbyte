@@ -171,7 +171,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     // This second query just finds the newest raw record.
 
     // This is _technically_ wrong, because during the DST transition we might select
-    // the wrong max timestamp.  We _should_ do the UTC conversion inside the CTE, but that's a lot
+    // the wrong max timestamp. We _should_ do the UTC conversion inside the CTE, but that's a lot
     // of work for a very small edge case.
     // We released the fix to write extracted_at in UTC before DST changed, so this is fine.
     final Optional<String> maxTimestamp = Optional.ofNullable(database.queryStrings(
