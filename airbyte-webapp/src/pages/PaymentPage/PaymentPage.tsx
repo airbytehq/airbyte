@@ -58,7 +58,7 @@ const PaymentPage: React.FC = () => {
   const [updatePlanLoading, setUpdatePlanLoading] = useState<boolean>(false);
   const [deploymentMode, setDeploymentMode] = useState("");
   const [cloudProvider, setCloudProvider] = useState(selectedProduct?.cloudProviderName ?? "");
-
+  const [jobs, setJobs] = useState(selectedProduct?.noOfJobs ?? null);
   const [cloudItemId, setCloudItemId] = useState(selectedProduct?.cloudItemId ?? "");
   const [selectedRegion, setSelectedRegion] = useState(selectedProduct?.regionItemId ?? "");
   const [selectedInstance, setSelectedInstance] = useState(selectedProduct?.instanceItemId ?? "");
@@ -203,6 +203,8 @@ const PaymentPage: React.FC = () => {
               setCloudPackageId={setCloudPackageId}
               setPrice={setPrice}
               price={price}
+              jobs={jobs}
+              setJobs={setJobs}
               planDetail={userPlanDetail?.planDetail}
               setInstanceSelected={setInstanceSelected}
               instanceSelected={instanceSelected}
