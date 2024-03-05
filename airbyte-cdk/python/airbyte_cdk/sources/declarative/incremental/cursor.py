@@ -38,14 +38,14 @@ class Cursor(ABC, StreamSlicer):
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         """
         Update state based on the stream slice and the latest record. Note that `stream_slice.cursor_slice` and
-        `last_record.associated_slice` are expected to be the same but we make it explicit here that `stream_slice` should be leveraged to
+        `most_recent_record.associated_slice` are expected to be the same but we make it explicit here that `stream_slice` should be leveraged to
         update the state.
 
         :param stream_slice: slice to close
-        :param last_record: the latest record we have received for the slice. This is important to consider because even if the cursor emits
-          a slice, some APIs are not able to enforce the upper boundary. The outcome is that the last_record might have a higher cursor
-          value than the slice upper boundary and if we want to reduce the duplication as much as possible, we need to consider the highest
-          value between the internal cursor, the stream slice upper boundary and the record cursor value.
+        :param most_recent_record: the latest record we have received for the slice. This is important to consider because even if the
+          cursor emits a slice, some APIs are not able to enforce the upper boundary. The outcome is that the last_record might have a
+          higher cursor value than the slice upper boundary and if we want to reduce the duplication as much as possible, we need to
+          consider the highest value between the internal cursor, the stream slice upper boundary and the record cursor value.
         """
 
     @abstractmethod
