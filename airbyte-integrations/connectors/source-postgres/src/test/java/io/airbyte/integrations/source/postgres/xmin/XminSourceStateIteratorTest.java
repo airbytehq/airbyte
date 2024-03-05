@@ -11,19 +11,23 @@ import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.REC
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.STREAM_NAME1;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.XMIN_STATE_MESSAGE_1;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.XMIN_STATUS1;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.Iterator;
 import org.junit.jupiter.api.Test;
 
-public class XminStateIteratorTest {
+public class XminSourceStateIteratorTest {
 
   private static Iterator<AirbyteMessage> messageIterator;
 
@@ -60,10 +64,11 @@ public class XminStateIteratorTest {
     manager.setCurrentXminStatus(XMIN_STATUS1);
     final ConfiguredAirbyteStream stream =
         new ConfiguredAirbyteStream().withStream(new AirbyteStream().withNamespace(NAMESPACE).withName(STREAM_NAME1));
-    final XminStateIterator iterator = new XminStateIterator(
+    final SourceStateIterator iterator = new SourceStateIterator(
         messageIterator,
         stream,
-        manager);
+        manager,
+        new StateEmitFrequency(0L, Duration.ofSeconds(1L)));
 
     var expectedStateMessage =
         XMIN_STATE_MESSAGE_1.withState(XMIN_STATE_MESSAGE_1.getState().withSourceStats(new AirbyteStateStats().withRecordCount(2.0)));
@@ -81,20 +86,17 @@ public class XminStateIteratorTest {
     manager.setCurrentXminStatus(XMIN_STATUS1);
     final ConfiguredAirbyteStream stream =
         new ConfiguredAirbyteStream().withStream(new AirbyteStream().withNamespace(NAMESPACE).withName(STREAM_NAME1));
-    final XminStateIterator iterator = new XminStateIterator(
+    final SourceStateIterator iterator = new SourceStateIterator(
         createExceptionIterator(),
         stream,
-        manager);
+        manager,
+        new StateEmitFrequency(0L, Duration.ofSeconds(1L)));
 
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
     assertEquals(RECORD_MESSAGE_3, iterator.next());
-    // No state message is emitted at this point.
-    // Since there is no intermediate stateEmission, this will catch the error but not emit a state
-    // message
-    // but will prevent an exception from causing the iterator to fail by marking iterator as
-    // endOfData()
-    assertFalse(iterator.hasNext());
+    // We want to throw an exception here.
+    assertThrows(RuntimeException.class, () -> iterator.hasNext());
   }
 
 }
