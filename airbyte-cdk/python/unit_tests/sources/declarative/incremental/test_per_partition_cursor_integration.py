@@ -183,7 +183,7 @@ def test_given_record_for_partition_when_read_then_update_state():
     list(stream_instance.stream_slices(sync_mode=SYNC_MODE))
 
     stream_slice = StreamSlice(partition={"partition_field": "1"},
-                                           cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
+                               cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
     with patch.object(
             SimpleRetriever, "_read_pages",
             side_effect=[[Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}, stream_slice)]]
@@ -235,7 +235,7 @@ def test_substream_without_input_state():
     stream_instance = source.streams({})[1]
 
     stream_slice = StreamSlice(partition={"parent_id": "1"},
-                                           cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
+                               cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
 
     with patch.object(
             SimpleRetriever, "_read_pages", side_effect=[[Record({"id": "1", CURSOR_FIELD: "2022-01-15"}, stream_slice)],
@@ -243,8 +243,10 @@ def test_substream_without_input_state():
     ):
         slices = list(stream_instance.stream_slices(sync_mode=SYNC_MODE))
         assert list(slices) == [
-            StreamSlice(partition={"parent_id": "1", "parent_slice": {}, }, cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"}),
-            StreamSlice(partition={"parent_id": "1", "parent_slice": {}, }, cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"}),
+            StreamSlice(partition={"parent_id": "1", "parent_slice": {}, },
+                        cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"}),
+            StreamSlice(partition={"parent_id": "1", "parent_slice": {}, },
+                        cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"}),
         ]
 
 
@@ -290,7 +292,7 @@ def test_substream_with_legacy_input_state():
     stream_instance.state = input_state
 
     stream_slice = StreamSlice(partition={"parent_id": "1"},
-                                           cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
+                               cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
 
     logger = init_logger("airbyte")
     configured_catalog = ConfiguredAirbyteCatalog(
