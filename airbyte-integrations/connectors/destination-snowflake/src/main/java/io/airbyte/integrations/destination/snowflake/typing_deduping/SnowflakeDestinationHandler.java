@@ -312,8 +312,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
   @Override
   protected SnowflakeState toDestinationState(JsonNode json) {
     return new SnowflakeState(
-        json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean(),
-        json.hasNonNull("extractedAtInUtc") && json.get("extractedAtInUtc").asBoolean());
+        json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean());
   }
 
   private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {

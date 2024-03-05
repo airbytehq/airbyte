@@ -29,7 +29,6 @@ import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDe
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV2TableMigrator;
-import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.ExtractedAtUtcTimezoneMigration;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -170,7 +169,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
     final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, sqlGenerator, snowflakeDestinationHandler);
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
-    final List<Migration<SnowflakeState>> migrations = List.of(new ExtractedAtUtcTimezoneMigration(database));
+    final List<Migration<SnowflakeState>> migrations = List.of();
     if (disableTypeDedupe) {
       typerDeduper =
           new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, migrations);
