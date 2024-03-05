@@ -348,14 +348,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
           "column_casts", columnCasts,
           "column_errors", columnErrors,
           "extractedAtCondition", extractedAtCondition,
-          "column_list", columnList)).replace(
+          "column_list", columnList,
+          "airbyte_extracted_at_utc", airbyteExtractedAtUtcForced("\"_airbyte_extracted_at\""))).replace(
               """
               WITH intermediate_data AS (
                 SELECT
               ${column_casts}
               ARRAY_CONSTRUCT_COMPACT(${column_errors}) as "_airbyte_cast_errors",
                 "_airbyte_raw_id",
-                "_airbyte_extracted_at"
+                ${airbyte_extracted_at_utc} as "_airbyte_extracted_at"
                 FROM ${raw_table_id}
                 WHERE
                   "_airbyte_loaded_at" IS NULL
