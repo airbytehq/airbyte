@@ -25,9 +25,7 @@ acceptance_tests:
       - config_path: "integration_tests/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         file_types:
           skip_test: yes
           bypass_reason: "Source is not based on file based CDK"
