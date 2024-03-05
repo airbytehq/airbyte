@@ -48,14 +48,14 @@ from live_tests.commons.backends import FileBackend
                 ),
                 (
                     "test_stream_records.jsonl",
-                    '{"namespace": null, "stream": "test_stream", "data": {}, "emitted_at": 123456789, "meta": null}\n',
+                    '{"namespace": null, "stream": "test_stream", "data": {}, "meta": null}\n',
                 ),
                 (
                     "spec.jsonl",
                     '{"documentationUrl": null, "changelogUrl": null, "connectionSpecification": {}, "supportsIncremental": null, "supportsNormalization": false, "supportsDBT": false, "supported_destination_sync_modes": null, "advanced_auth": null, "protocol_version": null}\n',
                 ),
                 (
-                    "_global_states_states.jsonl",
+                    "_global_states.jsonl",
                     '{"type": null, "stream": null, "global_": null, "data": {"test": "value"}, "sourceStats": null, "destinationStats": null}\n',
                 ),
             ],

@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Iterable, TextIO, Tuple
 
+import pydash
+
 from airbyte_protocol.models import AirbyteMessage
 from airbyte_protocol.models import Type as AirbyteMessageType
 from cachetools import LRUCache, cached
