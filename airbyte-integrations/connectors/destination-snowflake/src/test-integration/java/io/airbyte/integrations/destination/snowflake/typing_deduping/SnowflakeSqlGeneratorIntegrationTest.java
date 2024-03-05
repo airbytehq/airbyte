@@ -491,22 +491,22 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     this.insertFinalTableRecords(false, this.streamId, "", List.of(
         Jsons.deserialize("""
                           {
-                            "_AIRBYTE_RAW_ID": "pre-dst local tz 3",
-                            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00-08:00",
-                            "_AIRBYTE_META": {"errors": []},
-                            "ID1": 3,
-                            "ID2": 100,
-                            "STRING": "Charlie00"
+                            "_airbyte_raw_id": "pre-dst local tz 3",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00-08:00",
+                            "_airbyte_meta": {"errors": []},
+                            "id1": 3,
+                            "id2": 100,
+                            "string": "Charlie00"
                           }
                           """),
         Jsons.deserialize("""
                           {
-                            "_AIRBYTE_RAW_ID": "post-dst local tz 4",
-                            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00-07:00",
-                            "_AIRBYTE_META": {"errors": []},
-                            "ID1": 4,
-                            "ID2": 100,
-                            "STRING": "Dave00"
+                            "_airbyte_raw_id": "post-dst local tz 4",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00-07:00",
+                            "_airbyte_meta": {"errors": []},
+                            "id1": 4,
+                            "id2": 100,
+                            "string": "Dave00"
                           }
                           """)));
     // Gather initial state at the start of our updated sync
