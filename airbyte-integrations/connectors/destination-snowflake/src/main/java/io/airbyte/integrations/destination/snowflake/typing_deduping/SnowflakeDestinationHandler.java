@@ -169,23 +169,29 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
 
     // If there are no unloaded raw records, then we can safely skip all existing raw records.
     // This second query just finds the newest raw record.
+
+    // This is _technically_ wrong, because during the DST transition we might select
+    // the wrong max timestamp.  We _should_ do the UTC conversion inside the CTE, but that's a lot
+    // of work for a very small edge case.
+    // We released the fix to write extracted_at in UTC before DST changed, so this is fine.
     final Optional<String> maxTimestamp = Optional.ofNullable(database.queryStrings(
         conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
                 """
                 WITH MAX_TS AS (
-                  SELECT MAX(TIMESTAMPADD(
-                      HOUR,
-                      EXTRACT(timezone_hour from "_airbyte_extracted_at"),
-                        TIMESTAMPADD(
-                          MINUTE,
-                          EXTRACT(timezone_minute from "_airbyte_extracted_at"),
-                          CONVERT_TIMEZONE('UTC', "_airbyte_extracted_at")
-                        )
-                    ))
+                  SELECT MAX("_airbyte_extracted_at")
                   AS MAX_TIMESTAMP
                   FROM ${raw_table}
-                ) SELECT TO_VARCHAR(MAX_TIMESTAMP,'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
+                ) SELECT TO_VARCHAR(
+                  TIMESTAMPADD(
+                    HOUR,
+                    EXTRACT(timezone_hour from MAX_TIMESTAMP),
+                    TIMESTAMPADD(
+                      MINUTE,
+                      EXTRACT(timezone_minute from MAX_TIMESTAMP),
+                      CONVERT_TIMEZONE('UTC', MAX_TIMESTAMP)
+                    )
+                ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
                 """)),
         record -> record.getString("MAX_TIMESTAMP_UTC")).get(0));
     return new InitialRawTableStatus(true, false, maxTimestamp.map(Instant::parse));
