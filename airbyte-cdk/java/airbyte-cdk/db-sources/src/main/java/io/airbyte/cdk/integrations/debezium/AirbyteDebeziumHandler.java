@@ -4,22 +4,9 @@
 
 package io.airbyte.cdk.integrations.debezium;
 
-import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
-import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
-import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
-import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
-import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateDecoratingIterator;
+import io.airbyte.cdk.integrations.debezium.internals.*;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -28,15 +15,16 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.*;
 
 /**
  * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants
