@@ -24,6 +24,16 @@ class Cursor(ABC, StreamSlicer):
         :param stream_state: The state of the stream as returned by get_stream_state
         """
 
+    def observe(self, stream_slice: StreamSlice, record: Record) -> None:
+        """
+        Register a record with the cursor; the cursor instance can then use it to manage the state of the in-progress stream read.
+
+        :param stream_slice: The current slice, which may or may not contain the most recently observed record
+        :param record: the most recently-read record, which the cursor can use to update the stream state. Outwardly-visible changes to the
+          stream state may need to be deferred depending on whether the source reliably orders records by the cursor field.
+        """
+        pass
+
     @abstractmethod
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         """
