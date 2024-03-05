@@ -169,7 +169,6 @@ definitions:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
           sort_by[asc]: created_at
-          include_deleted: "true"
           updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "coupon"
@@ -269,7 +268,6 @@ definitions:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
           sort_by[asc]: created_at
-          include_deleted: "true"
           created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "promotional_credit"
@@ -376,7 +374,6 @@ definitions:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
           sort_by[asc]: created_at
-          include_deleted: "true"
           created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     incremental_sync:
       $ref: "#/definitions/date_stream_slicer"
@@ -430,4 +427,4 @@ streams:
 
 check:
   stream_names:
-    - "customer"
+    - "event"
