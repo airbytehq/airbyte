@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import json
 from pathlib import Path
 from typing import Iterable, TextIO, Tuple
 
@@ -52,7 +53,10 @@ class FileBackend(BaseBackend):
             return self.RELATIVE_CONNECTION_STATUS_PATH, message.connectionStatus.json()
 
         elif message.type == AirbyteMessageType.RECORD:
-            return f"{message.record.stream}_{self.RELATIVE_RECORDS_PATH}", message.record.json()
+            record = json.loads(message.record.json())
+            # TODO: once we have a comparator and/or database backend implemented we can remove this
+            record.pop("emitted_at", None)
+            return f"{message.record.stream}_{self.RELATIVE_RECORDS_PATH}", json.dumps(record)
 
         elif message.type == AirbyteMessageType.SPEC:
             return self.RELATIVE_SPECS_PATH, message.spec.json()
