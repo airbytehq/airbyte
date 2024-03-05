@@ -142,7 +142,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix);
     }
-    final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
+    final String commitRawTable = commitRawTable(stream.id());
 
     return transactionally(insertNewRecords, dedupFinalTable, cdcDeletes, commitRawTable);
   }
@@ -424,15 +424,13 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
   }
 
   @VisibleForTesting
-  String commitRawTable(final StreamId id, final Optional<Instant> minRawTimestamp) {
+  String commitRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "extractedAtCondition", buildExtractedAtCondition(minRawTimestamp))).replace(
+        "raw_table_id", id.rawTableId(QUOTE))).replace(
             """
             UPDATE ${raw_table_id}
             SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP()
             WHERE "_airbyte_loaded_at" IS NULL
-              ${extractedAtCondition}
             ;""");
   }
 
