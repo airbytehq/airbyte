@@ -1,12 +1,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from collections import defaultdict
+import json
 from pathlib import Path
-from typing import Dict, Iterable, List, Union
+from typing import Iterable, TextIO, Tuple
 
-from airbyte_protocol.models import AirbyteMessage  # type: ignore
+import pydash
+from airbyte_protocol.models import AirbyteMessage
 from airbyte_protocol.models import Type as AirbyteMessageType
+from cachetools import LRUCache, cached
 from live_tests.commons.backends.base_backend import BaseBackend
+
+
+class FileDescriptorLRUCache(LRUCache):
+    def popitem(self):
+        filepath, fd = LRUCache.popitem(self)
+        fd.close()  # Close the file descriptor when it's evicted from the cache
+        return filepath, fd
 
 
 class FileBackend(BaseBackend):
@@ -18,105 +27,77 @@ class FileBackend(BaseBackend):
     RELATIVE_TRACES_PATH = "traces.jsonl"
     RELATIVE_LOGS_PATH = "logs.jsonl"
     RELATIVE_CONTROLS_PATH = "controls.jsonl"
+    RECORD_PATHS_TO_POP = ["emitted_at"]
 
     def __init__(self, output_directory: Path):
         self._output_directory = output_directory
 
-    def write(self, airbyte_messages: Iterable[AirbyteMessage]):
-        messages_by_type = self._get_messages_by_type(airbyte_messages)
+    async def write(self, airbyte_messages: Iterable[AirbyteMessage]):
+        """
+        Write AirbyteMessages to the appropriate file.
 
-        if messages_by_type["catalog"]:
-            with open(f"{self._output_directory}/{self.RELATIVE_CATALOGS_PATH}", "w") as catalogs_file:
-                for catalog in messages_by_type["catalog"]:
-                    catalogs_file.write(f"{catalog.json()}\n")
+        Catalogs, connection status messages, specs, trace messages, logs, and control messages are all written to their
+        own file (e.g. "catalog.jsonl", "spec.jsonl").
 
-        if messages_by_type["connection_status"]:
-            with open(f"{self._output_directory}/{self.RELATIVE_CONNECTION_STATUS_PATH}", "w") as statuses_file:
-                for status in messages_by_type["connection_status"]:
-                    statuses_file.write(f"{status.json()}\n")
+        Records and state messages are further subdivided, with one file per stream (e.g. "my_stream_records.jsonl",
+        "my_stream_states.jsonl"). Streams with global state are stored in a "_global_states.jsonl" file.
 
-        assert isinstance(messages_by_type["records"], dict)
-        for stream, records in messages_by_type["records"].items():
-            with open(f"{self._output_directory}/{stream}_{self.RELATIVE_RECORDS_PATH}", "w") as records_file:
-                # TODO: sort & filter out things like timestamp
-                for record in records:
-                    records_file.write(f"{record.json()}\n")
+        We use an LRU cache here to manage open file objects, in order to limit the number of concurrently open file
+        descriptors. This mitigates the risk of hitting limits on the number of open file descriptors, particularly for
+        connections with a high number of streams. The cache is designed to automatically close files upon eviction.
+        """
 
-        if messages_by_type["spec"]:
-            with open(f"{self._output_directory}/{self.RELATIVE_SPECS_PATH}", "w") as specs_file:
-                for spec in messages_by_type["spec"]:
-                    specs_file.write(f"{spec.json()}\n")
+        @cached(cache=FileDescriptorLRUCache(maxsize=250))
+        def _open_file(path: Path) -> TextIO:
+            return open(path, "a")
 
-        if messages_by_type["traces"]:
-            with open(f"{self._output_directory}/{self.RELATIVE_TRACES_PATH}", "w") as trace_file:
-                for trace in messages_by_type["traces"]:
-                    trace_file.write(f"{trace.json()}\n")
+        try:
+            for _message in airbyte_messages:
+                if not isinstance(_message, AirbyteMessage):
+                    continue
+                filepath, message = self._get_filepath_and_message(_message)
+                _open_file(self._output_directory / filepath).write(f"{message}\n")
+        finally:
+            for f in _open_file.cache.values():
+                f.close()
 
-        if messages_by_type["logs"]:
-            with open(f"{self._output_directory}/{self.RELATIVE_LOGS_PATH}", "w") as log_file:
-                for log in messages_by_type["logs"]:
-                    log_file.write(f"{log.json()}\n")
+    def _get_filepath_and_message(self, message: AirbyteMessage) -> Tuple[str, str]:
+        if message.type == AirbyteMessageType.CATALOG:
+            return self.RELATIVE_CATALOGS_PATH, message.catalog.json()
 
-        if messages_by_type["controls"]:
-            with open(f"{self._output_directory}/{self.RELATIVE_CONTROLS_PATH}", "w") as control_file:
-                for control in messages_by_type["controls"]:
-                    control_file.write(f"{control.json()}\n")
+        elif message.type == AirbyteMessageType.CONNECTION_STATUS:
+            return self.RELATIVE_CONNECTION_STATUS_PATH, message.connectionStatus.json()
 
-        assert isinstance(messages_by_type["states"], dict)
-        for stream, states in messages_by_type["states"].items():
-            with open(f"{self._output_directory}/{stream}_{self.RELATIVE_STATES_PATH}", "w") as states_file:
-                for state in states:
-                    states_file.write(f"{state.json()}\n")
+        elif message.type == AirbyteMessageType.RECORD:
+            record = json.loads(message.record.json())
+            # TODO: once we have a comparator and/or database backend implemented we can remove this
+            for key_path in self.RECORD_PATHS_TO_POP:
+                pydash.objects.unset(record, key_path)
+            return f"{message.record.stream}_{self.RELATIVE_RECORDS_PATH}", json.dumps(record)
 
-    @staticmethod
-    def _get_messages_by_type(messages: Iterable[AirbyteMessage]) -> Dict[str, Union[List, Dict]]:
-        messages_by_type: Dict[str, Union[List, Dict]] = {
-            "catalog": [],
-            "connection_status": [],
-            "records": defaultdict(list),
-            "spec": [],
-            "states": defaultdict(list),
-            "traces": [],
-            "logs": [],
-            "controls": [],
-        }
+        elif message.type == AirbyteMessageType.SPEC:
+            return self.RELATIVE_SPECS_PATH, message.spec.json()
 
-        for message in messages:
-            if not isinstance(message, AirbyteMessage):
-                continue
+        elif message.type == AirbyteMessageType.STATE:
+            if message.state.stream and message.state.stream.stream_descriptor:
+                stream_name = message.state.stream.stream_descriptor.name
+                stream_namespace = message.state.stream.stream_descriptor.namespace
+                filepath = (
+                    f"{stream_name}_{stream_namespace}_{self.RELATIVE_STATES_PATH}"
+                    if stream_namespace
+                    else f"{stream_name}_{self.RELATIVE_STATES_PATH}"
+                )
+            else:
+                filepath = f"_global_{self.RELATIVE_STATES_PATH}"
+            return filepath, message.state.json()
 
-            if message.type == AirbyteMessageType.CATALOG:
-                assert isinstance(messages_by_type["catalog"], list)
-                messages_by_type["catalog"].append(message.catalog)
+        elif message.type == AirbyteMessageType.TRACE:
+            return self.RELATIVE_TRACES_PATH, message.trace.json()
 
-            elif message.type == AirbyteMessageType.CONNECTION_STATUS:
-                assert isinstance(messages_by_type["connection_status"], list)
-                messages_by_type["connection_status"].append(message.connectionStatus)
+        elif message.type == AirbyteMessageType.LOG:
+            return self.RELATIVE_LOGS_PATH, message.log.json()
 
-            elif message.type == AirbyteMessageType.RECORD:
-                assert isinstance(messages_by_type["records"], dict)
-                messages_by_type["records"][message.record.stream].append(message.record)
+        elif message.type == AirbyteMessageType.CONTROL:
+            return self.RELATIVE_CONTROLS_PATH, message.control.json()
 
-            elif message.type == AirbyteMessageType.SPEC:
-                assert isinstance(messages_by_type["spec"], list)
-                messages_by_type["spec"].append(message.spec)
-
-            elif message.type == AirbyteMessageType.STATE:
-                if message.state.stream and message.state.stream.stream_descriptor:
-                    stream_name = message.state.stream.stream_descriptor.name
-                    stream_namespace = message.state.stream.stream_descriptor.namespace
-                    key = f"{stream_name}_{stream_namespace}" if stream_namespace else stream_name
-                else:
-                    key = "_global_states"
-                assert isinstance(messages_by_type["states"], dict)
-                messages_by_type["states"][key].append(message.state)
-            elif message.type == AirbyteMessageType.TRACE:
-                assert isinstance(messages_by_type["traces"], list)
-                messages_by_type["traces"].append(message.trace)
-            elif message.type == AirbyteMessageType.LOG:
-                assert isinstance(messages_by_type["logs"], list)
-                messages_by_type["logs"].append(message.log)
-            elif message.type == AirbyteMessageType.CONTROL:
-                assert isinstance(messages_by_type["controls"], list)
-                messages_by_type["controls"].append(message.control)
-        return messages_by_type
+        raise NotImplementedError(f"No handling for AirbyteMessage type {message.type} has been implemented. This is unexpected.")

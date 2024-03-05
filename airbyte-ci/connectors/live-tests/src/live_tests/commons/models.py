@@ -232,4 +232,4 @@ class ExecutionReport:
         # Make backends use customizable
         airbyte_messages_dir = final_dir / "airbyte_messages"
         airbyte_messages_dir.mkdir(parents=True, exist_ok=True)
-        FileBackend(airbyte_messages_dir).write(self.execution_result.airbyte_messages)
+        await FileBackend(airbyte_messages_dir).write(self.execution_result.airbyte_messages)
