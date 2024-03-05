@@ -35,7 +35,7 @@ on:
         required: false
 
 concurrency:
-  group: publish-airbyte-cdk
+  group: publish-java-cdk
   cancel-in-progress: false
 
 env:
