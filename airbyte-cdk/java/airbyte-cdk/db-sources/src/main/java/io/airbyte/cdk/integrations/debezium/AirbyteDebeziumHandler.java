@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.integrations.debezium;
 
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.internals.*;
@@ -15,16 +17,13 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants
@@ -64,6 +63,7 @@ public class AirbyteDebeziumHandler<T> {
   }
 
   class CapacityReportingBlockingQueue<E> extends LinkedBlockingQueue<E> {
+
     private static Duration REPORT_DURATION = Duration.of(10, ChronoUnit.SECONDS);
     private Instant lastReport;
 
@@ -79,6 +79,7 @@ public class AirbyteDebeziumHandler<T> {
         }
       }
     }
+
     @Override
     public void put(final E e) throws InterruptedException {
       reportQueueUtilization();
@@ -90,6 +91,7 @@ public class AirbyteDebeziumHandler<T> {
       reportQueueUtilization();
       return super.poll();
     }
+
   }
 
   public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final DebeziumPropertiesManager debeziumPropertiesManager,
