@@ -31,6 +31,8 @@ StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
 JsonSchema = Mapping[str, Any]
 
+# Streams that only support full refresh don't have a suitable cursor so this sentinel
+# value is used to indicate that stream should not load the incoming state value
 FULL_REFRESH_SENTINEL_STATE_KEY = "__ab_full_refresh_state_message"
 
 
