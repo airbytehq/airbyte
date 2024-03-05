@@ -26,6 +26,9 @@ allprojects {
         testCompileOnly libs.lombok
         testAnnotationProcessor libs.lombok
 
+        // Pin to 1.13.6 due to https://github.com/mockk/mockk/issues/1133
+        testImplementation 'io.mockk:mockk:1.13.6'
+
         testFixturesCompileOnly libs.lombok
         testFixturesAnnotationProcessor libs.lombok
     }
