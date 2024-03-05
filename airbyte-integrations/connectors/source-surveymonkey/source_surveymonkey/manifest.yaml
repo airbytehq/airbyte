@@ -82,15 +82,6 @@ streams:
           type: DpathExtractor
           field_path:
             - pages
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 1000
-          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router:
         - type: CustomPartitionRouter
           class_name: source_surveymonkey.components.SurveyIdPartitionRouter
@@ -137,15 +128,6 @@ streams:
             - "*"
             - questions
             - "*"
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 1000
-          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router:
         - type: CustomPartitionRouter
           class_name: source_surveymonkey.components.SurveyIdPartitionRouter
@@ -198,8 +180,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+          cursor_value: '{{ response.get("links", {}).get("self", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("self", {}) }}'
       partition_router:
         - type: CustomPartitionRouter
           class_name: source_surveymonkey.components.SurveyIdPartitionRouter
@@ -214,7 +196,7 @@ streams:
       cursor_field: date_modified
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S%z"
-      datetime_format: "%Y-%m-%d %H:%M:%S"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
@@ -227,22 +209,6 @@ streams:
     name: survey_collectors
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          href:
-            type: string
-          id:
-            type: string
-          name:
-            type: string
-          survey_id:
-            type: number
-          type:
-            type: string
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -275,8 +241,8 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+          cursor_value: '{{ response.get("links", {}).get("self", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("self", {}) }}'
       partition_router:
         - type: CustomPartitionRouter
           class_name: source_surveymonkey.components.SurveyIdPartitionRouter
@@ -321,15 +287,6 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 1000
-          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -341,22 +298,6 @@ streams:
                 name: survey_collectors
                 primary_key:
                   - id
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $schema: http://json-schema.org/schema#
-                    properties:
-                      href:
-                        type: string
-                      id:
-                        type: string
-                      name:
-                        type: string
-                      survey_id:
-                        type: number
-                      type:
-                        type: string
-                    type: object
                 retriever:
                   type: SimpleRetriever
                   requester:
@@ -389,8 +330,8 @@ streams:
                       type: RequestPath
                     pagination_strategy:
                       type: CursorPagination
-                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+                      cursor_value: '{{ response.get("links", {}).get("self", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("self", {}) }}'
                   partition_router:
                     - type: CustomPartitionRouter
                       class_name: source_surveymonkey.components.SurveyIdPartitionRouter
