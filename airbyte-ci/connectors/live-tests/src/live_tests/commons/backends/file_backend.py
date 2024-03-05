@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Iterable, TextIO, Tuple
 
 import pydash
-
 from airbyte_protocol.models import AirbyteMessage
 from airbyte_protocol.models import Type as AirbyteMessageType
 from cachetools import LRUCache, cached
@@ -47,6 +46,7 @@ class FileBackend(BaseBackend):
         descriptors. This mitigates the risk of hitting limits on the number of open file descriptors, particularly for
         connections with a high number of streams. The cache is designed to automatically close files upon eviction.
         """
+
         @cached(cache=FileDescriptorLRUCache(maxsize=250))
         def _open_file(path: Path) -> TextIO:
             return open(path, "a")
