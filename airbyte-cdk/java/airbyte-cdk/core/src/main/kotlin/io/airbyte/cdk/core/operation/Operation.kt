@@ -11,6 +11,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
  * OperationType}s and proxies to an {@link OperationExecutor} that performs the actual work.
  */
 interface Operation {
+
     fun type(): OperationType
 
     fun execute(): Result<AirbyteMessage?>
