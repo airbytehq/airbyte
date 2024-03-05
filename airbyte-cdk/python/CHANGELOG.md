@@ -1,11 +1,5 @@
 # Changelog
 
-## 0.67.3
-try to republish
-
-## 0.67.2
-test publish
-
 ## 0.67.1
 republish 0.67.2
 
