@@ -234,8 +234,6 @@ cmd_publish() {
     for arch in $(echo $build_arch | sed "s/,/ /g")
     do
       echo "building base images for $arch"
-      docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
-
       # For a short while (https://github.com/airbytehq/airbyte/pull/25034), destinations rely on the normalization image to build
       # Thanks to gradle, destinstaions which need normalization will already have built base-normalization's "build" artifacts
       if [[ "$image_name" == *"destination-"* ]]; then
