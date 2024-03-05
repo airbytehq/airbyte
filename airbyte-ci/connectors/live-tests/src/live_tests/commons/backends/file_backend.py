@@ -26,11 +26,25 @@ class FileBackend(BaseBackend):
     RELATIVE_TRACES_PATH = "traces.jsonl"
     RELATIVE_LOGS_PATH = "logs.jsonl"
     RELATIVE_CONTROLS_PATH = "controls.jsonl"
+    RECORD_PATHS_TO_POP = ["emitted_at"]
 
     def __init__(self, output_directory: Path):
         self._output_directory = output_directory
 
     async def write(self, airbyte_messages: Iterable[AirbyteMessage]):
+        """
+        Write AirbyteMessages to the appropriate file.
+
+        Catalogs, connection status messages, specs, trace messages, logs, and control messages are all written to their
+        own file (e.g. "catalog.jsonl", "spec.jsonl").
+
+        Records and state messages are further subdivided, with one file per stream (e.g. "my_stream_records.jsonl",
+        "my_stream_states.jsonl"). Streams with global state are stored in a "_global_states.jsonl" file.
+
+        We use an LRU cache here to manage open file objects, in order to limit the number of concurrently open file
+        descriptors. This mitigates the risk of hitting limits on the number of open file descriptors, particularly for
+        connections with a high number of streams. The cache is designed to automatically close files upon eviction.
+        """
         @cached(cache=FileDescriptorLRUCache(maxsize=250))
         def _open_file(path: Path) -> TextIO:
             return open(path, "a")
@@ -55,7 +69,8 @@ class FileBackend(BaseBackend):
         elif message.type == AirbyteMessageType.RECORD:
             record = json.loads(message.record.json())
             # TODO: once we have a comparator and/or database backend implemented we can remove this
-            record.pop("emitted_at", None)
+            for key_path in self.RECORD_PATHS_TO_POP:
+                pydash.objects.unset(record, key_path)
             return f"{message.record.stream}_{self.RELATIVE_RECORDS_PATH}", json.dumps(record)
 
         elif message.type == AirbyteMessageType.SPEC:
@@ -71,7 +86,7 @@ class FileBackend(BaseBackend):
                     else f"{stream_name}_{self.RELATIVE_STATES_PATH}"
                 )
             else:
-                filepath = f"_global_states_{self.RELATIVE_STATES_PATH}"
+                filepath = f"_global_{self.RELATIVE_STATES_PATH}"
             return filepath, message.state.json()
 
         elif message.type == AirbyteMessageType.TRACE:
