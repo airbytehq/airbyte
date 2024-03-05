@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.manifest_declarative_source import Manifest
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.logger import init_logger
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 
 CURSOR_FIELD = "cursor_field"
 SYNC_MODE = SyncMode.incremental

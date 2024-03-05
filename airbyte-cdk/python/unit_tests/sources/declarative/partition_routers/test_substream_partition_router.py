@@ -10,7 +10,6 @@ from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import Str
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Record
-from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 parent_records = [{"id": 1, "data": "data1"}, {"id": 2, "data": "data2"}]

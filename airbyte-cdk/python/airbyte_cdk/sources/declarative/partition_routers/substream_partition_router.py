@@ -27,7 +27,7 @@ class ParentStreamConfig:
     request_option: How to inject the slice value on an outgoing HTTP request
     """
 
-    stream: "DeclarativeStream" # Parent streams must be DeclarativeStream because we can't know which part of the stream slice is a partition for regular Stream
+    stream: "DeclarativeStream"  # Parent streams must be DeclarativeStream because we can't know which part of the stream slice is a partition for regular Stream
     parent_key: Union[InterpolatedString, str]
     partition_field: Union[InterpolatedString, str]
     config: Config

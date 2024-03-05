@@ -264,6 +264,7 @@ def test_given_records_with_different_slice_when_is_greater_than_or_equal_then_r
             Record({}, StreamSlice(partition={"another slice": "value"}, cursor_slice={})),
         )
 
+
 @pytest.mark.parametrize(
     "first_record_slice, second_record_slice",
     [
