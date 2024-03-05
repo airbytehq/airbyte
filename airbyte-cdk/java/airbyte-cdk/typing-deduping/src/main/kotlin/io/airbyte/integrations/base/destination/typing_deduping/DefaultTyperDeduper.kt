@@ -3,7 +3,7 @@
  */
 package io.airbyte.integrations.base.destination.typing_deduping
 
-import io.airbyte.cdk.integrations.base.IntegrationRunner
+import io.airbyte.cdk.core.util.ShutdownUtils
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst
 import io.airbyte.commons.concurrency.CompletableFutures
@@ -89,7 +89,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
             Executors.newFixedThreadPool(
                 FutureUtils.countOfTypeAndDedupeThreads,
                 BasicThreadFactory.Builder()
-                    .namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME)
+                    .namingPattern(ShutdownUtils.TYPE_AND_DEDUPE_THREAD_NAME)
                     .build()
             )
     }

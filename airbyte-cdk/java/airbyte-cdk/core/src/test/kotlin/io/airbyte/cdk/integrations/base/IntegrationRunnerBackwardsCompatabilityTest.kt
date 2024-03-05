@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.base
 
+import io.airbyte.cdk.core.util.WriteStreamConsumer
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -31,7 +32,7 @@ class IntegrationRunnerBackwardsCompatabilityTest {
             val stream1: InputStream =
                 ByteArrayInputStream(testInput.toByteArray(StandardCharsets.UTF_8))
             val consumer2 = MockConsumer()
-            IntegrationRunner.consumeWriteStream(consumer2, stream1)
+            WriteStreamConsumer(consumer2).consumeWriteStream(stream1)
             val newOutput = consumer2.getOutput()
 
             // get old output

@@ -3,7 +3,7 @@
  */
 package io.airbyte.integrations.base.destination.typing_deduping
 
-import io.airbyte.cdk.integrations.base.IntegrationRunner
+import io.airbyte.cdk.core.util.ShutdownUtils
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.Companion.executeRawTableMigrations
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.Companion.executeWeirdMigrations
@@ -49,7 +49,7 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
             Executors.newFixedThreadPool(
                 FutureUtils.countOfTypeAndDedupeThreads,
                 BasicThreadFactory.Builder()
-                    .namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME)
+                    .namingPattern(ShutdownUtils.TYPE_AND_DEDUPE_THREAD_NAME)
                     .build()
             )
     }
