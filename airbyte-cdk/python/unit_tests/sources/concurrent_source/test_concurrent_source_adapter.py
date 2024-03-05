@@ -81,13 +81,14 @@ def test_concurrent_source_adapter():
 def _mock_stream(name: str, data=[], available: bool = True):
     s = Mock()
     s.name = name
+    s.namespace = None
     s.as_airbyte_stream.return_value = AirbyteStream(
         name=name,
         json_schema={},
         supported_sync_modes=[SyncMode.full_refresh],
     )
     s.check_availability.return_value = (True, None) if available else (False, "not available")
-    s.read_full_refresh.return_value = iter(data)
+    s.read.return_value = iter(data)
     s.primary_key = None
     return s
 
