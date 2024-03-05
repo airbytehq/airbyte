@@ -121,9 +121,6 @@ class ConnectorRunner:
     IN_CONTAINER_CONFIG_PATH = "/data/config.json"
     IN_CONTAINER_CATALOG_PATH = "/data/catalog.json"
     IN_CONTAINER_STATE_PATH = "/data/state.json"
-    BASE_IN_CONTAINER_OUTPUT_DIRECTORY = "/tmp"
-    IN_CONTAINER_OUTPUT_PATH = f"{BASE_IN_CONTAINER_OUTPUT_DIRECTORY}/raw_output.txt"
-    RELATIVE_ERRORS_PATH = "errors.txt"
     MITMPROXY_IMAGE = "mitmproxy/mitmproxy:9.0.1"
     HTTP_DUMP_FILE_NAME = "http_dump.mitm"
 
@@ -146,13 +143,13 @@ class ConnectorRunner:
         self.state = state
         self.environment_variables = environment_variables if environment_variables else {}
         self.enable_http_cache = enable_http_cache
-        self.full_command: List[str] = self.get_full_command(command)
+        self.full_command: List[str] = self._get_full_command(command)
 
     @property
     def _connector_under_test_container(self) -> dagger.Container:
         return self.connector_under_test.container
 
-    def get_full_command(self, command: Command):
+    def _get_full_command(self, command: Command):
         if command is Command.SPEC:
             return ["spec"]
         elif command is Command.CHECK:
@@ -206,33 +203,33 @@ class ConnectorRunner:
         if self.catalog:
             container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, contents=self.catalog.json())
         if self.enable_http_cache:
-            container = await self.bind_connector_container_to_proxy(container)
+            container = await self._bind_connector_container_to_proxy(container)
         executed_container = await container.with_exec(self.full_command).sync()
 
         return ExecutionResult(
             stdout=await executed_container.stdout(),
             stderr=await executed_container.stderr(),
             executed_container=executed_container,
-            http_dump=await self.retrieve_http_dump() if self.enable_http_cache else None,
+            http_dump=await self._retrieve_http_dump() if self.enable_http_cache else None,
         )
 
-    def get_http_dumps_cache_volume(self) -> dagger.CacheVolume:
+    def _get_http_dumps_cache_volume(self) -> dagger.CacheVolume:
         config_data = self.config.data if self.config else None
         proxy_cache_key = hashlib.md5((self.connector_under_test.name + str(config_data)).encode("utf-8")).hexdigest()
         return self.dagger_client.cache_volume(f"{self.MITMPROXY_IMAGE}{proxy_cache_key}")
 
-    def get_mitmproxy_dir_cache(self) -> dagger.CacheVolume:
+    def _get_mitmproxy_dir_cache(self) -> dagger.CacheVolume:
         return self.dagger_client.cache_volume(self.MITMPROXY_IMAGE)
 
-    async def get_proxy_container(
+    async def _get_proxy_container(
         self,
     ) -> dagger.Container:
         proxy_container = (
             self.dagger_client.container()
             .from_(self.MITMPROXY_IMAGE)
             .with_exec(["mkdir", "-p", "/home/mitmproxy/.mitmproxy"], skip_entrypoint=True)
-            .with_mounted_cache("/dumps", self.get_http_dumps_cache_volume())
-            .with_mounted_cache("/home/mitmproxy/.mitmproxy", self.get_mitmproxy_dir_cache())
+            .with_mounted_cache("/dumps", self._get_http_dumps_cache_volume())
+            .with_mounted_cache("/home/mitmproxy/.mitmproxy", self._get_mitmproxy_dir_cache())
         )
         previous_dump_files = (
             await proxy_container.with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
@@ -254,8 +251,8 @@ class ConnectorRunner:
 
         return proxy_container.with_exec(command)
 
-    async def bind_connector_container_to_proxy(self, container: dagger.Container):
-        proxy_srv = await self.get_proxy_container()
+    async def _bind_connector_container_to_proxy(self, container: dagger.Container):
+        proxy_srv = await self._get_proxy_container()
         proxy_host, proxy_port = "proxy_server", 8080
         cert_path_in_volume = "/mitmproxy_dir/mitmproxy-ca.pem"
         requests_cert_path = "/usr/local/lib/python3.9/site-packages/certifi/cacert.pem"
@@ -263,7 +260,7 @@ class ConnectorRunner:
 
         return (
             container.with_service_binding(proxy_host, proxy_srv.with_exposed_port(proxy_port).as_service())
-            .with_mounted_cache("/mitmproxy_dir", self.get_mitmproxy_dir_cache())
+            .with_mounted_cache("/mitmproxy_dir", self._get_mitmproxy_dir_cache())
             .with_exec(["cp", cert_path_in_volume, requests_cert_path], skip_entrypoint=True)
             .with_exec(["cp", cert_path_in_volume, ca_certificate_path], skip_entrypoint=True)
             .with_env_variable("REQUESTS_CA_BUNDLE", requests_cert_path)
@@ -272,11 +269,11 @@ class ConnectorRunner:
             .with_env_variable("https_proxy", f"{proxy_host}:{proxy_port}")
         )
 
-    async def retrieve_http_dump(self) -> dagger.File:
+    async def _retrieve_http_dump(self) -> dagger.File:
         return await (
             self.dagger_client.container()
             .from_("alpine:latest")
-            .with_mounted_cache("/dumps", self.get_http_dumps_cache_volume())
+            .with_mounted_cache("/dumps", self._get_http_dumps_cache_volume())
             .with_exec(["mkdir", "/to_export"])
             .with_exec(
                 [

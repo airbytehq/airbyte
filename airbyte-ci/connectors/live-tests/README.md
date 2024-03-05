@@ -33,6 +33,7 @@ Options:
   -o, --output-directory DIRECTORY
                                   Directory in which connector output and test
                                   results should be stored.
+                                  Defaults to the current directory.
   --config-path FILE              Path to the connector config.
   --catalog-path FILE             Path to the connector catalog.
   --state-path FILE               Path to the connector state.

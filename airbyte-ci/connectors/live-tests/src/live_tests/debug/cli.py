@@ -34,7 +34,7 @@ from live_tests.debug import DAGGER_CONFIG
 @click.option(
     "-o",
     "--output-directory",
-    help="Directory in which connector output and test results should be stored.",
+    help="Directory in which connector output and test results should be stored. Defaults to the current directory.",
     default=Path("live_tests_debug_reports"),
     type=click.Path(file_okay=False, dir_okay=True, resolve_path=True, path_type=Path),
 )
