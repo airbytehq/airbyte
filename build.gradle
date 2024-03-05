@@ -6,8 +6,9 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id 'base'
-    id 'com.github.spotbugs' version '6.0.7' apply false
-    id 'org.jetbrains.kotlin.jvm' version '1.9.23' apply false
+    alias(libs.plugins.spotbugs) apply false
+    alias(libs.plugins.kotlin) apply false
+    alias(libs.plugins.ksp) apply false
 }
 
 allprojects {
@@ -17,7 +18,7 @@ allprojects {
     apply plugin: 'com.github.spotbugs'
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'idea'
-
+    apply plugin: 'com.google.devtools.ksp'
 
     // By default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
@@ -188,19 +189,10 @@ allprojects {
     }
 
     dependencies {
-        // Lombok dependencies.
-        def lombok = "org.projectlombok:lombok:1.18.30"
-        compileOnly lombok
-        annotationProcessor lombok
-        testCompileOnly lombok
-        testAnnotationProcessor lombok
-        testFixturesCompileOnly lombok
-        testFixturesAnnotationProcessor lombok
-
         // JUnit dependencies.
-        def vAssertJ = "3.25.3"
-        def vJUnit = "5.10.2"
-        def vJUnitJupiter = "5.11.0"
+        def vAssertJ = libs.versions.assertj.get()
+        def vJUnit = libs.versions.junit.get()
+        def vJUnitJupiter = libs.versions.mockito.get()
 
         testFixturesImplementation platform("org.junit:junit-bom:${vJUnit}")
         testFixturesImplementation "org.junit.jupiter:junit-jupiter-api:${vJUnit}"
@@ -218,7 +210,7 @@ allprojects {
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"
 
         // Spotbugs dependencies.
-        def vSpotbugs = "4.8.3"
+        def vSpotbugs = libs.versions.spotbugs.get()
         implementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
     }
 
