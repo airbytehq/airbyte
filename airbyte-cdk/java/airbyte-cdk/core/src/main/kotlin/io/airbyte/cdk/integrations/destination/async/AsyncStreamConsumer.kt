@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.async
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.google.common.base.Strings
+import io.airbyte.cdk.core.command.option.MicronautConfiguredAirbyteCatalog
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferEnqueue
@@ -51,7 +52,7 @@ constructor(
     private val onStart: OnStartFunction,
     private val onClose: OnCloseFunction,
     flusher: DestinationFlushFunction,
-    private val catalog: ConfiguredAirbyteCatalog,
+    private val catalog: MicronautConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
     private val flushFailure: FlushFailure,
     private val defaultNamespace: Optional<String>,
@@ -71,7 +72,7 @@ constructor(
         )
     private val streamNames: Set<StreamDescriptor> =
         StreamDescriptorUtils.fromConfiguredCatalog(
-            catalog,
+            catalog.getConfiguredCatalog(),
         )
 
     // Note that this map will only be populated for streams with nonzero records.
@@ -86,7 +87,7 @@ constructor(
         onStart: OnStartFunction,
         onClose: OnCloseFunction,
         flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
+        catalog: MicronautConfiguredAirbyteCatalog,
         bufferManager: BufferManager,
         defaultNamespace: Optional<String>,
     ) : this(
@@ -105,7 +106,7 @@ constructor(
         onStart: OnStartFunction,
         onClose: OnCloseFunction,
         flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
+        catalog: MicronautConfiguredAirbyteCatalog,
         bufferManager: BufferManager,
         defaultNamespace: Optional<String>,
         dataTransformer: StreamAwareDataTransformer,
@@ -128,7 +129,7 @@ constructor(
         onStart: OnStartFunction,
         onClose: OnCloseFunction,
         flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
+        catalog: MicronautConfiguredAirbyteCatalog,
         bufferManager: BufferManager,
         defaultNamespace: Optional<String>,
         workerPool: ExecutorService,
@@ -152,7 +153,7 @@ constructor(
         onStart: OnStartFunction,
         onClose: OnCloseFunction,
         flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
+        catalog: MicronautConfiguredAirbyteCatalog,
         bufferManager: BufferManager,
         flushFailure: FlushFailure,
         defaultNamespace: Optional<String>,
@@ -269,7 +270,7 @@ constructor(
                 .withName(message.record?.stream)
         // if stream is not part of list of streams to sync to then throw invalid stream exception
         if (!streamNames.contains(streamDescriptor)) {
-            throwUnrecognizedStream(catalog, message)
+            throwUnrecognizedStream(catalog.getConfiguredCatalog(), message)
         }
     }
 
