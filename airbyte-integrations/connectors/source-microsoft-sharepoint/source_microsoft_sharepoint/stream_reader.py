@@ -3,16 +3,17 @@
 #
 
 import logging
+from datetime import datetime
 from functools import lru_cache
 from io import IOBase
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Tuple
 
+import requests
 import smart_open
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from msal import ConfidentialClientApplication
-from msal.exceptions import MsalServiceError
 from office365.graph_client import GraphClient
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
@@ -78,7 +79,9 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     @property
     def one_drive_client(self) -> SourceMicrosoftSharePointSpec:
         if self._one_drive_client is None:
-            self._one_drive_client = SourceMicrosoftSharePointClient(self._config).client
+            auth_client = SourceMicrosoftSharePointClient(self._config)
+            self._one_drive_client = auth_client.client
+            self._get_access_token = auth_client._get_access_token
         return self._one_drive_client
 
     @config.setter
@@ -92,6 +95,55 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceMicrosoftSharePointSpec)
         self._config = value
 
+    def _get_shared_drive_object(self, drive_id: str, object_id: str) -> List[Tuple[str, str, datetime]]:
+        """
+        Retrieves a list of all nested files under the specified object.
+
+        Args:
+            drive_id: The ID of the drive containing the object.
+            object_id: The ID of the object to start the search from.
+
+        Returns:
+            A list of tuples containing file information (name, download URL, and last modified datetime).
+
+        Raises:
+            RuntimeError: If an error occurs during the request.
+        """
+
+        access_token = self._get_access_token()["access_token"]
+        headers = {"Authorization": f"Bearer {access_token}"}
+        base_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}"
+
+        def get_files(url: str) -> List[Tuple[str, str, datetime]]:
+            response = requests.get(url, headers=headers)
+            if response.status_code != 200:
+                raise RuntimeError(f"Error retrieving shared files: {response.status_code}")
+
+            data = response.json()
+            for child in data.get("value", []):
+                if child.get("file"):  # Object is a file
+                    last_modified = datetime.strptime(child["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
+                    yield (child["name"], child["@microsoft.graph.downloadUrl"], last_modified)
+                else:  # Object is a folder, retrieve children
+                    child_url = f"{base_url}/items/{child['id']}/children"  # Use item endpoint for nested objects
+                    yield from get_files(child_url)
+
+        # Initial request to item endpoint
+        item_url = f"{base_url}/items/{object_id}"
+        item_response = requests.get(item_url, headers=headers)
+        if item_response.status_code != 200:
+            raise RuntimeError(f"Error retrieving shared object: {item_response.status_code}")
+
+        # Check if the object is a file or a folder
+        item_data = item_response.json()
+        if item_data.get("file"):  # Initial object is a file
+            last_modified = datetime.strptime(item_data["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
+            yield (item_data["name"], item_data["@microsoft.graph.downloadUrl"], last_modified)
+            return
+
+        # Initial object is a folder, start file retrieval
+        yield from get_files(f"{item_url}/children")
+
     def _list_directories_and_files(self, root_folder, path=None):
         """Enumerates folders and files starting from a root folder."""
         drive_items = execute_query_with_retry(root_folder.children.get())
@@ -99,7 +151,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         for item in drive_items:
             item_path = path + "/" + item.name if path else item.name
             if item.is_file:
-                found_items.append((item, item_path))
+                found_items.append((item_path, item.properties["@microsoft.graph.downloadUrl"], item.properties["lastModifiedDateTime"]))
             else:
                 found_items.extend(self._list_directories_and_files(item, item_path))
         return found_items
@@ -136,21 +188,36 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
         return drives
 
+    def _get_shared_files_from_all_drives(self):
+        drive_ids = [drive.id for drive in self.drives]
+
+        shared_drive_items = self.one_drive_client.me.drive.shared_with_me().execute_query()
+        for drive_item in shared_drive_items:
+            parent_reference = drive_item.remote_item.parentReference
+
+            # check if drive is already parsed
+            if parent_reference and parent_reference["driveId"] in drive_ids:
+                yield from self._get_shared_drive_object(parent_reference["driveId"], drive_item.id)
+
+    def get_all_files(self):
+        yield from self._get_files_by_drive_name(self.drives, self.config.folder_path)
+        yield from self._get_shared_files_from_all_drives()
+
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Retrieve all files matching the specified glob patterns in SharePoint.
         """
-        files = self._get_files_by_drive_name(self.drives, self.config.folder_path)
+        files = self.get_all_files()
 
         files_generator = filter_http_urls(
             self.filter_files_by_globs_and_start_date(
                 [
                     MicrosoftSharePointRemoteFile(
                         uri=path,
-                        download_url=file.properties["@microsoft.graph.downloadUrl"],
-                        last_modified=file.properties["lastModifiedDateTime"],
+                        download_url=download_url,
+                        last_modified=last_modified,
                     )
-                    for file, path in files
+                    for path, download_url, last_modified in files
                 ],
                 globs,
             ),
