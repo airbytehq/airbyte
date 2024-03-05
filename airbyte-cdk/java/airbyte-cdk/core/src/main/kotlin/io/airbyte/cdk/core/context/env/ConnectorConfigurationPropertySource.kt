@@ -127,6 +127,7 @@ class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
             }
         }
 
+        @Suppress("UNCHECKED_CAST")
         private fun flattenValue(
             entry: Map.Entry<String, Any>,
             prefix: String,
