@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.67.3
+CDK: upgrade pyarrow
+
 ## 0.67.2
 File CDK: Update parquet parser to handle values that resolve to None
 
