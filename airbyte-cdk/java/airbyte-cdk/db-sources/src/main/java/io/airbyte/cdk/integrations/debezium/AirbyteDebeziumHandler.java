@@ -29,8 +29,12 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +75,35 @@ public class AirbyteDebeziumHandler<T> {
     this.addDbNameToOffsetState = addDbNameToOffsetState;
   }
 
+  class CapacityReportingBlockingQueue<E> extends LinkedBlockingQueue<E> {
+    private static Duration REPORT_DURATION = Duration.of(10, ChronoUnit.SECONDS);
+    private Instant lastReport;
+
+    CapacityReportingBlockingQueue(final int capacity) {
+      super(capacity);
+    }
+
+    private void reportQueueUtilization() {
+      if (lastReport == null || Duration.between(lastReport, Instant.now()).compareTo(REPORT_DURATION) > 0) {
+        LOGGER.info("CDC events queue size: {}. remaining {}", this.size(), this.remainingCapacity());
+        synchronized (this) {
+          lastReport = Instant.now();
+        }
+      }
+    }
+    @Override
+    public void put(final E e) throws InterruptedException {
+      reportQueueUtilization();
+      super.put(e);
+    }
+
+    @Override
+    public E poll() {
+      reportQueueUtilization();
+      return super.poll();
+    }
+  }
+
   public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final DebeziumPropertiesManager debeziumPropertiesManager,
                                                                        final DebeziumEventConverter eventConverter,
                                                                        final CdcSavedInfoFetcher cdcSavedInfoFetcher,
@@ -85,7 +118,7 @@ public class AirbyteDebeziumHandler<T> {
             cdcSavedInfoFetcher.getSavedSchemaHistory(), cdcStateHandler.compressSchemaHistoryForState()))
         : Optional.<AirbyteSchemaHistoryStorage>empty();
     final var publisher = new DebeziumRecordPublisher(debeziumPropertiesManager);
-    final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(queueSize);
+    final var queue = new CapacityReportingBlockingQueue<ChangeEvent<String, String>>(queueSize);
     publisher.start(queue, offsetManager, schemaHistoryManager);
     // handle state machine around pub/sub logic.
     final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
