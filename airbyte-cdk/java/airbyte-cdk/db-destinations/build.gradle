@@ -9,6 +9,9 @@ java {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok     // Lombok must be added BEFORE Micronaut
+
     api 'org.apache.commons:commons-csv:1.10.0'
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
@@ -16,6 +19,9 @@ dependencies {
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
 
     implementation 'io.aesy:datasize:1.0.0'
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 
     testFixturesCompileOnly libs.lombok
     testFixturesAnnotationProcessor libs.lombok

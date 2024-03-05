@@ -9,10 +9,16 @@ java {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok     // Lombok must be added BEFORE Micronaut
+
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
 
     implementation 'commons-codec:commons-codec:1.16.0'
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:dependencies'))

@@ -142,6 +142,9 @@ generate.configure {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok     // Lombok must be added BEFORE Micronaut
+
     api platform('com.fasterxml.jackson:jackson-bom:2.15.2')
     api 'com.fasterxml.jackson.core:jackson-annotations'
     api 'com.fasterxml.jackson.core:jackson-databind'

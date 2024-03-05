@@ -12,6 +12,9 @@ java {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok     // Lombok must be added BEFORE Micronaut
+
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
     implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
