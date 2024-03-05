@@ -91,7 +91,7 @@ micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", versi
 micronaut-inject-java = { module = "io.micronaut:micronaut-inject-java", version.ref = "micronaut-inject" }
 micronaut-inject-kotlin = { module = "io.micronaut:micronaut-inject-kotlin", version.ref = "micronaut-inject" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "5.10.0" }
-mockk = { module = "io.mockk:mockk", version = "1.13.9" }
+mockk = { module = "io.mockk:mockk", version = "1.13.6" }
 mongo-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version = "4.10.2" }
 otel-bom = { module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0" }
 otel-sdk = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0" }
