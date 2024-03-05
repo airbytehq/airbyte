@@ -23,6 +23,8 @@ application {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok     // Lombok must be added BEFORE Micronaut
 
     implementation('org.apache.spark:spark-sql_2.13:3.3.2') {
         exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
@@ -48,6 +50,9 @@ dependencies {
     implementation "org.apache.hadoop:hadoop-client-runtime:3.3.2"
     implementation "org.postgresql:postgresql:42.5.0"
     implementation "commons-collections:commons-collections:3.2.2"
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 
     testImplementation libs.testcontainers.postgresql
     integrationTestJavaImplementation libs.testcontainers.postgresql

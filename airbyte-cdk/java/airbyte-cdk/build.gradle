@@ -1,3 +1,7 @@
+plugins {
+    alias(libs.plugins.ksp)
+}
+
 final var cdkVersion = {
     var props = new Properties()
     file("core/src/main/resources/version.properties").withInputStream(props::load)
@@ -7,6 +11,7 @@ final var cdkVersion = {
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
+    apply plugin: 'com.google.devtools.ksp'
 
     group 'io.airbyte.cdk'
 
