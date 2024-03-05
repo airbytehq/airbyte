@@ -147,19 +147,19 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
                 """
                 WITH MIN_TS AS (
-                  SELECT TIMESTAMPADD(NANOSECOND, -1, MIN("_airbyte_extracted_at")) AS MIN_TIMESTAMP
+                  SELECT TIMESTAMPADD(NANOSECOND, -1,
+                    MIN(TIMESTAMPADD(
+                      HOUR,
+                      EXTRACT(timezone_hour from "_airbyte_extracted_at"),
+                        TIMESTAMPADD(
+                          MINUTE,
+                          EXTRACT(timezone_minute from "_airbyte_extracted_at"),
+                          CONVERT_TIMEZONE('UTC', "_airbyte_extracted_at")
+                        )
+                    ))) AS MIN_TIMESTAMP
                   FROM ${raw_table}
                   WHERE "_airbyte_loaded_at" IS NULL
-                ) SELECT TO_VARCHAR(
-                                    TIMESTAMPADD(
-                                      HOUR,
-                                      EXTRACT(timezone_hour from MIN_TIMESTAMP),
-                                        TIMESTAMPADD(
-                                          MINUTE,
-                                          EXTRACT(timezone_minute from MIN_TIMESTAMP),
-                                          CONVERT_TIMEZONE('UTC', MIN_TIMESTAMP)
-                                        )
-                                    ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MIN_TIMESTAMP_UTC from MIN_TS;
+                ) SELECT TO_VARCHAR(MIN_TIMESTAMP,'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MIN_TIMESTAMP_UTC from MIN_TS;
                 """)),
         // The query will always return exactly one record, so use .get(0)
         record -> record.getString("MIN_TIMESTAMP_UTC")).get(0));
@@ -174,19 +174,18 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
                 """
                 WITH MAX_TS AS (
-                  SELECT MAX("_airbyte_extracted_at")
+                  SELECT MAX(TIMESTAMPADD(
+                      HOUR,
+                      EXTRACT(timezone_hour from "_airbyte_extracted_at"),
+                        TIMESTAMPADD(
+                          MINUTE,
+                          EXTRACT(timezone_minute from "_airbyte_extracted_at"),
+                          CONVERT_TIMEZONE('UTC', "_airbyte_extracted_at")
+                        )
+                    ))
                   AS MAX_TIMESTAMP
                   FROM ${raw_table}
-                ) SELECT TO_VARCHAR(
-                                    TIMESTAMPADD(
-                                      HOUR,
-                                      EXTRACT(timezone_hour from MAX_TIMESTAMP),
-                                        TIMESTAMPADD(
-                                          MINUTE,
-                                          EXTRACT(timezone_minute from MAX_TIMESTAMP),
-                                          CONVERT_TIMEZONE('UTC', MAX_TIMESTAMP)
-                                        )
-                                    ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
+                ) SELECT TO_VARCHAR(MAX_TIMESTAMP,'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
                 """)),
         record -> record.getString("MAX_TIMESTAMP_UTC")).get(0));
     return new InitialRawTableStatus(true, false, maxTimestamp.map(Instant::parse));
