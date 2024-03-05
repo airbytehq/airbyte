@@ -146,15 +146,23 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
         conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
                 """
-                SELECT to_varchar(
-                  TIMESTAMPADD(NANOSECOND, -1, MIN("_airbyte_extracted_at")),
-                  'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
-                ) AS MIN_TIMESTAMP
-                FROM ${raw_table}
-                WHERE "_airbyte_loaded_at" IS NULL
+                WITH MIN_TS AS (
+                  SELECT TIMESTAMPADD(NANOSECOND, -1, MIN("_airbyte_extracted_at")) AS MIN_TIMESTAMP
+                  FROM ${raw_table}
+                  WHERE "_airbyte_loaded_at" IS NULL
+                ) SELECT TO_VARCHAR(
+                                    TIMESTAMPADD(
+                                      HOUR,
+                                      EXTRACT(timezone_hour from MIN_TIMESTAMP),
+                                        TIMESTAMPADD(
+                                          MINUTE,
+                                          EXTRACT(timezone_minute from MIN_TIMESTAMP),
+                                          CONVERT_TIMEZONE('UTC', MIN_TIMESTAMP)
+                                        )
+                                    ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MIN_TIMESTAMP_UTC from MIN_TS;
                 """)),
         // The query will always return exactly one record, so use .get(0)
-        record -> record.getString("MIN_TIMESTAMP")).get(0));
+        record -> record.getString("MIN_TIMESTAMP_UTC")).get(0));
     if (minUnloadedTimestamp.isPresent()) {
       return new InitialRawTableStatus(true, true, minUnloadedTimestamp.map(Instant::parse));
     }
@@ -165,13 +173,22 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
         conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
                 """
-                SELECT to_varchar(
-                  MAX("_airbyte_extracted_at"),
-                  'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
-                ) AS MIN_TIMESTAMP
-                FROM ${raw_table}
+                WITH MAX_TS AS (
+                  SELECT MAX("_airbyte_extracted_at")
+                  AS MAX_TIMESTAMP
+                  FROM ${raw_table}
+                ) SELECT TO_VARCHAR(
+                                    TIMESTAMPADD(
+                                      HOUR,
+                                      EXTRACT(timezone_hour from MAX_TIMESTAMP),
+                                        TIMESTAMPADD(
+                                          MINUTE,
+                                          EXTRACT(timezone_minute from MAX_TIMESTAMP),
+                                          CONVERT_TIMEZONE('UTC', MAX_TIMESTAMP)
+                                        )
+                                    ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
                 """)),
-        record -> record.getString("MIN_TIMESTAMP")).get(0));
+        record -> record.getString("MAX_TIMESTAMP_UTC")).get(0));
     return new InitialRawTableStatus(true, false, maxTimestamp.map(Instant::parse));
   }
 
@@ -181,7 +198,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     final UUID queryId = UUID.randomUUID();
     for (final String transaction : transactions) {
       final UUID transactionId = UUID.randomUUID();
-      LOGGER.debug("Executing sql {}-{}: {}", queryId, transactionId, transaction);
+      LOGGER.info("Executing sql {}-{}: {}", queryId, transactionId, transaction);
       final long startTime = System.currentTimeMillis();
 
       try {
@@ -200,7 +217,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
         throw new RuntimeException(trimmedMessage, e);
       }
 
-      LOGGER.debug("Sql {}-{} completed in {} ms", queryId, transactionId, System.currentTimeMillis() - startTime);
+      LOGGER.info("Sql {}-{} completed in {} ms", queryId, transactionId, System.currentTimeMillis() - startTime);
     }
   }
 
