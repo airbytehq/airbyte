@@ -19,7 +19,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.TestHarnessUtils;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -150,7 +149,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
     if (sourceProcess.isAlive() || !IGNORED_EXIT_CODES.contains(getExitValue())) {
       final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + getExitValue();
-      throw new TestHarnessException(message + ". This warning is normal if the job was cancelled.");
+      LOGGER.warn(message + ". This warning is normal if the job was cancelled.");
     }
   }
 
