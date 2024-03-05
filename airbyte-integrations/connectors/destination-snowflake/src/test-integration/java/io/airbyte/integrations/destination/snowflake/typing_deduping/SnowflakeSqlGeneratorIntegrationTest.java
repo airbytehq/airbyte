@@ -567,7 +567,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 1",
-                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00Z",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
                                 "ID1": 1,
                                 "ID2": 100,
                                 "STRING": "Alice01"
@@ -576,7 +577,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 2",
-                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00Z",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
                                 "ID1": 2,
                                 "ID2": 100,
                                 "STRING": "Bob01"
@@ -585,7 +587,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 3",
-                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00Z",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
                                 "ID1": 3,
                                 "ID2": 100,
                                 "STRING": "Charlie01"
@@ -594,7 +597,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 4",
-                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00Z",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
                                 "ID1": 4,
                                 "ID2": 100,
                                 "STRING": "Dave01"
