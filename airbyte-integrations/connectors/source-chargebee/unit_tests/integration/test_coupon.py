@@ -136,7 +136,7 @@ class FullRefreshTest(TestCase):
             a_response_with_status(401),
         )
         output = self._read(_config().with_start_date(self._start_date), expecting_exception=True)
-        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
     @HttpMocker()
     def test_given_rate_limited_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
@@ -201,7 +201,7 @@ class IncrementalTest(TestCase):
         state_cursor_value = int((self._now - timedelta(days=5)).timestamp())
         state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_cursor_value}).build()
         http_mocker.get(
-            _a_request().with_sort_by_asc("created_at").with_include_deleted(True).with_updated_at_btw([state_cursor_value, self._now_in_seconds]).build(),
+            _a_request().with_sort_by_asc("created_at").with_updated_at_btw([state_cursor_value, self._now_in_seconds]).build(),
             _a_response().with_record(_a_record().with_cursor(self._now_in_seconds - 1)).build(),
         )
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), state)

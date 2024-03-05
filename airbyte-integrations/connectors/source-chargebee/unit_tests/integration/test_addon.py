@@ -126,7 +126,7 @@ class FullRefreshTest(TestCase):
             a_response_with_status(401),
         )
         output = self._read(_config().with_start_date(self._start_date), expecting_exception=True)
-        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
     @HttpMocker()
     def test_given_rate_limited_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
