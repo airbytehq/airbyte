@@ -444,7 +444,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "pre-dst local tz 1",
-            "_airbyte_extracted_at": "2023-03-10T02:00:00-08:00",
+            "_airbyte_extracted_at": "2024-03-10T02:00:00-08:00",
             "_airbyte_data": {
               "id1": 1,
               "id2": 100,
@@ -455,7 +455,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "post-dst local tz 2",
-            "_airbyte_extracted_at": "2023-03-10T02:01:00-07:00",
+            "_airbyte_extracted_at": "2024-03-10T02:01:00-07:00",
             "_airbyte_data": {
               "id1": 2,
               "id2": 100,
@@ -470,7 +470,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "post-dst utc 1",
-            "_airbyte_extracted_at": "2023-03-10T02:02:00Z",
+            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
             "_airbyte_data": {
               "id1": 1,
               "id2": 100,
@@ -481,7 +481,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "post-dst utc 2",
-            "_airbyte_extracted_at": "2023-03-10T02:02:00Z",
+            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
             "_airbyte_data": {
               "id1": 2,
               "id2": 100,
@@ -497,7 +497,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
           {
             "_AIRBYTE_RAW_ID": "post-dst utc 1",
-            "_AIRBYTE_EXTRACTED_AT": "2023-03-10T02:02:00Z",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00Z",
             "ID1": 1,
             "ID2": 100,
             "STRING": "Alice01"
@@ -506,7 +506,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
           {
             "_AIRBYTE_RAW_ID": "post-dst utc 2",
-            "_AIRBYTE_EXTRACTED_AT": "2023-03-10T02:02:00Z",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00Z",
             "ID1": 2,
             "ID2": 100,
             "STRING": "Bob01"
@@ -524,7 +524,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "pre-dst local tz 1",
-            "_airbyte_extracted_at": "2023-03-10T01:59:00-08:00",
+            "_airbyte_extracted_at": "2024-03-10T01:59:00-08:00",
             "_airbyte_data": {
               "id1": 1,
               "id2": 100,
@@ -540,7 +540,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "pre-dst utc 1",
-            "_airbyte_extracted_at": "2023-03-10T02:00:00Z",
+            "_airbyte_extracted_at": "2024-03-10T02:00:00Z",
             "_airbyte_data": {
               "id1": 1,
               "id2": 100,
@@ -551,7 +551,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "post-dst utc 1",
-            "_airbyte_extracted_at": "2023-03-10T02:01:00Z",
+            "_airbyte_extracted_at": "2024-03-10T02:01:00Z",
             "_airbyte_data": {
               "id1": 1,
               "id2": 100,
@@ -567,7 +567,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
           {
             "_AIRBYTE_RAW_ID": "post-dst utc 1",
-            "_AIRBYTE_EXTRACTED_AT": "2023-03-10T02:01:00Z",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00Z",
             "ID1": 1,
             "ID2": 100,
             "STRING": "Alice02"
@@ -585,7 +585,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "pre-dst local tz 1",
-            "_airbyte_extracted_at": "2023-03-10T01:59:00-08:00",
+            "_airbyte_extracted_at": "2024-03-10T01:59:00-08:00",
             "_airbyte_data": {
               "id1": 1,
               "id2": 100,
@@ -596,7 +596,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "pre-dst local tz 2",
-            "_airbyte_extracted_at": "2023-03-10T01:59:00-08:00",
+            "_airbyte_extracted_at": "2024-03-10T01:59:00-08:00",
             "_airbyte_data": {
               "id1": 2,
               "id2": 100,
@@ -612,7 +612,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "pre-dst utc 1",
-            "_airbyte_extracted_at": "2023-03-10T02:00:00Z",
+            "_airbyte_extracted_at": "2024-03-10T02:00:00Z",
             "_airbyte_data": {
               "id1": 1,
               "id2": 100,
@@ -623,7 +623,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "pre-dst utc 2",
-            "_airbyte_extracted_at": "2023-03-10T02:00:00Z",
+            "_airbyte_extracted_at": "2024-03-10T02:00:00Z",
             "_airbyte_data": {
               "id1": 2,
               "id2": 100,
@@ -639,7 +639,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
           {
             "_AIRBYTE_RAW_ID": "pre-dst utc 1",
-            "_AIRBYTE_EXTRACTED_AT": "2023-03-10T02:00:00Z",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00Z",
             "ID1": 1,
             "ID2": 100,
             "STRING": "Alice01"
@@ -648,7 +648,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
           {
             "_AIRBYTE_RAW_ID": "pre-dst utc 2",
-            "_AIRBYTE_EXTRACTED_AT": "2023-03-10T02:00:00Z",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00Z",
             "ID1": 2,
             "ID2": 100,
             "STRING": "Bob01"
@@ -663,7 +663,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "post-dst utc 1",
-            "_airbyte_extracted_at": "2023-03-10T02:01:00Z",
+            "_airbyte_extracted_at": "2024-03-10T02:01:00Z",
             "_airbyte_data": {
               "id1": 1,
               "id2": 100,
@@ -674,7 +674,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         Jsons.deserialize("""
           {
             "_airbyte_raw_id": "post-dst utc 2",
-            "_airbyte_extracted_at": "2023-03-10T02:01:00Z",
+            "_airbyte_extracted_at": "2024-03-10T02:01:00Z",
             "_airbyte_data": {
               "id1": 2,
               "id2": 100,
@@ -690,7 +690,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
           {
             "_AIRBYTE_RAW_ID": "post-dst utc 1",
-            "_AIRBYTE_EXTRACTED_AT": "2023-03-10T02:01:00Z",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00Z",
             "ID1": 1,
             "ID2": 100,
             "STRING": "Alice02"
@@ -699,7 +699,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             Jsons.deserialize("""
           {
             "_AIRBYTE_RAW_ID": "post-dst utc 2",
-            "_AIRBYTE_EXTRACTED_AT": "2023-03-10T02:01:00Z",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00Z",
             "ID1": 2,
             "ID2": 100,
             "STRING": "Bob02"
