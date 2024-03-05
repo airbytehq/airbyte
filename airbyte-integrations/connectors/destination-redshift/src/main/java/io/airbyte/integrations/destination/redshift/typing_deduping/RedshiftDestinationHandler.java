@@ -4,8 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
-import static io.airbyte.cdk.integrations.base.JavaBaseConstants.*;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
@@ -20,12 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.SQLDialect;
 
 @Slf4j
-public class RedshiftDestinationHandler extends JdbcDestinationHandler {
+public class RedshiftDestinationHandler extends JdbcDestinationHandler<RedshiftState> {
 
-  public RedshiftDestinationHandler(final String databaseName, final JdbcDatabase jdbcDatabase) {
-    super(databaseName, jdbcDatabase);
+  public RedshiftDestinationHandler(final String databaseName, final JdbcDatabase jdbcDatabase, String rawNamespace) {
+    // :shrug: apparently this works better than using POSTGRES
+    super(databaseName, jdbcDatabase, rawNamespace, SQLDialect.DEFAULT);
   }
 
   @Override
@@ -67,6 +68,12 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler {
       case Union.TYPE -> toJdbcTypeName(((Union) airbyteType).chooseType());
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + airbyteType);
     };
+  }
+
+  @Override
+  protected RedshiftState toDestinationState(JsonNode json) {
+    return new RedshiftState(
+        json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean());
   }
 
   private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {
