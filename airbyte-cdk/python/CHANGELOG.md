@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.67.2
+File CDK: Update parquet parser to handle values that resolve to None
+
 ## 0.67.1
 Fix handling of tab-separated CSVs
 
