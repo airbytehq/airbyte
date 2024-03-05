@@ -462,7 +462,52 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
               "string": "Bob00"
             }
           }
+          """),
+        // and 2 records that got successfully loaded.
+        Jsons.deserialize("""
+          {
+            "_airbyte_raw_id": "pre-dst local tz 3",
+            "_airbyte_extracted_at": "2024-03-10T02:00:00-08:00",
+            "_airbyte_loaded_at": "1970-01-01T00:00:00Z",
+            "_airbyte_data": {
+              "id1": 3,
+              "id2": 100,
+              "string": "Charlie00"
+            }
+          }
+          """),
+        Jsons.deserialize("""
+          {
+            "_airbyte_raw_id": "post-dst local tz 4",
+            "_airbyte_extracted_at": "2024-03-10T02:01:00-07:00",
+            "_airbyte_loaded_at": "1970-01-01T00:00:00Z",
+            "_airbyte_data": {
+              "id1": 4,
+              "id2": 100,
+              "string": "Dave00"
+            }
+          }
           """)));
+    this.insertFinalTableRecords(false, this.streamId, "", List.of(
+        Jsons.deserialize("""
+          {
+            "_AIRBYTE_RAW_ID": "pre-dst local tz 3",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00-08:00",
+            "ID1": 3,
+            "ID2": 100,
+            "STRING": "Charlie00"
+          }
+          """),
+        Jsons.deserialize("""
+          {
+            "_AIRBYTE_RAW_ID": "post-dst local tz 4",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00-07:00",
+            "ID1": 4,
+            "ID2": 100,
+            "STRING": "Dave00"
+          }
+          """)
+    ));
     // Gather initial state at the start of our updated sync
     DestinationInitialStatus<SnowflakeState> initialState = this.destinationHandler.gatherInitialState(List.of(this.incrementalDedupStream)).getFirst();
     this.insertRawTableRecords(this.streamId, List.of(
@@ -488,6 +533,28 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
               "string": "Bob01"
             }
           }
+          """),
+        Jsons.deserialize("""
+          {
+            "_airbyte_raw_id": "post-dst utc 3",
+            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
+            "_airbyte_data": {
+              "id1": 3,
+              "id2": 100,
+              "string": "Charlie01"
+            }
+          }
+          """),
+        Jsons.deserialize("""
+          {
+            "_airbyte_raw_id": "post-dst utc 4",
+            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
+            "_airbyte_data": {
+              "id1": 4,
+              "id2": 100,
+              "string": "Dave01"
+            }
+          }
           """)));
 
     TypeAndDedupeTransaction.executeTypeAndDedupe(this.generator, this.destinationHandler, this.incrementalDedupStream, initialState.initialRawTableStatus().maxProcessedTimestamp(), "");
@@ -510,6 +577,24 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             "ID1": 2,
             "ID2": 100,
             "STRING": "Bob01"
+          }
+          """),
+            Jsons.deserialize("""
+          {
+            "_AIRBYTE_RAW_ID": "post-dst utc 3",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00Z",
+            "ID1": 3,
+            "ID2": 100,
+            "STRING": "Charlie01"
+          }
+          """),
+            Jsons.deserialize("""
+          {
+            "_AIRBYTE_RAW_ID": "post-dst utc 4",
+            "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00Z",
+            "ID1": 4,
+            "ID2": 100,
+            "STRING": "Dave01"
           }
           """)),
         this.dumpFinalTableRecords(this.streamId, ""));
