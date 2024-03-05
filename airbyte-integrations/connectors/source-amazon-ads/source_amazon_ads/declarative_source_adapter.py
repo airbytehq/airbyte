@@ -15,9 +15,13 @@ from airbyte_protocol.models import ConnectorSpecification
 
 class DeclarativeSourceAdapter(YamlDeclarativeSource):
     def __init__(self, source: AbstractSource) -> None:
-        super().__init__(path_to_yaml="manifest.yaml")
         self._source = source
+        super().__init__(path_to_yaml="manifest.yaml")
         self._set_adapted_methods()
+
+    @property
+    def name(self) -> str:
+        return self._source.name
 
     def spec(self, logger: Logger) -> ConnectorSpecification:
         return self._source.spec(logger)
