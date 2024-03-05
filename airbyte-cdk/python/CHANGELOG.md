@@ -1,8 +1,5 @@
 # Changelog
 
-## 0.67.2
-try publish
-
 ## 0.67.0
 Low-code: Add CustomRecordFilter
 
