@@ -235,7 +235,9 @@ cmd_publish() {
     do
       echo "building base images for $arch"
       docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
-      docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
+      if [ "$path" != "airbyte-cdk/python" ]; then
+        docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
+      fi
 
       # For a short while (https://github.com/airbytehq/airbyte/pull/25034), destinations rely on the normalization image to build
       # Thanks to gradle, destinstaions which need normalization will already have built base-normalization's "build" artifacts
