@@ -12,6 +12,8 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageP
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mongodb.MongoConstants;
+import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcEventUtils;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
@@ -65,8 +67,12 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
    * @param initialState The initial state to be stored in the state manager.
    * @return A new {@link MongoDbStateManager}
    */
-  public static MongoDbStateManager createStateManager(final JsonNode initialState) {
+  public static MongoDbStateManager createStateManager(final JsonNode initialState, final MongoDbSourceConfig config) {
     final MongoDbStateManager stateManager = new MongoDbStateManager();
+    stateManager.streamPairToLastIdMap = new HashMap<>();
+    stateManager.isEnforceSchema = config.getEnforceSchema();
+    stateManager.emittedAt = Instant.now();
+    stateManager.cdcMetadataInjector = Optional.of(MongoDbCdcConnectorMetadataInjector.getInstance(stateManager.emittedAt));
 
     if (initialState == null) {
       return stateManager;
@@ -101,7 +107,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
 
   /**
    * Creates a new {@link MongoDbStateManager} instance. This constructor should not be called
-   * directly. Instead, use {@link #createStateManager(JsonNode)}.
+   * directly. Instead, use {@link #createStateManager(JsonNode, MongoDbSourceConfig)}.
    */
   private MongoDbStateManager() {}
 
@@ -224,19 +230,6 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
     } else {
       return false;
     }
-  }
-
-  // Required when using stateIterator related functions below.
-  public void withIteratorFields(
-                                 final Instant emittedAt,
-                                 final Optional<CdcMetadataInjector<?>> cdcMetadataInjector,
-                                 final boolean isEnforceSchema) {
-    // this.lastId = this.getStreamState(stream.getStream().getName(),
-    // stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
-    this.emittedAt = emittedAt;
-    this.cdcMetadataInjector = cdcMetadataInjector;
-    this.isEnforceSchema = isEnforceSchema;
-    this.streamPairToLastIdMap = new HashMap<>();
   }
 
   /**

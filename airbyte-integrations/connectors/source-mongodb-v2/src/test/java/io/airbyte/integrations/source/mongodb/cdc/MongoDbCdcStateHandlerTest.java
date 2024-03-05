@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -23,11 +24,12 @@ class MongoDbCdcStateHandlerTest {
   private static final String REPLICA_SET = "test-replica-set";
   private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
 
+  private static final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(Jsons.emptyObject());
   private MongoDbCdcStateHandler mongoDbCdcStateHandler;
 
   @BeforeEach
   void setup() {
-    final MongoDbStateManager mongoDbStateManager = MongoDbStateManager.createStateManager(null);
+    final MongoDbStateManager mongoDbStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     mongoDbCdcStateHandler = new MongoDbCdcStateHandler(mongoDbStateManager);
   }
 

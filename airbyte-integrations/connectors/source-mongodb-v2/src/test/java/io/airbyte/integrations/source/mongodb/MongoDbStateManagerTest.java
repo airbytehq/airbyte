@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.mongodb.MongoException;
@@ -14,7 +14,8 @@ import com.mongodb.client.MongoCursor;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
@@ -29,9 +30,8 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
@@ -50,13 +50,18 @@ class MongoDbStateManagerTest {
   private MongoCursor<Document> mongoCursor;
   private AutoCloseable closeable;
   private MongoDbStateManager stateManager;
-  private MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector;
+  private static final String DATABASE = "test-database";
+
+  final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(Jsons.jsonNode(
+      Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
+          Map.of(
+              MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+              MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE))));
 
   @BeforeEach
   public void setup() {
     closeable = MockitoAnnotations.openMocks(this);
-    stateManager = MongoDbStateManager.createStateManager(null);
-    cdcConnectorMetadataInjector = mock(MongoDbCdcConnectorMetadataInjector.class);
+    stateManager = MongoDbStateManager.createStateManager(null, CONFIG);
   }
 
   @AfterEach
@@ -96,7 +101,6 @@ class MongoDbStateManagerTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    stateManager.withIteratorFields(Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), true);
     final var iter = new SourceStateIterator<Document>(mongoCursor, stream, stateManager, new StateEmitFrequency(CHECKPOINT_INTERVAL,
         MongoConstants.CHECKPOINT_DURATION));
 
@@ -164,7 +168,6 @@ class MongoDbStateManagerTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    stateManager.withIteratorFields(Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), true);
     final var iter = new SourceStateIterator<Document>(mongoCursor, stream, stateManager, new StateEmitFrequency(CHECKPOINT_INTERVAL,
         MongoConstants.CHECKPOINT_DURATION));
 
@@ -194,7 +197,6 @@ class MongoDbStateManagerTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    stateManager.withIteratorFields(Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), true);
     final var iter = new SourceStateIterator<Document>(mongoCursor, stream, stateManager, new StateEmitFrequency(CHECKPOINT_INTERVAL,
         MongoConstants.CHECKPOINT_DURATION));
 
@@ -216,7 +218,6 @@ class MongoDbStateManagerTest {
     stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
         new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID));
 
-    stateManager.withIteratorFields(Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), true);
     final var iter = new SourceStateIterator<Document>(mongoCursor, stream, stateManager, new StateEmitFrequency(CHECKPOINT_INTERVAL,
         MongoConstants.CHECKPOINT_DURATION));
 
@@ -255,7 +256,6 @@ class MongoDbStateManagerTest {
     stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
         new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID));
 
-    stateManager.withIteratorFields(Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), true);
     final var iter = new SourceStateIterator<Document>(mongoCursor, stream, stateManager, new StateEmitFrequency(1000000,
         Duration.of(1, SECONDS)));
 
@@ -327,7 +327,6 @@ class MongoDbStateManagerTest {
     when(mongoCursor.hasNext()).thenReturn(false);
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    stateManager.withIteratorFields(Instant.now(), Optional.ofNullable(cdcConnectorMetadataInjector), true);
     final var iter = new SourceStateIterator<Document>(mongoCursor, stream, stateManager, new StateEmitFrequency(1000000, Duration.of(1, SECONDS)));
 
     // MongoDbStateIterator should return a final state message

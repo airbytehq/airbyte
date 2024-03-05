@@ -115,8 +115,6 @@ public class InitialSnapshotHandler {
                   .sort(Sorts.ascending(MongoConstants.ID_FIELD))
                   .allowDiskUse(true)
                   .cursor();
-          stateManager.withIteratorFields(emittedAt, Optional.ofNullable(cdcConnectorMetadataInjector), isEnforceSchema);
-
           final var stateIterator =
               new SourceStateIterator<>(cursor, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
                   MongoConstants.CHECKPOINT_DURATION));
