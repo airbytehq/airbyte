@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -146,9 +145,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
   // corresponding iterator for other connectors before
   // doing so.
   protected void assertExpectedStateMessageCountMatches(final List<AirbyteStateMessage> stateMessages, long totalCount) {
-    AtomicLong count = new AtomicLong(0L);
-    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
-    assertEquals(totalCount, count.get());
+    // Do nothing.
   }
 
   @BeforeEach
@@ -352,6 +349,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordMessages);
     assertExpectedStateMessages(stateMessages);
+    assertExpectedStateMessageCountMatches(stateMessages, MODEL_RECORDS.size());
   }
 
   protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition,
@@ -378,6 +376,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
         extractRecordMessages(actualRecords2));
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
     assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
+    assertExpectedStateMessageCountMatches(stateMessages2, 1);
     assertEquals(1, recordMessages2.size());
     assertEquals(11, recordMessages2.get(0).getData().get(COL_ID).asInt());
     assertCdcMetaData(recordMessages2.get(0).getData(), false);
@@ -411,6 +410,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertEquals(11, recordMessages2.get(0).getData().get(COL_ID).asInt());
     assertEquals(updatedModel, recordMessages2.get(0).getData().get(COL_MODEL).asText());
     assertCdcMetaData(recordMessages2.get(0).getData(), true);
+    assertExpectedStateMessageCountMatches(stateMessages2, 1);
   }
 
   @SuppressWarnings({"BusyWait", "CodeBlock2Expr"})
@@ -527,6 +527,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final HashSet<String> names = new HashSet<>(STREAM_NAMES);
     names.add(MODELS_STREAM_NAME + "_2");
     assertExpectedStateMessages(stateMessages1);
+    // Full refresh does not get any state messages.
+    assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS_2.size());
     assertExpectedRecords(Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
         .collect(Collectors.toSet()),
         recordMessages1,
@@ -546,6 +548,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
     assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
+    assertExpectedStateMessageCountMatches(stateMessages2, 1);
     assertExpectedRecords(
         Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
             .collect(Collectors.toSet()),
@@ -567,6 +570,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
     assertExpectedRecords(Collections.emptySet(), recordMessages);
     assertExpectedStateMessagesForNoData(stateMessages);
+    assertExpectedStateMessageCountMatches(stateMessages, 0);
   }
 
   protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
@@ -591,6 +595,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
     assertExpectedRecords(Collections.emptySet(), recordMessages2);
     assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
+    assertExpectedStateMessageCountMatches(stateMessages2, 0);
   }
 
   @Test
@@ -621,6 +626,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
         dataFromFirstBatch);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
     assertExpectedStateMessages(stateAfterFirstBatch);
+    assertExpectedStateMessageCountMatches(stateAfterFirstBatch, MODEL_RECORDS.size());
 
     final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterFirstSyncCompletion.getType());
