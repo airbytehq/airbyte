@@ -27,6 +27,7 @@ public class MsSqlTestDatabaseWithBackgroundThreads extends MsSQLTestDatabase {
   private abstract class AbstractMssqlTestDatabaseBackgroundThread extends Thread {
 
     protected Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+    protected final boolean PRINT_EVERY_CALL = true;
 
     AbstractMssqlTestDatabaseBackgroundThread() {
       this.start();
@@ -86,7 +87,7 @@ public class MsSqlTestDatabaseWithBackgroundThreads extends MsSQLTestDatabase {
       String agentStateSql = "EXEC master.dbo.xp_servicecontrol 'QueryState', N'SQLServerAGENT';";
       final var r = query(ctx -> ctx.fetch(agentStateSql).get(0));
       String agentState = r.getValue(0).toString();
-      if (!Objects.equals(agentState, previousValue)) {
+      if (PRINT_EVERY_CALL || !Objects.equals(agentState, previousValue)) {
         LOGGER.info(formatLogLine("agentState changed from {} to {}"), previousValue, agentState);
         previousValue = agentState;
       }
@@ -116,7 +117,7 @@ public class MsSqlTestDatabaseWithBackgroundThreads extends MsSQLTestDatabase {
           throw e;
         }
       }
-      if (!Objects.equals(max_lsn, previousValue)) {
+      if (PRINT_EVERY_CALL || !Objects.equals(max_lsn, previousValue)) {
         LOGGER.info(formatLogLine("sys.fn_cdc_get_max_lsn changed from {} to {}"), previousValue, max_lsn);
         previousValue = max_lsn;
       }
@@ -141,7 +142,7 @@ public class MsSqlTestDatabaseWithBackgroundThreads extends MsSQLTestDatabase {
           throw e;
         }
       }
-      if (!Objects.equals(results, previousValue)) {
+      if (PRINT_EVERY_CALL || !Objects.equals(results, previousValue)) {
         LOGGER.info(formatLogLine("sys.lsn_time_mapping changed from {} to {}"), previousValue, results);
         previousValue = results;
       }
@@ -170,7 +171,7 @@ public class MsSqlTestDatabaseWithBackgroundThreads extends MsSQLTestDatabase {
           throw e;
         }
       }
-      if (!Objects.equals(resultsAsString, previousValue)) {
+      if (PRINT_EVERY_CALL || !Objects.equals(resultsAsString, previousValue)) {
         LOGGER.info(formatLogLine("cdc.change_tables changed from {} rows\n{} to {} rows\n{}"), previousRowCount, previousValue, resultSize,
             resultsAsString);
         previousValue = resultsAsString;
@@ -206,7 +207,7 @@ public class MsSqlTestDatabaseWithBackgroundThreads extends MsSQLTestDatabase {
           throw e;
         }
       }
-      if (!Objects.equals(resultsAsString, previousValue)) {
+      if (PRINT_EVERY_CALL || !Objects.equals(resultsAsString, previousValue)) {
         LOGGER.info(formatLogLine("cdc.change_tables changed from {} rows\n{} to {} rows\n{}"), previousRowCount, previousValue, resultSize,
             resultsAsString);
         previousValue = resultsAsString;
@@ -247,7 +248,7 @@ public class MsSqlTestDatabaseWithBackgroundThreads extends MsSQLTestDatabase {
           throw e;
         }
       }
-      if (!Objects.equals(resultsAsString, previousValue)) {
+      if (PRINT_EVERY_CALL || !Objects.equals(resultsAsString, previousValue)) {
         LOGGER.info(formatLogLine("cdc table {} for {}.{} changed from {} rows\n{} to {} rows\n{}"), instanceName, schemaName, tableName,
             previousRowCount, previousValue, resultSize,
             resultsAsString);

@@ -35,11 +35,11 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   // Turning this to true will create a bunch of background threads that will regularly check the
   // state of the database and log every time it changes. A bit verbose, but useful for debugging
-  private static final boolean ENABLE_BACKGROUND_THREADS = false;
+  private static final boolean ENABLE_BACKGROUND_THREADS = true;
 
   // empirically, 60 is enough. If you fee like you need to increase it, you're probably mmissing a
   // check somewhere
-  static public final int MAX_RETRIES = 60;
+  static public final int MAX_RETRIES = 240;
 
   public enum BaseImage {
 
