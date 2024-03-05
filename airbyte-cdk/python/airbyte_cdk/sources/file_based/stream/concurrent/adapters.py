@@ -7,7 +7,7 @@ import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteStream, Level, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.availability_strategy import (
@@ -156,29 +156,13 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
     def get_underlying_stream(self) -> DefaultStream:
         return self._abstract_stream
 
-    def read_full_refresh(
+    def read(
         self,
-        cursor_field: Optional[List[str]],
-        logger: logging.Logger,
-        slice_logger: SliceLogger,
-    ) -> Iterable[StreamData]:
-        """
-        Read full refresh. Delegate to the underlying AbstractStream, ignoring all the parameters
-        :param cursor_field: (ignored)
-        :param logger: (ignored)
-        :param slice_logger: (ignored)
-        :return: Iterable of StreamData
-        """
-        yield from self._read_records()
-
-    def read_incremental(
-        self,
-        cursor_field: Optional[List[str]],
+        configured_stream: ConfiguredAirbyteStream,
         logger: logging.Logger,
         slice_logger: SliceLogger,
         stream_state: MutableMapping[str, Any],
         state_manager: ConnectorStateManager,
-        per_stream_state_enabled: bool,
         internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
         yield from self._read_records()
