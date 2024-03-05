@@ -238,6 +238,7 @@ cmd_publish() {
     for arch in $(echo $build_arch | sed "s/,/ /g")
     do
       echo "building base images for $arch"
+      # These images aren't needed for the CDK
       if [ "$path" != "airbyte-cdk/python" ]; then
         docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
         docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
