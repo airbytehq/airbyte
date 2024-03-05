@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 avro_dependency = "avro~=1.11.2"
 fastavro_dependency = "fastavro~=1.8.0"
-pyarrow_dependency = "pyarrow==12.0.1"
+pyarrow_dependency = "pyarrow~=15.0.0"
 
 langchain_dependency = "langchain==0.0.271"
 openai_dependency = "openai[embeddings]==0.27.9"
