@@ -15,6 +15,21 @@ allprojects {
 
     project.version = cdkVersion
 
+    dependencies {
+        compileOnly libs.lombok
+        annotationProcessor libs.lombok     // Lombok must be added BEFORE Micronaut
+
+        ksp "info.picocli:picocli-codegen:${libs.versions.picocli.get()}"
+        ksp "io.micronaut:micronaut-inject-java:${libs.versions.micronaut.inject.get()}"
+        ksp "io.micronaut:micronaut-inject-kotlin:${libs.versions.micronaut.inject.get()}"
+
+        testCompileOnly libs.lombok
+        testAnnotationProcessor libs.lombok
+
+        testFixturesCompileOnly libs.lombok
+        testFixturesAnnotationProcessor libs.lombok
+    }
+
     publishing {
         publications {
             main(MavenPublication) {

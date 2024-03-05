@@ -55,12 +55,16 @@ spotbugsTestFixtures.enabled = false
 
 
 dependencies {
-
     api 'com.datadoghq:dd-trace-api:1.28.0'
     api 'com.datadoghq:dd-trace-ot:1.28.0'
     api 'com.zaxxer:HikariCP:5.1.0'
     api 'org.jooq:jooq:3.16.23'
     api 'org.apache.commons:commons-csv:1.10.0'
+    api "io.micronaut:micronaut-inject-java:${libs.versions.micronaut.inject.get()}"
+    api "io.micronaut:micronaut-runtime:${libs.versions.micronaut.platform.get()}"
+    api 'io.micronaut.picocli:micronaut-picocli:5.2.0'
+    api "info.picocli:picocli:${libs.versions.picocli.get()}"
+    api 'io.github.oshai:kotlin-logging-jvm:5.1.0'
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
 
