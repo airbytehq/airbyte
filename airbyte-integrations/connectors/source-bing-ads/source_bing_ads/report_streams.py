@@ -716,7 +716,18 @@ class ProductSearchQueryPerformanceReport(BingAdsReportingServicePerformanceStre
 
     report_name: str = "ProductSearchQueryPerformanceReport"
     report_schema_name = "product_search_query_performance_report"
-    primary_key = None
+    primary_key = [
+        "AccountId",
+        "TimePeriod",
+        "CampaignId",
+        "AdId",
+        "AdGroupId",
+        "SearchQuery",
+        "DeviceType",
+        "DeviceOS",
+        "Language",
+        "Network",
+    ]
 
 
 class ProductSearchQueryPerformanceReportHourly(HourlyReportTransformerMixin, ProductSearchQueryPerformanceReport):
@@ -743,7 +754,15 @@ class GoalsAndFunnelsReport(BingAdsReportingServicePerformanceStream, ABC):
 
     report_name: str = "GoalsAndFunnelsReport"
     report_schema_name = "goals_and_funnels_report"
-    primary_key = None
+    primary_key = [
+        "GoalId",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "DeviceType",
+        "DeviceOS",
+        "AdGroupId",
+    ]
 
 
 class GoalsAndFunnelsReportHourly(HourlyReportTransformerMixin, GoalsAndFunnelsReport):
@@ -770,7 +789,13 @@ class AudiencePerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
 
     report_name: str = "AudiencePerformanceReport"
     report_schema_name = "audience_performance_report"
-    primary_key = None
+    primary_key = [
+        "AudienceId",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+    ]
 
 
 class AudiencePerformanceReportHourly(HourlyReportTransformerMixin, AudiencePerformanceReport):
