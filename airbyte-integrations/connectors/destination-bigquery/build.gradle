@@ -1,15 +1,15 @@
 plugins {
     id 'airbyte-java-connector'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.20.2'
+    cdkVersionRequired = '0.23.11'
     features = [
-            'datastore-bigquery',
             'db-destinations',
-            'gcs-destinations',
-            's3-destinations',
+            'datastore-bigquery',
             'typing-deduping',
+            'gcs-destinations',
     ]
     useLocalCdk = false
 }

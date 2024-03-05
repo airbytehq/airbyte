@@ -7,9 +7,10 @@ package io.airbyte.cdk.integrations.destination_async.buffers;
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.cdk.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
 import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
-import io.airbyte.cdk.integrations.destination_async.state.PartialStateWithDestinationStats;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,16 +58,13 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
   }
 
   /**
-   * For the batch, marks all the states that have now been flushed. Also returns states that can be
-   * flushed. This method is descriptrive, it assumes that whatever consumes the state messages emits
-   * them, internally it purges the states it returns. message that it can.
+   * For the batch, marks all the states that have now been flushed. Also writes the states that can
+   * be flushed back to platform via stateManager.
    * <p>
-   *
-   * @return list of states that can be flushed
    */
-  public List<PartialStateWithDestinationStats> flushStates(final Map<Long, Long> stateIdToCount) {
+  public void flushStates(final Map<Long, Long> stateIdToCount, final Consumer<AirbyteMessage> outputRecordCollector) {
     stateIdToCount.forEach(stateManager::decrement);
-    return stateManager.flushStates();
+    stateManager.flushStates(outputRecordCollector);
   }
 
 }

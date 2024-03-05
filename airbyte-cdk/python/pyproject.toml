@@ -6,3 +6,39 @@ requires = [
 ]
 
 build-backend = "setuptools.build_meta"
+
+[tool.coverage.report]
+fail_under = 0
+skip_empty = true
+sort = "-cover"
+omit = [
+    ".venv/*",
+    "main.py",
+    "setup.py",
+    "unit_tests/*",
+    "integration_tests/*",
+    "**/generated/*",
+]
+
+[tool.flake8]
+extend-exclude = [
+    "*/lib/*/site-packages",
+    ".venv",
+    "build",
+    "models",
+    ".eggs",
+    "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
+    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/__init__.py",
+    ".tox",
+    "airbyte_api_client",
+    "**/generated/*",
+]
+max-complexity = 20
+max-line-length = 140
+
+extend-ignore = [
+    "E203",  # whitespace before ':' (conflicts with Black)
+    "E231",  # Bad trailing comma (conflicts with Black)
+    "E501",  # line too long (conflicts with Black)
+    "W503",  # line break before binary operator (conflicts with Black)
+]

@@ -193,17 +193,20 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
-| 2.0.0   | 2024-02-09 | [35042](https://github.com/airbytehq/airbyte/pull/35042)   | GA release V2 destinations format.                                                                  |
-| 0.6.3   | 2024-02-06 | [34891](https://github.com/airbytehq/airbyte/pull/34891)   | Remove varchar limit, use system defaults                                                           |
-| 0.6.2   | 2024-01-30 | [34683](https://github.com/airbytehq/airbyte/pull/34683)   | CDK Upgrade 0.16.3; Fix dependency mismatches in slf4j lib                                          |
-| 0.6.1   | 2024-01-29 | [34630](https://github.com/airbytehq/airbyte/pull/34630)   | CDK Upgrade; Use lowercase raw table in T+D queries.                                                |
-| 0.6.0   | 2024-01-19 | [34372](https://github.com/airbytehq/airbyte/pull/34372)   | Add dv2 flag in spec                                                                                |
-| 0.5.5   | 2024-01-18 | [34236](https://github.com/airbytehq/airbyte/pull/34236)   | Upgrade CDK to 0.13.1; Add indexes in raw table for query optimization                              |
-| 0.5.4   | 2024-01-11 | [34177](https://github.com/airbytehq/airbyte/pull/34177)   | Add code for DV2 beta (no user-visible changes)                                                     |
-| 0.5.3   | 2024-01-10 | [34135](https://github.com/airbytehq/airbyte/pull/34135)   | Use published CDK missed in previous release                                                        |
-| 0.5.2   | 2024-01-08 | [33875](https://github.com/airbytehq/airbyte/pull/33875)   | Update CDK to get Tunnel heartbeats feature                                                         |
-| 0.5.1   | 2024-01-04 | [33873](https://github.com/airbytehq/airbyte/pull/33873)   | Install normalization to enable DV2 beta                                                            |
-| 0.5.0   | 2023-12-18 | [33507](https://github.com/airbytehq/airbyte/pull/33507)   | Upgrade to latest CDK; Fix DATs and tests                                                           |
+| 2.0.3   | 2024-03-01 | [\#35528](https://github.com/airbytehq/airbyte/pull/35528) | Adopt CDK 0.23.11; Use Migration framework                                                          |
+| 2.0.2   | 2024-03-01 | [\#35760](https://github.com/airbytehq/airbyte/pull/35760) | Mark as certified, add PSQL exception to deinterpolator                                             |
+| 2.0.1   | 2024-02-22 | [\#35385](https://github.com/airbytehq/airbyte/pull/35385) | Upgrade CDK to 0.23.0; Gathering required initial state upfront                                     |
+| 2.0.0   | 2024-02-09 | [\#35042](https://github.com/airbytehq/airbyte/pull/35042) | GA release V2 destinations format.                                                                  |
+| 0.6.3   | 2024-02-06 | [\#34891](https://github.com/airbytehq/airbyte/pull/34891) | Remove varchar limit, use system defaults                                                           |
+| 0.6.2   | 2024-01-30 | [\#34683](https://github.com/airbytehq/airbyte/pull/34683) | CDK Upgrade 0.16.3; Fix dependency mismatches in slf4j lib                                          |
+| 0.6.1   | 2024-01-29 | [\#34630](https://github.com/airbytehq/airbyte/pull/34630) | CDK Upgrade; Use lowercase raw table in T+D queries.                                                |
+| 0.6.0   | 2024-01-19 | [\#34372](https://github.com/airbytehq/airbyte/pull/34372) | Add dv2 flag in spec                                                                                |
+| 0.5.5   | 2024-01-18 | [\#34236](https://github.com/airbytehq/airbyte/pull/34236) | Upgrade CDK to 0.13.1; Add indexes in raw table for query optimization                              |
+| 0.5.4   | 2024-01-11 | [\#34177](https://github.com/airbytehq/airbyte/pull/34177) | Add code for DV2 beta (no user-visible changes)                                                     |
+| 0.5.3   | 2024-01-10 | [\#34135](https://github.com/airbytehq/airbyte/pull/34135) | Use published CDK missed in previous release                                                        |
+| 0.5.2   | 2024-01-08 | [\#33875](https://github.com/airbytehq/airbyte/pull/33875) | Update CDK to get Tunnel heartbeats feature                                                         |
+| 0.5.1   | 2024-01-04 | [\#33873](https://github.com/airbytehq/airbyte/pull/33873) | Install normalization to enable DV2 beta                                                            |
+| 0.5.0   | 2023-12-18 | [\#33507](https://github.com/airbytehq/airbyte/pull/33507) | Upgrade to latest CDK; Fix DATs and tests                                                           |
 | 0.4.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.3.27  | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                               |
 | 0.3.26  | 2022-09-27 | [\#17299](https://github.com/airbytehq/airbyte/pull/17299) | Improve error handling for strict-encrypt postgres destination                                      |

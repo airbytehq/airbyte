@@ -152,6 +152,20 @@ class CustomRecordExtractor(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class CustomRecordFilter(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['CustomRecordFilter']
+    class_name: str = Field(
+        ...,
+        description='Fully-qualified name of the class that will be implementing the custom record filter strategy. The format is `source_<name>.<package>.<class_name>`.',
+        examples=['source_railz.components.MyCustomCustomRecordFilter'],
+        title='Class Name',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class CustomRequester(BaseModel):
     class Config:
         extra = Extra.allow
@@ -579,6 +593,16 @@ class SchemaNormalization(Enum):
 
 class RemoveFields(BaseModel):
     type: Literal['RemoveFields']
+    condition: Optional[str] = Field(
+        '',
+        description='The predicate to filter a property by a property value. Property will be removed if it is empty OR expression is evaluated to True.,',
+        examples=[
+            "{{ property|string == '' }}",
+            '{{ property is integer }}',
+            '{{ property|length > 5 }}',
+            "{{ property == 'some_string_to_match' }}",
+        ],
+    )
     field_pointers: List[List[str]] = Field(
         ...,
         description='Array of paths defining the field to remove. Each item is an array whose field describe the path of a field to remove.',
@@ -1019,7 +1043,7 @@ class ListPartitionRouter(BaseModel):
 class RecordSelector(BaseModel):
     type: Literal['RecordSelector']
     extractor: Union[CustomRecordExtractor, DpathExtractor]
-    record_filter: Optional[RecordFilter] = Field(
+    record_filter: Optional[Union[CustomRecordFilter, RecordFilter]] = Field(
         None,
         description='Responsible for filtering records to be emitted by the Source.',
         title='Record Filter',
@@ -1327,6 +1351,10 @@ class SimpleRetriever(BaseModel):
     paginator: Optional[Union[DefaultPaginator, NoPagination]] = Field(
         None,
         description="Paginator component that describes how to navigate through the API's pages.",
+    )
+    ignore_stream_slicer_parameters_on_paginated_requests: Optional[bool] = Field(
+        False,
+        description='If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.',
     )
     partition_router: Optional[
         Union[

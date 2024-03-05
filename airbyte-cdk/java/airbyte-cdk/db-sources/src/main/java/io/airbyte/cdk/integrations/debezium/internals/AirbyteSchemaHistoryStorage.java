@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 public class AirbyteSchemaHistoryStorage {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteSchemaHistoryStorage.class);
-  private static final long SIZE_LIMIT_TO_COMPRESS_MB = 3;
+  private static final long SIZE_LIMIT_TO_COMPRESS_MB = 1;
   public static final int ONE_MB = 1024 * 1024;
   private static final Charset UTF8 = StandardCharsets.UTF_8;
 

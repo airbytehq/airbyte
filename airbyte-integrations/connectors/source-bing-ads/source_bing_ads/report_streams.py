@@ -670,6 +670,45 @@ class UserLocationPerformanceReportMonthly(UserLocationPerformanceReport):
     report_aggregation = "Monthly"
 
 
+class ProductDimensionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
+    """
+    https://learn.microsoft.com/en-us/advertising/reporting-service/productdimensionperformancereportrequest?view=bingads-13
+    """
+
+    report_name: str = "ProductDimensionPerformanceReport"
+    report_schema_name = "product_dimension_performance_report"
+    primary_key = None
+
+    @property
+    def report_columns(self) -> Iterable[str]:
+        """AccountId is not in reporting columns for this report"""
+        properties = list(self.get_json_schema().get("properties", {}).keys())
+        properties.remove("AccountId")
+        return properties
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record = super().transform(record, stream_slice)
+        record["AccountId"] = stream_slice["account_id"]
+        return record
+
+
+class ProductDimensionPerformanceReportHourly(HourlyReportTransformerMixin, ProductDimensionPerformanceReport):
+    report_aggregation = "Hourly"
+    report_schema_name = "product_dimension_performance_report_hourly"
+
+
+class ProductDimensionPerformanceReportDaily(ProductDimensionPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class ProductDimensionPerformanceReportWeekly(ProductDimensionPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class ProductDimensionPerformanceReportMonthly(ProductDimensionPerformanceReport):
+    report_aggregation = "Monthly"
+
+
 class CustomReport(BingAdsReportingServicePerformanceStream, ABC):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     custom_report_columns = []

@@ -95,12 +95,10 @@ class MigrateStringToArray(ABC):
 
 
 class MigrateGroups(MigrateStringToArray):
-
     migrate_from_key: str = "groups"
     migrate_to_key: str = "groups_list"
 
 
 class MigrateProjects(MigrateStringToArray):
-
     migrate_from_key: str = "projects"
     migrate_to_key: str = "projects_list"

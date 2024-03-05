@@ -80,11 +80,15 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
 
     sorted_expected_records = sorted(
         filter(lambda e: "data" in e, expected_records),
-        key=lambda record: ",".join(f"{k}={v}" for k, v in sorted(record["data"].items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"),
+        key=lambda record: ",".join(
+            f"{k}={v}" for k, v in sorted(record["data"].items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"
+        ),
     )
     sorted_records = sorted(
         filter(lambda r: r.record, records),
-        key=lambda record: ",".join(f"{k}={v}" for k, v in sorted(record.record.data.items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"),
+        key=lambda record: ",".join(
+            f"{k}={v}" for k, v in sorted(record.record.data.items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"
+        ),
     )
 
     assert len(sorted_records) == len(sorted_expected_records)
@@ -105,10 +109,10 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
     if hasattr(scenario.source, "cursor_cls") and issubclass(scenario.source.cursor_cls, AbstractConcurrentFileBasedCursor):
         # Only check the last state emitted because we don't know the order the others will be in.
         # This may be needed for non-file-based concurrent scenarios too.
-        assert states[-1].state.data == expected_states[-1]
+        assert states[-1].state.stream.stream_state.dict() == expected_states[-1]
     else:
         for actual, expected in zip(states, expected_states):  # states should be emitted in sorted order
-            assert actual.state.data == expected
+            assert actual.state.stream.stream_state.dict() == expected
 
     if scenario.expected_logs:
         read_logs = scenario.expected_logs.get("read")

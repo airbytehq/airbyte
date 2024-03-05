@@ -50,6 +50,7 @@ types-requests = "2.31.0.4"
 freezegun = "^1.4.0"
 airbyte-source-faker = "^6.0.0"
 viztracer = "^0.16.2"
+tomli = "^2.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -63,6 +64,7 @@ markers = [
 
 [tool.ruff.pylint]
 max-args = 8  # Relaxed from default of 5
+max-branches = 15 # Relaxed from default of 12
 
 [tool.ruff]
 target-version = "py39"

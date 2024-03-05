@@ -5,10 +5,12 @@
 
 import json
 import logging
+import os
 import sys
 import tempfile
 import traceback
 import urllib
+import zipfile
 from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
@@ -261,7 +263,8 @@ class Client:
         self._provider = provider
         self._reader_format = format or "csv"
         self._reader_options = reader_options or {}
-        self.binary_source = self._reader_format in self.binary_formats
+        self._is_zip = url.endswith(".zip")
+        self.binary_source = self._reader_format in self.binary_formats or self._is_zip
         self.encoding = self._reader_options.get("encoding")
 
     @property
@@ -422,6 +425,8 @@ class Client:
                     fields = set(fields) if fields else None
                     if self.binary_source:
                         fp = self._cache_stream(fp)
+                    if self._is_zip:
+                        fp = self._unzip(fp)
                     for df in self.load_dataframes(fp):
                         columns = fields.intersection(set(df.columns)) if fields else df.columns
                         df.replace({np.nan: None}, inplace=True)
@@ -436,9 +441,20 @@ class Client:
                 logger.error(f"{error_msg}\n{traceback.format_exc()}")
                 raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
+    def _unzip(self, fp):
+        tmp_dir = tempfile.TemporaryDirectory()
+        with zipfile.ZipFile(str(fp.name), "r") as zip_ref:
+            zip_ref.extractall(tmp_dir.name)
+
+        logger.info("Temp dir content: " + str(os.listdir(tmp_dir.name)))
+        final_file: str = os.path.join(tmp_dir.name, os.listdir(tmp_dir.name)[0])
+        logger.info("Pick up first file: " + final_file)
+        fp_tmp = open(final_file, "r")
+        return fp_tmp
+
     def _cache_stream(self, fp):
         """cache stream to file"""
-        fp_tmp = tempfile.TemporaryFile(mode="w+b")
+        fp_tmp = tempfile.NamedTemporaryFile(mode="w+b")
         fp_tmp.write(fp.read())
         fp_tmp.seek(0)
         fp.close()
@@ -454,6 +470,8 @@ class Client:
         else:
             if self.binary_source:
                 fp = self._cache_stream(fp)
+            if self._is_zip:
+                fp = self._unzip(fp)
             df_list = self.load_dataframes(fp, skip_data=empty_schema, read_sample_chunk=read_sample_chunk)
         fields = {}
         for df in df_list:
