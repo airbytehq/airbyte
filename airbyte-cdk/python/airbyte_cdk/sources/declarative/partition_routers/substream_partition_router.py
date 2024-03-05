@@ -131,11 +131,7 @@ class SubstreamPartitionRouter(StreamSlicer):
                     sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
                 ):
                     empty_parent_slice = True
-                    parent_slice = parent_stream_slice
-                    if parent_slice:
-                        parent_partition = {k: v for k, v in parent_slice.items() if k in parent_slice.partition.keys()}
-                    else:
-                        parent_partition = {}
+                    parent_partition = parent_stream_slice.partition
 
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
