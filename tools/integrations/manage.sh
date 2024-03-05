@@ -231,6 +231,10 @@ cmd_publish() {
     # Alternative local approach @ https://github.com/docker/buildx/issues/301#issuecomment-755164475
     # We need to use the regular docker buildx driver (not docker container) because we need this intermediate contaiers to be available for later build steps
 
+    echo Installing arm64
+    docker run --privileged --rm tonistiigi/binfmt --install arm64
+
+
     for arch in $(echo $build_arch | sed "s/,/ /g")
     do
       echo "building base images for $arch"
