@@ -73,8 +73,11 @@ single_csv_input_state_is_earlier_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {"some_old_file.csv": "2023-06-01T03:54:07.000000Z", "a.csv": "2023-06-05T03:54:07.000000Z"},
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.csv",
+                "stream_state": {
+                    "history": {"some_old_file.csv": "2023-06-01T03:54:07.000000Z", "a.csv": "2023-06-05T03:54:07.000000Z"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.csv",
+                },
+                "record_count": 2.0,
             },
         ]
     )
@@ -152,9 +155,12 @@ single_csv_file_is_skipped_if_same_modified_at_as_in_history = (
     .set_expected_records(
         [
             {
-                "history": {"a.csv": "2023-06-05T03:54:07.000000Z"},
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.csv",
-            }
+                "stream_state": {
+                    "history": {"a.csv": "2023-06-05T03:54:07.000000Z"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.csv",
+                },
+                "record_count": 0.0,
+            },
         ]
     )
     .set_expected_catalog(
@@ -249,8 +255,11 @@ single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history = (
                 "stream": "stream1",
             },
             {
-                "history": {"a.csv": "2023-06-05T03:54:07.000000Z"},
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.csv",
+                "stream_state": {
+                    "history": {"a.csv": "2023-06-05T03:54:07.000000Z"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.csv",
+                },
+                "record_count": 2.0,
             },
         ]
     )
@@ -359,8 +368,11 @@ single_csv_no_input_state_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {"a.csv": "2023-06-05T03:54:07.000000Z"},
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.csv",
+                "stream_state": {
+                    "history": {"a.csv": "2023-06-05T03:54:07.000000Z"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.csv",
+                },
+                "record_count": 2.0,
             },
         ]
     )
@@ -480,8 +492,11 @@ multi_csv_same_timestamp_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {"a.csv": "2023-06-05T03:54:07.000000Z", "b.csv": "2023-06-05T03:54:07.000000Z"},
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.csv",
+                "stream_state": {
+                    "history": {"a.csv": "2023-06-05T03:54:07.000000Z", "b.csv": "2023-06-05T03:54:07.000000Z"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.csv",
+                },
+                "record_count": 4.0,
             },
         ]
     )
@@ -570,11 +585,14 @@ single_csv_input_state_is_later_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "recent_file.csv": "2023-07-15T23:59:59.000000Z",
-                    "a.csv": "2023-06-05T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "recent_file.csv": "2023-07-15T23:59:59.000000Z",
+                        "a.csv": "2023-06-05T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-07-15T23:59:59.000000Z_recent_file.csv",
                 },
-                "_ab_source_file_last_modified": "2023-07-15T23:59:59.000000Z_recent_file.csv",
+                "record_count": 2.0,
             },
         ]
     )
@@ -681,10 +699,13 @@ multi_csv_different_timestamps_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "a.csv": "2023-06-04T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "a.csv": "2023-06-04T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-04T03:54:07.000000Z_a.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-04T03:54:07.000000Z_a.csv",
+                "record_count": 2.0,
             },
             {
                 "data": {
@@ -707,8 +728,11 @@ multi_csv_different_timestamps_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {"a.csv": "2023-06-04T03:54:07.000000Z", "b.csv": "2023-06-05T03:54:07.000000Z"},
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.csv",
+                "stream_state": {
+                    "history": {"a.csv": "2023-06-04T03:54:07.000000Z", "b.csv": "2023-06-05T03:54:07.000000Z"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.csv",
+                },
+                "record_count": 2.0,
             },
         ]
     )
@@ -836,8 +860,11 @@ multi_csv_per_timestamp_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {"a.csv": "2023-06-05T03:54:07.000000Z", "b.csv": "2023-06-05T03:54:07.000000Z"},
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.csv",
+                "stream_state": {
+                    "history": {"a.csv": "2023-06-05T03:54:07.000000Z", "b.csv": "2023-06-05T03:54:07.000000Z"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.csv",
+                },
+                "record_count": 4.0,
             },
             {
                 "data": {
@@ -860,12 +887,15 @@ multi_csv_per_timestamp_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "a.csv": "2023-06-05T03:54:07.000000Z",
-                    "b.csv": "2023-06-05T03:54:07.000000Z",
-                    "c.csv": "2023-06-06T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "a.csv": "2023-06-05T03:54:07.000000Z",
+                        "b.csv": "2023-06-05T03:54:07.000000Z",
+                        "c.csv": "2023-06-06T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z_c.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z_c.csv",
+                "record_count": 2.0,
             },
         ]
     )
@@ -977,8 +1007,11 @@ multi_csv_skip_file_if_already_in_history = (
                 "stream": "stream1",
             },
             {
-                "history": {"a.csv": "2023-06-05T03:54:07.000000Z", "b.csv": "2023-06-05T03:54:07.000000Z"},
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.csv",
+                "stream_state": {
+                    "history": {"a.csv": "2023-06-05T03:54:07.000000Z", "b.csv": "2023-06-05T03:54:07.000000Z"},
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.csv",
+                },
+                "record_count": 2.0,
             },
             {
                 "data": {
@@ -1001,12 +1034,15 @@ multi_csv_skip_file_if_already_in_history = (
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "a.csv": "2023-06-05T03:54:07.000000Z",
-                    "b.csv": "2023-06-05T03:54:07.000000Z",
-                    "c.csv": "2023-06-06T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "a.csv": "2023-06-05T03:54:07.000000Z",
+                        "b.csv": "2023-06-05T03:54:07.000000Z",
+                        "c.csv": "2023-06-06T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z_c.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z_c.csv",
+                "record_count": 2.0,
             },
         ]
     )
@@ -1127,12 +1163,15 @@ multi_csv_include_missing_files_within_history_range = (
             # {"data": {"col1": "val11c", "col2": "val12c", "col3": "val13c"}, "stream": "stream1"}, # this file is skipped
             # {"data": {"col1": "val21c", "col2": "val22c", "col3": "val23c"}, "stream": "stream1"}, # this file is skipped
             {
-                "history": {
-                    "a.csv": "2023-06-05T03:54:07.000000Z",
-                    "b.csv": "2023-06-05T03:54:07.000000Z",
-                    "c.csv": "2023-06-06T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "a.csv": "2023-06-05T03:54:07.000000Z",
+                        "b.csv": "2023-06-05T03:54:07.000000Z",
+                        "c.csv": "2023-06-06T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z_c.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z_c.csv",
+                "record_count": 2.0,
             },
         ]
     )
@@ -1247,12 +1286,15 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "very_old_file.csv": "2023-06-02T03:54:07.000000Z",
-                    "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
-                    "a.csv": "2023-06-06T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "very_old_file.csv": "2023-06-02T03:54:07.000000Z",
+                        "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
+                        "a.csv": "2023-06-06T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z_old_file_same_timestamp_as_a.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z_old_file_same_timestamp_as_a.csv",
+                "record_count": 2.0,
             },
             {
                 "data": {
@@ -1275,12 +1317,15 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
-                    "a.csv": "2023-06-06T03:54:07.000000Z",
-                    "b.csv": "2023-06-07T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
+                        "a.csv": "2023-06-06T03:54:07.000000Z",
+                        "b.csv": "2023-06-07T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-07T03:54:07.000000Z_b.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-07T03:54:07.000000Z_b.csv",
+                "record_count": 2.0,
             },
             {
                 "data": {
@@ -1303,12 +1348,15 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
-                    "b.csv": "2023-06-07T03:54:07.000000Z",
-                    "c.csv": "2023-06-10T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
+                        "b.csv": "2023-06-07T03:54:07.000000Z",
+                        "c.csv": "2023-06-10T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-10T03:54:07.000000Z_c.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-10T03:54:07.000000Z_c.csv",
+                "record_count": 2.0,
             },
         ]
     )
@@ -1496,12 +1544,15 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario = (
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "b.csv": "2023-06-05T03:54:07.000000Z",
-                    "c.csv": "2023-06-05T03:54:07.000000Z",
-                    "d.csv": "2023-06-05T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "b.csv": "2023-06-05T03:54:07.000000Z",
+                        "c.csv": "2023-06-05T03:54:07.000000Z",
+                        "d.csv": "2023-06-05T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_d.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_d.csv",
+                "record_count": 8.0,
             },
         ]
     )
@@ -1600,13 +1651,16 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
     .set_expected_records(
         [
             {
-                "history": {
-                    "b.csv": "2023-06-05T03:54:07.000000Z",
-                    "c.csv": "2023-06-05T03:54:07.000000Z",
-                    "d.csv": "2023-06-05T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "b.csv": "2023-06-05T03:54:07.000000Z",
+                        "c.csv": "2023-06-05T03:54:07.000000Z",
+                        "d.csv": "2023-06-05T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_d.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_d.csv",
-            }
+                "record_count": 0.0,
+            },
         ]
     )
     .set_incremental_scenario_config(
@@ -1737,12 +1791,15 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "c.csv": "2023-06-07T03:54:07.000000Z",
-                    "d.csv": "2023-06-08T03:54:07.000000Z",
-                    "e.csv": "2023-06-08T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "c.csv": "2023-06-07T03:54:07.000000Z",
+                        "d.csv": "2023-06-08T03:54:07.000000Z",
+                        "e.csv": "2023-06-08T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-08T03:54:07.000000Z_e.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-08T03:54:07.000000Z_e.csv",
+                "record_count": 2.0,
             },
         ]
     )
@@ -1870,12 +1927,15 @@ multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_differe
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "a.csv": "2023-06-05T03:54:07.000000Z",
-                    "c.csv": "2023-06-07T03:54:07.000000Z",
-                    "d.csv": "2023-06-08T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "a.csv": "2023-06-05T03:54:07.000000Z",
+                        "c.csv": "2023-06-07T03:54:07.000000Z",
+                        "d.csv": "2023-06-08T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-08T03:54:07.000000Z_d.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-08T03:54:07.000000Z_d.csv",
+                "record_count": 2.0,
             },
             {
                 "data": {
@@ -1898,12 +1958,15 @@ multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_differe
                 "stream": "stream1",
             },
             {
-                "history": {
-                    "b.csv": "2023-06-06T03:54:07.000000Z",
-                    "c.csv": "2023-06-07T03:54:07.000000Z",
-                    "d.csv": "2023-06-08T03:54:07.000000Z",
+                "stream_state": {
+                    "history": {
+                        "b.csv": "2023-06-06T03:54:07.000000Z",
+                        "c.csv": "2023-06-07T03:54:07.000000Z",
+                        "d.csv": "2023-06-08T03:54:07.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-06-08T03:54:07.000000Z_d.csv",
                 },
-                "_ab_source_file_last_modified": "2023-06-08T03:54:07.000000Z_d.csv",
+                "record_count": 2.0,
             },
         ]
     )

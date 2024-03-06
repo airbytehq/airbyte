@@ -357,11 +357,11 @@ test_incremental_stream_with_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 1}, "stream": "stream1"},
-            {"cursor_field": 1},
+            {"stream_state": {"cursor_field": 1}, "record_count": None},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"cursor_field": 2},
-            {"cursor_field": 2},  # see Cursor.ensure_at_least_one_state_emitted
+            {"stream_state": {"cursor_field": 2}, "record_count": None},
+            {"stream_state": {"cursor_field": 2}, "record_count": None},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -403,8 +403,8 @@ test_incremental_stream_without_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 3}, "stream": "stream1"},
-            {"cursor_field": 3},
-            {"cursor_field": 3},  # see Cursor.ensure_at_least_one_state_emitted
+            {"stream_state": {"cursor_field": 3}, "record_count": None},
+            {"stream_state": {"cursor_field": 3}, "record_count": None},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
