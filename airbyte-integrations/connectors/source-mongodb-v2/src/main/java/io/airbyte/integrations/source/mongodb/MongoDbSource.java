@@ -122,8 +122,9 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                     final JsonNode state) {
     final var emittedAt = Instant.now();
     final var cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
-    final var stateManager = MongoDbStateManager.createStateManager(state);
     final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
+    final var stateManager = MongoDbStateManager.createStateManager(state, sourceConfig);
+
     if (catalog != null) {
       MongoUtil.checkSchemaModeMismatch(sourceConfig.getEnforceSchema(),
           stateManager.getCdcState() != null ? stateManager.getCdcState().schema_enforced() : sourceConfig.getEnforceSchema(), catalog);
