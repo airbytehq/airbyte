@@ -9,15 +9,53 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
+/*
+ * This class wants to do three separate things, but not all of them actually happen here right now:
+ * * A migration runner, which handles any changes in raw tables (#prepareSchemasAndRawTables) * A
+ * raw table creator, which creates any missing raw tables (currently handled in e.g.
+ * GeneralStagingFunctions.onStartFunction, BigQueryStagingConsumerFactory.onStartFunction, etc.) *
+ * A T+D runner, which manages the final tables (#prepareFinalTables, #typeAndDedupe, etc.)
+ *
+ * These would be injectable to the relevant locations, so that we can have: * DV2 destinations with
+ * T+D enabled (i.e. all three objects instantiated for real) * DV2 destinations with T+D disabled
+ * (i.e. noop T+D runner but the other two objects for real) * DV1 destinations (i.e. all three
+ * objects as noop)
+ *
+ * Even more ideally, we'd create an instance per stream, instead of having one instance for the
+ * entire sync. This would massively simplify all the state contained in our implementations - see
+ * DefaultTyperDeduper's pile of Sets and Maps.
+ *
+ * Unfortunately, it's just a pain to inject these objects to everywhere they need to be, and we'd
+ * need to refactor part of the async framework on top of that. There's an obvious overlap with the
+ * async framework's onStart function... which we should deal with eventually.
+ */
 public interface TyperDeduper {
+
+  /**
+   * Does two things: Set up the schemas for the sync (both airbyte_internal and final table schemas),
+   * and execute any raw table migrations. These migrations might include: Upgrading v1 raw tables to
+   * v2, adding a column to the raw tables, etc. In general, this method shouldn't actually create the
+   * raw tables; the only exception is in the V1 -> V2 migration.
+   * <p>
+   * This method should be called BEFORE creating raw tables, because the V1V2 migration might create
+   * the raw tables.
+   * <p>
+   * This method may affect the behavior of {@link #prepareFinalTables()}. For example, modifying a
+   * raw table may require us to run a soft reset. However, we should defer that soft reset until
+   * {@link #prepareFinalTables()}.
+   */
+  void prepareSchemasAndRunMigrations() throws Exception;
 
   /**
    * Create the tables that T+D will write to during the sync. In OVERWRITE mode, these might not be
    * the true final tables. Specifically, other than an initial sync (i.e. table does not exist, or is
    * empty) we write to a temporary final table, and swap it into the true final table at the end of
    * the sync. This is to prevent user downtime during a sync.
+   * <p>
+   * This method should be called AFTER creating the raw tables, because it may run a soft reset
+   * (which requires the raw tables to exist).
    */
-  void prepareTables() throws Exception;
+  void prepareFinalTables() throws Exception;
 
   /**
    * Suggest that we execute typing and deduping for a single stream (i.e. fetch new raw records into

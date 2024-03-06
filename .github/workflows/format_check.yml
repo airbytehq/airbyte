@@ -12,7 +12,7 @@ jobs:
   format-check:
     # IMPORTANT: This name must match the require check name on the branch protection settings
     name: "Check for formatting errors"
-    runs-on: ubuntu-latest
+    runs-on: tooling-test-small
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
