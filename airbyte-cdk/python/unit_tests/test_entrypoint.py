@@ -382,6 +382,13 @@ def test_filter_internal_requests(deployment_mode, url, expected_error):
             {HashableStreamDescriptor(name="customers", namespace="public"): 0},
             id="test_handle_state_message_with_descriptor",
         ),
+        pytest.param(
+            AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="others", namespace="public"),stream_state=AirbyteStateBlob(updated_at="2024-02-02")))),
+            {HashableStreamDescriptor(name="customers", namespace="public"): 100},
+            AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="others", namespace="public"), stream_state=AirbyteStateBlob(updated_at="2024-02-02")), sourceStats=AirbyteStateStats(recordCount=0.0))),
+            {HashableStreamDescriptor(name="customers", namespace="public"): 100, HashableStreamDescriptor(name="others", namespace="public"): 0},
+            id="test_handle_state_message_no_records",
+        ),
     ]
 )
 def test_handle_record_counts(incoming_message, stream_message_count, expected_message, expected_records_by_stream):

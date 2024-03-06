@@ -181,7 +181,7 @@ class AirbyteEntrypoint(object):
                 name=message.state.stream.stream_descriptor.name, namespace=message.state.stream.stream_descriptor.namespace
             )
             source_stats_for_stream = message.state.sourceStats or AirbyteStateStats()
-            source_stats_for_stream.recordCount = stream_message_count.get(descriptor)
+            source_stats_for_stream.recordCount = stream_message_count.get(descriptor, 0)
             message.state.sourceStats = source_stats_for_stream
 
             # todo: remove after pre-release testing
