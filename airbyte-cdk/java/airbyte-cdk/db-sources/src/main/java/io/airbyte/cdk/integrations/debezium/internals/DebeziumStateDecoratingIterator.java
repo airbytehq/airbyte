@@ -156,8 +156,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
 
         if (checkpointOffsetToSend.size() == 1
             && changeEventIterator.hasNext()
-            && !event.isSnapshotEvent()
-            && targetPosition.isEventAheadOffset(checkpointOffsetToSend, event)) {
+            && !event.isSnapshotEvent()) {
           if (targetPosition.isEventAheadOffset(checkpointOffsetToSend, event)) {
             sendCheckpointMessage = true;
           } else {
