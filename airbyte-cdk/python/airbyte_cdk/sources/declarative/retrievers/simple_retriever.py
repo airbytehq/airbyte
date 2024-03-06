@@ -22,7 +22,6 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
 
 
 @dataclass

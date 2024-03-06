@@ -502,6 +502,7 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
     assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
     assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
 
+
 @pytest.mark.parametrize(
     "stream_slice", [
         pytest.param(None, id="test_none_stream_slice"),
@@ -525,7 +526,6 @@ def test_request_option_with_empty_stream_slice(stream_slice):
         parameters={},
     )
     assert {} == slicer.get_request_params(stream_slice=stream_slice)
-
 
 
 @pytest.mark.parametrize(
