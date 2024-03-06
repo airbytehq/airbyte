@@ -332,6 +332,11 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
   }
 
   @Override
+  public void commitDestinationStates(Map<StreamId, SnowflakeState> destinationStates) throws Exception {
+    // noop. We're seeing lots of contention on the state table, so just stop using it for now.
+  }
+
+  @Override
   protected SnowflakeState toDestinationState(JsonNode json) {
     return new SnowflakeState(
         json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean());
