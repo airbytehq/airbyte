@@ -239,7 +239,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final List<AirbyteStateMessage> stateMessages = filterStateMessages(messages);
 
     assertEquals(0, recordMessages.size());
-    assertEquals(1, stateMessages.size());
+    // Each stream will have its own state message.
+    assertEquals(2, stateMessages.size());
 
     final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
     assertNotNull(lastStateMessage.getGlobal().getSharedState());
