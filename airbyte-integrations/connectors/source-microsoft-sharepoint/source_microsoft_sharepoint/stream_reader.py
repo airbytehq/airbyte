@@ -209,8 +209,8 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             parent_reference = drive_item.remote_item.parentReference
 
             # check if drive is already parsed
-            # if parent_reference and parent_reference["driveId"] not in drive_ids:
-            yield from self._get_shared_drive_object(parent_reference["driveId"], drive_item.id, drive_item.web_url)
+            if parent_reference and parent_reference["driveId"] not in drive_ids:
+                yield from self._get_shared_drive_object(parent_reference["driveId"], drive_item.id, drive_item.web_url)
 
     def get_all_files(self):
         yield from self._get_files_by_drive_name(self.drives, self.config.folder_path)
