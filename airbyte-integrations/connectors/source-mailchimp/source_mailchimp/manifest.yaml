@@ -329,21 +329,21 @@ definitions:
           type: CustomRecordExtractor
           class_name: source_mailchimp.components.MailChimpRecordExtractorEmailActivity
           field_path: ["{{ parameters.get('data_field') }}"]
-      incremental_sync:
-        type: DatetimeBasedCursor
+    incremental_sync:
+      type: DatetimeBasedCursor
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      start_datetime:
+        type: MinMaxDatetime
+        # TODO: ref to use datetime as optional parameter if possible
+        datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S%z')) }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_field: "{{ parameters['cursor_field'] }}"
-        start_datetime:
-          type: MinMaxDatetime
-          # TODO: ref to use datetime as optional parameter if possible
-          datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S%z')) }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_time_option:
-          inject_into: request_parameter
-          field_name: "since"
-          type: RequestOption
-        step: "P100Y"
-        cursor_granularity: "PT0.1S"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: "since"
+        type: RequestOption
+      step: "P100Y"
+      cursor_granularity: "PT0.1S"
     $parameters:
       name: "email_activity"
       primary_key: ["timestamp", "email_id", "action"]
