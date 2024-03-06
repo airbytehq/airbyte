@@ -124,4 +124,4 @@ def test_create_min_max_datetime(input_datetime):
     minMaxDatetime = MinMaxDatetime.create(input_datetime, parameters={})
     expected_value = "2022-01-01T00:00:00"
 
-    assert minMaxDatetime._datetime.eval(config={}) == expected_value
+    assert minMaxDatetime.datetime.eval(config={}) == expected_value
