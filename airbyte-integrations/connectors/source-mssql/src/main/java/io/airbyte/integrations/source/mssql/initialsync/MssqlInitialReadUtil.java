@@ -56,15 +56,7 @@ import io.debezium.connector.sqlserver.Lsn;
 import java.sql.JDBCType;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -74,6 +66,8 @@ import org.slf4j.LoggerFactory;
 public class MssqlInitialReadUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialReadUtil.class);
+  private static final int MIN_QUEUE_SIZE = 1000;
+  private static final int MAX_QUEUE_SIZE = 10000;
 
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,
                                    Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToInitialLoadStatus) {
@@ -97,6 +91,8 @@ public class MssqlInitialReadUtil {
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
     final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
     LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
+    final int queueSize = getQueueSize(sourceConfig);
+    LOGGER.info("Queue size: {}", queueSize);
     // Determine the streams that need to be loaded via primary key sync.
     final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
     // Construct the initial state for Mssql. If there is already existing state, we use that instead
@@ -167,7 +163,7 @@ public class MssqlInitialReadUtil {
         true,
         firstRecordWaitTime,
         subsequentRecordWaitTime,
-        AirbyteDebeziumHandler.QUEUE_CAPACITY,
+        queueSize,
         false);
 
     final var propertiesManager = new RelationalDbDebeziumPropertiesManager(getDebeziumProperties(database, catalog, false), sourceConfig, catalog);
@@ -337,6 +333,33 @@ public class MssqlInitialReadUtil {
     return new InitialLoadStreams(streamsForPkSync.stream().filter((stream) -> !stream.getStream().getSourceDefinedPrimaryKey()
         .isEmpty()).collect(Collectors.toList()),
         pairToInitialLoadStatus);
+  }
+
+  private static OptionalInt extractQueueSizeFromConfig(final JsonNode config) {
+    final JsonNode replicationMethod = config.get("replication_method");
+    if (replicationMethod != null && replicationMethod.has("queue_size")) {
+      final int queueSize = config.get("replication_method").get("queue_size").asInt();
+      return OptionalInt.of(queueSize);
+    }
+    return OptionalInt.empty();
+  }
+
+  public static int getQueueSize(final JsonNode config) {
+    final OptionalInt sizeFromConfig = extractQueueSizeFromConfig(config);
+    if (sizeFromConfig.isPresent()) {
+      final int size = sizeFromConfig.getAsInt();
+      if (size < MIN_QUEUE_SIZE) {
+        LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
+            MIN_QUEUE_SIZE);
+        return MIN_QUEUE_SIZE;
+      } else if (size > MAX_QUEUE_SIZE) {
+        LOGGER.warn("Queue size is overridden to {} , which is the max allowed for safety.",
+            MAX_QUEUE_SIZE);
+        return MAX_QUEUE_SIZE;
+      }
+      return size;
+    }
+    return MAX_QUEUE_SIZE;
   }
 
 }

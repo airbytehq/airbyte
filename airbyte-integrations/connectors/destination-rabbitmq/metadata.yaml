@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/destination-rabbitmq
   githubIssueLabel: destination-rabbitmq
   icon: pulsar.svg
@@ -20,5 +20,5 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: archived
+  supportLevel: community
 metadataSpecVersion: "1.0"
