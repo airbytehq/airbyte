@@ -22,4 +22,3 @@
 {"stream": "search_analytics_site_report_by_page", "data": {"clicks": 0, "impressions": 2, "ctr": 0, "position": 3, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2023-05-02", "country": "can", "device": "DESKTOP"}, "emitted_at": 1709756255945}
 {"stream": "search_analytics_site_report_by_site", "data": {"clicks": 0, "impressions": 1, "ctr": 0, "position": 37, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2023-05-01", "country": "nga", "device": "DESKTOP"}, "emitted_at": 1709756312520}
 {"stream": "search_analytics_site_report_by_site", "data": {"clicks": 0, "impressions": 2, "ctr": 0, "position": 3, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2023-05-02", "country": "can", "device": "DESKTOP"}, "emitted_at": 1709756312522}
-
