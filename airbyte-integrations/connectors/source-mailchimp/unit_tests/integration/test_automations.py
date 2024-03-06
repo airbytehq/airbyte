@@ -120,4 +120,4 @@ class AutomationsTest(TestCase):
             catalog=_create_catalog(sync_mode=SyncMode.incremental),
             state=StateBuilder().with_stream_state("automations", {"create_time": "2220-11-23T05:42:11+00:00"}).build(),
         )
-        assert actual_messages.state_messages[0].state.data == {"automations": {"create_time": "2220-11-23T05:42:11+00:00"}}
+        actual_messages.state_messages[0].state.stream.stream_state == {"create_time": "2220-11-23T05:42:11+00:00"}

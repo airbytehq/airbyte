@@ -4,7 +4,7 @@
 
 
 import pytest
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_mailchimp.components import MailChimpRecordFilter
 
 
@@ -52,8 +52,8 @@ from source_mailchimp.components import MailChimpRecordFilter
     ],
 )
 def test_mailchimp_custom_filter(config: dict, stream_state: dict, len_expected_records: int):
-    stream_slice = PerPartitionStreamSlice(
-        {"id": "7847cdaeff"}, {"end_time": "2024-02-19T13:33:56+0000", "start_time": "2022-10-07T13:33:56+0000"}
+    stream_slice = StreamSlice(
+        partition={"id": "7847cdaeff"}, cursor_slice={"end_time": "2024-02-19T13:33:56+0000", "start_time": "2022-10-07T13:33:56+0000"}
     )
     parameters = {
         "name": "segment_members",
