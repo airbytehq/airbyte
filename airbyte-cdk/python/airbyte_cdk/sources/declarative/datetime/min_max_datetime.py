@@ -4,7 +4,7 @@
 
 import datetime as dt
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Union, Optional
+from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -83,10 +83,16 @@ class MinMaxDatetime:
             self._datetime_format = value
 
     @classmethod
-    def create(cls, interpolated_string_or_min_max_datetime: Union[InterpolatedString, str, "MinMaxDatetime"], parameters: Optional[Mapping[str, Any]] = None) -> "MinMaxDatetime":
+    def create(
+        cls,
+        interpolated_string_or_min_max_datetime: Union[InterpolatedString, str, "MinMaxDatetime"],
+        parameters: Optional[Mapping[str, Any]] = None,
+    ) -> "MinMaxDatetime":
         if parameters is None:
             parameters = {}
-        if isinstance(interpolated_string_or_min_max_datetime, InterpolatedString) or isinstance(interpolated_string_or_min_max_datetime, str):
+        if isinstance(interpolated_string_or_min_max_datetime, InterpolatedString) or isinstance(
+            interpolated_string_or_min_max_datetime, str
+        ):
             return MinMaxDatetime(datetime=interpolated_string_or_min_max_datetime, parameters=parameters)
         else:
             return interpolated_string_or_min_max_datetime

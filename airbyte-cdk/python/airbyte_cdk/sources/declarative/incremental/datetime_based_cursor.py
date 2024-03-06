@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamState, StreamSlice
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.message import MessageRepository
 from isodate import Duration, parse_duration
 
@@ -71,11 +71,7 @@ class DatetimeBasedCursor(Cursor):
                 f"Right now, step is `{self.step}` and cursor_granularity is `{self.cursor_granularity}`"
             )
         self._start_datetime = MinMaxDatetime.create(self.start_datetime, parameters)
-        self._end_datetime = (
-            None
-            if not self.end_datetime
-            else MinMaxDatetime.create(self.end_datetime, parameters)
-        )
+        self._end_datetime = None if not self.end_datetime else MinMaxDatetime.create(self.end_datetime, parameters)
 
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
@@ -126,7 +122,7 @@ class DatetimeBasedCursor(Cursor):
                 # we need to ensure the cursor value is preserved as is in the state else the CATs might complain of something like
                 # 2023-01-04T17:30:19.000Z' <= '2023-01-04T17:30:19.000000Z'
                 lambda datetime_str: (self.parse_date(datetime_str), datetime_str),
-                potential_cursor_values
+                potential_cursor_values,
             )
         )
         self._cursor = (
