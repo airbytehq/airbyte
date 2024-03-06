@@ -119,6 +119,10 @@ class DatetimeBasedCursor(Cursor):
           stream state may need to be deferred depending on whether the source reliably orders records by the cursor field.
         """
         record_cursor_value = record.get(self.cursor_field.eval(self.config))
+        # if the current record has no cursor value, we cannot meaningfully update the state based on it, so there is nothing more to do
+        if not record_cursor_value:
+            return
+
         start_field = self.partition_field_start.eval(self.config)
         end_field = self.partition_field_end.eval(self.config)
         is_highest_observed_cursor_value = not self._highest_observed_cursor_field_value or record_cursor_value > self._highest_observed_cursor_field_value
