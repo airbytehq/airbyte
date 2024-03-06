@@ -3,6 +3,7 @@ import urllib.parse
 import json
 import yaml
 import base64
+import os
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -12,13 +13,15 @@ from airbyte_cdk.models import (
 
 class Client:
     def __init__(self, config: json, logger: AirbyteLogger):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
         self.subdomain = config.get("subdomain")
-        with open(f"/airbyte/integration_code/source_kintone/app_name_mapping/app_name.yaml") as f:
-              self.app_name_mappings = yaml.full_load(f)
+
+        with open(os.path.join(base_dir, "app_name_mapping", "app_name.yaml")) as f:
+            self.app_name_mappings = yaml.full_load(f)
         self.field_code_mappings = {}
         for app_id in config.get("app_ids"):
-            with open(f"/airbyte/integration_code/source_kintone/field_code_mapping/field_code_{app_id}.yaml") as f:
-                  self.field_code_mappings[app_id] = yaml.full_load(f)
+            with open(os.path.join(base_dir, "field_code_mapping", f"field_code_{app_id}.yaml")) as f:
+                self.field_code_mappings[app_id] = yaml.full_load(f)
         self.logger = logger
         self.config = config
 
@@ -31,7 +34,7 @@ class Client:
         return {
            "X-Cybozu-Authorization": param,
         }
-    
+
     def _fetch_data(self, url: str, params: dict, use_json: bool = False):
         headers = self._get_base_header()
         if use_json:
@@ -49,7 +52,7 @@ class Client:
                 headers=headers,
                 method="GET",
             )
-        
+
         return json.load(urllib.request.urlopen(req))
 
 
@@ -75,11 +78,11 @@ class Client:
             data=json.dumps(params).encode("utf-8"),
             method="DELETE",
         )
-    
+
     def _rename_field_code_from_jp_to_en(self, app_id: str, field_code: str):
         mappings = self.field_code_mappings[app_id]
         return mappings.get(field_code, field_code)
-    
+
     def rename_app_name(self, app_id: str, app_name: str):
         mappings = self.app_name_mappings
         return mappings.get(app_id, app_name)
@@ -121,8 +124,7 @@ class Client:
             if next == False:
                 self.delete_cursor(cursor["id"])
                 break
-            
-        
+
     # ref. https://kintone.dev/en/docs/kintone/rest-api/records/get-cursor/
     def get_records_by_cursor(self, app_id: str, cursor_id: str):
         params = {
