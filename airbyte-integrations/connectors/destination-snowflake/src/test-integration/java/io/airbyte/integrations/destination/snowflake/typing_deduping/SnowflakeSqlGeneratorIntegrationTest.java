@@ -393,7 +393,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Disabled("We removed the optimization to only set the loaded_at column for new records after certain _extracted_at")
   @Test
   @Override
-  public void ignoreOldRawRecords() {
+  public void ignoreOldRawRecords() throws Exception {
+    super.ignoreOldRawRecords();
   }
 
   /**
