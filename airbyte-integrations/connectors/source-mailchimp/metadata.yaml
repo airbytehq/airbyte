@@ -38,7 +38,13 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              [ "unsubscribes", "segments", "segment_members", "list_members", "email_activity" ]
+              [
+                "unsubscribes",
+                "segments",
+                "segment_members",
+                "list_members",
+                "email_activity",
+              ]
       1.0.0:
         message:
           Version 1.0.0 introduces schema changes to all incremental streams.

@@ -45,7 +45,8 @@
             "cursor": {
               "timestamp": "2230-11-23T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "3cbed9a0fc",
               "parent_slice": {}
@@ -53,7 +54,8 @@
             "cursor": {
               "timestamp": "2230-11-23T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "2aa901afd0",
               "parent_slice": {}
@@ -61,7 +63,8 @@
             "cursor": {
               "timestamp": "2230-11-23T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "e974db8443",
               "parent_slice": {}
@@ -69,7 +72,8 @@
             "cursor": {
               "timestamp": "2230-11-23T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "a79651273b",
               "parent_slice": {}
@@ -77,7 +81,8 @@
             "cursor": {
               "timestamp": "2230-11-23T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "d983b83b95",
               "parent_slice": {}
@@ -85,7 +90,8 @@
             "cursor": {
               "timestamp": "2230-11-23T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "7847cdaeff",
               "parent_slice": {}
@@ -299,7 +305,8 @@
             "cursor": {
               "timestamp": "2231-09-26T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "3cbed9a0fc",
               "parent_slice": {}
@@ -307,7 +314,8 @@
             "cursor": {
               "timestamp": "2231-09-26T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "2aa901afd0",
               "parent_slice": {}
@@ -315,7 +323,8 @@
             "cursor": {
               "timestamp": "2231-09-26T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "e974db8443",
               "parent_slice": {}
@@ -323,7 +332,8 @@
             "cursor": {
               "timestamp": "2231-09-26T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "a79651273b",
               "parent_slice": {}
@@ -331,7 +341,8 @@
             "cursor": {
               "timestamp": "2231-09-26T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "d983b83b95",
               "parent_slice": {}
@@ -339,7 +350,8 @@
             "cursor": {
               "timestamp": "2231-09-26T05:42:10+0000"
             }
-          }, {
+          },
+          {
             "partition": {
               "id": "7847cdaeff",
               "parent_slice": {}
