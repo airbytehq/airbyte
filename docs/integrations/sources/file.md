@@ -31,7 +31,7 @@ This page contains the setup guide and reference information for the Files sourc
 Set this to active if you want to add the [User-Agent header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) to requests (inactive by default).
 
 #### GCS: Google Cloud Storage
-- `Service Account JSON` (Required for **private** buckets) 
+- `Service Account JSON` (Required for **private** buckets)
 
 To access **private** buckets stored on Google Cloud, this connector requires a service account JSON credentials file with the appropriate permissions. A detailed breakdown of this topic can be found at the [Google Cloud service accounts page](https://cloud.google.com/iam/docs/service-accounts). Please generate the "credentials.json" file and copy its content to this field, ensuring it is in JSON format. **If you are accessing publicly available data**, this field is not required.
 
@@ -39,9 +39,9 @@ To access **private** buckets stored on Google Cloud, this connector requires a 
 - `AWS Access Key ID` (Required for **private** buckets)
 - `AWS Secret Access Key` (Required for **private** buckets)
 
-To access **private** buckets stored on AWS S3, this connector requires valid credentials with the necessary permissions. To access these keys, refer to the 
+To access **private** buckets stored on AWS S3, this connector requires valid credentials with the necessary permissions. To access these keys, refer to the
 [AWS IAM documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
-More information on setting permissions in AWS can be found 
+More information on setting permissions in AWS can be found
 [here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html). **If you are accessing publicly available data**, these fields are not required.
 
 #### AzBlob: Azure Blob Storage
@@ -53,18 +53,18 @@ This is the globally unique name of the storage account that the desired blob si
 
 - `SAS Token`: [Find more information here](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 - `Shared Key`: [Find more information here](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
-  
+
 #### SSH: Secure Shell / SCP: Secure Copy Protocol / SFTP: Secure File Transfer Protocol
 - `Host` (Required)
-  
+
 Enter the _hostname_ or _IP address_ of the remote server where the file trasfer will take place.
 - `User` (Required)
-  
+
 Enter the _username_ associated with your account on the remote server.
-- `Password` (Optional) 
-  
+- `Password` (Optional)
+
 **If required by the remote server**, enter the _password_ associated with your user account. Otherwise, leave this field blank.
-- `Port` (Optional) 
+- `Port` (Optional)
 
 Specify the _port number_ to use for the connection. The default port is usually 22. However, if your remote server uses a non-standard port, you can enter the appropriate port number here.
 
@@ -72,14 +72,14 @@ Specify the _port number_ to use for the connection. The default port is usually
 #### Local Filesystem (Airbyte Open Source only)
 - `Storage`
 
-:::caution 
+:::caution
 Currently, the local storage URL for reading must start with the local mount "/local/".
 :::
 
-Please note that if you are replicating data from a locally stored file on Windows OS, you will need to open the `.env` file in your local Airbyte root folder and change the values for: 
-- `LOCAL_ROOT` 
+Please note that if you are replicating data from a locally stored file on Windows OS, you will need to open the `.env` file in your local Airbyte root folder and change the values for:
+- `LOCAL_ROOT`
 - `LOCAL_DOCKER_MOUNT`
-- `HACK_LOCAL_ROOT_PARENT` 
+- `HACK_LOCAL_ROOT_PARENT`
 
 Please set these to an existing absolute path on your machine. Colons in the path need to be replaced with a double forward slash, `//`. `LOCAL_ROOT` & `LOCAL_DOCKER_MOUNT` should be set to the same value, and `HACK_LOCAL_ROOT_PARENT` should be set to their parent directory.
 <!-- /env:oss -->
@@ -218,6 +218,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.4.1   | 2024-03-04 | [35800](https://github.com/airbytehq/airbyte/pull/35800) | Add PyAirbyte support on Python 3.11                                                                                    |
 | 0.4.0   | 2024-02-15 | [32354](https://github.com/airbytehq/airbyte/pull/32354) | Add Zip File Support                                                                                    |
 | 0.3.17  | 2024-02-13 | [34678](https://github.com/airbytehq/airbyte/pull/34678) | Add Fixed-Width File Support                                                                            |
 | 0.3.16  | 2024-02-12 | [35186](https://github.com/airbytehq/airbyte/pull/35186) | Manage dependencies with Poetry                                                                         |
