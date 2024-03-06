@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.65.0"
+version = "0.68.2"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte-cdk-0.65.0.tar.gz", hash = "sha256:068d4419227f27d9e1d9429f27c4160850a6d6208417828055b89d1f4ef3c367"},
-    {file = "airbyte_cdk-0.65.0-py3-none-any.whl", hash = "sha256:8436125d39bd058ee0ffa67d47304ab5c707b3e184dd8fcd07848959aa3b0efc"},
+    {file = "airbyte-cdk-0.68.2.tar.gz", hash = "sha256:04c7557e72a2b2da6ffc8abc5196f16f2c5764738284931856c9210dd2d11998"},
+    {file = "airbyte_cdk-0.68.2-py3-none-any.whl", hash = "sha256:bad36c9d9a6755fe5ec2d130fa779bdf7a9248abbc8736fa4da1f35d4a97cc8e"},
 ]
 
 [package.dependencies]
@@ -32,8 +32,8 @@ requests-cache = "*"
 wcmatch = "8.4"
 
 [package.extras]
-dev = ["avro (>=1.11.2,<1.12.0)", "cohere (==4.21)", "fastavro (>=1.8.0,<1.9.0)", "freezegun", "langchain (==0.0.271)", "markdown", "mypy", "openai[embeddings] (==0.27.9)", "pandas (==2.0.3)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (==12.0.1)", "pytesseract (==0.3.10)", "pytest", "pytest-cov", "pytest-httpserver", "pytest-mock", "requests-mock", "tiktoken (==0.4.0)", "unstructured (==0.10.27)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
-file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (==12.0.1)", "pytesseract (==0.3.10)", "unstructured (==0.10.27)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
+dev = ["avro (>=1.11.2,<1.12.0)", "cohere (==4.21)", "fastavro (>=1.8.0,<1.9.0)", "freezegun", "langchain (==0.0.271)", "markdown", "mypy", "openai[embeddings] (==0.27.9)", "pandas (==2.0.3)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "pytest", "pytest-cov", "pytest-httpserver", "pytest-mock", "requests-mock", "tiktoken (==0.4.0)", "unstructured (==0.10.27)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
+file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "unstructured (==0.10.27)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
 sphinx-docs = ["Sphinx (>=4.2,<5.0)", "sphinx-rtd-theme (>=1.0,<2.0)"]
 vector-db-based = ["cohere (==4.21)", "langchain (==0.0.271)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.4.0)"]
 
@@ -1045,4 +1045,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "bdfc6a3b13138b7edddaabe4766334ebfe69ff7ee90c19ce4e80bca07683b005"
+content-hash = "34258a7e220323a05f6aadce404d78c226095a9fd5e0d7fe4db8f0ea9662b490"
