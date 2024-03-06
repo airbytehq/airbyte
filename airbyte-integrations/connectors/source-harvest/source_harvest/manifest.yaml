@@ -3699,7 +3699,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://api.harvestapp.com/v2/
-        path: /users/{{stream_partition.id}}/billable_rates
+        path: /users/{{stream_partition['id']}}/billable_rates
         http_method: GET
         request_parameters: {}
         request_headers:
