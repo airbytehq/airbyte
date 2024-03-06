@@ -152,14 +152,14 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_500_after_max_retries_raises_config_error(self, http_mocker: HttpMocker) -> None:
         # Tests 500 status error handling
         http_mocker.get(
             _a_request().with_any_query_params().build(),
             a_response_with_status_and_header(500, {"Retry-After": "0.01"}),
         )
         output = self._read(_config(), expecting_exception=True)
-        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
 @freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):
