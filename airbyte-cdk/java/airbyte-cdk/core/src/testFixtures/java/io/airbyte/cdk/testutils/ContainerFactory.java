@@ -127,8 +127,7 @@ public abstract class ContainerFactory<C extends GenericContainer<?>> {
   @SuppressWarnings("unchecked")
   @Deprecated
   public final C exclusive(String imageName, String... methods) {
-    return exclusive(imageName,
-        (NamedContainerModifier<C>) Stream.of(methods).map(n -> new NamedContainerModifierImpl<C>(n, resolveModifierByName(n))).toList());
+    return exclusive(imageName, Stream.of(methods).map(n -> new NamedContainerModifierImpl<C>(n, resolveModifierByName(n))).toList());
   }
 
   public final C exclusive(String imageName) {
@@ -139,7 +138,7 @@ public abstract class ContainerFactory<C extends GenericContainer<?>> {
     return exclusive(imageName, List.of(namedContainerModifiers));
   }
 
-  public final C exclusive(String imageName, List<NamedContainerModifier<C>> namedContainerModifiers) {
+  public final C exclusive(String imageName, List<? extends NamedContainerModifier<C>> namedContainerModifiers) {
     return (C) createAndStartContainer(DockerImageName.parse(imageName), namedContainerModifiers);
   }
 

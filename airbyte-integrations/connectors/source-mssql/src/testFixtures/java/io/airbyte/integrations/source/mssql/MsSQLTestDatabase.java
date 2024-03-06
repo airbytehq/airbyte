@@ -59,6 +59,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   }
 
+  @SuppressWarnings("deprecation")
   static public MsSQLTestDatabase in(final BaseImage imageName, final ContainerModifier... methods) {
     final String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
     final var container = new MsSQLContainerFactory().shared(imageName.reference, methodNames);
