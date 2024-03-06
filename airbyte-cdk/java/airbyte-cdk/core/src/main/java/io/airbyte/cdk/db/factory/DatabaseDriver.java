@@ -14,7 +14,7 @@ public enum DatabaseDriver {
   DB2("com.ibm.db2.jcc.DB2Driver", "jdbc:db2://%s:%d/%s"),
   STARBURST("io.trino.jdbc.TrinoDriver", "jdbc:trino://%s:%s/%s?SSL=true&source=airbyte"),
   MARIADB("org.mariadb.jdbc.Driver", "jdbc:mariadb://%s:%d/%s"),
-  MSSQLSERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d/%s"),
+  MSSQLSERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d;databaseName=%s"),
   MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s"),
   ORACLE("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@%s:%d/%s"),
   VERTICA("com.vertica.jdbc.Driver", "jdbc:vertica://%s:%d/%s"),

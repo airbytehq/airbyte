@@ -7,7 +7,6 @@ package io.airbyte.commons.logging;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 
@@ -23,7 +22,7 @@ class MdcScopeTest {
   }
 
   @Test
-  @DisplayName("The MDC context is properly overrided")
+  // The MDC context is properly overrided
   void testMDCModified() {
     try (final MdcScope ignored = new MdcScope(modificationInMDC)) {
       final Map<String, String> mdcState = MDC.getCopyOfContextMap();
@@ -34,7 +33,7 @@ class MdcScopeTest {
   }
 
   @Test
-  @DisplayName("The MDC context is properly restored")
+  // The MDC context is properly restored
   void testMDCRestore() {
     try (final MdcScope ignored = new MdcScope(modificationInMDC)) {}
 
