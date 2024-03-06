@@ -93,10 +93,16 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     LOGGER.info("creating new database. databaseId=" + this.databaseId + ", databaseName=" + getDatabaseName());
   }
 
+  private volatile boolean hasCdc = false;
+
   public MsSQLTestDatabase withCdc() {
+    if (hasCdc) {
+      throw new RuntimeException("Trying to enable CDC on a database that already has CDC!");
+    }
     LOGGER.info("enabling CDC on database {} with id {}", getDatabaseName(), databaseId);
     with("EXEC sys.sp_cdc_enable_db;");
     LOGGER.info("CDC enabled on database {} with id {}", getDatabaseName(), databaseId);
+    hasCdc = true;
     return this;
   }
 
@@ -116,6 +122,9 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   public MsSQLTestDatabase withCdcForTable(String schemaName, String tableName, String roleName, String instanceName) {
+    if (!hasCdc) {
+      throw new RuntimeException("Trying to enable CDC for a table when it hasn't been enabled for the DB!");
+    }
     LOGGER.info(formatLogLine("enabling CDC for table {}.{} and role {}, instance {}"), schemaName, tableName, roleName, instanceName);
     String sqlRoleName = roleName == null ? "NULL" : "N'%s'".formatted(roleName);
     for (int tryCount = 0; tryCount < MAX_RETRIES; tryCount++) {
@@ -160,6 +169,10 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   private static final String DISABLE_CDC_SQL = "EXEC sys.sp_cdc_disable_db;";
 
   public MsSQLTestDatabase withoutCdc() {
+    if (!hasCdc) {
+      throw new RuntimeException("Trying to disable CDC for a database that doesn't have it!");
+    }
+    hasCdc = false;
     CDC_INSTANCE_NAMES.clear();
     synchronized (getContainer()) {
       return with(DISABLE_CDC_SQL);
@@ -328,7 +341,14 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     return SQLDialect.DEFAULT;
   }
 
-  public static enum CertificateKey {
+  public void close() {
+    if (hasCdc) {
+      withoutCdc();
+    }
+    super.close();
+  }
+
+  public enum CertificateKey {
 
     CA(true),
     DUMMY_CA(false),
