@@ -118,13 +118,13 @@ class DatetimeBasedCursor(Cursor):
         :param record: the most recently-read record, which the cursor can use to update the stream state. Outwardly-visible changes to the
           stream state may need to be deferred depending on whether the source reliably orders records by the cursor field.
         """
-        record_cursor_value = record.get(self.cursor_field.eval(self.config))
+        record_cursor_value = record.get(self._cursor_field.eval(self.config))
         # if the current record has no cursor value, we cannot meaningfully update the state based on it, so there is nothing more to do
         if not record_cursor_value:
             return
 
-        start_field = self.partition_field_start.eval(self.config)
-        end_field = self.partition_field_end.eval(self.config)
+        start_field = self._partition_field_start.eval(self.config)
+        end_field = self._partition_field_end.eval(self.config)
         is_highest_observed_cursor_value = not self._highest_observed_cursor_field_value or self.parse_date(record_cursor_value) > self.parse_date(self._highest_observed_cursor_field_value)
         if self._is_within_daterange_boundaries(record, stream_slice.get(start_field), stream_slice.get(end_field)) and is_highest_observed_cursor_value:
             self._highest_observed_cursor_field_value = record_cursor_value
@@ -299,7 +299,7 @@ class DatetimeBasedCursor(Cursor):
         return self._is_within_daterange_boundaries(record, earliest_possible_cursor_value, latest_possible_cursor_value)
 
     def _is_within_daterange_boundaries(self, record: Record, start_datetime_boundary: Union[MinMaxDatetime, str], end_datetime_boundary: Union[MinMaxDatetime, str]) -> bool:
-        cursor_field = self.cursor_field.eval(self.config)
+        cursor_field = self._cursor_field.eval(self.config)
         record_cursor_value = record.get(cursor_field)
         if isinstance(start_datetime_boundary, str):
             start_datetime_boundary = self.parse_date(start_datetime_boundary)
