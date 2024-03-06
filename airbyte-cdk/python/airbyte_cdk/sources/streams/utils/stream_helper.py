@@ -34,5 +34,7 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
     :raises StopIteration: if there is no first record to return (the read_records generator is empty)
     :return: StreamData containing the first record in the slice
     """
-    records_for_slice = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+    # We wrap the return output of read_records() because some implementations return types that are iterable,
+    # but not iterators such as lists or tuples
+    records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
     return next(records_for_slice)

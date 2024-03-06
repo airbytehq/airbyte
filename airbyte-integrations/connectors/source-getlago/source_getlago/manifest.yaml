@@ -90,6 +90,24 @@ definitions:
         $ref: "#/definitions/customer_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+  wallets_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "wallets"
+      primary_key: "lago_id"
+      path: "/wallets"
+  customer_usage_stream:
+    name: "customer_usage"
+    primary_key: "lago_invoice_id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/customers/{{stream_slice.customer_external_id}}/current_usage"
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/customer_partition_router"
 
 streams:
   - "#/definitions/billable_metrics_stream"
@@ -99,6 +117,8 @@ streams:
   - "#/definitions/invoices_stream"
   - "#/definitions/customers_stream"
   - "#/definitions/subscriptions_stream"
+  - "#/definitions/wallets_stream"
+  - "#/definitions/customer_usage_stream"
 
 check:
   stream_names:

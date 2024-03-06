@@ -1,25 +1,45 @@
 # Exchange Rates API
 
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Exchange Rates API](https://exchangeratesapi.io/) source connector.
+
+</HideInUI>
+
 ## Overview
 
-The exchange rates integration is a toy integration to demonstrate how Airbyte works with a very simple source.
+The Exchange Rates API integration is a toy integration to demonstrate how Airbyte works with a very simple source.
 
-It pulls all its data from [https://apilayer.com/marketplace/exchangerates_data-api](https://apilayer.com/marketplace/exchangerates_data-api)
+## Prerequisites
 
-#### Output schema
+- Exchange Rates API account
+- API Access Key
 
-It contains one stream: `exchange_rates`
+## Setup Guide
 
-Each record in the stream contains many fields:
+### Step 1: Set up Exchange Rates API
 
-- The date of the record
-- One field for every supported [currency](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html) which contain the value of that currency on that date.
+1. Create an account with [Exchange Rates API](https://manage.exchangeratesapi.io/signup/).
+2. Navigate to the [Exchange Rates API Dashboard](https://manage.exchangeratesapi.io/dashboard) to find your `API Access Key`.
 
-#### Data type mapping
+:::note
+If you have a `free` subscription plan, you will have two limitations to the plan:
 
-Currencies are `number` and the date is a `string`.
+1. Limit of 1,000 API calls per month
+2. You won't be able to specify the `base` parameter, meaning that you will be only be allowed to use the default base value which is `EUR`.
+:::
 
-#### Features
+### Step 2: Set up the Exchange Rates connector in Airbyte
+
+1. Enter a **Name** for your source.
+2. Enter your **API key** as the `access_key` from the prerequisites.
+3. Enter the **Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated.
+4. (Optional) Enter a **base** currency. For those on the free plan, `EUR` is the only option available. If none are specified, `EUR` will be used.
+5. Click **Set up source**.
+
+<HideInUI>
+
+## Supported sync modes
 
 | Feature                   | Supported? |
 | :------------------------ | :--------- |
@@ -27,20 +47,41 @@ Currencies are `number` and the date is a `string`.
 | Incremental - Append Sync | Yes        |
 | Namespaces                | No         |
 
-### Getting started
+## Supported streams
 
-### Requirements
+It contains one stream: `exchange_rates`
 
-- API Access Key
+Each record in the stream contains many fields:
 
-### Setup guide
+- The date of the record.
+- One field for every supported [currency](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html) which contain the value of that currency on that date.
 
-In order to get an `API Access Key` please go to [this](https://manage.exchangeratesapi.io/signup/free) page and enter needed info. After registration and login you will see your `API Access Key`, also you may find it [here](https://manage.exchangeratesapi.io/dashboard).
+## Data type map
 
-If you have `free` subscription plan \(you may check it [here](https://manage.exchangeratesapi.io/plan)\) this means that you will have 2 limitations:
+| Field                     | Airbyte Type |
+| :------------------------ | :----------- |
+| Currency                  | `number`     |
+| Date                      | `string`     |
 
-1. 1000 API calls per month.
-2. You won't be able to specify the `base` parameter, meaning that you will be dealing only with default base value which is EUR.
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Exchange Rates API connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+
+The Exchange Rates API has rate limits that vary per pricing plan. The free plan is subject to rate limiting of 1,000 requests per month. Review the [Exchange Rates API Pricing Plans](https://exchangeratesapi.io/#pricing_plan) for more information.
+
+### Troubleshooting
+
+* With the free plan, you won't be able to specify the `base` parameter, meaning that you will be only be allowed to use the default base value which is `EUR`.
+* Check out common troubleshooting issues for the Exchange Rates API source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
 
 ## Changelog
 
@@ -58,3 +99,5 @@ If you have `free` subscription plan \(you may check it [here](https://manage.ex
 | 0.2.2   | 2021-05-28 | [3677](https://github.com/airbytehq/airbyte/pull/3677)   | Adding clearer error message when a currency isn't supported. access_key field in spec.json was marked as sensitive |
 | 0.2.0   | 2021-05-26 | [3566](https://github.com/airbytehq/airbyte/pull/3566)   | Move from `api.ratesapi.io/` to `api.exchangeratesapi.io/`. Add required field `access_key` to `config.json`.       |
 | 0.1.0   | 2021-04-19 | [2942](https://github.com/airbytehq/airbyte/pull/2942)   | Implement Exchange API using the CDK                                                                                |
+
+</HideInUI>

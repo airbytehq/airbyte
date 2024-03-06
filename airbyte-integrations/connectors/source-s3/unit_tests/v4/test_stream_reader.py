@@ -5,10 +5,10 @@
 
 import io
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -16,13 +16,14 @@ from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBas
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.stub import Stubber
+from moto import mock_s3, mock_sts
 from pydantic import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
 logger = logging.Logger("")
 
-endpoint_values = ["http://fake.com", None]
+endpoint_values = ["https://fake.com", None]
 _get_matching_files_cases = [
     pytest.param([], [], False, set(), id="no-files-match-if-no-globs"),
     pytest.param(
@@ -123,10 +124,51 @@ def test_get_matching_files(
     except Exception as exc:
         raise exc
 
-    stub = set_stub(reader, mocked_response, multiple_pages)
-    files = list(reader.get_matching_files(globs, None, logger))
-    stub.deactivate()
-    assert set(f.uri for f in files) == expected_uris
+    with patch.object(SourceS3StreamReader, 's3_client', new_callable=MagicMock) as mock_s3_client:
+        _setup_mock_s3_client(mock_s3_client, mocked_response, multiple_pages)
+        files = list(reader.get_matching_files(globs, None, logger))
+        assert set(f.uri for f in files) == expected_uris
+
+
+def _setup_mock_s3_client(mock_s3_client, mocked_response, multiple_pages):
+    responses = []
+    if multiple_pages and len(mocked_response) > 1:
+        # Split the mocked_response for pagination simulation
+        first_half = mocked_response[:len(mocked_response) // 2]
+        second_half = mocked_response[len(mocked_response) // 2:]
+
+        responses.append({
+            "IsTruncated": True,
+            "Contents": first_half,
+            "KeyCount": len(first_half),
+            "NextContinuationToken": "token",
+        })
+
+        responses.append({
+            "IsTruncated": False,
+            "Contents": second_half,
+            "KeyCount": len(second_half),
+        })
+    else:
+        responses.append({
+            "IsTruncated": False,
+            "Contents": mocked_response,
+            "KeyCount": len(mocked_response),
+        })
+
+    def list_objects_v2_side_effect(Bucket, Prefix=None, ContinuationToken=None, **kwargs):
+        if ContinuationToken == "token":
+            return responses[1]
+        return responses[0]
+
+    mock_s3_client.list_objects_v2 = MagicMock(side_effect=list_objects_v2_side_effect)
+
+
+def _split_mocked_response(mocked_response, multiple_pages):
+    if not multiple_pages:
+        return mocked_response, []
+    split_index = len(mocked_response) // 2
+    return mocked_response[:split_index], mocked_response[split_index:]
 
 
 @patch("boto3.client")
@@ -195,9 +237,9 @@ def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     with reader.open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, encoding, logger) as fp:
         fp.read()
 
-    smart_open_mock.assert_called_once_with(
-        "s3://test/", transport_params={"client": reader.s3_client}, mode=FileReadMode.READ.value, encoding=encoding
-    )
+    assert smart_open_mock.call_args.args == ("s3://test/",)
+    assert smart_open_mock.call_args.kwargs["mode"] == FileReadMode.READ.value
+    assert smart_open_mock.call_args.kwargs["encoding"] == encoding
 
 
 def test_get_s3_client_without_config_raises_exception():
@@ -217,24 +259,66 @@ def test_cannot_set_wrong_config_type():
         stream_reader.config = other_config
 
 
-def set_stub(reader: SourceS3StreamReader, contents: List[Dict[str, Any]], multiple_pages: bool) -> Stubber:
-    s3_stub = Stubber(reader.s3_client)
-    split_contents_idx = int(len(contents) / 2) if multiple_pages else -1
-    page1, page2 = contents[:split_contents_idx], contents[split_contents_idx:]
-    resp = {
-        "KeyCount": len(page1),
-        "Contents": page1,
+@mock_sts
+@patch("source_s3.v4.stream_reader.boto3.client")
+def test_get_iam_s3_client(boto3_client_mock):
+    # Mock the STS client assume_role method
+    boto3_client_mock.return_value.assume_role.return_value = {
+        "Credentials": {
+            "AccessKeyId": "assumed_access_key_id",
+            "SecretAccessKey": "assumed_secret_access_key",
+            "SessionToken": "assumed_session_token",
+            "Expiration": datetime.now(),
+        }
     }
-    if page2:
-        resp["NextContinuationToken"] = "token"
-    s3_stub.add_response("list_objects_v2", resp)
-    if page2:
-        s3_stub.add_response(
-            "list_objects_v2",
-            {
-                "KeyCount": len(page2),
-                "Contents": page2,
-            },
+
+    # Instantiate your stream reader and set the config
+    reader = SourceS3StreamReader()
+    reader.config = Config(
+        bucket="test",
+        role_arn="arn:aws:iam::123456789012:role/my-role",
+        streams=[],
+        endpoint=None,
+    )
+
+    # Call _get_iam_s3_client
+    with Stubber(reader.s3_client):
+        s3_client = reader._get_iam_s3_client({})
+
+    # Assertions to validate the s3 client
+    assert s3_client is not None
+
+@pytest.mark.parametrize(
+    "start_date, last_modified_date, expected_result",
+    (
+        # True when file is new or modified after given start_date
+        (
+            datetime.now() - timedelta(days=180),
+            datetime.now(),
+            True
+        ),
+        (
+            datetime.strptime("2024-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+            datetime.strptime("2024-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+            True
+        ),
+        # False when file is older than given start_date
+        (
+            datetime.now(),
+            datetime.now() - timedelta(days=180),
+            False
         )
-    s3_stub.activate()
-    return s3_stub
+    )
+)
+def test_filter_file_by_start_date(start_date: datetime, last_modified_date: datetime, expected_result: bool) -> None:
+    reader = SourceS3StreamReader()
+
+    reader.config = Config(
+        bucket="test",
+        aws_access_key_id="test",
+        aws_secret_access_key="test",
+        streams=[],
+        start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
+
+    assert expected_result == reader.is_modified_after_start_date(last_modified_date)

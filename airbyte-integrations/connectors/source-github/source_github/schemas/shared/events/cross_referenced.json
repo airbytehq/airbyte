@@ -27,7 +27,7 @@
         "received_events_url": { "type": "string" },
         "type": { "type": "string" },
         "site_admin": { "type": "boolean" },
-        "starred_at": { "type": "string" }
+        "starred_at": { "type": "string", "format": "date-time" }
       }
     },
     "created_at": { "type": "string", "format": "date-time" },
@@ -43,6 +43,8 @@
           "description": "Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.",
           "type": "object",
           "properties": {
+            "author_association": { "type": ["string", "null"] },
+            "performed_via_github_app": { "type": ["object", "null"] },
             "id": { "type": "integer" },
             "node_id": { "type": "string" },
             "url": { "type": "string" },
@@ -84,7 +86,7 @@
                     "received_events_url": { "type": "string" },
                     "type": { "type": "string" },
                     "site_admin": { "type": "boolean" },
-                    "starred_at": { "type": "string" }
+                    "starred_at": { "type": "string", "format": "date-time" }
                   }
                 }
               ]
@@ -139,7 +141,7 @@
                     "received_events_url": { "type": "string" },
                     "type": { "type": "string" },
                     "site_admin": { "type": "boolean" },
-                    "starred_at": { "type": "string" }
+                    "starred_at": { "type": "string", "format": "date-time" }
                   }
                 }
               ]
@@ -171,7 +173,7 @@
                   "site_admin": {
                     "type": "boolean"
                   },
-                  "starred_at": { "type": "string" }
+                  "starred_at": { "type": "string", "format": "date-time" }
                 }
               }
             },
@@ -220,7 +222,10 @@
                             "received_events_url": { "type": "string" },
                             "type": { "type": "string" },
                             "site_admin": { "type": "boolean" },
-                            "starred_at": { "type": "string" }
+                            "starred_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
                           }
                         }
                       ]
@@ -244,6 +249,7 @@
             "locked": { "type": "boolean" },
             "active_lock_reason": { "type": ["string", "null"] },
             "comments": { "type": "integer" },
+            "draft": { "type": ["boolean", "null"] },
             "pull_request": {
               "type": "object",
               "properties": {
@@ -289,7 +295,7 @@
                     "received_events_url": { "type": "string" },
                     "type": { "type": "string" },
                     "site_admin": { "type": "boolean" },
-                    "starred_at": { "type": "string" }
+                    "starred_at": { "type": "string", "format": "date-time" }
                   }
                 }
               ]
@@ -350,7 +356,10 @@
                         "received_events_url": { "type": "string" },
                         "type": { "type": "string" },
                         "site_admin": { "type": "boolean" },
-                        "starred_at": { "type": "string" }
+                        "starred_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
                       }
                     }
                   ]
@@ -389,7 +398,7 @@
                     "received_events_url": { "type": "string" },
                     "type": { "type": "string" },
                     "site_admin": { "type": "boolean" },
-                    "starred_at": { "type": "string" }
+                    "starred_at": { "type": "string", "format": "date-time" }
                   }
                 },
                 "private": { "type": "boolean" },
@@ -570,9 +579,9 @@
                     "archived": { "type": "boolean" },
                     "disabled": { "type": "boolean" },
                     "visibility": { "type": "string" },
-                    "pushed_at": { "type": "string" },
-                    "created_at": { "type": "string" },
-                    "updated_at": { "type": "string" },
+                    "pushed_at": { "type": "string", "format": "date-time" },
+                    "created_at": { "type": "string", "format": "date-time" },
+                    "updated_at": { "type": "string", "format": "date-time" },
                     "permissions": {
                       "type": "object",
                       "properties": {
@@ -617,7 +626,7 @@
                 "open_issues": { "type": "integer" },
                 "watchers": { "type": "integer" },
                 "master_branch": { "type": "string" },
-                "starred_at": { "type": "string" },
+                "starred_at": { "type": "string", "format": "date-time" },
                 "anonymous_access_enabled": { "type": "boolean" }
               },
               "performed_via_github_app": {
@@ -659,7 +668,10 @@
                               "received_events_url": { "type": "string" },
                               "type": { "type": "string" },
                               "site_admin": { "type": "boolean" },
-                              "starred_at": { "type": "string" }
+                              "starred_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
                             }
                           }
                         ]
@@ -764,6 +776,41 @@
                   "rocket": {
                     "type": "integer"
                   }
+                }
+              }
+            },
+            "reactions": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "total_count": {
+                  "type": "integer"
+                },
+                "+1": {
+                  "type": "integer"
+                },
+                "-1": {
+                  "type": "integer"
+                },
+                "laugh": {
+                  "type": "integer"
+                },
+                "confused": {
+                  "type": "integer"
+                },
+                "heart": {
+                  "type": "integer"
+                },
+                "hooray": {
+                  "type": "integer"
+                },
+                "eyes": {
+                  "type": "integer"
+                },
+                "rocket": {
+                  "type": "integer"
                 }
               }
             }

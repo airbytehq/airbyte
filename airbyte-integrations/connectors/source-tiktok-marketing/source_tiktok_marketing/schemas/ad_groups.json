@@ -437,6 +437,33 @@
       "items": {
         "type": "string"
       }
+    },
+    "contextual_tag_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "household_income": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "isp_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "spending_power": {
+      "type": ["null", "string"]
+    },
+    "zipcode_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

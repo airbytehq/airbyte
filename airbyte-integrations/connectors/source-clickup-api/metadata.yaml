@@ -8,6 +8,10 @@ data:
   icon: clickup.svg
   license: MIT
   name: ClickUp
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-clickup-api
   registries:
     cloud:
       enabled: true

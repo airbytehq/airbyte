@@ -6,10 +6,12 @@ package io.airbyte.integrations.source.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoSecurityException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -40,6 +42,7 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   public static void main(final String[] args) throws Exception {
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(MongoCommandException.class);
     final Source source = new MongoDbSource();
     LOGGER.info("starting source: {}", MongoDbSource.class);
     new IntegrationRunner(source).run(args);
@@ -103,7 +106,8 @@ public class MongoDbSource extends BaseConnector implements Source {
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
         final String databaseName = sourceConfig.getDatabaseName();
         final Integer sampleSize = sourceConfig.getSampleSize();
-        final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize);
+        final boolean isSchemaEnforced = sourceConfig.getEnforceSchema();
+        final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced);
         return new AirbyteCatalog().withStreams(streams);
       }
     } catch (final IllegalArgumentException e) {
@@ -119,10 +123,13 @@ public class MongoDbSource extends BaseConnector implements Source {
     final var emittedAt = Instant.now();
     final var cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     final var stateManager = MongoDbStateManager.createStateManager(state);
+    final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
+    if (catalog != null) {
+      MongoUtil.checkSchemaModeMismatch(sourceConfig.getEnforceSchema(),
+          stateManager.getCdcState() != null ? stateManager.getCdcState().schema_enforced() : sourceConfig.getEnforceSchema(), catalog);
+    }
 
     try {
-      final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
-
       // WARNING: do not close the client here since it needs to be used by the iterator
       final MongoClient mongoClient = createMongoClient(sourceConfig);
 

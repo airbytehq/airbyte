@@ -15,6 +15,10 @@ data:
   icon: delighted.svg
   license: MIT
   name: Delighted
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-delighted
   registries:
     cloud:
       enabled: true

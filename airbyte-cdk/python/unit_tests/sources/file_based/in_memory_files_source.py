@@ -26,11 +26,14 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor, DefaultFileBasedCursor
+from airbyte_cdk.sources.source import TState
 from avro import datafile
 from pydantic import AnyUrl
 
 
 class InMemoryFilesSource(FileBasedSource):
+    _concurrency_level = 10
+
     def __init__(
         self,
         files: Mapping[str, Any],
@@ -41,6 +44,8 @@ class InMemoryFilesSource(FileBasedSource):
         parsers: Mapping[str, FileTypeParser],
         stream_reader: Optional[AbstractFileBasedStreamReader],
         catalog: Optional[Mapping[str, Any]],
+        config: Optional[Mapping[str, Any]],
+        state: Optional[TState],
         file_write_options: Mapping[str, Any],
         cursor_cls: Optional[AbstractFileBasedCursor],
     ):
@@ -48,6 +53,9 @@ class InMemoryFilesSource(FileBasedSource):
         self.files = files
         self.file_type = file_type
         self.catalog = catalog
+        self.configured_catalog = ConfiguredAirbyteCatalog(streams=self.catalog["streams"]) if self.catalog else None
+        self.config = config
+        self.state = state
 
         # Source setup
         stream_reader = stream_reader or InMemoryFilesStreamReader(files=files, file_type=file_type, file_write_options=file_write_options)
@@ -55,7 +63,9 @@ class InMemoryFilesSource(FileBasedSource):
         super().__init__(
             stream_reader,
             spec_class=InMemorySpec,
-            catalog_path="fake_path" if catalog else None,
+            catalog=self.configured_catalog,
+            config=self.config,
+            state=self.state,
             availability_strategy=availability_strategy,
             discovery_policy=discovery_policy or DefaultDiscoveryPolicy(),
             parsers=parsers,
@@ -64,7 +74,7 @@ class InMemoryFilesSource(FileBasedSource):
         )
 
     def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog(streams=self.catalog["streams"]) if self.catalog else None
+        return self.configured_catalog
 
 
 class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
@@ -90,7 +100,11 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     ) -> Iterable[RemoteFile]:
         yield from self.filter_files_by_globs_and_start_date(
             [
-                RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"))
+                RemoteFile(
+                    uri=f,
+                    mime_type=data.get("mime_type", None),
+                    last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                )
                 for f, data in self.files.items()
             ],
             globs,
@@ -101,6 +115,8 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             return self._make_csv_file_contents(file.uri)
         elif self.file_type == "jsonl":
             return self._make_jsonl_file_contents(file.uri)
+        elif self.file_type == "unstructured":
+            return self._make_binary_file_contents(file.uri)
         else:
             raise NotImplementedError(f"No implementation for file type: {self.file_type}")
 
@@ -133,6 +149,13 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             except TypeError:
                 # Intentionally trigger json validation error
                 fh.write((str(line) + "\n").encode("utf-8"))
+        fh.seek(0)
+        return fh
+
+    def _make_binary_file_contents(self, file_name: str) -> IOBase:
+        fh = io.BytesIO()
+
+        fh.write(self.files[file_name]["contents"])
         fh.seek(0)
         return fh
 

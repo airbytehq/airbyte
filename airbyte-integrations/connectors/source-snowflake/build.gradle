@@ -1,15 +1,12 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.20.4'
     features = ['db-sources']
     useLocalCdk = false
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.snowflake.SnowflakeSourceRunner'
@@ -17,12 +14,8 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
-    implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.13.22'
-    implementation 'com.zaxxer:HikariCP:5.0.1'
+    implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.14.1'
 
-    testImplementation project(':airbyte-test-utils')
-
-    integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation 'org.testcontainers:jdbc:1.19.4'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }
-

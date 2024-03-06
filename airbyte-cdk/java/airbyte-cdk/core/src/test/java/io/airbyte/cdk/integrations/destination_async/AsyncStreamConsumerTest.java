@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.destination_async;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
@@ -30,11 +31,13 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -48,7 +51,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -135,7 +138,14 @@ class AsyncStreamConsumerTest {
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
 
-    verify(outputRecordCollector).accept(STATE_MESSAGE1);
+    final AirbyteMessage stateMessageWithDestinationStatsUpdated = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1)))
+            .withDestinationStats(new AirbyteStateStats().withRecordCount((double) expectedRecords.size())));
+
+    verify(outputRecordCollector).accept(stateMessageWithDestinationStatsUpdated);
   }
 
   @Test
@@ -152,7 +162,14 @@ class AsyncStreamConsumerTest {
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
 
-    verify(outputRecordCollector, times(1)).accept(STATE_MESSAGE2);
+    final AirbyteMessage stateMessageWithDestinationStatsUpdated = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(2)))
+            .withDestinationStats(new AirbyteStateStats().withRecordCount(0.0)));
+
+    verify(outputRecordCollector, times(1)).accept(stateMessageWithDestinationStatsUpdated);
   }
 
   @Test
@@ -184,7 +201,7 @@ class AsyncStreamConsumerTest {
     consumer = new AsyncStreamConsumer(
         m -> {},
         () -> {},
-        () -> {},
+        (hasFailed, recordCounts) -> {},
         flushFunction,
         CATALOG,
         new BufferManager(1024 * 10),
@@ -235,6 +252,22 @@ class AsyncStreamConsumerTest {
             .withData(PAYLOAD));
     final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
     final String airbyteRecordString = Jsons.serialize(PAYLOAD);
+    final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(airbyteRecordString, partial.getSerialized());
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithBigDecimalAirbyteRecord() {
+    final JsonNode payload = Jsons.jsonNode(Map.of(
+        "foo", new BigDecimal("1234567890.1234567890")));
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME)
+            .withNamespace(SCHEMA_NAME)
+            .withData(payload));
+    final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
+    final String airbyteRecordString = Jsons.serialize(payload);
     final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
     assertEquals(airbyteRecordString, partial.getSerialized());
   }
@@ -347,7 +380,7 @@ class AsyncStreamConsumerTest {
 
   private void verifyStartAndClose() throws Exception {
     verify(onStart).call();
-    verify(onClose).call();
+    verify(onClose).accept(any(), any());
   }
 
   @SuppressWarnings({"unchecked", "SameParameterValue"})

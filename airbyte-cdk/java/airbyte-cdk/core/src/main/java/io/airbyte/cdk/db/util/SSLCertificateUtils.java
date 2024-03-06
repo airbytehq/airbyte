@@ -96,6 +96,12 @@ public class SSLCertificateUtils {
     return keyStoreFromCertificate(fromPEMString(certString), keyStorePassword, filesystem, directory);
   }
 
+  public static URI keyStoreFromCertificate(final String certString,
+                                            final String keyStorePassword)
+      throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+    return keyStoreFromCertificate(fromPEMString(certString), keyStorePassword, null, null);
+  }
+
   public static URI keyStoreFromCertificate(final String certString, final String keyStorePassword, final String directory)
       throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
     return keyStoreFromCertificate(certString, keyStorePassword, FileSystems.getDefault(), directory);

@@ -8,6 +8,10 @@ data:
   icon: xkcd.svg
   license: MIT
   name: xkcd
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-xkcd
   registries:
     cloud:
       enabled: true

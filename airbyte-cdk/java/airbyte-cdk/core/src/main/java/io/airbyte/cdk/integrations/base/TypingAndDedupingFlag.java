@@ -5,17 +5,17 @@
 package io.airbyte.cdk.integrations.base;
 
 import java.util.Optional;
-import org.elasticsearch.common.Strings;
 
 public class TypingAndDedupingFlag {
 
   public static boolean isDestinationV2() {
-    return DestinationConfig.getInstance().getBooleanValue("use_1s1t_format");
+    return DestinationConfig.getInstance().getIsV2Destination()
+        || DestinationConfig.getInstance().getBooleanValue("use_1s1t_format");
   }
 
-  public static Optional<String> getRawNamespaceOverride(String option) {
-    String rawOverride = DestinationConfig.getInstance().getTextValue(option);
-    if (Strings.isEmpty(rawOverride)) {
+  public static Optional<String> getRawNamespaceOverride(final String option) {
+    final String rawOverride = DestinationConfig.getInstance().getTextValue(option);
+    if (rawOverride == null || rawOverride.isEmpty()) {
       return Optional.empty();
     } else {
       return Optional.of(rawOverride);

@@ -1,0 +1,3 @@
+Type,Status,Id,Parent Id,Client Id,Modified Time,Budget Id,Budget Name,Budget,Budget Type,Name
+Format Version,,,,,,,,,,6.0
+Budget,Active,-20,0,23645271,,,My Shared Budget,50,DailyBudgetStandard,

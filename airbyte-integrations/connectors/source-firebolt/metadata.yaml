@@ -8,6 +8,10 @@ data:
   icon: firebolt.svg
   license: MIT
   name: Firebolt
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-firebolt
   registries:
     cloud:
       enabled: true

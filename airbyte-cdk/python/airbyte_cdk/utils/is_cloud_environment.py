@@ -7,7 +7,7 @@ import os
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
-def is_cloud_environment():
+def is_cloud_environment() -> bool:
     """
     Returns True if the connector is running in a cloud environment, False otherwise.
 

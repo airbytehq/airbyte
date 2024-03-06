@@ -4,9 +4,16 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = ['db-destinations']
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -21,7 +28,6 @@ dependencies {
     // required so that log4j uses a standard xml parser instead of an oracle one (that gets pulled in by the oracle driver)
     implementation group: 'xerces', name: 'xercesImpl', version: '2.12.1'
 
-    implementation libs.airbyte.protocol
 
     implementation "com.oracle.database.jdbc:ojdbc8-production:19.7.0.0"
 

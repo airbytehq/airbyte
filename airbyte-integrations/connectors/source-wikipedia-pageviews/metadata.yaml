@@ -8,6 +8,10 @@ data:
   icon: wikipediapageviews.svg
   license: MIT
   name: Wikipedia Pageviews
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-wikipedia-pageviews
   registries:
     cloud:
       enabled: true

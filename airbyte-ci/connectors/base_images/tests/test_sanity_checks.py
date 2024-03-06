@@ -57,3 +57,56 @@ async def test_check_a_command_is_available_using_version_option(dagger_client):
     container_without_printenv = container.with_exec(["rm", "/usr/bin/printenv"], skip_entrypoint=True)
     with pytest.raises(SanityCheckError):
         await sanity_checks.check_a_command_is_available_using_version_option(container_without_printenv, "printenv")
+
+
+async def test_check_socat_version(mocker):
+    # Mocking is used in this test because it's hard to install a different socat version in the PYTHON_3_9_18 container
+
+    # Mock the container and its 'with_exec' method
+    mock_container = mocker.Mock()
+    # Set the expected version
+    expected_version = "1.2.3.4"
+
+    # Mock the 'stdout' method and return an output different from the socat -V command
+    mock_stdout = mocker.AsyncMock(return_value="foobar")
+    mock_container.with_exec.return_value.stdout = mock_stdout
+
+    # Run the function
+    with pytest.raises(SanityCheckError) as exc_info:
+        await sanity_checks.check_socat_version(mock_container, expected_version)
+
+    # Check the error message
+    assert str(exc_info.value) == "Could not parse the socat version from the output: foobar"
+
+    # Mock the 'stdout' method and return a "socat version" line but with a version structure not matching the pattern from the socat -V command
+    mock_stdout = mocker.AsyncMock(
+        return_value="socat by Gerhard Rieger and contributors - see www.dest-unreach.org\nsocat version 1.1 on 06 Nov 2022 08:15:51"
+    )
+    mock_container.with_exec.return_value.stdout = mock_stdout
+
+    # Run the function
+    with pytest.raises(SanityCheckError) as exc_info:
+        await sanity_checks.check_socat_version(mock_container, expected_version)
+    # Check the error message
+    assert str(exc_info.value) == "Could not find the socat version in the version output: socat version 1.1 on 06 Nov 2022 08:15:51"
+
+    # Mock the 'stdout' method and return a correct "socat version" line but with a version different from the expected one
+    mock_stdout = mocker.AsyncMock(
+        return_value="socat by Gerhard Rieger and contributors - see www.dest-unreach.org\nsocat version 1.7.4.4 on 06 Nov 2022 08:15:51"
+    )
+    mock_container.with_exec.return_value.stdout = mock_stdout
+
+    # Run the function
+    with pytest.raises(SanityCheckError) as exc_info:
+        await sanity_checks.check_socat_version(mock_container, expected_version)
+    # Check the error message
+    assert str(exc_info.value) == "unexpected socat version: 1.7.4.4"
+
+    # Mock the 'stdout' method and return a correct "socat version" matching the expected one
+    mock_stdout = mocker.AsyncMock(
+        return_value=f"socat by Gerhard Rieger and contributors - see www.dest-unreach.org\nsocat version {expected_version} on 06 Nov 2022 08:15:51"
+    )
+    mock_container.with_exec.return_value.stdout = mock_stdout
+
+    # No exception should be raised by this function call
+    await sanity_checks.check_socat_version(mock_container, expected_version)

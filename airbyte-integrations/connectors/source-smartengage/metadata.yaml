@@ -8,6 +8,10 @@ data:
   icon: smartengage.svg
   license: MIT
   name: SmartEngage
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-smartengage
   registries:
     cloud:
       enabled: true

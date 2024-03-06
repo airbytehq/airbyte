@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -15,6 +15,12 @@
       "type": ["null", "string"]
     },
     "invited": {
+      "type": ["null", "boolean"]
+    },
+    "detached": {
+      "type": ["null", "boolean"]
+    },
+    "sell_login_disabled": {
       "type": ["null", "boolean"]
     },
     "confirmed": {
@@ -37,6 +43,12 @@
     },
     "reports_to": {
       "type": ["null", "number"]
+    },
+    "system_tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "timezone": {
       "type": ["null", "string"]

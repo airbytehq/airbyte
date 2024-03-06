@@ -1,26 +1,27 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["object", "null"],
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "accountId": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "type": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "title": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "spaceId": {
       "type": ["null", "string"]
     },
     "sharedIds": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "settings": {

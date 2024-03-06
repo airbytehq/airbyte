@@ -49,6 +49,12 @@
     "billing_cycle_anchor": {
       "type": ["null", "number"]
     },
+    "billing_cycle_anchor_config": {
+      "type": ["null", "object"]
+    },
+    "invoice_settings": {
+      "type": ["null", "object"]
+    },
     "cancel_at_period_end": {
       "type": ["null", "boolean"]
     },
@@ -323,10 +329,7 @@
       }
     },
     "default_tax_rates": {
-      "type": ["null", "array"],
-      "items": {
-        "$ref": "tax_rates.json"
-      }
+      "$ref": "tax_rates.json"
     },
     "pause_collection": {
       "type": ["null", "object"],

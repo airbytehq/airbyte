@@ -6,7 +6,7 @@ ENV DOCKER_VERSION = "24.0.2"
 
 RUN apt-get update \
     && pip install --upgrade pip \
-    && apt-get install tzdata bash curl
+    && apt-get -y install tzdata bash curl
 
 # Docker is required for the dagger in docker use case.
 RUN curl -fsSL https://get.docker.com | sh
@@ -24,7 +24,6 @@ RUN poetry install --no-root --only main --no-interaction --no-ansi
 COPY . /app
 RUN poetry install --only main --no-cache --no-interaction --no-ansi
 
-LABEL io.airbyte.version=2.0.1
-LABEL io.airbyte.name=airbyte/connector-acceptance-test
+
 WORKDIR /test_input
 ENTRYPOINT ["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx", "--show-capture=log"]

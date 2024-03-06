@@ -8,6 +8,10 @@ data:
   icon: callrail.svg
   license: MIT
   name: CallRail
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-callrail
   registries:
     cloud:
       enabled: false

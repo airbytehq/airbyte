@@ -1,0 +1,42 @@
+[
+  {
+    "campaignId": 1,
+    "name": "string",
+    "budget": 0,
+    "budgetType": "lifetime",
+    "startDate": "string",
+    "endDate": "string",
+    "state": "enabled",
+    "servingStatus": "asinNotBuyable",
+    "portfolioId": 0,
+    "bidOptimization": true,
+    "bidMultiplier": 0,
+    "bidAdjustments": [
+      {
+        "bidAdjustmentPredicate": "placementGroupHome",
+        "bidAdjustmentPercent": 50
+      },
+      {
+        "bidAdjustmentPredicate": "placementGroupDetailPage",
+        "bidAdjustmentPercent": 50
+      },
+      {
+        "bidAdjustmentPredicate": "placementGroupOther",
+        "bidAdjustmentPercent": 50
+      }
+    ],
+    "adFormat": "productCollection",
+    "creative": {
+      "brandName": "string",
+      "brandLogoAssetID": "string",
+      "brandLogoUrl": "string",
+      "headline": "string",
+      "asins": ["string"],
+      "shouldOptimizeAsins": false
+    },
+    "landingPage": {
+      "pageType": "productList",
+      "url": "string"
+    }
+  }
+]

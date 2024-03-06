@@ -11,7 +11,7 @@ from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_milvus.destination import DestinationMilvus
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Milvus
-from pymilvus import Collection, connections
+from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
 
 
 class MilvusIntegrationTest(BaseIntegrationTest):
@@ -28,25 +28,36 @@ class MilvusIntegrationTest(BaseIntegrationTest):
 
     def _init_milvus(self):
         connections.connect(alias="test_driver", uri=self.config["indexing"]["host"], token=self.config["indexing"]["auth"]["token"])
-        self._collection = Collection(self.config["indexing"]["collection"], using="test_driver")
-
-    def _clean_index(self):
-        self._init_milvus()
-        entities = self._collection.query(
-            expr="pk != 0",
-        )
-        if len(entities) > 0:
-            id_list_expr = ", ".join([str(entity["pk"]) for entity in entities])
-            self._collection.delete(expr=f"pk in [{id_list_expr}]")
+        if utility.has_collection(self.config["indexing"]["collection"], using="test_driver"):
+            utility.drop_collection(self.config["indexing"]["collection"], using="test_driver")
 
     def setUp(self):
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())
-        self._clean_index()
+        self._init_milvus()
 
     def test_check_valid_config(self):
         outcome = DestinationMilvus().check(logging.getLogger("airbyte"), self.config)
         assert outcome.status == Status.SUCCEEDED
+
+    def _create_collection(self, vector_dimensions=1536):
+        pk = FieldSchema(name="pk", dtype=DataType.INT64, is_primary=True, auto_id=True)
+        vector = FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=vector_dimensions)
+        schema = CollectionSchema(fields=[pk, vector], enable_dynamic_field=True)
+        collection = Collection(name=self.config["indexing"]["collection"], schema=schema, using="test_driver")
+        collection.create_index(
+            field_name="vector", index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}}
+        )
+
+    def test_check_valid_config_pre_created_collection(self):
+        self._create_collection()
+        outcome = DestinationMilvus().check(logging.getLogger("airbyte"), self.config)
+        assert outcome.status == Status.SUCCEEDED
+
+    def test_check_invalid_config_vector_dimension(self):
+        self._create_collection(vector_dimensions=666)
+        outcome = DestinationMilvus().check(logging.getLogger("airbyte"), self.config)
+        assert outcome.status == Status.FAILED
 
     def test_check_invalid_config(self):
         outcome = DestinationMilvus().check(
@@ -77,14 +88,15 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         # initial sync
         destination = DestinationMilvus()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
-        self._collection.flush()
-        assert len(self._collection.query(expr="pk != 0")) == 5
+        collection = Collection(self.config["indexing"]["collection"], using="test_driver")
+        collection.flush()
+        assert len(collection.query(expr="pk != 0")) == 5
 
         # incrementalally update a doc
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
-        self._collection.flush()
-        result = self._collection.search(
+        collection.flush()
+        result = collection.search(
             anns_field=self.config["indexing"]["vector_field"],
             param={},
             data=[[0] * OPEN_AI_VECTOR_SIZE],

@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination_async.buffers;
 
+import static io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager.BLOCK_SIZE_BYTES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,7 +21,7 @@ import org.junit.jupiter.api.Test;
 public class BufferDequeueTest {
 
   private static final int RECORD_SIZE_20_BYTES = 20;
-  public static final String RECORD_20_BYTES = "abc";
+  private static final String DEFAULT_NAMESPACE = "foo_namespace";
   private static final String STREAM_NAME = "stream1";
   private static final StreamDescriptor STREAM_DESC = new StreamDescriptor().withName(STREAM_NAME);
   private static final PartialAirbyteMessage RECORD_MSG_20_BYTES = new PartialAirbyteMessage()
@@ -37,10 +38,10 @@ public class BufferDequeueTest {
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
-      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
-      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
-      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
 
       // total size of records is 80, so we expect 50 to get us 2 records (prefer to under-pull records
       // than over-pull).
@@ -59,9 +60,9 @@ public class BufferDequeueTest {
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
-      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
-      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
 
       try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, 60)) {
         assertEquals(3, take.getData().size());
@@ -76,8 +77,8 @@ public class BufferDequeueTest {
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
-      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+      enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
 
       try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, Long.MAX_VALUE)) {
         assertEquals(2, take.getData().size());
@@ -94,13 +95,13 @@ public class BufferDequeueTest {
     final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
     final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
-    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
 
     final var secondStream = new StreamDescriptor().withName("stream_2");
     final PartialAirbyteMessage recordFromSecondStream = Jsons.clone(RECORD_MSG_20_BYTES);
     recordFromSecondStream.getRecord().withStream(secondStream.getName());
-    enqueue.addRecord(recordFromSecondStream, RECORD_SIZE_20_BYTES);
+    enqueue.addRecord(recordFromSecondStream, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
 
     assertEquals(60, dequeue.getTotalGlobalQueueSizeBytes());
 
@@ -130,6 +131,40 @@ public class BufferDequeueTest {
     assertTrue(dequeue.getQueueSizeBytes(ghostStream).isEmpty());
 
     assertTrue(dequeue.getTimeOfLastRecord(ghostStream).isEmpty());
+  }
+
+  @Test
+  void cleansUpMemoryForEmptyQueues() throws Exception {
+    final var bufferManager = new BufferManager();
+    final var enqueue = bufferManager.getBufferEnqueue();
+    final var dequeue = bufferManager.getBufferDequeue();
+    final var memoryManager = bufferManager.getMemoryManager();
+
+    // we initialize with a block for state
+    assertEquals(BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
+
+    // allocate a block for new stream
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+    assertEquals(2 * BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
+
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+    enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE);
+
+    // no re-allocates as we haven't breached block size
+    assertEquals(2 * BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
+
+    final var totalBatchSize = RECORD_SIZE_20_BYTES * 4;
+
+    // read the whole queue
+    try (final var batch = dequeue.take(STREAM_DESC, totalBatchSize)) {
+      // slop allocation gets cleaned up
+      assertEquals(BLOCK_SIZE_BYTES + totalBatchSize, memoryManager.getCurrentMemoryBytes());
+      batch.close();
+      // back to initial state after flush clears the batch
+      assertEquals(BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
+      assertEquals(0, bufferManager.getBuffers().get(STREAM_DESC).getMaxMemoryUsage());
+    }
   }
 
 }

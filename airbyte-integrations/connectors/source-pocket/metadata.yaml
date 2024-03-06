@@ -8,6 +8,10 @@ data:
   icon: pocket.svg
   license: MIT
   name: Pocket
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pocket
   registries:
     cloud:
       enabled: true

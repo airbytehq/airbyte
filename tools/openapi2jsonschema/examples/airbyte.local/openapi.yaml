@@ -32,7 +32,7 @@ info:
     - developer_tools
   x-origin:
     - format: openapi
-      url: https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-api/src/main/openapi/config.yaml
+      url: https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/java/airbyte-cdk/airbyte-api/src/main/openapi/config.yaml
       version: "3.0"
   x-providerName: airbyte.local
   x-serviceName: config

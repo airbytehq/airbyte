@@ -4,9 +4,16 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.22.1'
+    features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -17,7 +24,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:destination-clickhouse')
 
     implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'

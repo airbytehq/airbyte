@@ -3,104 +3,124 @@
   "type": "object",
   "properties": {
     "avatar": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "avatarType": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "avatarUuid": {
+          "type": ["null", "string"]
+        },
+        "avatarUrl": {
           "type": ["null", "string"]
         }
       }
     },
     "color": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "dateCreated": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "features": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "firstEvent": {
       "type": ["null", "string"]
     },
     "hasAccess": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "isBookmarked": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "isInternal": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "isMember": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "isPublic": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "organization": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "avatar": {
-          "type": "object",
+          "type": ["object", "null"],
           "properties": {
             "avatarType": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "avatarUuid": {
               "type": ["null", "string"]
+            },
+            "avatarUrl": {
+              "type": ["string", "null"]
             }
           }
         },
         "dateCreated": {
-          "type": "string",
+          "type": ["string", "null"],
           "format": "date-time"
         },
         "id": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "isEarlyAdopter": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
+        },
+        "hasAuthProvider": {
+          "type": ["boolean", "null"]
+        },
+        "links": {
+          "type": ["object", "null"],
+          "properties": {
+            "organizationUrl": {
+              "type": ["string", "null"]
+            },
+            "regionUrl": {
+              "type": ["string", "null"]
+            }
+          }
         },
         "name": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "require2FA": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "slug": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "status": {
-          "type": "object",
+          "type": ["object", "null"],
           "properties": {
             "id": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "name": {
-              "type": "string"
+              "type": ["string", "null"]
             }
           }
         },
         "requireEmailVerification": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "features": {
-          "type": "array",
+          "type": ["array", "null"],
           "items": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         }
       }
@@ -109,10 +129,10 @@
       "type": ["null", "string"]
     },
     "slug": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "status": {
-      "type": "string",
+      "type": ["string", "null"],
       "enum": ["active", "disabled", "pending_deletion", "deletion_in_progress"]
     },
     "access": {
@@ -126,6 +146,9 @@
     "hasProfiles": { "type": ["null", "boolean"] },
     "hasReplays": { "type": ["null", "boolean"] },
     "hasSessions": { "type": ["null", "boolean"] },
+    "hasFeedbacks": { "type": ["null", "boolean"] },
+    "hasNewFeedbacks": { "type": ["null", "boolean"] },
+    "hasCustomMetrics": { "type": ["null", "boolean"] },
     "hasMinifiedStackTrace": { "type": ["null", "boolean"] }
   }
 }

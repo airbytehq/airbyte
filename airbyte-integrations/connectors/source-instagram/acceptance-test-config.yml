@@ -29,32 +29,6 @@ acceptance_tests:
             bypass_reason: Stories available only 24 hours
           - name: story_insights
             bypass_reason: Stories available only 24 hours, so do the insights
-        ignored_fields:
-          users:
-            - name: media_count
-              bypass_reason: Updated each time when new post was added to live account
-            - name: followers_count
-              bypass_reason: Updated each time when followers updated was added to live account
-            - name: follows_count
-              bypass_reason: Updated each time when follows updated was added to live account
-            - name: profile_picture_url
-              bypass_reason: Contains auto generated hash
-          user_lifetime_insights:
-            - name: value
-              bypass_reason: Contains PII data
-            - name: date
-              bypass_reason: Depend on current date
-          user_insights:
-            - name: date
-              bypass_reason: Anonymization for exactly for which date statistics anonymization
-            - name: online_followers
-              bypass_reason: Depend on each online user
-          media:
-            - name: media_url
-              bypass_reason: Contains auto generated hash
-          media_insights:
-            - name: id
-              bypass_reason: For statistic anonymization
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

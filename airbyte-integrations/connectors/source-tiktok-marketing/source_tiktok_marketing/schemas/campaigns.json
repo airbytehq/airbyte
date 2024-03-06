@@ -64,6 +64,15 @@
     },
     "is_smart_performance_campaign": {
       "type": ["null", "boolean"]
+    },
+    "is_search_campaign": {
+      "type": ["null", "boolean"]
+    },
+    "app_promotion_type": {
+      "type": ["null", "string"]
+    },
+    "rf_campaign_type": {
+      "type": ["null", "string"]
     }
   }
 }

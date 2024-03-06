@@ -31,6 +31,7 @@ public class StandardNameTransformer implements NamingConventionTransformer {
   }
 
   @Override
+  // @Deprecated see https://github.com/airbytehq/airbyte/issues/35333
   public String getRawTableName(final String streamName) {
     return convertStreamName("_airbyte_raw_" + streamName);
   }
@@ -38,6 +39,11 @@ public class StandardNameTransformer implements NamingConventionTransformer {
   @Override
   public String getTmpTableName(final String streamName) {
     return convertStreamName(Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_" + streamName);
+  }
+
+  @Override
+  public String getTmpTableName(final String streamName, final String randomSuffix) {
+    return convertStreamName("_airbyte_tmp" + "_" + randomSuffix + "_" + streamName);
   }
 
   @Override

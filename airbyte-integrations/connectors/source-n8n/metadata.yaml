@@ -8,6 +8,10 @@ data:
   icon: n8n.svg
   license: MIT
   name: n8n
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-n8n
   registries:
     cloud:
       enabled: false

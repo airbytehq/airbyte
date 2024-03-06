@@ -12,6 +12,8 @@ acceptance_tests:
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
+      - config_path: "integration_tests/invalid_config_domain.json"
+        status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
@@ -23,13 +25,8 @@ acceptance_tests:
         empty_streams:
           - name: "project_permission_schemes"
             bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."
-        ignored_fields:
-          sprint_issues:
-            - name: updated
-              bypass_reason: "Unstable data"
-            - name: fields/updated
-              bypass_reason: "Unstable data"
         timeout_seconds: 2400
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"

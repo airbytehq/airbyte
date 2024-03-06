@@ -86,7 +86,8 @@ class DetectStreamToFlushTest {
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.of(SIZE_10MB)));
     final DetectStreamToFlush detect =
-        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, mockedNowProvider);
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher,
+            mockedNowProvider);
 
     // initialize flush time
     when(mockedNowProvider.millis())

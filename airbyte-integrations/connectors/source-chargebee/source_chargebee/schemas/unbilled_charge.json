@@ -22,8 +22,7 @@
       "type": ["integer", "null"]
     },
     "pricing_model": {
-      "type": ["string", "null"],
-      "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+      "type": ["string", "null"]
     },
     "quantity": {
       "type": ["integer", "null"]
@@ -41,13 +40,7 @@
       "type": ["string", "null"]
     },
     "entity_type": {
-      "type": ["string", "null"],
-      "enum": [
-        "adhoc",
-        "plan_item_price",
-        "addon_item_price",
-        "charge_item_price"
-      ]
+      "type": ["string", "null"]
     },
     "entity_id": {
       "type": ["string", "null"]
@@ -105,19 +98,11 @@
         }
       }
     },
+    "object": {
+      "type": ["string", "null"]
+    },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

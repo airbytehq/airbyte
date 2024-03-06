@@ -11,7 +11,16 @@
     "category": {
       "type": ["null", "string"]
     },
+    "locale_key": {
+      "type": ["null", "string"]
+    },
+    "position_hash": {
+      "type": ["null", "string"]
+    },
     "active": {
+      "type": ["null", "boolean"]
+    },
+    "has_original_name": {
       "type": ["null", "boolean"]
     },
     "position": {

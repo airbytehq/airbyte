@@ -5,9 +5,10 @@
 from pathlib import Path
 
 import pytest
-from pipelines.contexts import PipelineContext
-from pipelines.steps.simple_docker_step import MountPath, SimpleDockerStep
-from pipelines.utils import get_exec_result
+from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
+from pipelines.helpers.utils import get_exec_result
+from pipelines.models.contexts.pipeline_context import PipelineContext
+from pipelines.models.steps import MountPath
 
 pytestmark = [
     pytest.mark.anyio,
@@ -21,6 +22,7 @@ def context(dagger_client):
         is_local=True,
         git_branch="test",
         git_revision="test",
+        report_output_prefix="test",
     )
     context.dagger_client = dagger_client
     return context

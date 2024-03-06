@@ -8,6 +8,10 @@ data:
   icon: tyntec.svg
   license: MIT
   name: Tyntec SMS
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-tyntec-sms
   registries:
     cloud:
       enabled: false

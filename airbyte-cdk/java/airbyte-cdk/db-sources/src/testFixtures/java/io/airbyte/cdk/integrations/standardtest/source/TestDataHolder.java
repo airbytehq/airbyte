@@ -27,6 +27,8 @@ public class TestDataHolder {
   private String idColumnName;
   private String testColumnName;
 
+  private StackTraceElement[] declarationLocation;
+
   TestDataHolder(final String sourceType,
                  final JsonSchemaType airbyteType,
                  final List<String> values,
@@ -208,6 +210,10 @@ public class TestDataHolder {
     return values;
   }
 
+  public String getNameSpace() {
+    return nameSpace;
+  }
+
   public String getNameWithTestPrefix() {
     // source type may include space (e.g. "character varying")
     return nameSpace + "_" + testNumber + "_" + sourceType.replaceAll("\\s", "_");
@@ -216,6 +222,14 @@ public class TestDataHolder {
   public String getCreateSqlQuery() {
     return String.format(createTablePatternSql, (nameSpace != null ? nameSpace + "." : "") + getNameWithTestPrefix(), idColumnName, testColumnName,
         fullSourceDataType);
+  }
+
+  void setDeclarationLocation(StackTraceElement[] declarationLocation) {
+    this.declarationLocation = declarationLocation;
+  }
+
+  public String getDeclarationLocation() {
+    return Arrays.asList(declarationLocation).subList(2, 3).toString();
   }
 
   public List<String> getInsertSqlQueries() {

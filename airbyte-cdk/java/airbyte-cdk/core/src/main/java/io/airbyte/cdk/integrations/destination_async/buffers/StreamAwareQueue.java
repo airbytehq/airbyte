@@ -27,8 +27,16 @@ public class StreamAwareQueue {
     return memoryAwareQueue.getCurrentMemoryUsage();
   }
 
+  public long getMaxMemoryUsage() {
+    return memoryAwareQueue.getMaxMemoryUsage();
+  }
+
   public void addMaxMemory(final long maxMemoryUsage) {
     memoryAwareQueue.addMaxMemory(maxMemoryUsage);
+  }
+
+  public boolean isEmpty() {
+    return memoryAwareQueue.size() == 0;
   }
 
   public Optional<Instant> getTimeOfLastMessage() {

@@ -26,7 +26,7 @@ public class AirbyteTraceMessageUtilityTest {
     System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
   }
 
-  private void assertJsonNodeIsTraceMessage(JsonNode jsonNode) {
+  private void assertJsonNodeIsTraceMessage(final JsonNode jsonNode) {
     // todo: this check could be better by actually trying to convert the JsonNode to an
     // AirbyteTraceMessage instance
     Assertions.assertEquals("TRACE", jsonNode.get("type").asText());
@@ -36,7 +36,7 @@ public class AirbyteTraceMessageUtilityTest {
   @Test
   void testEmitSystemErrorTrace() {
     AirbyteTraceMessageUtility.emitSystemErrorTrace(Mockito.mock(RuntimeException.class), "this is a system error");
-    JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
+    final JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
     assertJsonNodeIsTraceMessage(outJson);
     Assertions.assertEquals("system_error", outJson.get("trace").get("error").get("failure_type").asText());
   }
@@ -44,7 +44,7 @@ public class AirbyteTraceMessageUtilityTest {
   @Test
   void testEmitConfigErrorTrace() {
     AirbyteTraceMessageUtility.emitConfigErrorTrace(Mockito.mock(RuntimeException.class), "this is a config error");
-    JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
+    final JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
     assertJsonNodeIsTraceMessage(outJson);
     Assertions.assertEquals("config_error", outJson.get("trace").get("error").get("failure_type").asText());
   }
@@ -58,11 +58,11 @@ public class AirbyteTraceMessageUtilityTest {
   @Test
   void testCorrectStacktraceFormat() {
     try {
-      int x = 1 / 0;
-    } catch (Exception e) {
+      final int x = 1 / 0;
+    } catch (final Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "you exploded the universe");
     }
-    JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
+    final JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
     Assertions.assertTrue(outJson.get("trace").get("error").get("stack_trace").asText().contains("\n\tat"));
   }
 

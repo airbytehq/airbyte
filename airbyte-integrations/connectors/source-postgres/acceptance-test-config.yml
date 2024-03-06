@@ -1,7 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-postgres:dev
-# test_strictness_level: high  # Uncomment this line to enable high strictness level, requires: https://github.com/airbytehq/airbyte/pull/27872
+test_strictness_level: high
 custom_environment_variables:
   USE_STREAM_CAPABLE_STATE: true
 acceptance_tests:
@@ -9,6 +9,11 @@ acceptance_tests:
     tests:
       - spec_path: "src/test-integration/resources/expected_spec.json"
         config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.52"
+      - spec_path: "src/test-integration/resources/expected_strict_encrypt_spec.json"
+        config_path: "secrets/config.json"
+        deployment_mode: cloud
         backward_compatibility_tests_config:
           disable_for_version: "1.0.52"
       - spec_path: "src/test-integration/resources/expected_spec.json"
@@ -39,13 +44,13 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
       - config_path: "secrets/config_cdc.json"
-#  incremental:
-#    tests:
-#      - config_path: "secrets/config.json"
-#        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
-#        future_state:
-#          bypass_reason: "A java.lang.NullPointerException is thrown when a state with an invalid cursor value is passed"
-#      - config_path: "secrets/config_cdc.json"
-#        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
-#        future_state:
-#          bypass_reason: "A java.lang.NullPointerException is thrown when a state with an invalid cursor value is passed"
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
+        future_state:
+          bypass_reason: "A java.lang.NullPointerException is thrown when a state with an invalid cursor value is passed"
+      - config_path: "secrets/config_cdc.json"
+        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
+        future_state:
+          bypass_reason: "A java.lang.NullPointerException is thrown when a state with an invalid cursor value is passed"

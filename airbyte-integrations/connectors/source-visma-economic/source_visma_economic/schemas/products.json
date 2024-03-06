@@ -1,7 +1,6 @@
 {
-  "$schema": "http://json-schema.org/draft-03/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "title": "Products collection GET schema",
-  "restdocs": "http://restdocs.e-conomic.com/#get-products",
   "type": "object",
   "description": "A schema for retrieval of a collection of products.",
   "properties": {
@@ -45,6 +44,12 @@
       "sortable": true,
       "maxDecimal": 2,
       "description": "This is the unit net price that will appear on invoice lines when a product is added to an invoice line."
+    },
+    "minimumStock": {
+      "type": ["null", "number"]
+    },
+    "pricing": {
+      "type": ["null", "object"]
     },
     "barCode": {
       "type": "string",

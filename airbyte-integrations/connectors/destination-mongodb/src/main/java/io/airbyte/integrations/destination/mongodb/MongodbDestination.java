@@ -16,8 +16,8 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.mongodb.MongoDatabase;
+import io.airbyte.cdk.db.mongodb.MongoDatabaseException;
 import io.airbyte.cdk.db.mongodb.MongoUtils;
-import io.airbyte.cdk.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
@@ -26,7 +26,6 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.destination.mongodb.exception.MongodbDatabaseException;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -72,7 +71,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       final var databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
       final Set<String> databaseNames = getDatabaseNames(database);
       if (!databaseNames.contains(databaseName) && !databaseName.equals(database.getName())) {
-        throw new MongodbDatabaseException(databaseName);
+        throw new MongoDatabaseException(databaseName);
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
@@ -158,7 +157,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
     final StringBuilder connectionStrBuilder = new StringBuilder();
 
     final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
-    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
+    final var instance = MongoUtils.MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
 
     switch (instance) {
       case STANDALONE -> {

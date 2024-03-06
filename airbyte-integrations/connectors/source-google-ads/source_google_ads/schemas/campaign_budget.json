@@ -15,10 +15,7 @@
       "type": ["null", "integer"]
     },
     "campaign_budget.delivery_method": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"]
     },
     "campaign_budget.explicitly_shared": {
       "type": ["null", "boolean"]
@@ -33,10 +30,7 @@
       "type": ["null", "string"]
     },
     "campaign_budget.period": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"]
     },
     "campaign_budget.recommended_budget_amount_micros": {
       "type": ["null", "integer"]
@@ -60,19 +54,13 @@
       "type": ["null", "string"]
     },
     "campaign_budget.status": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"]
     },
     "campaign_budget.total_amount_micros": {
       "type": ["null", "integer"]
     },
     "campaign_budget.type": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"]
     },
     "segments.date": {
       "type": ["null", "string"],
@@ -82,10 +70,7 @@
       "type": ["null", "string"]
     },
     "segments.budget_campaign_association_status.status": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"]
     },
     "metrics.all_conversions": {
       "type": ["null", "number"]

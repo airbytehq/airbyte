@@ -27,6 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonInt64;
+import org.bson.BsonObjectId;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -51,7 +55,8 @@ public class InitialSnapshotHandler {
                                                                   final MongoDatabase database,
                                                                   final MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector,
                                                                   final Instant emittedAt,
-                                                                  final int checkpointInterval) {
+                                                                  final int checkpointInterval,
+                                                                  final boolean isEnforceSchema) {
     return streams
         .stream()
         .peek(airbyteStream -> {
@@ -85,20 +90,33 @@ public class InitialSnapshotHandler {
           // "where _id > [last saved state] order by _id ASC".
           // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
           final Bson filter = existingState
-              // TODO add type support here when we add support for _id fields that are not ObjectId types
-              .map(state -> Filters.gt(MongoConstants.ID_FIELD, new ObjectId(state.id())))
+              .map(state -> Filters.gt(MongoConstants.ID_FIELD,
+                  switch (state.idType()) {
+            case STRING -> new BsonString(state.id());
+            case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
+            case INT -> new BsonInt32(Integer.parseInt(state.id()));
+            case LONG -> new BsonInt64(Long.parseLong(state.id()));
+          }))
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 
-          final var cursor = collection.find()
+          // When schema is enforced we query for the selected fields
+          // Otherwise we retreive the entire set of fields
+          final var cursor = isEnforceSchema ? collection.find()
               .filter(filter)
               .projection(fields)
               .sort(Sorts.ascending(MongoConstants.ID_FIELD))
-              .cursor();
+              .allowDiskUse(true)
+              .cursor()
+              : collection.find()
+                  .filter(filter)
+                  .sort(Sorts.ascending(MongoConstants.ID_FIELD))
+                  .allowDiskUse(true)
+                  .cursor();
 
           final var stateIterator =
               new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
-                  airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION);
+                  airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION, isEnforceSchema);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();

@@ -25,22 +25,18 @@ All the commands below assume that `python` points to a version of python &gt;3.
 * Step 5: Implement `check`
 * Step 6: Implement `discover`
 * Step 7: Implement `read`
-* Step 8: Set up Standard Tests
+* Step 8: Set up Connector Acceptance Tests
 * Step 9: Write unit tests or integration tests
 * Step 10: Update the `README.md` \(If API credentials are required to run the integration, please document how they can be obtained or link to a how-to guide.\)
 * Step 11: Update the `metadata.yaml` file with accurate information about your connector. These metadata will be used to add the connector to Airbyte's connector registry.
 * Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
 
 :::info
-
 Each step of the Creating a Source checklist is explained in more detail below.
-
 :::
 
 :::info
-
 All `./gradlew` commands must be run from the root of the airbyte project.
-
 :::
 
 ### Submitting a Source to Airbyte
@@ -52,9 +48,7 @@ All `./gradlew` commands must be run from the root of the airbyte project.
 * Edit the `airbyte/tools/bin/ci_credentials.sh` script to pull the script from the build environment and write it to `secrets/config.json` during the build.
 
 :::info
-
-If you have a question about a step the Submitting a Source to Airbyte checklist include it in your PR or ask it on [slack](https://slack.airbyte.io).
-
+If you have a question about a step the Submitting a Source to Airbyte checklist include it in your PR or ask it on [#help-connector-development channel on Slack](https://airbytehq.slack.com/archives/C027KKE4BCZ).
 :::
 
 ## Explaining Each Step
@@ -70,18 +64,16 @@ $ ./generate.sh
 
 Select the `python` template and then input the name of your connector. For this walk through we will refer to our source as `example-python`
 
-### Step 2: Build the newly generated source
+### Step 2: Install the newly generated source
 
-Build the source by running:
+Install the source by running:
 
-```text
+```bash
 cd airbyte-integrations/connectors/source-<name>
-python -m venv .venv # Create a virtual environment in the .venv directory
-source .venv/bin/activate # enable the venv
-pip install -r requirements.txt
+poetry install
 ```
 
-This step sets up the initial python environment. **All** subsequent `python` or `pip` commands assume you have activated your virtual environment.
+This step sets up the initial python environment. 
 
 ### Step 3: Set up your Airbyte development environment
 
@@ -105,9 +97,7 @@ The commands we ran above created a virtual environment for your source. If you 
 Pretty much all it takes to create a source is to implement the `Source` interface. The template fills in a lot of information for you and has extensive docstrings describing what you need to do to implement each method. The next 4 steps are just implementing that interface.
 
 :::info
-
 All logging should be done through the `logger` object passed into each method. Otherwise, logs will not be shown in the Airbyte UI.
-
 :::
 
 #### Iterating on your implementation
@@ -118,43 +108,83 @@ Everyone develops differently but here are 3 ways that we recommend iterating on
 
 You'll notice in your source's directory that there is a python file called `main.py`. This file exists as convenience for development. You can call it from within the virtual environment mentioned above `. ./.venv/bin/activate` to test out that your source works.
 
-```text
+```bash
 # from airbyte-integrations/connectors/source-<source-name>
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-<source-name> spec
+poetry run source-<source-name> check --config secrets/config.json
+poetry run source-<source-name> discover --config secrets/config.json
+poetry run source-<source-name> read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 The nice thing about this approach is that you can iterate completely within in python. The downside is that you are not quite running your source as it will actually be run by Airbyte. Specifically you're not running it from within the docker container that will house it.
 
-**Run the source using docker**
 
-If you want to run your source exactly as it will be run by Airbyte \(i.e. within a docker container\), you can use the following commands from the connector module directory \(`airbyte-integrations/connectors/source-example-python`\):
+**Build the source docker image**
 
-```text
-# First build the container
+You have to build a docker image for your connector if you want to run your source exactly as it will be run by Airbyte.
+
+**Option A: Building the docker image with `airbyte-ci`**
+
+This is the preferred method for building and testing connectors.
+
+If you want to open source your connector we encourage you to use our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector. 
+It will not use a Dockerfile but will build the connector image from our [base image](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/README.md) and use our internal build logic to build an image from your Python connector code.
+
+Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
+Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
+
+
+
+**Option B: Building the docker image with a Dockerfile**
+
+If you don't want to rely on `airbyte-ci` to build your connector, you can build the docker image using your own Dockerfile. This method is not preferred, and is not supported for certified connectors.
+
+Create a `Dockerfile` in the root of your connector directory. The `Dockerfile` should look something like this:
+
+```Dockerfile
+
+FROM airbyte/python-connector-base:1.1.0
+
+COPY . ./airbyte/integration_code
+RUN pip install ./airbyte/integration_code
+
+# The entrypoint and default env vars are already set in the base image
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+```
+
+Please use this as an example. This is not optimized.
+
+Build your image:
+```bash
 docker build . -t airbyte/source-example-python:dev
+```
 
-# Then use the following commands to run it
+**Run the source docker image**
+
+```bash
 docker run --rm airbyte/source-example-python:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-example-python:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-example-python:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-example-python:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
 ```
 
-Note: Each time you make a change to your implementation you need to re-build the connector image. `docker build . -t airbyte/source-example-python:dev`. This ensures the new python code is added into the docker container.
+:::info
+Each time you make a change to your implementation you need to re-build the connector image. This ensures the new python code is added into the docker container.
+:::
 
 The nice thing about this approach is that you are running your source exactly as it will be run by Airbyte. The tradeoff is that iteration is slightly slower, because you need to re-build the connector between each change.
 
 **Detailed Debug Messages**
 
 During development of your connector, you can enable the printing of detailed debug information during a sync by specifying the `--debug` flag. This will allow you to get a better picture of what is happening during each step of your sync.
-```text
-python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
+
+```bash
+poetry run source-<source-name> read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
 ```
 
 In addition to the preset CDK debug statements, you can also emit custom debug information from your connector by introducing your own debug statements:
+
 ```python
 self.logger.debug(
     "your debug message here",
@@ -165,9 +195,9 @@ self.logger.debug(
 )
 ```
 
-**TDD using standard tests**
+**TDD using acceptance tests & integration tests**
 
-Airbyte provides a standard test suite that is run against every source. The objective of these tests is to provide some "free" tests that can sanity check that the basic functionality of the source works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
+Airbyte provides an acceptance test suite that is run against every source. The objective of these tests is to provide some "free" tests that can sanity check that the basic functionality of the source works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
 
 If you want to try out this approach, check out Step 8 which describes what you need to do to set up the standard tests for your source.
 
@@ -197,33 +227,32 @@ For a brief overview on the catalog check out [Beginner's Guide to the Airbyte C
 
 As described in the template code, this method takes in the same config object as the previous methods. It also takes in a "configured catalog". This object wraps the catalog emitted by the `discover` step and includes configuration on how the data should be replicated. For a brief overview on the configured catalog check out [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md). It then returns a generator which returns each record in the stream.
 
-### Step 8: Set up Standard Tests
+### Step 8: Set up Connector Acceptance Tests (CATs)
 
-The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../testing-connectors/connector-acceptance-tests-reference.md) explains Standard Tests and how to run them.
+The Connector Acceptance Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../testing-connectors/connector-acceptance-tests-reference.md) explains Connector Acceptance Tests and how to run them.
 
-You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
+You can run the tests using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+`airbyte-ci connectors --name source-<source-name> test --only-step=acceptance`
 
 :::info
-
 In some rare cases we make exceptions and allow a source to not need to pass all the standard tests. If for some reason you think your source cannot reasonably pass one of the tests cases, reach out to us on github or slack, and we can determine whether there's a change we can make so that the test will pass or if we should skip that test for your source.
-
 :::
 
 ### Step 9: Write unit tests and/or integration tests
 
-The Standard Tests are meant to cover the basic functionality of a source. Think of it as the bare minimum required for us to add a source to Airbyte. In case you need to test additional functionality of your source, write unit or integration tests.
+The connector acceptance tests are meant to cover the basic functionality of a source. Think of it as the bare minimum required for us to add a source to Airbyte. In case you need to test additional functionality of your source, write unit or integration tests.
 
 #### Unit Tests
 
-Add any relevant unit tests to the `unit_tests` directory. Unit tests should _not_ depend on any secrets.
+Add any relevant unit tests to the `tests/unit_tests` directory. Unit tests should _not_ depend on any secrets.
 
-You can run the tests using `python -m pytest -s unit_tests`
+You can run the tests using `poetry run pytest tests/unit_tests`
 
 #### Integration Tests
 
 Place any integration tests in the `integration_tests` directory such that they can be [discovered by pytest](https://docs.pytest.org/en/6.2.x/goodpractices.html#conventions-for-python-test-discovery).
 
-Run integration tests using `python -m pytest -s integration_tests`.
+You can run the tests using `poetry run pytest tests/integration_tests`
 
 ### Step 10: Update the `README.md`
 
@@ -237,7 +266,7 @@ If you are self hosting Airbyte (OSS) you are able to use the Custom Connector f
 If you are using Airbyte Cloud (or OSS), you can submit a PR to add your connector to the Airbyte repository. Once the PR is merged, the connector will be available to all Airbyte Cloud users. You can read more about it [here](https://docs.airbyte.com/contributing-to-airbyte/submit-new-connector).
 
 Note that when submitting an Airbyte connector, you will need to ensure that
-1. The connector passes the standard test suite. See [Set up Standard Tests](#step-8-set-up-standard-tests).
+1. The connector passes the CAT suite. See [Set up Connector Acceptance Tests](#step-8-set-up-connector-acceptance-tests-\(cats\)).
 2. The metadata.yaml file (created by our generator) is filed out and valid. See [Connector Metadata File](https://docs.airbyte.com/connector-development/connector-metadata-file).
 3. You have created appropriate documentation for the connector. See [Add docs](#step-12-add-docs).
 

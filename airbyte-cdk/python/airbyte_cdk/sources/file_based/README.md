@@ -72,6 +72,21 @@ CSV is a format loosely described by [RFC 4180](https://www.rfc-editor.org/rfc/r
 Parquet is a file format defined by [Apache](https://parquet.apache.org/). Configuration options are:
 * `decimal_as_float`: Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.
 
+### Document file types (PDF, DOCX, Markdown)
+
+For file share source connectors, the `unstructured` parser can be used to parse document file types. The textual content of the whole file will be parsed as a single record with a `content` field containing the text encoded as markdown.
+
+To use the unstructured parser, the libraries `poppler` and `tesseract` need to be installed on the system running the connector. For example, on Ubuntu, you can install them with the following command:
+```
+apt-get install -y tesseract-ocr poppler-utils
+```
+
+on Mac, you can install these via brew:
+```
+brew install poppler
+brew install tesseract
+```
+
 ## Schema
 
 Having a schema allows for the file-based CDK to take action when there is a discrepancy between a record and what are the expected types of the record fields.
