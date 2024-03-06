@@ -1,0 +1,140 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "OrderHistory",
+    "description": "Schema for the Order History stream of Uber Eats orders",
+    "type": "object",
+    "properties": {
+      "Store": {
+        "type": ["null", "string"]
+      },
+      "External Store ID": {
+        "type": ["null", "string"]
+      },
+      "Country": {
+        "type": ["null", "string"]
+      },
+      "Country Code": {
+        "type": ["null", "string"]
+      },
+      "City": {
+        "type": ["null", "string"]
+      },
+      "Order ID": {
+        "type": ["null", "string"]
+      },
+      "Order UUID": {
+        "type": ["null", "string"]
+      },
+      "Order Status": {
+        "type": ["null", "string"]
+      },
+      "Delivery Status": {
+        "type": ["null", "string"]
+      },
+      "Scheduled?": {
+        "type": ["null", "integer"],
+        "minimum": 0,
+        "maximum": 1
+      },
+      "Completed?": {
+        "type": ["null", "integer"],
+        "minimum": 0,
+        "maximum": 1
+      },
+      "Online Order?": {
+        "type": ["null", "integer"],
+        "minimum": 0,
+        "maximum": 1
+      },
+      "Canceled By": {
+        "type": ["null", "string"]
+      },
+      "Menu Item Count": {
+        "type": ["null", "integer"]
+      },
+      "Currency Code": {
+        "type": ["null", "string"]
+      },
+      "Ticket Size": {
+        "type": ["null", "number"]
+      },
+      "Date Ordered": {
+        "type": ["null", "string"],
+        "format": "date"
+      },
+      "Time Customer Ordered": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "Cancellation Time": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "Time Merchant Accepted": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "Time to Accept": {
+        "type": ["null", "number"]
+      },
+      "Original Prep Time": {
+        "type": ["null", "number"]
+      },
+      "Prep Time Increased?": {
+        "type": ["null", "integer"],
+        "minimum": 0,
+        "maximum": 1
+      },
+      "Increased Prep Time": {
+        "type": ["null", "number"]
+      },
+      "Courier Arrival Time": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "Time Courier Started Trip": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "Time Courier Delivered": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "Total Delivery Time": {
+        "type": ["null", "number"]
+      },
+      "Courier Wait Time (Restaurant)": {
+        "type": ["null", "number"]
+      },
+      "Courier Wait Time (Eater)": {
+        "type": ["null", "number"]
+      },
+      "Total Prep & Handoff Time": {
+        "type": ["null", "number"]
+      },
+      "Order Duration": {
+        "type": ["null", "number"]
+      },
+      "Delivery Batch Type": {
+        "type": ["null", "string"]
+      },
+      "Fulfillment Type": {
+        "type": ["null", "string"]
+      },
+      "Order Channel": {
+        "type": ["null", "string"]
+      },
+      "Eats Brand": {
+        "type": ["null", "string"]
+      },
+      "Subscription Pass": {
+        "type": ["null", "string"]
+      },
+      "Workflow UUID": {
+        "type": ["null", "string"]
+      }
+    },
+    "required": [],
+    "additionalProperties": true
+  }
+  

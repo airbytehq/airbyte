@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - ubereats-reports-zkwdzsbzhq-wl.a.run.app
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: acf35d2b-8592-466f-a576-f4255419b797
+  dockerImageTag: 0.1.0
+  dockerRepository: source-uber-eats
+  githubIssueLabel: source-uber-eats
+  icon: uber-eats.svg
+  license: MIT
+  name: Uber Eats
+  releaseDate: 2024-02-02
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/uber-eats
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
