@@ -63,5 +63,6 @@ In addition, in the connector UI you define two set of fields for this connector
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.1   | 2024-03-05 | [35206](https://github.com/airbytehq/airbyte/pull/35206) | Fix: improved title parsing                             |
 | 0.2.0   | 2024-01-29 | [34579](https://github.com/airbytehq/airbyte/pull/34579) | Add document title file configuration                             |
 | 0.1.0   | 2023-11-10 | [31958](https://github.com/airbytehq/airbyte/pull/31958) | 🎉 New Destination: Vectara (Vector Database)                     |
