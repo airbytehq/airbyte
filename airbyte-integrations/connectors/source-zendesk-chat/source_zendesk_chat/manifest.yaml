@@ -12,6 +12,11 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: ["{{ parameters.get('data_field') }}"]
+  bans_stream_record_selector:
+    type: RecordSelector
+    extractor:
+      type: CustomRecordExtractor
+      class_name: source_zendesk_chat.components.record_extractor.BansRecordExtractor
   authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
@@ -29,7 +34,7 @@ definitions:
       field_name: limit
     pagination_strategy:
       type: CursorPagination
-      page_size: 2
+      page_size: 100
       cursor_value: '{{ response.get("next_url", {}) }}'
       stop_condition: '{{ not response.get("next_url", {}) }}'
   paginator_id_offset:
@@ -85,7 +90,7 @@ definitions:
   retriever_for_type_list_no_pagination:
     $ref: "#/definitions/retriever_for_type_list"
     paginator:
-        type: NoPagination
+      type: NoPagination
 
   # BASE STREAMS
   # FULL-REFRESH
@@ -192,50 +197,6 @@ definitions:
       name: "departments"
       path: "departments"
   
-  # COLLECTIONS
-  # collections_stream:
-  #   description: >-
-  #     Collections Stream: https://developer.rechargepayments.com/2021-11/collections/collections_list
-  #   $ref: "#/definitions/base_modern_api_stream"
-  #   $parameters:
-  #     name: "collections"
-  #     data_field: "collections"
-  # # METAFIELDS
-  # metafields_stream:
-  #   description: >-
-  #     Metafields Stream: https://developer.rechargepayments.com/2021-11/metafields
-  #   $ref: "#/definitions/base_modern_api_stream"
-  #   retriever:
-  #     $ref: "#/definitions/retriever_metafields"
-  #   $parameters:
-  #     name: "metafields"
-  #     data_field: "metafields"
-  # # PRODUCTS
-  # products_stream:
-  #   description: >-
-  #     Products Stream: https://developer.rechargepayments.com/2021-11/products/products_list
-  #     Products endpoint has 422 error with 2021-11 API version
-  #   $ref: "#/definitions/base_deprecated_api_stream"
-  #   $parameters:
-  #     name: "products"
-  #     data_field: "products"
-  # # SHOP
-  # shop_stream:
-  #   description: >-
-  #     Shop Stream: https://developer.rechargepayments.com/v1-shopify?python#shop
-  #     Shop endpoint is not available in 2021-11 API version
-  #   $ref: "#/definitions/base_deprecated_api_stream"
-  #   retriever:
-  #     $ref: "#/definitions/retriever_api_deprecated"
-  #     record_selector:
-  #       $ref: "#/definitions/selector"
-  #       extractor:
-  #         type: DpathExtractor
-  #         field_path: []
-  #   primary_key: ["shop", "store"]
-  #   $parameters:
-  #     name: "shop"
-
   # INCREMENTAL STREAMS
   # AGENTS
   agents_stream:
@@ -250,11 +211,14 @@ definitions:
     description: >-
       Bans Stream: https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans
     $ref: "#/definitions/base_incremental_id_stream"
+    retriever:
+      $ref: "#/definitions/base_incremental_id_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/bans_stream_record_selector"
     $parameters:
       name: "bans"
       path: "bans"
   
-
 streams:
   - "#/definitions/bans_stream"
   - "#/definitions/agents_stream"
