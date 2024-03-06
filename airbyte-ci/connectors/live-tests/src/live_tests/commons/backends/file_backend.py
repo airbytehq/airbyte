@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Iterable, TextIO, Tuple
 
 import pydash
-from airbyte_protocol.models import AirbyteMessage
+from airbyte_protocol.models import AirbyteMessage  # type: ignore
 from airbyte_protocol.models import Type as AirbyteMessageType
 from cachetools import LRUCache, cached
 from live_tests.commons.backends.base_backend import BaseBackend
@@ -28,6 +28,7 @@ class FileBackend(BaseBackend):
     RELATIVE_LOGS_PATH = "logs.jsonl"
     RELATIVE_CONTROLS_PATH = "controls.jsonl"
     RECORD_PATHS_TO_POP = ["emitted_at"]
+    CACHE = FileDescriptorLRUCache(maxsize=250)
 
     def __init__(self, output_directory: Path):
         self._output_directory = output_directory
@@ -47,7 +48,7 @@ class FileBackend(BaseBackend):
         connections with a high number of streams. The cache is designed to automatically close files upon eviction.
         """
 
-        @cached(cache=FileDescriptorLRUCache(maxsize=250))
+        @cached(cache=self.CACHE)
         def _open_file(path: Path) -> TextIO:
             return open(path, "a")
 
@@ -58,7 +59,7 @@ class FileBackend(BaseBackend):
                 filepath, message = self._get_filepath_and_message(_message)
                 _open_file(self._output_directory / filepath).write(f"{message}\n")
         finally:
-            for f in _open_file.cache.values():
+            for f in self.CACHE.values():
                 f.close()
 
     def _get_filepath_and_message(self, message: AirbyteMessage) -> Tuple[str, str]:
