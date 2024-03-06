@@ -175,7 +175,7 @@ class AirbyteEntrypoint(object):
             stream_message_count[descriptor] += 1
         elif message.type == Type.STATE:
             if not message.state.stream:
-                raise ValueError("State message format was not in per-stream state format which is required for record counts")
+                raise ValueError("State message was not in per-stream state format which is required for record counts")
 
             descriptor = HashableStreamDescriptor(
                 name=message.state.stream.stream_descriptor.name, namespace=message.state.stream.stream_descriptor.namespace
@@ -183,6 +183,12 @@ class AirbyteEntrypoint(object):
             source_stats_for_stream = message.state.sourceStats or AirbyteStateStats()
             source_stats_for_stream.recordCount = stream_message_count.get(descriptor)
             message.state.sourceStats = source_stats_for_stream
+
+            # todo: remove after pre-release testing
+            stream_name = message.state.stream.stream_descriptor.name
+            stream_state = message.state.stream.stream_state.dict() if message.state.stream.stream_state else {}
+            record_count = message.state.sourceStats.recordCount
+            logger.info(f"Emitting state message for stream '{stream_name}' with count {record_count} and state data: {stream_state}")
 
             stream_message_count[descriptor] = 0
         return message
