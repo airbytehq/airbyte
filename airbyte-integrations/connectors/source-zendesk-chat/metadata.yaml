@@ -32,7 +32,7 @@ data:
       1.0.0:
         message: >-
           This update migrates the `source-zendesk-chat` to `YamlDeclarativeSource (Low-code)`.
-          More info in this PR: ____
+          More info in this PR: https://github.com/airbytehq/airbyte/pull/35867
         upgradeDeadline: "2024-04-10"
   supportLevel: certified
   tags:
