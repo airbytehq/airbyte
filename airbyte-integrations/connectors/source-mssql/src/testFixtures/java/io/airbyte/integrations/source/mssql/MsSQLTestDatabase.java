@@ -33,7 +33,11 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   static private final Logger LOGGER = LoggerFactory.getLogger(MsSQLTestDatabase.class);
 
-  // empirically, 240 is enough. If you fee like you need to increase it, you're probably missing a
+  // Turning this to true will create a bunch of background threads that will regularly check the
+  // state of the database and log every time it changes. A bit verbose, but useful for debugging
+  private static final boolean ENABLE_BACKGROUND_THREADS = false;
+
+  // empirically, 240 is enough. If you fee like you need to increase it, you're probably mmissing a
   // check somewhere
   static public final int MAX_RETRIES = 240;
 
@@ -73,7 +77,12 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   static public MsSQLTestDatabase in(final BaseImage imageName, final ContainerModifier... modifiers) {
     final var container = new MsSQLContainerFactory().shared(imageName.reference, modifiers);
-    final MsSQLTestDatabase testdb = new MsSQLTestDatabase(container);
+    final MsSQLTestDatabase testdb;
+    if (ENABLE_BACKGROUND_THREADS) {
+      testdb = new MsSqlTestDatabaseWithBackgroundThreads(container);
+    } else {
+      testdb = new MsSQLTestDatabase(container);
+    }
     return testdb
         .withConnectionProperty("encrypt", "false")
         .withConnectionProperty("trustServerCertificate", "true")
