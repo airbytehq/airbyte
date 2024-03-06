@@ -146,7 +146,7 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_http_status_500_once_before_200_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_500_then_retry_returns_200_and_extracted_records(self, http_mocker: HttpMocker) -> None:
         # Tests retry with 500 status
         http_mocker.get(
             _a_request().with_any_query_params().build(),

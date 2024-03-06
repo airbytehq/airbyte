@@ -152,7 +152,7 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_http_status_500_once_before_200_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_500_then_retry_returns_200_and_extracted_records(self, http_mocker: HttpMocker) -> None:
         # Tests retry with 500 status
         http_mocker.get(
             _a_request().with_any_query_params().build(),
@@ -201,7 +201,7 @@ class IncrementalTest(TestCase):
         state_cursor_value = int((self._now - timedelta(days=5)).timestamp())
         state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_cursor_value}).build()
         http_mocker.get(
-            _a_request().with_sort_by_asc("created_at").with_updated_at_btw([state_cursor_value, self._now_in_seconds]).build(),
+            _a_request().with_updated_at_btw([state_cursor_value, self._now_in_seconds]).build(),
             _a_response().with_record(_a_record().with_cursor(self._now_in_seconds - 1)).build(),
         )
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), state)
