@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.68.0
+low-code: Allow page size to be defined with string interpolation
+
 ## 0.67.3
 CDK: upgrade pyarrow
 
