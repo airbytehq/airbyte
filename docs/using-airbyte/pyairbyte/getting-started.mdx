@@ -70,3 +70,11 @@ PyAirbyte is a python library that can be run in any context that supports Pytho
 The following connectors are available:
 
 <AirbyteLibConnectors />
+
+## LangChain integration
+
+For those interested in using PyAirbyte to drive your LLM use cases, we provide two ways to integrate with LangChain:
+
+* **LangChain native integration**: This approach requires you to utilize the langchain-airbyte integration package. Refer to [LangChain Docs](https://python.langchain.com/docs/integrations/document_loaders/airbyte) or watch this [YouTube video](https://www.youtube.com/watch?v=zQU_1sCLSMU) to get started.
+
+* **PyAirbyte-centric integration**: You can also directly use PyAirbyte to create documents. With this approach, you do not need to import langchain-airbyte. Refer to [PyAirbyte Document Creation Demo](https://colab.research.google.com/drive/1IiP224qBttdSVYA31mutgokDsMk-1DAq#scrollTo=I7COppv6yGpv) to get started.
