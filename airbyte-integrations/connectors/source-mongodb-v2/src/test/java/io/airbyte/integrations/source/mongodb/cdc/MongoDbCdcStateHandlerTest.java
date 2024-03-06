@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType.GLOBAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,7 +25,12 @@ class MongoDbCdcStateHandlerTest {
   private static final String REPLICA_SET = "test-replica-set";
   private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
 
-  private static final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(Jsons.emptyObject());
+  final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(io.airbyte.commons.json.Jsons.jsonNode(
+      Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
+          Map.of(
+              MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+              MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE))));
+
   private MongoDbCdcStateHandler mongoDbCdcStateHandler;
 
   @BeforeEach
