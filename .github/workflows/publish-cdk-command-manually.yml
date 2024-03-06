@@ -223,7 +223,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: airbytehq/airbyte
-          ref: master
+          ref: ${{ github.event.inputs.gitref }}
       - name: Install Java
         uses: actions/setup-java@v3
         with:
@@ -245,8 +245,6 @@ jobs:
           command: |
             docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
             ./tools/integrations/manage.sh publish airbyte-cdk/python false
-          attempt_limit: 3
-          attempt_delay: 5000 in # ms
       - name: Post failure to Slack channel dev-connectors-extensibility
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
