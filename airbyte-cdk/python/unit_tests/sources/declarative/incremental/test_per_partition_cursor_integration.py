@@ -315,12 +315,12 @@ def test_substream_with_legacy_input_state():
     ):
         messages = list(source.read(logger, {}, configured_catalog, input_state))
 
-        output_state_message = [message for message in messages if message.type == Type.STATE][0]
+        output_state_message = [message for message in messages if message.type == Type.STATE][-1]
 
         expected_state = {"states": [
             {
                 "cursor": {
-                    "cursor_field": "2022-01-31"
+                    "cursor_field": "2022-02-28"
                 },
                 "partition": {"parent_id": "1", "parent_slice": {}}
             }
