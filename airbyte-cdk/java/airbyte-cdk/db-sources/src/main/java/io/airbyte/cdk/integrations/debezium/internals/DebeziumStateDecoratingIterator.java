@@ -160,7 +160,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
           if (targetPosition.isEventAheadOffset(checkpointOffsetToSend, event)) {
             sendCheckpointMessage = true;
           } else {
-            LOGGER.info("Encountered {} records with the same event offset", syncCheckpointRecords);
+            LOGGER.info("Encountered {} records with the same event offset", recordsLastSync);
           }
         }
       }
