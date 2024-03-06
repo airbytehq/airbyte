@@ -33,8 +33,8 @@ definitions:
       field_name: cursor
     pagination_strategy:
       type: CursorPagination
-      cursor_value: '{{ headers.get("link", {}).get("next", {}).get("cursor", {}) }}'
-      stop_condition: '{{ not headers.get("results") }}'
+      cursor_value: '{{ headers["link"].get("next", {}).get("cursor", {}) }}'
+      stop_condition: '{{ headers["link"]["next"]["results"] == "false" }}'
   retriever:
     type: SimpleRetriever
     requester:
@@ -60,6 +60,7 @@ definitions:
     cursor_field: "{{ parameters['cursor_field'] }}"
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%SZ"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
     start_datetime:
       type: MinMaxDatetime
@@ -88,16 +89,42 @@ definitions:
       primary_key: "id"
       path: "projects/{{ config['organization'] }}/{{ config['project'] }}/events/"
       cursor_field: "dateCreated"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          full: "true"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+        record_filter:
+          condition: "{{ record[parameters['cursor_field']] > stream_state.get(parameters['cursor_field'], '') }}"
+      paginator:
+        $ref: "#/definitions/paginator"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
 
   # Stream Issues https://docs.sentry.io/api/events/list-a-projects-issues/
   issues:
     type: DeclarativeStream
-    $ref: "#/definitions/base_stream_incremental"
     $parameters:
       name: "issues"
       primary_key: "id"
       path: "projects/{{ config['organization'] }}/{{ config['project'] }}/issues/"
       cursor_field: "lastSeen"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          statsPeriod: ""
+          query: "lastSeen:>{{ stream_state.get(parameters['cursor_field']) or '1900-01-01T00:00:00.0Z' if stream_state else '1900-01-01T00:00:00.0Z' }}"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
 
   # Stream Projects https://docs.sentry.io/api/projects/list-your-projects/
   projects:
