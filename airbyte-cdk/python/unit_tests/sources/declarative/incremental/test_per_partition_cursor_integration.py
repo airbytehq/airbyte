@@ -315,7 +315,7 @@ def test_substream_with_legacy_input_state():
     ):
         messages = list(source.read(logger, {}, configured_catalog, input_state))
 
-        output_state_message = [message for message in messages if message.type == Type.STATE][-1]
+        output_state_message = [message for message in messages if message.type == Type.STATE and message.state.data is not None][-1]
 
         expected_state = {"states": [
             {
