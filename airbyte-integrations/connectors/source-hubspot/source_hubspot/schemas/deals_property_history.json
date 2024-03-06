@@ -3,44 +3,21 @@
   "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
-    "dataSensitivity": {
-      "type": ["null", "string"]
-    },
     "updatedByUserId": {
       "type": ["null", "number"]
     },
-    "requestId": {
-      "type": ["null", "string"]
-    },
-    "sourceType": {
-      "type": ["null", "string"]
-    },
-    "portalId": {
-      "type": ["null", "number"]
-    },
-    "isDeleted": {
-      "type": ["null", "boolean"]
-    },
     "timestamp": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "property": {
       "type": ["null", "string"]
     },
-    "persistenceTimestamp": {
-      "type": ["null", "number"]
-    },
-    "sourceVid": {
-      "type": ["null", "array"]
-    },
-    "useTimestampAsPersistenceTimestamp": {
-      "type": ["null", "boolean"]
-    },
-    "sourceMetadata": {
+    "dealId": {
       "type": ["null", "string"]
     },
-    "dealId": {
+    "sourceType": {
       "type": ["null", "string"]
     },
     "sourceId": {
@@ -48,6 +25,9 @@
     },
     "value": {
       "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
     }
   }
 }

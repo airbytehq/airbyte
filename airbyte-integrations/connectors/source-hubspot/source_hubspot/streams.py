@@ -1962,150 +1962,21 @@ class ContactsPropertyHistory(PropertyHistory):
         return "/contacts/v1/lists/all/contacts/all"
 
 
-class CompaniesPropertyHistory(PropertyHistory):
-    @cached_property
-    def _property_wrapper(self) -> IURLPropertyRepresentation:
-        properties = list(self.properties.keys())
-        return APIPropertiesWithHistory(properties=properties)
-
-    @property
-    def scopes(self) -> set:
-        return {"crm.objects.companies.read"}
-
-    @property
-    def properties_scopes(self) -> set:
-        return {"crm.schemas.companies.read"}
-
-    @property
-    def page_field(self) -> str:
-        return "offset"
-
-    @property
-    def limit_field(self) -> str:
-        return "limit"
-
-    @property
-    def page_filter(self) -> str:
-        return "offset"
-
-    @property
-    def more_key(self) -> str:
-        return "has-more"
-
-    @property
-    def entity(self) -> str:
-        return "companies"
-
-    @property
-    def entity_primary_key(self) -> list:
-        return "companyId"
-
-    @property
-    def primary_key(self) -> list:
-        return ["companyId", "property", "timestamp"]
-
-    @property
-    def additional_keys(self) -> list:
-        return ["portalId", "isDeleted"]
-
-    @property
-    def last_modified_date_field_name(self) -> str:
-        return "hs_lastmodifieddate"
-
-    @property
-    def data_field(self) -> str:
-        return "companies"
-
-    @property
-    def url(self) -> str:
-        return "/companies/v2/companies/paged"
-
-    def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
-        pass
-
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        properties: IURLPropertyRepresentation = None,
-    ) -> str:
-        return f"{self.url}?{properties.as_url_param()}"
-
-
-class DealsPropertyHistory(PropertyHistory):
+class PropertyHistoryV3(PropertyHistory):
     @cached_property
     def _property_wrapper(self) -> IURLPropertyRepresentation:
         properties = list(self.properties.keys())
         return APIPropertiesWithHistory(properties=properties)
 
     limit = 50
-
-    @property
-    def scopes(self) -> set:
-        return {"crm.objects.deals.read"}
-
-    @property
-    def properties_scopes(self):
-        return {"crm.schemas.deals.read"}
-
-    @property
-    def page_field(self) -> str:
-        return "offset"
-
-    @property
-    def limit_field(self) -> str:
-        return "limit"
-
-    @property
-    def page_filter(self) -> str:
-        return "offset"
-
-    @property
-    def more_key(self) -> str:
-        return "hasMore"
-
-    @property
-    def entity(self) -> set:
-        return "deals"
-
-    @property
-    def entity_primary_key(self) -> list:
-        return "dealId"
-
-    @property
-    def primary_key(self) -> list:
-        return ["dealId", "property", "timestamp"]
-
-    @property
-    def additional_keys(self) -> list:
-        return ["portalId", "isDeleted"]
-
-    @property
-    def last_modified_date_field_name(self) -> str:
-        return "hs_lastmodifieddate"
-
-    @property
-    def data_field(self) -> str:
-        return "results"
-
-    @property
-    def url(self) -> str:
-        return "/crm/v3/objects/deals"
+    more_key = page_filter = page_field = None
+    limit_field = "limit"
+    data_field = "results"
+    additional_keys = ["archived"]
+    last_modified_date_field_name = "hs_lastmodifieddate"
 
     def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
         pass
-
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        properties: IURLPropertyRepresentation = None,
-    ) -> str:
-        return f"{self.url}?{properties.as_url_param()}"
 
     def _transform(self, records: Iterable) -> Iterable:
         for record in records:
@@ -2116,7 +1987,7 @@ class DealsPropertyHistory(PropertyHistory):
             for property_name, value_dict in properties_with_history.items():
                 if property_name == self.last_modified_date_field_name:
                     # Skipping the lastmodifieddate since it only returns the value
-                    # when one field of a contact was changed no matter which
+                    # when one field of a record was changed no matter which
                     # field was changed. It therefore creates overhead, since for
                     # every changed property there will be the date it was changed in itself
                     # and a change in the lastmodifieddate field.
@@ -2125,6 +1996,51 @@ class DealsPropertyHistory(PropertyHistory):
                     version["property"] = property_name
                     version[self.entity_primary_key] = primary_key
                     yield version | additional_keys
+
+
+class CompaniesPropertyHistory(PropertyHistoryV3):
+
+    scopes = {"crm.objects.companies.read"}
+    properties_scopes = {"crm.schemas.companies.read"}
+    entity = "companies"
+    entity_primary_key = "companyId"
+    primary_key = ["companyId", "property", "timestamp"]
+
+    @property
+    def url(self) -> str:
+        return "/crm/v3/objects/companies"
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
+    ) -> str:
+        return f"{self.url}?{properties.as_url_param()}"
+
+
+class DealsPropertyHistory(PropertyHistoryV3):
+    scopes = {"crm.objects.deals.read"}
+    properties_scopes = {"crm.schemas.deals.read"}
+    entity = "deals"
+    entity_primary_key = "dealId"
+    primary_key = ["dealId", "property", "timestamp"]
+
+    @property
+    def url(self) -> str:
+        return "/crm/v3/objects/deals"
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
+    ) -> str:
+        return f"{self.url}?{properties.as_url_param()}"
 
 
 class SubscriptionChanges(IncrementalStream):
