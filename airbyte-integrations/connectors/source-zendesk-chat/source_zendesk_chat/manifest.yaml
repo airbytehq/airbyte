@@ -16,7 +16,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: CustomRecordExtractor
-      class_name: source_zendesk_chat.components.record_extractor.ZendeskChatBansRecordExtractor
+      class_name: source_zendesk_chat.components.bans_record_extractor.ZendeskChatBansRecordExtractor
   authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
@@ -119,23 +119,17 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_base"
   base_stream_with_list_response_no_pagination:
-    primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
+    $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever_for_type_list_no_pagination"
   base_stream_with_id_offset_pagination:
-    primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
+    $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever_for_type_list"
       paginator:
         $ref: "#/definitions/paginator_id_offset"
   base_stream_with_time_offset_pagination:
-    primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
+    $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever_base"
       paginator:
@@ -144,6 +138,7 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           $ref: "#/definitions/requester/request_parameters"
+          # add `fields=<stream_name>(*)` to the request_params
           fields: "{{ parameters['name'] + '(*)' }}"
 
   # INCREMENTAL
@@ -155,7 +150,7 @@ definitions:
       ignore_stream_slicer_parameters_on_paginated_requests: true
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_zendesk_chat.components.id_incremental.ZendeskChatIdIncrementalCursor
+      class_name: source_zendesk_chat.components.id_incremental_cursor.ZendeskChatIdIncrementalCursor
       cursor_field: "id"
       field_name: "since_id"
   base_incremental_time_stream:
