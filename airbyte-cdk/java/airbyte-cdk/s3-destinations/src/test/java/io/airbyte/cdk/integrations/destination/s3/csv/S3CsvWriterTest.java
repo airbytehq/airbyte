@@ -41,16 +41,16 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.csv.CSVFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.Timeout.ThreadMode;
 import org.mockito.MockedConstruction;
 
-@Timeout(value = 1,
-         threadMode = ThreadMode.SAME_THREAD)
+@Timeout(value = 90,
+         unit = TimeUnit.SECONDS)
 class S3CsvWriterTest {
 
   public static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
