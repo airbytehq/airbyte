@@ -125,7 +125,7 @@ class DatetimeBasedCursor(Cursor):
 
         start_field = self.partition_field_start.eval(self.config)
         end_field = self.partition_field_end.eval(self.config)
-        is_highest_observed_cursor_value = not self._highest_observed_cursor_field_value or record_cursor_value > self._highest_observed_cursor_field_value
+        is_highest_observed_cursor_value = not self._highest_observed_cursor_field_value or self.parse_date(record_cursor_value) > self.parse_date(self._highest_observed_cursor_field_value)
         if self._is_within_daterange_boundaries(record, stream_slice.get(start_field), stream_slice.get(end_field)) and is_highest_observed_cursor_value:
             self._highest_observed_cursor_field_value = record_cursor_value
 
