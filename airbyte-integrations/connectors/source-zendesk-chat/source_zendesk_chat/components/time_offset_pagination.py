@@ -14,14 +14,14 @@ class ZendeskChatTimeOffsetIncrementPaginationStrategy(OffsetIncrement):
     """
     Time Offset Pagination docs:
         https://developer.zendesk.com/api-reference/live-chat/chat-api/agents/#pagination
-    
+
     Attributes:
         page_size (InterpolatedString): the number of records to request,
         time_field_name (InterpolatedString): the name of the <key> to track and increment from, {<key>: 1234}
     """
-    
+
     time_field_name: str = None
-    
+
     def __post_init__(self, parameters: Mapping[str, Any], **kwargs):
         if not self.time_field_name:
             raise Exception("The `time_field_name` property is missing, with no-default value.")

@@ -145,7 +145,7 @@ definitions:
         request_parameters:
           $ref: "#/definitions/requester/request_parameters"
           fields: "{{ parameters['name'] + '(*)' }}"
-  
+
   # INCREMENTAL
   base_incremental_id_stream:
     $ref: "#/definitions/base_stream_with_id_offset_pagination"
@@ -178,7 +178,7 @@ definitions:
       start_time_option:
         field_name: start_time
         inject_into: "request_parameter"
-      
+
   # FULL-REFRESH STREAMS
   # ACCOUNTS
   accounts_stream:
@@ -247,7 +247,7 @@ definitions:
     $parameters:
       name: "departments"
       path: "departments"
-  
+
   # INCREMENTAL STREAMS
   # AGENTS
   agents_stream:

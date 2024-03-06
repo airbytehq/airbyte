@@ -49,14 +49,14 @@ class ZendeskChatIdIncrementalCursor(Cursor):
 
         :param stream_state: The state of the stream as returned by get_stream_state
         """
-        
+
         self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None
         self._state = self._cursor if self._cursor else self._state
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         last_record_cursor_value = most_recent_record.get(self.cursor_field.eval(self.config)) if most_recent_record else None
         self._cursor = last_record_cursor_value if last_record_cursor_value else None
-        
+
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Use a single Slice.
