@@ -45,6 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<SnowflakeState> {
@@ -387,6 +388,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
       // diffRawTableRecords makes some assumptions about the structure of the blob.
       DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
     });
+  }
+
+  @Disabled("We removed the optimization to only set the loaded_at column for new records after certain _extracted_at")
+  @Test
+  @Override
+  public void ignoreOldRawRecords() {
   }
 
   /**
