@@ -70,15 +70,11 @@ class DatetimeBasedCursor(Cursor):
                 f"If step is defined, cursor_granularity should be as well and vice-versa. "
                 f"Right now, step is `{self.step}` and cursor_granularity is `{self.cursor_granularity}`"
             )
-        self._start_datetime = (
-            MinMaxDatetime(self.start_datetime, parameters) if not isinstance(self.start_datetime, MinMaxDatetime) else self.start_datetime
-        )
+        self._start_datetime = MinMaxDatetime.create(self.start_datetime, parameters)
         self._end_datetime = (
             None
             if not self.end_datetime
-            else MinMaxDatetime(self.end_datetime, parameters)
-            if not isinstance(self.end_datetime, MinMaxDatetime)
-            else self.end_datetime
+            else MinMaxDatetime.create(self.end_datetime, parameters)
         )
 
         self._timezone = datetime.timezone.utc
