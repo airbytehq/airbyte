@@ -23,12 +23,7 @@ from source_facebook_marketing.streams.streams import fetch_thumbnail_data_url
 def test_filter_all_statuses(api, mocker, some_config):
     mocker.patch.multiple(FBMarketingStream, __abstractmethods__=set())
     expected = {}
-    assert (
-        FBMarketingStream(
-            api=api, account_ids=some_config["account_ids"]
-        )._filter_all_statuses()
-        == expected
-    )
+    assert FBMarketingStream(api=api, account_ids=some_config["account_ids"])._filter_all_statuses() == expected
 
     expected = {
         "filtering": [
@@ -76,9 +71,7 @@ def test_filter_all_statuses(api, mocker, some_config):
     ],
 )
 def test_fetch_thumbnail_data_url(url, requests_mock):
-    requests_mock.get(
-        url, status_code=200, headers={"content-type": "content-type"}, content=b""
-    )
+    requests_mock.get(url, status_code=200, headers={"content-type": "content-type"}, content=b"")
     assert fetch_thumbnail_data_url(url) == "data:content-type;base64,"
 
 
@@ -122,9 +115,7 @@ def test_parse_call_rate_header():
         ],
     ],
 )
-def test_ads_insights_breakdowns(
-    class_name, breakdowns, action_breakdowns, some_config
-):
+def test_ads_insights_breakdowns(class_name, breakdowns, action_breakdowns, some_config):
     kwargs = {
         "api": None,
         "account_ids": some_config["account_ids"],
@@ -145,9 +136,7 @@ def test_custom_ads_insights_breakdowns(some_config):
         "end_date": pendulum.now(),
         "insights_lookback_window": 1,
     }
-    stream = AdsInsights(
-        breakdowns=["mmm"], action_breakdowns=["action_destination"], **kwargs
-    )
+    stream = AdsInsights(breakdowns=["mmm"], action_breakdowns=["action_destination"], **kwargs)
     assert stream.breakdowns == ["mmm"]
     assert stream.action_breakdowns == ["action_destination"]
 
@@ -159,12 +148,7 @@ def test_custom_ads_insights_breakdowns(some_config):
         "action_destination",
     ]
 
-    stream = AdsInsights(
-        breakdowns=[],
-        action_breakdowns=[],
-        action_breakdowns_allow_empty=True,
-        **kwargs
-    )
+    stream = AdsInsights(breakdowns=[], action_breakdowns=[], action_breakdowns_allow_empty=True, **kwargs)
     assert stream.breakdowns == []
     assert stream.action_breakdowns == []
 
