@@ -184,9 +184,7 @@ class ConcurrentCursor(Cursor):
         # TODO: if we migrate stored state to the concurrent state format
         #  (aka stop calling self._connector_state_converter.convert_to_sequential_state`), we'll need to cast datetimes to string or
         #  int before emitting state
-        state_message = self._connector_state_manager.create_state_message(
-            self._stream_name, self._stream_namespace, send_per_stream_state=True
-        )
+        state_message = self._connector_state_manager.create_state_message(self._stream_name, self._stream_namespace)
         self._message_repository.emit_message(state_message)
 
     def _merge_partitions(self) -> None:

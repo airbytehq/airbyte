@@ -1764,11 +1764,31 @@ def test_create_page_increment():
         start_from_page=1,
         inject_on_first_request=True,
     )
-    expected_strategy = PageIncrement(page_size=10, start_from_page=1, inject_on_first_request=True, parameters={})
+    expected_strategy = PageIncrement(page_size=10, start_from_page=1, inject_on_first_request=True, parameters={}, config=input_config)
 
     strategy = factory.create_page_increment(model, input_config)
 
     assert strategy.page_size == expected_strategy.page_size
+    assert strategy.start_from_page == expected_strategy.start_from_page
+    assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
+
+
+def test_create_page_increment_with_interpolated_page_size():
+    model = PageIncrementModel(
+        type="PageIncrement",
+        page_size="{{ config['page_size'] }}",
+        start_from_page=1,
+        inject_on_first_request=True,
+    )
+    config = {
+        **input_config,
+        "page_size": 5
+    }
+    expected_strategy = PageIncrement(page_size=5, start_from_page=1, inject_on_first_request=True, parameters={}, config=config)
+
+    strategy = factory.create_page_increment(model, config)
+
+    assert strategy.get_page_size() == expected_strategy.get_page_size()
     assert strategy.start_from_page == expected_strategy.start_from_page
     assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
 

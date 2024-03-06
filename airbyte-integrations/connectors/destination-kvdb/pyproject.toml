@@ -1,0 +1,31 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.4"
+name = "destination-kvdb"
+description = "Destination implementation for kvdb."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/kvdb"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_kvdb"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^0.62.1"
+sgqlc = "==16.3"
+
+[tool.poetry.scripts]
+destination-kvdb = "destination_kvdb.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.9.3"
+freezegun = "^1.2"
+pytest-mock = "^3.6.1"
+pytest = "^6.2"
+responses = "^0.23.1"
