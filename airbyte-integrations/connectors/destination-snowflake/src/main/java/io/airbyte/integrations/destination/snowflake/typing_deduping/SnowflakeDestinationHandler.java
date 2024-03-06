@@ -226,6 +226,14 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     }
   }
 
+  @Override
+  public void commitDestinationStates(Map<StreamId, SnowflakeState> destinationStates) throws Exception {
+    // Skip the state table for time being since we aren't doing UtcMigration.
+    // JdbcDestinationHandler#commitDestinationStates
+    // seems very contentious in snowflake and tests are taking long holding lock on this transaction.
+    // Revisit this after UtcMigration fix done.
+  }
+
   private Set<String> getPks(final StreamConfig stream) {
     return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
