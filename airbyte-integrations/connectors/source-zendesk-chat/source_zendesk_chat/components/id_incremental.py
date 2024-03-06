@@ -15,7 +15,7 @@ from airbyte_cdk.sources.message import MessageRepository
 
 
 @dataclass
-class IdIncrementalCursor(Cursor):
+class ZendeskChatIdIncrementalCursor(Cursor):
     """
     Custom Incremental Cursor implementation to provide the ability to pull data using `id`(int) as cursor.
     More info: https://developer.zendesk.com/api-reference/live-chat/chat-api/agents/#parameters

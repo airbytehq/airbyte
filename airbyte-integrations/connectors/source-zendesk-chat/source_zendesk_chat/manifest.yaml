@@ -16,7 +16,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: CustomRecordExtractor
-      class_name: source_zendesk_chat.components.record_extractor.BansRecordExtractor
+      class_name: source_zendesk_chat.components.record_extractor.ZendeskChatBansRecordExtractor
   authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
@@ -49,9 +49,24 @@ definitions:
       field_name: limit
     pagination_strategy:
       type: CustomPaginationStrategy
-      class_name: source_zendesk_chat.components.id_offset_pagination.IdOffsetIncrementPaginationStrategy
+      class_name: source_zendesk_chat.components.id_offset_pagination.ZendeskChatIdOffsetIncrementPaginationStrategy
       page_size: 100
-    
+  paginator_time_offset:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: start_time
+    page_size_option:
+      inject_into: request_parameter
+      type: RequestOption
+      field_name: limit
+    pagination_strategy:
+      type: CustomPaginationStrategy
+      class_name: source_zendesk_chat.components.time_offset_pagination.ZendeskChatTimeOffsetIncrementPaginationStrategy
+      time_field_name: end_time
+      page_size: 1000
+
   # REQUESTERS
   requester:
     description: >-
@@ -66,6 +81,9 @@ definitions:
       type: DefaultErrorHandler
       description: >-
         The default error handler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
     # additional request kwargs
     request_parameters:
       timeout: "60"
@@ -114,7 +132,20 @@ definitions:
       $ref: "#/definitions/retriever_for_type_list"
       paginator:
         $ref: "#/definitions/paginator_id_offset"
-
+  base_stream_with_time_offset_pagination:
+    primary_key: "id"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      $ref: "#/definitions/retriever_base"
+      paginator:
+        $ref: "#/definitions/paginator_time_offset"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          $ref: "#/definitions/requester/request_parameters"
+          fields: "{{ parameters['name'] + '(*)' }}"
+  
   # INCREMENTAL
   base_incremental_id_stream:
     $ref: "#/definitions/base_stream_with_id_offset_pagination"
@@ -124,10 +155,30 @@ definitions:
       ignore_stream_slicer_parameters_on_paginated_requests: true
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_zendesk_chat.components.id_incremental.IdIncrementalCursor
+      class_name: source_zendesk_chat.components.id_incremental.ZendeskChatIdIncrementalCursor
       cursor_field: "id"
       field_name: "since_id"
-
+  base_incremental_time_stream:
+    $ref: "#/definitions/base_stream_with_time_offset_pagination"
+    retriever:
+      $ref: "#/definitions/base_stream_with_time_offset_pagination/retriever"
+      # this is needed to ignore additional params for incremental syncs
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_zendesk_chat.components.datetime_based_cursor.ZendeskChatTimestampCursor
+      use_microseconds: "{{ parameters['use_microseconds'] }}"
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%s"
+      start_datetime:
+        datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+      start_time_option:
+        field_name: start_time
+        inject_into: "request_parameter"
+      
   # FULL-REFRESH STREAMS
   # ACCOUNTS
   accounts_stream:
@@ -218,18 +269,47 @@ definitions:
     $parameters:
       name: "bans"
       path: "bans"
-  
+  # AGENTS TIMELINES
+  agents_timelines_stream:
+    description: >-
+      Agent Timelines Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
+    $ref: "#/definitions/base_incremental_time_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["id"]
+            value: "{{ record.get('agent_id', '')|string + '|' + record.get('start_time', '')|string }}"
+    $parameters:
+      cursor_field: "start_time"
+      name: "agent_timeline"
+      data_field: "agent_timeline"
+      path: "incremental/agent_timeline"
+      use_microseconds: true
+  # CHATS
+  chats_stream:
+    description: >-
+      Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-chat-export
+    $ref: "#/definitions/base_incremental_time_stream"
+    $parameters:
+      cursor_field: "update_timestamp"
+      name: "chats"
+      data_field: "chats"
+      path: "incremental/chats"
+      use_microseconds: false
+
 streams:
-  - "#/definitions/bans_stream"
+  - "#/definitions/accounts_stream"
   - "#/definitions/agents_stream"
+  - "#/definitions/agents_timelines_stream"
+  - "#/definitions/bans_stream"
+  - "#/definitions/chats_stream"
   - "#/definitions/departments_stream"
   - "#/definitions/goals_stream"
-  - "#/definitions/skills_stream"
   - "#/definitions/roles_stream"
-  - "#/definitions/triggers_stream"
-  - "#/definitions/shortcuts_stream"
-  - "#/definitions/accounts_stream"
   - "#/definitions/routing_settings_stream"
+  - "#/definitions/shortcuts_stream"
+  - "#/definitions/skills_stream"
+  - "#/definitions/triggers_stream"
 
 check:
   type: CheckStream

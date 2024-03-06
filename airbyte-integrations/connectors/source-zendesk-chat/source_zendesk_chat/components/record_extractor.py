@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.types import Record
 
 
 @dataclass
-class BansRecordExtractor(RecordExtractor):
+class ZendeskChatBansRecordExtractor(RecordExtractor):
     """
     Unnesting nested bans: `visitor`, `ip_address`.
     """

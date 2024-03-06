@@ -31,7 +31,8 @@ data:
     breakingChanges:
       1.0.0:
         message: >-
-          This is the upgrade! Wow!
+          This update migrates the `source-zendesk-chat` to `YamlDeclarativeSource (Low-code)`.
+          More info in this PR: ____
         upgradeDeadline: "2024-04-10"
   supportLevel: certified
   tags:
