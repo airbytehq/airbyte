@@ -32,8 +32,12 @@ import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
+
+  static private final Logger LOGGER = LoggerFactory.getLogger(AbstractSshMssqlSourceAcceptanceTest.class);
 
   private static final String STREAM_NAME = "dbo.id_and_name";
   private static final String STREAM_NAME2 = "dbo.starships";
@@ -69,7 +73,6 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
         JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
-              ctx.fetch("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", testdb.getDatabaseName());
               ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
               ctx.fetch("INSERT INTO id_and_name (id, name, born) VALUES " +
                   "(1, 'picard', '2124-03-04T01:01:01Z'), " +
@@ -88,14 +91,16 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
             String.format(DatabaseDriver.MSSQLSERVER.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText()),
+                config.get(JdbcUtils.DATABASE_KEY).asText()) + ";encrypt=false;trustServerCertificate=true",
             SQLDialect.DEFAULT));
   }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2017, ContainerModifier.NETWORK);
+    LOGGER.info("starting bastion");
     bastion.initAndStartBastion(testdb.getContainer().getNetwork());
+    LOGGER.info("bastion started");
     populateDatabaseTestData();
   }
 
