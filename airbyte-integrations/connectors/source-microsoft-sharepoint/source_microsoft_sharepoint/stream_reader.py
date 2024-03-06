@@ -70,6 +70,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
     def __init__(self):
         super().__init__()
+        self._auth_client = None
         self._one_drive_client = None
 
     @property
@@ -77,12 +78,22 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         return self._config
 
     @property
-    def one_drive_client(self) -> SourceMicrosoftSharePointSpec:
+    def auth_client(self):
+        # Lazy initialization of the auth_client
+        if self._auth_client is None:
+            self._auth_client = SourceMicrosoftSharePointClient(self._config)
+        return self._auth_client
+
+    @property
+    def one_drive_client(self):
+        # Lazy initialization of the one_drive_client
         if self._one_drive_client is None:
-            auth_client = SourceMicrosoftSharePointClient(self._config)
-            self._one_drive_client = auth_client.client
-            self._get_access_token = auth_client._get_access_token
+            self._one_drive_client = self.auth_client.client
         return self._one_drive_client
+
+    def get_access_token(self):
+        # Directly fetch a new access token from the auth_client each time it's called
+        return self.auth_client._get_access_token()["access_token"]
 
     @config.setter
     def config(self, value: SourceMicrosoftSharePointSpec):
@@ -95,7 +106,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceMicrosoftSharePointSpec)
         self._config = value
 
-    def _get_shared_drive_object(self, drive_id: str, object_id: str) -> List[Tuple[str, str, datetime]]:
+    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> List[Tuple[str, str, datetime]]:
         """
         Retrieves a list of all nested files under the specified object.
 
@@ -110,23 +121,25 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             RuntimeError: If an error occurs during the request.
         """
 
-        access_token = self._get_access_token()["access_token"]
+        access_token = self.get_access_token()
         headers = {"Authorization": f"Bearer {access_token}"}
         base_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}"
 
-        def get_files(url: str) -> List[Tuple[str, str, datetime]]:
+        def get_files(url: str, path: str) -> List[Tuple[str, str, datetime]]:
             response = requests.get(url, headers=headers)
             if response.status_code != 200:
                 raise RuntimeError(f"Error retrieving shared files: {response.status_code}")
 
             data = response.json()
             for child in data.get("value", []):
+                new_path = path + "/" + child["name"]
                 if child.get("file"):  # Object is a file
                     last_modified = datetime.strptime(child["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-                    yield (child["name"], child["@microsoft.graph.downloadUrl"], last_modified)
+                    yield (new_path, child["@microsoft.graph.downloadUrl"], last_modified)
                 else:  # Object is a folder, retrieve children
                     child_url = f"{base_url}/items/{child['id']}/children"  # Use item endpoint for nested objects
-                    yield from get_files(child_url)
+                    yield from get_files(child_url, new_path)
+            yield from []
 
         # Initial request to item endpoint
         item_url = f"{base_url}/items/{object_id}"
@@ -137,12 +150,12 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         # Check if the object is a file or a folder
         item_data = item_response.json()
         if item_data.get("file"):  # Initial object is a file
+            new_path = path + "/" + item_data["name"]
             last_modified = datetime.strptime(item_data["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-            yield (item_data["name"], item_data["@microsoft.graph.downloadUrl"], last_modified)
-            return
-
-        # Initial object is a folder, start file retrieval
-        yield from get_files(f"{item_url}/children")
+            yield (new_path, item_data["@microsoft.graph.downloadUrl"], last_modified)
+        else:
+            # Initial object is a folder, start file retrieval
+            yield from get_files(f"{item_url}/children", path)
 
     def _list_directories_and_files(self, root_folder, path=None):
         """Enumerates folders and files starting from a root folder."""
@@ -191,13 +204,13 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     def _get_shared_files_from_all_drives(self):
         drive_ids = [drive.id for drive in self.drives]
 
-        shared_drive_items = self.one_drive_client.me.drive.shared_with_me().execute_query()
+        shared_drive_items = execute_query_with_retry(self.one_drive_client.me.drive.shared_with_me())
         for drive_item in shared_drive_items:
             parent_reference = drive_item.remote_item.parentReference
 
             # check if drive is already parsed
-            if parent_reference and parent_reference["driveId"] in drive_ids:
-                yield from self._get_shared_drive_object(parent_reference["driveId"], drive_item.id)
+            # if parent_reference and parent_reference["driveId"] not in drive_ids:
+            yield from self._get_shared_drive_object(parent_reference["driveId"], drive_item.id, drive_item.web_url)
 
     def get_all_files(self):
         yield from self._get_files_by_drive_name(self.drives, self.config.folder_path)
