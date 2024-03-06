@@ -1,4 +1,4 @@
-# Recharge Migration Guide
+# Zendesk chat Migration Guide
 
 ## Upgrading to 1.0.0
 This version introduces breaking changes for the STATE since the code-base changed from CDK Python to CDK Low-code. 
