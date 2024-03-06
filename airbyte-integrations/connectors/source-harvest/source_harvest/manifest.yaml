@@ -1711,6 +1711,8 @@ streams:
             type: number
           expense_category_name:
             type: string
+          to:
+            type: string
           total_amount:
             type: number
         type: object
@@ -1756,6 +1758,17 @@ streams:
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - from
+            value: '{{ stream_partition.start_date }}'
+      - type: AddFields
+        fields:
+          - path:
+              - to
+            value: '{{ stream_partition.end_date }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
@@ -1841,6 +1854,17 @@ streams:
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - from
+            value: '{{ stream_partition.start_date }}'
+      - type: AddFields
+        fields:
+          - path:
+              - to
+            value: '{{ stream_partition.end_date }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
@@ -1930,6 +1954,17 @@ streams:
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - from
+            value: '{{ stream_partition.start_date }}'
+      - type: AddFields
+        fields:
+          - path:
+              - to
+            value: '{{ stream_partition.end_date }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
@@ -2017,6 +2052,17 @@ streams:
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - from
+            value: '{{ stream_partition.start_date }}'
+      - type: AddFields
+        fields:
+          - path:
+              - to
+            value: '{{ stream_partition.end_date }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
@@ -2175,6 +2221,17 @@ streams:
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - from
+            value: '{{ stream_partition.start_date }}'
+      - type: AddFields
+        fields:
+          - path:
+              - to
+            value: '{{ stream_partition.end_date }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
@@ -2266,6 +2323,17 @@ streams:
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - from
+            value: '{{ stream_partition.start_date }}'
+      - type: AddFields
+        fields:
+          - path:
+              - to
+            value: '{{ stream_partition.end_date }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
@@ -2353,6 +2421,17 @@ streams:
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - from
+            value: '{{ stream_partition.start_date }}'
+      - type: AddFields
+        fields:
+          - path:
+              - to
+            value: '{{ stream_partition.end_date }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
@@ -2446,6 +2525,17 @@ streams:
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - from
+            value: '{{ stream_partition.start_date }}'
+      - type: AddFields
+        fields:
+          - path:
+              - to
+            value: '{{ stream_partition.end_date }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
@@ -2539,6 +2629,17 @@ streams:
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - from
+            value: '{{ stream_partition.start_date }}'
+      - type: AddFields
+        fields:
+          - path:
+              - to
+            value: '{{ stream_partition.end_date }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
@@ -2651,15 +2752,62 @@ streams:
               partition_field: id
               stream:
                 type: DeclarativeStream
-                name: estimates_parent
+                name: estimates
                 primary_key:
                   - id
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:
-                    $schema: http://json-schema.org/draft-07/schema#
-                    additionalProperties: true
-                    properties: {}
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      amount:
+                        type: number
+                      client:
+                        properties:
+                          id:
+                            type: number
+                          name:
+                            type: string
+                        type: object
+                      client_key:
+                        type: string
+                      created_at:
+                        type: string
+                      creator:
+                        properties:
+                          id:
+                            type: number
+                          name:
+                            type: string
+                        type: object
+                      currency:
+                        type: string
+                      discount_amount:
+                        type: number
+                      id:
+                        type: number
+                      issue_date:
+                        type: string
+                      line_items:
+                        type: array
+                      notes:
+                        type: string
+                      number:
+                        type: string
+                      purchase_order:
+                        type: string
+                      sent_at:
+                        type: string
+                      state:
+                        type: string
+                      subject:
+                        type: string
+                      tax2_amount:
+                        type: number
+                      tax_amount:
+                        type: number
+                      updated_at:
+                        type: string
                     type: object
                 retriever:
                   type: SimpleRetriever
@@ -2703,6 +2851,20 @@ streams:
                       cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
                       stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
                   partition_router: []
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: updated_at
+                  cursor_datetime_formats:
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_time_option:
+                    type: RequestOption
+                    field_name: updated_since
+                    inject_into: request_parameter
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -2813,7 +2975,7 @@ streams:
               partition_field: id
               stream:
                 type: DeclarativeStream
-                name: invoice_parent
+                name: invoices
                 primary_key:
                   - id
                 schema_loader:
@@ -2970,6 +3132,20 @@ streams:
                       cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
                       stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
                   partition_router: []
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: updated_at
+                  cursor_datetime_formats:
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_time_option:
+                    type: RequestOption
+                    field_name: updated_since
+                    inject_into: request_parameter
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -3063,7 +3239,7 @@ streams:
               partition_field: id
               stream:
                 type: DeclarativeStream
-                name: invoice_parent
+                name: invoices
                 primary_key:
                   - id
                 schema_loader:
@@ -3220,6 +3396,20 @@ streams:
                       cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
                       stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
                   partition_router: []
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: updated_at
+                  cursor_datetime_formats:
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_time_option:
+                    type: RequestOption
+                    field_name: updated_since
+                    inject_into: request_parameter
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -3357,7 +3547,7 @@ streams:
               partition_field: id
               stream:
                 type: DeclarativeStream
-                name: users_parent
+                name: users
                 primary_key:
                   - id
                 schema_loader:
@@ -3458,6 +3648,20 @@ streams:
                       cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
                       stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
                   partition_router: []
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: updated_at
+                  cursor_datetime_formats:
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                  start_time_option:
+                    type: RequestOption
+                    field_name: updated_since
+                    inject_into: request_parameter
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -3864,319 +4068,6 @@ streams:
         type: RequestOption
         field_name: updated_since
         inject_into: request_parameter
-  - type: DeclarativeStream
-    name: estimates_parent
-    primary_key:
-      - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.harvestapp.com/v2/
-        path: /estimates
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Harvest-Account-Id: '{{ config[''account_id''] }}'
-        authenticator:
-          type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          grant_type: refresh_token
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - estimates
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 1
-          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-      partition_router: []
-  - type: DeclarativeStream
-    name: invoice_parent
-    primary_key:
-      - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          amount:
-            type: number
-          client:
-            properties:
-              id:
-                type: number
-              name:
-                type: string
-            type: object
-          client_key:
-            type: string
-          created_at:
-            type: string
-          creator:
-            properties:
-              id:
-                type: number
-              name:
-                type: string
-            type: object
-          currency:
-            type: string
-          discount:
-            type:
-              - 'null'
-              - number
-          discount_amount:
-            type: number
-          due_amount:
-            type: number
-          due_date:
-            type: string
-          id:
-            type: number
-          issue_date:
-            type: string
-          line_items:
-            items:
-              properties:
-                amount:
-                  type: number
-                description:
-                  type: string
-                id:
-                  type: number
-                kind:
-                  type: string
-                project:
-                  properties:
-                    code:
-                      type: string
-                    id:
-                      type: number
-                    name:
-                      type: string
-                  type: object
-                quantity:
-                  type: number
-                taxed:
-                  type: boolean
-                taxed2:
-                  type: boolean
-                unit_price:
-                  type: number
-              type: object
-            type: array
-          notes:
-            type: string
-          number:
-            type: string
-          paid_at:
-            type:
-              - 'null'
-              - string
-          paid_date:
-            type:
-              - 'null'
-              - string
-          payment_options:
-            type: array
-          payment_term:
-            type: string
-          period_end:
-            type:
-              - 'null'
-              - string
-          period_start:
-            type:
-              - 'null'
-              - string
-          purchase_order:
-            type: string
-          sent_at:
-            type:
-              - 'null'
-              - string
-          state:
-            type: string
-          subject:
-            type: string
-          tax2_amount:
-            type: number
-          tax_amount:
-            type: number
-          updated_at:
-            type: string
-        type: object
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.harvestapp.com/v2/
-        path: /invoices
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Harvest-Account-Id: '{{ config[''account_id''] }}'
-        authenticator:
-          type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          grant_type: refresh_token
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - invoices
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 1
-          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-      partition_router: []
-  - type: DeclarativeStream
-    name: users_parent
-    primary_key:
-      - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          access_roles:
-            items:
-              type: string
-            type: array
-          avatar_url:
-            type: string
-          calendar_integration_enabled:
-            type: boolean
-          can_create_projects:
-            type: boolean
-          cost_rate:
-            type:
-              - 'null'
-              - number
-          created_at:
-            type: string
-          default_hourly_rate:
-            type:
-              - 'null'
-              - number
-          email:
-            type: string
-          first_name:
-            type: string
-          has_access_to_all_future_projects:
-            type: boolean
-          id:
-            type: number
-          is_active:
-            type: boolean
-          is_contractor:
-            type: boolean
-          last_name:
-            type: string
-          permissions_claims:
-            items:
-              type: string
-            type: array
-          roles:
-            items:
-              type: string
-            type: array
-          telephone:
-            type: string
-          timezone:
-            type: string
-          updated_at:
-            type: string
-          weekly_capacity:
-            type: number
-        type: object
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.harvestapp.com/v2/
-        path: /users
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Harvest-Account-Id: '{{ config[''account_id''] }}'
-        authenticator:
-          type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          grant_type: refresh_token
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - users
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 1
-          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-      partition_router: []
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -4250,6 +4141,3 @@ metadata:
     project_assignments: true
     billable_rates: true
     cost_rates: true
-    estimates_parent: true
-    invoice_parent: true
-    users_parent: true
