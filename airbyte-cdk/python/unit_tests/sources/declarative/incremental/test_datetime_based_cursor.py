@@ -349,17 +349,17 @@ def test_stream_slices(
         ),
         (
             "test_close_slice_stream_slice_partition_end_is_highest",
-            "2021-01-01",
+            "2020-01-01",
             StreamSlice(partition={}, cursor_slice={"end_time": "2023-01-01"}),
             {cursor_field: "2021-01-01"},
-            {cursor_field: "2023-01-01"},
+            {cursor_field: "2021-01-01"},
         ),
         (
             "test_close_slice_latest_record_cursor_value_is_highest",
             "2021-01-01",
             StreamSlice(partition={}, cursor_slice={"end_time": "2022-01-01"}),
             {cursor_field: "2023-01-01"},
-            {cursor_field: "2023-01-01"},
+            {cursor_field: "2022-01-01"},
         ),
         (
             "test_close_slice_without_latest_record",
@@ -384,8 +384,17 @@ def test_close_slice(test_name, previous_cursor, stream_slice, latest_record_dat
         datetime_format="%Y-%m-%d",
         config=config,
         parameters={},
+        partition_field_start="start_time",
+        partition_field_end="end_time",
     )
     cursor._cursor = previous_cursor
+    stream_slice = {
+        "start_time": "2021-01-01",
+        "end_time": stream_slice["end_time"]
+    }
+    if latest_record_data:
+        record = Record(latest_record_data, stream_slice)
+        cursor.observe(stream_slice, record)
     cursor.close_slice(stream_slice, Record(latest_record_data, stream_slice) if latest_record_data else None)
     updated_state = cursor.get_stream_state()
     assert updated_state == expected_state
