@@ -6,6 +6,10 @@ data:
     hosts:
       - graph.microsoft.com
       - login.microsoftonline.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-microsoft-sharepoint
   registries:
     oss:
       enabled: true
