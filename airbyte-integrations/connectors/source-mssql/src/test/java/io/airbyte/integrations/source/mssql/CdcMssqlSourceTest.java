@@ -40,7 +40,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
-import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
@@ -93,7 +92,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   @Override
   protected MsSQLTestDatabase createTestDatabase() {
-    return MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT)
+    return MsSQLTestDatabase.in(BaseImage.MSSQL_2022)
         .withWaitUntilAgentRunning()
         .withCdc();
   }

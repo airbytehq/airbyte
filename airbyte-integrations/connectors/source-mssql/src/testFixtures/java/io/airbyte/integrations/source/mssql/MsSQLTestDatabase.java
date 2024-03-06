@@ -55,9 +55,6 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   public enum ContainerModifier implements NamedContainerModifier<MSSQLServerContainer<?>> {
-
-    AGENT(MsSQLContainerFactory::withAgent),
-    WITH_SSL_CERTIFICATES(MsSQLContainerFactory::withSslCertificates),
     ;
 
     public final Consumer<MSSQLServerContainer<?>> modifier;
@@ -129,6 +126,8 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
         CDC_INSTANCE_NAMES.add(instanceName);
         return withShortenedCapturePollingInterval();
       } catch (DataAccessException e) {
+        LOGGER.info(formatLogLine("Failed to enable CDC for table {}.{} and role {}, instance {}, try {}/{}"), schemaName, tableName, roleName,
+            instanceName, tryCount, MAX_RETRIES);
         if (!e.getMessage().contains(RETRYABLE_CDC_TABLE_ENABLEMENT_ERROR_CONTENT)) {
           throw e;
         }

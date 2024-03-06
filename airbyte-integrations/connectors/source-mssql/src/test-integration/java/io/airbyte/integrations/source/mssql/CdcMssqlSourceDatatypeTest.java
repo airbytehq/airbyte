@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
-import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -35,7 +34,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
 
   @Override
   protected Database setupDatabase() {
-    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT)
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022)
         .withCdc();
     return testdb.getDatabase();
   }
