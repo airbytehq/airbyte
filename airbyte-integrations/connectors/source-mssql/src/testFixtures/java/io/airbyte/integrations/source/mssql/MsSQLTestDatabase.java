@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -304,10 +305,12 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   public void dropDatabaseAndUser() {
+    LOGGER.info(formatLogLine("dropping database {}}"), getDatabaseName());
     execInContainer(mssqlCmd(Stream.of(
         String.format("USE master"),
         String.format("ALTER DATABASE %s SET single_user WITH ROLLBACK IMMEDIATE", getDatabaseName()),
         String.format("DROP DATABASE %s", getDatabaseName()))));
+    LOGGER.info(formatLogLine("dropped database {}}"), getDatabaseName());
   }
 
   public Stream<String> mssqlCmd(final Stream<String> sql) {
@@ -328,7 +331,12 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     return SQLDialect.DEFAULT;
   }
 
-  public static enum CertificateKey {
+  public void close() {
+    new Thread(this::dropDatabaseAndUser).start();
+    super.close();
+  }
+
+  public enum CertificateKey {
 
     CA(true),
     DUMMY_CA(false),
