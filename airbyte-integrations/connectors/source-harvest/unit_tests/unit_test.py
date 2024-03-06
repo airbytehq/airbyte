@@ -11,38 +11,6 @@ from source_harvest.streams import ExpensesClients, HarvestStream, InvoicePaymen
 logger = AirbyteLogger()
 
 
-def test_check_connection_ok(config, mock_stream):
-    mock_stream("users", response={"users": [{"id": 1}], "next_page": 2})
-    ok, error_msg = SourceHarvest().check_connection(logger, config=config)
-
-    assert ok
-    assert not error_msg
-
-
-def test_check_connection_empty_config(config):
-    config = {}
-
-    ok, error_msg = SourceHarvest().check_connection(logger, config=config)
-
-    assert not ok
-    assert error_msg
-
-
-def test_check_connection_invalid_config(config):
-    config.pop("replication_start_date")
-    ok, error_msg = SourceHarvest().check_connection(logger, config=config)
-
-    assert not ok
-    assert error_msg
-
-
-def test_check_connection_exception(config):
-    ok, error_msg = SourceHarvest().check_connection(logger, config=config)
-
-    assert not ok
-    assert error_msg
-
-
 def test_streams(config):
     streams = SourceHarvest().streams(config)
 

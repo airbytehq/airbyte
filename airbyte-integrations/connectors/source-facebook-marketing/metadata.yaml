@@ -6,11 +6,11 @@ data:
     hosts:
       - graph.facebook.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 1.4.2
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
@@ -27,6 +27,22 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "All Ads-Insights-* streams now have updated schemas. Users will need to retest source confguration, refresh the source schema and reset affected streams after upgrading. For more information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)"
+        upgradeDeadline: "2024-03-17"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "ads_insights"
+              - "ads_insights_age_and_gender"
+              - "ads_insights_action_type"
+              - "ads_insights_country"
+              - "ads_insights_platform_and_device"
+              - "ads_insights_region"
+              - "ads_insights_dma"
+              - "ads_insights_action_product_id"
   suggestedStreams:
     streams:
       - ads_insights

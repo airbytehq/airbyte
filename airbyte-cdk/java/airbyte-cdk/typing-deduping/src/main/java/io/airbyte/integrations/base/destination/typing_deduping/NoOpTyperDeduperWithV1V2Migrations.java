@@ -6,22 +6,18 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.getCountOfTypeAndDedupeThreads;
-import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
-import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtilKt.prepareAllSchemas;
+import static java.util.stream.Collectors.toMap;
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
-import kotlin.NotImplementedError;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 /**
@@ -30,55 +26,60 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
  * json->string migrations in the raw tables.
  */
 @Slf4j
-public class NoOpTyperDeduperWithV1V2Migrations implements TyperDeduper {
+public class NoOpTyperDeduperWithV1V2Migrations<DestinationState extends MinimumDestinationState> implements TyperDeduper {
 
   private final DestinationV1V2Migrator v1V2Migrator;
   private final V2TableMigrator v2TableMigrator;
+  private final List<Migration<DestinationState>> migrations;
   private final ExecutorService executorService;
   private final ParsedCatalog parsedCatalog;
   private final SqlGenerator sqlGenerator;
-  private final DestinationHandler destinationHandler;
+  private final DestinationHandler<DestinationState> destinationHandler;
 
   public NoOpTyperDeduperWithV1V2Migrations(final SqlGenerator sqlGenerator,
-                                            final DestinationHandler destinationHandler,
+                                            final DestinationHandler<DestinationState> destinationHandler,
                                             final ParsedCatalog parsedCatalog,
                                             final DestinationV1V2Migrator v1V2Migrator,
-                                            final V2TableMigrator v2TableMigrator) {
+                                            final V2TableMigrator v2TableMigrator,
+                                            final List<Migration<DestinationState>> migrations) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
     this.v1V2Migrator = v1V2Migrator;
     this.v2TableMigrator = v2TableMigrator;
+    this.migrations = migrations;
     this.executorService = Executors.newFixedThreadPool(getCountOfTypeAndDedupeThreads(),
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
   @Override
-  public void prepareTables() throws Exception {
-    try {
-      log.info("Ensuring schemas exist for prepareTables with V1V2 migrations");
-      prepareAllSchemas(parsedCatalog, sqlGenerator, destinationHandler);
-      final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
-      for (final StreamConfig stream : parsedCatalog.streams()) {
-        prepareTablesTasks.add(CompletableFuture.supplyAsync(() -> {
-          // Migrate the Raw Tables if this is the first v2 sync after a v1 sync
-          try {
-            log.info("Migrating V1->V2 for stream {}", stream.id());
-            v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream);
-            log.info("Migrating V2 legacy for stream {}", stream.id());
-            v2TableMigrator.migrateIfNecessary(stream);
-            return Optional.empty();
-          } catch (final Exception e) {
-            return Optional.of(e);
-          }
-        }, executorService));
-      }
-      CompletableFuture.allOf(prepareTablesTasks.toArray(CompletableFuture[]::new)).join();
-      reduceExceptions(prepareTablesTasks, "The following exceptions were thrown attempting to prepare tables:\n");
-    } catch (NotImplementedError | NotImplementedException e) {
-      log.warn(
-          "Could not prepare schemas or tables because this is not implemented for this destination, this should not be required for this destination to succeed");
-    }
+  public void prepareSchemasAndRunMigrations() throws Exception {
+    TyperDeduperUtil.prepareSchemas(sqlGenerator, destinationHandler, parsedCatalog);
+
+    TyperDeduperUtil.executeWeirdMigrations(
+        executorService,
+        sqlGenerator,
+        destinationHandler,
+        v1V2Migrator,
+        v2TableMigrator,
+        parsedCatalog);
+
+    List<DestinationInitialStatus<DestinationState>> destinationInitialStatuses = TyperDeduperUtil.executeRawTableMigrations(
+        executorService,
+        destinationHandler,
+        migrations,
+        destinationHandler.gatherInitialState(parsedCatalog.streams()));
+
+    // Commit the updated destination states.
+    // We don't need to trigger any soft resets, because we don't have any final tables.
+    destinationHandler.commitDestinationStates(destinationInitialStatuses.stream().collect(toMap(
+        state -> state.streamConfig().id(),
+        DestinationInitialStatus::destinationState)));
+  }
+
+  @Override
+  public void prepareFinalTables() {
+    log.info("Skipping prepareFinalTables");
   }
 
   @Override
