@@ -83,7 +83,6 @@ definitions:
   # Stream Events https://docs.sentry.io/api/events/list-a-projects-error-events/
   events:
     type: DeclarativeStream
-    $ref: "#/definitions/base_stream_incremental"
     $parameters:
       name: "events"
       primary_key: "id"

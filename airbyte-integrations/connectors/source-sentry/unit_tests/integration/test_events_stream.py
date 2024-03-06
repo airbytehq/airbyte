@@ -49,7 +49,10 @@ class TestEvents(TestCase):
             }
         ]
         http_mocker.get(
-            HttpRequest("https://sentry.io/api/0/projects/test%20organization/test%20project/events/"),
+            HttpRequest(
+                url="https://sentry.io/api/0/projects/test%20organization/test%20project/events/",
+                query_params={"full": "true"}
+            ),
             HttpResponse(body=json.dumps(response), status_code=200)
 
         )
@@ -72,7 +75,7 @@ class TestEvents(TestCase):
                     {"key": "release", "value": "17642328ead24b51867165985996d04b29310337"},
                     {"key": "server_name", "value": "web1.example.com"}
                 ],
-                "dateCreated": "2022-09-02T15:01:28.946777Z",
+                "dateCreated": "2023-02-01T00:00:00.0Z",
                 "user": None,
                 "message": "",
                 "title": "This is an example Python exception",
@@ -105,9 +108,12 @@ class TestEvents(TestCase):
             }
         ]
         http_mocker.get(
-            HttpRequest("https://sentry.io/api/0/projects/test%20organization/test%20project/events/"),
+            HttpRequest(
+                url="https://sentry.io/api/0/projects/test%20organization/test%20project/events/",
+                query_params={"full": "true"}
+            ),
             HttpResponse(body=json.dumps(response), status_code=200)
 
         )
         output = read(SourceSentry(), self.config(), self.catalog(SyncMode.incremental), self.state())
-        assert len(output.records) == 1
+        assert len(output.records) == 2

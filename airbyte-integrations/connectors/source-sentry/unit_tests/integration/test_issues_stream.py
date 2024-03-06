@@ -63,10 +63,14 @@ class TestEvents(TestCase):
           }
         ]
         http_mocker.get(
-            HttpRequest("https://sentry.io/api/0/projects/test%20organization/test%20project/issues/"),
+            HttpRequest(
+                url="https://sentry.io/api/0/projects/test%20organization/test%20project/issues/",
+                query_params={"statsPeriod": "", "query": "lastSeen:>1900-01-01T00:00:00.0Z"}
+            ),
             HttpResponse(body=json.dumps(response), status_code=200)
 
         )
+        # https://sentry.io/api/1/projects/airbyte-09/airbyte-09/issues/?query=lastSeen%3A%3E2022-01-01T00%3A00%3A00.0Z
         output = read(SourceSentry(), self.config(), self.catalog())
         assert len(output.records) == 1
 
@@ -84,7 +88,7 @@ class TestEvents(TestCase):
                 "isBookmarked": False,
                 "isPublic": False,
                 "isSubscribed": True,
-                "lastSeen": "2020-01-01T00:00:00.0Z",
+                "lastSeen": "2023-02-02T00:00:00.0Z",
                 "level": "error",
                 "logger": None,
                 "metadata": {
@@ -147,9 +151,12 @@ class TestEvents(TestCase):
             }
         ]
         http_mocker.get(
-            HttpRequest("https://sentry.io/api/0/projects/test%20organization/test%20project/issues/"),
+            HttpRequest(
+                url="https://sentry.io/api/0/projects/test%20organization/test%20project/issues/",
+                query_params={"statsPeriod": "", "query": "lastSeen:>2023-01-01T00:00:00.0Z"}
+            ),
             HttpResponse(body=json.dumps(response), status_code=200)
 
         )
         output = read(SourceSentry(), self.config(), self.catalog(SyncMode.incremental), self.state())
-        assert len(output.records) == 1
+        assert len(output.records) == 2
