@@ -168,7 +168,6 @@ definitions:
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
-          sort_by[asc]: created_at
           updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "coupon"
