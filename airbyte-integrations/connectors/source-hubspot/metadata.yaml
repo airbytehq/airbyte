@@ -44,8 +44,7 @@ data:
             impactedScopes: ["marketing_emails"]
       4.0.0:
         message: >-
-          This update brings extended schema with data type changes for the streams: Deals Property History, Companies Peoperty History.
-          Users will need to refresh it and reset this stream after upgrading.
+          This update brings extended schema with data type changes for the streams Deals Property History and Companies Property History. Users will need to refresh their schema and reset their streams after upgrading.
         upgradeDeadline: 2024-03-10
         scopedImpact:
           - scopeType: stream
