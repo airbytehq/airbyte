@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.util
 
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
