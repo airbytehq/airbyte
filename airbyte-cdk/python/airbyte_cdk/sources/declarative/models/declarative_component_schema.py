@@ -544,10 +544,10 @@ class OffsetIncrement(BaseModel):
 
 class PageIncrement(BaseModel):
     type: Literal['PageIncrement']
-    page_size: Optional[int] = Field(
+    page_size: Optional[Union[int, str]] = Field(
         None,
         description='The number of records to include in each pages.',
-        examples=[100, '100'],
+        examples=[100, '100', "{{ config['page_size'] }}"],
         title='Page Size',
     )
     start_from_page: Optional[int] = Field(

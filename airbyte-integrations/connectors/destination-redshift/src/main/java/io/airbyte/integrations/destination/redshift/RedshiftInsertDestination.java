@@ -22,6 +22,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState;
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
 import java.time.Duration;
 import java.util.HashMap;
@@ -115,8 +116,10 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   }
 
   @Override
-  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
-    return new RedshiftDestinationHandler(databaseName, database);
+  protected JdbcDestinationHandler<RedshiftState> getDestinationHandler(final String databaseName,
+                                                                        final JdbcDatabase database,
+                                                                        String rawTableSchema) {
+    return new RedshiftDestinationHandler(databaseName, database, rawTableSchema);
   }
 
 }
