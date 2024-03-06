@@ -28,7 +28,7 @@ def test_open_file(mock_smart_open):
     with stream_reader.open_file(mock_file, FileReadMode.READ, "utf-8", mock_logger) as result:
         pass
 
-    mock_smart_open.assert_called_once_with(mock_file.download_url, mode='r', encoding='utf-8')
+    mock_smart_open.assert_called_once_with(mock_file.download_url, mode="r", encoding="utf-8")
     assert result is not None
 
 
@@ -40,15 +40,18 @@ def test_microsoft_onedrive_client_initialization(requests_mock):
             "client_id": "client_id",
             "tenant_id": "tenant_id",
             "client_secret": "client_secret",
-            "refresh_token": "refresh_token"
+            "refresh_token": "refresh_token",
         },
         "drive_name": "drive_name",
         "folder_path": "folder_path",
-        "streams": [{"name": "test_stream", "globs": ["*.csv"], "validation_policy": "Emit Record", "format": {"filetype": "csv"}}]
+        "streams": [{"name": "test_stream", "globs": ["*.csv"], "validation_policy": "Emit Record", "format": {"filetype": "csv"}}],
     }
 
-    authority_url = 'https://login.microsoftonline.com/tenant_id/v2.0/.well-known/openid-configuration'
-    mock_response = {'authorization_endpoint': 'https://login.microsoftonline.com/tenant_id/oauth2/v2.0/authorize', 'token_endpoint': 'https://login.microsoftonline.com/tenant_id/oauth2/v2.0/token'}
+    authority_url = "https://login.microsoftonline.com/tenant_id/v2.0/.well-known/openid-configuration"
+    mock_response = {
+        "authorization_endpoint": "https://login.microsoftonline.com/tenant_id/oauth2/v2.0/authorize",
+        "token_endpoint": "https://login.microsoftonline.com/tenant_id/oauth2/v2.0/token",
+    }
     requests_mock.get(authority_url, json=mock_response, status_code=200)
 
     client = SourceMicrosoftOneDriveClient(SourceMicrosoftOneDriveSpec(**config))
