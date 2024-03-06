@@ -10,29 +10,50 @@ import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PA
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
+import io.airbyte.cdk.testutils.ContainerFactory;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.DockerImageName;
 
 public class SshBastionContainer implements AutoCloseable {
+
+  public static class SshBastionContainerFactory extends ContainerFactory<GenericContainer<?>> {
+
+    @Override
+    protected GenericContainer<?> createNewContainer(DockerImageName imageName) {
+      var container = new GenericContainer(new ImageFromDockerfile("bastion-test")
+          .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
+              .withExposedPorts(22);
+      return container;
+    }
+
+    public GenericContainer exclusive(final Network network) {
+      Consumer<GenericContainer<?>> imageModifier = c -> {
+        c.withNetwork(network);
+      };
+      var container = super.exclusive("bastion-test", new NamedContainerModifierImpl<>("withNetwork", imageModifier));
+      return container;
+    }
+
+  }
+
+  private static final SshBastionContainerFactory factory = new SshBastionContainerFactory();
 
   private static final String SSH_USER = "sshuser";
   private static final String SSH_PASSWORD = "secret";
   private GenericContainer bastion;
 
   public void initAndStartBastion(final Network network) {
-    bastion = new GenericContainer(
-        new ImageFromDockerfile("bastion-test")
-            .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
-                .withNetwork(network)
-                .withExposedPorts(22);
+    bastion = factory.exclusive(network);
     bastion.start();
   }
 
