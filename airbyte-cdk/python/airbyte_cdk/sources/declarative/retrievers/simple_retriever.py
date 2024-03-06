@@ -322,6 +322,11 @@ class SimpleRetriever(Retriever):
             records_schema=records_schema,
         )
         for stream_data in self._read_pages(record_generator, self.state, _slice):
+            if self.cursor:
+                self.cursor.observe(stream_slice, stream_data)
+
+            # TODO this is just the most recent record *read*, not necessarily the most recent record *within slice boundaries*; once all
+            # cursors implement a meaningful `observe` method, it can be removed, both from here and the `Cursor.close_slice` method args
             most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, stream_data, _slice)
             yield stream_data
 
