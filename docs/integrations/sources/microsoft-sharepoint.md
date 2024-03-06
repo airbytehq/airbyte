@@ -127,8 +127,9 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
-| 0.1.0   | 2024-01-25 | [33537](https://github.com/airbytehq/airbyte/pull/33537) | New source |
+| Version | Date       | Pull Request                                             | Subject                   |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------|
+| 0.2.0   | 2024-03-06 | [35830](https://github.com/airbytehq/airbyte/pull/35830) | Add fetching shared items |
+| 0.1.0   | 2024-01-25 | [33537](https://github.com/airbytehq/airbyte/pull/33537) | New source                |
 
 </HideInUI>
