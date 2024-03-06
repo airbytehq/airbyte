@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.59.2"
+version = "0.61.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte-cdk-0.59.2.tar.gz", hash = "sha256:cd8a2b679ddd01ac1db9d42e4326c4b4e815dcaf7e1654cbe327cfce7654f07b"},
-    {file = "airbyte_cdk-0.59.2-py3-none-any.whl", hash = "sha256:90f9144f1519e0c66e260b68be94bb9b8f87130276353073c416df2e62ce7c7e"},
+    {file = "airbyte-cdk-0.61.0.tar.gz", hash = "sha256:8beda008c5a177041ac02860a431ce7b1ecd00062a4a8f31fe6ac446cbed3e70"},
+    {file = "airbyte_cdk-0.61.0-py3-none-any.whl", hash = "sha256:3f989bfe692c9519d61f9120ddb744ab82c432c2caf25374d4d6f5cdc374a1e9"},
 ]
 
 [package.dependencies]
@@ -2274,4 +2274,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "c42380257b1263d7dc5a9094743056e5adfc9d1ad27b8d780eeff354ae193a0d"
+content-hash = "eee8676fc20f015e8f2496c3cb4c46ef8e8d81d828f49466448868efadb0b53a"
