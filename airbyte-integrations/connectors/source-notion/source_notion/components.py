@@ -41,4 +41,26 @@ class NotionPropertiesTransformation(RecordTransformation):
 
 @dataclass
 class NotionBlocksTransformation(RecordTransformation):
-  pass
+  """
+  Transforms records containing 'mention' objects within their 'rich_text' fields. This method locates the 'mention'
+  objects, extracts their type-specific information, and moves this information into a newly created 'info' field within
+  the 'mention' object. It then removes the original type-specific field from the 'mention' object.
+
+  The transformation specifically targets a field determined by the record's 'type' attribute. It iterates over each
+  'mention' object within the 'rich_text' array of that field, restructures the 'mention' objects for consistency and
+  easier access, and updates the record in-place.
+  """
+
+  def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    transform_object_field = record.get("type")
+
+    if transform_object_field:
+      rich_text = record.get(transform_object_field, {}).get("rich_text", [])
+      for r in rich_text:
+        mention = r.get("mention")
+        if mention:
+          type_info = mention[mention["type"]]
+          record[transform_object_field]["rich_text"][rich_text.index(r)]["mention"]["info"] = type_info
+          del record[transform_object_field]["rich_text"][rich_text.index(r)]["mention"][mention["type"]]
+
+    return record
