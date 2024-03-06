@@ -1,0 +1,45 @@
+{
+  "documentationUrl" : "https://docs.airbyte.io/connector-development",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Cian Spec",
+    "type" : "object",
+    "required" : [
+      "token",
+      "start_date",
+      "end_date"
+    ],
+    "additionalProperties" : false,
+    "properties" : {
+      "token" : {
+        "type" : "string",
+        "title" : "Access Token",
+        "description" : "API токен Циан",
+        "airbyte_secret" : true,
+        "order" : 0
+      },
+      "start_date": {
+        "order": 1,
+        "type": "string",
+        "title": "Первый день загрузки",
+        "description": "Дата в формате YYYY-MM-DD",
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "examples": ["2020-06-01"]
+      },
+      "end_date": {
+        "order": 2,
+        "type": "string",
+        "title": "Последний день загрузки",
+        "description": "Дата в форматеYYYY-MM-DD.",
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "examples": ["2021-12-01"]
+      },
+      "building_id" : {
+        "order" : 3,
+        "type" : "integer",
+        "title" : "ID ЖК",
+        "description" : "ID ЖК, по которому нужно выгружать данные"
+      }
+    }
+  }
+}
