@@ -1719,10 +1719,15 @@ definitions:
       page_size:
         title: Page Size
         description: The number of records to include in each pages.
-        type: integer
+        interpolation_context:
+          - config
+        anyOf:
+          - type: integer
+          - type: string
         examples:
           - 100
           - "100"
+          - "{{ config['page_size'] }}"
       start_from_page:
         title: Start From Page
         description: Index of the first page to request.

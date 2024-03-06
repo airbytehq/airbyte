@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.Lock
 
-class NoOpRawTableTDLock: Lock {
+class NoOpRawTableTDLock : Lock {
     override fun lock() {}
 
     override fun lockInterruptibly() {}
@@ -21,6 +21,8 @@ class NoOpRawTableTDLock: Lock {
 
     override fun newCondition(): Condition {
         // Always throw exception to avoid callers from using this path
-        throw UnsupportedOperationException("This lock implementation does not support retrieving a Condition")
+        throw UnsupportedOperationException(
+            "This lock implementation does not support retrieving a Condition"
+        )
     }
 }

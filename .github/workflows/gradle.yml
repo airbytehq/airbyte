@@ -24,7 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       java: ${{ steps.changes.outputs.java }}
-      python_cdk: ${{ steps.changes.outputs.python_cdk }}
 
     steps:
       - name: Checkout Airbyte
@@ -39,8 +38,7 @@ jobs:
               - '**/*.java'
               - '**/*.gradle'
               - 'airbyte-cdk/java/**/*'
-            python_cdk:
-              - 'airbyte-cdk/python/**/*'
+
   run-check:
     needs:
       - changes

@@ -85,6 +85,7 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 * `read_price_rules`
 * `read_product_listings`
 * `read_products`
+* `read_publications`
 * `read_reports`
 * `read_resource_feedbacks`
 * `read_script_tags`
@@ -105,43 +106,44 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 
 The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQl API](https://shopify.dev/api/admin-graphql).
+This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql) and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries)
 
 ## Supported streams
 
-- [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2022-01/resources/abandoned-checkouts#top)
-- [Articles](https://shopify.dev/api/admin-rest/2022-01/resources/article)
+- [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2023-07/resources/abandoned-checkouts#top)
+- [Articles](https://shopify.dev/api/admin-rest/2023-07/resources/article)
 - [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2023-10/resources/transactions)
-- [Blogs](https://shopify.dev/api/admin-rest/2022-01/resources/blog)
-- [Collects](https://shopify.dev/api/admin-rest/2022-01/resources/collect#top)
-- [Collections](https://shopify.dev/api/admin-rest/2022-01/resources/collection)
-- [Countries](https://shopify.dev/docs/api/admin-rest/2023-04/resources/country)
-- [Custom Collections](https://shopify.dev/api/admin-rest/2022-01/resources/customcollection#top)
-- [Customers](https://shopify.dev/api/admin-rest/2022-01/resources/customer#top)
-- [Customer Address](https://shopify.dev/docs/api/admin-rest/2023-04/resources/customer-address)
-- [Customer Saved Search](https://shopify.dev/docs/api/admin-rest/2023-04/resources/customersavedsearch)
-- [Draft Orders](https://shopify.dev/api/admin-rest/2022-01/resources/draftorder#top)
-- [Discount Codes](https://shopify.dev/api/admin-rest/2022-01/resources/discountcode#top)
+- [Blogs](https://shopify.dev/api/admin-rest/2023-07/resources/blog)
+- [Collects](https://shopify.dev/api/admin-rest/2023-07/resources/collect#top)
+- [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/Collection)
+- [Countries](https://shopify.dev/docs/api/admin-rest/2023-07/resources/country)
+- [Custom Collections](https://shopify.dev/api/admin-rest/2023-07/resources/customcollection#top)
+- [Customers](https://shopify.dev/api/admin-rest/2023-07/resources/customer#top)
+- [Customer Address](https://shopify.dev/docs/api/admin-rest/2023-07/resources/customer-address)
+- [Customer Saved Search](https://shopify.dev/docs/api/admin-rest/2023-07/resources/customersavedsearch)
+- [Draft Orders](https://shopify.dev/api/admin-rest/2023-07/resources/draftorder#top)
+- [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/unions/DiscountCode)
 - [Disputes](https://shopify.dev/docs/api/admin-rest/2023-07/resources/dispute)
-- [Fulfillments](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillment)
-- [Fulfillment Orders](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillmentorder)
-- [Inventory Items](https://shopify.dev/api/admin-rest/2022-01/resources/inventoryItem)
-- [Inventory Levels](https://shopify.dev/api/admin-rest/2021-01/resources/inventorylevel)
-- [Locations](https://shopify.dev/api/admin-rest/2022-01/resources/location)
-- [Metafields](https://shopify.dev/api/admin-rest/2022-01/resources/metafield#top)
-- [Orders](https://shopify.dev/api/admin-rest/2022-01/resources/order#top)
-- [Order Refunds](https://shopify.dev/api/admin-rest/2022-01/resources/refund#top)
-- [Order Risks](https://shopify.dev/api/admin-rest/2022-01/resources/order-risk#top)
-- [Pages](https://shopify.dev/api/admin-rest/2022-01/resources/page#top)
-- [Price Rules](https://shopify.dev/api/admin-rest/2022-01/resources/pricerule#top)
-- [Products](https://shopify.dev/api/admin-rest/2022-01/resources/product#top)
+- [Fulfillments](https://shopify.dev/api/admin-rest/2023-07/resources/fulfillment)
+- [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/FulfillmentOrder)
+- [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/InventoryItem)
+- [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/InventoryLevel)
+- [Locations](https://shopify.dev/api/admin-rest/2023-07/resources/location)
+- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/Metafield)
+- [Orders](https://shopify.dev/api/admin-rest/2023-07/resources/order#top)
+- [Order Refunds](https://shopify.dev/api/admin-rest/2023-07/resources/refund#top)
+- [Order Risks](https://shopify.dev/api/admin-rest/2023-07/resources/order-risk#top)
+- [Pages](https://shopify.dev/api/admin-rest/2023-07/resources/page#top)
+- [Price Rules](https://shopify.dev/api/admin-rest/2023-07/resources/pricerule#top)
+- [Products](https://shopify.dev/api/admin-rest/2023-07/resources/product#top)
 - [Products (GraphQL)](https://shopify.dev/api/admin-graphql/2022-10/queries/products)
-- [Product Images](https://shopify.dev/api/admin-rest/2022-01/resources/product-image)
-- [Product Variants](https://shopify.dev/api/admin-rest/2022-01/resources/product-variant)
-- [Shop](https://shopify.dev/api/admin-rest/2022-01/resources/shop)
-- [Smart Collections](https://shopify.dev/api/admin-rest/2022-01/resources/smartcollection)
-- [Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/transaction#top)
-- [Tender Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/tendertransaction)
+- [Product Images](https://shopify.dev/api/admin-rest/2023-07/resources/product-image)
+- [Product Variants](https://shopify.dev/api/admin-rest/2023-07/resources/product-variant)
+- [Shop](https://shopify.dev/api/admin-rest/2023-07/resources/shop)
+- [Smart Collections](https://shopify.dev/api/admin-rest/2023-07/resources/smartcollection)
+- [Transactions](https://shopify.dev/api/admin-rest/2023-07/resources/transaction#top)
+- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/OrderTransaction)
+- [Tender Transactions](https://shopify.dev/api/admin-rest/2023-07/resources/tendertransaction)
 
 ## Capturing deleted records
 
@@ -191,14 +193,8 @@ Waiting <some_number> seconds then retrying..."
 
 This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync operation will continue successfully after a short backoff period.
 
-#### Incremental sync recommendations
+For all `Shopify GraphQL BULK` api requests these limitations are applied: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions 
 
-For the smoothest experience with Incremental Refresh sync mode, the following is recommended:
-
-- The `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
-- `Discount Codes` should be synced along with `Price Rules` stream.
-
-If a child stream is synced independently of its parent stream, a full sync will occur, followed by a filtering out of records. This process may be less efficient compared to syncing child streams alongside their respective parent streams.
 
 ### Troubleshooting
 
@@ -211,6 +207,7 @@ If a child stream is synced independently of its parent stream, a full sync will
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| 2.0.0   | 2024-02-12 | [32345](https://github.com/airbytehq/airbyte/pull/32345) | Fixed the issue with `state` causing the `substreams` to skip the records, made `metafield_*`: `collections, customers, draft_orders, locations, orders, product_images, product_variants, products`, and `fulfillment_orders, collections, discount_codes, inventory_levels, inventory_items, transactions_graphql, customer_address` streams to use `BULK Operations` instead of `REST`|
 | 1.1.8 | 2024-02-12 | [35166](https://github.com/airbytehq/airbyte/pull/35166) | Manage dependencies with Poetry. |
 | 1.1.7   | 2024-01-19 | [33804](https://github.com/airbytehq/airbyte/pull/33804) | Updated documentation with list of all supported streams |
 | 1.1.6   | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
