@@ -525,23 +525,23 @@ def test_datetime_based_cursor():
 
     assert isinstance(stream_slicer, DatetimeBasedCursor)
     assert stream_slicer._step == datetime.timedelta(days=10)
-    assert stream_slicer.cursor_field.string == "created"
+    assert stream_slicer._cursor_field.string == "created"
     assert stream_slicer.cursor_granularity == "PT0.000001S"
-    assert stream_slicer.lookback_window.string == "P5D"
+    assert stream_slicer._lookback_window.string == "P5D"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
     assert stream_slicer.start_time_option.field_name.eval(config=input_config | {"cursor_field": "updated_at"}) == "since_updated_at"
     assert stream_slicer.end_time_option.inject_into == RequestOptionType.body_json
     assert stream_slicer.end_time_option.field_name.eval({}) == "before_created_at"
-    assert stream_slicer.partition_field_start.eval({}) == "star"
-    assert stream_slicer.partition_field_end.eval({}) == "en"
+    assert stream_slicer._partition_field_start.eval({}) == "star"
+    assert stream_slicer._partition_field_end.eval({}) == "en"
 
-    assert isinstance(stream_slicer.start_datetime, MinMaxDatetime)
+    assert isinstance(stream_slicer._start_datetime, MinMaxDatetime)
     assert stream_slicer.start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
 
-    assert isinstance(stream_slicer.end_datetime, MinMaxDatetime)
-    assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
+    assert isinstance(stream_slicer._end_datetime, MinMaxDatetime)
+    assert stream_slicer._end_datetime.datetime.string == "{{ config['end_time'] }}"
 
 
 def test_stream_with_incremental_and_retriever_with_partition_router():
@@ -636,17 +636,17 @@ list_stream:
 
     datetime_stream_slicer = stream.retriever.stream_slicer._cursor_factory.create()
     assert isinstance(datetime_stream_slicer, DatetimeBasedCursor)
-    assert isinstance(datetime_stream_slicer.start_datetime, MinMaxDatetime)
-    assert datetime_stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
-    assert isinstance(datetime_stream_slicer.end_datetime, MinMaxDatetime)
-    assert datetime_stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
+    assert isinstance(datetime_stream_slicer._start_datetime, MinMaxDatetime)
+    assert datetime_stream_slicer._start_datetime.datetime.string == "{{ config['start_time'] }}"
+    assert isinstance(datetime_stream_slicer._end_datetime, MinMaxDatetime)
+    assert datetime_stream_slicer._end_datetime.datetime.string == "{{ config['end_time'] }}"
     assert datetime_stream_slicer.step == "P10D"
-    assert datetime_stream_slicer.cursor_field.string == "created"
+    assert datetime_stream_slicer._cursor_field.string == "created"
 
     list_stream_slicer = stream.retriever.stream_slicer._partition_router
     assert isinstance(list_stream_slicer, ListPartitionRouter)
     assert list_stream_slicer.values == ["airbyte", "airbyte-cloud"]
-    assert list_stream_slicer.cursor_field.string == "a_key"
+    assert list_stream_slicer._cursor_field.string == "a_key"
 
 
 def test_incremental_data_feed():
