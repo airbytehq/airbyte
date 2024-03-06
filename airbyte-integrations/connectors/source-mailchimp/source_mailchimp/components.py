@@ -8,13 +8,12 @@ import requests
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
     RequestInput,
 )
-from airbyte_cdk.sources.declarative.types import StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 
@@ -88,7 +87,7 @@ class MailChimpRecordFilter(RecordFilter):
         self,
         records: List[Mapping[str, Any]],
         stream_state: StreamState,
-        stream_slice: PerPartitionStreamSlice,
+        stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> List[Mapping[str, Any]]:
         current_state = [x for x in stream_state.get("states", []) if x["partition"]["id"] == stream_slice.partition["id"]]
