@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -18,7 +22,9 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
@@ -29,7 +35,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,6 +77,14 @@ class InitialSnapshotHandlerTest {
   private static final String NAME4 = "name4";
   private static final String NAME5 = "name5";
   private static final String NAME6 = "name6";
+
+  private static final String DATABASE = "test-database";
+
+  final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(Jsons.jsonNode(
+      Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
+          Map.of(
+              MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+              MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE))));
 
   private static final List<ConfiguredAirbyteStream> STREAMS = List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
@@ -144,9 +157,10 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME6))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
+    final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
+    final MongoDbStateManager stateManager = spy(ogStateManager);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
             MongoConstants.CHECKPOINT_INTERVAL, true);
 
     assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
@@ -160,21 +174,24 @@ class InitialSnapshotHandlerTest {
     assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
     assertEquals(OBJECT_ID1.toString(), collection1StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
     assertEquals(NAME1, collection1StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
-    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD), collection1StreamMessage1.getRecord().getData());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection1StreamMessage1.getRecord().getData());
 
     final AirbyteMessage collection1StreamMessage2 = collection1.next();
     assertEquals(Type.RECORD, collection1StreamMessage2.getType());
     assertEquals(COLLECTION1, collection1StreamMessage2.getRecord().getStream());
     assertEquals(OBJECT_ID2.toString(), collection1StreamMessage2.getRecord().getData().get(CURSOR_FIELD).asText());
     assertEquals(NAME2, collection1StreamMessage2.getRecord().getData().get(NAME_FIELD).asText());
-    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD), collection1StreamMessage2.getRecord().getData());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection1StreamMessage2.getRecord().getData());
 
     final AirbyteMessage collection1StreamMessage3 = collection1.next();
     assertEquals(Type.RECORD, collection1StreamMessage3.getType());
     assertEquals(COLLECTION1, collection1StreamMessage3.getRecord().getStream());
     assertEquals(OBJECT_ID3.toString(), collection1StreamMessage3.getRecord().getData().get(CURSOR_FIELD).asText());
     assertEquals(NAME3, collection1StreamMessage3.getRecord().getData().get(NAME_FIELD).asText());
-    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD), collection1StreamMessage3.getRecord().getData());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection1StreamMessage3.getRecord().getData());
 
     final AirbyteMessage collection1SateMessage = collection1.next();
     assertEquals(Type.STATE, collection1SateMessage.getType(), "State message is expected after all records in a stream are emitted");
@@ -186,13 +203,15 @@ class InitialSnapshotHandlerTest {
     assertEquals(Type.RECORD, collection2StreamMessage1.getType());
     assertEquals(COLLECTION2, collection2StreamMessage1.getRecord().getStream());
     assertEquals(OBJECT_ID4.toString(), collection2StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
-    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD), collection2StreamMessage1.getRecord().getData());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection2StreamMessage1.getRecord().getData());
 
     final AirbyteMessage collection2StreamMessage2 = collection2.next();
     assertEquals(Type.RECORD, collection2StreamMessage2.getType());
     assertEquals(COLLECTION2, collection2StreamMessage2.getRecord().getStream());
     assertEquals(OBJECT_ID5.toString(), collection2StreamMessage2.getRecord().getData().get(CURSOR_FIELD).asText());
-    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD), collection2StreamMessage1.getRecord().getData());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection2StreamMessage1.getRecord().getData());
 
     final AirbyteMessage collection2SateMessage = collection2.next();
     assertEquals(Type.STATE, collection2SateMessage.getType(), "State message is expected after all records in a stream are emitted");
@@ -216,11 +235,12 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME3))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
+    final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
+    final MongoDbStateManager stateManager = spy(ogStateManager);
     when(stateManager.getStreamState(COLLECTION1, NAMESPACE))
         .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.OBJECT_ID)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
             MongoConstants.CHECKPOINT_INTERVAL, true);
 
     assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
@@ -234,7 +254,8 @@ class InitialSnapshotHandlerTest {
     assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
     assertEquals(OBJECT_ID2.toString(), collection1StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
     assertEquals(NAME2, collection1StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
-    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD), collection1StreamMessage1.getRecord().getData());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection1StreamMessage1.getRecord().getData());
 
     final AirbyteMessage collection1SateMessage = collection1.next();
     assertEquals(Type.STATE, collection1SateMessage.getType(), "State message is expected after all records in a stream are emitted");
@@ -246,7 +267,8 @@ class InitialSnapshotHandlerTest {
     assertEquals(Type.RECORD, collection2StreamMessage1.getType());
     assertEquals(COLLECTION2, collection2StreamMessage1.getRecord().getStream());
     assertEquals(OBJECT_ID3.toString(), collection2StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
-    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD), collection2StreamMessage1.getRecord().getData());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection2StreamMessage1.getRecord().getData());
 
     final AirbyteMessage collection2SateMessage = collection2.next();
     assertEquals(Type.STATE, collection2SateMessage.getType(), "State message is expected after all records in a stream are emitted");
@@ -268,7 +290,7 @@ class InitialSnapshotHandlerTest {
     final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
 
     final var thrown = assertThrows(ConfigErrorException.class,
-        () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
+        () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
             MongoConstants.CHECKPOINT_INTERVAL, true));
     assertTrue(thrown.getMessage().contains("must be consistently typed"));
   }
@@ -284,7 +306,7 @@ class InitialSnapshotHandlerTest {
     final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
 
     final var thrown = assertThrows(ConfigErrorException.class,
-        () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
+        () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
             MongoConstants.CHECKPOINT_INTERVAL, true));
     assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
   }
@@ -308,9 +330,10 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME1))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
+    final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
+    final MongoDbStateManager stateManager = spy(ogStateManager);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
             MongoConstants.CHECKPOINT_INTERVAL, true);
 
     assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
@@ -324,7 +347,8 @@ class InitialSnapshotHandlerTest {
     assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
     assertEquals(OBJECT_ID1.toString(), collection1StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
     assertEquals(NAME1, collection1StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
-    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD), collection1StreamMessage1.getRecord().getData());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection1StreamMessage1.getRecord().getData());
 
     final AirbyteMessage collection1SateMessage = collection1.next();
     assertEquals(Type.STATE, collection1SateMessage.getType(), "State message is expected after all records in a stream are emitted");
@@ -354,11 +378,12 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME3))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
+    final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
+    final MongoDbStateManager stateManager = spy(ogStateManager);
     when(stateManager.getStreamState(COLLECTION1, NAMESPACE))
         .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.STRING)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), null, Instant.now(),
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
             MongoConstants.CHECKPOINT_INTERVAL, true);
 
     assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
@@ -376,7 +401,8 @@ class InitialSnapshotHandlerTest {
     assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
     assertEquals(OBJECT_ID2.toString(), collection1StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
     assertEquals(NAME2, collection1StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
-    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD), collection1StreamMessage1.getRecord().getData());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection1StreamMessage1.getRecord().getData());
 
     final AirbyteMessage collection1SateMessage = collection1.next();
     assertEquals(Type.STATE, collection1SateMessage.getType(), "State message is expected after all records in a stream are emitted");
@@ -387,7 +413,8 @@ class InitialSnapshotHandlerTest {
     assertEquals(Type.RECORD, collection2StreamMessage1.getType());
     assertEquals(COLLECTION2, collection2StreamMessage1.getRecord().getStream());
     assertEquals(OBJECT_ID3.toString(), collection2StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
-    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD), collection2StreamMessage1.getRecord().getData());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection2StreamMessage1.getRecord().getData());
 
     final AirbyteMessage collection2SateMessage = collection2.next();
     assertEquals(Type.STATE, collection2SateMessage.getType(), "State message is expected after all records in a stream are emitted");
