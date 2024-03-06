@@ -35,9 +35,12 @@ import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
+import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
@@ -49,6 +52,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -60,42 +64,25 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.testcontainers.containers.MSSQLServerContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestDatabase> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CdcSourceTest.class);
 
   static private final String CDC_ROLE_NAME = "cdc_selector";
 
   static private final String TEST_USER_NAME_PREFIX = "cdc_test_user";
 
-  // Deliberately do not share this test container, as we're going to mutate the global SQL Server
-  // state.
-  protected final MSSQLServerContainer<?> privateContainer;
-
   private DataSource testDataSource;
-
-  CdcMssqlSourceTest() {
-    this.privateContainer = createContainer();
-  }
-
-  protected MSSQLServerContainer<?> createContainer() {
-    return new MsSQLContainerFactory().exclusive(
-        MsSQLTestDatabase.BaseImage.MSSQL_2022.reference,
-        MsSQLTestDatabase.ContainerModifier.AGENT.methodName);
-  }
-
-  @AfterAll
-  void afterAll() {
-    privateContainer.close();
-  }
 
   protected final String testUserName() {
     return testdb.withNamespace(TEST_USER_NAME_PREFIX);
@@ -103,11 +90,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   @Override
   protected MsSQLTestDatabase createTestDatabase() {
-    final var testdb = new MsSQLTestDatabase(privateContainer);
-    return testdb
-        .withConnectionProperty("encrypt", "false")
-        .withConnectionProperty("databaseName", testdb.getDatabaseName())
-        .initialized()
+    return MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT)
         .withWaitUntilAgentRunning()
         .withCdc();
   }
@@ -134,19 +117,12 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   @Override
   @BeforeEach
   protected void setup() {
-    super.setup();
-
+    testdb = createTestDatabase();
+    createTables();
     // Enables cdc on MODELS_SCHEMA.MODELS_STREAM_NAME, giving CDC_ROLE_NAME select access.
-    final var enableCdcSqlFmt = """
-                                EXEC sys.sp_cdc_enable_table
-                                \t@source_schema = N'%s',
-                                \t@source_name   = N'%s',
-                                \t@role_name     = N'%s',
-                                \t@supports_net_changes = 0""";
     testdb
-        .with(enableCdcSqlFmt, modelsSchema(), MODELS_STREAM_NAME, CDC_ROLE_NAME)
-        .with(enableCdcSqlFmt, randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME)
-        .withShortenedCapturePollingInterval();
+        .withCdcForTable(modelsSchema(), MODELS_STREAM_NAME, CDC_ROLE_NAME)
+        .withCdcForTable(randomSchema(), RANDOM_TABLE_NAME, CDC_ROLE_NAME);
 
     // Create a test user to be used by the source, with proper permissions.
     testdb
@@ -162,7 +138,15 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         .with("USE [%s]", testdb.getDatabaseName())
         .with("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName());
 
+    populateTables();
+    waitForCdcRecords();
     testDataSource = createTestDataSource();
+  }
+
+  public void waitForCdcRecords() {
+    testdb.waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, MODEL_RECORDS.size());
+    testdb.waitForCdcRecords(randomSchema(), RANDOM_TABLE_NAME, MODEL_RECORDS_RANDOM.size());
+
   }
 
   protected DataSource createTestDataSource() {
@@ -171,7 +155,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         testdb.getPassword(),
         testdb.getDatabaseDriver().getDriverClassName(),
         testdb.getJdbcUrl(),
-        Map.of("encrypt", "false"),
+        Map.of("encrypt", "false", "trustServerCertificate", "true"),
         JdbcConnector.CONNECT_TIMEOUT_DEFAULT);
   }
 
@@ -300,41 +284,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   }
 
   @Test
-  void testAssertSqlServerAgentRunning() {
-    testdb.withAgentStopped().withWaitUntilAgentStopped();
-    // assert expected failure if sql server agent stopped
-    assertThrows(RuntimeException.class, () -> source().assertSqlServerAgentRunning(testDatabase()));
-    // assert success if sql server agent running
-    testdb.withAgentStarted().withWaitUntilAgentRunning();
-    assertDoesNotThrow(() -> source().assertSqlServerAgentRunning(testDatabase()));
-  }
-
-  // Ensure the CDC check operations are included when CDC is enabled
-  // todo: make this better by checking the returned checkOperations from source.getCheckOperations
-  @Test
-  void testCdcCheckOperations() throws Exception {
-    // assertCdcEnabledInDb
-    testdb.withoutCdc();
-    AirbyteConnectionStatus status = source().check(config());
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
-    testdb.withCdc();
-    // assertCdcSchemaQueryable
-    testdb.with("REVOKE SELECT ON SCHEMA :: [cdc] TO %s", testUserName());
-    status = source().check(config());
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
-    testdb.with("GRANT SELECT ON SCHEMA :: [cdc] TO %s", testUserName());
-
-    // assertSqlServerAgentRunning
-
-    testdb.withAgentStopped().withWaitUntilAgentStopped();
-    status = source().check(config());
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
-    testdb.withAgentStarted().withWaitUntilAgentRunning();
-    status = source().check(config());
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
-  }
-
-  @Test
   void testCdcCheckOperationsWithDot() throws Exception {
     final String dbNameWithDot = testdb.getDatabaseName().replace("_", ".");
     testdb.with("CREATE DATABASE [%s];", dbNameWithDot)
@@ -347,7 +296,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   // todo: check LSN returned is actually the max LSN
   // todo: check we fail as expected under certain conditions
   @Test
-  void testGetTargetPosition() {
+  void testGetTargetPosition() throws Exception {
     // check that getTargetPosition returns higher Lsn after inserting new row
     testdb.withWaitUntilMaxLsnAvailable();
     final Lsn firstLsn = MssqlCdcTargetPosition.getTargetPosition(testDatabase(), testdb.getDatabaseName()).targetLsn;
@@ -475,6 +424,34 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
       } else {
         assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       }
+    }
+  }
+
+  @Override
+  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition,
+                                                                                         final AirbyteRecordMessage record) {
+    // The LSN from records should be either equal or grater than the position value before the sync
+    // started.
+    // Since we're using shared containers, the current LSN can move forward without any data
+    // modifications
+    // (INSERT, UPDATE, DELETE) in the current DB
+    assert targetPosition instanceof MssqlCdcTargetPosition;
+    assertTrue(extractPosition(record.getData()).targetLsn.compareTo(((MssqlCdcTargetPosition) targetPosition).targetLsn) >= 0);
+  }
+
+  protected void waitForCdcRecords(String schemaName, String tableName, int recordCount)
+      throws Exception {
+    testdb.waitForCdcRecords(schemaName, tableName, recordCount);
+  }
+
+  protected void deleteCommand(final String streamName) {
+    String selectCountSql = "SELECT COUNT(*) FROM %s.%s".formatted(modelsSchema(), streamName);
+    try {
+      int rowCount = testdb.query(ctx -> ctx.fetch(selectCountSql)).get(0).get(0, Integer.class);
+      LOGGER.info("deleting all {} rows from table {}.{}", rowCount, modelsSchema(), streamName);
+      super.deleteCommand(streamName);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 

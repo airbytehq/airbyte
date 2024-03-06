@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.68.2
+low-code: remove parent cursor compoent from incremental substreams' state message
+
+## 0.68.1
+no-op republish of 0.68.0
+
+## 0.68.0
+low-code: Allow page size to be defined with string interpolation
+
 ## 0.67.3
 CDK: upgrade pyarrow
 

@@ -644,10 +644,11 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.5.1   | [#35786](https://github.com/airbytehq/airbyte/pull/35786)  | Declare `live_tests` as an internal poetry package.                                                                        |
 | 4.5.0   | [#35784](https://github.com/airbytehq/airbyte/pull/35784)  | Format command supports kotlin                                                                                             |
 | 4.4.0   | [#35317](https://github.com/airbytehq/airbyte/pull/35317)  | Augment java connector reports to include full logs and junit test results                                                 |
 | 4.3.2   | [#35536](https://github.com/airbytehq/airbyte/pull/35536)  | Make QA checks run correctly on `*-strict-encrypt` connectors.                                                             |
-| 4.3.1   | [#35437](https://github.com/airbytehq/airbyte/pull/35437)  | Do not run QA checks on publish, just MetadataValidation.                                                             |
+| 4.3.1   | [#35437](https://github.com/airbytehq/airbyte/pull/35437)  | Do not run QA checks on publish, just MetadataValidation.                                                                  |
 | 4.3.0   | [#35438](https://github.com/airbytehq/airbyte/pull/35438)  | Optionally disable telemetry with environment variable.                                                                    |
 | 4.2.4   | [#35325](https://github.com/airbytehq/airbyte/pull/35325)  | Use `connectors_qa` for QA checks and remove redundant checks.                                                             |
 | 4.2.3   | [#35322](https://github.com/airbytehq/airbyte/pull/35322)  | Declare `connectors_qa` as an internal package for testing.                                                                |
