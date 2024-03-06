@@ -85,7 +85,7 @@ public class MongoDbCdcInitializer {
 
     final Duration firstRecordWaitTime = Duration.ofSeconds(config.getInitialWaitingTimeSeconds());
     // #35059: debezium heartbeats are not sent on the expected interval. this is
-    // a worksaround to allow making subsequent wait time configurable.
+    // a workaround to allow making subsequent wait time configurable.
     final Duration subsequentRecordWaitTime = firstRecordWaitTime;
     LOGGER.info("Subsequent cdc record wait time: {} seconds", subsequentRecordWaitTime);
     final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);

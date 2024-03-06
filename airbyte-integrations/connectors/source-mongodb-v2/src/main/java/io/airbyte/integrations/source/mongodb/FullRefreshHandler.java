@@ -1,20 +1,15 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.*;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
@@ -26,45 +21,31 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.bson.BsonDocument;
-import org.bson.BsonInt32;
-import org.bson.BsonInt64;
-import org.bson.BsonObjectId;
-import org.bson.BsonString;
-import org.bson.Document;
+
+import org.bson.*;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Retrieves iterators used for the initial snapshot
- */
-public class InitialSnapshotHandler {
+public class FullRefreshHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(InitialSnapshotHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FullRefreshHandler.class);
 
-  /**
-   * For each given stream configured as incremental sync it will output an iterator that will
-   * retrieve documents from the given database. Each iterator will start after the last checkpointed
-   * document, if any, or from the beginning of the stream otherwise.
-   */
-  public List<AutoCloseableIterator<AirbyteMessage>> getIterators(
-                                                                  final List<ConfiguredAirbyteStream> streams,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIterators(final List<ConfiguredAirbyteStream> streams,
                                                                   final MongoDbStateManager stateManager,
                                                                   final MongoDatabase database,
-                                                                  final MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector,
                                                                   final Instant emittedAt,
-                                                                  final int checkpointInterval,
-                                                                  final boolean isEnforceSchema) {
+                                                                  final MongoDbSourceConfig config) {
+      final boolean isEnforceSchema = config.getEnforceSchema();
     return streams
         .stream()
         .peek(airbyteStream -> {
-          if (!airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
+          if (!airbyteStream.getSyncMode().equals((SyncMode.FULL_REFRESH))) {
             // Todo: throw exception here
             LOGGER.warn("Stream {} configured with unsupported sync mode: {}", airbyteStream.getStream().getName(), airbyteStream.getSyncMode());
+          }
         })
-        .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
           final var collection = database.getCollection(collectionName);
@@ -79,30 +60,28 @@ public class InitialSnapshotHandler {
             if (IdType.findByBsonType(idType).isEmpty()) {
               throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED
                   + " (collection = " + collectionName + ").");
+
             }
           });
 
           // find the existing state, if there is one, for this stream
           final Optional<MongoDbStreamState> existingState =
-              stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
-
-          // The filter determines the starting point of this iterator based on the state of this collection.
-          // If a state exists, it will use that state to create a query akin to
-          // "where _id > [last saved state] order by _id ASC".
-          // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
-          final Bson filter = existingState
-              .map(state -> Filters.gt(MongoConstants.ID_FIELD,
-                  switch (state.idType()) {
-            case STRING -> new BsonString(state.id());
-            case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
-            case INT -> new BsonInt32(Integer.parseInt(state.id()));
-            case LONG -> new BsonInt64(Long.parseLong(state.id()));
-          }))
-              // if nothing was found, return a new BsonDocument
-              .orElseGet(BsonDocument::new);
-
-          // When schema is enforced we query for the selected fields
-          // Otherwise we retreive the entire set of fields
+                  stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+            // The filter determines the starting point of this iterator based on the state of this collection.
+            // If a state exists, it will use that state to create a query akin to
+            // "where _id > [last saved state] order by _id ASC".
+            // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
+            final Bson filter = existingState
+                    .map(state -> Filters.gt(MongoConstants.ID_FIELD,
+                            switch (state.idType()) {
+                                case STRING -> new BsonString(state.id());
+                                case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
+                                case INT -> new BsonInt32(Integer.parseInt(state.id()));
+                                case LONG -> new BsonInt64(Long.parseLong(state.id()));
+                            }))
+                    // if nothing was found, return a new BsonDocument
+                    .orElseGet(BsonDocument::new);
+            LOGGER.info("*** filter: {}", filter);
           final var cursor = isEnforceSchema ? collection.find()
               .filter(filter)
               .projection(fields)
@@ -115,9 +94,8 @@ public class InitialSnapshotHandler {
                   .allowDiskUse(true)
                   .cursor();
 
-          final var stateIterator =
-              new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
-                  airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION, isEnforceSchema, false);
+          final var stateIterator = new MongoDbStateIterator(cursor, stateManager, null,
+              airbyteStream, emittedAt, config.getCheckpointInterval(), MongoConstants.CHECKPOINT_DURATION, isEnforceSchema, true);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();

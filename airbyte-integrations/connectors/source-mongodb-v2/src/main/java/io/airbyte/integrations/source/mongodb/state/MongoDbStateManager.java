@@ -134,6 +134,12 @@ public class MongoDbStateManager {
     pairToStreamState.put(airbyteStreamNameNamespacePair, streamState);
   }
 
+  public void deleteStreamState(final String streamName, final String streamNamespace) {
+    final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
+    LOGGER.debug("Deleting stream state for stream {}:{} ...", streamNamespace, streamName);
+    pairToStreamState.remove(airbyteStreamNameNamespacePair);
+  }
+
   /**
    * Resets the state stored in this manager by overwriting the CDC state and clearing the stream
    * state.

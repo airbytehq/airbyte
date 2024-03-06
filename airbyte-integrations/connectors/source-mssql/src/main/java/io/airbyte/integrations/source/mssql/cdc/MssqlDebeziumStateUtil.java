@@ -62,7 +62,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
                                                           Set @res = 1
                                                       ELSE
                                                           Set @res = 0
-                                                      select @res as [included], @MIN_LSN as [min], @MAX_LSN as [max]
+                                                      select @res as [included], @min_lsn as [min], @max_lsn as [max]
                                                   """;
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlDebeziumStateUtil.class);
 

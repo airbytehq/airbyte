@@ -51,6 +51,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private final Integer checkpointInterval;
   private final Duration checkpointDuration;
   private final boolean isEnforceSchema;
+  private final boolean isFullRefresh;
 
   /**
    * Counts the number of records seen in this batch, resets when a state-message has been generated.
@@ -99,7 +100,8 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
                               final Instant emittedAt,
                               final int checkpointInterval,
                               final Duration checkpointDuration,
-                              final boolean isEnforceSchema) {
+                              final boolean isEnforceSchema,
+                              final boolean isFullRefresh) {
     this.iter = iter;
     this.stateManager = stateManager;
     this.stream = stream;
@@ -111,6 +113,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
         stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
     this.cdcMetadataInjector = cdcMetadataInjector;
     this.isEnforceSchema = isEnforceSchema;
+    this.isFullRefresh = isFullRefresh;
   }
 
   @Override
@@ -162,12 +165,16 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
     if (finalStateNext || initialSnapshotFailed) {
       LOGGER.debug("Emitting final state status for stream {}:{}...", stream.getStream().getNamespace(), stream.getStream().getName());
-      final var finalStateStatus = initialSnapshotFailed ? InitialSnapshotStatus.IN_PROGRESS : InitialSnapshotStatus.COMPLETE;
-      final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
-          .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
-      final var state = new MongoDbStreamState(lastId.toString(), finalStateStatus, idType);
+      if (isFullRefresh) {
+        stateManager.deleteStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
+      } else {
+        final var finalStateStatus = initialSnapshotFailed ? InitialSnapshotStatus.IN_PROGRESS : InitialSnapshotStatus.COMPLETE;
+        final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
+                .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+        final var state = new MongoDbStreamState(lastId.toString(), finalStateStatus, idType);
 
-      stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
+        stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
+      }
 
       return new AirbyteMessage()
           .withType(Type.STATE)
@@ -179,7 +186,9 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       if (lastId != null) {
         final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
             .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
-        final var state = new MongoDbStreamState(lastId.toString(), InitialSnapshotStatus.IN_PROGRESS, idType);
+        final var state = new MongoDbStreamState(lastId.toString(),
+                isFullRefresh ? InitialSnapshotStatus.FULL_REFRESH : InitialSnapshotStatus.IN_PROGRESS,
+                idType);
         stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
       }
 
