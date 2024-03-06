@@ -271,7 +271,6 @@ class IncrementalStreamTest(TestCase):
         assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_1}
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2
 
-
     @HttpMocker()
     def test_incremental_running_as_full_refresh(self, http_mocker):
         start_datetime = _NOW - timedelta(days=14)
@@ -301,7 +300,6 @@ class IncrementalStreamTest(TestCase):
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[0].state.stream.stream_state == {"created_at": last_record_date_1}
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 5
-
 
     @HttpMocker()
     def test_legacy_incremental_sync(self, http_mocker):
