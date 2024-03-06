@@ -180,8 +180,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          cursor_value: '{{ response.get("links", {}).get("self", {}) }}'
-          stop_condition: '{{ not response.get("links", {}).get("self", {}) }}'
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router:
         - type: CustomPartitionRouter
           class_name: source_surveymonkey.components.SurveyIdPartitionRouter
@@ -241,8 +241,8 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: '{{ response.get("links", {}).get("self", {}) }}'
-          stop_condition: '{{ not response.get("links", {}).get("self", {}) }}'
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router:
         - type: CustomPartitionRouter
           class_name: source_surveymonkey.components.SurveyIdPartitionRouter
@@ -330,8 +330,8 @@ streams:
                       type: RequestPath
                     pagination_strategy:
                       type: CursorPagination
-                      cursor_value: '{{ response.get("links", {}).get("self", {}) }}'
-                      stop_condition: '{{ not response.get("links", {}).get("self", {}) }}'
+                      cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+                      stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
                   partition_router:
                     - type: CustomPartitionRouter
                       class_name: source_surveymonkey.components.SurveyIdPartitionRouter
