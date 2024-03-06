@@ -1,4 +1,4 @@
-version: 0.65.0
+version: 0.68.2
 
 definitions:
   # COMMON PARTS
@@ -12,11 +12,6 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: ["{{ parameters.get('data_field') }}"]
-  bans_stream_record_selector:
-    type: RecordSelector
-    extractor:
-      type: CustomRecordExtractor
-      class_name: source_zendesk_chat.components.bans_record_extractor.ZendeskChatBansRecordExtractor
   authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
@@ -50,6 +45,7 @@ definitions:
     pagination_strategy:
       type: CustomPaginationStrategy
       class_name: source_zendesk_chat.components.id_offset_pagination.ZendeskChatIdOffsetIncrementPaginationStrategy
+      id_field: id
       page_size: 100
   paginator_time_offset:
     type: DefaultPaginator
@@ -111,13 +107,13 @@ definitions:
       type: NoPagination
 
   # BASE STREAMS
-  # FULL-REFRESH
   base_stream:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever_base"
+  # FULL-REFRESH
   base_stream_with_list_response_no_pagination:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -161,7 +157,7 @@ definitions:
       ignore_stream_slicer_parameters_on_paginated_requests: true
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_zendesk_chat.components.datetime_based_cursor.ZendeskChatTimestampCursor
+      class_name: source_zendesk_chat.components.timestamp_based_cursor.ZendeskChatTimestampCursor
       use_microseconds: "{{ parameters['use_microseconds'] }}"
       cursor_field: "{{ parameters['cursor_field'] }}"
       cursor_datetime_formats:
@@ -260,7 +256,10 @@ definitions:
     retriever:
       $ref: "#/definitions/base_incremental_id_stream/retriever"
       record_selector:
-        $ref: "#/definitions/bans_stream_record_selector"
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_zendesk_chat.components.bans_record_extractor.ZendeskChatBansRecordExtractor
     $parameters:
       name: "bans"
       path: "bans"

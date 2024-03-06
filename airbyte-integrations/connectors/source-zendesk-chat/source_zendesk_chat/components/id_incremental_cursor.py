@@ -61,7 +61,8 @@ class ZendeskChatIdIncrementalCursor(Cursor):
         """
         Use a single Slice.
         """
-        return [None]
+        slice = StreamSlice(partition={}, cursor_slice={})
+        return [slice]
 
     def get_request_params(
         self,

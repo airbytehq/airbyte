@@ -3,9 +3,10 @@
 #
 
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import OffsetIncrement
 
 
@@ -20,10 +21,13 @@ class ZendeskChatIdOffsetIncrementPaginationStrategy(OffsetIncrement):
         id_field (InterpolatedString): the name of the <key> to track and increment from, {<key>: 1234}
     """
 
-    id_field: str = "id"
+    id_field: Union[InterpolatedString, str] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any], **kwargs):
-        self._id_field = self.id_field
+    def __post_init__(self, parameters: Mapping[str, Any], **kwargs) -> None:
+        if not self.id_field:
+            raise ValueError("The `id_field` property is missing, with no-default value.")
+        else:
+            self._id_field = InterpolatedString.create(self.id_field, parameters=parameters).eval(self.config)
         super().__post_init__(parameters=parameters, **kwargs)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:

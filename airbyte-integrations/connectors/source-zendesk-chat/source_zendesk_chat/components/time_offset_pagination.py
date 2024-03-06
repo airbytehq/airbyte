@@ -3,9 +3,10 @@
 #
 
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import OffsetIncrement
 
 
@@ -20,13 +21,13 @@ class ZendeskChatTimeOffsetIncrementPaginationStrategy(OffsetIncrement):
         time_field_name (InterpolatedString): the name of the <key> to track and increment from, {<key>: 1234}
     """
 
-    time_field_name: str = None
+    time_field_name: Union[InterpolatedString, str] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any], **kwargs):
+    def __post_init__(self, parameters: Mapping[str, Any], **kwargs) -> None:
         if not self.time_field_name:
-            raise Exception("The `time_field_name` property is missing, with no-default value.")
+            raise ValueError("The `time_field_name` property is missing, with no-default value.")
         else:
-            self._time_field_name = self.time_field_name
+            self._time_field_name = InterpolatedString.create(self.time_field_name, parameters=parameters).eval(self.config)
         super().__post_init__(parameters=parameters, **kwargs)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
