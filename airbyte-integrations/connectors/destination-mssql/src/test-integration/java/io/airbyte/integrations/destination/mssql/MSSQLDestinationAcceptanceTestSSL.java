@@ -160,7 +160,8 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    // no op, called in {@link io.airbyte.integrations.destination.mssql.MSSQLDestinationAcceptanceTestSSL.cleanUp}
+    // no op, called in {@link
+    // io.airbyte.integrations.destination.mssql.MSSQLDestinationAcceptanceTestSSL.cleanUp}
   }
 
   @AfterAll

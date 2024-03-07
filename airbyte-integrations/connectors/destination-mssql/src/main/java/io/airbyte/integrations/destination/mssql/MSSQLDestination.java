@@ -94,7 +94,8 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  protected JdbcDestinationHandler<? extends MinimumDestinationState> getDestinationHandler(final String databaseName, final JdbcDatabase database,
+  protected JdbcDestinationHandler<? extends MinimumDestinationState> getDestinationHandler(final String databaseName,
+                                                                                            final JdbcDatabase database,
                                                                                             final String rawTableSchema) {
     return new NoOpJdbcDestinationHandler<>(databaseName, database, rawTableSchema, SQLDialect.DEFAULT);
   }
@@ -131,4 +132,5 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   protected boolean shouldAlwaysDisableTypeDedupe() {
     return true;
   }
+
 }
