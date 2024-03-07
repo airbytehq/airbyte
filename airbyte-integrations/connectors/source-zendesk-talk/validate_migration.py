@@ -35,6 +35,28 @@ def _run_most_recent():
         executable="/bin/bash"
     )
 
+def _compare_catalogs():
+    manifest_discover_output = _get_entrypoint_output_from_process(subprocess.run(
+        ["source activate .venv/bin/activate; python main.py discover --config secrets/config.json --debug"],
+        capture_output=True,
+        shell=True,
+        executable="/bin/bash"
+    ))
+    manifest_catalog = list(filter(lambda message: message.catalog, manifest_discover_output._messages))[0]
+
+    mostrecent_discover_output = _get_entrypoint_output_from_process(subprocess.run(
+        ["docker run -v $(pwd)/secrets:/data airbyte/source-zendesk-talk discover --config /data/config.json --debug"],
+        capture_output=True,
+        shell=True,
+        executable="/bin/bash"
+    ))
+    most_recent_catalog = list(filter(lambda message: message.catalog, mostrecent_discover_output._messages))[0]
+
+    for manifest_stream, most_recent_stream in zip(manifest_catalog.catalog.streams, most_recent_catalog.catalog.streams):
+        diff = dict_diff(manifest_stream.json_schema, most_recent_stream.json_schema)
+        assert manifest_stream.json_schema == most_recent_stream.json_schema, f"Stream {most_recent_stream.name} does not have the same schema: \n{diff}"
+    assert manifest_catalog.catalog.streams == most_recent_catalog.catalog.streams
+
 
 def _get_entrypoint_output_from_process(process_output):
     assert process_output.returncode == 0
@@ -52,9 +74,10 @@ def print_requests(name, output):
     for outbound_log in filter(lambda log: "outbound API request" in log.log.message, output.logs):
         print(f"\t{outbound_log.log.message}")
 
+_compare_catalogs()
 
-manifest_output = _get_entrypoint_output(manifest_output_filename)
-mostrecent_output = _get_entrypoint_output(mostrecent_output_filename)
+manifest_output = _get_entrypoint_output("manifest")
+mostrecent_output = _get_entrypoint_output("mostrecent")
 
 print_requests("MANIFEST REQUESTS", manifest_output)
 print_requests("MOSTRECENT REQUESTS", mostrecent_output)
