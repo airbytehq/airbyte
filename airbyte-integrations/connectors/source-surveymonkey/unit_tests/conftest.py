@@ -43,6 +43,6 @@ def config(args_mock):
     return {
         **args_mock,
         "survey_ids": ["307785415"],
-        "credentials": {},
+        "credentials": {"access_token": "access_token"},
         "start_date": args_mock["start_date"].to_iso8601_string()
     }
