@@ -78,8 +78,9 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
   }
 
   /**
-   * If the destination should always disable type dedupe, override this method to return true.
-   * We only type and dedupe if we create final tables.
+   * If the destination should always disable type dedupe, override this method to return true. We
+   * only type and dedupe if we create final tables.
+   *
    * @return whether the destination should always disable type dedupe
    */
   protected boolean shouldAlwaysDisableTypeDedupe() {
