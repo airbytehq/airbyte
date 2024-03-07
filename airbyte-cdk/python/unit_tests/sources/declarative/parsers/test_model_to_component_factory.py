@@ -1267,7 +1267,6 @@ def test_create_custom_components(manifest, field_name, expected_value, expected
         assert getattr(custom_component, field_name) == expected_value
 
 
-
 def test_custom_components_do_not_contain_extra_fields():
     custom_substream_partition_router_manifest = {
         "type": "CustomPartitionRouter",
