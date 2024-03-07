@@ -126,4 +126,9 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   public boolean isV2Destination() {
     return true;
   }
+
+  @Override
+  protected boolean shouldAlwaysDisableTypeDedupe() {
+    return true;
+  }
 }
