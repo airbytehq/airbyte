@@ -139,6 +139,11 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   @Override
+  protected boolean shouldAlwaysDisableTypeDedupe() {
+    return true;
+  }
+
+  @Override
   protected JdbcSqlGenerator getSqlGenerator() {
     return new RawOnlySqlGenerator(new OracleNameTransformer());
   }

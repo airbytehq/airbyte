@@ -77,6 +77,15 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     return "schema";
   }
 
+  /**
+   * If the destination should always disable type dedupe, override this method to return true.
+   * We only type and dedupe if we create final tables.
+   * @return whether the destination should always disable type dedupe
+   */
+  protected boolean shouldAlwaysDisableTypeDedupe() {
+    return false;
+  }
+
   public AbstractJdbcDestination(final String driverClass,
                                  final NamingConventionTransformer namingResolver,
                                  final SqlOperations sqlOperations) {
@@ -323,7 +332,7 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
     final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
     final DestinationHandler<? extends MinimumDestinationState> destinationHandler =
         getDestinationHandler(databaseName, database, rawNamespaceOverride.orElse(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
-    final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
+    final boolean disableTypeDedupe = isTypeDedupeDisabled(config);
     final TyperDeduper typerDeduper;
     if (disableTypeDedupe) {
       typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());
@@ -332,6 +341,10 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
           new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());
     }
     return typerDeduper;
+  }
+
+  private boolean isTypeDedupeDisabled(final JsonNode config) {
+    return (config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false)) || shouldAlwaysDisableTypeDedupe();
   }
 
 }
