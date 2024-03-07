@@ -1,6 +1,6 @@
 # HubSpot Migration Guide
 
-## Upgrading to 3.0.0
+## Upgrading to 4.0.0
 
 :::note
 This change is only breaking if you are syncing streams `Deals Property History` or `Companies Peoperty History`.
