@@ -11,7 +11,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction;
@@ -47,17 +47,16 @@ public class SnowflakeFinalTableUpcaseMigrator implements Migration<SnowflakeSta
     this.rawNamespace = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).orElse(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
   }
 
-  @Override
-  public boolean requireMigration(@NotNull SnowflakeState state) {
-    return !state.getFinalTableNameUppercase();
-  }
-
   @NotNull
   @Override
   public MigrationResult<SnowflakeState> migrateIfNecessary(
                                                             @NotNull DestinationHandler<SnowflakeState> destinationHandler,
                                                             @NotNull StreamConfig streamConfig,
-                                                            @NotNull DestinationInitialState<SnowflakeState> state) {
+                                                            @NotNull DestinationInitialStatus<SnowflakeState> status) {
+    if (status.destinationState().getFinalTableNameUppercase()) {
+
+    }
+
     final StreamId caseSensitiveStreamId = buildStreamId_caseSensitive(
         streamConfig.id().originalNamespace(),
         streamConfig.id().originalName(),
@@ -71,7 +70,7 @@ public class SnowflakeFinalTableUpcaseMigrator implements Migration<SnowflakeSta
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
-    final boolean existingTableUppercaseDoesNotExist = state.isFinalTablePresent();
+    final boolean existingTableUppercaseDoesNotExist = status.isFinalTablePresent();
     LOGGER.info(
         "Checking whether upcasing migration is necessary for {}.{}. Sync mode requires migration: {}; existing case-sensitive table exists: {}; existing uppercased table does not exist: {}",
         streamConfig.id().originalNamespace(),
@@ -96,16 +95,15 @@ public class SnowflakeFinalTableUpcaseMigrator implements Migration<SnowflakeSta
       final SnowflakeState updatedState = new SnowflakeState(
           // We don't need to trigger a soft reset here, because we've already done it.
           false,
-          state.destinationState().getV1V2MigrationDone(),
+          status.destinationState().getV1V2MigrationDone(),
           // Update the migration status to completed
-          true,
-          state.destinationState().getExtractedAtInUtc());
+          true);
       // Invalidate the initial state - SnowflakeDestinationHandler will now be able to find the final
       // tables
       // so we need to refetch it.
       return new MigrationResult<>(updatedState, true);
     }
-    return new MigrationResult<>(state.destinationState(), true);
+    return new MigrationResult<>(status.destinationState(), true);
   }
 
   // These methods were copied from
