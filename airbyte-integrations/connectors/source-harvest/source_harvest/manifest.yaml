@@ -1711,8 +1711,10 @@ streams:
             type: number
           expense_category_name:
             type: string
+          from:
+            type: number
           to:
-            type: string
+            type: number
           total_amount:
             type: number
         type: object
@@ -1763,18 +1765,18 @@ streams:
         fields:
           - path:
               - from
-            value: '{{ stream_partition.start_date }}'
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: '{{ stream_partition.end_date }}'
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -1792,7 +1794,7 @@ streams:
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       step: P1M
-      cursor_granularity: PT1S
+      cursor_granularity: P1D
   - type: DeclarativeStream
     name: expenses_clients
     primary_key: []
@@ -1859,18 +1861,18 @@ streams:
         fields:
           - path:
               - from
-            value: '{{ stream_partition.start_date }}'
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: '{{ stream_partition.end_date }}'
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -1888,7 +1890,7 @@ streams:
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       step: P1M
-      cursor_granularity: PT1S
+      cursor_granularity: P1D
   - type: DeclarativeStream
     name: expenses_projects
     primary_key: []
@@ -1959,18 +1961,18 @@ streams:
         fields:
           - path:
               - from
-            value: '{{ stream_partition.start_date }}'
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: '{{ stream_partition.end_date }}'
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -1988,7 +1990,7 @@ streams:
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       step: P1M
-      cursor_granularity: PT1S
+      cursor_granularity: P1D
   - type: DeclarativeStream
     name: expenses_team
     primary_key: []
@@ -2057,18 +2059,18 @@ streams:
         fields:
           - path:
               - from
-            value: '{{ stream_partition.start_date }}'
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: '{{ stream_partition.end_date }}'
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -2086,7 +2088,7 @@ streams:
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       step: P1M
-      cursor_granularity: PT1S
+      cursor_granularity: P1D
   - type: DeclarativeStream
     name: project_budget
     primary_key: []
@@ -2226,18 +2228,18 @@ streams:
         fields:
           - path:
               - from
-            value: '{{ stream_partition.start_date }}'
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: '{{ stream_partition.end_date }}'
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -2255,7 +2257,7 @@ streams:
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       step: P1M
-      cursor_granularity: PT1S
+      cursor_granularity: P1D
   - type: DeclarativeStream
     name: time_projects
     primary_key: []
@@ -2274,9 +2276,13 @@ streams:
             type: string
           currency:
             type: string
+          from:
+            type: string
           project_id:
             type: number
           project_name:
+            type: string
+          to:
             type: string
           total_hours:
             type: number
@@ -2328,18 +2334,18 @@ streams:
         fields:
           - path:
               - from
-            value: '{{ stream_partition.start_date }}'
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: '{{ stream_partition.end_date }}'
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -2357,7 +2363,7 @@ streams:
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       step: P1M
-      cursor_granularity: PT1S
+      cursor_granularity: P1D
   - type: DeclarativeStream
     name: time_tasks
     primary_key: []
@@ -2426,18 +2432,18 @@ streams:
         fields:
           - path:
               - from
-            value: '{{ stream_partition.start_date }}'
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: '{{ stream_partition.end_date }}'
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -2455,7 +2461,7 @@ streams:
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       step: P1M
-      cursor_granularity: PT1S
+      cursor_granularity: P1D
   - type: DeclarativeStream
     name: time_team
     primary_key: []
@@ -2530,18 +2536,18 @@ streams:
         fields:
           - path:
               - from
-            value: '{{ stream_partition.start_date }}'
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: '{{ stream_partition.end_date }}'
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -2559,7 +2565,7 @@ streams:
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       step: P1M
-      cursor_granularity: PT1S
+      cursor_granularity: P1D
   - type: DeclarativeStream
     name: uninvoiced
     primary_key: []
@@ -2574,10 +2580,14 @@ streams:
             type: string
           currency:
             type: string
+          from:
+            type: number
           project_id:
             type: number
           project_name:
             type: string
+          to:
+            type: number
           total_hours:
             type: number
           uninvoiced_amount:
@@ -2634,18 +2644,18 @@ streams:
         fields:
           - path:
               - from
-            value: '{{ stream_partition.start_date }}'
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: '{{ stream_partition.end_date }}'
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -2663,7 +2673,7 @@ streams:
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       step: P1M
-      cursor_granularity: PT1S
+      cursor_granularity: P1D
   - type: DeclarativeStream
     name: estimate_messages
     primary_key:
