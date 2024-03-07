@@ -3,9 +3,9 @@
 #
 
 import logging
-import pendulum
 from typing import Any, List, Mapping
 
+import pendulum
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import Source
