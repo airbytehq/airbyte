@@ -1,7 +1,7 @@
 # Microsoft SQL Server (MSSQL)
-Airbyte's certified MySQL connector offers the following features:
+Airbyte's certified MSSQL connector offers the following features:
 * Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) using the [binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html).
-* All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
+* Incremental as well as Full Refresh [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 * Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
 
@@ -38,11 +38,11 @@ This step is optional but highly recommended to allow for better permission cont
 #### 3. Your database user should now be ready for use with Airbyte!
 
 #### Airbyte Cloud
-On Airbyte Cloud, only secured connections to your MSSQL instance are supported in source configuration, Either by configuring you connection usign one of the supported SSL Methods or by using an SSH Tunnel.
+On Airbyte Cloud, only secured connections to your MSSQL instance are supported in source configuration. You may either configure your connection using one of the supported SSL Methods or by using an SSH Tunnel.
 
 ## Change Data Capture \(CDC\)
 
-We use [SQL Server's change data capture feature](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017) with transaction logs to capture row-level `INSERT`, `UPDATE` and `DELETE` operations that occur on cdc-enabled tables.
+We use [SQL Server's change data capture feature](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017) with transaction logs to capture row-level `INSERT`, `UPDATE` and `DELETE` operations that occur on CDC-enabled tables.
 
 Some extra setup requiring at least _db_owner_ permissions on the database\(s\) you intend to sync from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
 
@@ -58,7 +58,7 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 #### CDC Limitations
 
 - Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
-- `hierarchyid` and `sql_variant` types are not processed in CDC migration type (not supported by debezium). For more details please check
+- `hierarchyid` and `sql_variant` types are not processed in CDC migration type (not supported by Debezium). For more details please check
 [this ticket](https://github.com/airbytehq/airbyte/issues/14411)
 - CDC is only available for SQL Server 2016 Service Pack 1 \(SP1\) and later.
 - _db_owner_ \(or higher\) permissions are required to perform the [neccessary setup](mssql.md#setting-up-cdc-for-mssql) for CDC.
@@ -327,7 +327,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.0   | 2024-03-06 | [35873](https://github.com/airbytehq/airbyte/pull/35873)                                                          | Terabyte sized tables support, reliability improvements, bug fixes.                                                                             |
+| 4.0.0   | 2024-03-06 | [35873](https://github.com/airbytehq/airbyte/pull/35873)                                                          | Terabyte-sized tables support, reliability improvements, bug fixes.                                                                             |
 | 3.7.7   | 2024-03-06 | [35816](https://github.com/airbytehq/airbyte/pull/35816)                                                          | Fix query that was failing on a case sensitive server.                                                                                          |
 | 3.7.6   | 2024-03-04 | [35721](https://github.com/airbytehq/airbyte/pull/35721)                                                          | Fix tests                                                                                                                                       |
 | 3.7.5   | 2024-02-29 | [35739](https://github.com/airbytehq/airbyte/pull/35739)                                                          | Allow configuring the queue size used for cdc events.                                                                                           |
