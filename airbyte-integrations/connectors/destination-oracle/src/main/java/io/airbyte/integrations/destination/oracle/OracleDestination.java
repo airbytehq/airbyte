@@ -18,6 +18,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.NoOpJdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.RawOnlySqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,6 +143,12 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
     return new RawOnlySqlGenerator(new OracleNameTransformer());
   }
 
+  @Override
+  protected JdbcDestinationHandler<? extends MinimumDestinationState> getDestinationHandler(final String databaseName, final JdbcDatabase database,
+                                                                                            final String rawTableSchema) {
+    return new NoOpJdbcDestinationHandler<>(databaseName, database, rawTableSchema, SQLDialect.DEFAULT);
+  }
+
   private static void convertAndImportCertificate(final String certificate)
       throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
@@ -158,11 +166,6 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
-  }
-
-  @Override
-  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
-    return new NoOpJdbcDestinationHandler(databaseName, database);
   }
 
   public static void main(final String[] args) throws Exception {
