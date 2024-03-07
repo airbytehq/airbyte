@@ -35,7 +35,9 @@ public abstract class ContainerFactory<C extends GenericContainer<?>> {
 
   private record ContainerKey<C extends GenericContainer<?>> (Class<? extends ContainerFactory> clazz,
                                                               DockerImageName imageName,
-                                                              List<? extends NamedContainerModifier<C>> methods) {};
+                                                              List<? extends NamedContainerModifier<C>> methods) {}
+
+  ;
 
   private static class ContainerOrException {
 
@@ -70,7 +72,7 @@ public abstract class ContainerFactory<C extends GenericContainer<?>> {
 
   }
 
-  private final ConcurrentMap<ContainerKey<C>, ContainerOrException> SHARED_CONTAINERS = new ConcurrentHashMap<>();
+  private static final ConcurrentMap<ContainerKey<?>, ContainerOrException> SHARED_CONTAINERS = new ConcurrentHashMap<>();
   private static final AtomicInteger containerId = new AtomicInteger(0);
 
   private final MdcScope.Builder getTestContainerLogMdcBuilder(DockerImageName imageName,
@@ -112,7 +114,7 @@ public abstract class ContainerFactory<C extends GenericContainer<?>> {
     // Container creation can be exceedingly slow.
     // Furthermore, we need to handle exceptions raised during container creation.
     ContainerOrException containerOrError = SHARED_CONTAINERS.computeIfAbsent(containerKey,
-        key -> new ContainerOrException(() -> createAndStartContainer(key.imageName(), key.methods())));
+        key -> new ContainerOrException(() -> createAndStartContainer(key.imageName(), ((ContainerKey<C>) key).methods())));
     // Instead, the container creation (if applicable) is deferred to here.
     return (C) containerOrError.container();
   }
@@ -125,8 +127,7 @@ public abstract class ContainerFactory<C extends GenericContainer<?>> {
   @SuppressWarnings("unchecked")
   @Deprecated
   public final C exclusive(String imageName, String... methods) {
-    return exclusive(imageName,
-        (NamedContainerModifier<C>) Stream.of(methods).map(n -> new NamedContainerModifierImpl<C>(n, resolveModifierByName(n))).toList());
+    return exclusive(imageName, Stream.of(methods).map(n -> new NamedContainerModifierImpl<C>(n, resolveModifierByName(n))).toList());
   }
 
   public final C exclusive(String imageName) {
@@ -137,7 +138,7 @@ public abstract class ContainerFactory<C extends GenericContainer<?>> {
     return exclusive(imageName, List.of(namedContainerModifiers));
   }
 
-  public final C exclusive(String imageName, List<NamedContainerModifier<C>> namedContainerModifiers) {
+  public final C exclusive(String imageName, List<? extends NamedContainerModifier<C>> namedContainerModifiers) {
     return (C) createAndStartContainer(DockerImageName.parse(imageName), namedContainerModifiers);
   }
 

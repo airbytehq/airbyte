@@ -142,7 +142,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix);
     }
-    final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
+    final String commitRawTable = commitRawTable(stream.id());
 
     return transactionally(insertNewRecords, dedupFinalTable, cdcDeletes, commitRawTable);
   }
@@ -227,6 +227,21 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
     }
   }
 
+  private static String airbyteExtractedAtUtcForced(final String sqlExpression) {
+    return new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
+        """
+        TIMESTAMPADD(
+          HOUR,
+          EXTRACT(timezone_hour from ${expression}),
+          TIMESTAMPADD(
+            MINUTE,
+            EXTRACT(timezone_minute from ${expression}),
+            CONVERT_TIMEZONE('UTC', ${expression})
+          )
+        )
+        """);
+  }
+
   @VisibleForTesting
   String insertNewRecords(final StreamConfig stream,
                           final String finalSuffix,
@@ -297,14 +312,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
           "extractedAtCondition", extractedAtCondition,
           "column_list", columnList,
           "pk_list", pkList,
-          "cursor_order_clause", cursorOrderClause)).replace(
+          "cursor_order_clause", cursorOrderClause,
+          "airbyte_extracted_at_utc", airbyteExtractedAtUtcForced("\"_airbyte_extracted_at\""))).replace(
               """
               WITH intermediate_data AS (
                 SELECT
               ${column_casts}
               ARRAY_CONSTRUCT_COMPACT(${column_errors}) as "_airbyte_cast_errors",
                 "_airbyte_raw_id",
-                "_airbyte_extracted_at"
+                ${airbyte_extracted_at_utc} as "_airbyte_extracted_at"
                 FROM ${raw_table_id}
                 WHERE (
                     "_airbyte_loaded_at" IS NULL
@@ -332,14 +348,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
           "column_casts", columnCasts,
           "column_errors", columnErrors,
           "extractedAtCondition", extractedAtCondition,
-          "column_list", columnList)).replace(
+          "column_list", columnList,
+          "airbyte_extracted_at_utc", airbyteExtractedAtUtcForced("\"_airbyte_extracted_at\""))).replace(
               """
               WITH intermediate_data AS (
                 SELECT
               ${column_casts}
               ARRAY_CONSTRUCT_COMPACT(${column_errors}) as "_airbyte_cast_errors",
                 "_airbyte_raw_id",
-                "_airbyte_extracted_at"
+                ${airbyte_extracted_at_utc} as "_airbyte_extracted_at"
                 FROM ${raw_table_id}
                 WHERE
                   "_airbyte_loaded_at" IS NULL
@@ -356,7 +373,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
 
   private static String buildExtractedAtCondition(final Optional<Instant> minRawTimestamp) {
     return minRawTimestamp
-        .map(ts -> " AND \"_airbyte_extracted_at\" > '" + ts + "'")
+        .map(ts -> " AND " + airbyteExtractedAtUtcForced("\"_airbyte_extracted_at\"") + " > '" + ts + "'")
         .orElse("");
   }
 
@@ -373,13 +390,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
     return new StringSubstitutor(Map.of(
         "final_table_id", id.finalTableId(QUOTE, finalSuffix.toUpperCase()),
         "pk_list", pkList,
-        "cursor_order_clause", cursorOrderClause)).replace(
+        "cursor_order_clause", cursorOrderClause,
+        "airbyte_extracted_at_utc", airbyteExtractedAtUtcForced("\"_AIRBYTE_EXTRACTED_AT\""))).replace(
             """
             DELETE FROM ${final_table_id}
             WHERE "_AIRBYTE_RAW_ID" IN (
               SELECT "_AIRBYTE_RAW_ID" FROM (
                 SELECT "_AIRBYTE_RAW_ID", row_number() OVER (
-                  PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} "_AIRBYTE_EXTRACTED_AT" DESC
+                  PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} ${airbyte_extracted_at_utc} DESC
                 ) as row_number FROM ${final_table_id}
               )
               WHERE row_number != 1
@@ -406,15 +424,13 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
   }
 
   @VisibleForTesting
-  String commitRawTable(final StreamId id, final Optional<Instant> minRawTimestamp) {
+  String commitRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "extractedAtCondition", buildExtractedAtCondition(minRawTimestamp))).replace(
+        "raw_table_id", id.rawTableId(QUOTE))).replace(
             """
             UPDATE ${raw_table_id}
             SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP()
             WHERE "_airbyte_loaded_at" IS NULL
-              ${extractedAtCondition}
             ;""");
   }
 
