@@ -269,7 +269,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
         refresh_date = today - self.insights_lookback_period
         if self._cursor_value:
-            start_date = self._cursor_value + pendulum.duration(days=self.time_increment)
+            start_date = self._cursor_value
             if start_date > refresh_date:
                 logger.info(
                     f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."
