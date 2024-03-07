@@ -211,6 +211,9 @@ async def with_installed_python_package(
     has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
 
     if has_pyproject_toml:
+        # This is a temporary change in order to scope an issue. There should be following action items once we have more information.
+        # maxi297 has an action item on his calendar for 2024-03-21 to review this
+        # container = with_poetry_cache(container, context.dagger_client)
         container = _install_python_dependencies_from_poetry(container, additional_dependency_groups, install_root_package)
     elif has_setup_py:
         container = with_pip_cache(container, context.dagger_client)
