@@ -16,7 +16,6 @@ from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_str
 )
 
 _message_repository = InMemoryMessageRepository()
-_final_state_cursor = FinalStateCursor(stream_name="stream1", stream_namespace=None, message_repository=_message_repository)
 
 _id_only_stream = DefaultStream(
     partition_generator=InMemoryPartitionGenerator(
@@ -34,7 +33,7 @@ _id_only_stream = DefaultStream(
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
     message_repository=_message_repository,
-    cursor=_final_state_cursor
+    cursor=None,
 )
 
 _id_only_stream_with_slice_logger = DefaultStream(
@@ -53,7 +52,7 @@ _id_only_stream_with_slice_logger = DefaultStream(
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
     message_repository=_message_repository,
-    cursor=_final_state_cursor
+    cursor=None,
 )
 
 _id_only_stream_with_primary_key = DefaultStream(
@@ -72,7 +71,7 @@ _id_only_stream_with_primary_key = DefaultStream(
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
     message_repository=_message_repository,
-    cursor=_final_state_cursor
+    cursor=None,
 )
 
 _id_only_stream_multiple_partitions = DefaultStream(
@@ -94,7 +93,7 @@ _id_only_stream_multiple_partitions = DefaultStream(
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
     message_repository=_message_repository,
-    cursor=_final_state_cursor
+    cursor=None,
 )
 
 _id_only_stream_multiple_partitions_concurrency_level_two = DefaultStream(
@@ -116,7 +115,7 @@ _id_only_stream_multiple_partitions_concurrency_level_two = DefaultStream(
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
     message_repository=_message_repository,
-    cursor=_final_state_cursor  # I have my suspicions if this will work?
+    cursor=None,
 )
 
 _stream_raising_exception = DefaultStream(
@@ -135,7 +134,7 @@ _stream_raising_exception = DefaultStream(
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
     message_repository=_message_repository,
-    cursor=_final_state_cursor
+    cursor=None,
 )
 
 test_concurrent_cdk_single_stream = (
@@ -263,7 +262,7 @@ test_concurrent_cdk_multiple_streams = (
                     cursor_field=None,
                     logger=logging.getLogger("test_logger"),
                     message_repository=_message_repository,
-                    cursor=FinalStateCursor(stream_name="stream2", stream_namespace=None, message_repository=_message_repository)
+                    cursor=None,
                 ),
             ]
         )
