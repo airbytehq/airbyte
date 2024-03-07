@@ -205,6 +205,14 @@ public class Jsons {
     return serialize(jsonNode).getBytes(Charsets.UTF_8);
   }
 
+  public static JsonNode fromBytes(final byte[] jsonBytes) {
+    try {
+      return OBJECT_MAPPER.readTree(jsonBytes);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Use string length as an estimation for byte size, because all ASCII characters are one byte long
    * in UTF-8, and ASCII characters cover most of the use cases. To be more precise, we can convert
