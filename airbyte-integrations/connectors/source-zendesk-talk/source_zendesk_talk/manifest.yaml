@@ -14,6 +14,14 @@ definitions:
     oauth:
       type: BearerAuthenticator
       api_token: "{{ config['credentials']['access_token'] }}"
+  non_incremental_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestPath
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: '{{ response.get("next_page", {}) }}'
+      stop_condition: '{{ not response.get("next_page", {}) }}'
 
 spec:
   type: Spec
@@ -147,8 +155,7 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      paginator:
-        type: NoPagination
+      paginator: "#/definitions/non_incremental_paginator"
       requester:
         path: addresses
         type: HttpRequester
@@ -215,8 +222,7 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      paginator:
-        type: NoPagination
+      paginator: "#/definitions/non_incremental_paginator"
       requester:
         path: /stats/agents_activity
         type: HttpRequester
@@ -479,8 +485,7 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      paginator:
-        type: NoPagination
+      paginator: "#/definitions/non_incremental_paginator"
       requester:
         path: /greeting_categories
         type: HttpRequester
@@ -523,8 +528,7 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      paginator:
-        type: NoPagination
+      paginator: "#/definitions/non_incremental_paginator"
       requester:
         path: /greetings
         type: HttpRequester
@@ -618,8 +622,7 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      paginator:
-        type: NoPagination
+      paginator: "#/definitions/non_incremental_paginator"
       requester:
         path: phone_numbers
         type: HttpRequester
@@ -1251,8 +1254,7 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      paginator:
-        type: NoPagination
+      paginator: "#/definitions/non_incremental_paginator"
       requester:
         path: /ivr
         type: HttpRequester
@@ -1360,8 +1362,7 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      paginator:
-        type: NoPagination
+      paginator: "#/definitions/non_incremental_paginator"
       requester:
         path: /ivr
         type: HttpRequester
@@ -1413,8 +1414,7 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
-      paginator:
-        type: NoPagination
+      paginator: "#/definitions/non_incremental_paginator"
       requester:
         path: /ivr
         type: HttpRequester
