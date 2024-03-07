@@ -91,6 +91,7 @@ def test_substream_slicer(test_name, stream_slicers, expected_slices):
     slices = [s for s in slicer.stream_slices()]
     assert slices == expected_slices
 
+
 def test_stream_slices_raises_exception_if_multiple_cursor_slice_components():
     stream_slicers = [
         DatetimeBasedCursor(
