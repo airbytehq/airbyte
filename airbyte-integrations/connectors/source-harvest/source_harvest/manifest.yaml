@@ -1793,7 +1793,7 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P1M
+      step: P1Y
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: expenses_clients
@@ -1889,7 +1889,7 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P1M
+      step: P1Y
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: expenses_projects
@@ -1989,7 +1989,7 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P1M
+      step: P1Y
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: expenses_team
@@ -2087,7 +2087,7 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P1M
+      step: P1Y
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: project_budget
@@ -2256,7 +2256,7 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P1M
+      step: P1Y
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: time_projects
@@ -2362,7 +2362,7 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P1M
+      step: P1Y
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: time_tasks
@@ -2460,7 +2460,7 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P1M
+      step: P1Y
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: time_team
@@ -2564,7 +2564,7 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P1M
+      step: P1Y
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: uninvoiced
@@ -2672,7 +2672,7 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P1M
+      step: P1Y
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: estimate_messages
