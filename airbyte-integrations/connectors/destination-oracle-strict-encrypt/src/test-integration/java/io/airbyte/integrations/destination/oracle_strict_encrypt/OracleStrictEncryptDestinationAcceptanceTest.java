@@ -180,7 +180,8 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
                 config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"), Duration.ofMinutes(5));
+                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"),
+            Duration.ofMinutes(5));
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
     final String networkServiceBanner =
@@ -207,7 +208,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
                 "oracle.net.encryption_types_client=( " + algorithm + " )", ";"),
-        Duration.ofMinutes(5));
+            Duration.ofMinutes(5));
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
     final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";

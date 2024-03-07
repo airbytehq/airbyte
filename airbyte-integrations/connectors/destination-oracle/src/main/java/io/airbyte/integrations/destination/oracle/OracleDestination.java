@@ -144,7 +144,8 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   @Override
-  protected JdbcDestinationHandler<? extends MinimumDestinationState> getDestinationHandler(final String databaseName, final JdbcDatabase database,
+  protected JdbcDestinationHandler<? extends MinimumDestinationState> getDestinationHandler(final String databaseName,
+                                                                                            final JdbcDatabase database,
                                                                                             final String rawTableSchema) {
     return new NoOpJdbcDestinationHandler<>(databaseName, database, rawTableSchema, SQLDialect.DEFAULT);
   }
