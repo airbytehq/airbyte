@@ -51,6 +51,16 @@ def config_fixture():
     return {
         "start_date": "2021-01-10T00:00:00Z",
         "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"},
+        "enable_experimental_streams": False
+    }
+
+
+@pytest.fixture(name="config_experimental")
+def config_eperimantal_fixture():
+    return {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"},
+        "enable_experimental_streams": True
     }
 
 

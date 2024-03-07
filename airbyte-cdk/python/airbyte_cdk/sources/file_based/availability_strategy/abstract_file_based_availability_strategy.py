@@ -8,6 +8,12 @@ from typing import TYPE_CHECKING, Optional, Tuple
 
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
+    AbstractAvailabilityStrategy,
+    StreamAvailability,
+    StreamAvailable,
+    StreamUnavailable,
+)
 from airbyte_cdk.sources.streams.core import Stream
 
 if TYPE_CHECKING:
@@ -35,3 +41,17 @@ class AbstractFileBasedAvailabilityStrategy(AvailabilityStrategy):
         Returns (True, None) if successful, otherwise (False, <error message>).
         """
         ...
+
+
+class AbstractFileBasedAvailabilityStrategyWrapper(AbstractAvailabilityStrategy):
+    def __init__(self, stream: "AbstractFileBasedStream"):
+        self.stream = stream
+
+    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
+        is_available, reason = self.stream.availability_strategy.check_availability(self.stream, logger, None)
+        if is_available:
+            return StreamAvailable()
+        return StreamUnavailable(reason or "")
+
+    def check_availability_and_parsability(self, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
+        return self.stream.availability_strategy.check_availability_and_parsability(self.stream, logger, None)

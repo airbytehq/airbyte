@@ -12,8 +12,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,22 +71,26 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     final Optional<Throwable> deinterpolatableException = ExceptionUtils.getThrowableList(throwable).stream()
         .filter(t -> THROWABLES_TO_DEINTERPOLATE.stream().anyMatch(deinterpolatableClass -> deinterpolatableClass.isAssignableFrom(t.getClass())))
         .findFirst();
+    final boolean messageWasMangled;
     if (deinterpolatableException.isPresent()) {
+      final String originalMessage = deinterpolatableException.get().getMessage();
       mangledMessage = STRINGS_TO_DEINTERPOLATE.stream()
           // Sort the strings longest to shortest, in case any target string is a substring of another
           // e.g. "airbyte_internal" should be swapped out before "airbyte"
           .sorted(Comparator.comparing(String::length).reversed())
-          .reduce(deinterpolatableException.get().getMessage(), AirbyteExceptionHandler::deinterpolate);
+          .reduce(originalMessage, AirbyteExceptionHandler::deinterpolate);
+      messageWasMangled = !mangledMessage.equals(originalMessage);
     } else {
       mangledMessage = throwable.getMessage();
+      messageWasMangled = false;
     }
 
-    // If we did not modify the message (either not a deinterpolatable class, or we tried to
-    // deinterpolate
-    // but made no changes) then emit our default trace message
-    if (mangledMessage.equals(throwable.getMessage())) {
+    if (!messageWasMangled) {
+      // If we did not modify the message (either not a deinterpolatable class, or we tried to
+      // deinterpolate but made no changes) then emit our default trace message
       AirbyteTraceMessageUtility.emitSystemErrorTrace(throwable, logMessage);
     } else {
+      // If we did modify the message, then emit a custom trace message
       AirbyteTraceMessageUtility.emitCustomErrorTrace(throwable.getMessage(), mangledMessage);
     }
 
@@ -95,7 +99,8 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
 
   @NotNull
   private static String deinterpolate(final String message, final String targetString) {
-    final String quotedTarget = '(' + Pattern.quote(targetString) + ')';
+    // (?i) makes the pattern case-insensitive
+    final String quotedTarget = '(' + "(?i)" + Pattern.quote(targetString) + ')';
     final String targetRegex = REGEX_PREFIX + quotedTarget + REGEX_SUFFIX;
     final Pattern pattern = Pattern.compile(targetRegex);
     final Matcher matcher = pattern.matcher(message);
@@ -116,7 +121,7 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
 
   public static void addStringForDeinterpolation(final String string) {
     if (string != null) {
-      STRINGS_TO_DEINTERPOLATE.add(string);
+      STRINGS_TO_DEINTERPOLATE.add(string.toLowerCase());
     }
   }
 
@@ -139,19 +144,19 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   @VisibleForTesting
   static void addCommonStringsToDeinterpolate() {
     // Add some common strings to deinterpolate, regardless of what the connector is doing
-    STRINGS_TO_DEINTERPOLATE.add("airbyte");
-    STRINGS_TO_DEINTERPOLATE.add("config");
-    STRINGS_TO_DEINTERPOLATE.add("configuration");
-    STRINGS_TO_DEINTERPOLATE.add("description");
-    STRINGS_TO_DEINTERPOLATE.add("email");
-    STRINGS_TO_DEINTERPOLATE.add("id");
-    STRINGS_TO_DEINTERPOLATE.add("location");
-    STRINGS_TO_DEINTERPOLATE.add("message");
-    STRINGS_TO_DEINTERPOLATE.add("name");
-    STRINGS_TO_DEINTERPOLATE.add("state");
-    STRINGS_TO_DEINTERPOLATE.add("status");
-    STRINGS_TO_DEINTERPOLATE.add("type");
-    STRINGS_TO_DEINTERPOLATE.add("userEmail");
+    addStringForDeinterpolation("airbyte");
+    addStringForDeinterpolation("config");
+    addStringForDeinterpolation("configuration");
+    addStringForDeinterpolation("description");
+    addStringForDeinterpolation("email");
+    addStringForDeinterpolation("id");
+    addStringForDeinterpolation("location");
+    addStringForDeinterpolation("message");
+    addStringForDeinterpolation("name");
+    addStringForDeinterpolation("state");
+    addStringForDeinterpolation("status");
+    addStringForDeinterpolation("type");
+    addStringForDeinterpolation("userEmail");
   }
 
 }

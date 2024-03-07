@@ -51,6 +51,9 @@
     },
     "updated_at": {
       "type": ["null", "integer"]
+    },
+    "messenger_writable": {
+      "type": ["null", "boolean"]
     }
   }
 }

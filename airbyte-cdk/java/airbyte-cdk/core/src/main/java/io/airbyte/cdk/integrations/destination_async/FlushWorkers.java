@@ -6,13 +6,10 @@ package io.airbyte.cdk.integrations.destination_async;
 
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.cdk.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination_async.state.FlushFailure;
 import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -170,7 +167,7 @@ public class FlushWorkers implements AutoCloseable {
               AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
 
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
-          emitStateMessages(batch.flushStates(stateIdToCount));
+          batch.flushStates(stateIdToCount, outputRecordCollector);
         }
 
         log.info("Flush Worker ({}) -- Worker finished flushing. Current queue size: {}",
@@ -220,24 +217,21 @@ public class FlushWorkers implements AutoCloseable {
     log.info("Closing flush workers -- all buffers flushed");
 
     // before shutting down the supervisor, flush all state.
-    emitStateMessages(stateManager.flushStates());
+    stateManager.flushStates(outputRecordCollector);
     supervisorThread.shutdown();
-    final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
-    log.info("Closing flush workers -- Supervisor shutdown status: {}", supervisorShut);
+    while (!supervisorThread.awaitTermination(5L, TimeUnit.MINUTES)) {
+      log.info("Waiting for flush worker supervisor to shut down");
+    }
+    log.info("Closing flush workers -- supervisor shut down");
 
     log.info("Closing flush workers -- Starting worker pool shutdown..");
     workerPool.shutdown();
-    final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
-    log.info("Closing flush workers -- Workers shutdown status: {}", workersShut);
+    while (!workerPool.awaitTermination(5L, TimeUnit.MINUTES)) {
+      log.info("Waiting for flush workers to shut down");
+    }
+    log.info("Closing flush workers  -- workers shut down");
 
     debugLoop.shutdownNow();
-  }
-
-  private void emitStateMessages(final List<PartialAirbyteMessage> partials) {
-    partials
-        .stream()
-        .map(partial -> Jsons.deserialize(partial.getSerialized(), AirbyteMessage.class))
-        .forEach(outputRecordCollector);
   }
 
   private static String humanReadableFlushWorkerId(final UUID flushWorkerId) {

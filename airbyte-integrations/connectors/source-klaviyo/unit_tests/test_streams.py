@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from typing import Optional
 from unittest import mock
 
 import pendulum
@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.exceptions import KlaviyoBackoffError
 from source_klaviyo.streams import (
+    ArchivedRecordsStream,
     Campaigns,
     GlobalExclusions,
     IncrementalKlaviyoStream,
@@ -304,6 +305,29 @@ class TestSemiIncrementalKlaviyoStream:
 
 
 class TestProfilesStream:
+    @pytest.mark.parametrize(
+        ("next_page_token", "page_size", "expected_params"),
+        (
+            (
+                {"page[cursor]": "aaA0aAo0aAA0A"},
+                None,
+                {"page[cursor]": "aaA0aAo0aAA0A", "additional-fields[profile]": "predictive_analytics", "sort": "updated"},
+            ),
+            (
+                {"page[cursor]": "aaA0aAo0aAA0A"},
+                100,
+                {"page[cursor]": "aaA0aAo0aAA0A", "additional-fields[profile]": "predictive_analytics", "sort": "updated"},
+            ),
+            (None, None, {"additional-fields[profile]": "predictive_analytics", "sort": "updated"}),
+            (None, 100, {"page[size]": 100, "additional-fields[profile]": "predictive_analytics", "sort": "updated"}),
+        ),
+    )
+    def test_request_params(self, next_page_token: Optional[dict], page_size: Optional[int], expected_params: dict):
+        stream = Profiles(api_key=API_KEY)
+        stream.page_size = page_size
+        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": next_page_token}
+        assert stream.request_params(**inputs) == expected_params
+
     def test_parse_response(self, mocker):
         stream = Profiles(api_key=API_KEY, start_date=START_DATE.isoformat())
         json = {
@@ -470,3 +494,46 @@ class TestCampaignsStream:
     def test_get_updated_state(self, latest_record, current_stream_state, expected_state):
         stream = Campaigns(api_key=API_KEY)
         assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+
+
+class TestArchivedRecordsStream:
+    @pytest.mark.parametrize(
+        "stream_state, next_page_token, expected_params",
+        [
+            ({}, None, {"filter": "equals(archived,true)", "sort": "updated_at"}),
+            (
+                {"archived": {"updated_at": "2023-10-10 00:00:00"}},
+                None,
+                {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))", "sort": "updated_at"},
+            ),
+            (
+                {"archived": {"updated_at": "2023-10-10 00:00:00"}},
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+            ),
+            (
+                {},
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+            ),
+        ],
+    )
+    def test_request_params(self, stream_state, next_page_token, expected_params):
+        archived_stream = ArchivedRecordsStream(api_key="API_KEY", cursor_field="updated_at", path="path")
+        assert archived_stream.request_params(stream_state=stream_state, next_page_token=next_page_token) == expected_params

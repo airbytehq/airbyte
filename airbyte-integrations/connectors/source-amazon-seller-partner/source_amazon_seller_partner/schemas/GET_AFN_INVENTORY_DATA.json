@@ -9,6 +9,7 @@
     "asin": { "type": ["null", "string"] },
     "condition-type": { "type": ["null", "string"] },
     "Warehouse-Condition-code": { "type": ["null", "string"] },
-    "Quantity Available": { "type": ["null", "number"] }
+    "Quantity Available": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

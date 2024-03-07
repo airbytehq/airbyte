@@ -100,15 +100,29 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "occurred_at": 2147483647 },
-      "stream_descriptor": { "name": "event" }
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "transaction" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": 2147483647 },
+      "stream_descriptor": { "name": "comment" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": 2147483647 },
-      "stream_descriptor": { "name": "transaction" }
+      "stream_descriptor": { "name": "item_family" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "differential_price" }
     }
   }
 ]

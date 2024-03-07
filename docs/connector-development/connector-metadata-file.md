@@ -88,14 +88,14 @@ In the example above, the connector has three tags. Tags are used for two primar
 These are just examples of how tags can be used. As a free-form field, the tags list can be customized as required for each connector. This flexibility allows tags to be a powerful tool for managing and discovering connectors.
 
 ## The `icon` Field
-This denotes the name of the icon file for the connector. At this time the icon file is located in the `platform-internal` repository. So please ensure that the icon file is present in the `platform-internal` repository at [oss/airbyte-config/init/src/main/resources/icons](https://github.com/airbytehq/airbyte-platform-internal/tree/master/oss/airbyte-config/init/src/main/resources/icons) before adding the icon name to the `metadata.yaml` file.
+This denotes the name of the icon file for the connector. At this time the icon file is located in the `airbyte-platform` repository. So please ensure that the icon file is present in the `airbyte-platform` repository at [https://github.com/airbytehq/airbyte-platform/tree/main/airbyte-config/init/src/main/resources/icons](https://github.com/airbytehq/airbyte-platform/tree/main/airbyte-config/init/src/main/resources/icons) before adding the icon name to the `metadata.yaml` file.
 
 ### Future Plans
 _⚠️ This property is in the process of being refactored to be a file in the connector folder_
 
 You may notice a `icon.svg` file in the connectors folder.
 
-This is because we are transitioning away from icons being stored in the `platform-internal` repository. Instead, we will be storing them in the connector folder itself. This will allow us to have a single source of truth for all connector-related information.
+This is because we are transitioning away from icons being stored in the `airbyte-platform` repository. Instead, we will be storing them in the connector folder itself. This will allow us to have a single source of truth for all connector-related information.
 
 This transition is currently in progress. Once it is complete, the `icon` field in the `metadata.yaml` file will be removed, and the `icon.svg` file will be used instead.
 
@@ -125,3 +125,45 @@ releases:
       message: "This version changes the connector’s authentication by removing ApiKey authentication, which is now deprecated by the [upstream source](upsteam-docs-url.com). Users currently using ApiKey auth will need to reauthenticate with OAuth after upgrading to continue syncing."
       upgradeDeadline: "2023-12-31"
 ```
+
+#### `scopedImpact`
+The optional `scopedImpact` property allows you to provide a list of scopes for which the change is breaking.
+This allows you to reduce the scope of the change; it's assumed that any scopes not listed are unaffected by the breaking change.
+
+For example, consider the following `scopedImpact` definition:
+
+```yaml
+releases:
+  breakingChanges:
+    1.0.0:
+      message: "This version changes the cursor for the `Users` stream. After upgrading, please reset the stream."
+      upgradeDeadline: "2023-12-31"
+      scopedImpact:
+        - scopeType: stream
+          impactedScopes: ["users"]
+```
+
+This change only breaks the `users` stream - all other streams are unaffected. A user can safely ignore the breaking change
+if they are not syncing the `users` stream.
+
+The supported scope types are listed below.
+
+| Scope Type | Value Type | Value Description |
+|------------|------------|------------------|
+| stream     | `list[str]`  | List of stream names |
+
+#### `remoteRegistries`
+The optional `remoteRegistries` property allows you to configure how a connector should be published to registries like Pypi.
+
+**Important note**: Currently no automated publishing will occur.
+
+```yaml
+remoteRegistries:
+  pypi:
+    enabled: true
+    packageName: airbyte-source-connector-name
+```
+
+The `packageName` property of the `pypi` section is the name of the installable package in the PyPi registry.
+
+If not specified, all remote registry configurations are disabled by default.

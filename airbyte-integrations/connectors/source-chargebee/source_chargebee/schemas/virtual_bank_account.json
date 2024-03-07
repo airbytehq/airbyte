@@ -13,8 +13,7 @@
       "type": ["string", "null"]
     },
     "scheme": {
-      "type": ["string", "null"],
-      "enum": ["ach_credit", "sepa_credit"]
+      "type": ["string", "null"]
     },
     "bank_name": {
       "type": ["string", "null"]
@@ -29,54 +28,7 @@
       "type": ["string", "null"]
     },
     "gateway": {
-      "type": ["string", "null"],
-      "enum": [
-        "chargebee",
-        "chargebee_payments",
-        "stripe",
-        "wepay",
-        "braintree",
-        "authorize_net",
-        "paypal_pro",
-        "pin",
-        "eway",
-        "eway_rapid",
-        "worldpay",
-        "balanced_payments",
-        "beanstream",
-        "bluepay",
-        "elavon",
-        "first_data_global",
-        "hdfc",
-        "migs",
-        "nmi",
-        "ogone",
-        "paymill",
-        "paypal_payflow_pro",
-        "sage_pay",
-        "tco",
-        "wirecard",
-        "amazon_payments",
-        "paypal_express_checkout",
-        "gocardless",
-        "adyen",
-        "orbital",
-        "moneris_us",
-        "moneris",
-        "bluesnap",
-        "cybersource",
-        "vantiv",
-        "checkout_com",
-        "paypal",
-        "ingenico_direct",
-        "exact",
-        "mollie",
-        "quickbooks",
-        "razorpay",
-        "global_payments",
-        "bank_of_america",
-        "not_applicable"
-      ]
+      "type": ["string", "null"]
     },
     "resource_version": {
       "type": ["integer", "null"]
@@ -94,18 +46,7 @@
       "type": ["boolean", "null"]
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

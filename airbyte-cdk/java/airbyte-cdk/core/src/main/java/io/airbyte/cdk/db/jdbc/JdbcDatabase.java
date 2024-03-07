@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -174,15 +175,17 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   public int queryInt(final String sql, final String... params) throws SQLException {
-    try (final Stream<Integer> stream = unsafeQuery(c -> {
-      PreparedStatement statement = c.prepareStatement(sql);
-      int i = 1;
-      for (String param : params) {
-        statement.setString(i, param);
-        ++i;
-      }
-      return statement;
-    }, rs -> rs.getInt(1))) {
+    try (final Stream<Integer> stream = unsafeQuery(
+        c -> getPreparedStatement(sql, params, c),
+        rs -> rs.getInt(1))) {
+      return stream.findFirst().get();
+    }
+  }
+
+  public boolean queryBoolean(final String sql, final String... params) throws SQLException {
+    try (final Stream<Boolean> stream = unsafeQuery(
+        c -> getPreparedStatement(sql, params, c),
+        rs -> rs.getBoolean(1))) {
       return stream.findFirst().get();
     }
   }
@@ -216,20 +219,38 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   public ResultSetMetaData queryMetadata(final String sql, final String... params) throws SQLException {
-    try (final Stream<ResultSetMetaData> q = unsafeQuery(c -> {
-      PreparedStatement statement = c.prepareStatement(sql);
-      int i = 1;
-      for (String param : params) {
-        statement.setString(i, param);
-        ++i;
-      }
-      return statement;
-    },
+    try (final Stream<ResultSetMetaData> q = unsafeQuery(
+        c -> getPreparedStatement(sql, params, c),
         ResultSet::getMetaData)) {
       return q.findFirst().orElse(null);
     }
   }
 
+  /**
+   * Implementations of DatabaseMetadata hold a reference of the Connection object. It is safe to use
+   * this to retrieve static information like getIndentifierQuoteString() etc but calling methods
+   * which return a ResultSet needs the connection to be still open. This may or may not work
+   * depending on how the underlying Connection object is handled eg. Hikari's ProxyConnection is not
+   * actually closed, rather recycled into Pool. See {@link #executeMetadataQuery(Function)} which
+   * gives the caller a safe alternative to access ResultSet methods of DatabaseMetadata in the
+   * consumer before closing connection.
+   *
+   * @return
+   * @throws SQLException
+   */
+
   public abstract DatabaseMetaData getMetaData() throws SQLException;
+
+  public abstract <T> T executeMetadataQuery(Function<DatabaseMetaData, T> query) throws SQLException;
+
+  private static PreparedStatement getPreparedStatement(String sql, String[] params, Connection c) throws SQLException {
+    PreparedStatement statement = c.prepareStatement(sql);
+    int i = 1;
+    for (String param : params) {
+      statement.setString(i, param);
+      i++;
+    }
+    return statement;
+  }
 
 }

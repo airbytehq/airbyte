@@ -8,6 +8,10 @@ data:
   icon: salesforcepardot.svg
   license: MIT
   name: Pardot
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pardot
   registries:
     cloud:
       enabled: false
@@ -17,6 +21,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/pardot
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100

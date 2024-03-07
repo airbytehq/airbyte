@@ -28,6 +28,9 @@
             "subject": {
               "type": ["null", "string"]
             },
+            "channel": {
+              "type": ["null", "string"]
+            },
             "id": {
               "type": ["null", "integer"]
             },
@@ -66,6 +69,9 @@
         "to": {
           "type": ["null", "object"],
           "properties": {
+            "brand_id": {
+              "type": ["null", "integer"]
+            },
             "name": {
               "type": ["null", "string"]
             },
