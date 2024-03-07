@@ -86,7 +86,7 @@ Follow these instructions to add the Airbyte helm repository:
 <summary>Template airbyte.yml file</summary>
 
 ```
-webapp-url: # example: localhost:8080
+webapp-url: # example: http://localhost:8080
 
 initial-user:
   email: 
@@ -221,7 +221,6 @@ For Self-Managed Enterprise deployments, we recommend spinning up standalone log
 
 To do this, add external log storage details to your `airbyte.yml` file. This disables the default internal Minio instance (`airbyte/minio`), and configures the external log database:
 
-
 <Tabs>
 <TabItem value="S3" label="S3" default>
 
@@ -230,31 +229,20 @@ minio:
   enabled: false
 
 global:
-    log4jConfig: "log4j2-no-minio.xml"
-    logs:
-        storage:
-            type: "S3"
-        
-        minio:
-            enabled: false
+  storage:
+    type: "S3"
+    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
 
-        s3:
-            enabled: true
-            bucket: "" ## S3 bucket name that you've created.
-            bucketRegion: "" ## e.g. us-east-1
-
-        accessKey: ## AWS Access Key.
-            password: ""
-            existingSecret: "" ## The name of an existing Kubernetes secret containing the AWS Access Key.
-            existingSecretKey: "" ## The Kubernetes secret key containing the AWS Access Key.
-
-        secretKey: ## AWS Secret Access Key
-            password:
-            existingSecret: "" ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
-            existingSecretKey: "" ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
+    s3:
+      region: "" ## e.g. us-east-1
+      accessKeyExistingSecret: ## The name of an existing Kubernetes secret containing the AWS Access Key.
+      accessKeyExistingSecretKey: ## The Kubernetes secret key containing the AWS Access Key.
+      secretKeyExistingSecret: ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
+      secretKeyExistingSecretKey: ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
 ```
-
-For each of `accessKey` and `secretKey`, the `password` and `existingSecret` fields are mutually exclusive.
 
 Then, ensure your access key is tied to an IAM user with the [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-policies-s3.html#iam-policy-ex0), allowing the user access to S3 storage:
 
@@ -288,7 +276,7 @@ Then, ensure your access key is tied to an IAM user with the [following policies
 ```
 
 </TabItem>
-<TabItem value="GKE" label="GKE" default> 
+<TabItem value="GCS" label="GCS" default> 
 
 
 ```yaml
@@ -296,18 +284,16 @@ minio:
   enabled: false
 
 global:
-    log4jConfig: "log4j2-no-minio.xml"
-    logs:
-        storage:
-            type: "GCS"
-        
-        minio:
-            enabled: false
-            
-        gcs:
-            bucket: airbyte-dev-logs # GCS bucket name that you've created.
-            credentials: ""
-            credentialsJson: "" ## Base64 encoded json GCP credentials file contents
+  storage:
+    type: "GCS"
+    bucket: ## GCS bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+
+    gcs:
+      credentials: ""
+      credentialsJson: "" ## Base64 encoded json GCP credentials file contents.
 ```
 
 Note that the `credentials` and `credentialsJson` fields are mutually exclusive.
