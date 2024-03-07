@@ -56,6 +56,22 @@
     "TimePeriod": "2023-11-10T00:00:00+00:00",
     "TopVsOther": "Syndicated search partners - Top",
     "ViewThroughConversions": "0",
-    "ViewThroughConversionsQualified": null
+    "ViewThroughConversionsQualified": null,
+    "CampaignStatus": "Active",
+    "TopImpressionRatePercent": null,
+    "AdGroupStatus": "Active",
+    "TrackingTemplate": null,
+    "BidStrategyType": "Enhanced CPC",
+    "AccountStatus": "Active",
+    "FinalUrl": "https://landing.brevo.com/en/email-marketing-service/",
+    "AdType": "Responsive ad",
+    "KeywordLabels": "Email_Marketing",
+    "FinalMobileUrl": null,
+    "Goal": null,
+    "GoalType": null,
+    "AbsoluteTopImpressionRatePercent": null,
+    "BaseCampaignId": "278665388",
+    "AccountNumber": "B0149SGJ",
+    "DestinationUrl": null
   }
 ]

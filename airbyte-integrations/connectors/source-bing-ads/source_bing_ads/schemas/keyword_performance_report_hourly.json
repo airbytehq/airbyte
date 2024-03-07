@@ -175,6 +175,54 @@
     },
     "RevenuePerAssist": {
       "type": ["null", "number"]
+    },
+    "CampaignStatus": {
+      "type": ["null", "string"]
+    },
+    "TopImpressionRatePercent": {
+      "type": ["null", "string"]
+    },
+    "AdGroupStatus": {
+      "type": ["null", "string"]
+    },
+    "TrackingTemplate": {
+      "type": ["null", "string"]
+    },
+    "BidStrategyType": {
+      "type": ["null", "string"]
+    },
+    "AccountStatus": {
+      "type": ["null", "string"]
+    },
+    "FinalUrl": {
+      "type": ["null", "string"]
+    },
+    "AdType": {
+      "type": ["null", "string"]
+    },
+    "KeywordLabels": {
+      "type": ["null", "string"]
+    },
+    "FinalMobileUrl": {
+      "type": ["null", "string"]
+    },
+    "Goal": {
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "type": ["null", "string"]
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "type": ["null", "string"]
+    },
+    "BaseCampaignId": {
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "type": ["null", "string"]
+    },
+    "DestinationUrl": {
+      "type": ["null", "string"]
     }
   }
 }
