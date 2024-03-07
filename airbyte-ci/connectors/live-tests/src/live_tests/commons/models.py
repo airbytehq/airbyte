@@ -11,7 +11,7 @@ import _collections_abc
 import dagger
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
 from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
-from live_tests.commons.backends import FileBackend
+from live_tests.commons.backends import DuckDbBackend
 from pydantic import ValidationError
 
 
@@ -234,7 +234,7 @@ class ExecutionReport:
         # Make backends use customizable
         airbyte_messages_dir = final_dir / "airbyte_messages"
         airbyte_messages_dir.mkdir(parents=True, exist_ok=True)
-        FileBackend(airbyte_messages_dir).write(self.execution_result.airbyte_messages)
+        DuckDbBackend(final_dir / airbyte_messages_dir).write(self.execution_result.airbyte_messages)
         self.saved_path = final_dir
 
 

@@ -33,6 +33,51 @@ class FileBackend(BaseBackend):
     def __init__(self, output_directory: Path):
         self._output_directory = output_directory
 
+    @property
+    def jsonl_specs_path(self) -> Path:
+        return (self._output_directory / self.RELATIVE_SPECS_PATH).resolve()
+
+    @property
+    def jsonl_catalogs_path(self) -> Path:
+        return (self._output_directory / self.RELATIVE_CATALOGS_PATH).resolve()
+
+    @property
+    def jsonl_connection_status_path(self) -> Path:
+        return (self._output_directory / self.RELATIVE_CONNECTION_STATUS_PATH).resolve()
+
+    @property
+    def jsonl_records_path(self) -> Path:
+        return (self._output_directory / self.RELATIVE_RECORDS_PATH).resolve()
+
+    @property
+    def jsonl_states_path(self) -> Path:
+        return (self._output_directory / self.RELATIVE_STATES_PATH).resolve()
+
+    @property
+    def jsonl_traces_path(self) -> Path:
+        return (self._output_directory / self.RELATIVE_TRACES_PATH).resolve()
+
+    @property
+    def jsonl_logs_path(self) -> Path:
+        return (self._output_directory / self.RELATIVE_LOGS_PATH).resolve()
+
+    @property
+    def jsonl_controls_path(self) -> Path:
+        return (self._output_directory / self.RELATIVE_CONTROLS_PATH).resolve()
+
+    @property
+    def jsonl_files(self) -> Iterable[Path]:
+        return [
+            self.jsonl_catalogs_path,
+            self.jsonl_connection_status_path,
+            self.jsonl_records_path,
+            self.jsonl_specs_path,
+            self.jsonl_states_path,
+            self.jsonl_traces_path,
+            self.jsonl_logs_path,
+            self.jsonl_controls_path,
+        ]
+
     def write(self, airbyte_messages: Iterable[AirbyteMessage]) -> None:
         """
         Write AirbyteMessages to the appropriate file.
@@ -74,7 +119,7 @@ class FileBackend(BaseBackend):
             # TODO: once we have a comparator and/or database backend implemented we can remove this
             for key_path in self.RECORD_PATHS_TO_POP:
                 pydash.objects.unset(record, key_path)
-            return f"{message.record.stream}_{self.RELATIVE_RECORDS_PATH}", json.dumps(record)
+            return self.RELATIVE_RECORDS_PATH, json.dumps(record)
 
         elif message.type == AirbyteMessageType.SPEC:
             return self.RELATIVE_SPECS_PATH, message.spec.json()
