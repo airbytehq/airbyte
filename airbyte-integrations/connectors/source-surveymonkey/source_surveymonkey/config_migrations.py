@@ -51,11 +51,7 @@ class MigrateAccessTokenToCredentials:
 
     @classmethod
     def emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
-        """Emits the control message."""
-        control_message = create_connector_config_control_message(migrated_config)
-        cls.message_repository.emit_message(control_message)
-        for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
+        print(create_connector_config_control_message(migrated_config).json(exclude_unset=True))
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:

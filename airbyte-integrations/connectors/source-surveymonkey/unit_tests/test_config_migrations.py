@@ -4,29 +4,17 @@
 
 
 import json
-from typing import Any, Mapping
 
-from airbyte_cdk.models import OrchestratorType, Type
-from airbyte_cdk.sources import Source
 from source_surveymonkey.config_migrations import MigrateAccessTokenToCredentials
 from source_surveymonkey.source import SourceSurveymonkey
 
-# BASE ARGS
-CMD = "check"
-TEST_CONFIG_PATH = "unit_tests/test_migrations/test_old_config.json"
-NEW_TEST_CONFIG_PATH = "unit_tests/test_migrations/test_new_config.json"
-UPGRADED_TEST_CONFIG_PATH = "unit_tests/test_migrations/test_upgraded_config.json"
-SOURCE_INPUT_ARGS = [CMD, "--config", TEST_CONFIG_PATH]
-SOURCE: Source = SourceSurveymonkey()
+TEST_CONFIG = "test_old_config.json"
+NEW_TEST_CONFIG = "test_new_config.json"
+UPGRADED_TEST_CONFIG = "test_upgraded_config.json"
 
 
-# HELPERS
-def load_config(config_path: str = TEST_CONFIG_PATH) -> Mapping[str, Any]:
-    with open(config_path, "r") as config:
-        return json.load(config)
-
-
-def revert_migration(config_path: str = TEST_CONFIG_PATH) -> None:
+def revert_migration(config_path: str = TEST_CONFIG) -> None:
+    config_path = "unit_tests/test_config_migrations/" + config_path
     with open(config_path, "r") as test_config:
         config = json.load(test_config)
         config.pop("credentials")
@@ -35,13 +23,13 @@ def revert_migration(config_path: str = TEST_CONFIG_PATH) -> None:
             updated_config.write(config)
 
 
-def test_migrate_config():
+def test_migrate_config(capsys, read_json):
     migration_instance = MigrateAccessTokenToCredentials()
-    original_config = load_config()
+    original_config = read_json(TEST_CONFIG)
     # migrate the test_config
-    migration_instance.migrate(SOURCE_INPUT_ARGS, SOURCE)
+    migration_instance.migrate(["check", "--config", "unit_tests/test_config_migrations/" + TEST_CONFIG], SourceSurveymonkey())
     # load the updated config
-    test_migrated_config = load_config()
+    test_migrated_config = read_json(TEST_CONFIG)
     # check migrated property
     assert "credentials" in test_migrated_config
     assert isinstance(test_migrated_config["credentials"], dict)
@@ -57,22 +45,25 @@ def test_migrate_config():
     # load the old custom reports VS migrated
     assert original_config["access_token"] == test_migrated_config["credentials"]["access_token"]
     # test CONTROL MESSAGE was emitted
-    control_msg = migration_instance.message_repository._message_queue[0]
-    assert control_msg.type == Type.CONTROL
-    assert control_msg.control.type == OrchestratorType.CONNECTOR_CONFIG
+    control_msg = json.loads(capsys.readouterr()[0].split("\n")[0])
+    control = control_msg.get("control", {})
+    config = control.get("connectorConfig", {}).get("config", {})
+
+    assert control_msg.get("type") == "CONTROL"
+    assert control.get("type") == "CONNECTOR_CONFIG"
     # old custom_reports are stil type(str)
-    assert isinstance(control_msg.control.connectorConfig.config["access_token"], str)
+    assert isinstance(config.get("access_token"), str)
     # new custom_reports are type(list)
-    assert isinstance(control_msg.control.connectorConfig.config["credentials"]["access_token"], str)
+    assert isinstance(config.get("credentials", {}).get("access_token"), str)
     # check the migrated values
-    assert control_msg.control.connectorConfig.config["credentials"]["access_token"] == "access_token"
+    assert config.get("credentials", {}).get("access_token") == "access_token"
     # revert the test_config to the starting point
     revert_migration()
 
 
-def test_config_is_reverted():
+def test_config_is_reverted(read_json):
     # check the test_config state, it has to be the same as before tests
-    test_config = load_config()
+    test_config = read_json(TEST_CONFIG)
     # check the config no longer has the migarted property
     assert "credentials" not in test_config
     # check the old property is still there
@@ -80,13 +71,13 @@ def test_config_is_reverted():
     assert isinstance(test_config["access_token"], str)
 
 
-def test_should_not_migrate_new_config():
-    new_config = load_config(NEW_TEST_CONFIG_PATH)
+def test_should_not_migrate_new_config(read_json):
+    new_config = read_json(NEW_TEST_CONFIG)
     migration_instance = MigrateAccessTokenToCredentials()
     assert not migration_instance.should_migrate(new_config)
 
 
-def test_should_not_migrate_upgraded_config():
-    new_config = load_config(UPGRADED_TEST_CONFIG_PATH)
+def test_should_not_migrate_upgraded_config(read_json):
+    new_config = read_json(UPGRADED_TEST_CONFIG)
     migration_instance = MigrateAccessTokenToCredentials()
     assert not migration_instance.should_migrate(new_config)

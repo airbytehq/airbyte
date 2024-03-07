@@ -258,6 +258,7 @@ streams:
           - path:
               - survey_id
             value: "{{ stream_slice.survey_id }}"
+            value_type: string
   - type: DeclarativeStream
     name: collectors
     primary_key:
@@ -347,6 +348,7 @@ streams:
                       - path:
                           - survey_id
                         value: "{{ stream_slice.survey_id }}"
+                        value_type: string
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
