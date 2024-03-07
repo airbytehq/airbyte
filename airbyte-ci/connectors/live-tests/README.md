@@ -102,7 +102,20 @@ And run:
 mitmweb --rfile=http_dump.mitm
 ```
 
+## Regression tests
+We created a regression test suite to run tests to compare outputs of connector commands on different versions of the same connector. 
+You can run the existing test suites with the following command:
+
+```bash
+cd src/live_tests/regression_tests
+poetry run pytest --connector-image=airbyte/source-pokeapi --config-path=<path-to-config-path> --catalog-path=<path-to-catalog-path>
+```
+
+
 ## Changelog
+
+### 0.2.0
+Declare the regression tests suite.
 
 ### 0.1.0
 Implement initial primitives and a `debug` command to run connector commands and persist the outputs to local storage.
