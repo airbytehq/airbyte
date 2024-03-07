@@ -42,4 +42,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python-file-based
 metadataSpecVersion: "1.0"
