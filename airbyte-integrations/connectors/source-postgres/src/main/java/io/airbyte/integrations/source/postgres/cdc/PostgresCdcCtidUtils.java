@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.postgres.cdc;
 
-import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Sets;
 import io.airbyte.cdk.integrations.source.relationaldb.CdcStateManager;
@@ -24,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
 
 public class PostgresCdcCtidUtils {
 

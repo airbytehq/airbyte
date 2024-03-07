@@ -447,7 +447,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   @Override
   protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
-    assertEquals(1, stateMessages.size());
+    if (stateMessages.size() != 1) {
+      assertEquals(1, stateMessages.size());
+    }
     assertNotNull(stateMessages.get(0).getData());
   }
 

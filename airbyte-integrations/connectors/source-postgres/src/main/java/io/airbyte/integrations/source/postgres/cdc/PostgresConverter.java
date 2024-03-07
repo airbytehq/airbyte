@@ -4,15 +4,6 @@
 
 package io.airbyte.integrations.source.postgres.cdc;
 
-import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToDate;
-import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTime;
-import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTimestamp;
-import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTimestampWithTimezone;
-import static org.apache.kafka.connect.data.Schema.OPTIONAL_BOOLEAN_SCHEMA;
-import static org.apache.kafka.connect.data.Schema.OPTIONAL_FLOAT64_SCHEMA;
-import static org.apache.kafka.connect.data.Schema.OPTIONAL_INT64_SCHEMA;
-import static org.apache.kafka.connect.data.Schema.OPTIONAL_STRING_SCHEMA;
-
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumConverterUtils;
 import io.debezium.connector.postgresql.PostgresValueConverter;
@@ -41,6 +32,15 @@ import org.postgresql.jdbc.PgArray;
 import org.postgresql.util.PGInterval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToDate;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTime;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTimestamp;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTimestampWithTimezone;
+import static org.apache.kafka.connect.data.Schema.OPTIONAL_BOOLEAN_SCHEMA;
+import static org.apache.kafka.connect.data.Schema.OPTIONAL_FLOAT64_SCHEMA;
+import static org.apache.kafka.connect.data.Schema.OPTIONAL_INT64_SCHEMA;
+import static org.apache.kafka.connect.data.Schema.OPTIONAL_STRING_SCHEMA;
 
 public class PostgresConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
 

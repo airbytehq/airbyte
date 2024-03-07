@@ -8,13 +8,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresSourceOperations;
-import io.airbyte.integrations.source.postgres.cdc.PostgresCdcConnectorMetadataInjector;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
+
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_LSN;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 
 public class CtidPostgresSourceOperations extends PostgresSourceOperations {
 
@@ -60,18 +63,17 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
 
     private final String transactionTimestamp;
     private final long lsn;
-    private final PostgresCdcConnectorMetadataInjector metadataInjector;
 
     public CdcMetadataInjector(final String transactionTimestamp,
-                               final long lsn,
-                               final PostgresCdcConnectorMetadataInjector metadataInjector) {
+                               final long lsn) {
       this.transactionTimestamp = transactionTimestamp;
       this.lsn = lsn;
-      this.metadataInjector = metadataInjector;
     }
 
     private void inject(final ObjectNode record) {
-      metadataInjector.addMetaDataToRowsFetchedOutsideDebezium(record, transactionTimestamp, lsn);
+      record.put(CDC_UPDATED_AT, transactionTimestamp);
+      record.put(CDC_LSN, lsn);
+      record.put(CDC_DELETED_AT, (String) null);
     }
 
   }
