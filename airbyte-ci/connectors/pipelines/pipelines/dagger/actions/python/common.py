@@ -9,7 +9,7 @@ from typing import List, Optional, Sequence
 from dagger import Container, Directory
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.dagger.containers.python import with_pip_cache, with_poetry_cache, with_python_base, with_testing_dependencies
+from pipelines.dagger.containers.python import with_pip_cache, with_python_base, with_testing_dependencies
 from pipelines.helpers.utils import check_path_in_workdir, get_file_contents
 
 
