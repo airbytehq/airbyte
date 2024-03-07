@@ -31,10 +31,10 @@ acceptance_tests:
         empty_streams:
           # - name: search_analytics_page_report
           #   bypass_reason: "Fast changing data"
-          # - name: search_analytics_keyword_site_report_by_page
-          #   bypass_reason: "Fast changing data"
-          # - name: search_analytics_keyword_site_report_by_site
-          #   bypass_reason: "Fast changing data"
+          - name: search_analytics_keyword_site_report_by_page
+            bypass_reason: "Cannot authenticate endpoint with current sandbox credentials"
+          - name: search_analytics_keyword_site_report_by_site
+            bypass_reason: "Cannot authenticate endpoint with current sandbox credentials"
           - name: search_analytics_keyword_page_report
             bypass_reason: "Cannot authenticate endpoint with current sandbox credentials"
           # - name: search_analytics_site_report_by_page
