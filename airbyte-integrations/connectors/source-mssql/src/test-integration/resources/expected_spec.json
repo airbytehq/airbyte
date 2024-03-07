@@ -148,6 +148,15 @@
                 "enum": ["Fail sync", "Re-sync data"],
                 "default": "Fail sync",
                 "order": 4
+              },
+              "queue_size": {
+                "type": "integer",
+                "title": "Size of the queue (Advanced)",
+                "description": "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
+                "default": 10000,
+                "order": 5,
+                "min": 1000,
+                "max": 10000
               }
             }
           },
