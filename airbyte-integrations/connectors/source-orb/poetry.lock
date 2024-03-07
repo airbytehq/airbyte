@@ -883,6 +883,25 @@ fixture = ["fixtures"]
 test = ["fixtures", "mock", "purl", "pytest", "requests-futures", "sphinx", "testtools"]
 
 [[package]]
+name = "responses"
+version = "0.13.4"
+description = "A utility library for mocking out the `requests` Python library."
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+files = [
+    {file = "responses-0.13.4-py2.py3-none-any.whl", hash = "sha256:d8d0f655710c46fd3513b9202a7f0dcedd02ca0f8cf4976f27fa8ab5b81e656d"},
+    {file = "responses-0.13.4.tar.gz", hash = "sha256:9476775d856d3c24ae660bbebe29fb6d789d4ad16acd723efbfb6ee20990b899"},
+]
+
+[package.dependencies]
+requests = ">=2.0"
+six = "*"
+urllib3 = ">=1.25.10"
+
+[package.extras]
+tests = ["coverage (>=3.7.1,<6.0.0)", "flake8", "mypy", "pytest (>=4.6)", "pytest (>=4.6,<5.0)", "pytest-cov", "pytest-localserver", "types-mock", "types-requests", "types-six"]
+
+[[package]]
 name = "setuptools"
 version = "69.1.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
@@ -1058,4 +1077,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "87a93d3a6bd68e85966c21366cf7ede4ecaf84b0f117d2936e8194a00b09df73"
+content-hash = "b07abb5b3eeb29b800015ec2d21a126fbefe667b5b888a8f2c1500b166a4f249"

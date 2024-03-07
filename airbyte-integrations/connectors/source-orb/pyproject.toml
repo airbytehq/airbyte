@@ -29,4 +29,5 @@ requests-mock = "^1.11.0"
 pytest-faker = "==2.0.0"
 pytest-mock = "^3.6.1"
 pendulum = "==2.1.2"
+responses = "^0.13.3"
 
