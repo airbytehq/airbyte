@@ -105,6 +105,7 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
 
     expected_states = list(filter(lambda e: "data" not in e, expected_records))
     states = list(filter(lambda r: r.state, records))
+    assert len(states) != 0, "No state messages were emitted."
 
     if hasattr(scenario.source, "cursor_cls") and issubclass(scenario.source.cursor_cls, AbstractConcurrentFileBasedCursor):
         # Only check the last state emitted because we don't know the order the others will be in.
