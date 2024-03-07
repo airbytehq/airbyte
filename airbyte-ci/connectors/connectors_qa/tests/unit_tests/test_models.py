@@ -9,7 +9,7 @@ from connectors_qa.models import CheckStatus
 class TestCheck:
     def test_fail_when_requires_metadata_and_metata_is_missing(self, mocker):
         # Arrange
-        connector = mocker.MagicMock(metadata={})
+        connector = mocker.MagicMock(metadata={}, is_released=False)
 
         # Act
         results = []

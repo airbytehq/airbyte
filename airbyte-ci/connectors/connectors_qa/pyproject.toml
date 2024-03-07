@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connectors-qa"
-version = "1.1.0"
+version = "1.2.0"
 description = "A package to run QA checks on Airbyte connectors, generate reports and documentation."
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
@@ -43,10 +43,3 @@ lint = "ruff check src"
 optional_poetry_groups = ["dev"]
 poe_tasks = ["type_check", "lint", "test"]
 required_environment_variables = ["DOCKER_HUB_USERNAME", "DOCKER_HUB_PASSWORD"]
-
-[tool.pyright]
-reportMissingImports = true
-reportMissingTypeStubs = false
-pythonVersion = "3.10"
-venvPath = "."
-venv = ".venv"

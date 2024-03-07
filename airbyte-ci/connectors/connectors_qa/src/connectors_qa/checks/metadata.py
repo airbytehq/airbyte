@@ -1,11 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
 
 import toml
-
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
@@ -150,13 +149,15 @@ class CheckConnectorCDKTag(MetadataCheck):
             message=f"CDK tag {self.get_expected_cdk_tag(connector)} is present in the metadata file",
         )
 
+
 class ValidateBreakingChangesDeadlines(MetadataCheck):
     """
     Verify that _if_ the the most recent connector version has a breaking change,
     it's deadline is at least a week in the future.
     """
-    name = "Breaking change opt-in should be a week in the future"
-    description = f"If the connector version has a breaking change, the deadline field must be set to at least a week in the future."
+
+    name = "Breaking change deadline should be a week in the future"
+    description = "If the connector version has a breaking change, the deadline field must be set to at least a week in the future."
     runs_on_released_connectors = False
     minimum_days_until_deadline = 7
 
@@ -188,7 +189,7 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
                 message="No breaking changes found for the current version.",
             )
 
-        upgrade_deadline = current_version_breaking_changes.get('upgradeDeadline')
+        upgrade_deadline = current_version_breaking_changes.get("upgradeDeadline")
 
         if not upgrade_deadline:
             return self.fail(
@@ -202,13 +203,10 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
         if upgrade_deadline_datetime <= one_week_from_now:
             return self.fail(
                 connector=connector,
-                message=f"The upgrade deadline for the breaking changes in {current_version} is less than {self.minimum_days_until_deadline} days from today. Please extend the deadline.",
+                message=f"The upgrade deadline for the breaking changes in {current_version} is less than {self.minimum_days_until_deadline} days from today. Please extend the deadline",
             )
 
-        return self.pass_(
-            connector=connector,
-            message="Breaking changes deadline is at least a week in the future.",
-        )
+        return self.pass_(connector=connector, message="The upgrade deadline is set to at least a week in the future")
 
 
 ENABLED_CHECKS = [
