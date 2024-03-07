@@ -20,6 +20,10 @@ data:
   icon: freshsales.svg
   license: MIT
   name: Freshsales
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-freshsales
   registries:
     cloud:
       enabled: true

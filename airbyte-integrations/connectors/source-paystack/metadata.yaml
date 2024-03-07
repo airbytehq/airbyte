@@ -11,6 +11,10 @@ data:
   icon: paystack.svg
   license: MIT
   name: Paystack
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-paystack
   registries:
     cloud:
       enabled: true

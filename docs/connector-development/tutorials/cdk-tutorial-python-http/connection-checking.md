@@ -65,17 +65,17 @@ directory is gitignored by default.
 mkdir sample_files
 echo '{"start_date": "2022-04-01", "base": "USD", "apikey": <your_apikey>}'  > secrets/config.json
 echo '{"start_date": "2022-04-01", "base": "BTC", "apikey": <your_apikey>}'  > secrets/invalid_config.json
-python main.py check --config secrets/config.json
-python main.py check --config secrets/invalid_config.json
+poetry run source-python-http-example check --config secrets/config.json
+poetry run source-python-http-example check --config secrets/invalid_config.json
 ```
 
 You should see output like the following:
 
 ```bash
-> python main.py check --config secrets/config.json
+> poetry run source-python-http-example check --config secrets/config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "SUCCEEDED"}}
 
-> python main.py check --config secrets/invalid_config.json
+> poetry run source-python-http-example check --config secrets/invalid_config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "FAILED", "message": "Input currency BTC is invalid. Please input one of the following currencies: {'DKK', 'USD', 'CZK', 'BGN', 'JPY'}"}}
 ```
 

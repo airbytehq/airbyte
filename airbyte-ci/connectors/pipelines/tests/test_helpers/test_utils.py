@@ -12,6 +12,7 @@ from pipelines import consts
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers import utils
 from pipelines.helpers.connectors.modifed import get_connector_modified_files, get_modified_connectors
+from pipelines.models.contexts.pipeline_context import PipelineContext
 from tests.utils import pick_a_random_connector
 
 
@@ -193,6 +194,12 @@ def test_sh_dash_c():
     assert utils.sh_dash_c([]) == ["sh", "-c", "set -o xtrace"]
 
 
+def test_java_log_scrub_pattern():
+    assert utils.java_log_scrub_pattern([]) == ""
+    assert utils.java_log_scrub_pattern(["foo", "bar"]) == "foo|bar"
+    assert utils.java_log_scrub_pattern(["|", "'\"{}\t[]<>&"]) == "\\||&apos;&quot;\\&#123;\\&#125;\\&#9;\\[\\]&lt;&gt;\\&amp;"
+
+
 @pytest.mark.anyio
 @pytest.mark.parametrize("tar_file_name", [None, "custom_tar_name.tar"])
 async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_file_name):
@@ -235,3 +242,19 @@ async def test_export_container_to_tarball_failure(mocker, tmp_path):
         str(tmp_path / f"my_connector_my_git_revision_{platform.replace('/', '_')}.tar"),
         forced_compression=dagger.ImageLayerCompression.Gzip,
     )
+
+
+# @pytest.mark.anyio
+async def test_get_repo_dir(dagger_client):
+    test_context = PipelineContext(pipeline_name="test", is_local=True, git_branch="test", git_revision="test", report_output_prefix="test")
+    test_context.dagger_client = dagger_client
+    # we know airbyte-ci/connectors/pipelines/ is excluded
+    filtered_entries = await test_context.get_repo_dir("airbyte-ci/connectors/pipelines/").entries()
+    assert not filtered_entries
+    unfiltered_entries = await dagger_client.host().directory("airbyte-ci/connectors/pipelines/").entries()
+    assert unfiltered_entries
+    # we also know that **/secrets is excluded and that source-mysql contains a secrets file
+    filtered_entries = await test_context.get_repo_dir("airbyte-integrations/connectors/source-mysql/").entries()
+    assert "secrets" not in filtered_entries
+    unfiltered_entries = await dagger_client.host().directory("airbyte-integrations/connectors/source-mysql/").entries()
+    assert "secrets" in unfiltered_entries

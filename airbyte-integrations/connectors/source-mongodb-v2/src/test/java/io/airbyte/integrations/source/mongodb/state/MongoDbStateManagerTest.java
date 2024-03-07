@@ -4,9 +4,10 @@
 
 package io.airbyte.integrations.source.mongodb.state;
 
-import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER;
-import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN;
-import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -15,7 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
@@ -31,6 +34,13 @@ class MongoDbStateManagerTest {
   private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
   private static final String STREAM_NAME = "test-collection";
   private static final String STREAM_NAMESPACE = "test-database";
+  private static final String DATABASE = "test-database";
+
+  final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(Jsons.jsonNode(
+      Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
+          Map.of(
+              MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+              MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE))));
 
   @Test
   void testCreationWithInitialState() {
@@ -49,7 +59,7 @@ class MongoDbStateManagerTest {
     final AirbyteStateMessage airbyteStateMessage =
         new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL).withGlobal(airbyteGlobalState);
 
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.jsonNode(List.of(airbyteStateMessage)));
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.jsonNode(List.of(airbyteStateMessage)), CONFIG);
     assertNotNull(stateManager);
     assertNotNull(stateManager.getCdcState());
     Assertions.assertEquals(seconds, stateManager.getCdcState().state().get(SOURCE_SECONDS).asInt());
@@ -61,21 +71,21 @@ class MongoDbStateManagerTest {
 
   @Test
   void testCreationWithInitialNullState() {
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     assertNotNull(stateManager);
     assertNull(stateManager.getCdcState());
   }
 
   @Test
   void testCreationWithInitialEmptyState() {
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.emptyObject());
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.emptyObject(), CONFIG);
     assertNotNull(stateManager);
     assertNull(stateManager.getCdcState());
   }
 
   @Test
   void testCreationWithInitialEmptyListState() {
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.jsonNode(List.of()));
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.jsonNode(List.of()), CONFIG);
     assertNotNull(stateManager);
     assertNull(stateManager.getCdcState());
   }
@@ -83,12 +93,12 @@ class MongoDbStateManagerTest {
   @Test
   void testCreationWithInitialStateTooManyMessages() {
     final List<AirbyteStateMessage> stateMessages = List.of(new AirbyteStateMessage(), new AirbyteStateMessage());
-    assertThrows(IllegalStateException.class, () -> MongoDbStateManager.createStateManager(Jsons.jsonNode(stateMessages)));
+    assertThrows(IllegalStateException.class, () -> MongoDbStateManager.createStateManager(Jsons.jsonNode(stateMessages), CONFIG));
   }
 
   @Test
   void testUpdateCdcState() {
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     assertNotNull(stateManager);
     assertNull(stateManager.getCdcState());
 
@@ -118,7 +128,7 @@ class MongoDbStateManagerTest {
     final AirbyteStateMessage airbyteStateMessage =
         new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL).withGlobal(airbyteGlobalState);
 
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.jsonNode(List.of(airbyteStateMessage)));
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.jsonNode(List.of(airbyteStateMessage)), CONFIG);
     final AirbyteStateMessage generated = stateManager.toState();
 
     assertNotNull(generated);
@@ -161,7 +171,7 @@ class MongoDbStateManagerTest {
     final AirbyteStateMessage airbyteStateMessage =
         new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL).withGlobal(airbyteGlobalState);
 
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.jsonNode(List.of(airbyteStateMessage)));
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.jsonNode(List.of(airbyteStateMessage)), CONFIG);
     final MongoDbCdcState newCdcState = new MongoDbCdcState(Jsons.jsonNode(Map.of()));
 
     stateManager.resetState(newCdcState);

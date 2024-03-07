@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 36be8dc6-9851-49af-b776-9d4c30e4ab6a
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   dockerRepository: airbyte/destination-typesense
   githubIssueLabel: destination-typesense
   icon: typesense.svg

@@ -7,18 +7,18 @@ changes get merged to `master`.
 
 ## Installation
 
-For consistency across other Airbyte projects we use yarn (A Javascript based software package
+For consistency across other Airbyte projects we use `pnpm` (A Javascript based software package
 manager).
 
 ```bash
-brew install yarn
+brew install pnpm
 
 cd docusaurus
-yarn install
-yarn build
+pnpm install
+pnpm build
 ```
 
-`yarn build` will build Docusaurus site in `docusaurus/build` directory.
+`pnpm build` will build Docusaurus site in `docusaurus/build` directory.
 
 ## Developing Locally
 
@@ -26,7 +26,7 @@ If you want to make changes to the documentation, you can run docusaurus locally
 listen to any source docs changes and live-reload them:
 
 ```bash
-yarn start # any changes will automatically be reflected in your browser!
+pnpm start # any changes will automatically be reflected in your browser!
 ```
 
 All the content for docs.airbyte.com lives in the `/docs` directory in this repo. All files are
@@ -41,7 +41,7 @@ in [`sidebars.js`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/s
 
 We welcome documentation updates! If you'd like to contribute a change, please make sure to:
 
-- Run `yarn build` and check that all build steps are successful.
+- Run `pnpm build` and check that all build steps are successful.
 - Push your changes into a pull request, and follow the PR template instructions.
 
 When you make a pull request, Vercel will automatically build a test instance of the full docs site
@@ -61,7 +61,7 @@ periodically:
 > fine. For that reason, if you're linking to another Airbyte documentation page, make it a relative
 > link. I.e. `[link](/connector-development/overview.md)` instead of
 > `[link](https://docs.airbyte.com/connector-development/)`. That way, if your link breaks in the
-> future due to a navigation restructure, it will be caught with `yarn build`.
+> future due to a navigation restructure, it will be caught with `pnpm build`.
 
 ## Docusaurus Plugins We Use
 

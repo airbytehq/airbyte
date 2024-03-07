@@ -8,6 +8,10 @@ data:
   icon: surveysparrow.svg
   license: MIT
   name: SurveySparrow
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-survey-sparrow
   registries:
     cloud:
       enabled: true

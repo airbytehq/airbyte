@@ -3,6 +3,10 @@ data:
     hosts:
       - hub.docker.com
       - auth.docker.io
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-dockerhub
   registries:
     oss:
       enabled: true
@@ -21,7 +25,7 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
   tags:
-    - language:lowcode
+    - language:low-code
   ab_internal:
     sl: 100
     ql: 100

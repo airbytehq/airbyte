@@ -19,6 +19,7 @@ import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.InsertAllRequest;
+import com.google.cloud.bigquery.InsertAllRequest.RowToInsert;
 import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
@@ -37,9 +38,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -159,13 +160,15 @@ public class BigQueryUtils {
         CHECK_TEST_TMP_TABLE_NAME, testTableSchema);
 
     // Try to make test (dummy records) insert to make sure that user has required permissions
+    // Use ids for BigQuery client to attempt idempotent retries.
+    // See https://github.com/airbytehq/airbyte/issues/33982
     try {
       final InsertAllResponse response =
           bigquery.insertAll(InsertAllRequest
               .newBuilder(test_connection_table_name)
-              .addRow(Map.of("id", 1, "name", "James"))
-              .addRow(Map.of("id", 2, "name", "Eugene"))
-              .addRow(Map.of("id", 3, "name", "Angelina"))
+              .addRow(RowToInsert.of("1", ImmutableMap.of("id", 1, "name", "James")))
+              .addRow(RowToInsert.of("2", ImmutableMap.of("id", 2, "name", "Eugene")))
+              .addRow(RowToInsert.of("3", ImmutableMap.of("id", 3, "name", "Angelina")))
               .build());
 
       if (response.hasErrors()) {
@@ -175,6 +178,7 @@ public class BigQueryUtils {
         }
       }
     } catch (final BigQueryException e) {
+      LOGGER.error("Dummy inserts in check failed", e);
       throw new ConfigErrorException("Failed to check connection: \n" + e.getMessage());
     } finally {
       test_connection_table_name.delete();
@@ -389,18 +393,6 @@ public class BigQueryUtils {
         return JobInfo.WriteDisposition.WRITE_APPEND;
       }
       default -> throw new IllegalStateException("Unrecognized destination sync mode: " + syncMode);
-    }
-  }
-
-  public static boolean isUsingJsonCredentials(final JsonNode config) {
-    if (!config.has(BigQueryConsts.CONFIG_CREDS)) {
-      return false;
-    }
-    final JsonNode json = config.get(BigQueryConsts.CONFIG_CREDS);
-    if (json.isTextual()) {
-      return !json.asText().isEmpty();
-    } else {
-      return !Jsons.serialize(json).isEmpty();
     }
   }
 

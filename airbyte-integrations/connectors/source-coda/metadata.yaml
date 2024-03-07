@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - https://coda.io/
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-coda
   registries:
     oss:
       enabled: true

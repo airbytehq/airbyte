@@ -10,6 +10,10 @@ data:
   githubIssueLabel: source-firebase-realtime-database
   license: MIT
   name: Firebase Realtime Database
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-firebase-realtime-database
   registries:
     cloud:
       enabled: false

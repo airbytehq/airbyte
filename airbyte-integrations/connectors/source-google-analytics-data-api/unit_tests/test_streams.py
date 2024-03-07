@@ -80,6 +80,7 @@ def test_request_body_json(patch_base_class):
             {"name": "operatingSystem"},
             {"name": "browser"},
         ],
+        "keepEmptyRows": True,
         "dateRanges": [request_body_params["stream_slice"]],
         "returnPropertyQuota": True,
         "offset": str(0),
@@ -163,8 +164,8 @@ def test_parse_response(patch_base_class):
             {
                 "dimensionValues": [{"value": "20220731"}, {"value": "desktop"}, {"value": "Macintosh"}, {"value": "Chrome"}],
                 "metricValues": [
-                    {"value": "344"},
-                    {"value": "169"},
+                    {"value": "344.234"},  # This is a float will be converted to int
+                    {"value": "169.345345"},  # This is a float will be converted to int
                     {"value": "420"},
                     {"value": "1.2209302325581395"},
                     {"value": "194.76313766428572"},

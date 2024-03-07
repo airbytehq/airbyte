@@ -13,6 +13,7 @@ detail, check it out below.
 ## Dependencies
 
 1. Python &gt;= 3.9
+2. [Poetry](https://python-poetry.org/)
 2. Docker
 3. NodeJS
 
@@ -32,9 +33,7 @@ Select the `Python HTTP API Source` and name it `python-http-example`.
 
 ```bash
 cd ../../connectors/source-python-http-example
-python -m venv .venv # Create a virtual environment in the .venv directory
-source .venv/bin/activate
-pip install -r requirements.txt
+poetry install
 ```
 
 ### Define Connector Inputs
@@ -128,17 +127,17 @@ cd ..
 mkdir sample_files
 echo '{"pokemon_name": "pikachu"}'  > sample_files/config.json
 echo '{"pokemon_name": "chikapu"}'  > sample_files/invalid_config.json
-python main.py check --config sample_files/config.json
-python main.py check --config sample_files/invalid_config.json
+poetry run source-python-http-example check --config sample_files/config.json
+poetry run source-python-http-example check --config sample_files/invalid_config.json
 ```
 
 Expected output:
 
-```text
-> python main.py check --config sample_files/config.json
+```bash
+> poetry run source-python-http-example check --config sample_files/config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "SUCCEEDED"}}
 
-> python main.py check --config sample_files/invalid_config.json
+> poetry run source-python-http-example check --config sample_files/invalid_config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "FAILED", "message": "'Input Pokemon chikapu is invalid. Please check your spelling our input a valid Pokemon.'"}}
 ```
 
@@ -187,7 +186,7 @@ consistent in the naming of the JSON schema and the `HttpStream` class, as `poke
 Test your discover function. You should receive a fairly large JSON object in return.
 
 ```bash
-python main.py discover --config sample_files/config.json
+poetry run source-python-http-example discover --config sample_files/config.json
 ```
 
 Note that our discover function is using the `pokemon_name` config variable passed in from the
@@ -251,7 +250,7 @@ about sync modes [here](https://docs.airbyte.com/understanding-airbyte/connectio
 Let's read some data.
 
 ```bash
-python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
+poetry run source-python-http-example read --config sample_files/config.json --catalog sample_files/configured_catalog.json
 ```
 
 If all goes well, containerize it so you can use it in the UI:

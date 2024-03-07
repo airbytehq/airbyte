@@ -5,6 +5,10 @@ data:
   allowedHosts:
     hosts:
       - api.pipedrive.com # Please change to the hostname of the source.
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pipedrive
   registries:
     cloud:
       enabled: true
@@ -13,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 2.2.1
+  dockerImageTag: 2.2.2
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
@@ -29,5 +33,5 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:lowcode
+    - language:low-code
 metadataSpecVersion: "1.0"

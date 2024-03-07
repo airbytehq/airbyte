@@ -6,6 +6,10 @@ data:
       - us5.datadoghq.com
       - datadoghq.eu
       - ddog-gov.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-datadog
   registries:
     oss:
       enabled: true

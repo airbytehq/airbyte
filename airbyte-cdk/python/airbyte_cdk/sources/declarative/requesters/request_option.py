@@ -4,7 +4,9 @@
 
 from dataclasses import InitVar, dataclass
 from enum import Enum
-from typing import Any, Mapping
+from typing import Any, Mapping, Union
+
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 
 
 class RequestOptionType(Enum):
@@ -28,6 +30,9 @@ class RequestOption:
         inject_into (RequestOptionType): Describes where in the HTTP request to inject the parameter
     """
 
-    field_name: str
+    field_name: Union[InterpolatedString, str]
     inject_into: RequestOptionType
     parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self.field_name = InterpolatedString.create(self.field_name, parameters=parameters)

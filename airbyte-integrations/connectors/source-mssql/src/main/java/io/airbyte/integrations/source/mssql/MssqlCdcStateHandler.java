@@ -33,6 +33,11 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
+  public boolean isCdcCheckpointEnabled() {
+    return true;
+  }
+
+  @Override
   public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MSSQL_CDC_OFFSET, offset);
@@ -41,7 +46,7 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
 
     final JsonNode asJson = Jsons.jsonNode(state);
 
-    LOGGER.info("debezium state: {}", asJson);
+    LOGGER.info("debezium state offset: {}", Jsons.jsonNode(offset));
 
     final CdcState cdcState = new CdcState().withState(asJson);
     stateManager.getCdcStateManager().setCdcState(cdcState);

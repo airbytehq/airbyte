@@ -8,6 +8,10 @@ data:
   icon: breezometer.svg
   license: MIT
   name: Breezometer
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-breezometer
   registries:
     cloud:
       enabled: false

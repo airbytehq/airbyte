@@ -1,0 +1,53 @@
+name: "Get Dagger Engine Image"
+description: "Pulls the Dagger Engine Image or load from cache"
+
+inputs:
+  dagger_engine_image:
+    description: "Image name of the Dagger Engine"
+    required: true
+  path_to_dagger_engine_image_cache:
+    description: "Path to the Dagger Engine image cache"
+    required: false
+    default: "/home/runner/dagger-engine-image-cache"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create local image cache directory
+      id: create-dagger-engine-image-cache-dir
+      shell: bash
+      run: mkdir -p ${{ inputs.path_to_dagger_engine_image_cache }}
+
+    - name: Restore dagger engine image cache
+      id: dagger-engine-image-cache-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ inputs.path_to_dagger_engine_image_cache }}
+        key: ${{ inputs.dagger_engine_image }}
+
+    # If no GitHub Action cache hit, pull the image and save it locally as tar to the cache directory
+    - name: Pull dagger engine image
+      id: pull-dagger-engine-image
+      if: steps.dagger-engine-image-cache-restore.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -x
+        docker pull ${{ inputs.dagger_engine_image }}
+        docker save -o ${{ inputs.path_to_dagger_engine_image_cache }}/image.tar ${{ inputs.dagger_engine_image }}
+
+    # If no GitHub Action  cache hit, save the path to the image cache directory to the Github Action cache
+    - name: Save dagger engine image cache
+      id: dagger-engine-image-cache-save
+      if: steps.dagger-engine-image-cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ inputs.path_to_dagger_engine_image_cache }}
+        key: ${{ inputs.dagger_engine_image }}
+
+    # If GitHub Action cache hit, load the image tar restored from the cache
+    - name: Load dagger engine image from cache
+      if: steps.dagger-engine-image-cache-restore.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        set -x
+        docker load -i ${{ inputs.path_to_dagger_engine_image_cache }}/image.tar

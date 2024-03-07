@@ -10,13 +10,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: badc5925-0485-42be-8caa-b34096cb71b5
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-surveymonkey
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   githubIssueLabel: source-surveymonkey
   icon: surveymonkey.svg
   license: MIT
   name: SurveyMonkey
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-surveymonkey
   registries:
     cloud:
       enabled: true

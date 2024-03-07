@@ -83,19 +83,14 @@ $ ./generate.sh
 Select the `python` template and then input the name of your connector. For this walk through we
 will refer to our source as `example-python`
 
-### Step 2: Build the newly generated source
+### Step 2: Install the newly generated source
 
-Build the source by running:
+Install the source by running:
 
 ```bash
 cd airbyte-integrations/connectors/source-<name>
-python -m venv .venv # Create a virtual environment in the .venv directory
-source .venv/bin/activate # enable the venv
-pip install -r requirements.txt
+poetry install
 ```
-
-This step sets up the initial python environment. **All** subsequent `python` or `pip` commands
-assume you have activated your virtual environment.
 
 ### Step 3: Set up your Airbyte development environment
 
@@ -152,10 +147,10 @@ above `. ./.venv/bin/activate` to test out that your source works.
 
 ```bash
 # from airbyte-integrations/connectors/source-<source-name>
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-<source-name> spec
+poetry run source-<source-name> check --config secrets/config.json
+poetry run source-<source-name> discover --config secrets/config.json
+poetry run source-<source-name> read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 The nice thing about this approach is that you can iterate completely within in python. The downside
@@ -238,7 +233,7 @@ during a sync by specifying the `--debug` flag. This will allow you to get a bet
 is happening during each step of your sync.
 
 ```bash
-python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
+poetry run source-<source-name> read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
 ```
 
 In addition to the preset CDK debug statements, you can also emit custom debug information from your
@@ -320,9 +315,8 @@ in the Airbyte CI to prevent regressions. They also can help you sanity check th
 as expected. The following [article](../testing-connectors/connector-acceptance-tests-reference.md)
 explains Connector Acceptance Tests and how to run them.
 
-You can run the tests using
-`./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run
-this command from the Airbyte repository root.
+You can run the tests using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+`airbyte-ci connectors --name source-<source-name> test --only-step=acceptance`
 
 :::info
 
@@ -341,17 +335,16 @@ functionality of your source, write unit or integration tests.
 
 #### Unit Tests
 
-Add any relevant unit tests to the `unit_tests` directory. Unit tests should _not_ depend on any
-secrets.
+Add any relevant unit tests to the `tests/unit_tests` directory. Unit tests should _not_ depend on any secrets.
 
-You can run the tests using `python -m pytest -s unit_tests`
+You can run the tests using `poetry run pytest tests/unit_tests`
 
 #### Integration Tests
 
 Place any integration tests in the `integration_tests` directory such that they can be
 [discovered by pytest](https://docs.pytest.org/en/6.2.x/goodpractices.html#conventions-for-python-test-discovery).
 
-Run integration tests using `python -m pytest -s integration_tests`.
+You can run the tests using `poetry run pytest tests/integration_tests`
 
 ### Step 10: Update the `README.md`
 

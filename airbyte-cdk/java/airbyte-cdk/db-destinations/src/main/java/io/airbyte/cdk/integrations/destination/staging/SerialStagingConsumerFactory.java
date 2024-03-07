@@ -24,12 +24,11 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +48,7 @@ public class SerialStagingConsumerFactory {
   // in a previous attempt but failed to load to the warehouse for some reason (interrupted?) instead.
   // This would also allow other programs/scripts
   // to load (or reload backups?) in the connection's staging area to be loaded at the next sync.
-  private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
+  private static final Instant SYNC_DATETIME = Instant.now();
   public static final UUID RANDOM_CONNECTION_ID = UUID.randomUUID();
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,

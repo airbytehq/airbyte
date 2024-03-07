@@ -29,7 +29,7 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 ## Supported Streams
 
-- [Events](https://docs.sentry.io/api/events/list-a-projects-events/)
+- [Events](https://docs.sentry.io/api/events/list-a-projects-error-events/)
 - [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/)
 - [Projects](https://docs.sentry.io/api/projects/list-your-projects/)
 - [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/)
@@ -47,6 +47,8 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.4.1 | 2024-02-12 | [35145](https://github.com/airbytehq/airbyte/pull/35145) | Manage dependencies with Poetry. |
+| 0.4.0   | 2024-01-05 | [32957](https://github.com/airbytehq/airbyte/pull/32957)     | Added undeclared fields to schema, Base image migration: remove Dockerfile and use the python-connector-base image                                       |
 | 0.3.0   | 2023-09-05 | [30192](https://github.com/airbytehq/airbyte/pull/30192) | Added undeclared fields to schema                                       |
 | 0.2.4   | 2023-08-14 | [29401](https://github.com/airbytehq/airbyte/pull/29401) | Fix `null` value in stream state                                        |
 | 0.2.3   | 2023-08-03 | [29023](https://github.com/airbytehq/airbyte/pull/29023) | Add incremental for `issues` stream                                     |

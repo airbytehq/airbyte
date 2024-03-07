@@ -12,6 +12,10 @@ data:
   icon: braintree.svg
   license: MIT
   name: Braintree
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-braintree
   registries:
     cloud:
       enabled: true
@@ -20,5 +24,5 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:python
+    - language:low-code
 metadataSpecVersion: "1.0"

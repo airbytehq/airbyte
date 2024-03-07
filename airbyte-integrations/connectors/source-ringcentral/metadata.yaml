@@ -8,6 +8,10 @@ data:
   icon: ringcentral.svg
   license: MIT
   name: Ringcentral
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-ringcentral
   registries:
     cloud:
       enabled: false

@@ -9,6 +9,10 @@ data:
   icon: icon.svg
   license: MIT
   name: KYVE
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-kyve
   registries:
     cloud:
       enabled: true

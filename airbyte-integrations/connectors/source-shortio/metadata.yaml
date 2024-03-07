@@ -3,6 +3,10 @@ data:
     hosts:
       - https://api.short.io
       - https://api-v2.short.cm
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-shortio
   registries:
     oss:
       enabled: true
@@ -23,7 +27,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/shortio
   tags:
     - language:python
-    - language:lowcode
+    - language:low-code
   ab_internal:
     sl: 100
     ql: 100

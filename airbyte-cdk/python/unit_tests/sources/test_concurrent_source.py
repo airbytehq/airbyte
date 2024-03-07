@@ -12,6 +12,7 @@ from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPool
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability, StreamAvailable, StreamUnavailable
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_protocol.models import AirbyteStream
@@ -71,6 +72,10 @@ class _MockStream(AbstractStream):
 
     def log_stream_sync_configuration(self) -> None:
         raise NotImplementedError
+
+    @property
+    def cursor(self) -> Cursor:
+        return NoopCursor()
 
 
 class _MockPartition(Partition):

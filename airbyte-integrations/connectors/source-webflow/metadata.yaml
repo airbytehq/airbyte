@@ -2,12 +2,16 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef580275-d9a9-48bb-af5e-db0f5855be04
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   dockerRepository: airbyte/source-webflow
   githubIssueLabel: source-webflow
   icon: webflow.svg
   license: MIT
   name: Webflow
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-webflow
   registries:
     cloud:
       enabled: true

@@ -8,6 +8,10 @@ data:
   icon: sapfieldglass.svg
   license: MIT
   name: SAP Fieldglass
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sap-fieldglass
   registries:
     cloud:
       enabled: true

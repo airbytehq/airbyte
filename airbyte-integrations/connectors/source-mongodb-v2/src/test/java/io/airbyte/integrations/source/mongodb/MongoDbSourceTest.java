@@ -35,7 +35,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
@@ -240,9 +240,9 @@ class MongoDbSourceTest {
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get(DEFAULT_CURSOR_FIELD).get("type").asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_DELETED_AT).get("type").asText());
+        stream.get().getJsonSchema().get("properties").get(DebeziumEventConverter.CDC_DELETED_AT).get("type").asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_UPDATED_AT).get("type").asText());
+        stream.get().getJsonSchema().get("properties").get(DebeziumEventConverter.CDC_UPDATED_AT).get("type").asText());
     assertEquals(true, stream.get().getSourceDefinedCursor());
     assertEquals(List.of(DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
     assertEquals(List.of(List.of(MongoCatalogHelper.DEFAULT_PRIMARY_KEY)), stream.get().getSourceDefinedPrimaryKey());

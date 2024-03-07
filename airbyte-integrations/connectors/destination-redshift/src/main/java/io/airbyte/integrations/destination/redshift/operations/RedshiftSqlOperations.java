@@ -31,6 +31,8 @@ import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep4;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
+import org.jooq.conf.Settings;
+import org.jooq.conf.StatementType;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
@@ -111,7 +113,19 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
         // > default
         for (final List<PartialAirbyteMessage> batch : Iterables.partition(records, 10_000)) {
           LOGGER.info("Prepared batch size: {}, {}, {}", batch.size(), schemaName, tableName);
-          final DSLContext create = using(connection, SQLDialect.POSTGRES);
+          final DSLContext create = using(
+              connection,
+              SQLDialect.POSTGRES,
+              // Force inlined params.
+              // jooq normally tries to intelligently use bind params when possible.
+              // This would cause queries with many params to use inline params,
+              // but small queries would use bind params.
+              // In turn, that would force us to intelligently escape string values,
+              // since we need to escape inlined strings
+              // but need to not escape bound strings.
+              // Instead, we force jooq to always inline params,
+              // and always call escapeStringLiteral() on the string values.
+              new Settings().withStatementType(StatementType.STATIC_STATEMENT));
           // JOOQ adds some overhead here. Building the InsertValuesStep object takes about 139ms for 5K
           // records.
           // That's a nontrivial execution speed loss when the actual statement execution takes 500ms.
@@ -133,7 +147,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
           for (final PartialAirbyteMessage record : batch) {
             insert = insert.values(
                 val(UUID.randomUUID().toString()),
-                function("JSON_PARSE", String.class, val(record.getSerialized())),
+                function("JSON_PARSE", String.class, val(escapeStringLiteral(record.getSerialized()))),
                 val(Instant.ofEpochMilli(record.getRecord().getEmittedAt()).atOffset(ZoneOffset.UTC)),
                 val((OffsetDateTime) null));
           }
@@ -144,6 +158,17 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
     } catch (final Exception e) {
       LOGGER.error("Error while inserting records", e);
       throw new RuntimeException(e);
+    }
+  }
+
+  public static String escapeStringLiteral(final String str) {
+    if (str == null) {
+      return null;
+    } else {
+      // jooq handles most things
+      // but we need to manually escape backslashes because postgres and redshift have
+      // different backslash handling.
+      return str.replace("\\", "\\\\");
     }
   }
 

@@ -7,10 +7,9 @@ API. We'll be using the Exchange Rates API as an example since it is simple and 
 of the capabilities of the CDK.
 
 ## Requirements
-
-- Python &gt;= 3.9
-- Docker
-- NodeJS \(only used to generate the connector\). We'll remove the NodeJS dependency soon.
+* Python &gt;= 3.9
+* [Poetry](https://python-poetry.org/)
+* Docker
 
 All the commands below assume that `python` points to a version of python &gt;=3.9.0. On some
 systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the

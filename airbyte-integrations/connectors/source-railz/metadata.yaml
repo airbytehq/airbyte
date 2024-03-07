@@ -8,6 +8,10 @@ data:
   icon: railz.svg
   license: MIT
   name: Railz
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-railz
   registries:
     cloud:
       enabled: true

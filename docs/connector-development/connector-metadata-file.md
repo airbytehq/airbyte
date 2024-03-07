@@ -130,7 +130,7 @@ releases:
 The optional `scopedImpact` property allows you to provide a list of scopes for which the change is breaking.
 This allows you to reduce the scope of the change; it's assumed that any scopes not listed are unaffected by the breaking change.
 
-For example, consider the following `scopedImpact` defintion:
+For example, consider the following `scopedImpact` definition:
 
 ```yaml
 releases:
@@ -138,7 +138,7 @@ releases:
     1.0.0:
       message: "This version changes the cursor for the `Users` stream. After upgrading, please reset the stream."
       upgradeDeadline: "2023-12-31"
-      impactScope:
+      scopedImpact:
         - scopeType: stream
           impactedScopes: ["users"]
 ```

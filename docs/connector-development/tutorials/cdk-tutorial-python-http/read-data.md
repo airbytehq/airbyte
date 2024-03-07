@@ -128,7 +128,7 @@ one
 -- download this and place it in `sample_files/configured_catalog.json`. Then run:
 
 ```bash
- python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+ poetry run source-<name> --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 you should see some output lines, one of which is a record from the API:
@@ -279,19 +279,19 @@ We should now have a working implementation of incremental sync!
 
 Let's try it out:
 
-```text
-python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+```bash
+poetry run source-<name> --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 You should see a bunch of `RECORD` messages and `STATE` messages. To verify that incremental sync is
 working, pass the input state back to the connector and run it again:
 
-```text
+```bash
 # Save the latest state to sample_files/state.json
-python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json | grep STATE | tail -n 1 | jq .state.data > sample_files/state.json
+poetry run source-<name> --config secrets/config.json --catalog sample_files/configured_catalog.json | grep STATE | tail -n 1 | jq .state.data > sample_files/state.json
 
 # Run a read operation with the latest state message
-python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --state sample_files/state.json
+poetry run source-<name> --config secrets/config.json --catalog sample_files/configured_catalog.json --state sample_files/state.json
 ```
 
 You should see that only the record from the last date is being synced! This is acceptable behavior,

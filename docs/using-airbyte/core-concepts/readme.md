@@ -24,12 +24,12 @@ An Airbyte component which pulls data from a source or pushes data to a destinat
 
 A connection is an automated data pipeline that replicates data from a source to a destination. Setting up a connection enables configuration of the following parameters:
 
-| Concept              | Description                                                                                                         |
-|---------------------|---------------------------------------------------------------------------------------------------------------------|
-| [Replication Frequency](/using-airbyte/core-concepts/sync-schedules.md) | When should a data sync be triggered? | 
-| [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces.md) | Where should the replicated data be written? | 
-| [Sync Mode](/using-airbyte/core-concepts/sync-modes/README.md) | How should the streams be replicated (read and written)? | 
-| [Schema Propagation](/cloud/managing-airbyte-cloud/manage-schema-changes.md) | How should Airbyte handle schema drift in sources? | 
+| Concept                                                                                                         | Description                                                        |
+|-----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| [Replication Frequency](/using-airbyte/core-concepts/sync-schedules.md)                                         | When should a data sync be triggered?                              | 
+| [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces.md)                           | Where should the replicated data be written?                       | 
+| [Sync Mode](/using-airbyte/core-concepts/sync-modes/README.md)                                                  | How should the streams be replicated (read and written)?           | 
+| [Schema Propagation](/cloud/managing-airbyte-cloud/manage-schema-changes.md)                                    | How should Airbyte handle schema drift in sources?                 | 
 | [Catalog Selection](/cloud/managing-airbyte-cloud/configuring-connections.md#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? | 
 
 ## Stream
@@ -83,7 +83,7 @@ Typing and deduping ensures the data emitted from sources is written into the co
 Typing and Deduping is the default method of transforming datasets within data warehouse and database destinations after they've been replicated. We are retaining documentation about normalization to support legacy destinations. 
 :::
 
-For more details, see our [Typing & Deduping documentation](/understanding-airbyte/typing-deduping). 
+For more details, see our [Typing & Deduping documentation](/using-airbyte/core-concepts/typing-deduping).
 
 ## Basic Normalization
 

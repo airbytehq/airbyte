@@ -6,14 +6,13 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import java.util.Map;
 
 public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
     return testdb.integrationTestConfigBuilder()
-        .withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"))
+        .withEncrytedTrustServerCertificate()
         .build();
   }
 

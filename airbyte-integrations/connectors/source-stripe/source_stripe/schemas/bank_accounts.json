@@ -13,6 +13,9 @@
     "account_holder_type": {
       "type": ["null", "string"]
     },
+    "account_type": {
+      "type": ["null", "string"]
+    },
     "bank_name": {
       "type": ["null", "string"]
     },

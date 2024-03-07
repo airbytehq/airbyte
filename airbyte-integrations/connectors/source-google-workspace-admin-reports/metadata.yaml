@@ -8,6 +8,11 @@ data:
   icon: googleworkpace.svg
   license: MIT
   name: Google Workspace Admin Reports
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-google-workspace-admin-reports
   registries:
     cloud:
       dockerImageTag: 0.1.4

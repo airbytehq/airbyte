@@ -119,7 +119,7 @@ class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
         self._streams: List[DefaultStream] = []
         self._message_repository = None
 
-    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> ConcurrentCdkSource:
+    def build(self, configured_catalog: Optional[Mapping[str, Any]], _, __) -> ConcurrentCdkSource:
         return ConcurrentCdkSource(self._streams, self._message_repository, 1, 1)
 
     def set_streams(self, streams: List[DefaultStream]) -> "ConcurrentSourceBuilder":

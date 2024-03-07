@@ -10,19 +10,36 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-chargebee
   documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
   githubIssueLabel: source-chargebee
   icon: chargebee.svg
   license: MIT
   name: Chargebee
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-chargebee
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - subscription
+      - customer
+      - invoice
+      - credit_note
+      - coupon
+      - transaction
+      - event
+      - order
+      - plan
+      - payment_source
+      - addon
   supportLevel: certified
   tags:
     - language:low-code

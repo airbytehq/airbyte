@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,13 +23,26 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GeneralStagingFunctions {
 
+  // using a random string here as a placeholder for the moment.
+  // This would avoid mixing data in the staging area between different syncs (especially if they
+  // manipulate streams with similar names)
+  // if we replaced the random connection id by the actual connection_id, we'd gain the opportunity to
+  // leverage data that was uploaded to stage
+  // in a previous attempt but failed to load to the warehouse for some reason (interrupted?) instead.
+  // This would also allow other programs/scripts
+  // to load (or reload backups?) in the connection's staging area to be loaded at the next sync.
+  public static final UUID RANDOM_CONNECTION_ID = UUID.randomUUID();
+
   public static OnStartFunction onStartFunction(final JdbcDatabase database,
                                                 final StagingOperations stagingOperations,
                                                 final List<WriteConfig> writeConfigs,
                                                 final TyperDeduper typerDeduper) {
     return () -> {
       log.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
-      typerDeduper.prepareTables();
+
+      typerDeduper.prepareSchemasAndRunMigrations();
+
+      // Create raw tables
       final List<String> queryList = new ArrayList<>();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schema = writeConfig.getOutputSchemaName();
@@ -58,6 +72,9 @@ public class GeneralStagingFunctions {
 
         log.info("Preparing staging area in destination completed for schema {} stream {}", schema, stream);
       }
+
+      typerDeduper.prepareFinalTables();
+
       log.info("Executing finalization of tables.");
       stagingOperations.executeTransaction(database, queryList);
     };
@@ -96,8 +113,6 @@ public class GeneralStagingFunctions {
         typerDeduperValve.updateTimeAndIncreaseInterval(streamId);
       }
     } catch (final Exception e) {
-      stagingOperations.cleanUpStage(database, stageName, stagedFiles);
-      log.info("Cleaning stage path {}", stagingPath);
       throw new RuntimeException("Failed to upload data from stage " + stagingPath, e);
     }
   }
@@ -125,9 +140,17 @@ public class GeneralStagingFunctions {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {
           final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
+          final String stagePath = stagingOperations.getStagingPath(
+              RANDOM_CONNECTION_ID,
+              schemaName,
+              writeConfig.getStreamName(),
+              writeConfig.getOutputTableName(),
+              writeConfig.getWriteDatetime());
           log.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
-              stageName);
-          stagingOperations.dropStageIfExists(database, stageName);
+              stagePath);
+          // TODO: This is another weird manifestation of Redshift vs Snowflake using either or variables from
+          // stageName/StagingPath.
+          stagingOperations.dropStageIfExists(database, stageName, stagePath);
         }
       }
       typerDeduper.commitFinalTables();

@@ -3,26 +3,14 @@
 #
 
 import asyncclick as click
-import requests
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.upgrade_cdk.pipeline import run_connector_cdk_upgrade_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
-def latest_cdk_version():
-    """
-    Get the latest version of airbyte-cdk from pypi
-    """
-    cdk_pypi_url = "https://pypi.org/pypi/airbyte-cdk/json"
-    response = requests.get(cdk_pypi_url)
-    response.raise_for_status()
-    package_info = response.json()
-    return package_info["info"]["version"]
-
-
 @click.command(cls=DaggerPipelineCommand, short_help="Upgrade CDK version")
-@click.argument("target-cdk-version", type=str, default=latest_cdk_version)
+@click.argument("target-cdk-version", type=str, default="latest")
 @click.pass_context
 async def bump_version(
     ctx: click.Context,

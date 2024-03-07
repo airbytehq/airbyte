@@ -13,11 +13,11 @@ import io.airbyte.cdk.integrations.debezium.internals.DebeziumConverterUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import java.math.BigDecimal;
-import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -38,7 +38,7 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
   private static final String SMALLMONEY_TYPE = "SMALLMONEY";
   private static final String GEOMETRY = "GEOMETRY";
   private static final String GEOGRAPHY = "GEOGRAPHY";
-  private static final String DEBEZIUM_DATETIMEOFFSET_FORMAT = "yyyy-MM-dd HH:mm:ss XXX";
+  private static final String DEBEZIUM_DATETIMEOFFSET_FORMAT = "yyyy-MM-dd HH:mm:ss[.][SSSSSSS] XXX";
 
   private static final String DATETIME_FORMAT_MICROSECONDS = "yyyy-MM-dd'T'HH:mm:ss[.][SSSSSS]";
 
@@ -197,7 +197,7 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
       }
 
       if (input instanceof byte[]) {
-        return new String((byte[]) input, Charset.defaultCharset());
+        return Base64.getEncoder().encodeToString((byte[]) input);
       }
 
       LOGGER.warn("Uncovered binary class type '{}'. Use default converter",

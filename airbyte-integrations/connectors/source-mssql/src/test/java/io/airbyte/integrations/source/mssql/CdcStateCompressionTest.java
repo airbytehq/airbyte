@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcStateCompressionTest {
 
@@ -54,38 +53,30 @@ public class CdcStateCompressionTest {
 
   static private final int ADDED_COLUMNS = 1000;
 
-  static private final MSSQLServerContainer<?> CONTAINER = new MsSQLContainerFactory().shared(
-      "mcr.microsoft.com/mssql/server:2022-latest", "withAgent");
-
   private MsSQLTestDatabase testdb;
 
   @BeforeEach
-  public void setup() {
-    testdb = new MsSQLTestDatabase(CONTAINER);
-    testdb = testdb
-        .withConnectionProperty("encrypt", "false")
-        .withConnectionProperty("databaseName", testdb.getDatabaseName())
-        .initialized()
-        .withSnapshotIsolation()
-        .withCdc()
-        .withWaitUntilAgentRunning();
+  public void setup() throws Exception {
+    testdb = MsSQLTestDatabase.in(MsSQLTestDatabase.BaseImage.MSSQL_2022, MsSQLTestDatabase.ContainerModifier.AGENT)
+        .withWaitUntilAgentRunning()
+        .withCdc();
 
     // Create a test schema and a bunch of test tables with CDC enabled.
     // Insert one row in each table so that they're not empty.
-    final var enableCdcSqlFmt = """
-                                EXEC sys.sp_cdc_enable_table
-                                \t@source_schema = N'%s',
-                                \t@source_name   = N'test_table_%d',
-                                \t@role_name     = N'%s',
-                                \t@supports_net_changes = 0,
-                                \t@capture_instance = N'capture_instance_%d_%d'
-                                """;
     testdb.with("CREATE SCHEMA %s;", TEST_SCHEMA);
     for (int i = 0; i < TEST_TABLES; i++) {
+      String tableName = "test_table_%d".formatted(i);
+      String cdcInstanceName = "capture_instance_%d_%d".formatted(i, 1);
       testdb
-          .with("CREATE TABLE %s.test_table_%d (id INT IDENTITY(1,1) PRIMARY KEY);", TEST_SCHEMA, i)
-          .with(enableCdcSqlFmt, TEST_SCHEMA, i, CDC_ROLE_NAME, i, 1)
-          .with("INSERT INTO %s.test_table_%d DEFAULT VALUES", TEST_SCHEMA, i);
+          .with("CREATE TABLE %s.%s (id INT IDENTITY(1,1) PRIMARY KEY);", TEST_SCHEMA, tableName)
+          .withCdcForTable(TEST_SCHEMA, tableName, CDC_ROLE_NAME, cdcInstanceName)
+          .with("INSERT INTO %s.%s DEFAULT VALUES", TEST_SCHEMA, tableName);
+    }
+
+    for (int i = 0; i < TEST_TABLES; i++) {
+      String tableName = "test_table_%d".formatted(i);
+      String cdcInstanceName = "capture_instance_%d_%d".formatted(i, 1);
+      testdb.waitForCdcRecords(TEST_SCHEMA, tableName, cdcInstanceName, 1);
     }
 
     // Create a test user to be used by the source, with proper permissions.
@@ -105,15 +96,13 @@ public class CdcStateCompressionTest {
     // We do this by adding lots of columns with long names,
     // then migrating to a new CDC capture instance for each table.
     // This is admittedly somewhat awkward and perhaps could be improved.
-    final var disableCdcSqlFmt = """
-                                 EXEC sys.sp_cdc_disable_table
-                                 \t@source_schema = N'%s',
-                                 \t@source_name   = N'test_table_%d',
-                                 \t@capture_instance = N'capture_instance_%d_%d'
-                                 """;
+
     for (int i = 0; i < TEST_TABLES; i++) {
+      String tableName = "test_table_%d".formatted(i);
+      String cdcInstanceName = "capture_instance_%d_%d".formatted(i, 2);
+      String oldCdcInstanceName = "capture_instance_%d_%d".formatted(i, 1);
       final var sb = new StringBuilder();
-      sb.append("ALTER TABLE ").append(TEST_SCHEMA).append(".test_table_").append(i).append(" ADD");
+      sb.append("ALTER TABLE ").append(TEST_SCHEMA).append(".").append(tableName).append(" ADD");
       for (int j = 0; j < ADDED_COLUMNS; j++) {
         sb.append((j > 0) ? ", " : " ")
             .append("rather_long_column_name_________________________________________________________________________________________").append(j)
@@ -121,13 +110,13 @@ public class CdcStateCompressionTest {
       }
       testdb
           .with(sb.toString())
-          .with(enableCdcSqlFmt, TEST_SCHEMA, i, CDC_ROLE_NAME, i, 2)
-          .with(disableCdcSqlFmt, TEST_SCHEMA, i, i, 1);
+          .withCdcForTable(TEST_SCHEMA, tableName, CDC_ROLE_NAME, cdcInstanceName)
+          .withCdcDisabledForTable(TEST_SCHEMA, tableName, oldCdcInstanceName);
     }
   }
 
   private AirbyteCatalog getCatalog() {
-    var streams = new ArrayList<AirbyteStream>();
+    final var streams = new ArrayList<AirbyteStream>();
     for (int i = 0; i < TEST_TABLES; i++) {
       streams.add(CatalogHelpers.createAirbyteStream(
           "test_table_%d".formatted(i),
@@ -156,8 +145,13 @@ public class CdcStateCompressionTest {
         .with(JdbcUtils.USERNAME_KEY, testUserName())
         .with(JdbcUtils.PASSWORD_KEY, testdb.getPassword())
         .withSchemas(TEST_SCHEMA)
-        .withCdcReplication()
         .withoutSsl()
+        // Configure for CDC replication but with a higher timeout than usual.
+        // This is because Debezium requires more time than usual to build the initial snapshot.
+        .with("is_test", true)
+        .with("replication_method", Map.of(
+            "method", "CDC",
+            "initial_waiting_seconds", 60))
         .build();
   }
 
@@ -166,7 +160,7 @@ public class CdcStateCompressionTest {
   }
 
   /**
-   * This test is similar in principle to {@link CdcMysqlSourceTest.testCompressedSchemaHistory}.
+   * This test is similar in principle to CdcMysqlSourceTest.testCompressedSchemaHistory.
    */
   @Test
   public void testCompressedSchemaHistory() throws Exception {
@@ -184,7 +178,7 @@ public class CdcStateCompressionTest {
     assertTrue(lastSharedStateFromFirstBatch.get(IS_COMPRESSED).asBoolean());
     final var recordsFromFirstBatch = extractRecordMessages(dataFromFirstBatch);
     assertEquals(TEST_TABLES, recordsFromFirstBatch.size());
-    for (var record : recordsFromFirstBatch) {
+    for (final var record : recordsFromFirstBatch) {
       assertEquals("1", record.getData().get("id").toString());
     }
 
@@ -209,7 +203,7 @@ public class CdcStateCompressionTest {
     assertTrue(lastSharedStateFromSecondBatch.get(IS_COMPRESSED).asBoolean());
     final var recordsFromSecondBatch = extractRecordMessages(dataFromSecondBatch);
     assertEquals(TEST_TABLES, recordsFromSecondBatch.size());
-    for (var record : recordsFromSecondBatch) {
+    for (final var record : recordsFromSecondBatch) {
       assertEquals("2", record.getData().get("id").toString());
     }
   }
@@ -231,7 +225,7 @@ public class CdcStateCompressionTest {
         .collect(Collectors.groupingBy(AirbyteRecordMessage::getStream));
 
     final Map<String, Set<AirbyteRecordMessage>> recordsPerStreamWithNoDuplicates = new HashMap<>();
-    for (var entry : recordsPerStream.entrySet()) {
+    for (final var entry : recordsPerStream.entrySet()) {
       final var set = new HashSet<>(entry.getValue());
       recordsPerStreamWithNoDuplicates.put(entry.getKey(), set);
       assertEquals(entry.getValue().size(), set.size(), "duplicate records in sync for " + entry.getKey());
