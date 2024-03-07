@@ -32,8 +32,16 @@ def config_fixture(requests_mock):
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",
     }
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users", json={"data": []})
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/", json={"account": 123})
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users",
+        json={"data": []},
+    )
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",
+        json={"account": 123},
+    )
     return config
 
 
@@ -143,21 +151,35 @@ class TestSourceFacebookMarketing:
 
     def test_get_custom_insights_streams(self, api, config, fb_marketing):
         config["custom_insights"] = [
-            {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": ["action_device"]},
+            {
+                "name": "test",
+                "fields": ["account_id"],
+                "breakdowns": ["ad_format_asset"],
+                "action_breakdowns": ["action_device"],
+            },
         ]
         config = ConnectorConfig.parse_obj(config)
         assert fb_marketing.get_custom_insights_streams(api, config)
 
     def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config, fb_marketing):
         config["custom_insights"] = [
-            {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": []},
+            {
+                "name": "test",
+                "fields": ["account_id"],
+                "breakdowns": ["ad_format_asset"],
+                "action_breakdowns": [],
+            },
         ]
 
         config["action_breakdowns_allow_empty"] = False
         streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
-        assert streams[0].action_breakdowns == ["action_type", "action_target_id", "action_destination"]
+        assert streams[0].action_breakdowns == [
+            "action_type",
+            "action_target_id",
+            "action_destination",
+        ]
 
         config["action_breakdowns_allow_empty"] = True
         streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))

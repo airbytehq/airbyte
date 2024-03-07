@@ -118,11 +118,12 @@ class TestReportsAmazonSPStream:
             status_code=201,
             json={"reportId": report_id},
         )
+        document_id = "some_document_id"
         requests_mock.register_uri(
             "GET",
             f"https://test.url/reports/2021-06-30/reports/{report_id}",
             status_code=200,
-            json={"processingStatus": ReportProcessingStatus.FATAL, "dataEndTime": "2022-10-03T00:00:00Z"},
+            json={"processingStatus": ReportProcessingStatus.FATAL, "dataEndTime": "2022-10-03T00:00:00Z", "reportDocumentId": document_id},
         )
 
         stream = SomeReportStream(**report_init_kwargs)
@@ -136,8 +137,8 @@ class TestReportsAmazonSPStream:
                 )
             )
         assert e.value.internal_message == (
-            f"Failed to retrieve the report 'GET_TEST_REPORT' for period {stream_start}-{stream_end} "
-            "due to Amazon Seller Partner platform issues. This will be read during the next sync."
+            f"Failed to retrieve the report 'GET_TEST_REPORT' for period {stream_start}-{stream_end}. "
+            "This will be read during the next sync. Error: Failed to retrieve the report result document."
         )
 
     def test_read_records_retrieve_cancelled(self, report_init_kwargs, mocker, requests_mock, caplog):
@@ -274,9 +275,7 @@ class TestVendorFulfillment:
 
         stream = VendorDirectFulfillmentShipping(**report_init_kwargs)
         with patch("pendulum.now", return_value=pendulum.parse("2022-09-05T00:00:00Z")):
-            assert list(
-                stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)
-            ) == expected_slices
+            assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)) == expected_slices
 
     @pytest.mark.parametrize(
         ("stream_slice", "next_page_token", "expected_params"),
@@ -297,10 +296,8 @@ class TestVendorFulfillment:
             ),
             (None, {"nextToken": "123123123"}, {"nextToken": "123123123"}),
             (None, None, {}),
-        )
+        ),
     )
     def test_request_params(self, report_init_kwargs, stream_slice, next_page_token, expected_params):
         stream = VendorDirectFulfillmentShipping(**report_init_kwargs)
-        assert stream.request_params(
-            stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token
-        ) == expected_params
+        assert stream.request_params(stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token) == expected_params

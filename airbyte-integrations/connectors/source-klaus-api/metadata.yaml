@@ -27,5 +27,5 @@ data:
     ql: 300
     sl: 100
   tags:
-    - language:python
+    - language:low-code
 metadataSpecVersion: "1.0"

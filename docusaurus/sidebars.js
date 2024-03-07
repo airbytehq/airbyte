@@ -312,6 +312,7 @@ const contributeToAirbyte = {
         "contributing-to-airbyte/resources/pull-requests-handbook",
         "contributing-to-airbyte/resources/code-style",
         "contributing-to-airbyte/resources/code-formatting",
+        "contributing-to-airbyte/resources/qa-checks",
         "contributing-to-airbyte/resources/developing-locally",
         "contributing-to-airbyte/resources/developing-on-docker",
       ],
@@ -477,6 +478,11 @@ module.exports = {
         "operator-guides/reset",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
+    },
+    {
+      type: "doc",
+      label: "Using PyAirbyte",
+      id: "using-airbyte/pyairbyte/getting-started",
     },
     {
       type: "category",

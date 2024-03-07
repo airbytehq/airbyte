@@ -38,6 +38,11 @@
     "Line": {
       "items": {
         "properties": {
+          "SubTotalLineDetail": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {}
+          },
           "Id": {
             "type": ["null", "string"]
           },
@@ -84,7 +89,8 @@
             "type": ["null", "object"]
           }
         },
-        "type": ["null", "object"]
+        "type": ["null", "object"],
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     },
