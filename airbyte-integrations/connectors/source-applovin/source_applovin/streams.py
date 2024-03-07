@@ -216,6 +216,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             "format": "json",
             "report_type": self.report_type,
             "columns": self.columns,
+            "not_zero": 1,
             "offset": self.offset,
             "limit": self.page_size
         }
