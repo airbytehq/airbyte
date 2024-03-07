@@ -95,7 +95,6 @@ test_stream_facade_single_stream = (
         [
             {"data": {"id": "1"}, "stream": "stream1"},
             {"data": {"id": "2"}, "stream": "stream1"},
-            {"stream_state": {"__ab_full_refresh_state_message": True}, "record_count": 2.0},
         ]
     )
     .set_expected_catalog(
@@ -140,8 +139,6 @@ test_stream_facade_raises_exception = (
     .set_expected_records(
         [
             {"data": {"id": "1"}, "stream": "stream1"},
-            {"stream_state": {"__ab_full_refresh_state_message": True}, "record_count": 1.0},
-
         ]
     )
     .set_expected_catalog(
@@ -173,7 +170,6 @@ test_stream_facade_single_stream_with_primary_key = (
         [
             {"data": {"id": "1"}, "stream": "stream1"},
             {"data": {"id": "2"}, "stream": "stream1"},
-            {"stream_state": {"__ab_full_refresh_state_message": True}, "record_count": 2.0},
         ]
     )
     .set_expected_catalog(
@@ -204,10 +200,8 @@ test_stream_facade_multiple_streams = (
         [
             {"data": {"id": "1"}, "stream": "stream1"},
             {"data": {"id": "2"}, "stream": "stream1"},
-            {"stream_state": {"__ab_full_refresh_state_message": True}, "record_count": 2.0},
             {"data": {"id": "A"}, "stream": "stream2"},
             {"data": {"id": "B"}, "stream": "stream2"},
-            {"stream_state": {"__ab_full_refresh_state_message": True}, "record_count": 2.0},
         ]
     )
     .set_expected_catalog(
@@ -248,7 +242,6 @@ test_stream_facade_single_stream_with_single_slice = (
         [
             {"data": {"id": "1"}, "stream": "stream1"},
             {"data": {"id": "2"}, "stream": "stream1"},
-            {"stream_state": {"__ab_full_refresh_state_message": True}, "record_count": 2.0},
         ]
     )
     .set_expected_catalog(
@@ -281,7 +274,6 @@ test_stream_facade_single_stream_with_multiple_slices = (
             {"data": {"id": "2"}, "stream": "stream1"},
             {"data": {"id": "3"}, "stream": "stream1"},
             {"data": {"id": "4"}, "stream": "stream1"},
-            {"stream_state": {"__ab_full_refresh_state_message": True}, "record_count": 4.0},
         ]
     )
     .set_expected_catalog(
@@ -314,7 +306,6 @@ test_stream_facade_single_stream_with_multiple_slices_with_concurrency_level_two
             {"data": {"id": "2"}, "stream": "stream1"},
             {"data": {"id": "3"}, "stream": "stream1"},
             {"data": {"id": "4"}, "stream": "stream1"},
-            {"stream_state": {"__ab_full_refresh_state_message": True}, "record_count": 4.0},
         ]
     )
     .set_expected_catalog(
@@ -366,11 +357,11 @@ test_incremental_stream_with_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 1}, "stream": "stream1"},
-            {"stream_state": {"cursor_field": 1}, "record_count": 2.0},
+            {"cursor_field": 1},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"stream_state": {"cursor_field": 2}, "record_count": 2.0},
-            {"stream_state": {"cursor_field": 2}, "record_count": 0.0},  # see Cursor.ensure_at_least_one_state_emitted
+            {"cursor_field": 2},
+            {"cursor_field": 2},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -412,8 +403,8 @@ test_incremental_stream_without_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 3}, "stream": "stream1"},
-            {"stream_state": {"cursor_field": 3}, "record_count": 2.0},
-            {"stream_state": {"cursor_field": 3}, "record_count": 0.0},  # see Cursor.ensure_at_least_one_state_emitted
+            {"cursor_field": 3},
+            {"cursor_field": 3},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
