@@ -24,6 +24,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.oracle.OracleNameTransformer;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -115,15 +116,13 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
       throws SQLException {
     final String query =
         String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase());
-
-    try (final DSLContext dslContext = getDslContext(config)) {
-      final List<org.jooq.Record> result = getDatabase(dslContext).query(ctx -> ctx.fetch(query).stream().toList());
-      return result
-          .stream()
-          .map(r -> r.formatJSON(JSON_FORMAT))
-          .map(Jsons::deserialize)
-          .collect(Collectors.toList());
-    }
+    final DSLContext dslContext = getDslContext(config);
+    final List<org.jooq.Record> result = getDatabase(dslContext).query(ctx -> ctx.fetch(query).stream().toList());
+    return result
+        .stream()
+        .map(r -> r.formatJSON(JSON_FORMAT))
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
   }
 
   private static Database getDatabase(final DSLContext dslContext) {
@@ -152,15 +151,13 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
     db.start();
 
     config = getConfig(db);
+    final DSLContext dslContext = getDslContext(config);
+    final Database database = getDatabase(dslContext);
+    database.query(
+        ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
+    database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
-    try (final DSLContext dslContext = getDslContext(config)) {
-      final Database database = getDatabase(dslContext);
-      database.query(
-          ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
-      database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
-
-      ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
-    }
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
   }
 
   @Override
@@ -183,7 +180,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
                 config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
+                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"), Duration.ofMinutes(5));
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
     final String networkServiceBanner =
@@ -209,7 +206,8 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
                 config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
+                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"),
+        Duration.ofMinutes(5));
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
     final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
