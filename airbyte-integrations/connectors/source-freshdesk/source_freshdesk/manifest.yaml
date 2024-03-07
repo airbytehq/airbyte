@@ -149,7 +149,7 @@ definitions:
             value: "{{ record.get('business_hours') }}"
       - type: RemoveFields
         field_pointers:
-          - [ "business_hours" ]
+          - ["business_hours"]
 
   canned_response_folders:
     type: DeclarativeStream
@@ -443,7 +443,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "category_id" ]
+          - path: ["category_id"]
             value: "{{ record.get('category_id') or stream_slice.get('id') }}"
     $parameters:
       name: "solution_folders"
