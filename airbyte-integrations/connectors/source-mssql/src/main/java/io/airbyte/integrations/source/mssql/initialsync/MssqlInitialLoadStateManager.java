@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 
 public abstract class MssqlInitialLoadStateManager implements SourceStateMessageProducer<AirbyteMessage> {
 
-  public static long MSSQL_STATE_VERSION = 2;
-  public static String STATE_TYPE_KEY = "state_type";
-  public static String ORDERED_COL_STATE_TYPE = "ordered_column";
+  public static final long MSSQL_STATE_VERSION = 2;
+  public static final String STATE_TYPE_KEY = "state_type";
+  public static final String ORDERED_COL_STATE_TYPE = "ordered_column";
   protected Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOrderedColLoadStatus;
 
   private OrderedColumnLoadStatus ocStatus;
