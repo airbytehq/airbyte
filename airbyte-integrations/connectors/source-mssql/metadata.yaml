@@ -29,7 +29,6 @@ data:
   supportLevel: community
   tags:
     - language:java
-    - language:python
   releases:
     breakingChanges:
       3.0.0:
