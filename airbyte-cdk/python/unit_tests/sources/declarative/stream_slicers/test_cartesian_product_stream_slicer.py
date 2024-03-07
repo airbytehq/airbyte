@@ -91,6 +91,33 @@ def test_substream_slicer(test_name, stream_slicers, expected_slices):
     slices = [s for s in slicer.stream_slices()]
     assert slices == expected_slices
 
+def test_stream_slices_raises_exception_if_multiple_cursor_slice_components():
+    stream_slicers = [
+        DatetimeBasedCursor(
+            start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
+            end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", parameters={}),
+            step="P1D",
+            cursor_field=InterpolatedString.create("", parameters={}),
+            datetime_format="%Y-%m-%d",
+            cursor_granularity="P1D",
+            config={},
+            parameters={},
+        ),
+        DatetimeBasedCursor(
+            start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
+            end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", parameters={}),
+            step="P1D",
+            cursor_field=InterpolatedString.create("", parameters={}),
+            datetime_format="%Y-%m-%d",
+            cursor_granularity="P1D",
+            config={},
+            parameters={},
+        ),
+    ]
+    slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
+    with pytest.raises(ValueError):
+        list(slicer.stream_slices())
+
 
 @pytest.mark.parametrize(
     "test_name, stream_1_request_option, stream_2_request_option, expected_req_params, expected_headers,expected_body_json, expected_body_data",

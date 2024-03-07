@@ -104,5 +104,11 @@ class CartesianProductStreamSlicer(StreamSlicer):
         product = itertools.product(*sub_slices)
         for stream_slice_tuple in product:
             partition = dict(ChainMap(*[s.partition for s in stream_slice_tuple]))
-            cursor_slice = dict(ChainMap(*[s.cursor_slice for s in stream_slice_tuple]))
+            cursor_slices = [s.cursor_slice for s in stream_slice_tuple if s.cursor_slice]
+            if len(cursor_slices) > 1:
+                raise ValueError(f"There should only be a single cursor slice. Found {cursor_slices}")
+            if cursor_slices:
+                cursor_slice = cursor_slices[0]
+            else:
+                cursor_slice = {}
             yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
