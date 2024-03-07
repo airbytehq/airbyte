@@ -12,7 +12,7 @@ from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
-from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
@@ -42,13 +42,14 @@ class ConcurrentCdkSource(ConcurrentSourceAdapter):
         concurrent_source = ConcurrentSource.create(1, 1, streams[0]._logger, NeverLogSliceLogger(), message_repository)
         super().__init__(concurrent_source)
         self._streams = streams
+        self._message_repository = message_repository
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         # Check is not verified because it is up to the source to implement this method
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [StreamFacade(s, LegacyStream(), NoopCursor(), NeverLogSliceLogger(), s._logger) for s in self._streams]
+        return [StreamFacade(s, LegacyStream(), FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=self.message_repository), NeverLogSliceLogger(), s._logger) for s in self._streams]
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(connectionSpecification={})

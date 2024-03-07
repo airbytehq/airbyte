@@ -4,7 +4,7 @@
 import logging
 
 from airbyte_cdk.sources.message import InMemoryMessageRepository
-from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
@@ -14,6 +14,8 @@ from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_str
     InMemoryPartition,
     InMemoryPartitionGenerator,
 )
+
+_message_repository = InMemoryMessageRepository()
 
 _id_only_stream = DefaultStream(
     partition_generator=InMemoryPartitionGenerator(
@@ -30,7 +32,8 @@ _id_only_stream = DefaultStream(
     primary_key=[],
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
-    cursor=NoopCursor(),
+    message_repository=_message_repository,
+    cursor=None,
 )
 
 _id_only_stream_with_slice_logger = DefaultStream(
@@ -48,7 +51,8 @@ _id_only_stream_with_slice_logger = DefaultStream(
     primary_key=[],
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
-    cursor=NoopCursor(),
+    message_repository=_message_repository,
+    cursor=None,
 )
 
 _id_only_stream_with_primary_key = DefaultStream(
@@ -66,7 +70,8 @@ _id_only_stream_with_primary_key = DefaultStream(
     primary_key=["id"],
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
-    cursor=NoopCursor(),
+    message_repository=_message_repository,
+    cursor=None,
 )
 
 _id_only_stream_multiple_partitions = DefaultStream(
@@ -87,7 +92,8 @@ _id_only_stream_multiple_partitions = DefaultStream(
     primary_key=[],
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
-    cursor=NoopCursor(),
+    message_repository=_message_repository,
+    cursor=None,
 )
 
 _id_only_stream_multiple_partitions_concurrency_level_two = DefaultStream(
@@ -108,7 +114,8 @@ _id_only_stream_multiple_partitions_concurrency_level_two = DefaultStream(
     primary_key=[],
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
-    cursor=NoopCursor(),
+    message_repository=_message_repository,
+    cursor=None,
 )
 
 _stream_raising_exception = DefaultStream(
@@ -126,7 +133,8 @@ _stream_raising_exception = DefaultStream(
     primary_key=[],
     cursor_field=None,
     logger=logging.getLogger("test_logger"),
-    cursor=NoopCursor(),
+    message_repository=_message_repository,
+    cursor=None,
 )
 
 test_concurrent_cdk_single_stream = (
@@ -140,7 +148,7 @@ test_concurrent_cdk_single_stream = (
                 _id_only_stream,
             ]
         )
-        .set_message_repository(InMemoryMessageRepository())
+        .set_message_repository(_message_repository)
     )
     .set_expected_records(
         [
@@ -193,7 +201,7 @@ test_concurrent_cdk_single_stream_with_primary_key = (
                 _id_only_stream_with_primary_key,
             ]
         )
-        .set_message_repository(InMemoryMessageRepository())
+        .set_message_repository(_message_repository)
     )
     .set_expected_records(
         [
@@ -253,11 +261,12 @@ test_concurrent_cdk_multiple_streams = (
                     primary_key=[],
                     cursor_field=None,
                     logger=logging.getLogger("test_logger"),
-                    cursor=NoopCursor(),
+                    message_repository=_message_repository,
+                    cursor=None,
                 ),
             ]
         )
-        .set_message_repository(InMemoryMessageRepository())
+        .set_message_repository(_message_repository)
     )
     .set_expected_records(
         [
@@ -308,7 +317,7 @@ test_concurrent_cdk_partition_raises_exception = (
                 _stream_raising_exception,
             ]
         )
-        .set_message_repository(InMemoryMessageRepository())
+        .set_message_repository(_message_repository)
     )
     .set_expected_records(
         [
@@ -346,7 +355,7 @@ test_concurrent_cdk_single_stream_multiple_partitions = (
                 _id_only_stream_multiple_partitions,
             ]
         )
-        .set_message_repository(InMemoryMessageRepository())
+        .set_message_repository(_message_repository)
     )
     .set_expected_records(
         [
@@ -386,7 +395,7 @@ test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_two = (
                 _id_only_stream_multiple_partitions_concurrency_level_two,
             ]
         )
-        .set_message_repository(InMemoryMessageRepository())
+        .set_message_repository(_message_repository)
     )
     .set_expected_records(
         [
