@@ -75,7 +75,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     invalid_csv_scenario,
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
-    multi_format_analytics_scenario,
+    csv_analytics_scenario,
     multi_stream_custom_format,
     schemaless_csv_multi_stream_scenario,
     schemaless_csv_scenario,
@@ -265,7 +265,7 @@ read_scenarios = discover_scenarios + [
     emit_record_scenario_single_stream,
     skip_record_scenario_multi_stream,
     skip_record_scenario_single_stream,
-    multi_format_analytics_scenario,
+    csv_analytics_scenario,
     wait_for_rediscovery_scenario_multi_stream,
     wait_for_rediscovery_scenario_single_stream,
 ]

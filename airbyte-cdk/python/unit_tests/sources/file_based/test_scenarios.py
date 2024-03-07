@@ -135,6 +135,7 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
 
 def _verify_analytics(analytics: List[AirbyteMessage], expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]]) -> None:
     if expected_analytics:
+        assert len(analytics) == len(expected_analytics), f"Number of actual analytics messages ({len(analytics)}) did not match expected ({expected_analytics})"
         for actual, expected in zip(analytics, expected_analytics):
             actual_type, actual_value = actual.trace.analytics.type, actual.trace.analytics.value
             expected_type = expected.type
