@@ -4,7 +4,7 @@
 
 import datetime as dt
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Union
+from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -37,13 +37,13 @@ class MinMaxDatetime:
     min_datetime: Union[InterpolatedString, str] = ""
     max_datetime: Union[InterpolatedString, str] = ""
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.datetime = InterpolatedString.create(self.datetime, parameters=parameters or {})
         self._parser = DatetimeParser()
-        self.min_datetime = InterpolatedString.create(self.min_datetime, parameters=parameters) if self.min_datetime else None
-        self.max_datetime = InterpolatedString.create(self.max_datetime, parameters=parameters) if self.max_datetime else None
+        self.min_datetime = InterpolatedString.create(self.min_datetime, parameters=parameters) if self.min_datetime else None  # type: ignore
+        self.max_datetime = InterpolatedString.create(self.max_datetime, parameters=parameters) if self.max_datetime else None  # type: ignore
 
-    def get_datetime(self, config, **additional_parameters) -> dt.datetime:
+    def get_datetime(self, config: Mapping[str, Any], **additional_parameters: Mapping[str, Any]) -> dt.datetime:
         """
         Evaluates and returns the datetime
         :param config: The user-provided configuration as specified by the source's spec
@@ -55,29 +55,44 @@ class MinMaxDatetime:
         if not datetime_format:
             datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
-        time = self._parser.parse(str(self.datetime.eval(config, **additional_parameters)), datetime_format)
+        time = self._parser.parse(str(self.datetime.eval(config, **additional_parameters)), datetime_format)  # type: ignore # datetime is always cast to an interpolated string
 
         if self.min_datetime:
-            min_time = str(self.min_datetime.eval(config, **additional_parameters))
+            min_time = str(self.min_datetime.eval(config, **additional_parameters))  # type: ignore # min_datetime is always cast to an interpolated string
             if min_time:
-                min_time = self._parser.parse(min_time, datetime_format)
-                time = max(time, min_time)
+                min_datetime = self._parser.parse(min_time, datetime_format)  # type: ignore # min_datetime is always cast to an interpolated string
+                time = max(time, min_datetime)
         if self.max_datetime:
-            max_time = str(self.max_datetime.eval(config, **additional_parameters))
+            max_time = str(self.max_datetime.eval(config, **additional_parameters))  # type: ignore # max_datetime is always cast to an interpolated string
             if max_time:
-                max_time = self._parser.parse(max_time, datetime_format)
-                time = min(time, max_time)
+                max_datetime = self._parser.parse(max_time, datetime_format)
+                time = min(time, max_datetime)
         return time
 
-    @property
+    @property  # type: ignore # properties don't play well with dataclasses...
     def datetime_format(self) -> str:
         """The format of the string representing the datetime"""
         return self._datetime_format
 
     @datetime_format.setter
-    def datetime_format(self, value: str):
+    def datetime_format(self, value: str) -> None:
         """Setter for the datetime format"""
         # Covers the case where datetime_format is not provided in the constructor, which causes the property object
         # to be set which we need to avoid doing
         if not isinstance(value, property):
             self._datetime_format = value
+
+    @classmethod
+    def create(
+        cls,
+        interpolated_string_or_min_max_datetime: Union[InterpolatedString, str, "MinMaxDatetime"],
+        parameters: Optional[Mapping[str, Any]] = None,
+    ) -> "MinMaxDatetime":
+        if parameters is None:
+            parameters = {}
+        if isinstance(interpolated_string_or_min_max_datetime, InterpolatedString) or isinstance(
+            interpolated_string_or_min_max_datetime, str
+        ):
+            return MinMaxDatetime(datetime=interpolated_string_or_min_max_datetime, parameters=parameters)
+        else:
+            return interpolated_string_or_min_max_datetime

@@ -55,7 +55,7 @@ data:
           Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` schema has been updated to match Amazon Seller Partner.
           Users will need to refresh the source schema and reset this stream after upgrading.
         upgradeDeadline: "2024-03-11"
-  supportLevel: community
+  supportLevel: certified
   tags:
     - language:python
 metadataSpecVersion: "1.0"

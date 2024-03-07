@@ -155,9 +155,7 @@ class FileBasedConcurrentCursor(AbstractConcurrentFileBasedCursor):
                 self._stream_namespace,
                 new_state,
             )
-            state_message = self._connector_state_manager.create_state_message(
-                self._stream_name, self._stream_namespace, send_per_stream_state=True
-            )
+            state_message = self._connector_state_manager.create_state_message(self._stream_name, self._stream_namespace)
             self._message_repository.emit_message(state_message)
 
     def _get_new_cursor_value(self) -> str:
