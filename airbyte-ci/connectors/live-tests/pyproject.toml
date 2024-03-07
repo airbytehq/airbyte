@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "live-tests"
-version = "0.1.0"
+version = "0.2.0"
 description = "Contains utilities for testing connectors against live data."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -20,7 +20,6 @@ airbyte-protocol-models = "<1.0.0"
 cachetools = "~=5.3.3"
 dagger-io = "==0.9.6"
 pydantic = "*"
-pytest = "~=8.0.2"
 pytest-asyncio = "~=0.23.5"
 pydash = "~=7.0.7"
 docker = ">=6,<7"
@@ -37,10 +36,9 @@ types-cachetools = "^5.3.0.7"
 [tool.poe.tasks]
 test = "pytest tests"
 lint = "ruff check src"
-type_check = "mypy src"
+format = "ruff format src"
+type_check = "mypy src --disallow-untyped-defs"
+pre-push = ["format", "lint", "test", "type_check"]
 
 [tool.airbyte_ci]
 poe_tasks = ["test", "lint", "type_check"]
-
-[tool.pytest.ini_options]
-pythonpath = ["src"]

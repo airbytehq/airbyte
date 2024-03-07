@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Iterable, TextIO, Tuple
+from typing import Any, Iterable, TextIO, Tuple
 
 import pydash
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
@@ -12,9 +12,9 @@ from live_tests.commons.backends.base_backend import BaseBackend
 
 
 class FileDescriptorLRUCache(LRUCache):
-    def popitem(self):
+    def popitem(self) -> Tuple[Any, Any]:
         filepath, fd = LRUCache.popitem(self)
-        fd.close()  # Close the file descriptor when it's evicted from the cache
+        fd.close()  # type: ignore  # Close the file descriptor when it's evicted from the cache
         return filepath, fd
 
 
@@ -33,7 +33,7 @@ class FileBackend(BaseBackend):
     def __init__(self, output_directory: Path):
         self._output_directory = output_directory
 
-    async def write(self, airbyte_messages: Iterable[AirbyteMessage]):
+    async def write(self, airbyte_messages: Iterable[AirbyteMessage]) -> None:
         """
         Write AirbyteMessages to the appropriate file.
 
