@@ -4,7 +4,6 @@
 import logging
 
 from airbyte_cdk.sources.message import InMemoryMessageRepository
-from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
