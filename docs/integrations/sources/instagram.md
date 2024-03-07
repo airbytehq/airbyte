@@ -113,8 +113,9 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
-| 3.0.3 | 2024-02-12 | [35177](https://github.com/airbytehq/airbyte/pull/35177) | Manage dependencies with Poetry. |
-| 3.0.2   | 2024-01-15 | [34254](https://github.com/airbytehq/airbyte/pull/34254) | prepare for airbyte-lib                                                        |
+| 3.0.4   | 2024-03-07 | [35875](https://github.com/airbytehq/airbyte/pull/35875) | Remove `total_interactions` from the `MediaInsights` queries.                                                             |
+| 3.0.3   | 2024-02-12 | [35177](https://github.com/airbytehq/airbyte/pull/35177) | Manage dependencies with Poetry.                                                                                          |
+| 3.0.2   | 2024-01-15 | [34254](https://github.com/airbytehq/airbyte/pull/34254) | prepare for airbyte-lib                                                                                                   |
 | 3.0.1   | 2024-01-08 | [33989](https://github.com/airbytehq/airbyte/pull/33989) | Remove metrics from video feed                                                                                            |
 | 3.0.0   | 2024-01-05 | [33930](https://github.com/airbytehq/airbyte/pull/33930) | Upgrade to API v18.0                                                                                                      |
 | 2.0.1   | 2024-01-03 | [33889](https://github.com/airbytehq/airbyte/pull/33889) | Change requested metrics for stream `media_insights`                                                                      |
