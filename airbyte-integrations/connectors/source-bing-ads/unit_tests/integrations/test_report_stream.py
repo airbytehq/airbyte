@@ -34,10 +34,10 @@ class TestReportStream(BaseTest):
 
 
 class TestSuiteReportStream(TestReportStream):
-    stream_name: str = None
+    stream_name: Optional[str] = None
     report_file: str
     records_number: int
-    second_read_records_number: int = None
+    second_read_records_number: Optional[int] = None
     state_file: str
     incremental_report_file: str
     first_read_state: dict
