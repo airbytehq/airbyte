@@ -10,7 +10,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -38,9 +38,10 @@ public class SqlServerOperations implements SqlOperations {
             + "%s VARCHAR(64) PRIMARY KEY,\n"
             + "%s NVARCHAR(MAX),\n" // Microsoft SQL Server specific: NVARCHAR can store Unicode meanwhile VARCHAR - not
             + "%s DATETIMEOFFSET(7) DEFAULT SYSDATETIMEOFFSET()\n"
+            + "%s DATETIMEOFFSET(7)"
             + ");\n",
-        schemaName, tableName, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        schemaName, tableName, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT);
   }
 
   @Override
@@ -60,7 +61,7 @@ public class SqlServerOperations implements SqlOperations {
 
   @Override
   public void insertRecords(final JdbcDatabase database,
-                            final List<AirbyteRecordMessage> records,
+                            final List<PartialAirbyteMessage> records,
                             final String schemaName,
                             final String tempTableName)
       throws SQLException {
@@ -72,11 +73,12 @@ public class SqlServerOperations implements SqlOperations {
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
         schemaName,
         tempTableName,
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT);
     final String recordQueryComponent = "(?, ?, ?),\n";
-    final List<List<AirbyteRecordMessage>> batches = Lists.partition(records, MAX_BATCH_SIZE);
+    final List<List<PartialAirbyteMessage>> batches = Lists.partition(records, MAX_BATCH_SIZE);
     batches.forEach(record -> {
       try {
         SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, record);
