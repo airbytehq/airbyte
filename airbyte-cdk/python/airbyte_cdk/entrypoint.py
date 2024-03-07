@@ -171,9 +171,11 @@ class AirbyteEntrypoint(object):
     @staticmethod
     def handle_record_counts(message: AirbyteMessage, stream_message_count: DefaultDict[HashableStreamDescriptor, int]) -> AirbyteMessage:
         if message.type == Type.RECORD:
+            logger.debug(f"Message type: {message}")
             descriptor = HashableStreamDescriptor(name=message.record.stream, namespace=message.record.namespace)
             stream_message_count[descriptor] += 1
         elif message.type == Type.STATE:
+            logger.debug(f"Message type: {message}")
             if not message.state.stream:
                 raise ValueError("State message was not in per-stream state format which is required for record counts")
 
