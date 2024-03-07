@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.68.4
+low-code: update cartesian stream slice to emit typed StreamSlice
+
 ## 0.68.3
 Low-code: adding a default value if a stream slice is None during read_records
 
