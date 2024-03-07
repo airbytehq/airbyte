@@ -21,15 +21,14 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
+  releaseStage: generally_available
   supportLevel: community
   tags:
     - language:java
-    - language:python
   releases:
     breakingChanges:
       4.0.0:
-        message: "Beta release of certified source mssql connector."
+        message: "Certified source mssql connector."
         upgradeDeadline: "2024-04-07"
       3.0.0:
         message: "Remapped columns of types: date, datetime, datetime2, datetimeoffset, smalldatetime, and time from `String` to their appropriate Airbyte types. Customers whose streams have columns with the affected data types must take action with their connections."
