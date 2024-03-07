@@ -58,7 +58,6 @@ definitions:
   basic_authenticator:
     type: BasicHttpAuthenticator
     username: "{{ config.get('api_key')}}"
-    password: "X"
 
   record_selector:
     type: RecordSelector
@@ -143,6 +142,14 @@ definitions:
     $parameters:
       name: "business_hours"
       primary_key: "id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["working_hours"]
+            value: "{{ record.get('business_hours') }}"
+      - type: RemoveFields
+        field_pointers:
+          - [ "business_hours" ]
 
   canned_response_folders:
     type: DeclarativeStream
@@ -433,6 +440,11 @@ definitions:
           - stream: "#/definitions/solution_categories"
             parent_key: id
             partition_field: id
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "category_id" ]
+            value: "{{ record.get('category_id') or stream_slice.get('id') }}"
     $parameters:
       name: "solution_folders"
       primary_key: "id"
