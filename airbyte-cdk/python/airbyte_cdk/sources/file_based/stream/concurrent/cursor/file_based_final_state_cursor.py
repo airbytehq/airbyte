@@ -24,11 +24,7 @@ class FileBasedFinalStateCursor(AbstractConcurrentFileBasedCursor):
     """Cursor that is used to guarantee at least one state message is emitted for a concurrent file-based stream."""
 
     def __init__(
-            self,
-            stream_config: FileBasedStreamConfig,
-            message_repository: MessageRepository,
-            stream_namespace: Optional[str],
-            **kwargs: Any
+        self, stream_config: FileBasedStreamConfig, message_repository: MessageRepository, stream_namespace: Optional[str], **kwargs: Any
     ):
         self._stream_name = stream_config.name
         self._stream_namespace = stream_namespace

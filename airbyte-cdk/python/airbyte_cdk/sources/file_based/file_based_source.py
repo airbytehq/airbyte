@@ -171,9 +171,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
 
                 if sync_mode == SyncMode.full_refresh and hasattr(self, "_concurrency_level") and self._concurrency_level is not None:
                     cursor = FileBasedFinalStateCursor(
-                        stream_config=stream_config,
-                        stream_namespace=None,
-                        message_repository=self.message_repository
+                        stream_config=stream_config, stream_namespace=None, message_repository=self.message_repository
                     )
                     stream = FileBasedStreamFacade.create_from_stream(
                         self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
