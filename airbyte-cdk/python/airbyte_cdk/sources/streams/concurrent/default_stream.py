@@ -7,9 +7,10 @@ from logging import Logger
 from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 
@@ -25,6 +26,7 @@ class DefaultStream(AbstractStream):
         cursor_field: Optional[str],
         logger: Logger,
         cursor: Optional[Cursor],
+        message_repository: MessageRepository,
         namespace: Optional[str] = None,
     ) -> None:
         self._stream_partition_generator = partition_generator
@@ -34,7 +36,7 @@ class DefaultStream(AbstractStream):
         self._primary_key = primary_key
         self._cursor_field = cursor_field
         self._logger = logger
-        self._cursor = cursor or NoopCursor()
+        self._cursor = cursor or FinalStateCursor(stream_name=name, stream_namespace=namespace, message_repository=message_repository)
         self._namespace = namespace
 
     def generate_partitions(self) -> Iterable[Partition]:
@@ -43,6 +45,10 @@ class DefaultStream(AbstractStream):
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def namespace(self) -> Optional[str]:
+        return self._namespace
 
     def check_availability(self) -> StreamAvailability:
         return self._availability_strategy.check_availability(self._logger)
