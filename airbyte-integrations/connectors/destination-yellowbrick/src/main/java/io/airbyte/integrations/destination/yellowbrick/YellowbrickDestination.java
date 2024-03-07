@@ -23,6 +23,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickDestinationHandler;
 import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickSqlGenerator;
+import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickState;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -98,8 +99,8 @@ public class YellowbrickDestination extends AbstractJdbcDestination implements D
   }
 
   @Override
-  protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database) {
-    return new YellowbrickDestinationHandler(databaseName, database);
+  protected JdbcDestinationHandler<YellowbrickState> getDestinationHandler(String databaseName, JdbcDatabase database, String rawTableSchema) {
+    return new YellowbrickDestinationHandler(databaseName, database, rawTableSchema);
   }
 
   @Override

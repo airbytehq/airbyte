@@ -14,12 +14,14 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.yellowbrick.YellowbrickSqlOperations;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.SQLDialect;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Slf4j
-public class YellowbrickDestinationHandler extends JdbcDestinationHandler {
+public class YellowbrickDestinationHandler extends JdbcDestinationHandler<YellowbrickState> {
 
-  public YellowbrickDestinationHandler(final String databaseName, final JdbcDatabase jdbcDatabase) {
-    super(databaseName, jdbcDatabase);
+  public YellowbrickDestinationHandler(final String databaseName, final JdbcDatabase jdbcDatabase, String rawTableSchema) {
+    super(databaseName, jdbcDatabase, rawTableSchema, SQLDialect.POSTGRES);
   }
 
   @Override
@@ -34,6 +36,12 @@ public class YellowbrickDestinationHandler extends JdbcDestinationHandler {
       case Union.TYPE -> toJdbcTypeName(((Union) airbyteType).chooseType());
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + airbyteType);
     };
+  }
+
+  @Override
+  protected YellowbrickState toDestinationState(JsonNode json) {
+    return new YellowbrickState(
+        json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean());
   }
 
   private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {
