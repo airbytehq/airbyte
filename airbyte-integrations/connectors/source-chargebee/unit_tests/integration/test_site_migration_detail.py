@@ -112,7 +112,7 @@ class FullRefreshTest(TestCase):
             _a_response().with_record(_a_record()).build()
         )
 
-        self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
+        self._read(_config().with_start_date(self._start_date))
         # HTTPMocker ensures call are performed
 
 
@@ -170,7 +170,7 @@ class FullRefreshTest(TestCase):
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
 
-@freezegun.freeze_time(datetime.now(timezone.utc))
+@freezegun.freeze_time(_NOW.timestamp())
 class IncrementalTest(TestCase):
 
     # Site Migration Detail stream is a semi-incremental stream and therefore state acts differently than typical declarative incremental implementation -- state is updated to most recent cursor value read

@@ -107,7 +107,7 @@ class FullRefreshTest(TestCase):
             _a_response().with_record(_a_record()).build()
         )
 
-        self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
+        self._read(_config().with_start_date(self._start_date))
         # HTTPMocker ensures call are performed
 
     @HttpMocker()
