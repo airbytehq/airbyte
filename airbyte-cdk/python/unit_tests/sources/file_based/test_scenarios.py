@@ -110,11 +110,13 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
         # Only check the last state emitted because we don't know the order the others will be in.
         # This may be needed for non-file-based concurrent scenarios too.
         assert states[-1].state.stream.stream_state.dict() == expected_states[-1]
-        # assert states[-1].state.sourceStats.recordCount == expected_states[-1]["record_count"]
     else:
         for actual, expected in zip(states, expected_states):  # states should be emitted in sorted order
             assert actual.state.stream.stream_state.dict() == expected
-            # assert actual.state.sourceStats.recordCount == expected["record_count"]
+
+    # TODO: probably split this up per stream
+    total_state_message_record_count = sum([state_message.state.sourceStats.recordCount for state_message in states])
+    assert total_state_message_record_count == len(sorted_records)
 
     if scenario.expected_logs:
         read_logs = scenario.expected_logs.get("read")
