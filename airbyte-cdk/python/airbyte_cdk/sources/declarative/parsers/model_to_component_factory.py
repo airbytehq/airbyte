@@ -319,7 +319,7 @@ class ModelToComponentFactory:
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
-                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),
+                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),  # type: ignore # $parameters has a default value
                 config,
                 token_provider=token_provider,  # type: ignore # $parameters defaults to None
             )
@@ -435,7 +435,10 @@ class ModelToComponentFactory:
         split = class_name.split(".")
         module = ".".join(split[:-1])
         class_name = split[-1]
-        return getattr(importlib.import_module(module), class_name)
+        try:
+            return getattr(importlib.import_module(module), class_name)
+        except AttributeError:
+            raise ValueError(f"Class {class_name} could not be found.")
 
     @staticmethod
     def _derive_component_type_from_type_hints(field_type: Any) -> Optional[str]:
