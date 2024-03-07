@@ -1,30 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import json
-from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List
 
 import dagger
-from live_tests.commons.connector_runner import SecretDict, get_connector_container
+from live_tests.commons.connector_runner import get_connector_container
 from live_tests.commons.models import ConnectorUnderTest
-
-
-def get_connector_config(path: Optional[str | Path]) -> Optional[SecretDict]:
-    if path is None:
-        return None
-    return SecretDict(_read_json(path))
-
-
-def get_state(path: Optional[str | Path]) -> Optional[Dict]:
-    if path is None:
-        return None
-    return _read_json(path)
-
-
-def _read_json(path: Path | str) -> Dict:
-    with open(str(path), "r") as file:
-        contents = file.read()
-    return json.loads(contents)
 
 
 async def get_connector_under_test(dagger_client: dagger.Client, connector_image_name: str) -> ConnectorUnderTest:
