@@ -3,6 +3,7 @@
 #
 
 
+import traceback
 from os import getenv
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -115,10 +116,11 @@ class SourceAmazonSellerPartner(AbstractSource):
 
             if config.get("account_type", "Seller") == "Seller":
                 stream_to_check = Orders(**stream_kwargs)
+                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
             else:
-                stream_to_check = VendorSalesReports(**stream_kwargs)
-
-            next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
+                stream_to_check = VendorOrders(**stream_kwargs)
+                stream_slices = list(stream_to_check.stream_slices(sync_mode=SyncMode.full_refresh))
+                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
 
             return True, None
         except Exception as e:

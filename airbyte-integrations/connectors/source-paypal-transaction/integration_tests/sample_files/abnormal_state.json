@@ -1,0 +1,46 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "as_of_time": "2033-06-09T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "balances"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "transaction_updated_date": "2033-06-09T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "transactions"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2033-06-09T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "list_payments"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_time_cut": "2033-06-09T00:00:00.000Z"
+      },
+      "stream_descriptor": {
+        "name": "list_disputes"
+      }
+    }
+  }
+]

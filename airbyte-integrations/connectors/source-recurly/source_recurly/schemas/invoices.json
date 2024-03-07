@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -7,6 +7,12 @@
       "title": "Invoice ID",
       "readOnly": true,
       "maxLength": 13
+    },
+    "uuid": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
     },
     "type": {
       "title": "Invoice type",
@@ -26,20 +32,7 @@
       "maxLength": 256
     },
     "account": {
-      "type": "object",
-      "title": "Account mini details",
-      "properties": {
-        "id": {
-          "type": ["null", "string"],
-          "maxLength": 13,
-          "readOnly": true
-        },
-        "code": {
-          "type": ["null", "string"],
-          "description": "The unique identifier of the account.",
-          "maxLength": 50
-        }
-      }
+      "$ref": "account_details.json"
     },
     "billing_info_id": {
       "type": ["null", "string"],
@@ -264,6 +257,9 @@
         }
       }
     },
+    "used_tax_service": {
+      "type": ["null", "boolean"]
+    },
     "vat_number": {
       "type": ["null", "string"],
       "title": "VAT number",
@@ -292,22 +288,11 @@
       "type": ["null", "array"],
       "title": "Line Items",
       "items": {
-        "type": ["null", "object"],
-        "title": "Line item",
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Line item ID",
-            "maxLength": 13
-          },
-          "uuid": {
-            "type": "string",
-            "title": "UUID",
-            "description": "The UUID is useful for matching data with the CSV exports and building URLs into Recurly's UI.",
-            "maxLength": 32
-          }
-        }
+        "$ref": "line_items.json"
       }
+    },
+    "has_more_line_items": {
+      "type": ["null", "boolean"]
     },
     "transactions": {
       "type": ["null", "array"],
@@ -378,6 +363,15 @@
       "title": "Dunning Campaign ID",
       "description": "Unique ID to identify the dunning campaign used when dunning the invoice. Available when the Dunning Campaigns feature is enabled. For sites without multiple dunning campaigns enabled, this will always be the default dunning campaign.",
       "maxLength": 256
+    },
+    "dunning_events_sent": {
+      "type": ["null", "integer"]
+    },
+    "final_dunning_event": {
+      "type": ["null", "boolean"]
+    },
+    "business_entity_id": {
+      "type": ["null", "string"]
     }
   }
 }

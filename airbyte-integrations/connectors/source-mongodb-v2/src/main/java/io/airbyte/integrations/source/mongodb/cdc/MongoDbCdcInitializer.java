@@ -12,6 +12,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -116,6 +117,10 @@ public class MongoDbCdcInitializer {
 
     if (!savedOffsetIsValid) {
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
+      if (config.shouldFailSyncOnInvalidCursor()) {
+        throw new ConfigErrorException(
+            "Saved offset is not valid. Please reset the connection, and then increase oplog retention and/or increase sync frequency to prevent his from happening in the future. See https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-oplog-and-change-streams for more details");
+      }
       LOGGER.info("Saved offset is not valid. Airbyte will trigger a full refresh.");
       // If the offset in the state is invalid, reset the state to the initial STATE
       stateManager.resetState(new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema()));
@@ -134,8 +139,8 @@ public class MongoDbCdcInitializer {
         MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetIsValid);
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
-        initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), cdcMetadataInjector,
-            emittedAt, config.getCheckpointInterval(), isEnforceSchema);
+        initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName),
+            config.getCheckpointInterval(), isEnforceSchema);
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.getDatabaseConfig(),
         new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
