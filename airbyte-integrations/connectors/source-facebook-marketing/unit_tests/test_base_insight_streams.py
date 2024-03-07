@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from pendulum import duration
+from freezegun import freeze_time
 from source_facebook_marketing.streams import AdsInsights
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 
@@ -121,6 +122,35 @@ class TestBaseInsightsStream:
         "state",
         [
             {
+                AdsInsights.cursor_field: "2010-01-04",
+                "slices": [
+                    "2010-01-01",
+                    "2010-01-02",
+                    "2010-01-03",
+                    "2010-01-04",
+                ],
+                "time_increment": 1,
+            },
+            {
+                AdsInsights.cursor_field: "2010-01-04",
+                "slices": [
+                    "2010-01-01",
+                    "2010-01-02",
+                ],
+                "time_increment": 1,
+            }
+        ],
+    )
+    def test_start_date_computation(self, api, state):
+        with freeze_time("2010-03-01"):
+            stream = AdsInsights(api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2010, 3, 1), insights_lookback_window=2)
+            stream.state = state
+            assert stream._get_start_date() == datetime(2010, 1, 4)
+
+    @pytest.mark.parametrize(
+        "state",
+        [
+            {
                 AdsInsights.cursor_field: "2010-10-03",
                 "slices": [
                     "2010-01-01",
@@ -200,9 +230,9 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == len(api.accounts) * (end_date - cursor_value).days
-        assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=1)
-        assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=2)
+        assert len(generated_jobs) == len(api.accounts) * ((end_date - cursor_value).days + 1)
+        assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=0)
+        assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=1)
 
     def test_stream_slices_with_state_close_to_now(self, api, async_manager_mock, recent_start_date):
         """Stream will use start_date when close to now and start_date close to now"""
@@ -240,9 +270,9 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == len(api.accounts) * ((end_date - cursor_value).days - 2), "should be 2 slices short because of state"
-        assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=2)
-        assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=4)
+        assert len(generated_jobs) == len(api.accounts) * ((end_date - cursor_value).days + 1), "should be 2 slices short because of state"
+        assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=0)
+        assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=1)
 
     def test_get_json_schema(self, api):
         stream = AdsInsights(api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1), insights_lookback_window=28)
