@@ -29,10 +29,8 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
 
   private OrderedColumnLoadStatus ocStatus;
 
-  private Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
-  private long syncCheckpointRecords;
-  private Duration syncCheckpointDuration;
 
   /**
    * Returns an intermediate state message for the initial sync.
@@ -121,10 +119,6 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
   @Override
   public boolean shouldEmitStateMessage(final ConfiguredAirbyteStream stream) {
     return Objects.nonNull(getOrderedColumnInfo(new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace())));
-  }
-
-  public void setStreamStateForIncrementalRunSupplier(Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
-    this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
   }
 
   private JsonNode getIncrementalState(final ConfiguredAirbyteStream stream) {

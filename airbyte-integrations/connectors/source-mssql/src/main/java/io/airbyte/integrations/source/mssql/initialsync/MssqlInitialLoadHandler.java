@@ -17,6 +17,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
@@ -59,7 +60,6 @@ public class MssqlInitialLoadHandler {
   private final MssqlInitialLoadStateManager initialLoadStateManager;
   private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
   private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
-  private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
   public MssqlInitialLoadHandler(
@@ -68,14 +68,12 @@ public class MssqlInitialLoadHandler {
                                  final MssqlSourceOperations sourceOperations,
                                  final String quoteString,
                                  final MssqlInitialLoadStateManager initialLoadStateManager,
-                                 final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
                                  final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
     this.initialLoadStateManager = initialLoadStateManager;
-    this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.tableSizeInfoMap = tableSizeInfoMap;
   }
 
@@ -219,11 +217,9 @@ public class MssqlInitialLoadHandler {
     final Duration syncCheckpointDuration =
         config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null
             ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
-            : MssqlInitialSyncStateIterator.SYNC_CHECKPOINT_DURATION;
+            : DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
-        : MssqlInitialSyncStateIterator.SYNC_CHECKPOINT_RECORDS;
-
-    initialLoadStateManager.setStreamStateForIncrementalRunSupplier(streamStateForIncrementalRunSupplier);
+        : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
     return AutoCloseableIterators.transformIterator(
         r -> new SourceStateIterator<>(r, stream, initialLoadStateManager, new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
