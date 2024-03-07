@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,6 +80,13 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   protected void setBaseImage() {
     this.postgresImage = getServerImage();
+  }
+
+  @Override
+  protected void assertExpectedStateMessageCountMatches(final List<AirbyteStateMessage> stateMessages, long totalCount) {
+    AtomicLong count = new AtomicLong(0L);
+    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
+    assertEquals(totalCount, count.get());
   }
 
   @Override
