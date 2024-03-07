@@ -36,18 +36,14 @@ def start_date_fixture():
 
 @pytest.fixture(name="async_manager_mock")
 def async_manager_mock_fixture(mocker):
-    mock = mocker.patch(
-        "source_facebook_marketing.streams.base_insight_streams.InsightAsyncJobManager"
-    )
+    mock = mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJobManager")
     mock.return_value = mock
     return mock
 
 
 @pytest.fixture(name="async_job_mock")
 def async_job_mock_fixture(mocker):
-    mock = mocker.patch(
-        "source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob"
-    )
+    mock = mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob")
     mock.side_effect = lambda api, **kwargs: {"api": api, **kwargs}
 
 
@@ -101,9 +97,7 @@ class TestBaseInsightsStream:
         """
         job = mocker.Mock(spec=InsightAsyncJob)
         job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
-        job.interval = pendulum.Period(
-            pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1)
-        )
+        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
@@ -131,9 +125,7 @@ class TestBaseInsightsStream:
         """
         job = mocker.Mock(spec=AsyncJob)
         job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
-        job.interval = pendulum.Period(
-            pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1)
-        )
+        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
@@ -258,16 +250,12 @@ class TestBaseInsightsStream:
         actual_state = stream.state
 
         result_state = state if not result_state else result_state
-        result_state[some_config["account_ids"][0]]["slices"] = result_state[
-            some_config["account_ids"][0]
-        ].get("slices", set())
+        result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", set())
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
 
-    def test_stream_slices_no_state(
-        self, api, async_manager_mock, start_date, some_config
-    ):
+    def test_stream_slices_no_state(self, api, async_manager_mock, start_date, some_config):
         """Stream will use start_date when there is not state"""
         end_date = start_date + duration(weeks=2)
         stream = AdsInsights(
@@ -279,9 +267,7 @@ class TestBaseInsightsStream:
         )
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
-        slices = list(
-            stream.stream_slices(stream_state=None, sync_mode=SyncMode.incremental)
-        )
+        slices = list(stream.stream_slices(stream_state=None, sync_mode=SyncMode.incremental))
 
         assert slices == [
             {"account_id": "unknown_account", "insight_job": 1},
@@ -295,9 +281,7 @@ class TestBaseInsightsStream:
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
-    def test_stream_slices_no_state_close_to_now(
-        self, api, async_manager_mock, recent_start_date, some_config
-    ):
+    def test_stream_slices_no_state_close_to_now(self, api, async_manager_mock, recent_start_date, some_config):
         """Stream will use start_date when there is not state and start_date within 28d from now"""
         start_date = recent_start_date
         end_date = pendulum.now()
@@ -310,9 +294,7 @@ class TestBaseInsightsStream:
         )
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
-        slices = list(
-            stream.stream_slices(stream_state=None, sync_mode=SyncMode.incremental)
-        )
+        slices = list(stream.stream_slices(stream_state=None, sync_mode=SyncMode.incremental))
 
         assert slices == [
             {"account_id": "unknown_account", "insight_job": 1},
@@ -326,9 +308,7 @@ class TestBaseInsightsStream:
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
-    def test_stream_slices_with_state(
-        self, api, async_manager_mock, start_date, some_config
-    ):
+    def test_stream_slices_with_state(self, api, async_manager_mock, start_date, some_config):
         """Stream will use cursor_value from state when there is state"""
         end_date = start_date + duration(days=10)
         cursor_value = start_date + duration(days=5)
@@ -342,9 +322,7 @@ class TestBaseInsightsStream:
         )
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
-        slices = list(
-            stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental)
-        )
+        slices = list(stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental))
 
         assert slices == [
             {"account_id": "unknown_account", "insight_job": 1},
@@ -355,16 +333,10 @@ class TestBaseInsightsStream:
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
         assert len(generated_jobs) == (end_date - cursor_value).days
-        assert generated_jobs[0].interval.start == cursor_value.date() + duration(
-            days=1
-        )
-        assert generated_jobs[1].interval.start == cursor_value.date() + duration(
-            days=2
-        )
+        assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=1)
+        assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=2)
 
-    def test_stream_slices_with_state_close_to_now(
-        self, api, async_manager_mock, recent_start_date, some_config
-    ):
+    def test_stream_slices_with_state_close_to_now(self, api, async_manager_mock, recent_start_date, some_config):
         """Stream will use start_date when close to now and start_date close to now"""
         start_date = recent_start_date
         end_date = pendulum.now()
@@ -379,9 +351,7 @@ class TestBaseInsightsStream:
         )
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
-        slices = list(
-            stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental)
-        )
+        slices = list(stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental))
 
         assert slices == [
             {"account_id": "unknown_account", "insight_job": 1},
@@ -396,9 +366,7 @@ class TestBaseInsightsStream:
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
     @pytest.mark.parametrize("state_format", ["old_format", "new_format"])
-    def test_stream_slices_with_state_and_slices(
-        self, api, async_manager_mock, start_date, some_config, state_format
-    ):
+    def test_stream_slices_with_state_and_slices(self, api, async_manager_mock, start_date, some_config, state_format):
         """Stream will use cursor_value from state, but will skip saved slices"""
         end_date = start_date + duration(days=10)
         cursor_value = start_date + duration(days=5)
@@ -430,9 +398,7 @@ class TestBaseInsightsStream:
         )
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
-        slices = list(
-            stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental)
-        )
+        slices = list(stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental))
 
         assert slices == [
             {"account_id": "unknown_account", "insight_job": 1},
@@ -442,15 +408,9 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert (
-            len(generated_jobs) == (end_date - cursor_value).days - 2
-        ), "should be 2 slices short because of state"
-        assert generated_jobs[0].interval.start == cursor_value.date() + duration(
-            days=2
-        )
-        assert generated_jobs[1].interval.start == cursor_value.date() + duration(
-            days=4
-        )
+        assert len(generated_jobs) == (end_date - cursor_value).days - 2, "should be 2 slices short because of state"
+        assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=2)
+        assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=4)
 
     def test_get_json_schema(self, api, some_config):
         stream = AdsInsights(
@@ -465,9 +425,7 @@ class TestBaseInsightsStream:
 
         assert "device_platform" not in schema["properties"]
         assert "country" not in schema["properties"]
-        assert not (
-            set(stream.fields()) - set(schema["properties"].keys())
-        ), "all fields present in schema"
+        assert not (set(stream.fields()) - set(schema["properties"].keys())), "all fields present in schema"
 
     def test_get_json_schema_custom(self, api, some_config):
         stream = AdsInsights(
@@ -483,9 +441,7 @@ class TestBaseInsightsStream:
 
         assert "device_platform" in schema["properties"]
         assert "country" in schema["properties"]
-        assert not (
-            set(stream.fields()) - set(schema["properties"].keys())
-        ), "all fields present in schema"
+        assert not (set(stream.fields()) - set(schema["properties"].keys())), "all fields present in schema"
 
     def test_fields(self, api, some_config):
         stream = AdsInsights(

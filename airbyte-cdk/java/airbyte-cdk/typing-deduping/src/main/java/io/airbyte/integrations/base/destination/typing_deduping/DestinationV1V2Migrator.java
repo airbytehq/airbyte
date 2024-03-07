@@ -18,7 +18,7 @@ public interface DestinationV1V2Migrator {
    */
   void migrateIfNecessary(
                           final SqlGenerator sqlGenerator,
-                          final DestinationHandler destinationHandler,
+                          final DestinationHandler<?> destinationHandler,
                           final StreamConfig streamConfig)
       throws TableNotMigratedException, UnexpectedSchemaException, Exception;
 

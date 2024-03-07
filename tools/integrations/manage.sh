@@ -231,11 +231,18 @@ cmd_publish() {
     # Alternative local approach @ https://github.com/docker/buildx/issues/301#issuecomment-755164475
     # We need to use the regular docker buildx driver (not docker container) because we need this intermediate contaiers to be available for later build steps
 
+
+    echo Installing arm64 docker emulation
+    docker run --privileged --rm tonistiigi/binfmt --install arm64
+
     for arch in $(echo $build_arch | sed "s/,/ /g")
     do
-      echo "building base images for $arch"
-      docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
-      docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
+      # These images aren't needed for the CDK
+      if [ "$path" != "airbyte-cdk/python" ]; then
+        echo "building base images for $arch"
+        docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
+        docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
+      fi
 
       # For a short while (https://github.com/airbytehq/airbyte/pull/25034), destinations rely on the normalization image to build
       # Thanks to gradle, destinstaions which need normalization will already have built base-normalization's "build" artifacts

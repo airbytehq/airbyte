@@ -8,7 +8,7 @@ data:
       packageName: airbyte-source-scaffold-source-python
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
       enabled: false
   connectorBuildOptions:

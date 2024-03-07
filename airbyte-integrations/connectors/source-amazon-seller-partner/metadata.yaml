@@ -15,7 +15,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
-  dockerImageTag: 3.5.0
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-amazon-seller-partner
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   githubIssueLabel: source-amazon-seller-partner
@@ -56,7 +56,12 @@ data:
           Users will need to refresh the source schemas and reset these streams after
           upgrading.
         upgradeDeadline: "2024-01-12"
-  supportLevel: community
+      4.0.0:
+        message:
+          Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` schema has been updated to match Amazon Seller Partner.
+          Users will need to refresh the source schema and reset this stream after upgrading.
+        upgradeDeadline: "2024-03-11"
+  supportLevel: certified
   tags:
     - language:python
     - cdk:python

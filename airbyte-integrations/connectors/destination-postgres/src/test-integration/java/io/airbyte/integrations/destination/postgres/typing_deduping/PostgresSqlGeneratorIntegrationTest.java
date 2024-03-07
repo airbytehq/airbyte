@@ -16,7 +16,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.destination.postgres.PostgresDestination;
 import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest {
+public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest<PostgresState> {
 
   private static PostgresTestDatabase testContainer;
   private static String databaseName;
@@ -75,8 +75,8 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   }
 
   @Override
-  protected DestinationHandler getDestinationHandler() {
-    return new PostgresDestinationHandler(databaseName, database);
+  protected DestinationHandler<PostgresState> getDestinationHandler() {
+    return new PostgresDestinationHandler(databaseName, database, namespace);
   }
 
   @Override
@@ -95,11 +95,11 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     final Sql sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
-    List<DestinationInitialState> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
-    assertEquals(1, initialStates.size());
-    final DestinationInitialState initialState = initialStates.getFirst();
-    assertTrue(initialState.isFinalTablePresent());
-    assertFalse(initialState.isSchemaMismatch());
+    List<DestinationInitialStatus<PostgresState>> initialStatuses = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    assertEquals(1, initialStatuses.size());
+    final DestinationInitialStatus<PostgresState> initialStatus = initialStatuses.getFirst();
+    assertTrue(initialStatus.isFinalTablePresent());
+    assertFalse(initialStatus.isSchemaMismatch());
   }
 
 }
