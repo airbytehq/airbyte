@@ -125,6 +125,13 @@ allprojects {
                 systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
             }
         }
+        String junitMethodExecutionTimeout
+        if (project.hasProperty('JunitMethodExecutionTimeout')) {
+            junitMethodExecutionTimeout = project.property('JunitMethodExecutionTimeout').toString()
+        } else {
+            junitMethodExecutionTimeout = '1 m'
+        }
+        systemProperty 'JunitMethodExecutionTimeout', junitMethodExecutionTimeout
     }
 
     dependencies {

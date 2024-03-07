@@ -8,7 +8,8 @@ from typing import Any, List, Mapping, Optional, Union
 import requests
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.types import Config, Record
+
 
 
 @dataclass
@@ -27,7 +28,7 @@ class PageIncrement(PaginationStrategy):
     start_from_page: int = 0
     inject_on_first_request: bool = False
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._page = self.start_from_page
         if isinstance(self.page_size, int) or (self.page_size is None):
             self._page_size = self.page_size
@@ -43,7 +44,7 @@ class PageIncrement(PaginationStrategy):
             return self._page
         return None
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
         # Stop paginating when there are fewer records than the page size or the current page has no records
         if (self._page_size and len(last_records) < self._page_size) or len(last_records) == 0:
             return None
@@ -51,7 +52,7 @@ class PageIncrement(PaginationStrategy):
             self._page += 1
             return self._page
 
-    def reset(self):
+    def reset(self) -> None:
         self._page = self.start_from_page
 
     def get_page_size(self) -> Optional[int]:

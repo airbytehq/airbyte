@@ -118,7 +118,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
    * object. This typically entails at least a CREATE DATABASE and a CREATE USER. Also Initializes the
    * {@link DataSource} and {@link DSLContext} owned by this object.
    */
-  final public T initialized() {
+  public T initialized() {
     inContainerBootstrapCmd().forEach(this::execInContainer);
     this.dataSource = DataSourceFactory.create(
         getUserName(),
@@ -193,7 +193,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     try {
       getDatabase().query(ctx -> {
         sql.forEach(statement -> {
-          LOGGER.debug("{}", statement);
+          LOGGER.info("executing SQL statement {}", statement);
           ctx.execute(statement);
         });
         return null;
