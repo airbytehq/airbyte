@@ -98,14 +98,17 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_multiple_pages_of_records_read_and_returned(self, http_mocker: HttpMocker) -> None:
         # Tests pagination
-        request = _a_request().with_any_query_params().build()
         http_mocker.get(
-            request,
-            [_a_response().with_record(_a_record()).with_pagination().build(), _a_response().with_record(_a_record()).build()]
+            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).build(),
+            _a_response().with_record(_a_record()).with_pagination().build()
         )
-        output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
-        http_mocker.assert_number_of_calls(request, 2)
-        assert len(output.records) == 2
+        http_mocker.get(
+            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).with_offset("[1707076198000,57873868]").build(),
+            _a_response().with_record(_a_record()).build()
+        )
+
+        self._read(_config().with_start_date(self._start_date - timedelta(hours=8)))
+        # HTTPMocker ensures call are performed
 
     @HttpMocker()
     def test_given_records_returned_with_custom_field_transformation(self, http_mocker: HttpMocker) -> None:
