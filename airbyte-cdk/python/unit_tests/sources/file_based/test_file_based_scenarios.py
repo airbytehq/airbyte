@@ -152,7 +152,12 @@ from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import 
 )
 from unit_tests.sources.file_based.test_scenarios import verify_check, verify_discover, verify_read, verify_spec
 
-discover_scenarios = [
+discover_failure_scenarios = [
+    earlier_csv_scenario,
+    empty_schema_inference_scenario,
+]
+
+discover_success_scenarios = [
     csv_multi_stream_scenario,
     csv_single_stream_scenario,
     invalid_csv_scenario,
@@ -176,9 +181,7 @@ discover_scenarios = [
     single_csv_file_is_skipped_if_same_modified_at_as_in_history,
     single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history,
     csv_custom_format_scenario,
-    earlier_csv_scenario,
     multi_stream_custom_format,
-    empty_schema_inference_scenario,
     single_parquet_scenario,
     multi_parquet_scenario,
     parquet_various_types_scenario,
@@ -260,7 +263,9 @@ discover_scenarios = [
     single_csv_no_input_state_scenario_concurrent,
 ]
 
-read_scenarios = discover_scenarios + [
+discover_scenarios = discover_failure_scenarios + discover_success_scenarios
+
+read_scenarios = discover_success_scenarios + [
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
     skip_record_scenario_multi_stream,
