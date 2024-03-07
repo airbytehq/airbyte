@@ -26,8 +26,9 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDestinationHandler;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
-import java.io.UnsupportedEncodingException;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresState;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,12 +100,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
     String encodedDatabase = config.get(JdbcUtils.DATABASE_KEY).asText();
     if (encodedDatabase != null) {
-      try {
-        encodedDatabase = URLEncoder.encode(encodedDatabase, "UTF-8");
-      } catch (final UnsupportedEncodingException e) {
-        // Should never happen
-        e.printStackTrace();
-      }
+      encodedDatabase = URLEncoder.encode(encodedDatabase, StandardCharsets.UTF_8);
     }
     final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
         config.get(JdbcUtils.HOST_KEY).asText(),
@@ -133,8 +129,8 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
-  protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database) {
-    return new PostgresDestinationHandler(databaseName, database);
+  protected JdbcDestinationHandler<PostgresState> getDestinationHandler(String databaseName, JdbcDatabase database, String rawTableSchema) {
+    return new PostgresDestinationHandler(databaseName, database, rawTableSchema);
   }
 
   @Override

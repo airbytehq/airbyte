@@ -857,6 +857,7 @@ class ModelToComponentFactory:
     def create_page_increment(model: PageIncrementModel, config: Config, **kwargs: Any) -> PageIncrement:
         return PageIncrement(
             page_size=model.page_size,
+            config=config,
             start_from_page=model.start_from_page or 0,
             inject_on_first_request=model.inject_on_first_request or False,
             parameters=model.parameters or {},
