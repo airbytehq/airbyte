@@ -73,7 +73,7 @@ async def debug_cmd(
     catalog_path: Optional[str],
     state_path: Optional[str],
     enable_http_cache: bool,
-):
+) -> None:
     output_directory.mkdir(parents=True, exist_ok=True)
     debug_session_start_time = int(time.time())
     async with dagger.Connection(config=DAGGER_CONFIG) as dagger_client:
