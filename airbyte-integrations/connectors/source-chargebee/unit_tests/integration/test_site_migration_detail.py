@@ -170,7 +170,7 @@ class FullRefreshTest(TestCase):
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
 
-@freezegun.freeze_time(_NOW.timestamp())
+@freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):
 
     # Site Migration Detail stream is a semi-incremental stream and therefore state acts differently than typical declarative incremental implementation -- state is updated to most recent cursor value read
