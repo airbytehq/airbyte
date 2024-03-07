@@ -38,6 +38,7 @@ dependencies {
     implementation 'io.debezium:debezium-api:2.4.0.Final'
     implementation 'io.debezium:debezium-embedded:2.4.0.Final'
     implementation 'org.codehaus.plexus:plexus-utils:4.0.0'
+    implementation 'org.apache.commons:commons-math3:3.6.1'
 
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:dependencies'))
