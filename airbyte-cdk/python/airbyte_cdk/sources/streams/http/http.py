@@ -38,6 +38,7 @@ class HttpStream(Stream, ABC):
 
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
+    next_page_token_state_key = "next_page_token"
 
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
@@ -493,7 +494,7 @@ class HttpStream(Stream, ABC):
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
         pagination_complete = False
-        next_page_token = None
+        next_page_token = stream_state.get(self.next_page_token_state_key)
         while not pagination_complete:
             request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
             yield from records_generator_fn(request, response, stream_state, stream_slice)
