@@ -873,7 +873,7 @@ streams:
               - string
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "{{ config['start_date'] }}"
+      cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
@@ -1039,7 +1039,7 @@ streams:
               - "null"
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "{{ config['start_date'] }}"
+      cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
