@@ -166,6 +166,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.23.16 | 2024-03-06 | [\#35842](https://github.com/airbytehq/airbyte/pull/35842) | Improve logging in debezium processing.                                                                                                                        |
 | 0.23.15 | 2024-03-05 | [\#35827](https://github.com/airbytehq/airbyte/pull/35827) | improving the Junit interceptor.                                                                                                                               |
 | 0.23.14 | 2024-03-05 | [\#35739](https://github.com/airbytehq/airbyte/pull/35739) | Add logging to the CDC queue size. Fix the ContainerFactory.                                                                                                   |
 | 0.23.13 | 2024-03-04 | [\#35774](https://github.com/airbytehq/airbyte/pull/35774) | minor changes to the CDK test fixtures.                                                                                                                        |
