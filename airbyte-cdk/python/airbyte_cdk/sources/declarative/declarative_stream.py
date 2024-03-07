@@ -101,6 +101,13 @@ class DeclarativeStream(Stream):
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
+        if stream_slice is None:
+            # As the parameter is Optional, many would just call `read_records(sync_mode)` during testing without specifying the field
+            # As part of the declarative model without custom components, this should never happen as the CDK would wire up a
+            # SinglePartitionRouter that would create this StreamSlice properly
+            # As part of the declarative model with custom components, a user that would return a `None` slice would now have the default
+            # empty slice which seems to make sense.
+            stream_slice = StreamSlice(partition={}, cursor_slice={})
         if not isinstance(stream_slice, StreamSlice):
             raise ValueError(f"DeclarativeStream does not support stream_slices that are not StreamSlice. Got {stream_slice}")
         yield from self.retriever.read_records(self.get_json_schema(), stream_slice)
