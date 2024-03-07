@@ -10,23 +10,25 @@ import os.path
 import socket
 import sys
 import tempfile
+from collections import defaultdict
 from functools import wraps
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, DefaultDict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlparse
 
 import requests
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
-from airbyte_cdk.models import AirbyteMessage, Status, Type
+from airbyte_cdk.models import AirbyteMessage, FailureType, Status, Type
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification  # type: ignore [attr-defined]
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils import is_cloud_environment
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
@@ -160,8 +162,38 @@ class AirbyteEntrypoint(object):
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)
 
-        yield from self.source.read(self.logger, config, catalog, state)
-        yield from self._emit_queued_messages(self.source)
+        stream_message_count: DefaultDict[HashableStreamDescriptor, int] = defaultdict(int)
+        for message in self.source.read(self.logger, config, catalog, state):
+            yield self.handle_record_counts(message, stream_message_count)
+        for message in self._emit_queued_messages(self.source):
+            yield self.handle_record_counts(message, stream_message_count)
+
+    @staticmethod
+    def handle_record_counts(message: AirbyteMessage, stream_message_count: DefaultDict[HashableStreamDescriptor, int]) -> AirbyteMessage:
+        if message.type == Type.RECORD:
+            logger.debug(f"Message type: {message}")
+            descriptor = HashableStreamDescriptor(name=message.record.stream, namespace=message.record.namespace)
+            stream_message_count[descriptor] += 1
+        elif message.type == Type.STATE:
+            logger.debug(f"Message type: {message}")
+            if not message.state.stream:
+                raise ValueError("State message was not in per-stream state format which is required for record counts")
+
+            descriptor = HashableStreamDescriptor(
+                name=message.state.stream.stream_descriptor.name, namespace=message.state.stream.stream_descriptor.namespace
+            )
+            source_stats_for_stream = message.state.sourceStats or AirbyteStateStats()
+            source_stats_for_stream.recordCount = stream_message_count.get(descriptor, 0)
+            message.state.sourceStats = source_stats_for_stream
+
+            # todo: remove after pre-release testing
+            stream_name = message.state.stream.stream_descriptor.name
+            stream_state = message.state.stream.stream_state.dict() if message.state.stream.stream_state else {}
+            record_count = message.state.sourceStats.recordCount
+            logger.info(f"Emitting state message for stream '{stream_name}' with count {record_count} and state data: {stream_state}")
+
+            stream_message_count[descriptor] = 0
+        return message
 
     @staticmethod
     def validate_connection(source_spec: ConnectorSpecification, config: TConfig) -> None:

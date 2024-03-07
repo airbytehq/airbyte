@@ -4,6 +4,7 @@
 
 import os
 from argparse import Namespace
+from collections import defaultdict
 from copy import deepcopy
 from typing import Any, List, Mapping, MutableMapping, Union
 from unittest import mock
@@ -20,14 +21,25 @@ from airbyte_cdk.models import (
     AirbyteControlMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
+    AirbyteTraceMessage,
     ConnectorSpecification,
     OrchestratorType,
     Status,
+    StreamDescriptor,
     SyncMode,
+    TraceType,
     Type,
 )
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -309,3 +321,78 @@ def test_filter_internal_requests(deployment_mode, url, expected_error):
         else:
             actual_response = session.send(request=prepared_request)
             assert isinstance(actual_response, requests.Response)
+
+
+@pytest.mark.parametrize(
+    "incoming_message, stream_message_count, expected_message, expected_records_by_stream",
+    [
+        pytest.param(
+            AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="customers", data={"id": "12345"}, emitted_at=1)),
+            {HashableStreamDescriptor(name="customers"): 100},
+            AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="customers", data={"id": "12345"}, emitted_at=1)),
+            {HashableStreamDescriptor(name="customers"): 101},
+            id="test_handle_record_message",
+        ),
+        pytest.param(
+            AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="customers"), stream_state=AirbyteStateBlob(updated_at="2024-02-02")))),
+            {HashableStreamDescriptor(name="customers"): 100},
+            AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="customers"), stream_state=AirbyteStateBlob(updated_at="2024-02-02")), sourceStats=AirbyteStateStats(recordCount=100.0))),
+            {HashableStreamDescriptor(name="customers"): 0},
+            id="test_handle_state_message",
+        ),
+        pytest.param(
+            AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="customers", data={"id": "12345"}, emitted_at=1)),
+            defaultdict(int),
+            AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="customers", data={"id": "12345"}, emitted_at=1)),
+            {HashableStreamDescriptor(name="customers"): 1},
+            id="test_handle_first_record_message",
+        ),
+        pytest.param(
+            AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.STREAM_STATUS, stream_status=AirbyteStreamStatusTraceMessage(stream_descriptor=StreamDescriptor(name="customers"), status=AirbyteStreamStatus.COMPLETE), emitted_at=1)),
+            {HashableStreamDescriptor(name="customers"): 5},
+            AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.STREAM_STATUS, stream_status=AirbyteStreamStatusTraceMessage(stream_descriptor=StreamDescriptor(name="customers"), status=AirbyteStreamStatus.COMPLETE), emitted_at=1)),
+            {HashableStreamDescriptor(name="customers"): 5},
+            id="test_handle_other_message_type",
+        ),
+        pytest.param(
+            AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="others", data={"id": "12345"}, emitted_at=1)),
+            {HashableStreamDescriptor(name="customers"): 100, HashableStreamDescriptor(name="others"): 27},
+            AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="others", data={"id": "12345"}, emitted_at=1)),
+            {HashableStreamDescriptor(name="customers"): 100, HashableStreamDescriptor(name="others"): 28},
+            id="test_handle_record_message_for_other_stream",
+        ),
+        pytest.param(
+            AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="others"), stream_state=AirbyteStateBlob(updated_at="2024-02-02")))),
+            {HashableStreamDescriptor(name="customers"): 100, HashableStreamDescriptor(name="others"): 27},
+            AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="others"), stream_state=AirbyteStateBlob(updated_at="2024-02-02")),sourceStats=AirbyteStateStats(recordCount=27.0))),
+            {HashableStreamDescriptor(name="customers"): 100, HashableStreamDescriptor(name="others"): 0},
+            id="test_handle_state_message_for_other_stream",
+        ),
+        pytest.param(
+            AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="customers", namespace="public", data={"id": "12345"}, emitted_at=1)),
+            {HashableStreamDescriptor(name="customers", namespace="public"): 100},
+            AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="customers", namespace="public", data={"id": "12345"}, emitted_at=1)),
+            {HashableStreamDescriptor(name="customers", namespace="public"): 101},
+            id="test_handle_record_message_with_descriptor",
+        ),
+        pytest.param(
+            AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="customers", namespace="public"), stream_state=AirbyteStateBlob(updated_at="2024-02-02")))),
+            {HashableStreamDescriptor(name="customers", namespace="public"): 100},
+            AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="customers", namespace="public"), stream_state=AirbyteStateBlob(updated_at="2024-02-02")),sourceStats=AirbyteStateStats(recordCount=100.0))),
+            {HashableStreamDescriptor(name="customers", namespace="public"): 0},
+            id="test_handle_state_message_with_descriptor",
+        ),
+        pytest.param(
+            AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="others", namespace="public"),stream_state=AirbyteStateBlob(updated_at="2024-02-02")))),
+            {HashableStreamDescriptor(name="customers", namespace="public"): 100},
+            AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="others", namespace="public"), stream_state=AirbyteStateBlob(updated_at="2024-02-02")), sourceStats=AirbyteStateStats(recordCount=0.0))),
+            {HashableStreamDescriptor(name="customers", namespace="public"): 100, HashableStreamDescriptor(name="others", namespace="public"): 0},
+            id="test_handle_state_message_no_records",
+        ),
+    ]
+)
+def test_handle_record_counts(incoming_message, stream_message_count, expected_message, expected_records_by_stream):
+    entrypoint = AirbyteEntrypoint(source=MockSource())
+    actual_record = entrypoint.handle_record_counts(message=incoming_message, stream_message_count=stream_message_count)
+    assert actual_record == expected_message
+    assert stream_message_count == expected_records_by_stream

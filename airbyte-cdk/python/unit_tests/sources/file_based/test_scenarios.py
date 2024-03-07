@@ -115,6 +115,13 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
         for actual, expected in zip(states, expected_states):  # states should be emitted in sorted order
             assert actual.state.stream.stream_state.dict() == expected
 
+    # TODO: probably split this up per stream
+    for stream in set([record.record.stream for record in sorted_records]):
+        # Deal with namespaces here for the comparison
+        total_state_message_record_count_for_stream = sum([state_message.state.sourceStats.recordCount for state_message in states if state_message.state.stream.stream_descriptor.name == stream])
+        num_records_for_stream = len([record for record in sorted_records if record.record.stream == stream])
+        assert total_state_message_record_count_for_stream == num_records_for_stream
+
     if scenario.expected_logs:
         read_logs = scenario.expected_logs.get("read")
         assert len(logs) == (len(read_logs) if read_logs else 0)
