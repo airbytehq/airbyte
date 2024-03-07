@@ -42,7 +42,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition, Destin
   public MigrationResult<DestinationState> migrateIfNecessary(
                                                               @NotNull DestinationHandler<DestinationState> destinationHandler,
                                                               @NotNull StreamConfig streamConfig,
-                                                              @NotNull DestinationInitialState<DestinationState> state) {
+                                                              @NotNull DestinationInitialStatus<DestinationState> state) {
     LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
     if (shouldMigrate(streamConfig)) {
       LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());
