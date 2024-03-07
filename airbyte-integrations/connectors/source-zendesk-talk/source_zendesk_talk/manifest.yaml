@@ -6,7 +6,7 @@ definitions:
     legacy_basic_auth:
       type: BasicHttpAuthenticator
       password: "{{ config['access_token'] }}"
-      username: "{{ config['credentials'] }}/token"
+      username: "{{ config['email'] }}/token"
     basic_auth:
       type: BasicHttpAuthenticator
       password: "{{ config['credentials']['api_token'] }}"
