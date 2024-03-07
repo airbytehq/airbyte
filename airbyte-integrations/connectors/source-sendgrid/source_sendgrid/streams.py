@@ -23,7 +23,7 @@ from requests import codes, exceptions
 
 
 class SendgridStream(HttpStream, ABC):
-    url_base = "https://api.sendgrid.com/v3/"
+    url_base = "https://api.sendgrid.com/"
     primary_key = "id"
     limit = 50
     data_field = None
@@ -54,7 +54,7 @@ class Contacts(SendgridStream):
     encoding = "utf-8"
 
     def path(self, **kwargs) -> str:
-        return "marketing/contacts/exports"
+        return "v3/marketing/contacts/exports"
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, stream: bool = False, enable_auth: bool = True):
