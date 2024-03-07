@@ -67,19 +67,17 @@ definitions:
       field_path: []
 
   paginator:
-    type: "DefaultPaginator"
+    type: DefaultPaginator
     pagination_strategy:
-      type: "PageIncrement"
-      page_size: 100
-      start_from_page: 1
+      type: CursorPagination
+      cursor_value: "{{ headers['link']['next']['url'] }}"
+      stop_condition: "{{ 'next' not in headers['link'] }}"
+      page_size: 2
     page_size_option:
-      type: "RequestOption"
-      inject_into: "request_parameter"
       field_name: "per_page"
-    page_token_option:
-      type: "RequestOption"
       inject_into: "request_parameter"
-      field_name: "page"
+    page_token_option:
+      type: RequestPath
 
   error_handler:
     type: CompositeErrorHandler
