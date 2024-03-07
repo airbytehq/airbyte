@@ -6,7 +6,7 @@ from live_tests.debug.cli import debug_cmd
 
 @click.group()
 @click.pass_context
-async def live_tests(ctx):
+async def live_tests(ctx: click.Context) -> None:
     pass
 
 
