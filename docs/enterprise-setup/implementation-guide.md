@@ -86,7 +86,7 @@ Follow these instructions to add the Airbyte helm repository:
 <summary>Template airbyte.yml file</summary>
 
 ```
-webapp-url: # example: localhost:8080
+webapp-url: # example: http://localhost:8080
 
 initial-user:
   email: 
@@ -238,12 +238,10 @@ global:
 
     s3:
       region: "" ## e.g. us-east-1
-      accessKey: ## AWS Access Key.
-        accessKeyExistingSecret: ## The name of an existing Kubernetes secret containing the AWS Access Key.
-        accessKeyExistingSecretKey: ## The Kubernetes secret key containing the AWS Access Key.
-      secretKey: ## AWS Secret Access Key
-        secretKeyExistingSecret: ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
-        secretKeyExistingSecretKey: ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
+      accessKeyExistingSecret: ## The name of an existing Kubernetes secret containing the AWS Access Key.
+      accessKeyExistingSecretKey: ## The Kubernetes secret key containing the AWS Access Key.
+      secretKeyExistingSecret: ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
+      secretKeyExistingSecretKey: ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
 ```
 
 Then, ensure your access key is tied to an IAM user with the [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-policies-s3.html#iam-policy-ex0), allowing the user access to S3 storage:
