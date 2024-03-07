@@ -158,10 +158,13 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     url_base = "https://r.applovin.com/"
     report_type = ""
     cursor_field = "day"
+    page_size = 50000
 
     def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
         self.config = config
         self._state = {}
+        self.offset = 0
+        self.counter = 0
         super().__init__(
             authenticator=authenticator,
         )
@@ -173,6 +176,16 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     @state.setter
     def state(self, value):
         self._state[self.cursor_field] = value[self.cursor_field]
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        response_count = response.json()["count"]
+        if response_count < self.page_size:
+            return None
+        else:
+            self.offset += response_count
+            return {
+                "offset": self.offset
+            }
 
     def read_records(
             self,
@@ -202,7 +215,9 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             "end": "now",
             "format": "json",
             "report_type": self.report_type,
-            "columns": self.columns
+            "columns": self.columns,
+            "offset": self.offset,
+            "limit": self.page_size
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
