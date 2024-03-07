@@ -8,6 +8,7 @@ export interface ProductItem {
   regionItemId?: string;
   instanceItemId?: string;
   cloudItemId?: string;
+  noOfJobs?: string;
 }
 
 export interface ProductItemsList {

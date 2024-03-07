@@ -27,6 +27,7 @@ interface IProps {
   setPrice?: any;
   instanceSelected?: boolean;
   setInstanceSelected?: any;
+  setJobs?: any;
 }
 
 const Title = styled.div`
@@ -66,6 +67,7 @@ const Instance: React.FC<IProps> = ({
   setCloudPackageId,
   selectedProduct,
   setInstanceSelected,
+  setJobs,
   // instanceSelected
 }) => {
   const { formatMessage } = useIntl();
@@ -114,7 +116,7 @@ const Instance: React.FC<IProps> = ({
 
                                 if (selectedPackage) {
                                   setInstanceSelected(true);
-                                  // setJobs(inst?.noOfJobs);
+                                  setJobs(inst?.noOfJobs);
                                   setPrice(selectedPackage?.price);
                                   setCloudPackageId(selectedPackage?.cloudPackageId);
                                 } else {

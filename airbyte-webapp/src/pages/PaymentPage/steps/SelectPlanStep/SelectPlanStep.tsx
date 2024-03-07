@@ -43,6 +43,8 @@ interface IProps {
   planDetail?: any;
   setInstanceSelected?: any;
   instanceSelected?: boolean;
+  jobs?: any;
+  setJobs?: any;
 }
 
 const SelectPlanStep: React.FC<IProps> = ({
@@ -73,6 +75,8 @@ const SelectPlanStep: React.FC<IProps> = ({
   planDetail,
   setInstanceSelected,
   instanceSelected,
+  jobs,
+  setJobs,
 }) => {
   return (
     <>
@@ -121,6 +125,7 @@ const SelectPlanStep: React.FC<IProps> = ({
         selectedRegion={selectedRegion}
         // instanceSelected={instanceSelected}
         setInstanceSelected={setInstanceSelected}
+        setJobs={setJobs}
       />
       <Separator height="30px" />
       {instanceSelected ? (
@@ -133,6 +138,7 @@ const SelectPlanStep: React.FC<IProps> = ({
           price={price}
           planDetail={planDetail}
           selectedProduct={selectedProduct}
+          jobs={jobs}
         />
       ) : (
         <FeatureNot />

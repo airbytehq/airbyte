@@ -13,7 +13,7 @@ import { useUser } from "core/AuthContext";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
-import { useAuthenticationService } from "services/auth/AuthSpecificationService";
+// import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 
 import { SignOutIcon } from "./SignOutIcon";
 import { AccountSettingsRoute } from "../AccountSettingsPage";
@@ -103,7 +103,7 @@ const SidebarItemIcon = (path: string, color: string) => {
 export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
   const { pathname, push } = useRouter();
   const { removeUser } = useUser();
-  const authService = useAuthenticationService();
+  // const authService = useAuthenticationService();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
 
   const toggleSignOutConfirmModal = () => {
@@ -116,16 +116,16 @@ export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
           removeUser();
         }
         localStorage.clear();
-        onLogOut();
+        // onLogOut();
         closeConfirmationModal();
         push(`/${RoutePaths.LoginNew}`);
       },
     });
   };
 
-  const onLogOut = () => {
-    authService.logout().then().catch();
-  };
+  // const onLogOut = () => {
+  //   authService.logout().then().catch();
+  // };
 
   return (
     <SidebarContainer>
