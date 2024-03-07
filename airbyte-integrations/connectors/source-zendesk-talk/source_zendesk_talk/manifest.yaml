@@ -155,6 +155,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -218,6 +223,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -348,6 +358,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -472,6 +487,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -511,6 +531,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -601,6 +626,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -752,6 +782,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -869,6 +904,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1023,6 +1063,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1083,6 +1128,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1209,6 +1259,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1313,6 +1368,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -1361,6 +1421,11 @@ streams:
         url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
         http_method: GET
         authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
