@@ -146,6 +146,7 @@ class DatetimeBasedCursor(Cursor):
             else None
         )
 
+
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Partition the daterange into slices of size = step.
