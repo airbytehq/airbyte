@@ -49,6 +49,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 200
     ql: 400
