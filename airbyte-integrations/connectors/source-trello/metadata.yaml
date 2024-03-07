@@ -28,12 +28,7 @@ data:
     breakingChanges:
       1.0.0:
         upgradeDeadline: "2023-09-28"
-        message:
-          The verison migrates the Trello connector to the low-code framework
-          for greater maintainability. This introduces a breaking change to the state
-          format for the `response` stream. If you are using the incremental sync
-          mode for this stream, you will need to reset the affected connection after
-          upgrading to prevent sync failures.
+        message: "The verison migrates the Trello connector to the low-code framework for greater maintainability. This introduces a breaking change to the state format for the `response` stream. If you are using the incremental sync mode for this stream, you will need to reset the affected connection after upgrading to prevent sync failures."
   releaseDate: 2021-08-18
   releaseStage: beta
   supportLevel: community

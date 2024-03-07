@@ -33,14 +33,12 @@ data:
   releases:
     breakingChanges:
       4.0.0:
-        message:
-          Streams `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` now
-          have updated schemas.
+        message: "Streams `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` now have updated schemas."
         upgradeDeadline: "2024-01-17"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              [sponsored_brands_ad_groups, sponsored_brands_keywords]
+              ["sponsored_brands_ad_groups", "sponsored_brands_keywords"]
       3.0.0:
         message: Attribution report stream schemas fix.
         upgradeDeadline: "2023-07-24"

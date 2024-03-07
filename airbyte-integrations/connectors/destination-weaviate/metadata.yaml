@@ -31,7 +31,9 @@ data:
       0.2.0:
         message:
           "After upgrading, you need to reconfigure the source. For more details
-          check out the migration guide.\n"
+          check out the migration guide.
+
+          "
         upgradeDeadline: "2023-10-01"
   resourceRequirements:
     jobSpecific:

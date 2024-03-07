@@ -29,6 +29,6 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: Add new data type columns.
+        message: "Add new data type columns."
         upgradeDeadline: "2023-08-23"
 metadataSpecVersion: "1.0"
