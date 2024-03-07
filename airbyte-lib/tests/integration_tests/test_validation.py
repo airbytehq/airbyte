@@ -7,6 +7,16 @@ import pytest
 from airbyte_lib.validate import validate
 
 
+@pytest.fixture(scope="module", autouse=True)
+def autouse_source_test_installation(source_test_installation):
+    return
+
+
+@pytest.fixture(scope="function", autouse=True)
+def autouse_source_test_registry(source_test_registry):
+    return
+
+
 def test_validate_success():
     validate("./tests/integration_tests/fixtures/source-test", "./tests/integration_tests/fixtures/valid_config.json", validate_install_only=False)
 

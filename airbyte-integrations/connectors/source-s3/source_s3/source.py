@@ -43,7 +43,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
             f"requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
             always_show=True,
-            order=6,
+            order=7,
         )
         path_prefix: str = Field(
             default="",
@@ -54,13 +54,19 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
         )
 
         endpoint: str = Field("", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4)
+        region_name: Optional[str] = Field(
+            title="AWS Region",
+            default=None,
+            description="AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
+            order=5,
+        )
         start_date: Optional[str] = Field(
             title="Start Date",
             description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
             examples=["2021-01-01T00:00:00Z"],
             format="date-time",
             pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-            order=5,
+            order=6,
         )
 
     provider: S3Provider

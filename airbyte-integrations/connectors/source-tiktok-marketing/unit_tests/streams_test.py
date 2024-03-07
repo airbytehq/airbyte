@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from decimal import Decimal
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pendulum
@@ -19,6 +20,7 @@ from source_tiktok_marketing.streams import (
     BasicReports,
     CampaignsReports,
     Daily,
+    FullRefreshTiktokStream,
     Hourly,
     Lifetime,
     ReportGranularity,
@@ -273,3 +275,12 @@ def test_no_next_page_token(requests_mock):
     requests_mock.get(url, json={"data": {"page_info": {}}})
     test_response = requests.get(url)
     assert stream.next_page_token(test_response) is None
+
+
+@pytest.mark.parametrize(
+    ("original_value", "expected_value"),
+    (("-", None), (26.10, Decimal(26.10)), ("some_str", "some_str")),
+)
+def test_transform_function(original_value, expected_value):
+    field_schema = {}
+    assert FullRefreshTiktokStream.transform_function(original_value, field_schema) == expected_value

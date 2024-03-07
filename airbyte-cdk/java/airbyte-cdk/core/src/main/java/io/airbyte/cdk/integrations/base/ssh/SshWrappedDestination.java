@@ -4,7 +4,13 @@
 
 package io.airbyte.cdk.integrations.base.ssh;
 
-import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.*;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.CONNECTION_OPTIONS_KEY;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.GLOBAL_HEARTBEAT_INTERVAL_KEY;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.SESSION_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.SESSION_HEARTBEAT_INTERVAL_KEY;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.getInstance;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.sshWrap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -127,6 +133,11 @@ public class SshWrappedDestination implements Destination {
     return (endPointKey != null)
         ? getInstance(config, endPointKey)
         : getInstance(config, hostKey, portKey);
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return delegate.isV2Destination();
   }
 
 }

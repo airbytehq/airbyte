@@ -4,7 +4,7 @@ import CodeBlock from '@theme/CodeBlock';
 
 /**
  * Generate a fake config based on the spec.
- * 
+ *
  * As our specs are not 100% consistent, errors may occur.
  * Try to generate a few times before giving up.
  */
@@ -40,7 +40,7 @@ export const AirbyteLibExample = ({
 
 config = ${fakeConfig}
 
-result = ab.get_connector(
+result = ab.get_source(
     "${connector}",
     config=config,
 ).read()

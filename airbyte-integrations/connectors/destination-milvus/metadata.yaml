@@ -33,6 +33,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/milvus
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 200
     ql: 300

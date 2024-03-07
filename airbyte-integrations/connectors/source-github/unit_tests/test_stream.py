@@ -1379,17 +1379,17 @@ def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_r
         status=200,
     )
     responses.add(
-            responses.GET,
-            "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-            json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
-            status=200,
-        )
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
+        status=200,
+    )
     responses.add(
-                responses.GET,
-                "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
-                json={},
-                status=200,
-            )
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        json={},
+        status=200,
+    )
     resp = responses.add(
         responses.GET,
         "https://api.github.com/repos/airbytehq/test_airbyte/stats/contributors?per_page=100",
@@ -1401,9 +1401,14 @@ def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_r
     configured_catalog = {
         "streams": [
             {
-                "stream": {"name": "contributor_activity", "json_schema": {}, "supported_sync_modes": ["full_refresh"],"source_defined_primary_key": [["id"]]},
+                "stream": {
+                    "name": "contributor_activity",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_primary_key": [["id"]],
+                },
                 "sync_mode": "full_refresh",
-                "destination_sync_mode": "overwrite"
+                "destination_sync_mode": "overwrite",
             }
         ]
     }

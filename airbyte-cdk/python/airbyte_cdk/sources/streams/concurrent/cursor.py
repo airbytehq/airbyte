@@ -153,9 +153,19 @@ class ConcurrentCursor(Cursor):
             )
         elif self._most_recent_record:
             if self._has_closed_at_least_one_slice:
+                # If we track state value using records cursor field, we can only do that if there is one partition. This is because we save
+                # the state every time we close a partition. We assume that if there are multiple slices, they need to be providing
+                # boundaries. There are cases where partitions could not have boundaries:
+                # * The cursor should be per-partition
+                # * The stream state is actually the parent stream state
+                # There might be other cases not listed above. Those are not supported today hence the stream should not use this cursor for
+                # state management. For the specific user that was affected with this issue, we need to:
+                # * Fix state tracking (which is currently broken)
+                # * Make the new version available
+                # * (Probably) ask the user to reset the stream to avoid data loss
                 raise ValueError(
                     "Given that slice_boundary_fields is not defined and that per-partition state is not supported, only one slice is "
-                    "expected."
+                    "expected. Please contact the Airbyte team."
                 )
 
             self.state["slices"].append(
@@ -174,9 +184,7 @@ class ConcurrentCursor(Cursor):
         # TODO: if we migrate stored state to the concurrent state format
         #  (aka stop calling self._connector_state_converter.convert_to_sequential_state`), we'll need to cast datetimes to string or
         #  int before emitting state
-        state_message = self._connector_state_manager.create_state_message(
-            self._stream_name, self._stream_namespace, send_per_stream_state=True
-        )
+        state_message = self._connector_state_manager.create_state_message(self._stream_name, self._stream_namespace)
         self._message_repository.emit_message(state_message)
 
     def _merge_partitions(self) -> None:

@@ -134,6 +134,18 @@ class AirbyteLibInputError(AirbyteError, ValueError):
     input_value: str | None = None
 
 
+@dataclass
+class AirbyteLibNoStreamsSelectedError(AirbyteLibInputError):
+    """No streams were selected for the source."""
+
+    guidance = (
+        "Please call `select_streams()` to select at least one stream from the list provided. "
+        "You can also call `select_all_streams()` to select all available streams for this source."
+    )
+    connector_name: str | None = None
+    available_streams: list[str] | None = None
+
+
 # AirbyteLib Cache Errors
 
 
@@ -250,3 +262,16 @@ class AirbyteStreamNotFoundError(AirbyteConnectorError):
 
     stream_name: str | None = None
     available_streams: list[str] | None = None
+
+
+@dataclass
+class AirbyteLibSecretNotFoundError(AirbyteError):
+    """Secret not found."""
+
+    guidance = "Please ensure that the secret is set."
+    help_url = (
+        "https://docs.airbyte.com/using-airbyte/airbyte-lib/getting-started#secrets-management"
+    )
+
+    secret_name: str | None = None
+    sources: list[str] | None = None

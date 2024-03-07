@@ -49,11 +49,15 @@ _ANY_CURSOR = Mock(spec=FileBasedNoopCursor)
 def test_file_based_stream_partition_generator(sync_mode):
     stream = Mock()
     message_repository = Mock()
-    stream_slices = [{"files": [RemoteFile(uri="1", last_modified=datetime.now())]},
-                     {"files": [RemoteFile(uri="2", last_modified=datetime.now())]}]
+    stream_slices = [
+        {"files": [RemoteFile(uri="1", last_modified=datetime.now())]},
+        {"files": [RemoteFile(uri="2", last_modified=datetime.now())]},
+    ]
     stream.stream_slices.return_value = stream_slices
 
-    partition_generator = FileBasedStreamPartitionGenerator(stream, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
+    partition_generator = FileBasedStreamPartitionGenerator(
+        stream, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR
+    )
 
     partitions = list(partition_generator.generate())
     slices = [partition.to_slice() for partition in partitions]
@@ -134,7 +138,11 @@ def test_file_based_stream_partition_raising_exception(exception_type, expected_
 @pytest.mark.parametrize(
     "_slice, expected_hash",
     [
-        pytest.param({"files": [RemoteFile(uri="1", last_modified=datetime.strptime("2023-06-09T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"))]}, hash(("stream", "2023-06-09T00:00:00.000000Z_1")), id="test_hash_with_slice"),
+        pytest.param(
+            {"files": [RemoteFile(uri="1", last_modified=datetime.strptime("2023-06-09T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"))]},
+            hash(("stream", "2023-06-09T00:00:00.000000Z_1")),
+            id="test_hash_with_slice",
+        ),
         pytest.param(None, hash("stream"), id="test_hash_no_slice"),
     ],
 )
@@ -218,25 +226,14 @@ class StreamFacadeTest(unittest.TestCase):
 
         assert actual_stream_data == expected_stream_data
 
-    def test_read_records_full_refresh(self):
+    def test_read_records(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
         records = [Record(data, "stream") for data in expected_stream_data]
         partition = Mock()
         partition.read.return_value = records
         self._abstract_stream.generate_partitions.return_value = [partition]
 
-        actual_stream_data = list(self._facade.read_full_refresh(None, None, None))
-
-        assert actual_stream_data == expected_stream_data
-
-    def test_read_records_incremental(self):
-        expected_stream_data = [{"data": 1}, {"data": 2}]
-        records = [Record(data, "stream") for data in expected_stream_data]
-        partition = Mock()
-        partition.read.return_value = records
-        self._abstract_stream.generate_partitions.return_value = [partition]
-
-        actual_stream_data = list(self._facade.read_incremental(None, None, None, None, None, None, None))
+        actual_stream_data = list(self._facade.read(None, None, None, None, None, None))
 
         assert actual_stream_data == expected_stream_data
 

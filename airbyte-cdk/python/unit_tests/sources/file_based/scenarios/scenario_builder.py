@@ -6,7 +6,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Generic, List, Mapping, Optional, Set, Tuple, Type, TypeVar
 
-from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, AirbyteStateMessage, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.source import TState
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
@@ -191,10 +191,14 @@ class TestScenarioBuilder(Generic[SourceType]):
     def build(self) -> "TestScenario[SourceType]":
         if self.source_builder is None:
             raise ValueError("source_builder is not set")
+        if self._incremental_scenario_config and self._incremental_scenario_config.input_state:
+            state = [AirbyteStateMessage.parse_obj(s) for s in self._incremental_scenario_config.input_state]
+        else:
+            state = None
         source = self.source_builder.build(
             self._configured_catalog(SyncMode.incremental if self._incremental_scenario_config else SyncMode.full_refresh),
             self._config,
-            self._incremental_scenario_config.input_state if self._incremental_scenario_config else None,
+            state,
         )
         return TestScenario(
             self._name,

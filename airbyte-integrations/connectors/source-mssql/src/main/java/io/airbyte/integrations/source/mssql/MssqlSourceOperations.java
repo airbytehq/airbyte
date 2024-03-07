@@ -27,8 +27,8 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Base64;
 import microsoft.sql.DateTimeOffset;
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,7 +128,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
                            final int index)
       throws SQLException {
     final byte[] bytes = resultSet.getBytes(index);
-    final String value = Base64.encodeBase64String(bytes);
+    final String value = Base64.getEncoder().encodeToString(bytes);
     node.put(columnName, value);
   }
 

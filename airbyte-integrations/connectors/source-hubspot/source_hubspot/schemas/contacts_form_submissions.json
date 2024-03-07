@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "canonical-vid": {
+      "type": ["null", "integer"]
+    },
+    "canonical-url": {
+      "type": ["null", "string"]
+    },
+    "conversion-id": {
+      "type": ["null", "string"]
+    },
+    "page-title": {
+      "type": ["null", "string"]
+    },
+    "timestamp": {
+      "type": ["null", "integer"]
+    },
+    "form-id": {
+      "type": ["null", "string"]
+    },
+    "portal-id": {
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "page-url": {
+      "type": ["null", "string"]
+    },
+    "form-type": {
+      "type": ["null", "string"]
+    },
+    "contact-associated-by": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "meta-data": {
+      "type": ["null", "array"],
+      "items": {}
+    }
+  }
+}

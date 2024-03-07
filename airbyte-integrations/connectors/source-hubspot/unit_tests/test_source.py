@@ -50,7 +50,7 @@ def test_check_connection_empty_config(config):
 
 
 def test_check_connection_invalid_config(config):
-    config.pop("start_date")
+    config.pop("credentials")
 
     with pytest.raises(KeyError):
         SourceHubspot().check_connection(logger, config=config)
@@ -93,7 +93,7 @@ def test_streams(requests_mock, config_experimental):
 
     streams = SourceHubspot().streams(config_experimental)
 
-    assert len(streams) == 44
+    assert len(streams) == 45
 
 
 def test_custom_streams(config_experimental):

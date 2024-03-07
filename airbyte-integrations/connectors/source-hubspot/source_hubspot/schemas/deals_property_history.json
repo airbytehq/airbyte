@@ -3,6 +3,9 @@
   "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
+    "dataSensitivity": {
+      "type": ["null", "string"]
+    },
     "updatedByUserId": {
       "type": ["null", "number"]
     },

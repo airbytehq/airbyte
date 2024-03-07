@@ -1,0 +1,31 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT",
+    "reportOptions": {
+      "reportPeriod": "WEEK"
+    },
+    "dataStartTime": "2021-06-06",
+    "dataEndTime": "2021-06-12",
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "dataByDepartmentAndSearchTerm": [
+    {
+      "departmentName": "Amazon.com",
+      "searchTerm": "search term rank one",
+      "searchFrequencyRank": 1,
+      "clickedAsin": "B123456789",
+      "clickShareRank": 1,
+      "clickShare": 0.0771,
+      "conversionShare": 0.0874
+    },
+    {
+      "departmentName": "Amazon.com",
+      "searchTerm": "search term rank one",
+      "searchFrequencyRank": 1,
+      "clickedAsin": "B987654321",
+      "clickShareRank": 2,
+      "clickShare": 0.0726,
+      "conversionShare": 0.0974
+    }
+  ]
+}

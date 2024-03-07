@@ -156,15 +156,25 @@ def _install_python_dependencies_from_requirements_txt(container: Container) -> 
 def _install_python_dependencies_from_poetry(
     container: Container,
     additional_dependency_groups: Optional[Sequence[str]] = None,
+    install_root_package: bool = True,
 ) -> Container:
     pip_install_poetry_cmd = ["pip", "install", "poetry"]
     poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
-    poetry_install_no_venv_cmd = ["poetry", "install"]
+    poetry_install_cmd = ["poetry", "install"]
+    poetry_check_cmd = ["poetry", "check"]
+    if not install_root_package:
+        poetry_install_cmd += ["--no-root"]
     if additional_dependency_groups:
         for group in additional_dependency_groups:
-            poetry_install_no_venv_cmd += ["--with", group]
-
-    return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_no_venv_cmd)
+            poetry_install_cmd += ["--with", group]
+    else:
+        poetry_install_cmd += ["--only", "main"]
+    return (
+        container.with_exec(pip_install_poetry_cmd)
+        .with_exec(poetry_disable_virtual_env_cmd)
+        .with_exec(poetry_check_cmd)
+        .with_exec(poetry_install_cmd)
+    )
 
 
 async def with_installed_python_package(
@@ -174,6 +184,7 @@ async def with_installed_python_package(
     additional_dependency_groups: Optional[Sequence[str]] = None,
     exclude: Optional[List] = None,
     include: Optional[List] = None,
+    install_root_package: bool = True,
 ) -> Container:
     """Install a python package in a python environment container.
 
@@ -183,6 +194,8 @@ async def with_installed_python_package(
         package_source_code_path (str): The local path to the package source code.
         additional_dependency_groups (Optional[Sequence[str]]): extra_requires dependency of setup.py to install. Defaults to None.
         exclude (Optional[List]): A list of file or directory to exclude from the python package source code.
+        include (Optional[List]): A list of file or directory to include from the python package source code.
+        install_root_package (bool): Whether to install the root package. Defaults to True.
 
     Returns:
         Container: A python environment container with the python package installed.
@@ -199,7 +212,7 @@ async def with_installed_python_package(
 
     if has_pyproject_toml:
         container = with_poetry_cache(container, context.dagger_client)
-        container = _install_python_dependencies_from_poetry(container, additional_dependency_groups)
+        container = _install_python_dependencies_from_poetry(container, additional_dependency_groups, install_root_package)
     elif has_setup_py:
         container = with_pip_cache(container, context.dagger_client)
         container = _install_python_dependencies_from_setup_py(container, additional_dependency_groups)
@@ -250,6 +263,7 @@ async def with_python_connector_installed(
     additional_dependency_groups: Optional[Sequence[str]] = None,
     exclude: Optional[List[str]] = None,
     include: Optional[List[str]] = None,
+    install_root_package: bool = True,
 ) -> Container:
     """Install an airbyte python connectors  dependencies."""
 
@@ -263,6 +277,7 @@ async def with_python_connector_installed(
         additional_dependency_groups=additional_dependency_groups,
         exclude=exclude,
         include=include,
+        install_root_package=install_root_package,
     )
 
     container = await apply_python_development_overrides(context, container)

@@ -278,6 +278,7 @@ class VenvExecutor(Executor):
                     f"from importlib.metadata import version; print(version('{package_name}'))",
                 ],
                 universal_newlines=True,
+                stderr=subprocess.PIPE,  # Don't print to stderr
             ).strip()
         except Exception:
             if raise_on_error:
@@ -337,6 +338,10 @@ class VenvExecutor(Executor):
 
             # If the connector path does not exist, uninstall and re-install.
             # This is sometimes caused by a failed or partial installation.
+            print(
+                "Connector executable not found within the virtual environment "
+                f"at {self._get_connector_path()!s}.\nReinstalling..."
+            )
             self.uninstall()
             self.install()
             reinstalled = True

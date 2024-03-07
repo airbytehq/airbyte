@@ -21,10 +21,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.commons.json.Jsons;
 import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import org.apache.commons.codec.binary.Base64;
 import org.bson.BsonBinary;
 import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
@@ -46,7 +46,6 @@ import org.bson.UuidRepresentation;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 class MongoDbCdcEventUtilsTest {
 
@@ -89,14 +88,14 @@ class MongoDbCdcEventUtilsTest {
   void testNormalizeObjectIdNoSchema() {
     var objectNode = (ObjectNode) Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of(OBJECT_ID_FIELD, OBJECT_ID)));
     objectNode.set(SCHEMALESS_MODE_DATA_FIELD,
-        Jsons.jsonNode(ImmutableMap.of(DOCUMENT_OBJECT_ID_FIELD, Map.of(OBJECT_ID_FIELD, OBJECT_ID))));
+        Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of(OBJECT_ID_FIELD, OBJECT_ID))));
 
     final JsonNode data = MongoDbCdcEventUtils.normalizeObjectIdNoSchema(objectNode);
     assertEquals(OBJECT_ID, data.get(DOCUMENT_OBJECT_ID_FIELD).asText());
     assertEquals(OBJECT_ID, data.get(SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD).asText());
 
     objectNode = (ObjectNode) Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of()));
-    objectNode.set(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(ImmutableMap.of(DOCUMENT_OBJECT_ID_FIELD, Map.of())));
+    objectNode.set(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of())));
     final JsonNode dataWithoutObjectId = MongoDbCdcEventUtils.normalizeObjectIdNoSchema(objectNode);
     assertNotEquals(OBJECT_ID, dataWithoutObjectId.get(DOCUMENT_OBJECT_ID_FIELD).asText());
     assertNotEquals(OBJECT_ID, dataWithoutObjectId.get(SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD).asText());
@@ -143,7 +142,7 @@ class MongoDbCdcEventUtilsTest {
     assertEquals(4.0, transformed.get("field5").asDouble());
     assertEquals(expectedTimestamp, transformed.get("field6").asText());
     assertEquals(expectedTimestamp, transformed.get("field7").asText());
-    assertEquals(Base64.encodeBase64String("test".getBytes(Charset.defaultCharset())), transformed.get("field8").asText());
+    assertEquals(Base64.getEncoder().encodeToString("test".getBytes(Charset.defaultCharset())), transformed.get("field8").asText());
     assertEquals("test2", transformed.get("field9").asText());
     assertEquals("test3", transformed.get("field10").asText());
     assertEquals(OBJECT_ID, transformed.get("field11").asText());
