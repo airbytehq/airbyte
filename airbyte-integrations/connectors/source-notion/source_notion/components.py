@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, MutableMapping
 
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.incremental import PerPartitionCursor
 
 @dataclass
 class NotionUserTransformation(RecordTransformation):
@@ -64,3 +65,9 @@ class NotionBlocksTransformation(RecordTransformation):
           del record[transform_object_field]["rich_text"][rich_text.index(r)]["mention"][mention["type"]]
 
     return record
+
+
+@dataclass
+class NotionSemiIncrementalPerPartitionCursor(PerPartitionCursor):
+  pass
+  
