@@ -11,6 +11,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
+
 @dataclass
 class CustomFieldTransformation(RecordTransformation):
     """
