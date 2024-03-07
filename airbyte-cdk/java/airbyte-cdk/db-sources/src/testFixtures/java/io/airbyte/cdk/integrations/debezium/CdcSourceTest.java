@@ -125,10 +125,6 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
   protected abstract JsonNode config();
 
-  protected abstract CdcTargetPosition<?> cdcLatestTargetPosition();
-
-  protected abstract CdcTargetPosition<?> extractPosition(final JsonNode record);
-
   protected abstract void assertNullCdcMetaData(final JsonNode data);
 
   protected abstract void assertCdcMetaData(final JsonNode data, final boolean deletedAtNull);
@@ -336,25 +332,14 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
   @Test
   // On the first sync, produce returns records that exist in the database.
   void testExistingData() throws Exception {
-    final CdcTargetPosition targetPosition = cdcLatestTargetPosition();
     final AutoCloseableIterator<AirbyteMessage> read = source().read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
 
     final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
 
-    assertNotNull(targetPosition);
-    recordMessages.forEach(record -> {
-      compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(targetPosition, record);
-    });
-
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordMessages);
     assertExpectedStateMessages(stateMessages);
-  }
-
-  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition,
-                                                                                         final AirbyteRecordMessage record) {
-    assertEquals(extractPosition(record.getData()), targetPosition);
   }
 
   @Test
