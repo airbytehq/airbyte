@@ -16,10 +16,19 @@ class TestFreshdeskTicketsPaginationStrategy:
             (requests.Response(), 1, [], None),  # No records
             (requests.Response(), 1, [1, 2, 3], None),  # Fewer records than page size
             (requests.Response(), 3, [1, 2, 3, 4], 4),  # Page size records
-            (requests.Response(), 6,
-             [{"updated_at": "2022-01-01"}, {"updated_at": "2022-01-02"}, {"updated_at": "2022-01-03"}, {"updated_at": "2022-01-03"},
-              {"updated_at": "2022-01-05"}], "2022-01-05")  # Page limit is hit
-        ]
+            (
+                requests.Response(),
+                6,
+                [
+                    {"updated_at": "2022-01-01"},
+                    {"updated_at": "2022-01-02"},
+                    {"updated_at": "2022-01-03"},
+                    {"updated_at": "2022-01-03"},
+                    {"updated_at": "2022-01-05"},
+                ],
+                "2022-01-05",
+            ),  # Page limit is hit
+        ],
     )
     def test_returns_none_when_fewer_records_than_page_size(self, response, current_page, last_records, expected):
         pagination_strategy = FreshdeskTicketsPaginationStrategy(page_size=4, parameters={})
