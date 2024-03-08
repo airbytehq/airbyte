@@ -31,33 +31,11 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: true
           exact_order: true
-          extra_records: false
-        ignored_fields:
-          users/field_type_test/tblFcp5mncufoYaR9:
-            - name: "attachment"
-              bypass_reason: "Attachments' preview links are changed frequently"
-          "users/50_columns/tbl01Hi93Tt6XJ0u5":
-            - name: "attachments"
-              bypass_reason: "Attachments' preview links are changed frequently"
-            - name: "attachments_2"
-              bypass_reason: "Attachments' preview links are changed frequently"
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: true
           exact_order: true
-          extra_records: false
-        ignored_fields:
-          users/field_type_test/tblFcp5mncufoYaR9:
-            - name: "attachment"
-              bypass_reason: "Attachments' preview links are changed frequently"
-          "users/50_columns/tbl01Hi93Tt6XJ0u5":
-            - name: "attachments"
-              bypass_reason: "Attachments' preview links are changed frequently"
-            - name: "attachments_2"
-              bypass_reason: "Attachments' preview links are changed frequently"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

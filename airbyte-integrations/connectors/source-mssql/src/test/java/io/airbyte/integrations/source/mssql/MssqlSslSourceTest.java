@@ -29,7 +29,7 @@ public class MssqlSslSourceTest {
 
   @BeforeEach
   void setup() {
-    testDb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.WITH_SSL_CERTIFICATES);
+    testDb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT, ContainerModifier.WITH_SSL_CERTIFICATES);
   }
 
   @AfterEach

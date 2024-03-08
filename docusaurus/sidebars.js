@@ -480,6 +480,11 @@ module.exports = {
       ],
     },
     {
+      type: "doc",
+      label: "Using PyAirbyte",
+      id: "using-airbyte/pyairbyte/getting-started",
+    },
+    {
       type: "category",
       label: "Workspace Management",
       items: [

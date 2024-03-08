@@ -53,7 +53,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
+|:-----------------|:-------------|:------|
 | `string`         | `string`     |       |
 | `number`         | `number`     |       |
 | `array`          | `array`      |       |
@@ -62,7 +62,8 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 ## Changelog
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
-| :------- | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
+|:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| `2.2.0`  | 2024-02-27 | [35637](https://github.com/airbytehq/airbyte/pull/35637)   | Fix `predictive_analytics` field in stream `profiles`                                                                         |
 | `2.1.3`  | 2024-02-15 | [35336](https://github.com/airbytehq/airbyte/pull/35336)   | Added type transformer for the `profiles` stream.                                                                             |
 | `2.1.2`  | 2024-02-09 | [35088](https://github.com/airbytehq/airbyte/pull/35088)   | Manage dependencies with Poetry.                                                                                              |
 | `2.1.1`  | 2024-02-07 | [34998](https://github.com/airbytehq/airbyte/pull/34998)   | Add missing fields to stream schemas                                                                                          |
