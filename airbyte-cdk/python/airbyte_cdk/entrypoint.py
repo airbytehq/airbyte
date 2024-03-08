@@ -24,7 +24,7 @@ from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats, ConnectorSpec
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
-from airbyte_cdk.utils import is_cloud_environment
+from airbyte_cdk.utils import is_cloud_environment, message_utils
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -170,16 +170,13 @@ class AirbyteEntrypoint(object):
     @staticmethod
     def handle_record_counts(message: AirbyteMessage, stream_message_count: DefaultDict[HashableStreamDescriptor, int]) -> AirbyteMessage:
         if message.type == Type.RECORD:
-            stream_descriptor = HashableStreamDescriptor(name=message.record.stream, namespace=message.record.namespace)
-            stream_message_count[stream_descriptor] += 1
+            stream_message_count[message_utils.get_stream_descriptor(message)] += 1
 
         elif message.type == Type.STATE:
             if not message.state.stream:
                 raise ValueError("State message was not in per-stream state format, which is required for record counts.")
 
-            stream_descriptor = HashableStreamDescriptor(
-                name=message.state.stream.stream_descriptor.name, namespace=message.state.stream.stream_descriptor.namespace
-            )
+            stream_descriptor = message_utils.get_stream_descriptor(message)
 
             # Set record count from the counter onto the state message
             message.state.sourceStats = message.state.sourceStats or AirbyteStateStats()
