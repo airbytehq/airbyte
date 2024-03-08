@@ -122,7 +122,23 @@ public class MssqlCdcHelper {
     } else {
       props.setProperty("driver.trustServerCertificate", "true");
     }
-
+    
+    if (config.has("auth_method")) {
+      final JsonNode authConfig = config.get("auth_method");
+      final String authMethod = authConfig.get("auth_method").asText();
+      if ("SqlPassword".equals(auth_method)) {
+        props.setProperty("integratedSecurity", "false"); 
+      } else if ("ActiveDirectoryPassword".equals(auth_method)) {
+        props.setProperty("authentication", auth_method);
+      } else if ("ActiveDirectoryIntegrated".equals(auth_method)) {
+        props.setProperty("authentication", auth_method);
+      } else if ("ActiveDirectoryMSI".equals(auth_method)) {
+        props.setProperty("authentication", auth_method);
+      } else if ("ActiveDirectoryInteractive".equals(auth_method)) {
+        props.setProperty("authentication", auth_method);
+      }
+    }
+    
     return props;
   }
 
