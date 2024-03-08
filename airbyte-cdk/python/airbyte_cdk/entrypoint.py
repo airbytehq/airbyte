@@ -20,8 +20,7 @@ from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import AirbyteMessage, FailureType, Status, Type
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification  # type: ignore [attr-defined]
-from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats, ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
