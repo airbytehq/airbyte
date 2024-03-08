@@ -156,7 +156,7 @@ class AirbyteEntrypoint(object):
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
     def read(
-            self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]]
+        self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]]
     ) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
         if self.source.check_config_against_spec:
