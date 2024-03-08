@@ -99,6 +99,12 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// I have no idea which of these libraries may be needed, or how Java utilizes these
+import com.microsoft.aad.msal4j.IAuthenticationResult;
+import com.microsoft.aad.msal4j.IClientCredential;
+import com.microsoft.aad.msal4j.IntegratedWindowsAuthenticationParameters;
+import com.microsoft.aad.msal4j.InteractiveRequestParameters;
+
 //TO-DO: I think something may have to be added to this page to pass the authentication property along?? 
 
 public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source {
