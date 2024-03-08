@@ -13,6 +13,7 @@ from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
@@ -127,17 +128,31 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
         _verify_analytics(analytics, scenario.expected_analytics)
 
 
-def _verify_state_record_counts(records: List[AirbyteMessage], states: List[AirbyteMessage]) -> None:
-    # TODO: Use HashableStreamDescriptor here
-    record_streams = {record.record.stream for record in records}
-    actual_record_counts = {stream: 0 for stream in record_streams}
-    for record in records:
-        actual_record_counts[record.record.stream] += 1
+def get_stream_descriptor(message) -> HashableStreamDescriptor:
+    if message.record:
+        return HashableStreamDescriptor(
+            name=message.record.stream,
+            namespace=message.record.namespace
+        )
+    elif message.state:
+        return HashableStreamDescriptor(
+            name=message.state.stream.stream_descriptor.name,
+            namespace=message.state.stream.stream_descriptor.namespace
+        )
+    else:
+        raise ValueError("Message format does not contain a stream descriptor.")
 
-    state_message_streams = {state.state.stream.stream_descriptor.name for state in states}
-    state_record_count_sums = {stream: 0 for stream in state_message_streams}
+
+def _verify_state_record_counts(records: List[AirbyteMessage], states: List[AirbyteMessage]) -> None:
+    actual_record_counts = {}
+    for record in records:
+        stream_descriptor = get_stream_descriptor(record)
+        actual_record_counts[stream_descriptor] = actual_record_counts.get(stream_descriptor, 0) + 1
+
+    state_record_count_sums = {}
     for state in states:
-        state_record_count_sums[state.state.stream.stream_descriptor.name] += state.state.sourceStats.recordCount
+        stream_descriptor = get_stream_descriptor(state)
+        state_record_count_sums[stream_descriptor] = state_record_count_sums.get(stream_descriptor, 0) + state.state.sourceStats.recordCount
 
     for stream, actual_count in actual_record_counts.items():
         assert state_record_count_sums.get(stream) == actual_count
