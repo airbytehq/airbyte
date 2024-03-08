@@ -317,7 +317,7 @@ definitions:
         pagination_strategy:
           type: "CustomPaginationStrategy"
           class_name: source_freshdesk.components.FreshdeskTicketsPaginationStrategy
-          page_size: 2
+          page_size: 100
           start_from_page: 1
         page_size_option:
           type: "RequestOption"
