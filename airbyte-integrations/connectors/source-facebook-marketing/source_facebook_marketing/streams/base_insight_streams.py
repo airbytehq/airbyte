@@ -192,18 +192,6 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         self._next_cursor_values = self._get_start_date()
 
-    def get_updated_state(
-        self,
-        current_stream_state: MutableMapping[str, Any],
-        latest_record: Mapping[str, Any],
-    ):
-        """Update stream state from latest record
-
-        :param current_stream_state: latest state returned
-        :param latest_record: latest record that we read
-        """
-        return self.state
-
     def _date_intervals(self, account_id: str) -> Iterator[pendulum.Date]:
         """Get date period to sync"""
         if self._end_date < self._next_cursor_values[account_id]:
