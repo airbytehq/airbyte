@@ -9,8 +9,8 @@ Heartbeat errors are expected to be transient and should automatically resolve. 
 ## Known Causes
 
 Possible reasons for this issue:
-1. Certain API sources take an unknown amount of time to generate an asynchronous responses (e.g., Salesforce, Facebook, Amplitude). No workaround currently exists.
-2. Certain API sources can be rate-limited for a time period longer than their configured threshold. Although Airbyte tries our best to handle this on a per-connector basis, rate limits are not always predictable.
+1. Certain API sources take an unknown amount of time to generate asynchronous responses (e.g., Salesforce, Facebook, Amplitude). No workaround currently exists.
+2. Certain API sources can be rate-limited for a time period longer than their configured threshold. Although Airbyte tries its best to handle this on a per-connector basis, rate limits are not always predictable.
 3. Database sources can be slow to respond to a query. This can be due to a variety of reasons, including the size of the database, the complexity of the query, and the number of other queries being made to the database at the same time.
    1. The most common reason we see is using an un-indexed column as a cursor column in an incremental sync, or a dramatically under-provisioned database.
 4. Destinations can be slow to respond to write requests.
