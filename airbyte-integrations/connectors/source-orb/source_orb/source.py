@@ -629,7 +629,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         request_filter_json = {
             "event_ids": list(event_id_to_ledger_entries),
             "timeframe_start": min_created_at_timestamp.to_iso8601_string(),
-            "timeframe_end": max_created_at_timestamp.add(minutes=1).to_iso8601_string()
+            "timeframe_end": max_created_at_timestamp.add(minutes=1).to_iso8601_string(),
         }
 
         # Prepare request with self._session, which should
