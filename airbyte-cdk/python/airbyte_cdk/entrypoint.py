@@ -182,12 +182,6 @@ class AirbyteEntrypoint(object):
             message.state.sourceStats = message.state.sourceStats or AirbyteStateStats()
             message.state.sourceStats.recordCount = stream_message_count.get(stream_descriptor, 0)
 
-            # TODO: Logging - remove after pre-release testing
-            stream_name = message.state.stream.stream_descriptor.name
-            stream_state = message.state.stream.stream_state.dict() if message.state.stream.stream_state else {}
-            record_count = message.state.sourceStats.recordCount
-            logger.info(f"Emitting state message for stream '{stream_name}' with count {record_count} and state data: {stream_state}")
-
             # Reset the counter
             stream_message_count[stream_descriptor] = 0
         return message
