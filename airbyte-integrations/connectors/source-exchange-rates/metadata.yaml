@@ -3,6 +3,10 @@ data:
     hosts:
       - ${subdomain}.apilayer.com
       - apilayer.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-exchange-rates
   registries:
     oss:
       enabled: true
@@ -22,5 +26,6 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/exchange-rates
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

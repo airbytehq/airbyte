@@ -100,22 +100,8 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "occurred_at": 2147483647 },
-      "stream_descriptor": { "name": "event" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
       "stream_state": { "updated_at": 2147483647 },
       "stream_descriptor": { "name": "transaction" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "migrated_at": 2147483647 },
-      "stream_descriptor": { "name": "site_migration_detail" }
     }
   },
   {

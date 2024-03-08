@@ -10,7 +10,7 @@ import airbyte_lib as ab
 from airbyte_lib.caches import SnowflakeCacheConfig, SnowflakeSQLCache
 
 
-source = ab.get_connector(
+source = ab.get_source(
     "source-faker",
     config={"count": 10000, "seed": 0, "parallelism": 1, "always_updated": False},
     install_if_missing=True,
@@ -39,7 +39,7 @@ cache = SnowflakeSQLCache(
 
 source.check()
 
-source.set_streams(["products"])
+source.select_streams(["products"])
 result = source.read(cache)
 
 for name in ["products"]:

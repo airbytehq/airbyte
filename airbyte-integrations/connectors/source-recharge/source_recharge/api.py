@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -212,11 +212,22 @@ class Onetimes(RechargeStreamModernAPI, IncrementalRechargeStream):
     """
 
 
-class Orders(RechargeStreamDeprecatedAPI, IncrementalRechargeStream):
+class OrdersDeprecatedApi(RechargeStreamDeprecatedAPI, IncrementalRechargeStream):
     """
     Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
     Using old API version to avoid schema changes and loosing email, first_name, last_name columns, because in new version it not present
     """
+
+    name = "orders"
+
+
+class OrdersModernApi(RechargeStreamModernAPI, IncrementalRechargeStream):
+    """
+    Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
+    Using newer API version to fetch all the data, based on the Customer's UI toggle `use_deprecated_api: FALSE`.
+    """
+
+    name = "orders"
 
 
 class Products(RechargeStreamDeprecatedAPI):

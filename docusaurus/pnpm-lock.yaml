@@ -278,6 +278,9 @@ dependencies:
   docusaurus-plugin-segment:
     specifier: ^1.0.3
     version: 1.0.3
+  html-loader:
+    specifier: ^4.2.0
+    version: 4.2.0(webpack@5.89.0)
   js-yaml:
     specifier: ^4.1.0
     version: 4.1.0
@@ -6547,6 +6550,17 @@ packages:
 
   /html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
+    dev: false
+
+  /html-loader@4.2.0(webpack@5.89.0):
+    resolution: {integrity: sha512-OxCHD3yt+qwqng2vvcaPApCEvbx+nXWu+v69TYHx1FO8bffHn/JjHtE3TTQZmHjwvnJe4xxzuecetDVBrQR1Zg==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      webpack: ^5.0.0
+    dependencies:
+      html-minifier-terser: 7.2.0
+      parse5: 7.1.2
+      webpack: 5.89.0
     dev: false
 
   /html-minifier-terser@6.1.0:

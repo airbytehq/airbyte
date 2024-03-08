@@ -27,13 +27,14 @@ from pipelines.cli.auto_update import __installed_version__, check_for_upgrade, 
 from pipelines.cli.click_decorators import (
     CI_REQUIREMENTS_OPTION_NAME,
     click_append_to_context_object,
+    click_ci_requirements_option,
     click_ignore_unused_kwargs,
     click_merge_args_into_context_obj,
 )
 from pipelines.cli.confirm_prompt import pre_confirm_all_flag
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
-from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, CIContext
+from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_BUILD_PLATFORM, CIContext
 from pipelines.dagger.actions.connector.hooks import get_dagger_sdk_version
 from pipelines.helpers import github
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
@@ -52,6 +53,7 @@ def log_context_info(ctx: click.Context) -> None:
     main_logger.info(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
     main_logger.info(f"Pull Request Number: {ctx.obj['pull_request_number']}")
     main_logger.info(f"Pipeline Start Timestamp: {ctx.obj['pipeline_start_timestamp']}")
+    main_logger.info(f"Local build platform: {LOCAL_BUILD_PLATFORM}")
 
 
 def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:
@@ -171,6 +173,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str)
 @click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
+@click_ci_requirements_option()
 @click_track_command
 @click_merge_args_into_context_obj
 @click_append_to_context_object("is_ci", lambda ctx: not ctx.obj["is_local"])

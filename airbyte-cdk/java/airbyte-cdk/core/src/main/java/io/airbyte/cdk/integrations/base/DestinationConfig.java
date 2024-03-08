@@ -6,14 +6,12 @@ package io.airbyte.cdk.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Singleton of destination config for easy lookup of values.
  */
-@Singleton
 public class DestinationConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationConfig.class);

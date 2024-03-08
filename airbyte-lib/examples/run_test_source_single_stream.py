@@ -15,6 +15,6 @@ import airbyte_lib as ab
 
 os.environ["AIRBYTE_LOCAL_REGISTRY"] = "./tests/integration_tests/fixtures/registry.json"
 
-source = ab.get_connector("source-test", config={"apiKey": "test"})
+source = ab.get_source("source-test", config={"apiKey": "test"})
 
 print(list(source.read_stream("stream1")))

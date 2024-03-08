@@ -3,6 +3,10 @@ data:
     hosts:
       - auth.${region}.${host}.commercetools.com
       - api.${region}.${host}.commercetools.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-commercetools
   registries:
     oss:
       enabled: true
@@ -20,7 +24,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/commercetools
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

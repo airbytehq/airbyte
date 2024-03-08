@@ -990,6 +990,61 @@ def test_validate_oauth_flow(connector_spec, expected_error):
             ),
             "Credentials object does not have oneOf option.",
         ),
+        # SUCCESS: Skipped: no predicate key.
+        (
+                ConnectorSpecification(
+                    connectionSpecification={
+                        "type": "object",
+                        "properties": {
+                            "api_url": {"type": "object"},
+                            "credentials": {
+                                "type": "object",
+                                "properties": {
+                                    "auth_type": {"type": "string", "const": "oauth2.0"},
+                                    "client_id": {"type": "string"},
+                                    "client_secret": {"type": "string"},
+                                    "access_token": {"type": "string"},
+                                    "refresh_token": {"type": "string"},
+                                    "token_expiry_date": {"type": "string", "format": "date-time"},
+                                },
+                            },
+                        },
+                    },
+                    advanced_auth={
+                        "auth_flow_type": "oauth2.0",
+                        "oauth_config_specification": {
+                            "oauth_user_input_from_connector_config_specification": {
+                                "type": "object",
+                                "properties": {"domain": {"type": "string", "path_in_connector_config": ["api_url"]}},
+                            },
+                            "complete_oauth_output_specification": {
+                                "type": "object",
+                                "properties": {
+                                    "access_token": {"type": "string", "path_in_connector_config": ["credentials", "access_token"]},
+                                    "refresh_token": {"type": "string", "path_in_connector_config": ["credentials", "refresh_token"]},
+                                    "token_expiry_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "path_in_connector_config": ["credentials", "token_expiry_date"],
+                                    },
+                                },
+                            },
+                            "complete_oauth_server_input_specification": {
+                                "type": "object",
+                                "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                            },
+                            "complete_oauth_server_output_specification": {
+                                "type": "object",
+                                "properties": {
+                                    "client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]},
+                                    "client_secret": {"type": "string", "path_in_connector_config": ["credentials", "client_secret"]},
+                                },
+                            },
+                        },
+                    },
+                ),
+                "Advanced Auth object does not have predicate_key, only one option to authenticate.",
+        )
     ]
 )
 def test_validate_auth_default_method(connector_spec, expected_error):

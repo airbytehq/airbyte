@@ -163,6 +163,11 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         def _metric_type_to_python(metric_data: Tuple[str, str]) -> Any:
             metric_name, metric_value = metric_data
             python_type = metrics_type_to_python(metric_types[metric_name])
+
+            # Google Analytics sometimes returns float for integer metrics.
+            # So this is a workaround for this issue: https://github.com/airbytehq/oncall/issues/4130
+            if python_type == int:
+                return metric_name, round(float(metric_value))
             return metric_name, python_type(metric_value)
 
         return dict(map(_metric_type_to_python, zip(metrics, [v["value"] for v in row["metricValues"]])))
@@ -208,6 +213,12 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             }
         )
 
+        # change the type of `conversions:*` metrics from int to float: https://github.com/airbytehq/oncall/issues/4130
+        if self.config.get("convert_conversions_event", False):
+            for schema_field in schema["properties"]:
+                if schema_field.startswith("conversions:"):
+                    schema["properties"][schema_field]["type"] = ["null", "float"]
+
         return schema
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -245,6 +256,12 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         dimensions = [h.get("name") for h in r.get("dimensionHeaders", [{}])]
         metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
         metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}]) if "name" in h}
+
+        # change the type of `conversions:*` metrics from int to float: https://github.com/airbytehq/oncall/issues/4130
+        if self.config.get("convert_conversions_event", False):
+            for schema_field in metrics_type_map:
+                if schema_field.startswith("conversions:"):
+                    metrics_type_map[schema_field] = "TYPE_FLOAT"
 
         for row in r.get("rows", []):
             record = {

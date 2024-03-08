@@ -578,8 +578,8 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
 
   protected void executeStatementReadIncrementallyTwice() {
     testdb
-        .with("INSERT INTO %s(id, name, updated_at) VALUES (4, 'riker', '2006-10-19')", getFullyQualifiedTableName(TABLE_NAME))
-        .with("INSERT INTO %s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')", getFullyQualifiedTableName(TABLE_NAME));
+        .with("INSERT INTO %s (id, name, updated_at) VALUES (4, 'riker', '2006-10-19')", getFullyQualifiedTableName(TABLE_NAME))
+        .with("INSERT INTO %s (id, name, updated_at) VALUES (5, 'data', '2006-10-19')", getFullyQualifiedTableName(TABLE_NAME));
   }
 
   protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {

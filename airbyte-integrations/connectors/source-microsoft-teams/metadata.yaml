@@ -8,6 +8,10 @@ data:
   icon: microsoft-teams.svg
   license: MIT
   name: Microsoft teams
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-microsoft-teams
   registries:
     cloud:
       enabled: true
@@ -25,6 +29,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-teams
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100

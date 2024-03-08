@@ -85,6 +85,7 @@ When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/m
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.15 | 2023-01-25 | [34529](https://github.com/airbytehq/airbyte/pull/34529) | Fix tests |
 | 0.2.14 | 2023-01-15 | [34229](https://github.com/airbytehq/airbyte/pull/34229) | Allow configuring tenant id |
 | 0.2.13 | 2023-12-11 | [33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
 | 0.2.12 | 2023-12-07 | [33218](https://github.com/airbytehq/airbyte/pull/33218) | Normalize metadata field names |

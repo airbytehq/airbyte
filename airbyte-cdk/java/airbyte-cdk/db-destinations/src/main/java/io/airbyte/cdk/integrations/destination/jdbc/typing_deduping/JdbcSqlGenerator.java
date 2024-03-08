@@ -29,7 +29,6 @@ import static org.jooq.impl.DSL.with;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
-import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
@@ -66,13 +65,13 @@ import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
-public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
+public abstract class JdbcSqlGenerator implements SqlGenerator {
 
   protected static final String ROW_NUMBER_COLUMN_NAME = "row_number";
   private static final String TYPING_CTE_ALIAS = "intermediate_data";
   private static final String NUMBERED_ROWS_CTE_ALIAS = "numbered_rows";
 
-  private final NamingConventionTransformer namingTransformer;
+  protected final NamingConventionTransformer namingTransformer;
   protected final ColumnId cdcDeletedAtColumn;
 
   public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer) {

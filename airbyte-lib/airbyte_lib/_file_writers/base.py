@@ -18,6 +18,10 @@ from airbyte_lib.config import CacheConfigBase
 if TYPE_CHECKING:
     import pyarrow as pa
 
+    from airbyte_protocol.models import (
+        AirbyteStateMessage,
+    )
+
 
 DEFAULT_BATCH_SIZE = 10000
 
@@ -51,7 +55,7 @@ class FileWriterBase(RecordProcessor, abc.ABC):
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> FileWriterBatchHandle:
         """Process a record batch.
 
@@ -64,7 +68,7 @@ class FileWriterBase(RecordProcessor, abc.ABC):
         self,
         stream_name: str,
         batch_id: str,
-        record_batch: pa.Table | pa.RecordBatch,
+        record_batch: pa.Table,
     ) -> FileWriterBatchHandle:
         """Write a batch of records to the cache.
 
@@ -109,3 +113,14 @@ class FileWriterBase(RecordProcessor, abc.ABC):
         Subclasses should override `_cleanup_batch` instead.
         """
         self._cleanup_batch(stream_name, batch_id, batch_handle)
+
+    @overrides
+    def _finalize_state_messages(
+        self,
+        stream_name: str,
+        state_messages: list[AirbyteStateMessage],
+    ) -> None:
+        """
+        State messages are not used in file writers, so this method is a no-op.
+        """
+        pass

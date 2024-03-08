@@ -30,7 +30,13 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@TestInstance(Lifecycle.PER_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "dbo";
@@ -99,15 +105,9 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) {
     testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT);
-    final var enableCdcSqlFmt = """
-                                EXEC sys.sp_cdc_enable_table
-                                \t@source_schema = N'%s',
-                                \t@source_name   = N'%s',
-                                \t@role_name     = N'%s',
-                                \t@supports_net_changes = 0""";
     testdb
-        .withCdc()
         .withWaitUntilAgentRunning()
+        .withCdc()
         // create tables
         .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME)
         .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME2)
@@ -115,17 +115,16 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .with("INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');", SCHEMA_NAME, STREAM_NAME)
         .with("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');", SCHEMA_NAME, STREAM_NAME2)
         // enable cdc on tables for designated role
-        .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME, CDC_ROLE_NAME)
-        .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME2, CDC_ROLE_NAME)
-        .withShortenedCapturePollingInterval()
-        .withWaitUntilMaxLsnAvailable()
+        .withCdcForTable(SCHEMA_NAME, STREAM_NAME, CDC_ROLE_NAME)
+        .withCdcForTable(SCHEMA_NAME, STREAM_NAME2, CDC_ROLE_NAME)
         // revoke user permissions
         .with("REVOKE ALL FROM %s CASCADE;", testdb.getUserName())
         .with("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO %s;\"", testdb.getUserName())
         // grant user permissions
         .with("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", testdb.getUserName())
         .with("GRANT SELECT ON SCHEMA :: [cdc] TO %s", testdb.getUserName())
-        .with("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testdb.getUserName());
+        .with("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testdb.getUserName())
+        .withWaitUntilMaxLsnAvailable();
   }
 
   @Override
@@ -145,7 +144,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     final List<AirbyteStreamState> streamStates = stateMessages.get(0).getGlobal().getStreamStates();
 
     assertEquals(3, recordMessages.size());
-    assertEquals(1, stateMessages.size());
+    assertEquals(2, stateMessages.size());
     assertEquals(1, streamStates.size());
     assertEquals(STREAM_NAME, streamStates.get(0).getStreamDescriptor().getName());
     assertEquals(SCHEMA_NAME, streamStates.get(0).getStreamDescriptor().getNamespace());

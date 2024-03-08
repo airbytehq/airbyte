@@ -8,6 +8,10 @@ data:
   icon: vitally.svg
   license: MIT
   name: Vitally
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-vitally
   registries:
     cloud:
       enabled: false
@@ -16,8 +20,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/vitally
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

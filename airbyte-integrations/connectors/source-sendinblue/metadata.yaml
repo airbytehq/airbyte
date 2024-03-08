@@ -12,6 +12,10 @@ data:
   icon: sendinblue.svg
   license: MIT
   name: Sendinblue
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sendinblue
   registries:
     cloud:
       enabled: true
@@ -20,6 +24,6 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

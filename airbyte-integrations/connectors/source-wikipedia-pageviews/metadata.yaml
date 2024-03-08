@@ -8,6 +8,10 @@ data:
   icon: wikipediapageviews.svg
   license: MIT
   name: Wikipedia Pageviews
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-wikipedia-pageviews
   registries:
     cloud:
       enabled: true
@@ -16,8 +20,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/wikipedia-pageviews
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
