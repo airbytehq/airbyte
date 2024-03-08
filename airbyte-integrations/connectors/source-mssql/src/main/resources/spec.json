@@ -114,13 +114,76 @@
           }
         ]
       },
+      "auth_method": {
+        "title": "Authentication",
+        "type": "object",
+        "description": "The authentication method to connect with the database.",
+        "order": 8,
+        "oneOf": [
+          {
+            "title": "SQL Server Authentication",
+            "description": "Authenticate directly with SQL Server credentials",
+            "required": ["auth_method"],
+            "properties": {
+              "ssl_method": {
+                "type": "string",
+                "const": "SqlPassword"
+              }
+            }
+          },
+          {
+            "title": "Active Directory - Integrated",
+            "description": "Authenticate via Integrated Azure Active Directory",
+            "required": ["auth_method"],
+            "properties": {
+              "ssl_method": {
+                "type": "string",
+                "const": "ActiveDirectoryIntegrated"
+              }
+            }
+          },
+          {
+            "title": "Active Directory - MFA",
+            "description": "Authenticate via Multi Factor Azure Active Directory",
+            "required": ["auth_method"],
+            "properties": {
+              "auth_method": {
+                "type": "string",
+                "const": "ActiveDirectoryInteractive"
+              }
+            }
+          },
+          {
+            "title": "Active Directory - MSI",
+            "description": "Authenticate via MSI Azure Active Directory",
+            "required": ["auth_method"],
+            "properties": {
+              "auth_method": {
+                "type": "string",
+                "const": "ActiveDirectoryMSI"
+              }
+            }
+          },
+          {
+            "title": "Active Directory - Password",
+            "description": "Authenticate via Username and Password from Azure Active Directory",
+            "required": ["auth_method"],
+            "properties": {
+              "auth_method": {
+                "type": "string",
+                "const": "ActiveDirectoryPassword"
+              }
+            }
+          }
+        ]
+      },
       "replication_method": {
         "type": "object",
         "title": "Update Method",
         "description": "Configures how data is extracted from the database.",
         "default": "CDC",
         "display_type": "radio",
-        "order": 8,
+        "order": 9,
         "oneOf": [
           {
             "title": "Read Changes using Change Data Capture (CDC)",
