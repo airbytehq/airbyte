@@ -1676,6 +1676,17 @@ streams:
               type: object
             type: array
         type: object
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "last_edited_time"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%SZ'))}}"
+      step: "P100Y"
+      cursor_granularity: "PT0.1S"
     retriever:
       type: SimpleRetriever
       requester:
@@ -1711,6 +1722,9 @@ streams:
         request_body_json: {}
       record_selector:
         type: RecordSelector
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_notion.components.NotionSemiIncrementalFilter    
         extractor:
           type: DpathExtractor
           field_path:
@@ -1739,7 +1753,7 @@ streams:
                 type: RequestOption
                 field_name: block_id
                 inject_into: request_parameter
-              partition_field: parent_id
+              partition_field: id
               stream:
                 type: DeclarativeStream
                 name: pages
