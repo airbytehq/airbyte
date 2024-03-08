@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.68.4
+low-code: update cartesian stream slice to emit typed StreamSlice
+
+## 0.68.3
+Low-code: adding a default value if a stream slice is None during read_records
+
+## 0.68.2
+low-code: remove parent cursor compoent from incremental substreams' state message
+
+## 0.68.1
+no-op republish of 0.68.0
+
+## 0.68.0
+low-code: Allow page size to be defined with string interpolation
+
+## 0.67.3
+CDK: upgrade pyarrow
+
+## 0.67.2
+File CDK: Update parquet parser to handle values that resolve to None
+
+## 0.67.1
+Fix handling of tab-separated CSVs
+
+## 0.67.0
+Low-code: Add CustomRecordFilter
+
+## 0.66.0
+Low-code: Add interpolation for request options
+
 ## 0.65.0
 low-code: Allow connectors to ignore stream slicer request options on paginated requests
 

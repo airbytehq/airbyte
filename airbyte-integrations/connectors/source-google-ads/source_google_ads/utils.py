@@ -83,6 +83,9 @@ def traced_exception(ga_exception: Union[GoogleAdsException, Unauthenticated], c
                 f"Ensure the customer is linked to your manager account or check your permissions to access this customer account."
             )
 
+        elif is_error_type(authentication_error, AuthenticationErrorEnum.AuthenticationError.TWO_STEP_VERIFICATION_NOT_ENROLLED):
+            message = "An account administrator changed this account's authentication settings. To access this Google Ads account, enable 2-Step Verification in your Google account at https://www.google.com/landing/2step"
+
         # If the error is encountered in the internally used class `ServiceAccounts`, an exception is raised.
         # For other classes, the error is logged and skipped to prevent sync failure. See: https://github.com/airbytehq/airbyte/issues/12486
         elif is_error_type(authorization_error, AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED):

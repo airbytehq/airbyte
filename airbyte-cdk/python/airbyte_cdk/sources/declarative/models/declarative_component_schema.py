@@ -152,6 +152,20 @@ class CustomRecordExtractor(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class CustomRecordFilter(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['CustomRecordFilter']
+    class_name: str = Field(
+        ...,
+        description='Fully-qualified name of the class that will be implementing the custom record filter strategy. The format is `source_<name>.<package>.<class_name>`.',
+        examples=['source_railz.components.MyCustomCustomRecordFilter'],
+        title='Class Name',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class CustomRequester(BaseModel):
     class Config:
         extra = Extra.allow
@@ -530,10 +544,10 @@ class OffsetIncrement(BaseModel):
 
 class PageIncrement(BaseModel):
     type: Literal['PageIncrement']
-    page_size: Optional[int] = Field(
+    page_size: Optional[Union[int, str]] = Field(
         None,
         description='The number of records to include in each pages.',
-        examples=[100, '100'],
+        examples=[100, '100', "{{ config['page_size'] }}"],
         title='Page Size',
     )
     start_from_page: Optional[int] = Field(
@@ -581,7 +595,7 @@ class RemoveFields(BaseModel):
     type: Literal['RemoveFields']
     condition: Optional[str] = Field(
         '',
-        description="The predicate to filter a property by a property value. Property will be removed if it is empty OR expression is evaluated to True.",
+        description='The predicate to filter a property by a property value. Property will be removed if it is empty OR expression is evaluated to True.,',
         examples=[
             "{{ property|string == '' }}",
             '{{ property is integer }}',
@@ -1029,7 +1043,7 @@ class ListPartitionRouter(BaseModel):
 class RecordSelector(BaseModel):
     type: Literal['RecordSelector']
     extractor: Union[CustomRecordExtractor, DpathExtractor]
-    record_filter: Optional[RecordFilter] = Field(
+    record_filter: Optional[Union[CustomRecordFilter, RecordFilter]] = Field(
         None,
         description='Responsible for filtering records to be emitted by the Source.',
         title='Record Filter',
