@@ -7,11 +7,11 @@ package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
-import java.util.*
 import org.jooq.Condition
 import org.jooq.DataType
 import org.jooq.Field
 import org.jooq.SQLDialect
+import java.util.*
 
 /**
  * Some Destinations do not support Typing and Deduping but have the updated raw table format
@@ -39,7 +39,7 @@ class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransfo
 
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): List<Field<*>>? {
         throw NotImplementedError("This Destination does not support final tables")
     }
@@ -54,7 +54,7 @@ class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransfo
 
     override fun getRowNumber(
         primaryKey: List<ColumnId>,
-        cursorField: Optional<ColumnId>
+        cursorField: Optional<ColumnId>,
     ): Field<Int>? {
         throw NotImplementedError("This Destination does not support final tables")
     }
