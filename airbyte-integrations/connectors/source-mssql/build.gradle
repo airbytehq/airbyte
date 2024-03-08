@@ -28,7 +28,7 @@ dependencies {
     implementation 'io.debezium:debezium-embedded:2.4.0.Final'
     implementation 'io.debezium:debezium-connector-sqlserver:2.4.0.Final'
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
-
+    implementation 'com.microsoft.azure:msal4j:1.14.0'
     testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'
 
     testImplementation 'org.awaitility:awaitility:4.2.0'
