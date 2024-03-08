@@ -158,7 +158,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     url_base = "https://r.applovin.com/"
     report_type = ""
     cursor_field = "day"
-    page_size = 100000
+    page_size = 50000
 
     def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
         self.config = config
@@ -243,7 +243,7 @@ class PublisherReports(ApplovinIncrementalMetricsStream):
 class AdvertiserReports(ApplovinIncrementalMetricsStream):
     report_type = "advertiser"
     primary_key = ["ad_id"]
-    page_size = 500000
+    page_size = 100000
 
     def path(self, **kwargs) -> str:
         return "report"
