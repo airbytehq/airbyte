@@ -1487,7 +1487,6 @@ empty_schema_inference_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
-    .set_expected_records([])
 ).build()
 
 schemaless_csv_scenario: TestScenario[InMemoryFilesSource] = (
@@ -3046,6 +3045,5 @@ earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
             ]
         }
     )
-    .set_expected_records([])
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()
