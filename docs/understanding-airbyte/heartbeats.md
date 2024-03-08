@@ -1,11 +1,11 @@
 # Heartbeats
 
-Many transient issues, especially for long jobs, can occur when moving data. One class of issues is an unresponsive Source or Destination. In this case, the fix is often a simple restart.
+Many transient issues can occur when moving data. One class of issues is an unresponsive Source or Destination. In this case, the fix is often a simple restart.
 
-Airbyte aims to make restarts as automated as possible and uses a heartbeating mechanism to do so. Airbyte monitors for responses from the Sources and Destination,
-interpreting these as 'heartbeats'.
+Airbyte aims to make restarts as automated as possible and uses a heartbeating mechanism to do so.
 
-If the Source or Destination does not heartbeat within a certain time frame, Airbyte automatically triggers a heartbeat error and restarts the job. 
+Airbyte monitors for responses from the Sources and Destination, interpreting these as 'heartbeats'. If the Source or Destination does not heartbeat within
+a certain time frame, Airbyte triggers a heartbeat error and automatically restarts the job.
 
 Heartbeats are a final catch-all mechanism. Errors are expected to be transient and should automatically resolve. If they do not, it is likely a sign of a more serious issue.
 In these cases, Airbyte takes the more conservative approach. Airbyte restarts the job to avoid a seemingly endless job, and highlight to users the existence of a potential issue.
