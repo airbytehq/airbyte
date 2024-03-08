@@ -42,7 +42,7 @@ spec:
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:
           - "2020-12-01T00:00:00Z"
-      lookback_window:
+      lookback_window_in_days:
         type: integer
         order: 5
         title: Lookback Window
@@ -289,7 +289,7 @@ definitions:
       start_time_option:
         $ref: "#/definitions/incremental_sync/start_time_option"
         field_name: "created_since"
-      lookback_window: "P{{ config['lookback_window'] or 14 }}D"
+      lookback_window: "P{{ config['lookback_window_in_days'] or 14 }}D"
     $parameters:
       name: "satisfaction_ratings"
       primary_key: "id"
