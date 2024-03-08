@@ -14,8 +14,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
-      # - config_path: "secrets/service_account_config.json"
-      #   status: "succeed"
+      - config_path: "secrets/service_account_config.json"
+        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
@@ -35,10 +35,6 @@ acceptance_tests:
             bypass_reason: "Cannot authenticate endpoint with current sandbox credentials"
           - name: search_analytics_keyword_page_report
             bypass_reason: "Cannot authenticate endpoint with current sandbox credentials"
-          # - name: search_analytics_site_report_by_page
-          #   bypass_reason: "Cannot authenticate endpoint with current sandbox credentials"
-          # - name: search_analytics_site_report_by_site
-          #   bypass_reason: "Fast changing data"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
