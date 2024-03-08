@@ -40,8 +40,8 @@ class TimeTriggerTest {
                 flusher,
                 mockedNowProvider,
             )
-        Assertions.assertEquals(false, detect.isTimeTriggered(NOW_MS).getLeft())
-        Assertions.assertEquals(false, detect.isTimeTriggered(NOW_MS - ONE_SEC).getLeft())
-        Assertions.assertEquals(true, detect.isTimeTriggered(NOW_MS - FIVE_MIN).getLeft())
+        Assertions.assertEquals(false, detect.isTimeTriggered(NOW_MS).first)
+        Assertions.assertEquals(false, detect.isTimeTriggered(NOW_MS - ONE_SEC).first)
+        Assertions.assertEquals(true, detect.isTimeTriggered(NOW_MS - FIVE_MIN).first)
     }
 }

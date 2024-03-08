@@ -276,7 +276,8 @@ constructor(
 
     companion object {
 
-        // This is to account for the references when deserialization to a PartialAirbyteMessage. The
+        // This is to account for the references when deserialization to a PartialAirbyteMessage.
+        // The
         // calculation is as follows:
         // PartialAirbyteMessage (4) + Max( PartialRecordMessage(4), PartialStateMessage(6)) with
         // PartialStateMessage being larger with more nested objects within it. Using 8 bytes as we
@@ -290,8 +291,8 @@ constructor(
         ) {
             throw IllegalArgumentException(
                 "Message contained record from a stream that was not in the catalog. " +
-                        "\ncatalog: ${Jsons.serialize(catalog)}, " +
-                        "\nmessage: ${Jsons.serialize(message)}",
+                    "\ncatalog: ${Jsons.serialize(catalog)}, " +
+                    "\nmessage: ${Jsons.serialize(message)}",
             )
         }
     }

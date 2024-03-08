@@ -5,8 +5,6 @@
 package io.airbyte.cdk.integrations.destination.async
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.collect.ImmutableMap
-import com.google.common.collect.Lists
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
@@ -312,10 +310,7 @@ class AsyncStreamConsumerTest {
         }
         executor.shutdownNow()
 
-        Assertions.assertTrue(
-            recordCount.get() < 1000,
-            String.format("Record count was %s", recordCount.get()),
-        )
+        Assertions.assertTrue(recordCount.get() < 1000, "Record count was ${recordCount.get()}")
     }
 
     @Test
@@ -343,9 +338,8 @@ class AsyncStreamConsumerTest {
     internal fun deserializeAirbyteMessageWithBigDecimalAirbyteRecord() {
         val payload =
             Jsons.jsonNode(
-                java.util.Map.of(
-                    "foo",
-                    BigDecimal("1234567890.1234567890"),
+                mapOf(
+                    "foo" to BigDecimal("1234567890.1234567890"),
                 ),
             )
         val airbyteMessage =
@@ -507,17 +501,15 @@ class AsyncStreamConsumerTest {
 
     // NOTE: Generates records at chunks of 160 bytes
     private fun generateRecords(targetSizeInBytes: Long): List<AirbyteMessage> {
-        val output: MutableList<AirbyteMessage> = Lists.newArrayList()
+        val output: MutableList<AirbyteMessage> = mutableListOf()
         var bytesCounter: Long = 0
         var i = 0
         while (true) {
             val payload =
                 Jsons.jsonNode(
-                    ImmutableMap.of(
-                        "id",
-                        RandomStringUtils.randomAlphabetic(7),
-                        "name",
-                        "human " + String.format("%8d", i),
+                    mapOf(
+                        "id" to RandomStringUtils.randomAlphabetic(7),
+                        "name" to "human " + String.format("%8d", i),
                     ),
                 )
             val sizeInBytes = RecordSizeEstimator.getStringByteSize(payload)

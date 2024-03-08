@@ -22,11 +22,11 @@ private val logger = KotlinLogging.logger {}
  * interface has a lot of methods to override, and we don't want to spend the time overriding a lot
  * of methods that won't be used. By hiding the queue, we avoid someone accidentally using a queue
  * method that has not been modified. If you need access to another of the queue methods, pattern
- * match adding the memory tracking as seen in [HiddenQueue], and then delegate to that method
- * from this top-level class.
+ * match adding the memory tracking as seen in [HiddenQueue], and then delegate to that method from
+ * this top-level class.
  *
- * @param <E> type in the queue
-</E> */
+ * @param <E> type in the queue </E>
+ */
 class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
     private val hiddenQueue = HiddenQueue<E?>(maxMemoryUsage)
 
@@ -73,13 +73,12 @@ class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
         get() = hiddenQueue.getMaxMemoryUsage()
 
     /**
-     * Extends LinkedBlockingQueue so that we can get a LinkedBlockingQueue bounded by memory. Hidden as
-     * an inner class, so it doesn't get misused, see top-level javadoc comment.
+     * Extends LinkedBlockingQueue so that we can get a LinkedBlockingQueue bounded by memory.
+     * Hidden as an inner class, so it doesn't get misused, see top-level javadoc comment.
      *
-     * @param <E>
-     </E> */
-    private class HiddenQueue<E>(maxMemoryUsage: Long) :
-        LinkedBlockingQueue<MemoryItem<E>?>() {
+     * @param <E> </E>
+     */
+    private class HiddenQueue<E>(maxMemoryUsage: Long) : LinkedBlockingQueue<MemoryItem<E>?>() {
         val currentMemoryUsage: AtomicLong = AtomicLong(0)
         val maxMemoryUsage: AtomicLong = AtomicLong(maxMemoryUsage)
 

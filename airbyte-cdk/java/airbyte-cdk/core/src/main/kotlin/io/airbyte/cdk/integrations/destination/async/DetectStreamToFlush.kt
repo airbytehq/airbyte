@@ -101,7 +101,8 @@ internal constructor(
             val isTimeTriggeredResult = isTimeTriggered(latestFlushTimeMs)
             val isSizeTriggeredResult = isSizeTriggered(stream, queueSizeThresholdBytes)
 
-            val debugString = "trigger info: ${stream.namespace} - ${stream.name}, " +
+            val debugString =
+                "trigger info: ${stream.namespace} - ${stream.name}, " +
                     "${isTimeTriggeredResult.second} , ${isSizeTriggeredResult.second}"
             logger.debug { "computed: $debugString" }
 
@@ -162,7 +163,8 @@ internal constructor(
         val queueSizeAfterRunningWorkers = currentQueueSize - sizeOfRunningWorkersEstimate
         val isSizeTriggered = queueSizeAfterRunningWorkers > queueSizeThresholdBytes
 
-        val debugString = "size trigger: $isSizeTriggered " +
+        val debugString =
+            "size trigger: $isSizeTriggered " +
                 "current threshold b: ${AirbyteFileUtils.byteCountToDisplaySize(queueSizeThresholdBytes)}, " +
                 "queue size b: ${AirbyteFileUtils.byteCountToDisplaySize(currentQueueSize)}, " +
                 "penalty b: ${AirbyteFileUtils.byteCountToDisplaySize(sizeOfRunningWorkersEstimate)}, " +

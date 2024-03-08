@@ -14,9 +14,6 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.apache.commons.io.FileUtils
-import org.apache.commons.lang3.tuple.ImmutablePair
-import org.apache.mina.util.ConcurrentHashSet
 import java.time.Instant
 import java.util.Optional
 import java.util.UUID
@@ -25,6 +22,8 @@ import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
+import org.apache.commons.io.FileUtils
+import org.apache.mina.util.ConcurrentHashSet
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,43 +43,41 @@ private val logger = KotlinLogging.logger {}
  * tricky. Because we don't know the stream type to begin with, we always assume PER_STREAM until
  * the first state message arrives. If this state message is a GLOBAL state, we alias all existing
  * state ids to a single global state id via a set of alias ids. From then onwards, we use one id -
- * [.SENTINEL_GLOBAL_DESC] regardless of stream. Read
- * [.convertToGlobalIfNeeded] for more detail.
+ * [.SENTINEL_GLOBAL_DESC] regardless of stream. Read [.convertToGlobalIfNeeded] for more detail.
  */
 class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
-    /**
-     * Memory that the manager has allocated to it to use. It can ask for more memory as needed.
-     */
+    /** Memory that the manager has allocated to it to use. It can ask for more memory as needed. */
     private val memoryAllocated: AtomicLong = AtomicLong(memoryManager.requestMemory())
 
-    /**
-     * Memory that the manager is currently using.
-     */
+    /** Memory that the manager is currently using. */
     private val memoryUsed: AtomicLong = AtomicLong()
 
     private var preState: Boolean = true
-    private val descToStateIdQ: ConcurrentMap<StreamDescriptor, LinkedBlockingDeque<Long>> = ConcurrentHashMap()
-
-    /**
-     * Both [stateIdToCounter] and [stateIdToCounterForPopulatingDestinationStats] are used
-     * to maintain a counter for the number of records associated with a give state i.e. before a state
-     * was received, how many records were seen until that point. As records are received the value for
-     * both are incremented. The difference is the purpose of the two attributes.
-     * [stateIdToCounter] is used to determine whether a state is safe to emit or not. This is
-     * done by decrementing the value as records are committed to the destination. If the value hits 0,
-     * it means all the records associated with a given state have been committed to the destination, it
-     * is safe to emit the state back to platform. But because of this we can't use it to determine the
-     * actual number of records that are associated with a state to update the value of
-     * [AirbyteStateMessage.destinationStats] at the time of emitting the state message. That's
-     * where we need [stateIdToCounterForPopulatingDestinationStats], which is only reset when a
-     * state message has been emitted.
-     */
-    private val stateIdToCounter: ConcurrentMap<Long, AtomicLong> = ConcurrentHashMap()
-    private val stateIdToCounterForPopulatingDestinationStats: ConcurrentMap<Long, AtomicLong> = ConcurrentHashMap()
-    private val stateIdToState: ConcurrentMap<Long, ImmutablePair<StateMessageWithArrivalNumber, Long>> =
+    private val descToStateIdQ: ConcurrentMap<StreamDescriptor, LinkedBlockingDeque<Long>> =
         ConcurrentHashMap()
 
-    // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to one
+    /**
+     * Both [stateIdToCounter] and [stateIdToCounterForPopulatingDestinationStats] are used to
+     * maintain a counter for the number of records associated with a give state i.e. before a state
+     * was received, how many records were seen until that point. As records are received the value
+     * for both are incremented. The difference is the purpose of the two attributes.
+     * [stateIdToCounter] is used to determine whether a state is safe to emit or not. This is done
+     * by decrementing the value as records are committed to the destination. If the value hits 0,
+     * it means all the records associated with a given state have been committed to the
+     * destination, it is safe to emit the state back to platform. But because of this we can't use
+     * it to determine the actual number of records that are associated with a state to update the
+     * value of [AirbyteStateMessage.destinationStats] at the time of emitting the state message.
+     * That's where we need [stateIdToCounterForPopulatingDestinationStats], which is only reset
+     * when a state message has been emitted.
+     */
+    private val stateIdToCounter: ConcurrentMap<Long, AtomicLong> = ConcurrentHashMap()
+    private val stateIdToCounterForPopulatingDestinationStats: ConcurrentMap<Long, AtomicLong> =
+        ConcurrentHashMap()
+    private val stateIdToState: ConcurrentMap<Long, Pair<StateMessageWithArrivalNumber, Long>> =
+        ConcurrentHashMap()
+
+    // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to
+    // one
     // single global id.
     // This only happens once.
     private val aliasIds: MutableSet<Long> = ConcurrentHashSet()
@@ -173,13 +170,13 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                     // This can be if you call the flush method if there are 0 records/states
                     val oldestStateCounter: AtomicLong = stateIdToCounter[oldestStateId] ?: break
 
-                    val oldestState: ImmutablePair<StateMessageWithArrivalNumber, Long> =
+                    val oldestState: Pair<StateMessageWithArrivalNumber, Long> =
                         stateIdToState[oldestStateId] ?: break
                     // no state to flush for this stream
 
                     val allRecordsCommitted: Boolean = oldestStateCounter.get() == 0L
                     if (allRecordsCommitted) {
-                        val stateMessage: StateMessageWithArrivalNumber = oldestState.getLeft()
+                        val stateMessage: StateMessageWithArrivalNumber = oldestState.first
                         val flushedRecordsAssociatedWithState: Double =
                             stateIdToCounterForPopulatingDestinationStats[oldestStateId]!!
                                 .toDouble()
@@ -196,7 +193,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                             AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState)
                         outputRecordCollector.accept(message)
 
-                        bytesFlushed += oldestState.getRight()
+                        bytesFlushed += oldestState.second
 
                         // cleanup
                         entry.value!!.poll()
@@ -260,15 +257,18 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     private fun freeBytes(bytesFlushed: Long) {
         logger.debug {
             "Bytes flushed memory to store state message. Allocated: " +
-                    "${FileUtils.byteCountToDisplaySize(memoryAllocated.get())}, " +
-                    "Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, " +
-                    "Flushed: ${FileUtils.byteCountToDisplaySize(bytesFlushed)}, " +
-                    "% Used: ${memoryUsed.get().toDouble() / memoryAllocated.get()}" }
+                "${FileUtils.byteCountToDisplaySize(memoryAllocated.get())}, " +
+                "Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, " +
+                "Flushed: ${FileUtils.byteCountToDisplaySize(bytesFlushed)}, " +
+                "% Used: ${memoryUsed.get().toDouble() / memoryAllocated.get()}"
+        }
 
         memoryManager.free(bytesFlushed)
         memoryAllocated.addAndGet(-bytesFlushed)
         memoryUsed.addAndGet(-bytesFlushed)
-        logger.debug { "Returned ${FileUtils.byteCountToDisplaySize(bytesFlushed)} of memory back to the memory manager." }
+        logger.debug {
+            "Returned ${FileUtils.byteCountToDisplaySize(bytesFlushed)} of memory back to the memory manager."
+        }
     }
 
     private fun convertToGlobalIfNeeded(message: PartialAirbyteMessage) {
@@ -343,7 +343,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         synchronized(lock) {
             logger.debug { "State with arrival number $arrivalNumber received" }
             stateIdToState[getStateId(resolvedDescriptor)] =
-                ImmutablePair.of(
+                Pair(
                     StateMessageWithArrivalNumber(
                         message,
                         arrivalNumber,
@@ -367,13 +367,15 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
             while (memoryAllocated.get() < memoryUsed.get() + sizeInBytes) {
                 memoryAllocated.addAndGet(memoryManager.requestMemory())
                 try {
-                    logger.debug { "Insufficient memory to store state message. " +
+                    logger.debug {
+                        "Insufficient memory to store state message. " +
                             "Allocated: ${FileUtils.byteCountToDisplaySize(memoryAllocated.get())}, " +
                             "Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, " +
                             "Size of State Msg: ${FileUtils.byteCountToDisplaySize(sizeInBytes)}, " +
                             "Needed: ${FileUtils.byteCountToDisplaySize(
                                 sizeInBytes - (memoryAllocated.get() - memoryUsed.get()),
-                            )}" }
+                            )}"
+                    }
                     Thread.sleep(1000)
                 } catch (e: InterruptedException) {
                     throw RuntimeException(e)

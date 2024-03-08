@@ -16,9 +16,9 @@ import java.util.function.Consumer
  * The contained stream **IS EXPECTED to be a BOUNDED** stream. Returning a boundless stream has
  * undefined behaviour.
  *
- * Once done, consumers **MUST** invoke [.close]. As the [.batch] has already been
- * retrieved from in-memory buffers, we need to update [GlobalMemoryManager] to reflect the
- * freed up memory and avoid memory leaks.
+ * Once done, consumers **MUST** invoke [.close]. As the [.batch] has already been retrieved from
+ * in-memory buffers, we need to update [GlobalMemoryManager] to reflect the freed up memory and
+ * avoid memory leaks.
  */
 class MemoryAwareMessageBatch(
     val data: List<StreamAwareQueue.MessageWithMeta>,
@@ -32,8 +32,8 @@ class MemoryAwareMessageBatch(
     }
 
     /**
-     * For the batch, marks all the states that have now been flushed. Also writes the states that can
-     * be flushed back to platform via stateManager.
+     * For the batch, marks all the states that have now been flushed. Also writes the states that
+     * can be flushed back to platform via stateManager.
      */
     fun flushStates(
         stateIdToCount: Map<Long?, Long?>,
