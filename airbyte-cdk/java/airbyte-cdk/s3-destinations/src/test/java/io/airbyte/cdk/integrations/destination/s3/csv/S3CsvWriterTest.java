@@ -41,12 +41,16 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.csv.CSVFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.MockedConstruction;
 
+@Timeout(value = 90,
+         unit = TimeUnit.SECONDS)
 class S3CsvWriterTest {
 
   public static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
@@ -284,13 +288,10 @@ class S3CsvWriterTest {
     // carriage returns are required b/c RFC4180 requires it :(
     // Dynamically generate the timestamp because we generate in local time.
     assertEquals(
-        String.format(
-            """
-            f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",%s\r
-            2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",%s\r
-            """,
-            Timestamp.from(Instant.ofEpochMilli(1234)),
-            Timestamp.from(Instant.ofEpochMilli(2345))),
+        """
+        f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",1970-01-01T00:00:01.234Z\r
+        2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",1970-01-01T00:00:02.345Z\r
+        """,
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
   }
 

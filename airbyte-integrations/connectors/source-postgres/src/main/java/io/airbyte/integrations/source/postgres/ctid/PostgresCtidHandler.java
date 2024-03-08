@@ -10,15 +10,17 @@ import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterat
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.PostgresType;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.RowDataWithCtid;
-import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -109,7 +111,7 @@ public class PostgresCtidHandler {
             tablesMaxTuple.orElseGet(() -> Map.of(pair, -1)).get(pair));
         final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
+        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
         final AutoCloseableIterator<AirbyteMessage> logAugmented = augmentWithLogs(recordAndMessageIterator, pair, streamName);
         iteratorList.add(logAugmented);
 
@@ -165,21 +167,20 @@ public class PostgresCtidHandler {
   }
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator,
-                                                                 final AirbyteStreamNameNamespacePair pair) {
+                                                                 final ConfiguredAirbyteStream airbyteStream) {
 
-    final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(pair);
-    final JsonNode incrementalState =
-        (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
-            : currentCtidStatus.getIncrementalState();
     final Duration syncCheckpointDuration =
         config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
-            : CtidStateIterator.SYNC_CHECKPOINT_DURATION;
+            : DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
-        : CtidStateIterator.SYNC_CHECKPOINT_RECORDS;
+        : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
+    ctidStateManager.setStreamStateIteratorFields(streamStateForIncrementalRunSupplier, fileNodeHandler);
+
+    final AirbyteStreamNameNamespacePair pair =
+        new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
     return AutoCloseableIterators.transformIterator(
-        r -> new CtidStateIterator(r, pair, fileNodeHandler, ctidStateManager, incrementalState,
-            syncCheckpointDuration, syncCheckpointRecords),
+        r -> new SourceStateIterator(r, airbyteStream, ctidStateManager, new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
         recordIterator, pair);
   }
 

@@ -11,6 +11,8 @@ public class DebeziumIteratorConstants {
   public static final String SYNC_CHECKPOINT_DURATION_PROPERTY = "sync_checkpoint_seconds";
   public static final String SYNC_CHECKPOINT_RECORDS_PROPERTY = "sync_checkpoint_records";
 
+  // TODO: Move these variables to a separate class IteratorConstants, as they will be used in state
+  // iterators for non debezium cases too.
   public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
   public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
 

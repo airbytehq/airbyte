@@ -15,7 +15,7 @@ def generateComponentManifestClassFiles = tasks.register('generateComponentManif
 generateComponentManifestClassFiles.configure {
     dependsOn generateCodeGeneratorImage
 }
-tasks.register('generate').configure {
+tasks.named('assemble').configure {
     dependsOn generateComponentManifestClassFiles
 }
 

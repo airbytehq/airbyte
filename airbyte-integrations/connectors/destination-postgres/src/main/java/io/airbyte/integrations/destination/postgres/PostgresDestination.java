@@ -14,20 +14,26 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDestinationHandler;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
-import java.io.UnsupportedEncodingException;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresState;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,12 +100,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
     String encodedDatabase = config.get(JdbcUtils.DATABASE_KEY).asText();
     if (encodedDatabase != null) {
-      try {
-        encodedDatabase = URLEncoder.encode(encodedDatabase, "UTF-8");
-      } catch (final UnsupportedEncodingException e) {
-        // Should never happen
-        e.printStackTrace();
-      }
+      encodedDatabase = URLEncoder.encode(encodedDatabase, StandardCharsets.UTF_8);
     }
     final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
         config.get(JdbcUtils.HOST_KEY).asText(),
@@ -128,11 +129,17 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
+  protected JdbcDestinationHandler<PostgresState> getDestinationHandler(String databaseName, JdbcDatabase database, String rawTableSchema) {
+    return new PostgresDestinationHandler(databaseName, database, rawTableSchema);
+  }
+
+  @Override
   public boolean isV2Destination() {
     return true;
   }
 
   public static void main(final String[] args) throws Exception {
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(PSQLException.class);
     final Destination destination = PostgresDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", PostgresDestination.class);
     new IntegrationRunner(destination).run(args);

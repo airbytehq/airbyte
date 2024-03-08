@@ -47,12 +47,56 @@
             "type": "object"
           }
         },
+        "created": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
         "updated": {
           "type": ["null", "string"],
           "format": "date-time"
         },
         "timetracking": {
           "type": ["null", "object"]
+        },
+        "status": {
+          "type": ["null", "object"],
+          "properties": {
+            "description": {
+              "type": ["null", "string"]
+            },
+            "iconUrl": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "statusCategory": {
+              "type": ["null", "object"],
+              "properties": {
+                "colorName": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "integer"]
+                },
+                "key": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "self": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
         }
       }
     },
