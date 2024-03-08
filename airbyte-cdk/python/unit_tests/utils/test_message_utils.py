@@ -80,11 +80,12 @@ def test_get_state_message_stream_descriptor_no_namespace():
 
 def test_get_other_message_stream_descriptor_fails():
     message = AirbyteMessage(
-    type=Type.CONTROL,
-    control=AirbyteControlMessage(
-        type=OrchestratorType.CONNECTOR_CONFIG,
-        emitted_at=10,
-        connectorConfig=AirbyteControlConnectorConfigMessage(config={"any config": "a config value"}),
-    ))
+        type=Type.CONTROL,
+        control=AirbyteControlMessage(
+            type=OrchestratorType.CONNECTOR_CONFIG,
+            emitted_at=10,
+            connectorConfig=AirbyteControlConnectorConfigMessage(config={"any config": "a config value"}),
+        ),
+    )
     with pytest.raises(NotImplementedError):
         get_stream_descriptor(message)
