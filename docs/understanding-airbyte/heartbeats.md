@@ -1,8 +1,8 @@
 # Heartbeats
 
-Many transient things can go wrong when moving data, especially for long jobs. Often the fix is a simple restart.
+Many transient issues can occur when moving data, especially for long jobs. Often the fix is a simple restart.
 
-Airbyte aims to make restarts as automated as possible and uses heartbeating mechanism to do so. This is performed on 2 different components: the source and the destination.
+Airbyte aims to make restarts as automated as possible and uses a heartbeating mechanism to do so. This is performed on 2 different components: the source and the destination.
 
 Heartbeat errors are expected to be transient and should automatically resolve. If they do not, it is likely a sign of a more serious issue.
 
@@ -16,7 +16,9 @@ Possible reasons for this issue:
 4. Destinations can be slow to respond to write requests.
    1. The most common reason we see here is destination resource availability vis-a-vis data volumes.
 
-Database Sources and Destination errors are unexpected. Any issues are likely to be indicative of actual issues and need to be investigated.
+In general,
+* **Database Sources and Destination errors are extremely rare**. Any issues are likely to be indicative of actual issues and need to be investigated.
+* **API Sources errors are uncommon but not unexpected**. This is especially true if an API source generates asynchronous responses or has rate limits.
 
 ## Airbyte Cloud
 Airbyte Cloud has identical heartbeat monitoring and alerting as Airbyte Open Source. 
