@@ -40,5 +40,6 @@ data:
         upgradeDeadline: "2023-09-25"
   supportLevel: certified
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"
