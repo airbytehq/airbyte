@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.integrations.destination.dest_state_lifecycle_manager;
 
-import com.amazonaws.util.StringUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -50,7 +49,8 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
     Preconditions.checkArgument(message.getState().getType() == AirbyteStateType.STREAM);
     final StreamDescriptor originalStreamId = message.getState().getStream().getStreamDescriptor();
     final StreamDescriptor actualStreamId;
-    if (StringUtils.isNullOrEmpty(originalStreamId.getNamespace())) {
+    final String namespace = originalStreamId.getNamespace();
+    if (namespace == null || namespace.isEmpty()) {
       // If the state's namespace is null/empty, we need to be able to find it using the default namespace
       // (because many destinations actually set records' namespace to the default namespace before
       // they make it into this class).

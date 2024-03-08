@@ -1,141 +1,10 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/weaviate",
   "connectionSpecification": {
-    "title": "Weaviate Destination Config",
+    "title": "Destination Config",
+    "description": "The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,\nas well as to provide type safety for the configuration passed to the destination.\n\nThe configuration model is composed of four parts:\n* Processing configuration\n* Embedding configuration\n* Indexing configuration\n* Advanced configuration\n\nProcessing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.",
     "type": "object",
     "properties": {
-      "processing": {
-        "title": "ProcessingConfigModel",
-        "type": "object",
-        "properties": {
-          "chunk_size": {
-            "title": "Chunk size",
-            "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
-            "maximum": 8191,
-            "type": "integer"
-          },
-          "chunk_overlap": {
-            "title": "Chunk overlap",
-            "description": "Size of overlap between chunks in tokens to store in vector store to better capture relevant context",
-            "default": 0,
-            "type": "integer"
-          },
-          "text_fields": {
-            "title": "Text fields to embed",
-            "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
-            "default": [],
-            "always_show": true,
-            "examples": ["text", "user.name", "users.*.name"],
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "metadata_fields": {
-            "title": "Fields to store as metadata",
-            "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
-            "default": [],
-            "always_show": true,
-            "examples": ["age", "user", "user.name"],
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "text_splitter": {
-            "title": "Text splitter",
-            "description": "Split text fields into chunks based on the specified method.",
-            "type": "object",
-            "oneOf": [
-              {
-                "title": "By Separator",
-                "type": "object",
-                "properties": {
-                  "mode": {
-                    "title": "Mode",
-                    "default": "separator",
-                    "const": "separator",
-                    "enum": ["separator"],
-                    "type": "string"
-                  },
-                  "separators": {
-                    "title": "Separators",
-                    "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
-                    "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
-                    "type": "array",
-                    "items": { "type": "string" }
-                  },
-                  "keep_separator": {
-                    "title": "Keep separator",
-                    "description": "Whether to keep the separator in the resulting chunks",
-                    "default": false,
-                    "type": "boolean"
-                  }
-                },
-                "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
-              },
-              {
-                "title": "By Markdown header",
-                "type": "object",
-                "properties": {
-                  "mode": {
-                    "title": "Mode",
-                    "default": "markdown",
-                    "const": "markdown",
-                    "enum": ["markdown"],
-                    "type": "string"
-                  },
-                  "split_level": {
-                    "title": "Split level",
-                    "description": "Level of markdown headers to split text fields by. Headings down to the specified level will be used as split points",
-                    "default": 1,
-                    "minimum": 1,
-                    "maximum": 6,
-                    "type": "integer"
-                  }
-                },
-                "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
-              },
-              {
-                "title": "By Programming Language",
-                "type": "object",
-                "properties": {
-                  "mode": {
-                    "title": "Mode",
-                    "default": "code",
-                    "const": "code",
-                    "enum": ["code"],
-                    "type": "string"
-                  },
-                  "language": {
-                    "title": "Language",
-                    "description": "Split code in suitable places based on the programming language",
-                    "enum": [
-                      "cpp",
-                      "go",
-                      "java",
-                      "js",
-                      "php",
-                      "proto",
-                      "python",
-                      "rst",
-                      "ruby",
-                      "rust",
-                      "scala",
-                      "swift",
-                      "markdown",
-                      "latex",
-                      "html",
-                      "sol"
-                    ],
-                    "type": "string"
-                  }
-                },
-                "required": ["language"],
-                "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
-              }
-            ]
-          }
-        },
-        "required": ["chunk_size"],
-        "group": "processing"
-      },
       "embedding": {
         "title": "Embedding",
         "description": "Embedding configuration",
@@ -154,7 +23,8 @@
                 "type": "string"
               }
             },
-            "description": "Do not calculate and pass embeddings to Weaviate. Suitable for clusters with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search."
+            "description": "Do not calculate and pass embeddings to Weaviate. Suitable for clusters with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search.",
+            "required": ["mode"]
           },
           {
             "title": "Azure OpenAI",
@@ -186,7 +56,7 @@
                 "type": "string"
               }
             },
-            "required": ["openai_key", "api_base", "deployment"],
+            "required": ["openai_key", "api_base", "deployment", "mode"],
             "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -206,7 +76,7 @@
                 "type": "string"
               }
             },
-            "required": ["openai_key"],
+            "required": ["openai_key", "mode"],
             "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -226,7 +96,7 @@
                 "type": "string"
               }
             },
-            "required": ["cohere_key"],
+            "required": ["cohere_key", "mode"],
             "description": "Use the Cohere API to embed text."
           },
           {
@@ -253,7 +123,7 @@
                 "type": "integer"
               }
             },
-            "required": ["field_name", "dimensions"],
+            "required": ["field_name", "dimensions", "mode"],
             "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
           },
           {
@@ -268,7 +138,8 @@
                 "type": "string"
               }
             },
-            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.",
+            "required": ["mode"]
           },
           {
             "title": "OpenAI-compatible",
@@ -307,10 +178,181 @@
                 "type": "integer"
               }
             },
-            "required": ["base_url", "dimensions"],
+            "required": ["base_url", "dimensions", "mode"],
             "description": "Use a service that's compatible with the OpenAI API to embed text."
           }
         ]
+      },
+      "processing": {
+        "title": "ProcessingConfigModel",
+        "type": "object",
+        "properties": {
+          "chunk_size": {
+            "title": "Chunk size",
+            "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
+            "maximum": 8191,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "chunk_overlap": {
+            "title": "Chunk overlap",
+            "description": "Size of overlap between chunks in tokens to store in vector store to better capture relevant context",
+            "default": 0,
+            "type": "integer"
+          },
+          "text_fields": {
+            "title": "Text fields to embed",
+            "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
+            "default": [],
+            "always_show": true,
+            "examples": ["text", "user.name", "users.*.name"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata_fields": {
+            "title": "Fields to store as metadata",
+            "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
+            "default": [],
+            "always_show": true,
+            "examples": ["age", "user", "user.name"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "text_splitter": {
+            "title": "Text splitter",
+            "description": "Split text fields into chunks based on the specified method.",
+            "type": "object",
+            "oneOf": [
+              {
+                "title": "By Separator",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "separator",
+                    "const": "separator",
+                    "enum": ["separator"],
+                    "type": "string"
+                  },
+                  "separators": {
+                    "title": "Separators",
+                    "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
+                    "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "keep_separator": {
+                    "title": "Keep separator",
+                    "description": "Whether to keep the separator in the resulting chunks",
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc.",
+                "required": ["mode"]
+              },
+              {
+                "title": "By Markdown header",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "markdown",
+                    "const": "markdown",
+                    "enum": ["markdown"],
+                    "type": "string"
+                  },
+                  "split_level": {
+                    "title": "Split level",
+                    "description": "Level of markdown headers to split text fields by. Headings down to the specified level will be used as split points",
+                    "default": 1,
+                    "minimum": 1,
+                    "maximum": 6,
+                    "type": "integer"
+                  }
+                },
+                "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk.",
+                "required": ["mode"]
+              },
+              {
+                "title": "By Programming Language",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "code",
+                    "const": "code",
+                    "enum": ["code"],
+                    "type": "string"
+                  },
+                  "language": {
+                    "title": "Language",
+                    "description": "Split code in suitable places based on the programming language",
+                    "enum": [
+                      "cpp",
+                      "go",
+                      "java",
+                      "js",
+                      "php",
+                      "proto",
+                      "python",
+                      "rst",
+                      "ruby",
+                      "rust",
+                      "scala",
+                      "swift",
+                      "markdown",
+                      "latex",
+                      "html",
+                      "sol"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": ["language", "mode"],
+                "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
+              }
+            ]
+          },
+          "field_name_mappings": {
+            "title": "Field name mappings",
+            "description": "List of fields to rename. Not applicable for nested fields, but can be used to rename fields already flattened via dot notation.",
+            "default": [],
+            "type": "array",
+            "items": {
+              "title": "FieldNameMappingConfigModel",
+              "type": "object",
+              "properties": {
+                "from_field": {
+                  "title": "From field name",
+                  "description": "The field name in the source",
+                  "type": "string"
+                },
+                "to_field": {
+                  "title": "To field name",
+                  "description": "The field name to use in the destination",
+                  "type": "string"
+                }
+              },
+              "required": ["from_field", "to_field"]
+            }
+          }
+        },
+        "required": ["chunk_size"],
+        "group": "processing"
+      },
+      "omit_raw_text": {
+        "title": "Do not store raw text",
+        "description": "Do not store the text that gets embedded along with the vector and the metadata in the destination. If set to true, only the vector and the metadata will be stored - in this case raw text for LLM use cases needs to be retrieved from another source.",
+        "default": false,
+        "group": "advanced",
+        "type": "boolean"
       },
       "indexing": {
         "title": "Indexing",
@@ -347,7 +389,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["token"],
+                "required": ["token", "mode"],
                 "description": "Authenticate using an API token (suitable for Weaviate Cloud)"
               },
               {
@@ -375,7 +417,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["username", "password"],
+                "required": ["username", "password", "mode"],
                 "description": "Authenticate using username and password (suitable for self-managed Weaviate clusters)"
               },
               {
@@ -390,7 +432,8 @@
                     "type": "string"
                   }
                 },
-                "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)"
+                "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)",
+                "required": ["mode"]
               }
             ]
           },
@@ -404,6 +447,13 @@
             "title": "Text Field",
             "description": "The field in the object that contains the embedded text",
             "default": "text",
+            "type": "string"
+          },
+          "tenant_id": {
+            "title": "Tenant ID",
+            "description": "The tenant ID to use for multi tenancy",
+            "airbyte_secret": true,
+            "default": "",
             "type": "string"
           },
           "default_vectorizer": {
@@ -427,14 +477,20 @@
             "description": "Additional HTTP headers to send with every request.",
             "default": [],
             "examples": [
-              { "header_key": "X-OpenAI-Api-Key", "value": "my-openai-api-key" }
+              {
+                "header_key": "X-OpenAI-Api-Key",
+                "value": "my-openai-api-key"
+              }
             ],
             "type": "array",
             "items": {
               "title": "Header",
               "type": "object",
               "properties": {
-                "header_key": { "title": "Header Key", "type": "string" },
+                "header_key": {
+                  "title": "Header Key",
+                  "type": "string"
+                },
                 "value": {
                   "title": "Header Value",
                   "airbyte_secret": true,
@@ -450,11 +506,24 @@
         "description": "Indexing configuration"
       }
     },
-    "required": ["processing", "embedding", "indexing"],
+    "required": ["embedding", "processing", "indexing"],
     "groups": [
-      { "id": "processing", "title": "Processing" },
-      { "id": "embedding", "title": "Embedding" },
-      { "id": "indexing", "title": "Indexing" }
+      {
+        "id": "processing",
+        "title": "Processing"
+      },
+      {
+        "id": "embedding",
+        "title": "Embedding"
+      },
+      {
+        "id": "indexing",
+        "title": "Indexing"
+      },
+      {
+        "id": "advanced",
+        "title": "Advanced"
+      }
     ]
   },
   "supportsIncremental": true,

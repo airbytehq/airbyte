@@ -43,6 +43,8 @@
           "description": "Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.",
           "type": "object",
           "properties": {
+            "author_association": { "type": ["string", "null"] },
+            "performed_via_github_app": { "type": ["object", "null"] },
             "id": { "type": "integer" },
             "node_id": { "type": "string" },
             "url": { "type": "string" },
@@ -247,6 +249,7 @@
             "locked": { "type": "boolean" },
             "active_lock_reason": { "type": ["string", "null"] },
             "comments": { "type": "integer" },
+            "draft": { "type": ["boolean", "null"] },
             "pull_request": {
               "type": "object",
               "properties": {
@@ -773,6 +776,41 @@
                   "rocket": {
                     "type": "integer"
                   }
+                }
+              }
+            },
+            "reactions": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "total_count": {
+                  "type": "integer"
+                },
+                "+1": {
+                  "type": "integer"
+                },
+                "-1": {
+                  "type": "integer"
+                },
+                "laugh": {
+                  "type": "integer"
+                },
+                "confused": {
+                  "type": "integer"
+                },
+                "heart": {
+                  "type": "integer"
+                },
+                "hooray": {
+                  "type": "integer"
+                },
+                "eyes": {
+                  "type": "integer"
+                },
+                "rocket": {
+                  "type": "integer"
                 }
               }
             }

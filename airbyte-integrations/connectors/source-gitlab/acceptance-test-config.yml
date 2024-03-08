@@ -18,17 +18,13 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: 1.7.1
+          disable_for_version: 3.0.0
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         timeout_seconds: 3600
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        ignored_fields:
-          jobs:
-            - name: "user"
-              bypass_reason: "User object contains local_time which will be different each time test is run"
       - config_path: "secrets/config_with_ids.json"
         timeout_seconds: 3600
         empty_streams:
@@ -38,18 +34,10 @@ acceptance_tests:
             bypass_reason: "Group in this config does not have epics issues. This stream is tested in the above TC."
         expect_records:
           path: "integration_tests/expected_records_with_ids.jsonl"
-        ignored_fields:
-          jobs:
-            - name: "user"
-              bypass_reason: "User object contains local_time which will be different each time test is run"
       - config_path: "secrets/config_oauth.json"
         timeout_seconds: 3600
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        ignored_fields:
-          jobs:
-            - name: "user"
-              bypass_reason: "User object contains local_time which will be different each time test is run"
   incremental:
     tests:
       - config_path: "secrets/config_with_ids.json"

@@ -61,8 +61,16 @@ class NotionStream(HttpStream, ABC):
         return NotionAvailabilityStrategy()
 
     @property
-    def retry_factor(self) -> float:
-        return 8
+    def retry_factor(self) -> int:
+        return 5
+
+    @property
+    def max_retries(self) -> int:
+        return 7
+
+    @property
+    def max_time(self) -> int:
+        return 60 * 11
 
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
@@ -71,13 +79,20 @@ class NotionStream(HttpStream, ABC):
             if message.startswith("The start_cursor provided is invalid: "):
                 return message
 
+    @staticmethod
+    def throttle_request_page_size(current_page_size):
+        """
+        Helper method to halve page_size when encountering a 504 Gateway Timeout error.
+        """
+        throttled_page_size = max(current_page_size // 2, 10)
+        return throttled_page_size
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
         Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
         For a 429 response, we can use the retry-header to determine how long to wait before retrying.
-        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 8.
+        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 5.
         Docs: https://developers.notion.com/reference/errors#rate-limiting
-
         """
         retry_after = response.headers.get("retry-after", "5")
         if response.status_code == 429:
@@ -87,6 +102,17 @@ class NotionStream(HttpStream, ABC):
         return super().backoff_time(response)
 
     def should_retry(self, response: requests.Response) -> bool:
+        # In the case of a 504 Gateway Timeout error, we can lower the page_size when retrying to reduce the load on the server.
+        if response.status_code == 504:
+            self.page_size = self.throttle_request_page_size(self.page_size)
+            self.logger.info(f"Encountered a server timeout. Reducing request page size to {self.page_size} and retrying.")
+
+        # If page_size has been reduced after encountering a 504 Gateway Timeout error,
+        # we increase it back to the default of 100 once a success response is achieved, for the following API calls.
+        if response.status_code == 200 and self.page_size != 100:
+            self.page_size = 100
+            self.logger.info(f"Successfully reconnected after a server timeout. Increasing request page size to {self.page_size}.")
+
         return response.status_code == 400 or super().should_retry(response)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
@@ -226,6 +252,22 @@ class Users(NotionStream):
             params["start_cursor"] = next_page_token["next_cursor"]
         return params
 
+    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        owner = record.get("bot", {}).get("owner")
+        if owner:
+            owner_type = owner.get("type")
+            owner_info = owner.get(owner_type)
+            if owner_type and owner_info:
+                record["bot"]["owner"]["info"] = owner_info
+                del record["bot"]["owner"][owner_type]
+        return record
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # sometimes notion api returns response without results object
+        data = response.json().get("results", [])
+        for record in data:
+            yield self.transform(record)
+
 
 class Databases(IncrementalNotionStream):
     """
@@ -287,6 +329,20 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
             yield {"page_id": page_id}
 
+    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        transform_object_field = record.get("type")
+
+        if transform_object_field:
+            rich_text = record.get(transform_object_field, {}).get("rich_text", [])
+            for r in rich_text:
+                mention = r.get("mention")
+                if mention:
+                    type_info = mention[mention["type"]]
+                    record[transform_object_field]["rich_text"][rich_text.index(r)]["mention"]["info"] = type_info
+                    del record[transform_object_field]["rich_text"][rich_text.index(r)]["mention"][mention["type"]]
+
+        return record
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         # pages and databases blocks are already fetched in their streams, so no
         # need to do it again
@@ -295,7 +351,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
         records = super().parse_response(response, stream_state=stream_state, **kwargs)
         for record in records:
             if record["type"] not in ("child_page", "child_database", "ai_block"):
-                yield record
+                yield self.transform(record)
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         # if reached recursive limit, don't read anymore

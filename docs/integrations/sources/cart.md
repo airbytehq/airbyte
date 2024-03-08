@@ -50,6 +50,8 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 0.3.1   | 2023-11-21 | [32705](https://github.com/airbytehq/airbyte/pull/32705) | Update CDK version |
+| 0.3.0   | 2023-11-14 | [23317](https://github.com/airbytehq/airbyte/pull/23317) | Update schemas |
 | 0.2.1   | 2023-02-22 | [23317](https://github.com/airbytehq/airbyte/pull/23317) | Remove support for incremental for `order_statuses` stream |
 | 0.2.0   | 2022-09-21 | [16612](https://github.com/airbytehq/airbyte/pull/16612) | Source Cart.com: implement Central API Router access method and improve backoff policy |
 | 0.1.6   | 2022-07-15 | [14752](https://github.com/airbytehq/airbyte/pull/14752) | Add `order_statuses` stream                                                            |

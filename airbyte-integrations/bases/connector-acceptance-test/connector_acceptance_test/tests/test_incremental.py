@@ -3,17 +3,15 @@
 #
 
 import json
-from collections import defaultdict
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple, Union
+from typing import Any, Dict, List, Mapping, MutableMapping, Tuple, Union
 
-import pendulum
 import pytest
 from airbyte_protocol.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, SyncMode, Type
 from connector_acceptance_test import BaseTest
 from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
-from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, filter_output, incremental_only_catalog
+from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, incremental_only_catalog
+from connector_acceptance_test.utils.timeouts import TWENTY_MINUTES
 from deepdiff import DeepDiff
 
 
@@ -103,7 +101,7 @@ def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteM
     return diff
 
 
-@pytest.mark.default_timeout(20 * 60)
+@pytest.mark.default_timeout(TWENTY_MINUTES)
 class TestIncremental(BaseTest):
     async def test_two_sequential_reads(
         self,

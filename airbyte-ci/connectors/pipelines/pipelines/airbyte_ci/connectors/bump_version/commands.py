@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import anyio
-import click
+import asyncclick as click
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import run_connector_version_bump_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -15,7 +14,7 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 @click.argument("pull-request-number", type=str)
 @click.argument("changelog-entry", type=str)
 @click.pass_context
-def bump_version(
+async def bump_version(
     ctx: click.Context,
     bump_type: str,
     pull_request_number: str,
@@ -40,13 +39,16 @@ def bump_version(
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
-            open_report_in_browser=False,
+            enable_report_auto_open=False,
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
+            docker_hub_username=ctx.obj.get("docker_hub_username"),
+            docker_hub_password=ctx.obj.get("docker_hub_password"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
 
-    anyio.run(
-        run_connectors_pipelines,
+    await run_connectors_pipelines(
         connectors_contexts,
         run_connector_version_bump_pipeline,
         "Version bump pipeline pipeline",

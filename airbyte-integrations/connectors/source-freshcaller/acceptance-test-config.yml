@@ -1,24 +1,37 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
 connector_image: airbyte/source-freshcaller:dev
-tests:
+test_strictness_level: low
+acceptance_tests:
   spec:
-    - spec_path: "source_freshcaller/spec.json"
-      backward_compatibility_tests_config:
-        disable_for_version: 0.1.0 # Fix start_date type
+    tests:
+      - spec_path: "source_freshcaller/spec.yaml"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
-      empty_streams: ["teams"]
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
+        empty_streams:
+          - name: teams
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
-      future_state_path: "integration_tests/abnormal_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_incremental_metrics.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"

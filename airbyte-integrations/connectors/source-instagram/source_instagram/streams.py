@@ -11,12 +11,31 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.igmedia import IGMedia
 from facebook_business.exceptions import FacebookRequestError
 from source_instagram.api import InstagramAPI
 
 from .common import remove_params_from_url
+
+
+class DatetimeTransformerMixin:
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
+
+    @staticmethod
+    @transformer.registerCustomTransform
+    def custom_transform_datetime_rfc3339(original_value, field_schema):
+        """
+        Transform datetime string to RFC 3339 format
+        """
+        if original_value and field_schema.get("format") == "date-time" and field_schema.get("airbyte_type") == "timestamp_with_timezone":
+            # Parse the ISO format timestamp
+            dt = pendulum.parse(original_value)
+
+            # Convert to RFC 3339 format
+            return dt.to_rfc3339_string()
+        return original_value
 
 
 class InstagramStream(Stream, ABC):
@@ -81,7 +100,7 @@ class InstagramIncrementalStream(InstagramStream, IncrementalMixin):
 
     def __init__(self, start_date: datetime, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = pendulum.instance(start_date)
+        self._start_date = pendulum.parse(start_date)
         self._state = {}
 
     @property
@@ -121,12 +140,20 @@ class Users(InstagramStream):
         yield self.transform(record)
 
 
-class UserLifetimeInsights(InstagramStream):
+class UserLifetimeInsights(DatetimeTransformerMixin, InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
 
-    primary_key = None
-    LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
+    primary_key = ["business_account_id", "breakdown"]
+    BREAKDOWNS = ["city", "country", "age,gender"]
+    BASE_METRIC = ["follower_demographics"]
     period = "lifetime"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
+            for breakdown in self.BREAKDOWNS:
+                yield slice | {"breakdown": breakdown}
 
     def read_records(
         self,
@@ -137,13 +164,14 @@ class UserLifetimeInsights(InstagramStream):
     ) -> Iterable[Mapping[str, Any]]:
         account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
-        for insight in ig_account.get_insights(params=self.request_params()):
+        for insight in ig_account.get_insights(params=self.request_params(stream_slice=stream_slice)):
+            insight_data = insight.export_all_data()
             yield {
                 "page_id": account["page_id"],
+                "breakdown": stream_slice["breakdown"],
                 "business_account_id": ig_account.get("id"),
                 "metric": insight["name"],
-                "date": insight["values"][0].get("end_time"),
-                "value": insight["values"][0].get("value"),
+                "value": self._transform_breakdown_results(insight_data["total_value"]["breakdowns"][0]["results"]),
             }
 
     def request_params(
@@ -152,11 +180,17 @@ class UserLifetimeInsights(InstagramStream):
         stream_state: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_slice=stream_slice, stream_state=stream_state)
-        params.update({"metric": self.LIFETIME_METRICS, "period": self.period})
+        params.update(
+            {"metric": self.BASE_METRIC, "metric_type": "total_value", "period": self.period, "breakdown": stream_slice["breakdown"]}
+        )
         return params
 
+    @staticmethod
+    def _transform_breakdown_results(breakdown_results: Iterable[Mapping[str, Any]]) -> Mapping[str, Any]:
+        return {res.get("dimension_values")[0]: res.get("value") for res in breakdown_results}
 
-class UserInsights(InstagramIncrementalStream):
+
+class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
 
     METRICS_BY_PERIOD = {
@@ -176,7 +210,7 @@ class UserInsights(InstagramIncrementalStream):
         "lifetime": ["online_followers"],
     }
 
-    primary_key = None
+    primary_key = ["business_account_id", "date"]
     cursor_field = "date"
 
     # For some metrics we can only get insights not older than 30 days, it is Facebook policy
@@ -295,13 +329,13 @@ class UserInsights(InstagramIncrementalStream):
         return False
 
 
-class Media(InstagramStream):
+class Media(DatetimeTransformerMixin, InstagramStream):
     """Children objects can only be of the media_type == "CAROUSEL_ALBUM".
-    And children object does not support INVALID_CHILDREN_FIELDS fields,
+    And children objects do not support INVALID_CHILDREN_FIELDS fields,
     so they are excluded when trying to get child objects to avoid the error
     """
 
-    INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children"]
+    INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children", "media_product_type"]
 
     def read_records(
         self,
@@ -339,9 +373,19 @@ class Media(InstagramStream):
 class MediaInsights(Media):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights"""
 
-    MEDIA_METRICS = ["engagement", "impressions", "reach", "saved"]
-    CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
-    REELS_METRICS = ["comments", "likes", "reach", "saved", "shares", "total_interactions", "plays"]
+    MEDIA_METRICS = ["impressions", "reach", "saved", "video_views", "likes", "comments", "shares"]
+    CAROUSEL_ALBUM_METRICS = ["impressions", "reach", "saved", "video_views"]
+
+    REELS_METRICS = [
+        "comments",
+        "ig_reels_avg_watch_time",
+        "ig_reels_video_view_total_time",
+        "likes",
+        "plays",
+        "reach",
+        "saved",
+        "shares",
+    ]
 
     def read_records(
         self,
@@ -368,6 +412,8 @@ class MediaInsights(Media):
         """Get insights for specific media"""
         if item.get("media_product_type") == "REELS":
             metrics = self.REELS_METRICS
+        elif item.get("media_type") == "VIDEO" and item.get("media_product_type") == "FEED":
+            metrics = ["impressions", "reach", "saved", "video_views", "video_views"]
         elif item.get("media_type") == "VIDEO":
             metrics = self.MEDIA_METRICS + ["video_views"]
         elif item.get("media_type") == "CAROUSEL_ALBUM":
@@ -380,21 +426,30 @@ class MediaInsights(Media):
             insights = item.get_insights(params={"metric": metrics})
             return {record.get("name"): record.get("values")[0]["value"] for record in insights}
         except FacebookRequestError as error:
+            error_code = error.api_error_code()
+            error_subcode = error.api_error_subcode()
+            error_message = error.api_error_message()
+
             # An error might occur if the media was posted before the most recent time that
             # the user's account was converted to a business account from a personal account
-            if error.api_error_subcode() == 2108006:
-                details = error.body().get("error", {}).get("error_user_title") or error.api_error_message()
+            if error_subcode == 2108006:
+                details = error.body().get("error", {}).get("error_user_title") or error_message
                 self.logger.error(f"Insights error for business_account_id {account_id}: {details}")
                 # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
                 # then no reason to make inquiries for each Media further, since they were published even earlier.
                 return None
-            elif error.api_error_code() == 100 and error.api_error_subcode() == 33:
-                self.logger.error(f"Check provided permissions for {account_id}: {error.api_error_message()}")
+            elif (
+                error_code == 100
+                and error_subcode == 33
+                or error_code == 10
+                and error_message == "(#10) Application does not have permission for this action"
+            ):
+                self.logger.error(f"Check provided permissions for {account_id}: {error_message}")
                 return None
             raise error
 
 
-class Stories(InstagramStream):
+class Stories(DatetimeTransformerMixin, InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories"""
 
     def read_records(
@@ -417,7 +472,7 @@ class Stories(InstagramStream):
 class StoryInsights(Stories):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights"""
 
-    metrics = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
+    metrics = ["impressions", "reach", "replies"]
 
     def read_records(
         self,

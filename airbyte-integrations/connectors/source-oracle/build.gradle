@@ -1,15 +1,12 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.20.4'
     features = ['db-sources']
     useLocalCdk = false
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.oracle.OracleSource'
@@ -17,16 +14,7 @@ application {
 }
 
 dependencies {
-
-    // required so that log4j uses a standard xml parser instead of an oracle one (that gets pulled in by the oracle driver)
-    implementation group: 'xerces', name: 'xercesImpl', version: '2.12.1'
-
-    implementation libs.airbyte.protocol
-
     implementation "com.oracle.database.jdbc:ojdbc8-production:19.7.0.0"
 
-    testImplementation project(":airbyte-json-validation")
-
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.testcontainers.oracle.xe
+    testImplementation 'org.testcontainers:oracle-xe:1.19.4'
 }

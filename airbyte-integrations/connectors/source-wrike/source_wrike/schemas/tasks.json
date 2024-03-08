@@ -1,24 +1,25 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["object", "null"],
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "accountId": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "title": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "status": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "importance": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "scope": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "briefDescription": {
       "type": ["null", "string"]
@@ -27,16 +28,16 @@
       "type": ["null", "string"]
     },
     "customStatusId": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "permalink": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "priority": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "createdDate": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "responsibleIds": {
@@ -69,7 +70,7 @@
         "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "value": {
             "type": ["string", "null"]
@@ -78,14 +79,18 @@
       }
     },
     "dates": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "type": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       }
     },
     "updatedDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completedDate": {
       "type": "string",
       "format": "date-time"
     }

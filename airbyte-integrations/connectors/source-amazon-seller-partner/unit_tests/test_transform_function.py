@@ -2,30 +2,26 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import pytest
-from source_amazon_seller_partner.auth import AWSSignature
-from source_amazon_seller_partner.streams import SellerFeedbackReports
+from source_amazon_seller_partner.streams import (
+    FlatFileSettlementV2Reports,
+    LedgerDetailedViewReports,
+    MerchantListingsFypReport,
+    MerchantListingsReports,
+    SellerFeedbackReports,
+)
 
 
 def reports_stream(marketplace_id):
-    aws_signature = AWSSignature(
-        service="execute-api",
-        aws_access_key_id="AccessKeyId",
-        aws_secret_access_key="SecretAccessKey",
-        aws_session_token="SessionToken",
-        region="Mars",
-    )
     stream = SellerFeedbackReports(
         url_base="https://test.url",
-        aws_signature=aws_signature,
         replication_start_date="2010-01-25T00:00:00Z",
         replication_end_date="2017-02-25T00:00:00Z",
         marketplace_id=marketplace_id,
         authenticator=None,
         period_in_days=0,
         report_options=None,
-        advanced_stream_options=None,
-        max_wait_seconds=0,
     )
     return stream
 
@@ -63,4 +59,82 @@ def test_transform_seller_feedback(marketplace_id, input_data, expected_data):
     schema = stream.get_json_schema()
     transformer.transform(input_data, schema)
 
+    assert input_data == expected_data
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_data"),
+    (
+        (
+            {"item-name": "GiftBox", "open-date": "2022-07-11 01:34:18 PDT", "dataEndTime": "2022-07-31"},
+            {"item-name": "GiftBox", "open-date": "2022-07-11T01:34:18-07:00", "dataEndTime": "2022-07-31"},
+        ),
+        (
+            {"item-name": "GiftBox", "open-date": "", "dataEndTime": "2022-07-31"},
+            {"item-name": "GiftBox", "open-date": "", "dataEndTime": "2022-07-31"},
+        ),
+    ),
+)
+def test_transform_merchant_reports(report_init_kwargs, input_data, expected_data):
+    stream = MerchantListingsReports(**report_init_kwargs)
+    transformer = stream.transformer
+    schema = stream.get_json_schema()
+    transformer.transform(input_data, schema)
+    assert input_data == expected_data
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_data"),
+    (
+        (
+            {"Product name": "GiftBox", "Condition": "11", "Status Change Date": "Jul 29, 2022", "dataEndTime": "2022-07-31"},
+            {"Product name": "GiftBox", "Condition": "11", "Status Change Date": "2022-07-29", "dataEndTime": "2022-07-31"},
+        ),
+        (
+            {"Product name": "GiftBox", "Condition": "11", "Status Change Date": "", "dataEndTime": "2022-07-31"},
+            {"Product name": "GiftBox", "Condition": "11", "Status Change Date": "", "dataEndTime": "2022-07-31"},
+        ),
+    ),
+)
+def test_transform_merchant_fyp_reports(report_init_kwargs, input_data, expected_data):
+    stream = MerchantListingsFypReport(**report_init_kwargs)
+    transformer = stream.transformer
+    schema = stream.get_json_schema()
+    transformer.transform(input_data, schema)
+    assert input_data == expected_data
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_data"),
+    (
+        ({"Date": "07/29/2022", "dataEndTime": "2022-07-31"}, {"Date": "2022-07-29", "dataEndTime": "2022-07-31"}),
+        ({"Date": "7/29/2022", "dataEndTime": "2022-07-31"}, {"Date": "2022-07-29", "dataEndTime": "2022-07-31"}),
+        ({"Date": "07/2022", "dataEndTime": "2022-07-31"}, {"Date": "2022-07-01", "dataEndTime": "2022-07-31"}),
+        ({"Date": "7/2022", "dataEndTime": "2022-07-31"}, {"Date": "2022-07-01", "dataEndTime": "2022-07-31"}),
+        ({"Date": "", "dataEndTime": "2022-07-31"}, {"Date": "", "dataEndTime": "2022-07-31"}),
+    ),
+)
+def test_transform_ledger_reports(report_init_kwargs, input_data, expected_data):
+    stream = LedgerDetailedViewReports(**report_init_kwargs)
+    transformer = stream.transformer
+    schema = stream.get_json_schema()
+    transformer.transform(input_data, schema)
+    assert input_data == expected_data
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_data"),
+    (
+        (
+            {"posted-date": "2023-11-09T18:44:35+00:00", "dataEndTime": "2022-07-31"},
+            {"posted-date": "2023-11-09T18:44:35+00:00", "dataEndTime": "2022-07-31"},
+        ),
+        ({"posted-date": "", "dataEndTime": "2022-07-31"}, {"posted-date": None, "dataEndTime": "2022-07-31"}),
+    ),
+)
+def test_transform_settlement_reports(report_init_kwargs, input_data, expected_data):
+    stream = FlatFileSettlementV2Reports(**report_init_kwargs)
+    transformer = stream.transformer
+    schema = stream.get_json_schema()
+    transformer.transform(input_data, schema)
     assert input_data == expected_data

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Ad Group": {
+      "type": ["null", "string"]
+    },
+    "App Id": {
+      "type": ["null", "integer"]
+    },
+    "Campaign": {
+      "type": ["null", "string"]
+    },
+    "Client Id": {
+      "type": ["null", "integer"]
+    },
+    "Custom Parameter": {
+      "type": ["null", "string"]
+    },
+    "Device Preference": {
+      "type": ["null", "string"]
+    },
+    "Editorial Appeal Status": {
+      "type": ["null", "string"]
+    },
+    "Editorial Location": {
+      "type": ["null", "string"]
+    },
+    "Editorial Reason Code": {
+      "type": ["null", "string"]
+    },
+    "Editorial Status": {
+      "type": ["null", "string"]
+    },
+    "Editorial Term": {
+      "type": ["null", "string"]
+    },
+    "Final Url": {
+      "type": ["null", "string"]
+    },
+    "Final Url Suffix": {
+      "type": ["null", "string"]
+    },
+    "Id": {
+      "type": ["null", "integer"]
+    },
+    "Modified Time": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "Parent Id": {
+      "type": ["null", "integer"]
+    },
+    "Publisher Countries": {
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "Text": {
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "type": ["null", "string"]
+    },
+    "Tracking Template": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -53,6 +53,11 @@ acceptance_tests:
         expect_records:
           path: integration_tests/expected_records/jsonl_newlines.jsonl
           exact_order: true
+      - config_path: secrets/unstructured_config.json
+        expect_records:
+          path: integration_tests/expected_records/unstructured.jsonl
+          exact_order: true
+        timeout_seconds: 1800
   connection:
     tests:
       - config_path: secrets/config.json
@@ -80,6 +85,8 @@ acceptance_tests:
       - config_path: secrets/jsonl_config.json
         status: succeed
       - config_path: secrets/jsonl_newlines_config.json
+        status: succeed
+      - config_path: secrets/unstructured_config.json
         status: succeed
   discovery:
     tests:

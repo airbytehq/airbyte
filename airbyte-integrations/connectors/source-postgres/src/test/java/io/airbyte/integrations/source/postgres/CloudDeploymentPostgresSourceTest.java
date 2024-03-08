@@ -11,154 +11,126 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 public class CloudDeploymentPostgresSourceTest {
 
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
+  static PostgresTestDatabase DB_NO_SSL_WITH_NETWORK, DB_WITH_SSL, DB_WITH_SSL_WITH_NETWORK;
+  static SshBastionContainer BASTION_NO_SSL, BASTION_WITH_SSL;
+  static Network NETWORK_NO_SSL, NETWORK_WITH_SSL;
 
-  private final PostgreSQLContainer<?> postgreSQLContainerNoSSL = new PostgreSQLContainer<>("postgres:13-alpine");
-  private final PostgreSQLContainer<?> postgreSQLContainerWithSSL =
-      new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
-          .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
+  @BeforeAll
+  static void setupContainers() {
+    DB_NO_SSL_WITH_NETWORK = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.NETWORK);
+    NETWORK_NO_SSL = DB_NO_SSL_WITH_NETWORK.getContainer().getNetwork();
+    BASTION_NO_SSL = new SshBastionContainer();
+    BASTION_NO_SSL.initAndStartBastion(NETWORK_NO_SSL);
+
+    DB_WITH_SSL = PostgresTestDatabase.in(BaseImage.POSTGRES_SSL_DEV, ContainerModifier.SSL);
+
+    DB_WITH_SSL_WITH_NETWORK = PostgresTestDatabase.in(BaseImage.POSTGRES_SSL_DEV, ContainerModifier.SSL, ContainerModifier.NETWORK);
+    NETWORK_WITH_SSL = DB_WITH_SSL_WITH_NETWORK.getContainer().getNetwork();
+    BASTION_WITH_SSL = new SshBastionContainer();
+    BASTION_WITH_SSL.initAndStartBastion(NETWORK_WITH_SSL);
+  }
+
+  @AfterAll
+  static void tearDownContainers() {
+    BASTION_NO_SSL.stopAndClose();
+    BASTION_WITH_SSL.stopAndClose();
+    DB_NO_SSL_WITH_NETWORK.close();
+    DB_WITH_SSL_WITH_NETWORK.close();
+    DB_WITH_SSL.close();
+  }
+
   private static final List<String> NON_STRICT_SSL_MODES = List.of("disable", "allow", "prefer");
   private static final String SSL_MODE_REQUIRE = "require";
 
-  private static final SshBastionContainer bastion = new SshBastionContainer();
-  private static final Network network = Network.newNetwork();
-
-  @BeforeEach
-  void setup() {
-    environmentVariables.set(AdaptiveSourceRunner.DEPLOYMENT_MODE_KEY, AdaptiveSourceRunner.CLOUD_MODE);
+  private Source source() {
+    PostgresSource source = new PostgresSource();
+    source.setFeatureFlags(
+        FeatureFlagsWrapper.overridingDeploymentMode(
+            new EnvVariableFeatureFlags(), AdaptiveSourceRunner.CLOUD_MODE));
+    return PostgresSource.sshWrappedSource(source);
   }
 
   @Test
   void testSSlModesDisableAllowPreferWithTunnelIfServerDoesNotSupportSSL() throws Exception {
-
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerNoSSL.withNetwork(network)) {
-      bastion.initAndStartBastion(network);
-      db.start();
-
-      for (final String sslmode : NON_STRICT_SSL_MODES) {
-        final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, sslmode, false);
-        assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
-      }
-
-    } finally {
-      bastion.stopAndClose();
+    for (final String sslmode : NON_STRICT_SSL_MODES) {
+      final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_NO_SSL_WITH_NETWORK, BASTION_NO_SSL, sslmode);
+      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
     }
   }
 
   @Test
   void testSSlModesDisableAllowPreferWithTunnelIfServerSupportSSL() throws Exception {
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerWithSSL.withNetwork(network)) {
-
-      bastion.initAndStartBastion(network);
-      db.start();
-      for (final String sslmode : NON_STRICT_SSL_MODES) {
-
-        final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, sslmode, false);
-        assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
-      }
-    } finally {
-      bastion.stopAndClose();
+    for (final String sslmode : NON_STRICT_SSL_MODES) {
+      final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_WITH_SSL_WITH_NETWORK, BASTION_WITH_SSL, sslmode);
+      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
     }
   }
 
   @Test
   void testSSlModesDisableAllowPreferWithFailedTunnelIfServerSupportSSL() throws Exception {
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerWithSSL) {
-
-      bastion.initAndStartBastion(network);
-      db.start();
-      for (final String sslmode : NON_STRICT_SSL_MODES) {
-
-        final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, sslmode, false);
-        assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
-        assertTrue(connectionStatus.getMessage().contains("Connection is not available"));
-
-      }
-    } finally {
-      bastion.stopAndClose();
+    for (final String sslmode : NON_STRICT_SSL_MODES) {
+      final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_WITH_SSL, BASTION_WITH_SSL, sslmode);
+      assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
+      final String msg = connectionStatus.getMessage();
+      assertTrue(msg.matches(".*Connection is not available.*|.*The connection attempt failed.*"), msg);
     }
   }
 
   @Test
   void testSSlRequiredWithTunnelIfServerDoesNotSupportSSL() throws Exception {
-
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerNoSSL.withNetwork(network)) {
-      bastion.initAndStartBastion(network);
-      db.start();
-      final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, SSL_MODE_REQUIRE, false);
-      assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
-      assertEquals("State code: 08004; Message: The server does not support SSL.", connectionStatus.getMessage());
-
-    } finally {
-      bastion.stopAndClose();
-    }
+    final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_NO_SSL_WITH_NETWORK, BASTION_NO_SSL, SSL_MODE_REQUIRE);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
+    assertEquals("State code: 08004; Message: The server does not support SSL.", connectionStatus.getMessage());
   }
 
   @Test
   void testSSlRequiredNoTunnelIfServerSupportSSL() throws Exception {
-
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerWithSSL) {
-      db.start();
-
-      final ImmutableMap<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, SSL_MODE_REQUIRE, false).build();
-      final JsonNode config = Jsons.jsonNode(configBuilderWithSSLMode);
-      addNoTunnel((ObjectNode) config);
-      final AirbyteConnectionStatus connectionStatus = PostgresSource.sshWrappedSource().check(config);
-      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
-    }
+    final JsonNode config = configBuilderWithSSLMode(DB_WITH_SSL, SSL_MODE_REQUIRE, false).build();
+    addNoTunnel((ObjectNode) config);
+    final AirbyteConnectionStatus connectionStatus = source().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
   }
 
   @Test
   void testStrictSSLSecuredWithTunnel() throws Exception {
-
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerWithSSL.withNetwork(network)) {
-
-      bastion.initAndStartBastion(network);
-      db.start();
-
-      final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, SSL_MODE_REQUIRE, false);
-      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
-    } finally {
-      bastion.stopAndClose();
-    }
+    final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_WITH_SSL_WITH_NETWORK, BASTION_WITH_SSL, SSL_MODE_REQUIRE);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
   }
 
-  private ImmutableMap.Builder<Object, Object> getDatabaseConfigBuilderWithSSLMode(final PostgreSQLContainer<?> db,
-                                                                                   final String sslMode,
-                                                                                   final boolean innerAddress) {
-    final var containerAddress = innerAddress ? SshHelpers.getInnerContainerAddress(db) : SshHelpers.getOuterContainerAddress(db);
-    return ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(
-            containerAddress.left))
-        .put(JdbcUtils.PORT_KEY, containerAddress.right)
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode));
+  private PostgresTestDatabase.PostgresConfigBuilder configBuilderWithSSLMode(
+                                                                              final PostgresTestDatabase db,
+                                                                              final String sslMode,
+                                                                              final boolean innerAddress) {
+    final var containerAddress = innerAddress
+        ? SshBastionContainer.getInnerContainerAddress(db.getContainer())
+        : SshBastionContainer.getOuterContainerAddress(db.getContainer());
+    return db.configBuilder()
+        .with(JdbcUtils.HOST_KEY, Objects.requireNonNull(containerAddress.left))
+        .with(JdbcUtils.PORT_KEY, containerAddress.right)
+        .withDatabase()
+        .withSchemas("public")
+        .withCredentials()
+        .with(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode));
   }
 
   private JsonNode getMockedSSLConfig(final String sslMode) {
@@ -179,18 +151,18 @@ public class CloudDeploymentPostgresSourceTest {
       final JsonNode config = getMockedSSLConfig(sslMode);
       addNoTunnel((ObjectNode) config);
 
-      final AirbyteConnectionStatus connectionStatus = PostgresSource.sshWrappedSource().check(config);
+      final AirbyteConnectionStatus connectionStatus = source().check(config);
       assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
-      assertTrue(connectionStatus.getMessage().contains("Unsecured connection not allowed"));
+      assertTrue(connectionStatus.getMessage().contains("Unsecured connection not allowed"), connectionStatus.getMessage());
     }
   }
 
-  private AirbyteConnectionStatus checkWithTunnel(final PostgreSQLContainer<?> db, final String sslmode, final boolean innerAddress)
-      throws Exception {
-    final ImmutableMap.Builder<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, sslmode, true);
-    final JsonNode configWithSSLModeDisable =
-        bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, configBuilderWithSSLMode, innerAddress);
-    return PostgresSource.sshWrappedSource().check(configWithSSLModeDisable);
+  private AirbyteConnectionStatus checkWithTunnel(final PostgresTestDatabase db, SshBastionContainer bastion, final String sslmode) throws Exception {
+    final var configWithSSLModeDisable = configBuilderWithSSLMode(db, sslmode, true)
+        .with("tunnel_method", bastion.getTunnelMethod(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, false))
+        .with(JdbcUtils.JDBC_URL_PARAMS_KEY, "connectTimeout=1")
+        .build();
+    return source().check(configWithSSLModeDisable);
   }
 
   private static void addNoTunnel(final ObjectNode config) {

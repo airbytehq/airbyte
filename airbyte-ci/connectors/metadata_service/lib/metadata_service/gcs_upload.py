@@ -217,7 +217,11 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     if metadata is None:
         raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
 
-    service_account_info = json.loads(os.environ.get("GCS_CREDENTIALS"))
+    gcs_creds = os.environ.get("GCS_CREDENTIALS")
+    if not gcs_creds:
+        raise ValueError("Please set the GCS_CREDENTIALS env var.")
+
+    service_account_info = json.loads(gcs_creds)
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)

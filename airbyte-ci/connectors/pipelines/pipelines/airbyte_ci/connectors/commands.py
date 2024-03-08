@@ -4,13 +4,16 @@
 
 import os
 from pathlib import Path
-from typing import List, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
-import click
-from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
+import asyncclick as click
+from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
 from pipelines import main_logger
+from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
+from pipelines.helpers.git import get_modified_files
+from pipelines.helpers.utils import transform_strs_to_paths
 
 ALL_CONNECTORS = get_all_connectors_in_repo()
 
@@ -89,7 +92,7 @@ def get_selected_connectors_with_modified_files(
     return selected_connectors_with_modified_files
 
 
-def validate_environment(is_local: bool, use_remote_secrets: bool):
+def validate_environment(is_local: bool) -> None:
     """Check if the required environment variables exist."""
     if is_local:
         if not Path(".git").is_dir():
@@ -99,14 +102,43 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
             "GCP_GSM_CREDENTIALS",
             "CI_REPORT_BUCKET_NAME",
             "CI_GITHUB_ACCESS_TOKEN",
+            "DOCKER_HUB_USERNAME",
+            "DOCKER_HUB_PASSWORD",
         ]
         for required_env_var in required_env_vars_for_ci:
             if os.getenv(required_env_var) is None:
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
-    if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
-        raise click.UsageError(
-            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
-        )
+
+
+def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
+    """Check if the connector secrets should be loaded from Airbyte GSM or from the local secrets directory.
+
+    Args:
+        use_remote_secrets (Optional[bool]): Whether to use remote connector secrets or local connector secrets according to user inputs.
+
+    Raises:
+        click.UsageError: If the --use-remote-secrets flag was provided but no GCP_GSM_CREDENTIALS environment variable was found.
+
+    Returns:
+        bool: Whether to use remote connector secrets (True) or local connector secrets (False).
+    """
+    gcp_gsm_credentials_is_set = bool(os.getenv("GCP_GSM_CREDENTIALS"))
+    if use_remote_secrets is None:
+        if gcp_gsm_credentials_is_set:
+            main_logger.info("GCP_GSM_CREDENTIALS environment variable found, using remote connector secrets.")
+            return True
+        else:
+            main_logger.info("No GCP_GSM_CREDENTIALS environment variable found, using local connector secrets.")
+            return False
+    if use_remote_secrets:
+        if gcp_gsm_credentials_is_set:
+            main_logger.info("GCP_GSM_CREDENTIALS environment variable found, using remote connector secrets.")
+            return True
+        else:
+            raise click.UsageError("The --use-remote-secrets flag was provided but no GCP_GSM_CREDENTIALS environment variable was found.")
+    else:
+        main_logger.info("Using local connector secrets as the --use-local-secrets flag was provided")
+        return False
 
 
 @click.group(
@@ -115,14 +147,20 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     lazy_subcommands={
         "build": "pipelines.airbyte_ci.connectors.build_image.commands.build",
         "test": "pipelines.airbyte_ci.connectors.test.commands.test",
-        "list": "pipelines.airbyte_ci.connectors.list.commands.list",
+        "list": "pipelines.airbyte_ci.connectors.list.commands.list_connectors",
         "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
         "bump_version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
         "migrate_to_base_image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
         "upgrade_base_image": "pipelines.airbyte_ci.connectors.upgrade_base_image.commands.upgrade_base_image",
+        "upgrade_cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.bump_version",
     },
 )
-@click.option("--use-remote-secrets", default=True)  # specific to connectors
+@click.option(
+    "--use-remote-secrets/--use-local-secrets",
+    help="Use Airbyte GSM connector secrets or local connector secrets.",
+    type=bool,
+    default=None,
+)
 @click.option(
     "--name",
     "names",
@@ -177,39 +215,50 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     default=True,
     type=bool,
 )
+@click.option(
+    "--docker-hub-username",
+    help="Your username to connect to DockerHub.",
+    type=click.STRING,
+    required=False,
+    envvar="DOCKER_HUB_USERNAME",
+)
+@click.option(
+    "--docker-hub-password",
+    help="Your password to connect to DockerHub.",
+    type=click.STRING,
+    required=False,
+    envvar="DOCKER_HUB_PASSWORD",
+)
+@click_merge_args_into_context_obj
+@click_append_to_context_object("use_remote_secrets", lambda ctx: should_use_remote_secrets(ctx.obj["use_remote_secrets"]))
 @click.pass_context
-def connectors(
+@click_ignore_unused_kwargs
+async def connectors(
     ctx: click.Context,
-    use_remote_secrets: bool,
-    names: Tuple[str],
-    languages: Tuple[ConnectorLanguage],
-    support_levels: Tuple[str],
-    modified: bool,
-    metadata_changes_only: bool,
-    metadata_query: str,
-    concurrency: int,
-    execute_timeout: int,
-    enable_dependency_scanning: bool,
-    use_local_cdk: bool,
-    enable_report_auto_open: bool,
-):
+) -> None:
     """Group all the connectors-ci command."""
-    validate_environment(ctx.obj["is_local"], use_remote_secrets)
+    validate_environment(ctx.obj["is_local"])
 
-    ctx.ensure_object(dict)
-    ctx.obj["use_remote_secrets"] = use_remote_secrets
-    ctx.obj["concurrency"] = concurrency
-    ctx.obj["execute_timeout"] = execute_timeout
-    ctx.obj["use_local_cdk"] = use_local_cdk
-    ctx.obj["open_report_in_browser"] = enable_report_auto_open
+    modified_files = []
+    if ctx.obj["modified"] or ctx.obj["metadata_changes_only"]:
+        modified_files = transform_strs_to_paths(
+            await get_modified_files(
+                ctx.obj["git_branch"],
+                ctx.obj["git_revision"],
+                ctx.obj["diffed_branch"],
+                ctx.obj["is_local"],
+                ctx.obj["ci_context"],
+            )
+        )
+
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
-        names,
-        support_levels,
-        languages,
-        modified,
-        metadata_changes_only,
-        metadata_query,
-        ctx.obj["modified_files"],
-        enable_dependency_scanning,
+        ctx.obj["names"],
+        ctx.obj["support_levels"],
+        ctx.obj["languages"],
+        ctx.obj["modified"],
+        ctx.obj["metadata_changes_only"],
+        ctx.obj["metadata_query"],
+        set(modified_files),
+        ctx.obj["enable_dependency_scanning"],
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])

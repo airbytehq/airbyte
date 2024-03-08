@@ -6,6 +6,57 @@
     "date_updated": {
       "type": ["null", "string"]
     },
+    "activity_at": {
+      "type": ["null", "string"]
+    },
+    "contact_id": {
+      "type": ["null", "string"]
+    },
+    "notetaker_id": {
+      "type": ["null", "string"]
+    },
+    "provider_calendar_event_id": {
+      "type": ["null", "string"]
+    },
+    "provider_calendar_type": {
+      "type": ["null", "string"]
+    },
+    "summary": {
+      "type": ["null", "string"]
+    },
+    "user_note": {
+      "type": ["null", "string"]
+    },
+    "user_note_date_updated": {
+      "type": ["null", "string"]
+    },
+    "user_note_html": {
+      "type": ["null", "string"]
+    },
+    "provider_calendar_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "integrations": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "calendar_event_uids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "conference_links": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "created_by_name": {
       "type": ["null", "string"]
     },

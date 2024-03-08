@@ -24,8 +24,14 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +46,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSourceDatabaseTypeTest.class);
 
   protected final List<TestDataHolder> testDataHolders = new ArrayList<>();
+  protected Database database;
 
   /**
    * The column name will be used for a PK column in the test tables. Override it if default name is
@@ -76,7 +83,10 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    setupDatabaseInternal();
+    database = setupDatabase();
+    initTests();
+    createTables();
+    populateTables();
   }
 
   /**
@@ -130,15 +140,24 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
 
       // Stream that is missing any value
       public String streamName;
-      // Type associated to the test
-      public String dataType;
       // Which are the values that has not being gathered from the source
       public List<String> missedValues;
 
-      public MissedRecords(String streamName, String dataType, List<String> missedValues) {
+      public MissedRecords(String streamName, List<String> missedValues) {
         this.streamName = streamName;
-        this.dataType = dataType;
         this.missedValues = missedValues;
+      }
+
+    }
+
+    class UnexpectedRecord {
+
+      public final String streamName;
+      public final String unexpectedValue;
+
+      public UnexpectedRecord(String streamName, String unexpectedValue) {
+        this.streamName = streamName;
+        this.unexpectedValue = unexpectedValue;
       }
 
     }
@@ -148,15 +167,16 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
 
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).toList();
     final Map<String, List<String>> expectedValues = new HashMap<>();
-    final Map<String, String> testTypes = new HashMap<>();
-    final ArrayList<MissedRecords> missedValues = new ArrayList<>();
+    final Map<String, ArrayList<MissedRecords>> missedValuesByStream = new HashMap<>();
+    final Map<String, List<UnexpectedRecord>> unexpectedValuesByStream = new HashMap<>();
+    final Map<String, TestDataHolder> testByName = new HashMap<>();
 
     // If there is no expected value in the test set we don't include it in the list to be asserted
     // (even if the table contains records)
     testDataHolders.forEach(testDataHolder -> {
       if (!testDataHolder.getExpectedValues().isEmpty()) {
         expectedValues.put(testDataHolder.getNameWithTestPrefix(), testDataHolder.getExpectedValues());
-        testTypes.put(testDataHolder.getNameWithTestPrefix(), testDataHolder.getSourceType());
+        testByName.put(testDataHolder.getNameWithTestPrefix(), testDataHolder);
       } else {
         LOGGER.warn("Missing expected values for type: " + testDataHolder.getSourceType());
       }
@@ -167,24 +187,52 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
       final List<String> expectedValuesForStream = expectedValues.get(streamName);
       if (expectedValuesForStream != null) {
         final String value = getValueFromJsonNode(message.getRecord().getData().get(getTestColumnName()));
-        assertTrue(expectedValuesForStream.contains(value),
-            String.format("Returned value '%s' from stream %s is not in the expected list: %s",
-                value, streamName, expectedValuesForStream));
-        expectedValuesForStream.remove(value);
+        if (!expectedValuesForStream.contains(value)) {
+          unexpectedValuesByStream.putIfAbsent(streamName, new ArrayList<>());
+          unexpectedValuesByStream.get(streamName).add(new UnexpectedRecord(streamName, value));
+        } else {
+          expectedValuesForStream.remove(value);
+        }
       }
     }
 
     // Gather all the missing values, so we don't stop the test in the first missed one
     expectedValues.forEach((streamName, values) -> {
       if (!values.isEmpty()) {
-        missedValues.add(new MissedRecords(streamName, testTypes.get(streamName), values));
+        missedValuesByStream.putIfAbsent(streamName, new ArrayList<>());
+        missedValuesByStream.get(streamName).add(new MissedRecords(streamName, values));
       }
     });
 
-    assertTrue(missedValues.isEmpty(),
-        missedValues.stream().map((entry) -> // stream each entry, map it to string value
-        "The stream '" + entry.streamName + "' checking type '" + entry.dataType + "' is missing values: " + entry.missedValues)
-            .collect(Collectors.joining("\n"))); // and join them
+    Map<String, List<String>> errorsByStream = new HashMap<>();
+    for (String streamName : unexpectedValuesByStream.keySet()) {
+      errorsByStream.putIfAbsent(streamName, new ArrayList<>());
+      TestDataHolder test = testByName.get(streamName);
+      List<UnexpectedRecord> unexpectedValues = unexpectedValuesByStream.get(streamName);
+      for (UnexpectedRecord unexpectedValue : unexpectedValues) {
+        errorsByStream.get(streamName).add(
+            "The stream '%s' checking type '%s' initialized at %s got unexpected values: %s".formatted(streamName, test.getSourceType(),
+                test.getDeclarationLocation(), unexpectedValue));
+      }
+    }
+
+    for (String streamName : missedValuesByStream.keySet()) {
+      errorsByStream.putIfAbsent(streamName, new ArrayList<>());
+      TestDataHolder test = testByName.get(streamName);
+      List<MissedRecords> missedValues = missedValuesByStream.get(streamName);
+      for (MissedRecords missedValue : missedValues) {
+        errorsByStream.get(streamName).add(
+            "The stream '%s' checking type '%s' initialized at %s is missing values: %s".formatted(streamName, test.getSourceType(),
+                test.getDeclarationLocation(), missedValue));
+      }
+    }
+
+    List<String> errorStrings = new ArrayList<>();
+    for (List<String> errors : errorsByStream.values()) {
+      errorStrings.add(StringUtils.join(errors, "\n"));
+    }
+
+    assertTrue(errorsByStream.isEmpty(), StringUtils.join(errorStrings, "\n"));
   }
 
   protected String getValueFromJsonNode(final JsonNode jsonNode) throws IOException {
@@ -206,16 +254,23 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    * @throws Exception might raise exception if configuration goes wrong or tables creation/insert
    *         scripts failed.
    */
-  private void setupDatabaseInternal() throws Exception {
-    final Database database = setupDatabase();
 
-    initTests();
-
+  protected void createTables() throws Exception {
     for (final TestDataHolder test : testDataHolders) {
       database.query(ctx -> {
         ctx.fetch(test.getCreateSqlQuery());
-        LOGGER.debug("Table " + test.getNameWithTestPrefix() + " is created.");
+        LOGGER.info("Table {} is created.", test.getNameWithTestPrefix());
+        return null;
+      });
+    }
+  }
+
+  protected void populateTables() throws Exception {
+    for (final TestDataHolder test : testDataHolders) {
+      database.query(ctx -> {
         test.getInsertSqlQueries().forEach(ctx::fetch);
+        LOGGER.info("Inserted {} rows in Ttable {}", test.getInsertSqlQueries().size(), test.getNameWithTestPrefix());
+
         return null;
       });
     }
@@ -259,6 +314,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
     test.setNameSpace(getNameSpace());
     test.setIdColumnName(getIdColumnName());
     test.setTestColumnName(getTestColumnName());
+    test.setDeclarationLocation(Thread.currentThread().getStackTrace());
   }
 
   private String formatCollection(final Collection<String> collection) {

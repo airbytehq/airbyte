@@ -1,7 +1,8 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/pinecone",
   "connectionSpecification": {
-    "title": "Pinecone Destination Config",
+    "title": "Destination Config",
+    "description": "The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,\nas well as to provide type safety for the configuration passed to the destination.\n\nThe configuration model is composed of four parts:\n* Processing configuration\n* Embedding configuration\n* Indexing configuration\n* Advanced configuration\n\nProcessing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.",
     "type": "object",
     "properties": {
       "indexing": {
@@ -53,7 +54,7 @@
                 "type": "string"
               }
             },
-            "required": ["openai_key"],
+            "required": ["openai_key", "mode"],
             "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -73,7 +74,7 @@
                 "type": "string"
               }
             },
-            "required": ["cohere_key"],
+            "required": ["cohere_key", "mode"],
             "description": "Use the Cohere API to embed text."
           },
           {
@@ -88,6 +89,7 @@
                 "type": "string"
               }
             },
+            "required": ["mode"],
             "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
           },
           {
@@ -120,7 +122,7 @@
                 "type": "string"
               }
             },
-            "required": ["openai_key", "api_base", "deployment"],
+            "required": ["openai_key", "api_base", "deployment", "mode"],
             "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -160,7 +162,7 @@
                 "type": "integer"
               }
             },
-            "required": ["base_url", "dimensions"],
+            "required": ["base_url", "dimensions", "mode"],
             "description": "Use a service that's compatible with the OpenAI API to embed text."
           }
         ]
@@ -172,6 +174,7 @@
           "chunk_size": {
             "title": "Chunk size",
             "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
+            "minimum": 1,
             "maximum": 8191,
             "type": "integer"
           },
@@ -199,18 +202,33 @@
             "type": "array",
             "items": { "type": "string" }
           },
+          "field_name_mappings": {
+            "title": "Field name mappings",
+            "description": "List of fields to rename. Not applicable for nested fields, but can be used to rename fields already flattened via dot notation.",
+            "default": [],
+            "type": "array",
+            "items": {
+              "title": "FieldNameMappingConfigModel",
+              "type": "object",
+              "properties": {
+                "from_field": {
+                  "title": "From field name",
+                  "description": "The field name in the source",
+                  "type": "string"
+                },
+                "to_field": {
+                  "title": "To field name",
+                  "description": "The field name to use in the destination",
+                  "type": "string"
+                }
+              },
+              "required": ["from_field", "to_field"]
+            }
+          },
           "text_splitter": {
             "title": "Text splitter",
             "description": "Split text fields into chunks based on the specified method.",
             "type": "object",
-            "discriminator": {
-              "propertyName": "mode",
-              "mapping": {
-                "separator": "#/definitions/SeparatorSplitterConfigModel",
-                "markdown": "#/definitions/MarkdownHeaderSplitterConfigModel",
-                "code": "#/definitions/CodeSplitterConfigModel"
-              }
-            },
             "oneOf": [
               {
                 "title": "By Separator",
@@ -237,6 +255,7 @@
                     "type": "boolean"
                   }
                 },
+                "required": ["mode"],
                 "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
               },
               {
@@ -259,6 +278,7 @@
                     "type": "integer"
                   }
                 },
+                "required": ["mode"],
                 "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
               },
               {
@@ -296,7 +316,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["language"],
+                "required": ["language", "mode"],
                 "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
               }
             ]
@@ -304,13 +324,21 @@
         },
         "required": ["chunk_size"],
         "group": "processing"
+      },
+      "omit_raw_text": {
+        "title": "Do not store raw text",
+        "description": "Do not store the text that gets embedded along with the vector and the metadata in the destination. If set to true, only the vector and the metadata will be stored - in this case raw text for LLM use cases needs to be retrieved from another source.",
+        "default": false,
+        "group": "advanced",
+        "type": "boolean"
       }
     },
-    "required": ["indexing", "embedding", "processing"],
+    "required": ["embedding", "processing", "indexing"],
     "groups": [
       { "id": "processing", "title": "Processing" },
       { "id": "embedding", "title": "Embedding" },
-      { "id": "indexing", "title": "Indexing" }
+      { "id": "indexing", "title": "Indexing" },
+      { "id": "advanced", "title": "Advanced" }
     ]
   },
   "supportsIncremental": true,

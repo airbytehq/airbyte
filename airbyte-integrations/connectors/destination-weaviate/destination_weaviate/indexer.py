@@ -7,11 +7,9 @@ import json
 import logging
 import os
 import re
-import time
 import uuid
 from collections import defaultdict
-from dataclasses import dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional
+from typing import Optional
 
 import weaviate
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD
@@ -29,21 +27,11 @@ class WeaviatePartialBatchError(Exception):
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
-@dataclass
-class BufferedObject:
-    id: str
-    properties: Mapping[str, Any]
-    vector: Optional[List[Any]]
-    class_name: str
-
-
 class WeaviateIndexer(Indexer):
     config: WeaviateIndexingConfigModel
 
     def __init__(self, config: WeaviateIndexingConfigModel):
         super().__init__(config)
-        self.buffered_objects: MutableMapping[str, BufferedObject] = {}
-        self.objects_with_error: MutableMapping[str, BufferedObject] = {}
 
     def _create_client(self):
         headers = {
@@ -58,6 +46,19 @@ class WeaviateIndexer(Indexer):
             self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials, additional_headers=headers)
         else:
             self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
+
+        # disable dynamic batching because it's handled asynchroniously in the client
+        self.client.batch.configure(
+            batch_size=None, dynamic=False, weaviate_error_retries=weaviate.WeaviateErrorRetryConf(number_retries=5)
+        )
+
+    def _add_tenant_to_class_if_missing(self, class_name: str):
+        class_tenants = self.client.schema.get_class_tenants(class_name=class_name)
+        if class_tenants is not None and self.config.tenant_id not in [tenant.name for tenant in class_tenants]:
+            self.client.schema.add_class_tenants(class_name=class_name, tenants=[weaviate.Tenant(name=self.config.tenant_id)])
+            logging.info(f"Added tenant {self.config.tenant_id} to class {class_name}")
+        else:
+            logging.info(f"Tenant {self.config.tenant_id} already exists in class {class_name}")
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
@@ -75,9 +76,14 @@ class WeaviateIndexer(Indexer):
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
         classes = {c["class"]: c for c in self.client.schema.get().get("classes", [])}
-        self.has_record_id_metadata = defaultdict(None)
+        self.has_record_id_metadata = defaultdict(lambda: False)
+
+        if self.config.tenant_id.strip():
+            for class_name in classes.keys():
+                self._add_tenant_to_class_if_missing(class_name)
+
         for stream in catalog.streams:
-            class_name = self.stream_to_class_name(stream.stream.name)
+            class_name = self._stream_to_class_name(stream.stream.name)
             schema = classes[class_name] if class_name in classes else None
             if stream.destination_sync_mode == DestinationSyncMode.overwrite and schema is not None:
                 self.client.schema.delete_class(class_name=class_name)
@@ -85,24 +91,29 @@ class WeaviateIndexer(Indexer):
                 self.client.schema.create_class(schema)
                 logging.info(f"Recreated class {class_name}")
             elif class_name not in classes:
-                self.client.schema.create_class(
-                    {
-                        "class": class_name,
-                        "vectorizer": self.config.default_vectorizer,
-                        "properties": [
-                            {
-                                # Record ID is used for bookkeeping, not for searching
-                                "name": METADATA_RECORD_ID_FIELD,
-                                "dataType": ["text"],
-                                "description": "Record ID, used for bookkeeping.",
-                                "indexFilterable": True,
-                                "indexSearchable": False,
-                                "tokenization": "field",
-                            }
-                        ],
-                    }
-                )
+                config = {
+                    "class": class_name,
+                    "vectorizer": self.config.default_vectorizer,
+                    "properties": [
+                        {
+                            # Record ID is used for bookkeeping, not for searching
+                            "name": METADATA_RECORD_ID_FIELD,
+                            "dataType": ["text"],
+                            "description": "Record ID, used for bookkeeping.",
+                            "indexFilterable": True,
+                            "indexSearchable": False,
+                            "tokenization": "field",
+                        }
+                    ],
+                }
+                if self.config.tenant_id.strip():
+                    config["multiTenancyConfig"] = {"enabled": True}
+
+                self.client.schema.create_class(config)
                 logging.info(f"Created class {class_name}")
+
+                if self.config.tenant_id.strip():
+                    self._add_tenant_to_class_if_missing(class_name)
             else:
                 self.has_record_id_metadata[class_name] = schema is not None and any(
                     prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {})
@@ -110,12 +121,19 @@ class WeaviateIndexer(Indexer):
 
     def delete(self, delete_ids, namespace, stream):
         if len(delete_ids) > 0:
-            # Delete ids in all classes that have the record id metadata
-            for class_name in self.has_record_id_metadata.keys():
-                if self.has_record_id_metadata[class_name]:
+            class_name = self._stream_to_class_name(stream)
+            if self.has_record_id_metadata[class_name]:
+                where_filter = {"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids}
+                if self.config.tenant_id.strip():
                     self.client.batch.delete_objects(
                         class_name=class_name,
-                        where={"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids},
+                        tenant=self.config.tenant_id,
+                        where=where_filter,
+                    )
+                else:
+                    self.client.batch.delete_objects(
+                        class_name=class_name,
+                        where=where_filter,
                     )
 
     def index(self, document_chunks, namespace, stream):
@@ -127,25 +145,41 @@ class WeaviateIndexer(Indexer):
         for batch in batches:
             for i in range(len(batch)):
                 chunk = batch[i]
-                weaviate_object = {**self._normalize(chunk.metadata), self.config.text_field: chunk.page_content}
+                weaviate_object = {**self._normalize(chunk.metadata)}
+                if chunk.page_content is not None:
+                    weaviate_object[self.config.text_field] = chunk.page_content
                 object_id = str(uuid.uuid4())
-                class_name = self.stream_to_class_name(chunk.record.stream)
-                self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)
-                self.buffered_objects[object_id] = BufferedObject(object_id, weaviate_object, chunk.embedding, class_name)
+                class_name = self._stream_to_class_name(chunk.record.stream)
+                if self.config.tenant_id.strip():
+                    self.client.batch.add_data_object(
+                        weaviate_object, class_name, object_id, vector=chunk.embedding, tenant=self.config.tenant_id
+                    )
+                else:
+                    self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)
             self._flush()
 
-    def stream_to_class_name(self, stream_name: str) -> str:
+    def _stream_to_class_name(self, stream_name: str) -> str:
         pattern = "[^0-9A-Za-z_]+"
         stream_name = re.sub(pattern, "", stream_name)
         stream_name = stream_name.replace(" ", "")
         return stream_name[0].upper() + stream_name[1:]
+
+    def _normalize_property_name(self, field_name: str) -> str:
+        # Remove invalid characters and replace spaces with underscores
+        normalized = re.sub(r"[^0-9A-Za-z_]", "", field_name.replace(" ", "_"))
+
+        # Ensure the name starts with a letter or underscore
+        if not re.match(r"^[_A-Za-z]", normalized):
+            normalized = "_" + normalized
+
+        return normalized[0].lower() + normalized[1:]
 
     def _normalize(self, metadata: dict) -> dict:
         result = {}
 
         for key, value in metadata.items():
             # Property names in Weaviate have to start with lowercase letter
-            normalized_key = key[0].lower() + key[1:]
+            normalized_key = self._normalize_property_name(key)
             # "id" and "additional" are reserved properties in Weaviate, prefix to disambiguate
             if key == "id" or key == "_id" or key == "_additional":
                 normalized_key = f"raw_{key}"
@@ -161,27 +195,14 @@ class WeaviateIndexer(Indexer):
         return result
 
     def _flush(self, retries: int = 3):
-        if len(self.objects_with_error) > 0 and retries == 0:
-            error_msg = f"Objects had errors and retries failed as well. Object IDs: {self.objects_with_error.keys()}"
-            raise WeaviatePartialBatchError(error_msg)
-
         results = self.client.batch.create_objects()
-        self.objects_with_error.clear()
+        all_errors = []
+
         for result in results:
             errors = result.get("result", {}).get("errors", [])
             if errors:
-                obj_id = result.get("id")
-                self.objects_with_error[obj_id] = self.buffered_objects.get(obj_id)
-                logging.info(f"Object {obj_id} had errors: {errors}. Going to retry.")
+                all_errors.extend(errors)
 
-        for buffered_object in self.objects_with_error.values():
-            self.client.batch.add_data_object(
-                buffered_object.properties, buffered_object.class_name, buffered_object.id, vector=buffered_object.vector
-            )
-
-        if len(self.objects_with_error) > 0 and retries > 0:
-            logging.info("sleeping 2 seconds before retrying batch again")
-            time.sleep(2)
-            self._flush(retries - 1)
-
-        self.buffered_objects.clear()
+        if len(all_errors) > 0:
+            error_msg = "Errors while loading: " + ", ".join([str(error) for error in all_errors])
+            raise WeaviatePartialBatchError(error_msg)

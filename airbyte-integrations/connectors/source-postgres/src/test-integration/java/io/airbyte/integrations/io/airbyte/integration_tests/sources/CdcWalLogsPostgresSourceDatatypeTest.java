@@ -5,16 +5,12 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -23,25 +19,11 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
 
   private static final String SCHEMA_NAME = "test";
-  private static final String SLOT_NAME_BASE = "debezium_slot";
-  private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 30;
   private JsonNode stateAfterFirstSync;
-
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
 
   @Override
   protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
@@ -54,7 +36,6 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   @Override
   protected void postSetup() throws Exception {
     final Database database = setupDatabase();
-    initTests();
     for (final TestDataHolder test : testDataHolders) {
       database.query(ctx -> {
         ctx.fetch(test.getCreateSqlQuery());
@@ -84,76 +65,29 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   }
 
   @Override
-  protected Database setupDatabase() throws Exception {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    container = new PostgreSQLContainer<>("postgres:15-alpine")
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
-            "/etc/postgresql/postgresql.conf")
-        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
-    container.start();
-
-    /**
-     * The publication is not being set as part of the config and because of it
-     * {@link io.airbyte.integrations.source.postgres.PostgresSource#isCdc(JsonNode)} returns false, as
-     * a result no test in this class runs through the cdc path.
-     */
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "CDC")
-        .put("replication_slot", SLOT_NAME_BASE)
-        .put("publication", PUBLICATION)
-        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .build());
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", replicationMethod)
-        .put("is_test", true)
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());
-
-    dslContext = DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            container.getHost(),
-            container.getFirstMappedPort(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
-        SQLDialect.POSTGRES);
-    final Database database = new Database(dslContext);
-
-    database.query(ctx -> {
-      ctx.execute(
-          "SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
-      ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
-      ctx.execute("CREATE EXTENSION hstore;");
-      return null;
-    });
-
-    database.query(ctx -> ctx.fetch("CREATE SCHEMA TEST;"));
-    database.query(ctx -> ctx.fetch("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');"));
-    database.query(ctx -> ctx.fetch("CREATE TYPE inventory_item AS (\n"
-        + "    name            text,\n"
-        + "    supplier_id     integer,\n"
-        + "    price           numeric\n"
-        + ");"));
-
-    database.query(ctx -> ctx.fetch("SET TIMEZONE TO 'MST'"));
-    return database;
+  protected Database setupDatabase() {
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.CONF)
+        .with("CREATE EXTENSION hstore;")
+        .with("CREATE SCHEMA TEST;")
+        .with("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');")
+        .with("CREATE TYPE inventory_item AS (\n"
+            + "    name            text,\n"
+            + "    supplier_id     integer,\n"
+            + "    price           numeric\n"
+            + ");")
+        .with("SET TIMEZONE TO 'MST'")
+        .withReplicationSlot()
+        .withPublicationForAllTables();
+    return testdb.getDatabase();
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
-    container.close();
-  }
-
-  public boolean testCatalog() {
-    return true;
+  protected JsonNode getConfig() throws Exception {
+    return testdb.integrationTestConfigBuilder()
+        .withSchemas(SCHEMA_NAME)
+        .withoutSsl()
+        .withCdcReplication()
+        .build();
   }
 
   @Override
@@ -192,25 +126,6 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
               // so 13:00:01 is returned as 13:00:01-07.
               .addExpectedValues(null, "20:00:01Z", "05:00:00.000000Z", "21:00:03Z", "13:00:04Z", "21:00:05.012345Z",
                   "05:00:06Z")
-              .build());
-    }
-  }
-
-  @Override
-  protected void addTimestampWithInfinityValuesTest() {
-    // timestamp without time zone
-    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone not null default now()")) {
-      addDataTypeTestData(
-          TestDataHolder.builder()
-              .sourceType("timestamp")
-              .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .addInsertValues(
-                  "'infinity'",
-                  "'-infinity'")
-              .addExpectedValues(
-                  "+294247-01-10T04:00:25.200000",
-                  "+290309-12-21T19:59:27.600000 BC")
               .build());
     }
   }

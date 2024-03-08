@@ -11,14 +11,14 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 from requests import HTTPError, codes
 
 
-class KlaviyoAvailabilityStrategyLatest(HttpAvailabilityStrategy):
+class KlaviyoAvailabilityStrategy(HttpAvailabilityStrategy):
     def reasons_for_unavailable_status_codes(
         self, stream: Stream, logger: logging.Logger, source: Optional[Source], error: HTTPError
     ) -> Dict[int, str]:
         reasons_for_codes: Dict[int, str] = super().reasons_for_unavailable_status_codes(stream, logger, source, error)
         reasons_for_codes[codes.UNAUTHORIZED] = (
             "This is most likely due to insufficient permissions on the credentials in use. "
-            "Try to grant required permissions/scopes or re-authenticate"
+            f"Try to create and use an API key with read permission for the '{stream.name}' stream granted"
         )
 
         return reasons_for_codes

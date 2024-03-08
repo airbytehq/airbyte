@@ -11,10 +11,11 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, SyncMode
+from airbyte_cdk.models import Type as MessageType
 
 # list of all possible HTTP methods which can be used for sending of request bodies
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
@@ -29,6 +30,10 @@ if typing.TYPE_CHECKING:
 StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
 JsonSchema = Mapping[str, Any]
+
+# Streams that only support full refresh don't have a suitable cursor so this sentinel
+# value is used to indicate that stream should not load the incoming state value
+FULL_REFRESH_SENTINEL_STATE_KEY = "__ab_full_refresh_state_message"
 
 
 def package_name_from_class(cls: object) -> str:
@@ -106,22 +111,72 @@ class Stream(ABC):
         """
         return None
 
-    def read_full_refresh(
+    def read(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,
-        cursor_field: Optional[List[str]],
+        configured_stream: ConfiguredAirbyteStream,
         logger: logging.Logger,
         slice_logger: SliceLogger,
+        stream_state: MutableMapping[str, Any],
+        state_manager,
+        internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
-        slices = self.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
-        logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)", extra={"stream_slices": slices})
+        sync_mode = configured_stream.sync_mode
+        cursor_field = configured_stream.cursor_field
+
+        slices = self.stream_slices(
+            cursor_field=cursor_field,
+            sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
+            stream_state=stream_state,
+        )
+        logger.debug(f"Processing stream slices for {self.name} (sync_mode: {sync_mode.name})", extra={"stream_slices": slices})
+
+        has_slices = False
+        record_counter = 0
         for _slice in slices:
+            has_slices = True
             if slice_logger.should_log_slice_message(logger):
                 yield slice_logger.create_slice_log_message(_slice)
-            yield from self.read_records(
+            records = self.read_records(
+                sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
                 stream_slice=_slice,
-                sync_mode=SyncMode.full_refresh,
-                cursor_field=cursor_field,
+                stream_state=stream_state,
+                cursor_field=cursor_field or None,
             )
+            for record_data_or_message in records:
+                yield record_data_or_message
+                if isinstance(record_data_or_message, Mapping) or (
+                    hasattr(record_data_or_message, "type") and record_data_or_message.type == MessageType.RECORD
+                ):
+                    record_data = record_data_or_message if isinstance(record_data_or_message, Mapping) else record_data_or_message.record
+                    stream_state = self.get_updated_state(stream_state, record_data)
+                    record_counter += 1
+
+                    if sync_mode == SyncMode.incremental:
+                        # Checkpoint intervals are a bit controversial, but see below comment about why we're gating it right now
+                        checkpoint_interval = self.state_checkpoint_interval
+                        if checkpoint_interval and record_counter % checkpoint_interval == 0:
+                            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+                            yield airbyte_state_message
+
+                    if internal_config.is_limit_reached(record_counter):
+                        break
+
+            if sync_mode == SyncMode.incremental:
+                # Even though right now, only incremental streams running as incremental mode will emit periodic checkpoints. Rather than
+                # overhaul how refresh interacts with the platform, this positions the code so that once we want to start emitting
+                # periodic checkpoints in full refresh mode it can be done here
+                airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+                yield airbyte_state_message
+
+        if not has_slices or sync_mode == SyncMode.full_refresh:
+            if sync_mode == SyncMode.full_refresh:
+                # We use a dummy state if there is no suitable value provided by full_refresh streams that do not have a valid cursor.
+                # Incremental streams running full_refresh mode emit a meaningful state
+                stream_state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
+
+            # We should always emit a final state message for full refresh sync or streams that do not have any slices
+            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+            yield airbyte_state_message
 
     @abstractmethod
     def read_records(
@@ -304,3 +359,20 @@ class Stream(ABC):
             return wrapped_keys
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
+
+    def _checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
+        self,
+        stream_state: Mapping[str, Any],
+        state_manager,
+    ) -> AirbyteMessage:
+        # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
+        # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
+        # instance's deprecated get_updated_state() method.
+        try:
+            state_manager.update_state_for_stream(
+                self.name, self.namespace, self.state  # type: ignore # we know the field might not exist...
+            )
+
+        except AttributeError:
+            state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
+        return state_manager.create_state_message(self.name, self.namespace)

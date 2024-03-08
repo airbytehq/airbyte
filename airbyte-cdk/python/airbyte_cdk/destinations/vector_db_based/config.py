@@ -2,8 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
+import dpath.util
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
+from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
 
 
@@ -16,11 +19,10 @@ class SeparatorSplitterConfigModel(BaseModel):
     )
     keep_separator: bool = Field(default=False, title="Keep separator", description="Whether to keep the separator in the resulting chunks")
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "By Separator"
-        schema_extra = {
-            "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
-        }
+        description = "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
+        discriminator = "mode"
 
 
 class MarkdownHeaderSplitterConfigModel(BaseModel):
@@ -33,11 +35,10 @@ class MarkdownHeaderSplitterConfigModel(BaseModel):
         ge=1,
     )
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "By Markdown header"
-        schema_extra = {
-            "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
-        }
+        description = "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
+        discriminator = "mode"
 
 
 class CodeSplitterConfigModel(BaseModel):
@@ -65,11 +66,12 @@ class CodeSplitterConfigModel(BaseModel):
         ],
     )
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "By Programming Language"
-        schema_extra = {
-            "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
-        }
+        description = (
+            "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
+        )
+        discriminator = "mode"
 
 
 TextSplitterConfigModel = Union[SeparatorSplitterConfigModel, MarkdownHeaderSplitterConfigModel, CodeSplitterConfigModel]
@@ -85,6 +87,7 @@ class ProcessingConfigModel(BaseModel):
         ...,
         title="Chunk size",
         maximum=8191,
+        minimum=1,
         description="Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
     )
     chunk_overlap: int = Field(
@@ -127,11 +130,12 @@ class OpenAIEmbeddingConfigModel(BaseModel):
     mode: Literal["openai"] = Field("openai", const=True)
     openai_key: str = Field(..., title="OpenAI API key", airbyte_secret=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "OpenAI"
-        schema_extra = {
-            "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
-        }
+        description = (
+            "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+        )
+        discriminator = "mode"
 
 
 class OpenAICompatibleEmbeddingConfigModel(BaseModel):
@@ -150,9 +154,10 @@ class OpenAICompatibleEmbeddingConfigModel(BaseModel):
         title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384]
     )
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "OpenAI-compatible"
-        schema_extra = {"description": "Use a service that's compatible with the OpenAI API to embed text."}
+        description = "Use a service that's compatible with the OpenAI API to embed text."
+        discriminator = "mode"
 
 
 class AzureOpenAIEmbeddingConfigModel(BaseModel):
@@ -176,21 +181,19 @@ class AzureOpenAIEmbeddingConfigModel(BaseModel):
         examples=["your-resource-name"],
     )
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "Azure OpenAI"
-        schema_extra = {
-            "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
-        }
+        description = "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+        discriminator = "mode"
 
 
 class FakeEmbeddingConfigModel(BaseModel):
     mode: Literal["fake"] = Field("fake", const=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "Fake"
-        schema_extra = {
-            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
-        }
+        description = "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+        discriminator = "mode"
 
 
 class FromFieldEmbeddingConfigModel(BaseModel):
@@ -202,17 +205,71 @@ class FromFieldEmbeddingConfigModel(BaseModel):
         ..., title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384]
     )
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "From Field"
-        schema_extra = {
-            "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
-        }
+        description = "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
+        discriminator = "mode"
 
 
 class CohereEmbeddingConfigModel(BaseModel):
     mode: Literal["cohere"] = Field("cohere", const=True)
     cohere_key: str = Field(..., title="Cohere API key", airbyte_secret=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "Cohere"
-        schema_extra = {"description": "Use the Cohere API to embed text."}
+        description = "Use the Cohere API to embed text."
+        discriminator = "mode"
+
+
+class VectorDBConfigModel(BaseModel):
+    """
+    The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,
+    as well as to provide type safety for the configuration passed to the destination.
+
+    The configuration model is composed of four parts:
+    * Processing configuration
+    * Embedding configuration
+    * Indexing configuration
+    * Advanced configuration
+
+    Processing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.
+    """
+
+    embedding: Union[
+        OpenAIEmbeddingConfigModel,
+        CohereEmbeddingConfigModel,
+        FakeEmbeddingConfigModel,
+        AzureOpenAIEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
+    ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
+    processing: ProcessingConfigModel
+    omit_raw_text: bool = Field(
+        default=False,
+        title="Do not store raw text",
+        group="advanced",
+        description="Do not store the text that gets embedded along with the vector and the metadata in the destination. If set to true, only the vector and the metadata will be stored - in this case raw text for LLM use cases needs to be retrieved from another source.",
+    )
+
+    class Config:
+        title = "Destination Config"
+        schema_extra = {
+            "groups": [
+                {"id": "processing", "title": "Processing"},
+                {"id": "embedding", "title": "Embedding"},
+                {"id": "indexing", "title": "Indexing"},
+                {"id": "advanced", "title": "Advanced"},
+            ]
+        }
+
+    @staticmethod
+    def remove_discriminator(schema: Dict[str, Any]) -> None:
+        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+        dpath.util.delete(schema, "properties/**/discriminator")
+
+    @classmethod
+    def schema(cls, by_alias: bool = True, ref_template: str = "") -> Dict[str, Any]:
+        """we're overriding the schema classmethod to enable some post-processing"""
+        schema: Dict[str, Any] = super().schema()
+        schema = resolve_refs(schema)
+        cls.remove_discriminator(schema)
+        return schema

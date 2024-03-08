@@ -107,7 +107,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   }
 
   @Override
-  protected SqlGenerator<?> getSqlGenerator() {
+  protected SqlGenerator getSqlGenerator() {
     return new SnowflakeSqlGenerator();
   }
 
@@ -149,9 +149,9 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
       runSync(catalog, messages2);
 
-      final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+      final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw_mixed_tzs.jsonl");
       final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
-      verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+      verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
     } finally {
       // manually drop the lowercased schema, since we no longer have the code to do it automatically
       // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code
@@ -184,7 +184,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
       final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl");
       final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
-      verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+      verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
     } finally {
       // manually drop the lowercased schema, since we no longer have the code to do it automatically
       // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code
@@ -216,6 +216,37 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
     // Second sync
     runSync(catalog, messages); // does not throw with latest version
     assertEquals(1, dumpFinalTableRecords(streamNamespace, streamName).toArray().length);
+  }
+
+  @Test
+  public void testExtractedAtUtcTimezoneMigration() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withCursorField(List.of("updated_at"))
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    // First sync
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+    runSync(catalog, messages1, "airbyte/destination-snowflake:3.5.11");
+
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/ltz_extracted_at_sync1_expectedrecords_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/ltz_extracted_at_sync1_expectedrecords_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+
+    runSync(catalog, messages2);
+
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw_mixed_tzs.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final_mixed_tzs.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
   private String getDefaultSchema() {

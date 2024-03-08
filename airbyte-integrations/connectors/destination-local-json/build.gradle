@@ -4,9 +4,16 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = ['db-destinations']
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -17,6 +24,4 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation libs.airbyte.protocol
 }

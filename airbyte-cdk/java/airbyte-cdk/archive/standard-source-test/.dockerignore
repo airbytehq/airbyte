@@ -1,4 +1,0 @@
-*
-!Dockerfile
-!build/distributions
-!entrypoint.sh

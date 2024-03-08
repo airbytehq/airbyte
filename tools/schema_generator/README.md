@@ -22,7 +22,7 @@ $ source .venv/bin/activate # enable the venv
 $ pip install -r requirements.txt
 ```
 
-To use a connectors `run` command we first need an AirbyteConfiguredCatalog:
+To use a connector's `run` command we first need a `ConfiguredAirbyteCatalog`:
 
 ```bash
 $ ../../airbyte-integrations/connectors/<your-connector> # you need to use the tool at the root folder of a connector

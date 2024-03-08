@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.common.base.Charsets;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationWriter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -23,7 +24,7 @@ public class BigQueryTableWriter implements DestinationWriter {
 
   private final TableDataWriteChannel writeChannel;
 
-  public BigQueryTableWriter(TableDataWriteChannel writeChannel) {
+  public BigQueryTableWriter(final TableDataWriteChannel writeChannel) {
     this.writeChannel = writeChannel;
   }
 
@@ -31,30 +32,31 @@ public class BigQueryTableWriter implements DestinationWriter {
   public void initialize() throws IOException {}
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) {
     throw new RuntimeException("This write method is not used!");
   }
 
   @Override
-  public void write(JsonNode formattedData) throws IOException {
+  public void write(final JsonNode formattedData) throws IOException {
     writeChannel.write(ByteBuffer.wrap((Jsons.serialize(formattedData) + "\n").getBytes(Charsets.UTF_8)));
   }
 
   @Override
-  public void write(String formattedData) throws IOException {
+  public void write(final String formattedData) throws IOException {
     writeChannel.write(ByteBuffer.wrap((formattedData + "\n").getBytes(Charsets.UTF_8)));
   }
 
   @Override
-  public void close(boolean hasFailed) throws IOException {
+  public void close(final boolean hasFailed) throws IOException {
     this.writeChannel.close();
     try {
-      Job job = writeChannel.getJob();
+      final Job job = writeChannel.getJob();
       if (job != null && job.getStatus().getError() != null) {
+        AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
         throw new RuntimeException("Fail to complete a load job in big query, Job id: " + writeChannel.getJob().getJobId() +
             ", with error: " + writeChannel.getJob().getStatus().getError());
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

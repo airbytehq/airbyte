@@ -12,6 +12,11 @@ from airbyte_cdk.models import Type as MessageType
 
 
 class SliceLogger(ABC):
+    """
+    SliceLogger is an interface that allows us to log slices of data in a uniform way.
+    It is responsible for determining whether or not a slice should be logged and for creating the log message.
+    """
+
     SLICE_LOG_PREFIX = "slice:"
 
     def create_slice_log_message(self, _slice: Optional[Mapping[str, Any]]) -> AirbyteMessage:

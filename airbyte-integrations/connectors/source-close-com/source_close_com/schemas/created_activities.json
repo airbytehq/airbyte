@@ -6,6 +6,9 @@
     "date_updated": {
       "type": ["null", "string"]
     },
+    "activity_at": {
+      "type": ["null", "string"]
+    },
     "date_created": {
       "type": ["null", "string"]
     },

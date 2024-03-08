@@ -1,34 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from typing import Any, Dict, Optional
 
-from typing import List, Optional, Union
-
+import dpath.util
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
-from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
-from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
-from pydantic import AnyUrl, BaseModel, Field, ValidationError, root_validator
-
-
-class UnstructuredFormat(BaseModel):
-    class Config:
-        title = "Markdown/PDF/Docx Format (Experimental)"
-        schema_extra = {"description": "Extract text from document formats and emit as one record per file."}
-
-    filetype: str = Field(
-        "unstructured",
-        const=True,
-    )
-
-
-class S3FileBasedStreamConfig(FileBasedStreamConfig):
-    format: Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat, UnstructuredFormat] = Field(
-        title="Format",
-        description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
-    )
+from airbyte_cdk.utils import is_cloud_environment
+from pydantic import AnyUrl, Field, ValidationError, root_validator
 
 
 class Config(AbstractFileBasedSpec):
@@ -52,6 +30,14 @@ class Config(AbstractFileBasedSpec):
         order=2,
     )
 
+    role_arn: Optional[str] = Field(
+        title=f"AWS Role ARN",
+        default=None,
+        description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
+        f"requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
+        order=6,
+    )
+
     aws_secret_access_key: Optional[str] = Field(
         title="AWS Secret Access Key",
         default=None,
@@ -62,13 +48,18 @@ class Config(AbstractFileBasedSpec):
     )
 
     endpoint: Optional[str] = Field(
-        "", title="Endpoint", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4
+        default="",
+        title="Endpoint",
+        description="Endpoint to an S3 compatible service. Leave empty to use AWS.",
+        examples=["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
+        order=4,
     )
 
-    streams: List[S3FileBasedStreamConfig] = Field(
-        title="The list of streams to sync",
-        description='Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.',
-        order=10,
+    region_name: Optional[str] = Field(
+        title="AWS Region",
+        default=None,
+        description="AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
+        order=5,
     )
 
     @root_validator
@@ -79,4 +70,24 @@ class Config(AbstractFileBasedSpec):
             raise ValidationError(
                 "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config
             )
+
+        if is_cloud_environment():
+            endpoint = values.get("endpoint")
+            if endpoint:
+                if endpoint.startswith("http://"):  # ignore-https-check
+                    raise ValidationError("The endpoint must be a secure HTTPS endpoint.", model=Config)
+
         return values
+
+    @classmethod
+    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        """
+        Generates the mapping comprised of the config fields
+        """
+        schema = super().schema(*args, **kwargs)
+
+        # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
+        processing_options = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf")
+        dpath.util.set(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf", processing_options[:1])
+
+        return schema

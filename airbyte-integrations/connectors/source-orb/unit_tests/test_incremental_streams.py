@@ -257,7 +257,7 @@ def test_credits_ledger_entries_transform_record(mocker):
 @responses.activate
 def test_credits_ledger_entries_no_matching_events(mocker):
     stream = CreditsLedgerEntries(string_event_properties_keys=["ping"])
-    ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, {"event_id": "bar-event-id", "entry_type": "decrement"}]
+    ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement", "created_at": "2022-02-21T07:00:00+00:00"}, {"event_id": "bar-event-id", "entry_type": "decrement", "created_at": "2022-02-21T07:00:00+00:00"}]
     mock_response = {
         "data": [
             {
@@ -277,8 +277,8 @@ def test_credits_ledger_entries_no_matching_events(mocker):
     # We failed to enrich either event, but still check that the schema was
     # transformed as expected
     assert enriched_entries == [
-        {"event": {"id": "foo-event-id"}, "entry_type": "decrement"},
-        {"event": {"id": "bar-event-id"}, "entry_type": "decrement"},
+        {"event": {"id": "foo-event-id"}, "entry_type": "decrement", "created_at": "2022-02-21T07:00:00+00:00"},
+        {"event": {"id": "bar-event-id"}, "entry_type": "decrement", "created_at": "2022-02-21T07:00:00+00:00"},
     ]
 
 
@@ -301,7 +301,7 @@ def test_credits_ledger_entries_enriches_selected_property_keys(
         string_event_properties_keys=selected_string_property_keys, numeric_event_properties_keys=selected_numeric_property_keys
     )
     original_entry_1 = {"entry_type": "increment"}
-    ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, original_entry_1]
+    ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement", "created_at": "2022-02-21T07:00:00+00:00"}, original_entry_1]
     mock_response = {
         "data": [
             {
@@ -317,7 +317,7 @@ def test_credits_ledger_entries_enriches_selected_property_keys(
     responses.add(responses.POST, f"{stream.url_base}events", json=mock_response, status=200)
     enriched_entries = stream.enrich_ledger_entries_with_event_data(ledger_entries)
 
-    assert enriched_entries[0] == {"entry_type": "decrement", "event": {"id": "foo-event-id", "properties": resulting_properties}}
+    assert enriched_entries[0] == {"entry_type": "decrement", "created_at": "2022-02-21T07:00:00+00:00", "event": {"id": "foo-event-id", "properties": resulting_properties}}
     # Does not enrich, but still passes back, irrelevant (for enrichment purposes) ledger entry
     assert enriched_entries[1] == original_entry_1
 
@@ -325,7 +325,7 @@ def test_credits_ledger_entries_enriches_selected_property_keys(
 @responses.activate
 def test_credits_ledger_entries_enriches_with_multiple_entries_per_event(mocker):
     stream = CreditsLedgerEntries(string_event_properties_keys=["ping"])
-    ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, {"event_id": "foo-event-id", "entry_type": "decrement"}]
+    ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement", "created_at": "2022-02-21T07:00:00+00:00",}, {"event_id": "foo-event-id", "entry_type": "decrement", "created_at": "2022-02-21T07:00:00+00:00",}]
     mock_response = {
         "data": [
             {
@@ -343,8 +343,8 @@ def test_credits_ledger_entries_enriches_with_multiple_entries_per_event(mocker)
 
     # We expect both events are enriched correctly
     assert enriched_entries == [
-        {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement"},
-        {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement"},
+        {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement", "created_at": "2022-02-21T07:00:00+00:00",},
+        {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement", "created_at": "2022-02-21T07:00:00+00:00",},
     ]
 
 

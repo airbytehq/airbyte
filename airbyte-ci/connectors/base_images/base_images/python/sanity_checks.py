@@ -76,12 +76,74 @@ async def check_python_image_has_expected_env_vars(python_image_container: dagge
         "PATH",
         "LANG",
         "GPG_KEY",
-        "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL",
         "PYTHON_SETUPTOOLS_VERSION",
-        "OTEL_TRACES_EXPORTER",
-        "OTEL_TRACE_PARENT",
-        "TRACEPARENT",
     }
     # It's not suboptimal to call printenv multiple times because the printenv output is cached.
     for expected_env_var in expected_env_vars:
         await base_sanity_checks.check_env_var_with_printenv(python_image_container, expected_env_var)
+
+
+async def check_nltk_data(python_image_container: dagger.Container):
+    """Install nltk and check that the required data is available.
+    As of today the required data is:
+    - taggers/averaged_perceptron_tagger
+    - tokenizers/punkt
+
+    Args:
+        python_image_container (dagger.Container): The container on which the sanity checks should run.
+
+    Raises:
+        errors.SanityCheckError: Raised if the nltk data is not available.
+    """
+    with_nltk = await python_image_container.with_exec(["pip", "install", "nltk==3.8.1"], skip_entrypoint=True)
+    try:
+        await with_nltk.with_exec(
+            ["python", "-c", 'import nltk;nltk.data.find("taggers/averaged_perceptron_tagger");nltk.data.find("tokenizers/punkt")'],
+            skip_entrypoint=True,
+        )
+    except dagger.ExecError as e:
+        raise errors.SanityCheckError(e)
+
+
+async def check_tesseract_version(python_image_container: dagger.Container, tesseract_version: str):
+    """Check that the tesseract version is the expected one.
+
+    Args:
+        python_image_container (dagger.Container): The container on which the sanity checks should run.
+        tesseract_version (str): The expected tesseract version.
+
+    Raises:
+        errors.SanityCheckError: Raised if the tesseract --version command could not be executed or if the outputted version is not the expected one.
+    """
+    try:
+        tesseract_version_output = await python_image_container.with_exec(["tesseract", "--version"], skip_entrypoint=True).stdout()
+    except dagger.ExecError as e:
+        raise errors.SanityCheckError(e)
+    if not tesseract_version_output.startswith(f"tesseract {tesseract_version}"):
+        raise errors.SanityCheckError(f"unexpected tesseract version: {tesseract_version_output}")
+
+
+async def check_poppler_utils_version(python_image_container: dagger.Container, poppler_version: str):
+    """Check that the poppler version is the expected one.
+    The poppler version can be checked by running a pdftotext -v command.
+
+    Args:
+        python_image_container (dagger.Container): The container on which the sanity checks should run.
+        poppler_version (str): The expected poppler version.
+
+    Raises:
+        errors.SanityCheckError: Raised if the pdftotext -v command could not be executed or if the outputted version is not the expected one.
+    """
+    try:
+        pdf_to_text_version_output = await python_image_container.with_exec(["pdftotext", "-v"], skip_entrypoint=True).stderr()
+    except dagger.ExecError as e:
+        raise errors.SanityCheckError(e)
+
+    if f"pdftotext version {poppler_version}" not in pdf_to_text_version_output:
+        raise errors.SanityCheckError(f"unexpected poppler version: {pdf_to_text_version_output}")
+
+
+async def check_cdk_system_dependencies(python_image_container: dagger.Container):
+    await check_nltk_data(python_image_container)
+    await check_tesseract_version(python_image_container, "5.3.0")
+    await check_poppler_utils_version(python_image_container, "22.12.0")

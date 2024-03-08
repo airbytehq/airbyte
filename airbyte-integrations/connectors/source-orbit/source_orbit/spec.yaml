@@ -6,7 +6,7 @@ connectionSpecification:
   required:
     - api_token
     - workspace
-  additionalProperties: false
+  additionalProperties: true
   properties:
     api_token:
       type: string

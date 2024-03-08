@@ -729,6 +729,7 @@ parquet_with_invalid_config_scenario = (
     .set_expected_records([])
     .set_expected_logs({"read": [{"level": "ERROR", "message": "Error parsing record"}]})
     .set_expected_discover_error(AirbyteTracedException, "Error inferring schema from files")
+    .set_expected_read_error(AirbyteTracedException, "Please check the logged errors for more information.")
     .set_expected_catalog(
         {
             "streams": [

@@ -49,6 +49,7 @@ def config(one_year_ago):
             "screenPageViewsPerSession",
             "bounceRate",
         ],
+        "keep_empty_rows": True,
         "custom_reports": json.dumps(
             [
                 {
@@ -67,6 +68,17 @@ def config_without_date_range():
         "property_id": "108176369",
         "property_ids": ["108176369"],
         "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
+        "dimensions": ["deviceCategory", "operatingSystem", "browser"],
+        "metrics": [
+            "totalUsers",
+            "newUsers",
+            "sessions",
+            "sessionsPerUser",
+            "averageSessionDuration",
+            "screenPageViews",
+            "screenPageViewsPerSession",
+            "bounceRate",
+        ],
         "custom_reports": [],
     }
 

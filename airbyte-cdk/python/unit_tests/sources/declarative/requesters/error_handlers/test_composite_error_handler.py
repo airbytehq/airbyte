@@ -186,3 +186,28 @@ def create_response(status_code: int, headers=None, json_body=None):
     response_mock.headers = headers or {}
     response_mock.json.return_value = json_body or {}
     return response_mock
+
+
+@pytest.mark.parametrize(
+    "test_name, max_times, expected_max_time",
+    [
+        ("test_single_handler", [10], 10),
+        ("test_multiple_handlers", [10, 15], 15),
+    ],
+)
+def test_max_time_is_max_of_underlying_handlers(test_name, max_times, expected_max_time):
+    composite_error_handler = CompositeErrorHandler(
+        error_handlers=[
+            DefaultErrorHandler(
+                response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, parameters={}, config={})],
+                max_time=max_time,
+                parameters={},
+                config={},
+            )
+            for max_time in max_times
+        ],
+        parameters={},
+    )
+
+    max_time = composite_error_handler.max_time
+    assert max_time == expected_max_time

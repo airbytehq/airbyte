@@ -5,116 +5,75 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.json.Jsons;
-import java.util.Map;
-import org.testcontainers.containers.MSSQLServerContainer;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@TestInstance(Lifecycle.PER_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
+  private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
-    container.close();
+  protected JsonNode getConfig() {
+    return testdb.integrationTestConfigBuilder()
+        .withCdcReplication()
+        .withoutSsl()
+        .build();
   }
 
   @Override
-  protected Database setupDatabase() throws Exception {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest")
-        .acceptLicense();
-    container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
-    container.start();
-
-    final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
-        "method", "CDC",
-        "data_to_sync", "Existing and New",
-        "initial_waiting_seconds", 5,
-        "snapshot_isolation", "Snapshot"));
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", replicationConfig)
-        .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
-        .build());
-
-    dslContext = DSLContextFactory.create(DataSourceFactory.create(
-        container.getUsername(),
-        container.getPassword(),
-        container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        Map.of("encrypt", "false")), null);
-    final Database database = new Database(dslContext);
-
-    executeQuery("CREATE DATABASE " + DB_NAME + ";");
-    executeQuery("ALTER DATABASE " + DB_NAME + "\n\tSET ALLOW_SNAPSHOT_ISOLATION ON");
-    executeQuery("USE " + DB_NAME + "\n" + "EXEC sys.sp_cdc_enable_db");
-
-    return database;
+  protected Database setupDatabase() {
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT)
+        .withCdc();
+    return testdb.getDatabase();
   }
 
-  private void executeQuery(final String query) {
-    try {
-      final Database database = new Database(dslContext);
-      database.query(
-          ctx -> ctx
-              .execute(query));
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
+  protected void createTables() throws Exception {
+    List<Callable<MsSQLTestDatabase>> createTableTasks = new ArrayList<>();
+    List<Callable<MsSQLTestDatabase>> enableCdcForTableTasks = new ArrayList<>();
+    for (var test : testDataHolders) {
+      createTableTasks.add(() -> testdb.with(test.getCreateSqlQuery()));
+      enableCdcForTableTasks.add(() -> testdb.withCdcForTable(test.getNameSpace(), test.getNameWithTestPrefix(), null));
     }
+    executor.invokeAll(createTableTasks);
+    executor.invokeAll(enableCdcForTableTasks);
+  }
+
+  protected void populateTables() throws Exception {
+    List<Callable<MsSQLTestDatabase>> insertTasks = new ArrayList<>();
+    List<Callable<MsSQLTestDatabase>> waitForCdcRecordsTasks = new ArrayList<>();
+    for (var test : testDataHolders) {
+      insertTasks.add(() -> {
+        this.database.query((ctx) -> {
+          List<String> sql = test.getInsertSqlQueries();
+          Objects.requireNonNull(ctx);
+          sql.forEach(ctx::fetch);
+          return null;
+        });
+        return null;
+      });
+      waitForCdcRecordsTasks.add(() -> testdb.waitForCdcRecords(test.getNameSpace(), test.getNameWithTestPrefix(), test.getExpectedValues().size()));
+    }
+    // executor.invokeAll(insertTasks);
+    executor.invokeAll(insertTasks);
+    executor.invokeAll(waitForCdcRecordsTasks);
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    super.setupEnvironment(environment);
-    enableCdcOnAllTables();
-  }
-
-  private void enableCdcOnAllTables() {
-    executeQuery("USE " + DB_NAME + "\n"
-        + "DECLARE @TableName VARCHAR(100)\n"
-        + "DECLARE @TableSchema VARCHAR(100)\n"
-        + "DECLARE CDC_Cursor CURSOR FOR\n"
-        + "  SELECT * FROM ( \n"
-        + "   SELECT Name,SCHEMA_NAME(schema_id) AS TableSchema\n"
-        + "   FROM   sys.objects\n"
-        + "   WHERE  type = 'u'\n"
-        + "   AND is_ms_shipped <> 1\n"
-        + "   ) CDC\n"
-        + "OPEN CDC_Cursor\n"
-        + "FETCH NEXT FROM CDC_Cursor INTO @TableName,@TableSchema\n"
-        + "WHILE @@FETCH_STATUS = 0\n"
-        + " BEGIN\n"
-        + "   DECLARE @SQL NVARCHAR(1000)\n"
-        + "   DECLARE @CDC_Status TINYINT\n"
-        + "   SET @CDC_Status=(SELECT COUNT(*)\n"
-        + "     FROM   cdc.change_tables\n"
-        + "     WHERE  Source_object_id = OBJECT_ID(@TableSchema+'.'+@TableName))\n"
-        + "   --IF CDC is not enabled on Table, Enable CDC\n"
-        + "   IF @CDC_Status <> 1\n"
-        + "     BEGIN\n"
-        + "       SET @SQL='EXEC sys.sp_cdc_enable_table\n"
-        + "         @source_schema = '''+@TableSchema+''',\n"
-        + "         @source_name   = ''' + @TableName\n"
-        + "                     + ''',\n"
-        + "         @role_name     = null;'\n"
-        + "       EXEC sp_executesql @SQL\n"
-        + "     END\n"
-        + "   FETCH NEXT FROM CDC_Cursor INTO @TableName,@TableSchema\n"
-        + "END\n"
-        + "CLOSE CDC_Cursor\n"
-        + "DEALLOCATE CDC_Cursor");
+  public boolean testCatalog() {
+    return true;
   }
 
 }
