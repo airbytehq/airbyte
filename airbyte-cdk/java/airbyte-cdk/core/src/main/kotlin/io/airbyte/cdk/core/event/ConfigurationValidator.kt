@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.core.command.option.ConnectorConfiguration
 import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.airbyte.cdk.core.operation.Operation
-import io.airbyte.cdk.core.operation.OperationType
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.validation.json.JsonSchemaValidator
@@ -31,7 +30,7 @@ class ConfigurationValidator(
     @Value("\${airbyte.connector.operation}") private val operationType: String,
     private val configuration: ConnectorConfiguration,
     private val validator: JsonSchemaValidator,
-    private val operations: List<Operation>,
+    private val operation: Operation,
 ) : ApplicationEventListener<StartupEvent> {
     override fun onApplicationEvent(event: StartupEvent) {
         if (requiresConfiguration()) {
@@ -50,9 +49,6 @@ class ConfigurationValidator(
     }
 
     private fun requiresConfiguration(): Boolean {
-        return operations
-            .find { it.type() == OperationType.valueOf(operationType.uppercase()) }
-            ?.type()?.requiresConfiguration
-            ?: false
+        return operation.type().requiresConfiguration
     }
 }

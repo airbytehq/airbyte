@@ -19,8 +19,8 @@ import java.util.concurrent.locks.ReentrantLock
  * Represents the minimal interface over the underlying buffer queues required for dequeue
  * operations with the aim of minimizing lower-level queue access.
  *
- * Aside from [.take], all public methods in this class represents
- * queue metadata required to determine buffer flushing.
+ * Aside from [.take], all public methods in this class represents queue metadata required to
+ * determine buffer flushing.
  */
 // todo (cgardens) - make all the metadata methods more efficient.
 class BufferDequeue(
@@ -31,7 +31,8 @@ class BufferDequeue(
     private val bufferLocks: ConcurrentMap<StreamDescriptor, ReentrantLock> = ConcurrentHashMap()
 
     /**
-     * Primary dequeue method. Reads from queue up to optimalBytesToRead OR until the queue is empty.
+     * Primary dequeue method. Reads from queue up to optimalBytesToRead OR until the queue is
+     * empty.
      *
      * @param streamDescriptor specific buffer to take from
      * @param optimalBytesToRead bytes to read, if possible
@@ -44,7 +45,9 @@ class BufferDequeue(
         val lock: ReentrantLock =
             bufferLocks.computeIfAbsent(
                 streamDescriptor,
-            ) { ReentrantLock() }
+            ) {
+                ReentrantLock()
+            }
         lock.lock()
 
         val queue: StreamAwareQueue? = buffers[streamDescriptor]
@@ -96,9 +99,9 @@ class BufferDequeue(
 
     val bufferedStreams: Set<StreamDescriptor>
         /**
-         * The following methods are provide metadata for buffer flushing calculations. Consumers are
-         * expected to call it to retrieve the currently buffered streams as a handle to the remaining
-         * methods.
+         * The following methods are provide metadata for buffer flushing calculations. Consumers
+         * are expected to call it to retrieve the currently buffered streams as a handle to the
+         * remaining methods.
          */
         get() = HashSet(buffers.keys)
 
@@ -107,14 +110,14 @@ class BufferDequeue(
 
     val totalGlobalQueueSizeBytes: Long
         get() =
-            buffers.values.stream().map { obj: StreamAwareQueue -> obj.currentMemoryUsage }.mapToLong { obj: Long -> obj }
+            buffers.values
+                .stream()
+                .map { obj: StreamAwareQueue -> obj.currentMemoryUsage }
+                .mapToLong { obj: Long -> obj }
                 .sum()
 
     fun getQueueSizeInRecords(streamDescriptor: StreamDescriptor): Optional<Long> {
-        return getBuffer(streamDescriptor).map { buf: StreamAwareQueue ->
-            buf.size()
-                .toLong()
-        }
+        return getBuffer(streamDescriptor).map { buf: StreamAwareQueue -> buf.size().toLong() }
     }
 
     fun getQueueSizeBytes(streamDescriptor: StreamDescriptor): Optional<Long> {
@@ -122,7 +125,9 @@ class BufferDequeue(
     }
 
     fun getTimeOfLastRecord(streamDescriptor: StreamDescriptor): Optional<Instant> {
-        return getBuffer(streamDescriptor).flatMap { obj: StreamAwareQueue -> obj.getTimeOfLastMessage() }
+        return getBuffer(streamDescriptor).flatMap { obj: StreamAwareQueue ->
+            obj.getTimeOfLastMessage()
+        }
     }
 
     private fun getBuffer(streamDescriptor: StreamDescriptor): Optional<StreamAwareQueue> {

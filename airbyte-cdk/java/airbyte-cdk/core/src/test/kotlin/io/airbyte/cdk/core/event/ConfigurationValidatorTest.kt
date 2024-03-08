@@ -13,7 +13,6 @@ import io.micronaut.context.event.StartupEvent
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -29,7 +28,6 @@ class ConfigurationValidatorTest {
         val connectorConfiguration: ConnectorConfiguration = mockk()
         val jsonValidator: JsonSchemaValidator = mockk()
         val operation: Operation = mockk()
-        val operations = listOf(operation)
 
         every { jsonValidator.validate(any(), any()) } returns setOf()
         every { connectorConfiguration.toJson() } returns Jsons.deserialize("{\"key\":\"value\"}")
@@ -41,7 +39,7 @@ class ConfigurationValidatorTest {
                 operationType = operationType.name.lowercase(),
                 configuration = connectorConfiguration,
                 validator = jsonValidator,
-                operations = operations,
+                operation = operation,
             )
         val event: StartupEvent = mockk()
 
@@ -59,7 +57,6 @@ class ConfigurationValidatorTest {
         val connectorConfiguration: ConnectorConfiguration = mockk()
         val jsonValidator: JsonSchemaValidator = mockk()
         val operation: Operation = mockk()
-        val operations = listOf(operation)
 
         every { jsonValidator.validate(any(), any()) } returns setOf("some error")
         every { connectorConfiguration.toJson() } returns Jsons.deserialize("{\"key\":\"value\"}")
@@ -71,7 +68,7 @@ class ConfigurationValidatorTest {
                 operationType = operationType.name.lowercase(),
                 configuration = connectorConfiguration,
                 validator = jsonValidator,
-                operations = operations,
+                operation = operation,
             )
         val event: StartupEvent = mockk()
 
@@ -89,7 +86,6 @@ class ConfigurationValidatorTest {
         val connectorConfiguration: ConnectorConfiguration = mockk()
         val jsonValidator: JsonSchemaValidator = mockk()
         val operation: Operation = mockk()
-        val operations = listOf(operation)
 
         every { jsonValidator.validate(any(), any()) } returns setOf()
         every { connectorConfiguration.toJson() } returns Jsons.deserialize("{\"key\":\"value\"}")
@@ -101,34 +97,7 @@ class ConfigurationValidatorTest {
                 operationType = operationType.name.lowercase(),
                 configuration = connectorConfiguration,
                 validator = jsonValidator,
-                operations = operations
-            )
-        val event: StartupEvent = mockk()
-
-        assertDoesNotThrow { validator.onApplicationEvent(event) }
-
-        verify(exactly = 0) { jsonValidator.validate(any(), any()) }
-    }
-
-    @Test
-    internal fun testCatalogValidationSkippedForNoMatchingOperation() {
-        val connectorName = "test-destination"
-        val connectorConfiguration: ConnectorConfiguration = mockk()
-        val jsonValidator: JsonSchemaValidator = mockk()
-        val operation: Operation = mockk()
-        val operations = listOf(operation)
-
-        every { jsonValidator.validate(any(), any()) } returns setOf()
-        every { connectorConfiguration.toJson() } returns Jsons.deserialize("{\"key\":\"value\"}")
-        every { operation.type() } returns OperationType.DISCOVER
-
-        val validator =
-            ConfigurationValidator(
-                connectorName = connectorName,
-                operationType = OperationType.CHECK.name.lowercase(),
-                configuration = connectorConfiguration,
-                validator = jsonValidator,
-                operations = operations
+                operation = operation
             )
         val event: StartupEvent = mockk()
 

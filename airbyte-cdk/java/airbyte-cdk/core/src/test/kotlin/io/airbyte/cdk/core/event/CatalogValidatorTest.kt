@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.core.event
 
-import io.airbyte.cdk.core.command.option.AirbyteConfiguredCatalog
+import io.airbyte.cdk.core.command.option.MicronautConfiguredAirbyteCatalog
 import io.airbyte.cdk.core.operation.Operation
 import io.airbyte.cdk.core.operation.OperationType
 import io.airbyte.commons.json.Jsons
@@ -13,7 +13,6 @@ import io.micronaut.context.event.StartupEvent
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -30,9 +29,8 @@ class CatalogValidatorTest {
         val streamNamespace = "test-namespace"
         val catalogJson =
             "{\"streams\":[{\"stream\":{\"name\":\"$streamName\",\"namespace\":\"$streamNamespace\"}}]}"
-        val catalog: AirbyteConfiguredCatalog = mockk()
+        val catalog: MicronautConfiguredAirbyteCatalog = mockk()
         val operation: Operation = mockk()
-        val operations = listOf(operation)
 
         every { catalog.getConfiguredCatalog() } returns
             Jsons.deserialize(catalogJson, ConfiguredAirbyteCatalog::class.java)
@@ -43,7 +41,7 @@ class CatalogValidatorTest {
                 connectorName = connectorName,
                 operationType = operationType.name.lowercase(),
                 airbyteConfiguredCatalog = catalog,
-                operations = operations
+                operation = operation
             )
         val event: StartupEvent = mockk()
         assertDoesNotThrow { validator.onApplicationEvent(event) }
@@ -56,9 +54,8 @@ class CatalogValidatorTest {
         operationType: OperationType
     ) {
         val connectorName = "test-destination"
-        val catalog: AirbyteConfiguredCatalog = mockk()
+        val catalog: MicronautConfiguredAirbyteCatalog = mockk()
         val operation: Operation = mockk()
-        val operations = listOf(operation)
 
         every { catalog.getConfiguredCatalog() } returns CatalogValidator.emptyCatalog
         every { operation.type() } returns operationType
@@ -68,7 +65,7 @@ class CatalogValidatorTest {
                 connectorName = connectorName,
                 operationType = operationType.name.lowercase(),
                 airbyteConfiguredCatalog = catalog,
-                operations = operations
+                operation = operation
             )
         val event: StartupEvent = mockk()
         assertThrows<IllegalArgumentException> { validator.onApplicationEvent(event) }
@@ -85,9 +82,8 @@ class CatalogValidatorTest {
         val streamNamespace = "test-namespace"
         val catalogJson =
             "{\"streams\":[{\"stream\":{\"name\":\"$streamName\",\"namespace\":\"$streamNamespace\"}}]}"
-        val catalog: AirbyteConfiguredCatalog = mockk()
+        val catalog: MicronautConfiguredAirbyteCatalog = mockk()
         val operation: Operation = mockk()
-        val operations = listOf(operation)
 
         every { catalog.getConfiguredCatalog() } returns
             Jsons.deserialize(catalogJson, ConfiguredAirbyteCatalog::class.java)
@@ -98,34 +94,7 @@ class CatalogValidatorTest {
                 connectorName = connectorName,
                 operationType = operationType.name.lowercase(),
                 airbyteConfiguredCatalog = catalog,
-                operations = operations
-            )
-        val event: StartupEvent = mockk()
-        assertDoesNotThrow { validator.onApplicationEvent(event) }
-        verify(exactly = 0) { catalog.getConfiguredCatalog() }
-    }
-
-    @Test
-    internal fun testCatalogValidationSkippedForNoMatchingOperation() {
-        val connectorName = "test-destination"
-        val streamName = "test-name"
-        val streamNamespace = "test-namespace"
-        val catalogJson =
-            "{\"streams\":[{\"stream\":{\"name\":\"$streamName\",\"namespace\":\"$streamNamespace\"}}]}"
-        val catalog: AirbyteConfiguredCatalog = mockk()
-        val operation: Operation = mockk()
-        val operations = listOf(operation)
-
-        every { catalog.getConfiguredCatalog() } returns
-            Jsons.deserialize(catalogJson, ConfiguredAirbyteCatalog::class.java)
-        every { operation.type() } returns OperationType.DISCOVER
-
-        val validator =
-            CatalogValidator(
-                connectorName = connectorName,
-                operationType = OperationType.CHECK.name.lowercase(),
-                airbyteConfiguredCatalog = catalog,
-                operations = operations
+                operation = operation
             )
         val event: StartupEvent = mockk()
         assertDoesNotThrow { validator.onApplicationEvent(event) }
