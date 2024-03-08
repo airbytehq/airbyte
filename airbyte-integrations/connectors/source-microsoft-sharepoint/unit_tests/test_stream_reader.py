@@ -353,7 +353,7 @@ not_empty_subfolder_response = {
 
 
 @pytest.mark.parametrize(
-    "initial_response, subsequent_responses, expected_result, raises_error, initial_path",
+    "initial_response, subsequent_responses, expected_result, raises_error, expected_error_message, initial_path",
     [
         # Object ID is a file
         (
@@ -367,10 +367,11 @@ not_empty_subfolder_response = {
                 )
             ],
             False,
+            None,
             "http://example.com",
         ),
         # Object ID is an empty folder
-        (empty_folder_response, [empty_subfolder_response], [], False, "http://example.com"),
+        (empty_folder_response, [empty_subfolder_response], [], False, None, "http://example.com"),
         # Object ID is a folder with empty subfolders and files
         (
             {"folder": True, "name": "root"},  # Initial folder response
@@ -387,37 +388,63 @@ not_empty_subfolder_response = {
                 )
             ],
             False,
+            None,
             "http://example.com",
         ),
         # Error response on initial request
-        (MagicMock(status_code=400), [], [], True, "http://example.com"),
+        (
+            MagicMock(status_code=400, json=MagicMock(return_value={"error": {"message": "Bad Request"}})),
+            [],
+            [],
+            True,
+            "Failed to retrieve the initial shared object with ID 'dummy_object_id' from drive 'dummy_drive_id'. HTTP status: 400. Error: Bad Request",
+            "http://example.com",
+        ),
         # Error response while iterating over nested
-        ({"folder": True, "name": "root"}, [MagicMock(status_code=400)], [], True, "http://example.com"),
+        (
+            {"folder": True, "name": "root"},
+            [MagicMock(status_code=400, json=MagicMock(return_value={"error": {"message": "Bad Request"}}))],
+            [],
+            True,
+            (
+                "Failed to retrieve files from URL "
+                "'https://graph.microsoft.com/v1.0/drives/dummy_drive_id/items/dummy_object_id/children'. "
+                "HTTP status: 400. Error: Bad Request"
+            ),
+            "http://example.com",
+        ),
     ],
 )
 @patch("source_microsoft_sharepoint.stream_reader.requests.get")
 @patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
 def test_get_shared_drive_object(
-    mock_get_access_token, mock_requests_get, initial_response, subsequent_responses, expected_result, raises_error, initial_path
+    mock_get_access_token,
+    mock_requests_get,
+    initial_response,
+    subsequent_responses,
+    expected_result,
+    raises_error,
+    expected_error_message,
+    initial_path,
 ):
     mock_get_access_token.return_value = "dummy_access_token"
-    mock_responses = (
-        [MagicMock(status_code=200, json=MagicMock(return_value=initial_response))]
-        if not isinstance(initial_response, MagicMock)
-        else [initial_response]
-    )
+    mock_responses = [
+        initial_response
+        if isinstance(initial_response, MagicMock)
+        else MagicMock(status_code=200, json=MagicMock(return_value=initial_response))
+    ]
     for response in subsequent_responses:
-        mock_json_response = (
-            MagicMock(status_code=200, json=MagicMock(return_value=response)) if not isinstance(response, MagicMock) else response
+        mock_responses.append(
+            response if isinstance(response, MagicMock) else MagicMock(status_code=200, json=MagicMock(return_value=response))
         )
-        mock_responses.append(mock_json_response)
     mock_requests_get.side_effect = mock_responses
 
     reader = SourceMicrosoftSharePointStreamReader()
 
     if raises_error:
-        with pytest.raises(RuntimeError):
+        with pytest.raises(RuntimeError) as exc_info:
             list(reader._get_shared_drive_object("dummy_drive_id", "dummy_object_id", initial_path))
+        assert str(exc_info.value) == expected_error_message
     else:
         result = list(reader._get_shared_drive_object("dummy_drive_id", "dummy_object_id", initial_path))
         assert result == expected_result

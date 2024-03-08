@@ -128,7 +128,8 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         def get_files(url: str, path: str) -> List[Tuple[str, str, datetime]]:
             response = requests.get(url, headers=headers)
             if response.status_code != 200:
-                raise RuntimeError(f"Error retrieving shared files: {response.status_code}")
+                error_info = response.json().get("error", {}).get("message", "No additional error information provided.")
+                raise RuntimeError(f"Failed to retrieve files from URL '{url}'. HTTP status: {response.status_code}. Error: {error_info}")
 
             data = response.json()
             for child in data.get("value", []):
@@ -145,7 +146,11 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         item_url = f"{base_url}/items/{object_id}"
         item_response = requests.get(item_url, headers=headers)
         if item_response.status_code != 200:
-            raise RuntimeError(f"Error retrieving shared object: {item_response.status_code}")
+            error_info = item_response.json().get("error", {}).get("message", "No additional error information provided.")
+            raise RuntimeError(
+                f"Failed to retrieve the initial shared object with ID '{object_id}' from drive '{drive_id}'. "
+                f"HTTP status: {item_response.status_code}. Error: {error_info}"
+            )
 
         # Check if the object is a file or a folder
         item_data = item_response.json()
