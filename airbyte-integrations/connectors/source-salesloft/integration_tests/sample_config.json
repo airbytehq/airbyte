@@ -2,5 +2,6 @@
   "client_id": "thisisclientid",
   "client_secret": "thisisclientsecret",
   "refresh_token": "refreshme",
-  "start_date": "2020-11-16T00:00:00Z"
+  "start_date": "2020-11-16T00:00:00Z",
+  "end_date": "2020-12-16T00:00:00Z"
 }

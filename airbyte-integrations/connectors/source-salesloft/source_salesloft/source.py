@@ -24,10 +24,12 @@ class SalesloftStream(HttpStream, ABC):
     datetime_format = "%Y-%m-%dT%H:%M:%S.%fZ"
     primary_key = "id"
 
-    def __init__(self, authenticator: HttpAuthenticator, start_date: str):
+    def __init__(self, authenticator: HttpAuthenticator, start_date: str, end_date: str):
         super().__init__(authenticator=authenticator)
         utc_start_date = pendulum.timezone("UTC").convert(pendulum.parse(start_date))
+        utc_end_date = pendulum.timezone("UTC").convert(pendulum.parse(end_date))
         self.start_date = min(pendulum.now(tz="UTC"), utc_start_date).strftime(self.datetime_format)
+        self.end_date = min(pendulum.now(tz="UTC"), utc_end_date).strftime(self.datetime_format)
 
     @property
     def created_at_field(self):
@@ -47,6 +49,7 @@ class SalesloftStream(HttpStream, ABC):
         params = {"per_page": 100, "page": 1}
         if self.created_at_field:
             params[f"{self.created_at_field}[gt]"] = self.start_date
+            params[f"{self.created_at_field}[lte]"] = self.end_date
         if next_page_token and "page" in next_page_token:
             params["page"] = next_page_token["page"]
         return params
@@ -82,6 +85,7 @@ class IncrementalSalesloftStream(SalesloftStream, ABC):
         cursor_value = pendulum.parse(stream_state.get(self.cursor_field, self.start_date))
         cursor_value = min(pendulum.now(tz="UTC"), cursor_value).strftime(self.datetime_format)
         params[f"{self.cursor_field}[gt]"] = cursor_value
+        params[f"{self.cursor_field}[lte]"] = self.end_date
         return params
 
 
@@ -287,7 +291,7 @@ class SourceSalesloft(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._create_authenticator(config)
-        args = (auth, config["start_date"])
+        args = (auth, config["start_date"], config["end_date"])  # Pass end_date to stream classes
         return [
             Cadences(*args),
             CadenceMemberships(*args),
