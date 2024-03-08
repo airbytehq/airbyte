@@ -18,7 +18,7 @@ Possible reasons for this issue:
 Airbyte Cloud has identical heartbeat monitoring and alerting as Airbyte Open Source. 
 
 If these issues show up on Airbyte Cloud,
-1. Please read [Known Causes](#known-causes) to understand the possible causes. In many cases, the issue is with the source or destination, not with Airbyte.
+1. Please read [Known Causes](#known-causes) to understand the possible causes. In many cases, the issue is with the source, the destination or the connection set up, and not with Airbyte.
 2. Reach out to Airbyte Support for help.
 
 ## Technical Details
