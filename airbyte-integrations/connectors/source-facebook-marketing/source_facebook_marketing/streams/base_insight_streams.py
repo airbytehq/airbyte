@@ -220,7 +220,10 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         self._next_cursor_values = self._get_start_date()
         for ts_start in self._date_intervals(account_id):
-            if ts_start in self._completed_slices.get(account_id, []) and ts_start < self._next_cursor_values.get(account_id, self._start_date) - self.insights_lookback_period:
+            if (
+                ts_start in self._completed_slices.get(account_id, [])
+                and ts_start < self._next_cursor_values.get(account_id, self._start_date) - self.insights_lookback_period
+            ):
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
@@ -309,7 +312,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                         f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."
                     )
                 start_date = min(start_date, refresh_date)
-# TODO remove this bock
+                # TODO remove this bock
                 if start_date < self._start_date:
                     logger.warning(f"Ignore provided state and start sync from start_date ({self._start_date}).")
                 start_date = max(start_date, self._start_date)
