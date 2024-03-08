@@ -1,8 +1,10 @@
 # Heartbeats
 
-Many things can go wrong when moving data. Often the fix is just to restart the synchronization.
-Airbyte aims to make restarts as automated as possible and uses heartbeating mechanism in order to do that.
-This performed on 2 differents component: the source and the destination.
+Many transient things can go wrong when moving data, especially for long jobs. Often the fix is a simple restart.
+
+Airbyte aims to make restarts as automated as possible and uses heartbeating mechanism to do so. This is performed on 2 different components: the source and the destination.
+
+Heartbeat errors are expected to be transient and should automatically resolve. If they do not, it is likely a sign of a more serious issue.
 
 ## Known Causes
 
@@ -10,15 +12,17 @@ Possible reasons for this issue:
 1. Certain API sources take an unknown amount of time to generate an asynchronous responses (e.g., Salesforce, Facebook, Amplitude). No workaround currently exists.
 2. Certain API sources can be rate-limited for a time period longer than their configured threshold. Although Airbyte tries our best to handle this on a per-connector basis, rate limits are not always predictable.
 3. Database sources can be slow to respond to a query. This can be due to a variety of reasons, including the size of the database, the complexity of the query, and the number of other queries being made to the database at the same time.
-   1. The most common reason we see is using an un-indexed column as a cursor column in an incremental sync.
+   1. The most common reason we see is using an un-indexed column as a cursor column in an incremental sync, or a dramatically under-provisioned database.
 4. Destinations can be slow to respond to write requests.
-   1. The most common reason we see here is destination resource availability.
+   1. The most common reason we see here is destination resource availability vis-a-vis data volumes.
+
+Database Sources and Destination errors are unexpected. Any issues are likely to be indicative of actual issues and need to be investigated.
 
 ## Airbyte Cloud
 Airbyte Cloud has identical heartbeat monitoring and alerting as Airbyte Open Source. 
 
 If these issues show up on Airbyte Cloud,
-1. Please read [Known Causes](#known-causes) to understand the possible causes. In many cases, the issue is with the source, the destination or the connection set up, and not with Airbyte.
+1. Please read [Known Causes](#known-causes). In many cases, the issue is with the source, the destination or the connection set up, and not with Airbyte.
 2. Reach out to Airbyte Support for help.
 
 ## Technical Details
