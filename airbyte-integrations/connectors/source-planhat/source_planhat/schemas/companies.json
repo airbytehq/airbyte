@@ -1,289 +1,154 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "additionalProperties": true,
-    "properties": {
-        "_id": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "name": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "owner": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "externalId": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "sourceId": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "phase": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "status": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "domains": {
-            "type": [
-                "array"
-            ],
-            "items": {
-                "type": "string"
-            }
-        },
-        "h": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "hProfile": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "hDiff": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "hDiffDate": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "csmScore": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "csmScoreLog": {
-            "type": [
-                "array"
-            ],
-            "items": {
-                "type": "string"
-            }
-        },
-        "mr": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "nrr30": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "mrrTotal": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "nrrTotal": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "mrTotal": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "description": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "address": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "country": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "city": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "zip": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "web": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "customerFrom": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "customerTo": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "tags": {
-            "type": [
-                "array"
-            ],
-            "items": {
-                "type": "string"
-            }
-        },
-        "createDate": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "createdAt": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "updatedAt": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "lastUpdated": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "renewalDaysFromNow": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "lastRenewal": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "usage": {
-            "type": [
-                "object",
-                "null"
-            ]
-        },
-        "lastTouch": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "lastTouchByType": {
-            "type": [
-                "object",
-                "null"
-            ]
-        },
-        "lastTouchType": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "phaseSince": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "headId": {
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "sunits": {
-            "type": [
-                "object",
-                "null"
-            ]
-        },
-        "mrr": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "arr": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "renewalMrr": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "renewalArr": {
-            "type": [
-                "number",
-                "null"
-            ]
-        },
-        "custom": {
-            "type": [
-                "object",
-                "null"
-            ]
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "_id": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "owner": {
+      "type": ["string", "null"]
+    },
+    "externalId": {
+      "type": ["string", "null"]
+    },
+    "sourceId": {
+      "type": ["string", "null"]
+    },
+    "phase": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "domains": {
+      "type": ["array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "h": {
+      "type": ["number", "null"]
+    },
+    "hProfile": {
+      "type": ["string", "null"]
+    },
+    "hDiff": {
+      "type": ["number", "null"]
+    },
+    "hDiffDate": {
+      "type": ["string", "null"]
+    },
+    "csmScore": {
+      "type": ["number", "null"]
+    },
+    "csmScoreLog": {
+      "type": ["array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "mr": {
+      "type": ["number", "null"]
+    },
+    "nrr30": {
+      "type": ["number", "null"]
+    },
+    "mrrTotal": {
+      "type": ["number", "null"]
+    },
+    "nrrTotal": {
+      "type": ["number", "null"]
+    },
+    "mrTotal": {
+      "type": ["number", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "address": {
+      "type": ["string", "null"]
+    },
+    "country": {
+      "type": ["string", "null"]
+    },
+    "city": {
+      "type": ["string", "null"]
+    },
+    "zip": {
+      "type": ["string", "null"]
+    },
+    "web": {
+      "type": ["string", "null"]
+    },
+    "customerFrom": {
+      "type": ["string", "null"]
+    },
+    "customerTo": {
+      "type": ["string", "null"]
+    },
+    "tags": {
+      "type": ["array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "createDate": {
+      "type": ["string", "null"]
+    },
+    "createdAt": {
+      "type": ["string", "null"]
+    },
+    "updatedAt": {
+      "type": ["string", "null"]
+    },
+    "lastUpdated": {
+      "type": ["string", "null"]
+    },
+    "renewalDaysFromNow": {
+      "type": ["number", "null"]
+    },
+    "lastRenewal": {
+      "type": ["string", "null"]
+    },
+    "usage": {
+      "type": ["object", "null"]
+    },
+    "lastTouch": {
+      "type": ["string", "null"]
+    },
+    "lastTouchByType": {
+      "type": ["object", "null"]
+    },
+    "lastTouchType": {
+      "type": ["string", "null"]
+    },
+    "phaseSince": {
+      "type": ["string", "null"]
+    },
+    "headId": {
+      "type": ["string", "null"]
+    },
+    "sunits": {
+      "type": ["object", "null"]
+    },
+    "mrr": {
+      "type": ["number", "null"]
+    },
+    "arr": {
+      "type": ["number", "null"]
+    },
+    "renewalMrr": {
+      "type": ["number", "null"]
+    },
+    "renewalArr": {
+      "type": ["number", "null"]
+    },
+    "custom": {
+      "type": ["object", "null"]
     }
+  }
 }
