@@ -65,7 +65,7 @@ class TestEvents(TestCase):
         http_mocker.get(
             HttpRequest(
                 url="https://sentry.io/api/0/projects/test%20organization/test%20project/issues/",
-                query_params={"statsPeriod": "", "query": "lastSeen:>1900-01-01T00:00:00.0Z"}
+                query_params={"query": "lastSeen:>1900-01-01T00:00:00.0Z"}
             ),
             HttpResponse(body=json.dumps(response), status_code=200)
 
@@ -153,7 +153,7 @@ class TestEvents(TestCase):
         http_mocker.get(
             HttpRequest(
                 url="https://sentry.io/api/0/projects/test%20organization/test%20project/issues/",
-                query_params={"statsPeriod": "", "query": "lastSeen:>2023-01-01T00:00:00.0Z"}
+                query_params={"query": "lastSeen:>2023-01-01T00:00:00.0Z"}
             ),
             HttpResponse(body=json.dumps(response), status_code=200)
 

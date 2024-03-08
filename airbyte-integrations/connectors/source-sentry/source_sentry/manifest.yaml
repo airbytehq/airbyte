@@ -59,8 +59,8 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: "{{ parameters['cursor_field'] }}"
     cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S.%f%z"
       - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
     start_datetime:
       type: MinMaxDatetime
@@ -116,7 +116,6 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          statsPeriod: ""
           query: "lastSeen:>{{ stream_state.get(parameters['cursor_field']) or '1900-01-01T00:00:00.0Z' if stream_state else '1900-01-01T00:00:00.0Z' }}"
       record_selector:
         $ref: "#/definitions/record_selector"
