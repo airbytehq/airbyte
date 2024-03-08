@@ -7,7 +7,7 @@ from unittest.mock import Mock
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 
 
@@ -21,6 +21,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._cursor_field = None
         self._logger = Mock()
         self._cursor = Mock(spec=Cursor)
+        self._message_repository = InMemoryMessageRepository()
         self._stream = DefaultStream(
             self._partition_generator,
             self._name,
@@ -29,8 +30,8 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._primary_key,
             self._cursor_field,
             self._logger,
-            NoopCursor(),
-            InMemoryMessageRepository(),
+            FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
+            self._message_repository,
         )
 
     def test_get_json_schema(self):
@@ -91,8 +92,8 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             ["id"],
             self._cursor_field,
             self._logger,
-            NoopCursor(),
-            InMemoryMessageRepository(),
+            FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
+            self._message_repository,
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -124,7 +125,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             ["id_a", "id_b"],
             self._cursor_field,
             self._logger,
-            NoopCursor(),
+            FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
             InMemoryMessageRepository(),
         )
 
@@ -157,8 +158,8 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._primary_key,
             "date",
             self._logger,
-            NoopCursor(),
-            InMemoryMessageRepository()
+            FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
+            self._message_repository,
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -183,8 +184,8 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._primary_key,
             self._cursor_field,
             self._logger,
-            NoopCursor(),
-            InMemoryMessageRepository(),
+            FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
+            self._message_repository,
             namespace="test",
         )
         expected_airbyte_stream = AirbyteStream(

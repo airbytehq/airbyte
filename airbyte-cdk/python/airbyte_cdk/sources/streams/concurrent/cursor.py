@@ -66,21 +66,6 @@ class Cursor(ABC):
         raise NotImplementedError()
 
 
-class NoopCursor(Cursor):
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return {}
-
-    def observe(self, record: Record) -> None:
-        pass
-
-    def close_partition(self, partition: Partition) -> None:
-        pass
-
-    def ensure_at_least_one_state_emitted(self) -> None:
-        pass
-
-
 class FinalStateCursor(Cursor):
     """Cursor that is used to guarantee at least one state message is emitted for a concurrent stream."""
 

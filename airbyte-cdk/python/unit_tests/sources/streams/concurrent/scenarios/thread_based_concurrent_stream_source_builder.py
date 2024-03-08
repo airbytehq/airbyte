@@ -8,11 +8,11 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
-from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
-from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
@@ -58,7 +58,7 @@ class ConcurrentCdkSource(ConcurrentSourceAdapter):
         return ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=StreamFacade(s, LegacyStream(), NoopCursor(), NeverLogSliceLogger(), s._logger).as_airbyte_stream(),
+                    stream=StreamFacade(s, LegacyStream(), FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=InMemoryMessageRepository()), NeverLogSliceLogger(), s._logger).as_airbyte_stream(),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
