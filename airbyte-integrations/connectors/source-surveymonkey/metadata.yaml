@@ -24,7 +24,9 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "The state format has changed for the survey_responses stream. Users need to reset their connections."
+        message: >-
+          The state format for the survey_responses stream has been updated. Users will need to reset their connections to accommodate this change. 
+          The field value for page_id will no longer be present in records. If you do not use this field as a reference key, please ignore this information.
         upgradeDeadline: "2024-06-01"
         scopedImpact:
           - scopeType: stream

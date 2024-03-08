@@ -23,7 +23,6 @@ class MigrateAccessTokenToCredentials:
     Starting from version `0.3.0`, the `access_token` property is relocated to the `credentials` property.
     """
 
-    message_repository: MessageRepository = InMemoryMessageRepository()
     migrate_from_key: str = "access_token"
     migrate_to_key: str = "credentials"
     default_values: dict = {"auth_method": "oauth2.0"}

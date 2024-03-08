@@ -16,6 +16,7 @@ def test_source_streams():
     streams = SourceSurveymonkey().streams(config=new_source_config)
     assert len(streams) == 6
 
+
 def test_source_check_connection_failed_missing_scopes(requests_mock):
     requests_mock.get("https://api.surveymonkey.com/v3/users/me", json={"scopes": {"granted": ["surveys_read", "users_read"]}})
 
