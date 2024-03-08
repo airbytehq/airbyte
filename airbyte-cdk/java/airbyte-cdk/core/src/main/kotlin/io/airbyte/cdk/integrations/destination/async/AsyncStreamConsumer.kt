@@ -188,6 +188,7 @@ constructor(
     ) {
         Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started")
         propagateFlushWorkerExceptionIfPresent()
+
         /*
          * intentionally putting extractStream outside the buffer manager so that if in the future we want
          * to try to use a thread pool to partially deserialize to get record type and stream name, we can
