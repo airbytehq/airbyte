@@ -8,8 +8,6 @@ import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.util.function.Consumer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * POJO abstraction representing one discrete buffer read. This allows ergonomics dequeues by
@@ -18,9 +16,9 @@ import org.slf4j.LoggerFactory
  * The contained stream **IS EXPECTED to be a BOUNDED** stream. Returning a boundless stream has
  * undefined behaviour.
  *
- * Once done, consumers **MUST** invoke [.close]. As the [.batch] has already been retrieved from
- * in-memory buffers, we need to update [GlobalMemoryManager] to reflect the freed up memory and
- * avoid memory leaks.
+ * Once done, consumers **MUST** invoke [.close]. As the [.batch] has already been
+ * retrieved from in-memory buffers, we need to update [GlobalMemoryManager] to reflect the
+ * freed up memory and avoid memory leaks.
  */
 class MemoryAwareMessageBatch(
     val data: List<StreamAwareQueue.MessageWithMeta>,
@@ -34,8 +32,8 @@ class MemoryAwareMessageBatch(
     }
 
     /**
-     * For the batch, marks all the states that have now been flushed. Also writes the states that
-     * can be flushed back to platform via stateManager.
+     * For the batch, marks all the states that have now been flushed. Also writes the states that can
+     * be flushed back to platform via stateManager.
      */
     fun flushStates(
         stateIdToCount: Map<Long?, Long?>,
@@ -48,9 +46,5 @@ class MemoryAwareMessageBatch(
             )
         }
         stateManager.flushStates(outputRecordCollector)
-    }
-
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(MemoryAwareMessageBatch::class.java)
     }
 }
