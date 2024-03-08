@@ -31,7 +31,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._cursor_field,
             self._logger,
             FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
-            self._message_repository,
         )
 
     def test_get_json_schema(self):
@@ -93,7 +92,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._cursor_field,
             self._logger,
             FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
-            self._message_repository,
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -126,7 +124,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._cursor_field,
             self._logger,
             FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
-            InMemoryMessageRepository(),
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -159,7 +156,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             "date",
             self._logger,
             FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
-            self._message_repository,
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -185,7 +181,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._cursor_field,
             self._logger,
             FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
-            self._message_repository,
             namespace="test",
         )
         expected_airbyte_stream = AirbyteStream(

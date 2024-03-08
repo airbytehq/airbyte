@@ -89,7 +89,6 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
                 primary_key=pk,
                 cursor_field=cursor_field,
                 logger=logger,
-                message_repository=message_repository,
                 cursor=cursor,
             ),
             stream,
