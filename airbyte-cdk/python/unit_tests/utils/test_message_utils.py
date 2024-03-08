@@ -86,5 +86,5 @@ def test_get_other_message_stream_descriptor_fails():
         emitted_at=10,
         connectorConfig=AirbyteControlConnectorConfigMessage(config={"any config": "a config value"}),
     ))
-    with pytest.raises(ValueError):
+    with pytest.raises(NotImplementedError):
         get_stream_descriptor(message)

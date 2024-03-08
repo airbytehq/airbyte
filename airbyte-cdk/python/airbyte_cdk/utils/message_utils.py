@@ -12,4 +12,4 @@ def get_stream_descriptor(message: AirbyteMessage) -> HashableStreamDescriptor:
             name=message.state.stream.stream_descriptor.name, namespace=message.state.stream.stream_descriptor.namespace
         )
     else:
-        raise ValueError("Message format does not contain a stream descriptor.")
+        raise NotImplementedError(f"get_stream_descriptor is not implemented for message type '{message.type}'.")
