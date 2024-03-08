@@ -86,10 +86,20 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
     }
   }
 
+  // This method is used to check if we should emit a state message. If the record count is set to 0,
+  // we should not emit a state message.
+  // If the frequency is set to be zero, we should not use it.
   private boolean shouldEmitStateMessage() {
-    return (recordCount >= stateEmitFrequency.syncCheckpointRecords()
-        || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(stateEmitFrequency.syncCheckpointDuration()) > 0);
-
+    if (stateEmitFrequency.syncCheckpointRecords() == 0) {
+      return false;
+    }
+    if (recordCount >= stateEmitFrequency.syncCheckpointRecords()) {
+      return true;
+    }
+    if (!stateEmitFrequency.syncCheckpointDuration().isZero()) {
+      return Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(stateEmitFrequency.syncCheckpointDuration()) > 0;
+    }
+    return false;
   }
 
 }

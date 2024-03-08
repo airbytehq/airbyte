@@ -2,19 +2,20 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.integrations.source.relationaldb;
+package io.airbyte.cdk.integrations.source.relationaldb.state;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.cdk.integrations.source.relationaldb.state.StreamStateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -23,22 +24,30 @@ import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
-class StateDecoratingIteratorTest {
+class CursorStateMessageProducerTest {
 
   private static final String NAMESPACE = "public";
   private static final String STREAM_NAME = "shoes";
   private static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR = new AirbyteStreamNameNamespacePair(STREAM_NAME, NAMESPACE);
   private static final String UUID_FIELD_NAME = "ascending_inventory_uuid";
+
+  private static final ConfiguredAirbyteStream STREAM = CatalogHelpers.createConfiguredAirbyteStream(
+      STREAM_NAME,
+      NAMESPACE,
+      Field.of(UUID_FIELD_NAME, JsonSchemaType.STRING))
+      .withCursorField(Lists.newArrayList(UUID_FIELD_NAME));
 
   private static final AirbyteMessage EMPTY_STATE_MESSAGE = createEmptyStateMessage(0.0);
 
@@ -146,14 +155,12 @@ class StateDecoratingIteratorTest {
   @Test
   void testWithoutInitialCursor() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        messageIterator,
+
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        null,
-        JsonSchemaPrimitive.STRING,
-        0);
+        null);
+
+    final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(0, Duration.ZERO));
 
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
@@ -167,14 +174,12 @@ class StateDecoratingIteratorTest {
     // record count
 
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        messageIterator,
+
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        RECORD_VALUE_5,
-        JsonSchemaPrimitive.STRING,
-        0);
+        RECORD_VALUE_5);
+
+    final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(0, Duration.ZERO));
 
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
@@ -188,14 +193,11 @@ class StateDecoratingIteratorTest {
     ((ObjectNode) recordMessage.getRecord().getData()).remove(UUID_FIELD_NAME);
     final Iterator<AirbyteMessage> messageStream = MoreIterators.of(recordMessage);
 
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        messageStream,
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        null,
-        JsonSchemaPrimitive.STRING,
-        0);
+        null);
+
+    final SourceStateIterator iterator = new SourceStateIterator(messageStream, STREAM, producer, new StateEmitFrequency(0, Duration.ZERO));
 
     assertEquals(recordMessage, iterator.next());
     // null because no records with a cursor field were replicated for the stream.
@@ -206,14 +208,13 @@ class StateDecoratingIteratorTest {
   @Test
   void testIteratorCatchesExceptionWhenEmissionFrequencyNonZero() {
     final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        exceptionIterator,
+
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        RECORD_VALUE_1,
-        JsonSchemaPrimitive.STRING,
-        1);
+        RECORD_VALUE_1);
+
+    final SourceStateIterator iterator = new SourceStateIterator(exceptionIterator, STREAM, producer, new StateEmitFrequency(1, Duration.ZERO));
+
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
     // continues to emit RECORD_MESSAGE_2 since cursorField has not changed thus not satisfying the
@@ -224,41 +225,36 @@ class StateDecoratingIteratorTest {
     // frequency minimum of 1 record
     assertEquals(createStateMessage(RECORD_VALUE_2, 2, 4.0), iterator.next());
     // no further records to read since Exception was caught above and marked iterator as endOfData()
-    assertFalse(iterator.hasNext());
+    assertThrows(RuntimeException.class, () -> iterator.hasNext());
   }
 
   @Test
   void testIteratorCatchesExceptionWhenEmissionFrequencyZero() {
     final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        exceptionIterator,
+
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        RECORD_VALUE_1,
-        JsonSchemaPrimitive.STRING,
-        0);
+        RECORD_VALUE_1);
+
+    final SourceStateIterator iterator = new SourceStateIterator(exceptionIterator, STREAM, producer, new StateEmitFrequency(0, Duration.ZERO));
+
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
     assertEquals(RECORD_MESSAGE_3, iterator.next());
-    // since stateEmission is not set to emit frequently, this will catch the error but not emit state
-    // message since it wasn't in a ready state
-    // of having a frequency > 0 but will prevent an exception from causing the iterator to fail by
-    // marking iterator as endOfData()
-    assertFalse(iterator.hasNext());
+
+    assertThrows(RuntimeException.class, () -> iterator.hasNext());
   }
 
   @Test
   void testEmptyStream() {
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        Collections.emptyIterator(),
+
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        null,
-        JsonSchemaPrimitive.STRING,
-        0);
+        null);
+
+    final SourceStateIterator iterator =
+        new SourceStateIterator(Collections.emptyIterator(), STREAM, producer, new StateEmitFrequency(1, Duration.ZERO));
 
     assertEquals(EMPTY_STATE_MESSAGE, iterator.next());
     assertFalse(iterator.hasNext());
@@ -273,14 +269,11 @@ class StateDecoratingIteratorTest {
 
     messageIterator = MoreIterators.of(recordMessageWithNull);
 
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        messageIterator,
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        null,
-        JsonSchemaPrimitive.STRING,
-        0);
+        null);
+
+    final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(0, Duration.ZERO));
 
     assertEquals(recordMessageWithNull, iterator.next());
     assertEquals(createStateMessage(RECORD_VALUE_1, 1, 1.0), iterator.next());
@@ -291,80 +284,74 @@ class StateDecoratingIteratorTest {
   // When initial cursor is null, and emit state for every record
   void testStateEmissionFrequency1() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5);
-    final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
-        messageIterator,
-        stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        null,
-        JsonSchemaPrimitive.STRING,
-        1);
 
-    assertEquals(RECORD_MESSAGE_1, iterator1.next());
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
+        stateManager,
+        null);
+
+    final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(1, Duration.ZERO));
+
+    assertEquals(RECORD_MESSAGE_1, iterator.next());
     // should emit state 1, but it is unclear whether there will be more
     // records with the same cursor value, so no state is ready for emission
-    assertEquals(RECORD_MESSAGE_2, iterator1.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
     // emit state 1 because it is the latest state ready for emission
-    assertEquals(createStateMessage(RECORD_VALUE_1, 1, 2.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(createStateMessage(RECORD_VALUE_2, 1, 1.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_4, iterator1.next());
-    assertEquals(createStateMessage(RECORD_VALUE_3, 1, 1.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_5, iterator1.next());
+    assertEquals(createStateMessage(RECORD_VALUE_1, 1, 2.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(createStateMessage(RECORD_VALUE_2, 1, 1.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_4, iterator.next());
+    assertEquals(createStateMessage(RECORD_VALUE_3, 1, 1.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_5, iterator.next());
     // state 4 is not emitted because there is no more record and only
     // the final state should be emitted at this point; also the final
     // state should only be emitted once
-    assertEquals(createStateMessage(RECORD_VALUE_5, 1, 1.0), iterator1.next());
-    assertFalse(iterator1.hasNext());
+    assertEquals(createStateMessage(RECORD_VALUE_5, 1, 1.0), iterator.next());
+    assertFalse(iterator.hasNext());
   }
 
   @Test
   // When initial cursor is null, and emit state for every 2 records
   void testStateEmissionFrequency2() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5);
-    final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
-        messageIterator,
-        stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        null,
-        JsonSchemaPrimitive.STRING,
-        2);
 
-    assertEquals(RECORD_MESSAGE_1, iterator1.next());
-    assertEquals(RECORD_MESSAGE_2, iterator1.next());
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
+        stateManager,
+        null);
+
+    final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(2, Duration.ZERO));
+
+    assertEquals(RECORD_MESSAGE_1, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
     // emit state 1 because it is the latest state ready for emission
-    assertEquals(createStateMessage(RECORD_VALUE_1, 1, 2.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(RECORD_MESSAGE_4, iterator1.next());
+    assertEquals(createStateMessage(RECORD_VALUE_1, 1, 2.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(RECORD_MESSAGE_4, iterator.next());
     // emit state 3 because it is the latest state ready for emission
-    assertEquals(createStateMessage(RECORD_VALUE_3, 1, 2.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_5, iterator1.next());
-    assertEquals(createStateMessage(RECORD_VALUE_5, 1, 1.0), iterator1.next());
-    assertFalse(iterator1.hasNext());
+    assertEquals(createStateMessage(RECORD_VALUE_3, 1, 2.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_5, iterator.next());
+    assertEquals(createStateMessage(RECORD_VALUE_5, 1, 1.0), iterator.next());
+    assertFalse(iterator.hasNext());
   }
 
   @Test
   // When initial cursor is not null
   void testStateEmissionWhenInitialCursorIsNotNull() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5);
-    final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
-        messageIterator,
-        stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        RECORD_VALUE_1,
-        JsonSchemaPrimitive.STRING,
-        1);
 
-    assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(createStateMessage(RECORD_VALUE_2, 1, 2.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_4, iterator1.next());
-    assertEquals(createStateMessage(RECORD_VALUE_3, 1, 1.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_5, iterator1.next());
-    assertEquals(createStateMessage(RECORD_VALUE_5, 1, 1.0), iterator1.next());
-    assertFalse(iterator1.hasNext());
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
+        stateManager,
+        RECORD_VALUE_1);
+
+    final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(1, Duration.ZERO));
+
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(createStateMessage(RECORD_VALUE_2, 1, 2.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_4, iterator.next());
+    assertEquals(createStateMessage(RECORD_VALUE_3, 1, 1.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_5, iterator.next());
+    assertEquals(createStateMessage(RECORD_VALUE_5, 1, 1.0), iterator.next());
+    assertFalse(iterator.hasNext());
   }
 
   /**
@@ -403,30 +390,28 @@ class StateDecoratingIteratorTest {
         RECORD_MESSAGE_3, RECORD_MESSAGE_3, RECORD_MESSAGE_3,
         RECORD_MESSAGE_4,
         RECORD_MESSAGE_5, RECORD_MESSAGE_5);
-    final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
-        messageIterator,
-        stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        RECORD_VALUE_1,
-        JsonSchemaPrimitive.STRING,
-        1);
 
-    assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
+        stateManager,
+        RECORD_VALUE_1);
+
+    final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(1, Duration.ZERO));
+
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
     // state 2 is the latest state ready for emission because
     // all records with the same cursor value have been emitted
-    assertEquals(createStateMessage(RECORD_VALUE_2, 2, 3.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(RECORD_MESSAGE_4, iterator1.next());
-    assertEquals(createStateMessage(RECORD_VALUE_3, 3, 3.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_5, iterator1.next());
-    assertEquals(createStateMessage(RECORD_VALUE_4, 1, 1.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_5, iterator1.next());
-    assertEquals(createStateMessage(RECORD_VALUE_5, 2, 1.0), iterator1.next());
-    assertFalse(iterator1.hasNext());
+    assertEquals(createStateMessage(RECORD_VALUE_2, 2, 3.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(RECORD_MESSAGE_4, iterator.next());
+    assertEquals(createStateMessage(RECORD_VALUE_3, 3, 3.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_5, iterator.next());
+    assertEquals(createStateMessage(RECORD_VALUE_4, 1, 1.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_5, iterator.next());
+    assertEquals(createStateMessage(RECORD_VALUE_5, 2, 1.0), iterator.next());
+    assertFalse(iterator.hasNext());
   }
 
   @Test
@@ -437,31 +422,29 @@ class StateDecoratingIteratorTest {
         RECORD_MESSAGE_3, RECORD_MESSAGE_3, RECORD_MESSAGE_3,
         RECORD_MESSAGE_3,
         RECORD_MESSAGE_3, RECORD_MESSAGE_3, RECORD_MESSAGE_3);
-    final StateDecoratingIterator iterator1 = new StateDecoratingIterator(
-        messageIterator,
-        stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        RECORD_VALUE_1,
-        JsonSchemaPrimitive.STRING,
-        10);
 
-    assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(RECORD_MESSAGE_2, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
+    final CursorStateMessageProducer producer = new CursorStateMessageProducer(
+        stateManager,
+        RECORD_VALUE_1);
+
+    final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(10, Duration.ZERO));
+
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
     // state 2 is the latest state ready for emission because
     // all records with the same cursor value have been emitted
-    assertEquals(createStateMessage(RECORD_VALUE_2, 4, 10.0), iterator1.next());
-    assertEquals(RECORD_MESSAGE_3, iterator1.next());
-    assertEquals(createStateMessage(RECORD_VALUE_3, 7, 1.0), iterator1.next());
-    assertFalse(iterator1.hasNext());
+    assertEquals(createStateMessage(RECORD_VALUE_2, 4, 10.0), iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    assertEquals(createStateMessage(RECORD_VALUE_3, 7, 1.0), iterator.next());
+    assertFalse(iterator.hasNext());
   }
 
 }

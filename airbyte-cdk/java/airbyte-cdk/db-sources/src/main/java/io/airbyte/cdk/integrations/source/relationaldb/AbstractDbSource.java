@@ -17,8 +17,9 @@ import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
-import io.airbyte.cdk.integrations.source.relationaldb.state.CursorStateIteratorManager;
+import io.airbyte.cdk.integrations.source.relationaldb.state.CursorStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
@@ -50,6 +51,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -401,16 +403,14 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream,
           cursorField);
 
-      CursorStateIteratorManager manager = new CursorStateIteratorManager(
+      CursorStateMessageProducer messageProducer = new CursorStateMessageProducer(
           stateManager,
-          pair,
-          cursorField,
-          cursorInfo.map(CursorInfo::getCursor).orElse(null),
-          cursorType,
-          getStateEmissionFrequency());
+          cursorInfo.map(CursorInfo::getCursor).orElse(null));
 
       iterator = AutoCloseableIterators.transform(
-          autoCloseableIterator -> new SourceStateIterator(autoCloseableIterator, manager),
+          autoCloseableIterator -> new SourceStateIterator(autoCloseableIterator, airbyteStream, messageProducer,
+              new StateEmitFrequency(getStateEmissionFrequency(),
+                  Duration.ZERO)),
           airbyteMessageIterator,
           AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
