@@ -9,6 +9,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]==0.57.0", "pymilvus==2.3.0"]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]
 
+
 setup(
     name="destination_milvus",
     description="Destination implementation for Milvus.",

@@ -9,6 +9,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]==0.57.0", "weaviate-client==3
 
 TEST_REQUIREMENTS = ["pytest~=6.2", "docker", "pytest-docker==2.0.1"]
 
+
 setup(
     name="destination_weaviate",
     description="Destination implementation for Weaviate.",
