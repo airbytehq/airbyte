@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk[vector-db-based]==0.57.0",
-    "pinecone-client[grpc]",
+    "pinecone-client[grpc]<3.0",
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]
