@@ -51,10 +51,32 @@ definitions:
       path: "collection"
   dashboards_stream:
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/collections_items_dashboards_stream"
+            parent_key: "id"
+            partition_field: "id"
     $parameters:
       name: "dashboards"
-      path: "dashboard"
-
+      path: "/dashboard/{{stream_slice.id}}"
+  collections_items_dashboards_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/data_field_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/collections_stream"
+            parent_key: "id"
+            partition_field: "id"
+    $parameters:
+      name: "collections_items_dashboards"
+      path: "collection/{{stream_slice.id}}/items?models=dashboard"
   databases_stream:
     primary_key: "id"
     retriever:
