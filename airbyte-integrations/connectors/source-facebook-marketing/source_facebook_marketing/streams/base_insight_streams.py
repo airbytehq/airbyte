@@ -312,10 +312,6 @@ class AdsInsights(FBMarketingIncrementalStream):
                         f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."
                     )
                 start_date = min(start_date, refresh_date)
-                # TODO remove this bock
-                if start_date < self._start_date:
-                    logger.warning(f"Ignore provided state and start sync from start_date ({self._start_date}).")
-                start_date = max(start_date, self._start_date)
             else:
                 start_date = self._start_date
             if start_date < oldest_date:

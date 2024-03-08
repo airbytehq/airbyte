@@ -333,9 +333,10 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - cursor_value).days
-        assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=1)
-        assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=2)
+        # assert that we sync all periods including insight_lookback_period
+        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
+        assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
+        assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
 
     def test_stream_slices_with_state_close_to_now(self, api, async_manager_mock, recent_start_date, some_config):
         """Stream will use start_date when close to now and start_date close to now"""
@@ -362,9 +363,9 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - start_date).days + 1
-        assert generated_jobs[0].interval.start == start_date.date()
-        assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
+        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
+        assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
+        assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
 
     @pytest.mark.parametrize("state_format", ["old_format", "new_format"])
     def test_stream_slices_with_state_and_slices(self, api, async_manager_mock, start_date, some_config, state_format):
@@ -409,9 +410,9 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - cursor_value).days - 2, "should be 2 slices short because of state"
-        assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=2)
-        assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=4)
+        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1, "should be 34 slices because we ignore slices which are within insights_lookback_period"
+        assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
+        assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
 
     def test_get_json_schema(self, api, some_config):
         stream = AdsInsights(
