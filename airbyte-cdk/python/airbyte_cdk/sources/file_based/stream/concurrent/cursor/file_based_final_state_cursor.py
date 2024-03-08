@@ -29,6 +29,9 @@ class FileBasedFinalStateCursor(AbstractConcurrentFileBasedCursor):
         self._stream_name = stream_config.name
         self._stream_namespace = stream_namespace
         self._message_repository = message_repository
+        # Normally the connector state manager operates at the source-level. However, we only need it to write the sentinel
+        # state message rather than manage overall source state. This is also only temporary as we move to the resumable
+        # full refresh world where every stream uses a FileBasedConcurrentCursor with incremental state.
         self._connector_state_manager = ConnectorStateManager(stream_instance_map={})
 
     @property
