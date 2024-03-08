@@ -13,7 +13,6 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import java.time.Duration;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -30,7 +29,6 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
   private OrderedColumnLoadStatus ocStatus;
 
   protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
-
 
   /**
    * Returns an intermediate state message for the initial sync.

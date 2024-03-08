@@ -40,7 +40,7 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
                                             final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
                                             final CdcState cdcState,
                                             final ConfiguredAirbyteCatalog catalog,
-      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
+                                            final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.cdcState = cdcState;
     this.pairToOrderedColLoadStatus = MssqlInitialLoadStateManager.initPairToOrderedColumnLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToOrderedColInfo = pairToOrderedColInfo;

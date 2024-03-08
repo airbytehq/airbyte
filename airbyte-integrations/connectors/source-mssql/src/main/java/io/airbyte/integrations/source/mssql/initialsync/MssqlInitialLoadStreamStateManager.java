@@ -34,7 +34,7 @@ public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateMan
   public MssqlInitialLoadStreamStateManager(final ConfiguredAirbyteCatalog catalog,
                                             final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
-      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
+                                            final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.pairToOrderedColInfo = pairToOrderedColInfo;
     this.pairToOrderedColLoadStatus = MssqlInitialLoadStateManager.initPairToOrderedColumnLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
