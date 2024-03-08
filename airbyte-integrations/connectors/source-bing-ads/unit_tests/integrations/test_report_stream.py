@@ -34,9 +34,10 @@ class TestReportStream(BaseTest):
 
 
 class TestSuiteReportStream(TestReportStream):
-    stream_name: str = None
+    stream_name: Optional[str] = None
     report_file: str
     records_number: int
+    second_read_records_number: Optional[int] = None
     state_file: str
     incremental_report_file: str
     first_read_state: dict
@@ -97,7 +98,10 @@ class TestSuiteReportStream(TestReportStream):
             self.incremental_report_file,
             state
         )
-        assert len(output.records) == self.records_number
+        if not self.second_read_records_number:
+            assert len(output.records) == self.records_number
+        else:
+            assert len(output.records) == self.second_read_records_number
 
         actual_cursor = output.most_recent_state.get(self.stream_name).get(self.account_id)
         expected_cursor = self.second_read_state.get(self.stream_name).get(self.account_id)
