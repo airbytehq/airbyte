@@ -2875,6 +2875,12 @@ streams:
                     type: RequestOption
                     field_name: updated_since
                     inject_into: request_parameter
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - parent_id
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -3156,6 +3162,12 @@ streams:
                     type: RequestOption
                     field_name: updated_since
                     inject_into: request_parameter
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - parent_id
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -3420,6 +3432,12 @@ streams:
                     type: RequestOption
                     field_name: updated_since
                     inject_into: request_parameter
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - parent_id
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -3672,6 +3690,12 @@ streams:
                     type: RequestOption
                     field_name: updated_since
                     inject_into: request_parameter
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - parent_id
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -3868,6 +3892,12 @@ streams:
                     type: RequestOption
                     field_name: updated_since
                     inject_into: request_parameter
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - parent_id
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -4064,6 +4094,12 @@ streams:
                     type: RequestOption
                     field_name: updated_since
                     inject_into: request_parameter
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - parent_id
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
