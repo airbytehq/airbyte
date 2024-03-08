@@ -85,6 +85,10 @@ definitions:
         backoff_strategies:
           - type: WaitTimeFromHeader
             header: Retry-After
+        response_filters:
+          - http_codes: [401]
+            action: FAIL
+            error_message: "The endpoint to access stream '{{ parameters['name'] }}' returned 401: Unauthorized. This is most likely due to wrong credentials."
 
   requester:
     # This requester is used to count call credits used for requests to Freshdesk

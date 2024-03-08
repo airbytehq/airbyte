@@ -117,7 +117,7 @@ class FreshdeskTicketsPaginationStrategy(PageIncrement):
         # Stop paginating when there are fewer records than the page size or the current page has no records, or maximum page number is hit
         if (self.page_size and len(last_records) < self.page_size) or len(last_records) == 0:
             return None
-        elif self._page > self.PAGE_LIMIT:
+        elif self._page >= self.PAGE_LIMIT:
             # reset page count as cursor parameter will be updated in the stream slicer
             self.reset()
             # get last_record from latest batch, pos. -1, because of ACS order of records
