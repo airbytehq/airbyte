@@ -166,6 +166,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.23.18 | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Null check when retrieving destination state                                                                                                                   |
 | 0.23.16 | 2024-03-06 | [\#35842](https://github.com/airbytehq/airbyte/pull/35842) | Improve logging in debezium processing.                                                                                                                        |
 | 0.23.15 | 2024-03-05 | [\#35827](https://github.com/airbytehq/airbyte/pull/35827) | improving the Junit interceptor.                                                                                                                               |
 | 0.23.14 | 2024-03-05 | [\#35739](https://github.com/airbytehq/airbyte/pull/35739) | Add logging to the CDC queue size. Fix the ContainerFactory.                                                                                                   |
