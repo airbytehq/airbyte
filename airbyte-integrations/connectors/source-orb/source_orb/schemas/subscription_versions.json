@@ -1,22 +1,21 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": ["null", "object"],
-    "properties": {
-      "subscription_id": {
-        "type": "string"
-      },
-      "plan_id": {
-        "type": "string"
-      },
-      "start_date": {
-        "type": ["string"],
-        "format": "date-time"
-      },
-      "end_date": {
-        "type": ["string"],
-        "format": "date-time"
-      }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "subscription_id": {
+      "type": "string"
     },
-    "required": ["subscription_id", "plan_id", "start_date", "end_date"]
-  }
-  
+    "plan_id": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": ["string"],
+      "format": "date-time"
+    },
+    "end_date": {
+      "type": ["string"],
+      "format": "date-time"
+    }
+  },
+  "required": ["subscription_id", "plan_id", "start_date", "end_date"]
+}
