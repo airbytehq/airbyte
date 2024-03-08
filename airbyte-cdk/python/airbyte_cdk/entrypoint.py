@@ -156,43 +156,44 @@ class AirbyteEntrypoint(object):
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
     def read(
-        self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]]
+            self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]]
     ) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)
 
-        stream_message_count: DefaultDict[HashableStreamDescriptor, int] = defaultdict(int)
+        stream_message_counter: DefaultDict[HashableStreamDescriptor, int] = defaultdict(int)
         for message in self.source.read(self.logger, config, catalog, state):
-            yield self.handle_record_counts(message, stream_message_count)
+            yield self.handle_record_counts(message, stream_message_counter)
         for message in self._emit_queued_messages(self.source):
-            yield self.handle_record_counts(message, stream_message_count)
+            yield self.handle_record_counts(message, stream_message_counter)
 
     @staticmethod
     def handle_record_counts(message: AirbyteMessage, stream_message_count: DefaultDict[HashableStreamDescriptor, int]) -> AirbyteMessage:
         if message.type == Type.RECORD:
-            logger.debug(f"Message type: {message}")
-            descriptor = HashableStreamDescriptor(name=message.record.stream, namespace=message.record.namespace)
-            stream_message_count[descriptor] += 1
-        elif message.type == Type.STATE:
-            logger.debug(f"Message type: {message}")
-            if not message.state.stream:
-                raise ValueError("State message was not in per-stream state format which is required for record counts")
+            stream_descriptor = HashableStreamDescriptor(name=message.record.stream, namespace=message.record.namespace)
+            stream_message_count[stream_descriptor] += 1
 
-            descriptor = HashableStreamDescriptor(
+        elif message.type == Type.STATE:
+            if not message.state.stream:
+                raise ValueError("State message was not in per-stream state format, which is required for record counts.")
+
+            stream_descriptor = HashableStreamDescriptor(
                 name=message.state.stream.stream_descriptor.name, namespace=message.state.stream.stream_descriptor.namespace
             )
-            source_stats_for_stream = message.state.sourceStats or AirbyteStateStats()
-            source_stats_for_stream.recordCount = stream_message_count.get(descriptor, 0)
-            message.state.sourceStats = source_stats_for_stream
 
-            # todo: remove after pre-release testing
+            # Set record count from the counter onto the state message
+            message.state.sourceStats = message.state.sourceStats or AirbyteStateStats()
+            message.state.sourceStats.recordCount = stream_message_count.get(stream_descriptor, 0)
+
+            # TODO: Logging - remove after pre-release testing
             stream_name = message.state.stream.stream_descriptor.name
             stream_state = message.state.stream.stream_state.dict() if message.state.stream.stream_state else {}
             record_count = message.state.sourceStats.recordCount
             logger.info(f"Emitting state message for stream '{stream_name}' with count {record_count} and state data: {stream_state}")
 
-            stream_message_count[descriptor] = 0
+            # Reset the counter
+            stream_message_count[stream_descriptor] = 0
         return message
 
     @staticmethod
