@@ -1,14 +1,18 @@
 # Heartbeats
 
-Many transient issues can occur when moving data, especially for long jobs. Often the fix is a simple restart.
+Many transient issues can occur when moving data. One class of issues is an unresponsive Source or Destination. In this case, the fix is often a simple restart.
 
-Airbyte aims to make restarts as automated as possible and uses a heartbeating mechanism to do so. This is performed on 2 different components: the source and the destination.
+Airbyte aims to make restarts as automated as possible and uses a heartbeating mechanism to do so.
 
-Heartbeat errors are expected to be transient and should automatically resolve. If they do not, it is likely a sign of a more serious issue.
+Airbyte monitors for responses from the Sources and Destination, interpreting these as 'heartbeats'. If the Source or Destination does not heartbeat within
+a certain time frame, Airbyte triggers a heartbeat error and automatically restarts the job.
 
-## Known Causes
+Heartbeats are a final catch-all mechanism. Errors are expected to be transient and should automatically resolve. If they do not, it is likely a sign of a more serious issue.
+In these cases, Airbyte takes the more conservative approach. Airbyte restarts the job to avoid a seemingly endless job, and highlight to users the existence of a potential issue.
 
-Possible reasons for this issue:
+## Known Heartbeat Error Causes
+
+Possible reasons for a heartbeat error:
 1. Certain API sources take an unknown amount of time to generate asynchronous responses (e.g., Salesforce, Facebook, Amplitude). No workaround currently exists.
 2. Certain API sources can be rate-limited for a time period longer than their configured threshold. Although Airbyte tries its best to handle this on a per-connector basis, rate limits are not always predictable.
 3. Database sources can be slow to respond to a query. This can be due to a variety of reasons, including the size of the database, the complexity of the query, and the number of other queries being made to the database at the same time.
