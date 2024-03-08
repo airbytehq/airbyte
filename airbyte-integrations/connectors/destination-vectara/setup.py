@@ -11,6 +11,7 @@ MAIN_REQUIREMENTS = [
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]
 
+
 setup(
     name="destination_vectara",
     description="Destination implementation for Vectara.",

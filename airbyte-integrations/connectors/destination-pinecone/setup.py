@@ -11,6 +11,7 @@ MAIN_REQUIREMENTS = [
     "pinecone-client[grpc]<3.0",
 ]
 
+
 TEST_REQUIREMENTS = ["pytest~=6.2"]
 
 setup(
