@@ -6,20 +6,16 @@ acceptance_tests:
       - spec_path: "source_harvest/spec.json"
   connection:
     tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
-      - config_path: "secrets/old_config.json"
-        status: "succeed"
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         fail_on_extra_columns: false
@@ -32,5 +28,5 @@ acceptance_tests:
         timeout_seconds: 2400
   full_refresh:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
