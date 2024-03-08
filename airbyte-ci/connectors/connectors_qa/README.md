@@ -4,8 +4,6 @@ This package has two main purposes:
 * Running QA checks on connectors.
 * Generating the QA checks documentation that are run on connectors.
 
-
-
 ## Usage
 
 ### Install
@@ -16,9 +14,7 @@ pipx install .
 
 This will make `connectors-qa` available in your `PATH`.
 
-
 Feel free to run `connectors-qa --help` to see the available commands and options.
-
 
 ### Examples
 
@@ -63,7 +59,7 @@ connectors-qa generate-documentation qa_checks.md
 ## Development
 
 ```bash
-poetry install
+poetry install --with dev
 ```
 
 ### Dependencies
@@ -98,8 +94,10 @@ poe type_check
 ```bash
 poe lint
 ```
-
 ## Changelog
+
+### 1.0.4
+Added `ValidateBreakingChangesDeadlines` check that verifies the minimal compliance of breaking change rollout deadline.
 
 ### 1.0.3
 Disable `CheckDocumentationStructure` for now. 
