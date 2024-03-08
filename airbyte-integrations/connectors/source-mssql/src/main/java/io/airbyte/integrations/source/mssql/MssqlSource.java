@@ -99,6 +99,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//TO-DO: I think something may have to be added to this page to pass the authentication property along?? 
+
 public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
