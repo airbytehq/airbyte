@@ -38,15 +38,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -75,12 +82,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -147,15 +154,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -209,15 +223,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -246,12 +267,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -283,15 +304,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -320,12 +348,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -397,15 +425,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -434,12 +469,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -463,11 +498,11 @@ streams:
             type: string
           unit_name:
             type:
-              - "null"
+              - 'null'
               - string
           unit_price:
             type:
-              - "null"
+              - 'null'
               - number
           updated_at:
             type: string
@@ -481,15 +516,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -518,12 +560,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -595,7 +637,7 @@ streams:
             properties:
               budget:
                 type:
-                  - "null"
+                  - 'null'
                   - number
               created_at:
                 type: string
@@ -622,15 +664,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -659,12 +708,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -700,15 +749,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -737,12 +793,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -780,7 +836,7 @@ streams:
             type: string
           discount:
             type:
-              - "null"
+              - 'null'
               - number
           discount_amount:
             type: number
@@ -828,11 +884,11 @@ streams:
             type: string
           paid_at:
             type:
-              - "null"
+              - 'null'
               - string
           paid_date:
             type:
-              - "null"
+              - 'null'
               - string
           payment_options:
             type: array
@@ -840,17 +896,17 @@ streams:
             type: string
           period_end:
             type:
-              - "null"
+              - 'null'
               - string
           period_start:
             type:
-              - "null"
+              - 'null'
               - string
           purchase_order:
             type: string
           sent_at:
             type:
-              - "null"
+              - 'null'
               - string
           state:
             type: string
@@ -872,15 +928,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -909,12 +972,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -932,7 +995,7 @@ streams:
             type: string
           budget:
             type:
-              - "null"
+              - 'null'
               - number
           budget_by:
             type: string
@@ -949,11 +1012,11 @@ streams:
             type: object
           code:
             type:
-              - "null"
+              - 'null'
               - string
           cost_budget:
             type:
-              - "null"
+              - 'null'
               - number
           cost_budget_include_expenses:
             type: boolean
@@ -961,7 +1024,7 @@ streams:
             type: string
           fee:
             type:
-              - "null"
+              - 'null'
               - number
           id:
             type: number
@@ -975,7 +1038,7 @@ streams:
             type: string
           notes:
             type:
-              - "null"
+              - 'null'
               - string
           notify_when_over_budget:
             type: boolean
@@ -995,15 +1058,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -1032,12 +1102,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -1073,15 +1143,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -1089,6 +1166,7 @@ streams:
               backoff_strategies:
                 - type: WaitTimeFromHeader
                   header: Retry-After
+            - type: DefaultErrorHandler
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1110,12 +1188,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -1141,7 +1219,7 @@ streams:
             properties:
               code:
                 type:
-                  - "null"
+                  - 'null'
                   - string
               id:
                 type: number
@@ -1167,15 +1245,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -1204,12 +1289,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -1247,15 +1332,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -1284,12 +1376,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -1307,7 +1399,7 @@ streams:
             type: boolean
           billable_rate:
             type:
-              - "null"
+              - 'null'
               - number
           budgeted:
             type: boolean
@@ -1322,7 +1414,7 @@ streams:
             type: object
           cost_rate:
             type:
-              - "null"
+              - 'null'
               - number
           created_at:
             type: string
@@ -1340,7 +1432,7 @@ streams:
                 type: string
             type:
               - object
-              - "null"
+              - 'null'
           is_billed:
             type: boolean
           is_closed:
@@ -1351,7 +1443,7 @@ streams:
             type: boolean
           locked_reason:
             type:
-              - "null"
+              - 'null'
               - string
           notes:
             type: string
@@ -1401,7 +1493,7 @@ streams:
             properties:
               budget:
                 type:
-                  - "null"
+                  - 'null'
                   - number
               created_at:
                 type: string
@@ -1428,15 +1520,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -1465,12 +1564,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -1486,13 +1585,13 @@ streams:
         properties:
           budget:
             type:
-              - "null"
+              - 'null'
               - number
           created_at:
             type: string
           hourly_rate:
             type:
-              - "null"
+              - 'null'
               - number
           id:
             type: number
@@ -1504,7 +1603,7 @@ streams:
             properties:
               code:
                 type:
-                  - "null"
+                  - 'null'
                   - string
               id:
                 type: number
@@ -1532,15 +1631,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -1569,12 +1675,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -1600,13 +1706,13 @@ streams:
             type: boolean
           cost_rate:
             type:
-              - "null"
+              - 'null'
               - number
           created_at:
             type: string
           default_hourly_rate:
             type:
-              - "null"
+              - 'null'
               - number
           email:
             type: string
@@ -1648,15 +1754,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -1685,12 +1798,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -1727,15 +1840,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -1765,22 +1885,22 @@ streams:
         fields:
           - path:
               - from
-            value: "{{ stream_partition.start_time }}"
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: "{{ stream_partition.end_time }}"
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - "%Y%m%d"
-      datetime_format: "%Y%m%d"
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: from
@@ -1791,9 +1911,9 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P1Y
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P365D
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: expenses_clients
@@ -1823,15 +1943,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -1861,22 +1988,22 @@ streams:
         fields:
           - path:
               - from
-            value: "{{ stream_partition.start_time }}"
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: "{{ stream_partition.end_time }}"
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - "%Y%m%d"
-      datetime_format: "%Y%m%d"
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: from
@@ -1887,9 +2014,9 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P1Y
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P365D
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: expenses_projects
@@ -1923,15 +2050,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -1961,22 +2095,22 @@ streams:
         fields:
           - path:
               - from
-            value: "{{ stream_partition.start_time }}"
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: "{{ stream_partition.end_time }}"
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - "%Y%m%d"
-      datetime_format: "%Y%m%d"
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: from
@@ -1987,9 +2121,9 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P1Y
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P365D
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: expenses_team
@@ -2021,15 +2155,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -2059,22 +2200,22 @@ streams:
         fields:
           - path:
               - from
-            value: "{{ stream_partition.start_time }}"
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: "{{ stream_partition.end_time }}"
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - "%Y%m%d"
-      datetime_format: "%Y%m%d"
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: from
@@ -2085,9 +2226,9 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P1Y
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P365D
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: project_budget
@@ -2127,15 +2268,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -2190,15 +2338,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -2228,22 +2383,22 @@ streams:
         fields:
           - path:
               - from
-            value: "{{ stream_partition.start_time }}"
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: "{{ stream_partition.end_time }}"
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - "%Y%m%d"
-      datetime_format: "%Y%m%d"
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: from
@@ -2254,9 +2409,9 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P1Y
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P365D
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: time_projects
@@ -2296,15 +2451,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -2334,22 +2496,22 @@ streams:
         fields:
           - path:
               - from
-            value: "{{ stream_partition.start_time }}"
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: "{{ stream_partition.end_time }}"
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - "%Y%m%d"
-      datetime_format: "%Y%m%d"
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: from
@@ -2360,9 +2522,9 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P1Y
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P365D
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: time_tasks
@@ -2394,15 +2556,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -2432,22 +2601,22 @@ streams:
         fields:
           - path:
               - from
-            value: "{{ stream_partition.start_time }}"
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: "{{ stream_partition.end_time }}"
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - "%Y%m%d"
-      datetime_format: "%Y%m%d"
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: from
@@ -2458,9 +2627,9 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P1Y
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P365D
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: time_team
@@ -2498,15 +2667,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -2536,22 +2712,22 @@ streams:
         fields:
           - path:
               - from
-            value: "{{ stream_partition.start_time }}"
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: "{{ stream_partition.end_time }}"
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - "%Y%m%d"
-      datetime_format: "%Y%m%d"
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: from
@@ -2562,9 +2738,9 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P1Y
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P365D
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: uninvoiced
@@ -2606,15 +2782,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -2644,22 +2827,22 @@ streams:
         fields:
           - path:
               - from
-            value: "{{ stream_partition.start_time }}"
+            value: '{{ stream_partition.start_time }}'
       - type: AddFields
         fields:
           - path:
               - to
-            value: "{{ stream_partition.end_time }}"
+            value: '{{ stream_partition.end_time }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: to
       cursor_datetime_formats:
-        - "%Y%m%d"
-      datetime_format: "%Y%m%d"
+        - '%Y%m%d'
+      datetime_format: '%Y%m%d'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: from
@@ -2670,9 +2853,9 @@ streams:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P1Y
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P365D
       cursor_granularity: P1D
   - type: DeclarativeStream
     name: estimate_messages
@@ -2722,15 +2905,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -2828,15 +3018,22 @@ streams:
                     http_method: GET
                     request_parameters: {}
                     request_headers:
-                      Harvest-Account-Id: "{{ config['account_id'] }}"
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
                     authenticator:
-                      type: OAuthAuthenticator
-                      client_id: "{{ config['client_id'] }}"
-                      grant_type: refresh_token
-                      client_secret: "{{ config['client_secret'] }}"
-                      refresh_token: "{{ config['client_refresh_token'] }}"
-                      refresh_request_body: {}
-                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                      type: SelectiveAuthenticator
+                      authenticator_selection_path: ["auth_type"]
+                      authenticators:
+                        bearer:
+                          type: BearerAuthenticator
+                          api_token: '{{ config[''api_token''] }}'
+                        oauth:
+                          type: OAuthAuthenticator
+                          client_id: '{{ config[''client_id''] }}'
+                          grant_type: refresh_token
+                          client_secret: '{{ config[''client_secret''] }}'
+                          refresh_token: '{{ config[''client_refresh_token''] }}'
+                          refresh_request_body: {}
+                          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
                     error_handler:
                       type: CompositeErrorHandler
                       error_handlers:
@@ -2865,12 +3062,12 @@ streams:
                   type: DatetimeBasedCursor
                   cursor_field: updated_at
                   cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%SZ"
-                  datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_datetime:
                     type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_time_option:
                     type: RequestOption
                     field_name: updated_since
@@ -2880,17 +3077,17 @@ streams:
         fields:
           - path:
               - parent_id
-            value: "{{stream_partition.id}}"
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -2951,15 +3148,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -3023,7 +3227,7 @@ streams:
                         type: string
                       discount:
                         type:
-                          - "null"
+                          - 'null'
                           - number
                       discount_amount:
                         type: number
@@ -3071,11 +3275,11 @@ streams:
                         type: string
                       paid_at:
                         type:
-                          - "null"
+                          - 'null'
                           - string
                       paid_date:
                         type:
-                          - "null"
+                          - 'null'
                           - string
                       payment_options:
                         type: array
@@ -3083,17 +3287,17 @@ streams:
                         type: string
                       period_end:
                         type:
-                          - "null"
+                          - 'null'
                           - string
                       period_start:
                         type:
-                          - "null"
+                          - 'null'
                           - string
                       purchase_order:
                         type: string
                       sent_at:
                         type:
-                          - "null"
+                          - 'null'
                           - string
                       state:
                         type: string
@@ -3115,15 +3319,22 @@ streams:
                     http_method: GET
                     request_parameters: {}
                     request_headers:
-                      Harvest-Account-Id: "{{ config['account_id'] }}"
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
                     authenticator:
-                      type: OAuthAuthenticator
-                      client_id: "{{ config['client_id'] }}"
-                      grant_type: refresh_token
-                      client_secret: "{{ config['client_secret'] }}"
-                      refresh_token: "{{ config['client_refresh_token'] }}"
-                      refresh_request_body: {}
-                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                      type: SelectiveAuthenticator
+                      authenticator_selection_path: ["auth_type"]
+                      authenticators:
+                        bearer:
+                          type: BearerAuthenticator
+                          api_token: '{{ config[''api_token''] }}'
+                        oauth:
+                          type: OAuthAuthenticator
+                          client_id: '{{ config[''client_id''] }}'
+                          grant_type: refresh_token
+                          client_secret: '{{ config[''client_secret''] }}'
+                          refresh_token: '{{ config[''client_refresh_token''] }}'
+                          refresh_request_body: {}
+                          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
                     error_handler:
                       type: CompositeErrorHandler
                       error_handlers:
@@ -3152,12 +3363,12 @@ streams:
                   type: DatetimeBasedCursor
                   cursor_field: updated_at
                   cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%SZ"
-                  datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_datetime:
                     type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_time_option:
                     type: RequestOption
                     field_name: updated_since
@@ -3167,17 +3378,17 @@ streams:
         fields:
           - path:
               - parent_id
-            value: "{{stream_partition.id}}"
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -3203,6 +3414,8 @@ streams:
             type: string
           paid_date:
             type: string
+          parent_id:
+            type: number
           payment_gateway:
             type: object
           recorded_by:
@@ -3221,15 +3434,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -3293,7 +3513,7 @@ streams:
                         type: string
                       discount:
                         type:
-                          - "null"
+                          - 'null'
                           - number
                       discount_amount:
                         type: number
@@ -3341,11 +3561,11 @@ streams:
                         type: string
                       paid_at:
                         type:
-                          - "null"
+                          - 'null'
                           - string
                       paid_date:
                         type:
-                          - "null"
+                          - 'null'
                           - string
                       payment_options:
                         type: array
@@ -3353,17 +3573,17 @@ streams:
                         type: string
                       period_end:
                         type:
-                          - "null"
+                          - 'null'
                           - string
                       period_start:
                         type:
-                          - "null"
+                          - 'null'
                           - string
                       purchase_order:
                         type: string
                       sent_at:
                         type:
-                          - "null"
+                          - 'null'
                           - string
                       state:
                         type: string
@@ -3385,15 +3605,22 @@ streams:
                     http_method: GET
                     request_parameters: {}
                     request_headers:
-                      Harvest-Account-Id: "{{ config['account_id'] }}"
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
                     authenticator:
-                      type: OAuthAuthenticator
-                      client_id: "{{ config['client_id'] }}"
-                      grant_type: refresh_token
-                      client_secret: "{{ config['client_secret'] }}"
-                      refresh_token: "{{ config['client_refresh_token'] }}"
-                      refresh_request_body: {}
-                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                      type: SelectiveAuthenticator
+                      authenticator_selection_path: ["auth_type"]
+                      authenticators:
+                        bearer:
+                          type: BearerAuthenticator
+                          api_token: '{{ config[''api_token''] }}'
+                        oauth:
+                          type: OAuthAuthenticator
+                          client_id: '{{ config[''client_id''] }}'
+                          grant_type: refresh_token
+                          client_secret: '{{ config[''client_secret''] }}'
+                          refresh_token: '{{ config[''client_refresh_token''] }}'
+                          refresh_request_body: {}
+                          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
                     error_handler:
                       type: CompositeErrorHandler
                       error_handlers:
@@ -3422,12 +3649,12 @@ streams:
                   type: DatetimeBasedCursor
                   cursor_field: updated_at
                   cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%SZ"
-                  datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_datetime:
                     type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_time_option:
                     type: RequestOption
                     field_name: updated_since
@@ -3437,17 +3664,17 @@ streams:
         fields:
           - path:
               - parent_id
-            value: "{{stream_partition.id}}"
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -3463,7 +3690,7 @@ streams:
         properties:
           budget:
             type:
-              - "null"
+              - 'null'
               - number
           client:
             properties:
@@ -3478,7 +3705,7 @@ streams:
             type: string
           hourly_rate:
             type:
-              - "null"
+              - 'null'
               - number
           id:
             type: number
@@ -3490,7 +3717,7 @@ streams:
             properties:
               code:
                 type:
-                  - "null"
+                  - 'null'
                   - string
               id:
                 type: number
@@ -3535,15 +3762,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -3595,13 +3829,13 @@ streams:
                         type: boolean
                       cost_rate:
                         type:
-                          - "null"
+                          - 'null'
                           - number
                       created_at:
                         type: string
                       default_hourly_rate:
                         type:
-                          - "null"
+                          - 'null'
                           - number
                       email:
                         type: string
@@ -3643,15 +3877,22 @@ streams:
                     http_method: GET
                     request_parameters: {}
                     request_headers:
-                      Harvest-Account-Id: "{{ config['account_id'] }}"
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
                     authenticator:
-                      type: OAuthAuthenticator
-                      client_id: "{{ config['client_id'] }}"
-                      grant_type: refresh_token
-                      client_secret: "{{ config['client_secret'] }}"
-                      refresh_token: "{{ config['client_refresh_token'] }}"
-                      refresh_request_body: {}
-                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                      type: SelectiveAuthenticator
+                      authenticator_selection_path: ["auth_type"]
+                      authenticators:
+                        bearer:
+                          type: BearerAuthenticator
+                          api_token: '{{ config[''api_token''] }}'
+                        oauth:
+                          type: OAuthAuthenticator
+                          client_id: '{{ config[''client_id''] }}'
+                          grant_type: refresh_token
+                          client_secret: '{{ config[''client_secret''] }}'
+                          refresh_token: '{{ config[''client_refresh_token''] }}'
+                          refresh_request_body: {}
+                          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
                     error_handler:
                       type: CompositeErrorHandler
                       error_handlers:
@@ -3680,12 +3921,12 @@ streams:
                   type: DatetimeBasedCursor
                   cursor_field: updated_at
                   cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%SZ"
-                  datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_datetime:
                     type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_time_option:
                     type: RequestOption
                     field_name: updated_since
@@ -3695,17 +3936,17 @@ streams:
         fields:
           - path:
               - parent_id
-            value: "{{stream_partition.id}}"
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -3737,15 +3978,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -3797,13 +4045,13 @@ streams:
                         type: boolean
                       cost_rate:
                         type:
-                          - "null"
+                          - 'null'
                           - number
                       created_at:
                         type: string
                       default_hourly_rate:
                         type:
-                          - "null"
+                          - 'null'
                           - number
                       email:
                         type: string
@@ -3845,15 +4093,22 @@ streams:
                     http_method: GET
                     request_parameters: {}
                     request_headers:
-                      Harvest-Account-Id: "{{ config['account_id'] }}"
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
                     authenticator:
-                      type: OAuthAuthenticator
-                      client_id: "{{ config['client_id'] }}"
-                      grant_type: refresh_token
-                      client_secret: "{{ config['client_secret'] }}"
-                      refresh_token: "{{ config['client_refresh_token'] }}"
-                      refresh_request_body: {}
-                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                      type: SelectiveAuthenticator
+                      authenticator_selection_path: ["auth_type"]
+                      authenticators:
+                        bearer:
+                          type: BearerAuthenticator
+                          api_token: '{{ config[''api_token''] }}'
+                        oauth:
+                          type: OAuthAuthenticator
+                          client_id: '{{ config[''client_id''] }}'
+                          grant_type: refresh_token
+                          client_secret: '{{ config[''client_secret''] }}'
+                          refresh_token: '{{ config[''client_refresh_token''] }}'
+                          refresh_request_body: {}
+                          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
                     error_handler:
                       type: CompositeErrorHandler
                       error_handlers:
@@ -3882,12 +4137,12 @@ streams:
                   type: DatetimeBasedCursor
                   cursor_field: updated_at
                   cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%SZ"
-                  datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_datetime:
                     type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_time_option:
                     type: RequestOption
                     field_name: updated_since
@@ -3897,17 +4152,17 @@ streams:
         fields:
           - path:
               - parent_id
-            value: "{{stream_partition.id}}"
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -3939,15 +4194,22 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Harvest-Account-Id: "{{ config['account_id'] }}"
+          Harvest-Account-Id: '{{ config[''account_id''] }}'
         authenticator:
-          type: OAuthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
-          refresh_request_body: {}
-          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["auth_type"]
+          authenticators:
+            bearer:
+              type: BearerAuthenticator
+              api_token: '{{ config[''api_token''] }}'
+            oauth:
+              type: OAuthAuthenticator
+              client_id: '{{ config[''client_id''] }}'
+              grant_type: refresh_token
+              client_secret: '{{ config[''client_secret''] }}'
+              refresh_token: '{{ config[''client_refresh_token''] }}'
+              refresh_request_body: {}
+              token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -3999,13 +4261,13 @@ streams:
                         type: boolean
                       cost_rate:
                         type:
-                          - "null"
+                          - 'null'
                           - number
                       created_at:
                         type: string
                       default_hourly_rate:
                         type:
-                          - "null"
+                          - 'null'
                           - number
                       email:
                         type: string
@@ -4047,15 +4309,22 @@ streams:
                     http_method: GET
                     request_parameters: {}
                     request_headers:
-                      Harvest-Account-Id: "{{ config['account_id'] }}"
+                      Harvest-Account-Id: '{{ config[''account_id''] }}'
                     authenticator:
-                      type: OAuthAuthenticator
-                      client_id: "{{ config['client_id'] }}"
-                      grant_type: refresh_token
-                      client_secret: "{{ config['client_secret'] }}"
-                      refresh_token: "{{ config['client_refresh_token'] }}"
-                      refresh_request_body: {}
-                      token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+                      type: SelectiveAuthenticator
+                      authenticator_selection_path: ["auth_type"]
+                      authenticators:
+                        bearer:
+                          type: BearerAuthenticator
+                          api_token: '{{ config[''api_token''] }}'
+                        oauth:
+                          type: OAuthAuthenticator
+                          client_id: '{{ config[''client_id''] }}'
+                          grant_type: refresh_token
+                          client_secret: '{{ config[''client_secret''] }}'
+                          refresh_token: '{{ config[''client_refresh_token''] }}'
+                          refresh_request_body: {}
+                          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
                     error_handler:
                       type: CompositeErrorHandler
                       error_handlers:
@@ -4084,12 +4353,12 @@ streams:
                   type: DatetimeBasedCursor
                   cursor_field: updated_at
                   cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%SZ"
-                  datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    - '%Y-%m-%dT%H:%M:%SZ'
+                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_datetime:
                     type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                    datetime: '{{ config[''start_date''] }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
                   start_time_option:
                     type: RequestOption
                     field_name: updated_since
@@ -4099,17 +4368,17 @@ streams:
         fields:
           - path:
               - parent_id
-            value: "{{stream_partition.id}}"
+            value: '{{stream_partition.id}}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
         type: RequestOption
         field_name: updated_since
@@ -4119,38 +4388,57 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
     required:
-      - start_date
-      - client_id
-      - client_secret
-      - client_refresh_token
       - account_id
+      - start_date
+      - auth_type
     properties:
-      start_date:
-        type: string
-        title: Replication Start Date
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 0
-      client_id:
-        type: string
-        title: Client ID
-        airbyte_secret: true
-        order: 1
-      client_secret:
-        type: string
-        title: Client secret
-        airbyte_secret: true
-        order: 2
-      client_refresh_token:
-        type: string
-        title: Refresh token
-        airbyte_secret: true
-        order: 3
       account_id:
         type: string
-        order: 4
+        order: 0
         title: Account Id
         airbyte_secret: true
+        description: Harvest account ID
+      start_date:
+        type: string
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+        description: The date after which data will be synced.
+      auth_type:
+        title: Auth Type
+        description: >-
+          Type of API authentication. Select "bearer" if using an "api_token",
+          select "oauth" if using "client_id", "client_secret", and
+          "client_refresh_token".
+        default: oauth
+        enum:
+          - bearer
+          - oauth
+        type: string
+        order: 2
+      api_token:
+        title: API Token
+        description: Required for oauth authentication
+        airbyte_secret: true
+        type: string
+        order: 3
+      client_id:
+        title: Client ID
+        description: Required for oauth authentication
+        type: string
+        order: 4
+      client_refresh_token:
+        title: Client Refresh Token
+        description: Required for oauth authentication
+        type: string
+        order: 5
+      client_secret:
+        title: Client Secret
+        description: Required for oauth authentication
+        airbyte_secret: true
+        type: string
+        order: 6
     additionalProperties: true
   type: Spec
 metadata:
