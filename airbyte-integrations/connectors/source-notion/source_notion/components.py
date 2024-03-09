@@ -77,8 +77,9 @@ class NotionBlocksTransformation(RecordTransformation):
 @dataclass
 class NotionSemiIncrementalFilter(RecordFilter):
     """
-    The Blocks and Comments endpoints do not support sorting/filtering, and are both semi-incemental in nature.
-    This filter is a hack to replicate the existing behaviour until semi-incremental is officially supported by the low-code framework
+    Custom filter to implement semi-incremental syncing for the Blocks and Comments endpoints, which do not support sorting or filtering.
+    This filter emulates incremental behavior by filtering out records based on the comparison of the cursor value with current value in state,
+    ensuring only records updated after the cutoff timestamp are synced.
     """
 
     parameters: InitVar[Mapping[str, Any]]
@@ -91,27 +92,23 @@ class NotionSemiIncrementalFilter(RecordFilter):
         records: List[Mapping[str, Any]],
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        **kwargs
     ) -> List[Mapping[str, Any]]:
-        current_state = [x for x in stream_state.get(
+      """
+      Filters a list of records, returning only those with a cursor_value greater than the current value in state.
+      """
+      current_state = [x for x in stream_state.get(
             "states", []) if x["partition"]["id"] == stream_slice.partition["id"]]
-        # TODO: REF what to do if no start_date mentioned (see manifest)
-        #  implement the same logic
-        cursor_value = self.get_filter_date(
+      cursor_value = self.get_filter_date(
             self.config.get("start_date"), current_state)
-        if cursor_value:
-            print(cursor_value)
-            for record in records:
-                print(record)
+      if cursor_value:
             return [record for record in records if record["last_edited_time"] > cursor_value]
-        return records
+      return records
 
     def get_filter_date(self, start_date: str, state_value: list) -> str:
         """
-        Calculate the filter date to pass in the request parameters by comparing the start_date
-        with the value of state obtained from the stream_slice.
-        If only one value exists, use it by default. Otherwise, return None.
-        If no filter_date is provided, the API will fetch all available records.
+        Calculates the filter date to pass in the request parameters by comparing the start_date with the value of state obtained from the stream_slice.
+        If only one value exists, it is used as the filter_date by default.
         """
 
         start_date_parsed = pendulum.parse(
@@ -122,5 +119,6 @@ class NotionSemiIncrementalFilter(RecordFilter):
         )
 
         # Return the max of the two dates if both are present. Otherwise return whichever is present, or None.
-        if start_date_parsed or state_date_parsed:
-            return max(filter(None, [start_date_parsed, state_date_parsed]), default=None)
+        if state_date_parsed:
+            return max(filter(None, [start_date_parsed, state_date_parsed]), default=start_date_parsed)
+        return start_date_parsed

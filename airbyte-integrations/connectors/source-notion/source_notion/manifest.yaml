@@ -1685,8 +1685,6 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%SZ'))}}"
-      step: "P100Y"
-      cursor_granularity: "PT0.1S"
     retriever:
       type: SimpleRetriever
       requester:
@@ -2107,6 +2105,15 @@ streams:
           type:
             type: string
         type: object
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "last_edited_time"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%SZ'))}}"
     retriever:
       type: SimpleRetriever
       requester:
