@@ -173,9 +173,6 @@ class AirbyteEntrypoint(object):
             stream_message_count[message_utils.get_stream_descriptor(message)] += 1
 
         elif message.type == Type.STATE:
-            if not message.state.stream:
-                raise ValueError("State message was not in per-stream state format, which is required for record counts.")
-
             stream_descriptor = message_utils.get_stream_descriptor(message)
 
             # Set record count from the counter onto the state message
