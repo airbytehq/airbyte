@@ -11,7 +11,7 @@ from . import config
 
 def test_check_connection(mocker):
     source = SourceKyve()
-    logger_mock, config_mock = MagicMock(), MagicMock()
+    logger_mock, config_mock = config, config
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 
