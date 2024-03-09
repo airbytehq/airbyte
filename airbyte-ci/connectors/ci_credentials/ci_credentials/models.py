@@ -54,7 +54,7 @@ class Secret:
         Raises:
             TypeError: If the secret value is not a valid JSON string.
         """
-        return json.dumps(self.value)
+        return json.loads(self.value)
 
 
 @dataclass
