@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.mongodb;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -81,7 +83,6 @@ public class FullRefreshHandler {
                             }))
                     // if nothing was found, return a new BsonDocument
                     .orElseGet(BsonDocument::new);
-            LOGGER.info("*** filter: {}", filter);
           final var cursor = isEnforceSchema ? collection.find()
               .filter(filter)
               .projection(fields)
@@ -94,8 +95,12 @@ public class FullRefreshHandler {
                   .allowDiskUse(true)
                   .cursor();
 
-          final var stateIterator = new MongoDbStateIterator(cursor, stateManager, null,
-              airbyteStream, emittedAt, config.getCheckpointInterval(), MongoConstants.CHECKPOINT_DURATION, isEnforceSchema, true);
+            final var stateIterator = new SourceStateIterator<>(cursor, airbyteStream, stateManager,
+                    new StateEmitFrequency(
+                            /*config.getCheckpointInterval()*/1000L, // TEMP
+                            MongoConstants.CHECKPOINT_DURATION));
+          /*final var stateIterator = new MongoDbStateIterator(cursor, stateManager, null,
+              airbyteStream, emittedAt, config.getCheckpointInterval(), MongoConstants.CHECKPOINT_DURATION, isEnforceSchema, true);*/
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();

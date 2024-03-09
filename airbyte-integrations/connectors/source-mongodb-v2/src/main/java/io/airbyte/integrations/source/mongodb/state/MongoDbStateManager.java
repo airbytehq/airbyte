@@ -16,16 +16,9 @@ import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcEventUtils;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
-import io.airbyte.protocol.models.v0.AirbyteGlobalState;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +29,10 @@ import java.util.stream.Collectors;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.FULL_REFRESH;
+import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
+import static io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL;
 
 /**
  * A state manager for MongoDB CDC syncs.
@@ -244,14 +241,16 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
   @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-
+    final var syncMode = stream.getSyncMode();
     // Assuming we will always process at least 1 record message before sending out the state message.
     // shouldEmitStateMessage should guard this.
     var lastId = streamPairToLastIdMap.get(pair);
     if (lastId != null) {
       final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
           .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
-      final var state = new MongoDbStreamState(lastId.toString(), InitialSnapshotStatus.IN_PROGRESS, idType);
+      final var state = new MongoDbStreamState(lastId.toString(),
+              syncMode == INCREMENTAL ? IN_PROGRESS : FULL_REFRESH,
+              idType);
       updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
     }
     return toState();
@@ -266,7 +265,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
 
     final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
 
-    var lastId = document.get(MongoConstants.ID_FIELD);
+    final var lastId = document.get(MongoConstants.ID_FIELD);
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
     streamPairToLastIdMap.put(pair, lastId);
 
@@ -292,20 +291,24 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
    */
   @Override
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {
-    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-    if (!streamPairToLastIdMap.containsKey(pair)) {
-      var initialLastId = getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
-      streamPairToLastIdMap.put(pair, initialLastId);
-    }
-    var lastId = streamPairToLastIdMap.get(pair);
-    if (lastId != null) {
-      LOGGER.debug("Emitting final state status for stream {}:{}...", stream.getStream().getNamespace(), stream.getStream().getName());
-      final var finalStateStatus = InitialSnapshotStatus.COMPLETE;
-      final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
-          .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
-      final var state = new MongoDbStreamState(lastId.toString(), finalStateStatus, idType);
+    if (stream.getSyncMode() == INCREMENTAL) {
+      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+      if (!streamPairToLastIdMap.containsKey(pair)) {
+        var initialLastId = getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
+        streamPairToLastIdMap.put(pair, initialLastId);
+      }
+      var lastId = streamPairToLastIdMap.get(pair);
+      if (lastId != null) {
+        LOGGER.debug("Emitting final state status for stream {}:{}...", stream.getStream().getNamespace(), stream.getStream().getName());
+        final var finalStateStatus = InitialSnapshotStatus.COMPLETE;
+        final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
+                .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+        final var state = new MongoDbStreamState(lastId.toString(), finalStateStatus, idType);
 
-      updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
+        updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
+      }
+    } else {
+      deleteStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
     }
     return toState();
   }
