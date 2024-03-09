@@ -6,8 +6,8 @@ from __future__ import (  # Used to evaluate type hints at runtime, a NameError:
     annotations,
 )
 
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 
 DEFAULT_SECRET_FILE = "config"
 

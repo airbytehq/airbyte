@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+
 from common_utils import Logger
 
 from . import SecretsManager
@@ -42,6 +43,7 @@ def get_secrets_manager(
         connector_name=connector_name,
         gsm_credentials=gcp_gsm_credentials,
     )
+
 
 def get_connector_secrets(
     connector_name: str | None = None,
