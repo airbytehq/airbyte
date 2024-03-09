@@ -255,7 +255,7 @@ test_concurrent_cdk_multiple_streams = (
                     primary_key=[],
                     cursor_field=None,
                     logger=logging.getLogger("test_logger"),
-                    cursor=FinalStateCursor(stream_name="stream1", stream_namespace=None, message_repository=_message_repository),
+                    cursor=FinalStateCursor(stream_name="stream2", stream_namespace=None, message_repository=_message_repository),
                 ),
             ]
         )
