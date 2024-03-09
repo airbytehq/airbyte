@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
+import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.RESYNC_DATA_OPTION;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.testutils.TestDatabase;
@@ -128,12 +131,17 @@ public class MySQLTestDatabase extends
     }
 
     public MySQLConfigBuilder withCdcReplication() {
+      return withCdcReplication(RESYNC_DATA_OPTION);
+    }
+
+    public MySQLConfigBuilder withCdcReplication(String cdcCursorFailBehaviour) {
       return this
           .with("is_test", true)
           .with("replication_method", ImmutableMap.builder()
               .put("method", "CDC")
               .put("initial_waiting_seconds", 5)
               .put("server_time_zone", "America/Los_Angeles")
+              .put(INVALID_CDC_CURSOR_POSITION_PROPERTY, cdcCursorFailBehaviour)
               .build());
     }
 

@@ -142,7 +142,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 ### Troubleshooting
 
 * If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
-* Connector setup will fail if the speadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
+* Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
 * Check out common troubleshooting issues for the Google Sheets source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
@@ -150,7 +150,8 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
-| ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.3.17  | 2024-02-29 | [35722](https://github.com/airbytehq/airbyte/pull/35722) | Add logic to emit stream statuses                                                 |
 | 0.3.16  | 2024-02-12 | [35136](https://github.com/airbytehq/airbyte/pull/35136) | Fix license in `pyproject.toml`.                                                  |
 | 0.3.15  | 2024-02-07 | [34944](https://github.com/airbytehq/airbyte/pull/34944) | Manage dependencies with Poetry.                                                  |
 | 0.3.14  | 2024-01-23 | [34437](https://github.com/airbytehq/airbyte/pull/34437) | Fix header cells filtering                                                        |

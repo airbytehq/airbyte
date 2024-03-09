@@ -104,6 +104,7 @@ allprojects {
         systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', 1
         // Order test classes by annotation.
         systemProperty 'junit.jupiter.testclass.order.default', 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation'
+        systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
 
         if (!project.hasProperty('testExecutionConcurrency')) {
             // By default, let gradle spawn as many independent workers as it wants.
@@ -124,6 +125,13 @@ allprojects {
                 systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
             }
         }
+        String junitMethodExecutionTimeout
+        if (project.hasProperty('JunitMethodExecutionTimeout')) {
+            junitMethodExecutionTimeout = project.property('JunitMethodExecutionTimeout').toString()
+        } else {
+            junitMethodExecutionTimeout = '1 m'
+        }
+        systemProperty 'JunitMethodExecutionTimeout', junitMethodExecutionTimeout
     }
 
     dependencies {
