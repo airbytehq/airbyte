@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "project_name": {
+      "type": ["null", "string"]
+    },
+    "client_id": {
+      "type": ["null", "integer"]
+    },
+    "client_name": {
+      "type": ["null", "string"]
+    },
+    "total_hours": {
+      "type": ["null", "number"]
+    },
+    "billable_hours": {
+      "type": ["null", "number"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "billable_amount": {
+      "type": ["null", "number"]
+    },
+    "from": {
+      "type": ["null", "string"]
+    },
+    "to": {
+      "type": ["null", "string"]
+    }
+  }
+}

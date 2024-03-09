@@ -1,0 +1,54 @@
+documentationUrl: https://help.getharvest.com/api-v2/
+connectionSpecification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - account_id
+      - start_date
+      - auth_type
+    properties:
+      account_id:
+        type: string
+        order: 0
+        title: Account Id
+        airbyte_secret: true
+        description: Harvest account ID
+      start_date:
+        type: string
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+        description: The date after which data will be synced.
+      auth_type:
+        title: Auth Type
+        description: Type of API authentication. Select "api_token" if using an API Token, select "oauth" if using "client_id", "client_secret", and "client_refresh_token".
+        default: oauth
+        enum:
+          - api_token
+          - oauth
+        type: string
+        order: 2
+      api_token:
+        title: API Token
+        description: Required for oauth authentication
+        airbyte_secret: true
+        type: string
+        order: 3
+      client_id:
+        title: Client ID
+        description: Required for oauth authentication
+        type: string
+        order: 4
+      client_refresh_token:
+        title: Client Refresh Token
+        description: Required for oauth authentication
+        type: string
+        order: 5
+      client_secret:
+        title: Client Secret
+        description: Required for oauth authentication
+        airbyte_secret: true
+        type: string
+        order: 6
+    additionalProperties: true
