@@ -7,6 +7,7 @@ from __future__ import (  # Used to evaluate type hints at runtime, a NameError:
 )
 
 from dataclasses import dataclass
+import json
 
 DEFAULT_SECRET_FILE = "config"
 
@@ -45,6 +46,15 @@ class Secret:
             return f"airbyte-integrations/bases/{self.connector_name}/secrets"
         else:
             return f"airbyte-integrations/connectors/{self.connector_name}/secrets"
+
+    @property
+    def value_dict(self) -> dict:
+        """Returns the secret value as a dictionary.
+
+        Raises:
+            TypeError: If the secret value is not a valid JSON string.
+        """
+        return json.dumps(self.value)
 
 
 @dataclass
