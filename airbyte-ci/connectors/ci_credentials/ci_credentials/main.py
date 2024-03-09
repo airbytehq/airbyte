@@ -10,6 +10,7 @@ import click
 from common_utils import Logger
 
 from . import SecretsManager
+from .library import get_secrets_manager
 
 logger = Logger()
 
@@ -30,18 +31,9 @@ def ci_credentials(ctx, connector_name: str, gcp_gsm_credentials):
         # if needed to load all secrets
         connector_name = None
 
-    # parse GCP_GSM_CREDENTIALS
-    try:
-        gsm_credentials = json.loads(gcp_gsm_credentials) if gcp_gsm_credentials else {}
-    except JSONDecodeError as e:
-        return logger.error(f"incorrect GCP_GSM_CREDENTIALS value, error: {e}")
-
-    if not gsm_credentials:
-        return logger.error("GCP_GSM_CREDENTIALS shouldn't be empty!")
-
-    secret_manager = SecretsManager(
+    secret_manager: SecretsManager = get_secrets_manager(
         connector_name=connector_name,
-        gsm_credentials=gsm_credentials,
+        gcp_gsm_credentials=gcp_gsm_credentials,
     )
     ctx.obj["secret_manager"] = secret_manager
     ctx.obj["connector_secrets"] = secret_manager.read_from_gsm()
