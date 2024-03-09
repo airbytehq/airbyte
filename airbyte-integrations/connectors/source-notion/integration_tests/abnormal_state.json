@@ -31,5 +31,21 @@
         "name": "blocks"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "comments"
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": { "id": "dd4b5383-2dc0-46fd-9dc6-a7a251337e0b" },
+            "cursor": {"last_edited_time": "2024-03-09T21:19:31Z"}
+          }
+        ]
+      }
+    }
   }
 ]

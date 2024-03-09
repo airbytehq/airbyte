@@ -114,7 +114,7 @@ class NotionSemiIncrementalFilter(RecordFilter):
         start_date_parsed = pendulum.parse(
             start_date).to_iso8601_string() if start_date else None
         state_date_parsed = (
-            pendulum.parse(state_value[0]["cursor"][self.parameters["cursor_field"]]).to_iso8601_string(
+            pendulum.parse(state_value[0]["cursor"]["last_edited_time"]).to_iso8601_string(
             ) if state_value else None
         )
 

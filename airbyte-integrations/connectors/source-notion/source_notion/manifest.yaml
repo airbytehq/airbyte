@@ -1722,7 +1722,7 @@ streams:
         type: RecordSelector
         record_filter:
           type: CustomRecordFilter
-          class_name: source_notion.components.NotionSemiIncrementalFilter    
+          class_name: source_notion.components.NotionSemiIncrementalFilter
         extractor:
           type: DpathExtractor
           field_path:
