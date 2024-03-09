@@ -210,6 +210,10 @@ streams:
             type:
               - "null"
               - string
+          state:
+            type:
+              - "null"
+              - string
           country_code:
             type:
               - "null"
@@ -352,6 +356,10 @@ streams:
             type:
               - "null"
               - integer
+          forwarding_number:
+            type:
+              - "null"
+              - string
   - name: agents_overview
     type: DeclarativeStream
     retriever:
@@ -481,6 +489,8 @@ streams:
             type:
               - "null"
               - integer
+          current_timestamp:
+            type: integer
   - name: greeting_categories
     type: DeclarativeStream
     retriever:
@@ -752,7 +762,6 @@ streams:
               - array
             items:
               type:
-                - "null"
                 - string
           categorised_greetings:
             type:
@@ -766,6 +775,34 @@ streams:
             type:
               - "null"
               - object
+          default_group_id:
+            type:
+              - "null"
+              - integer
+          failover_number:
+            type:
+              - "null"
+              - string
+          ivr_id:
+            type:
+              - "null"
+              - integer
+          nickname:
+            type:
+              - "null"
+              - string
+          token:
+            type:
+              - "null"
+              - string
+          schedule_id:
+            type:
+              - "null"
+              - integer
+          sms_group_id:
+            type:
+              - "null"
+              - integer
   - name: call_legs
     type: DeclarativeStream
     retriever:
@@ -874,6 +911,42 @@ streams:
             type:
               - "null"
               - string
+          conference_from:
+            type:
+              - "null"
+              - integer
+          conference_time:
+            type:
+              - "null"
+              - integer
+          conference_to:
+            type:
+              - "null"
+              - integer
+          consultation_from:
+            type:
+              - "null"
+              - integer
+          consultation_time:
+            type:
+              - "null"
+              - integer
+          consultation_to:
+            type:
+              - "null"
+              - integer
+          forwarded_to:
+            type:
+              - "null"
+              - string
+          transferred_from:
+            type:
+              - "null"
+              - integer
+          transferred_to:
+            type:
+              - "null"
+              - integer
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -1040,6 +1113,62 @@ streams:
             type:
               - integer
               - "null"
+          agent_id:
+            type:
+              - integer
+              - "null"
+          call_group_id:
+            type:
+              - integer
+              - "null"
+          call_recording_consent_action:
+            type:
+              - string
+              - "null"
+          call_recording_consent_keypress:
+            type:
+              - string
+              - "null"
+          callback_source:
+            type:
+              - string
+              - "null"
+          exceeded_queue_time:
+            type:
+              - boolean
+              - "null"
+          ivr_action:
+            type:
+              - string
+              - "null"
+          ivr_destination_group_name:
+            type:
+              - string
+              - "null"
+          ivr_hops:
+            type:
+              - integer
+              - "null"
+          ivr_routed_to:
+            type:
+              - string
+              - "null"
+          ivr_time_spent:
+            type:
+              - integer
+              - "null"
+          overflowed_to:
+            type:
+              - string
+              - "null"
+          ticket_id:
+            type:
+              - integer
+              - "null"
+          time_to_answer:
+            type:
+              - integer
+              - "null"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
@@ -1119,6 +1248,8 @@ streams:
             type:
               - integer
               - "null"
+          current_timestamp:
+            type: integer
   - name: account_overview
     type: DeclarativeStream
     retriever:
@@ -1292,6 +1423,10 @@ streams:
             type:
               - string
               - "null"
+          greeting_id:
+            type:
+              - integer
+              - "null"
           menus:
             type:
               - array
@@ -1319,6 +1454,10 @@ streams:
                           - integer
                           - "null"
                       action:
+                        type:
+                          - string
+                          - "null"
+                      greeting:
                         type:
                           - string
                           - "null"
