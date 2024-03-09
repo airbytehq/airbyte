@@ -27,10 +27,10 @@ data:
     oss:
       enabled: true
   releases:
-      breakingChanges:
-        1.0.0:
-          message: "ThThis update requires a config update. Please update your config and reset your data (to match the new format). This version has added an additional field, requiring you to select either 'API Token' authentication or 'OAuth' authentication. Additionally, the replication_end_date option has been removed."
-          upgradeDeadline: "2024-04-10"
+    breakingChanges:
+      1.0.0:
+        message: "ThThis update requires a config update. Please update your config and reset your data (to match the new format). This version has added an additional field, requiring you to select either 'API Token' authentication or 'OAuth' authentication. Additionally, the replication_end_date option has been removed."
+        upgradeDeadline: "2024-04-10"
   releaseStage: generally_available
   supportLevel: certified
   tags:
