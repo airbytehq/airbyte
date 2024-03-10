@@ -74,13 +74,18 @@ public class FullRefreshHandler {
             // "where _id > [last saved state] order by _id ASC".
             // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
             final Bson filter = existingState
-                    .map(state -> Filters.gt(MongoConstants.ID_FIELD,
-                            switch (state.idType()) {
-                                case STRING -> new BsonString(state.id());
-                                case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
-                                case INT -> new BsonInt32(Integer.parseInt(state.id()));
-                                case LONG -> new BsonInt64(Long.parseLong(state.id()));
-                            }))
+                    .map(state -> {
+                        return Optional.ofNullable(state.id())
+                                .map(
+                                        Id -> Filters.gt(MongoConstants.ID_FIELD,
+                                                switch (state.idType()) {
+                                                    case STRING -> new BsonString(Id);
+                                                    case OBJECT_ID -> new BsonObjectId(new ObjectId(Id));
+                                                    case INT -> new BsonInt32(Integer.parseInt(Id));
+                                                    case LONG -> new BsonInt64(Long.parseLong(Id));
+                                                }))
+                                .orElseGet(BsonDocument::new);
+                    } )
                     // if nothing was found, return a new BsonDocument
                     .orElseGet(BsonDocument::new);
           final var cursor = isEnforceSchema ? collection.find()
