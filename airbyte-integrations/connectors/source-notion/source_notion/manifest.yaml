@@ -23,7 +23,7 @@ streams:
           Notion-Version: '2022-06-28'
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''credentials''][''token''] }}'
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -86,7 +86,7 @@ streams:
           Notion-Version: '2022-06-28'
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''credentials''][''token''] }}'
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -140,7 +140,7 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       is_data_feed: true
     transformations:
       - type: CustomTransformation
@@ -162,7 +162,7 @@ streams:
           Notion-Version: '2022-06-28'
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''credentials''][''token''] }}'
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -216,7 +216,7 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       is_data_feed: true
     transformations:
       - type: CustomTransformation
@@ -231,10 +231,10 @@ streams:
       cursor_field: "last_edited_time"
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%SZ'))}}"
+        datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
     retriever:
       type: SimpleRetriever
       requester:
@@ -247,7 +247,7 @@ streams:
           Notion-Version: '2022-06-28'
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''credentials''][''token''] }}'
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -319,7 +319,7 @@ streams:
                       Notion-Version: '2022-06-28'
                     authenticator:
                       type: BearerAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
+                      api_token: '{{ config[''credentials''][''token''] }}'
                     error_handler:
                       type: CompositeErrorHandler
                       error_handlers:
@@ -375,7 +375,7 @@ streams:
                   start_datetime:
                     type: MinMaxDatetime
                     datetime: '{{ config[''start_date''] }}'
-                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
                   is_data_feed: true
 
   - type: DeclarativeStream
@@ -387,10 +387,10 @@ streams:
       cursor_field: "last_edited_time"
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%SZ'))}}"
+        datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
     retriever:
       type: SimpleRetriever
       requester:
@@ -403,7 +403,7 @@ streams:
           Notion-Version: '2022-06-28'
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''credentials''][''token''] }}'
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -487,7 +487,7 @@ streams:
                       Notion-Version: '2022-06-28'
                     authenticator:
                       type: BearerAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
+                      api_token: '{{ config[''credentials''][''token''] }}'
                     error_handler:
                       type: CompositeErrorHandler
                       error_handlers:
@@ -543,7 +543,7 @@ streams:
                   start_datetime:
                     type: MinMaxDatetime
                     datetime: '{{ config[''start_date''] }}'
-                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
                   is_data_feed: true
     transformations:
       - type: CustomTransformation
