@@ -16,7 +16,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /clients
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -120,7 +121,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /contacts
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -187,7 +189,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /estimate_item_categories
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -254,7 +257,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /estimates
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -321,7 +325,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /expense_categories
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -388,7 +393,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /expenses
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -455,7 +461,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /invoice_item_categories
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -522,7 +529,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /invoices
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -589,7 +597,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /projects
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -656,7 +665,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /roles
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -724,7 +734,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /task_assignments
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -791,7 +802,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /tasks
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -858,7 +870,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /time_entries
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -925,7 +938,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /user_assignments
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -992,7 +1006,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /users
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1058,7 +1073,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /reports/expenses/categories
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1145,7 +1161,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /reports/expenses/clients
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1232,7 +1249,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /reports/expenses/projects
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1319,7 +1337,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /reports/expenses/team
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1406,7 +1425,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /reports/project_budget
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1458,7 +1478,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /reports/time/clients
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1545,7 +1566,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /reports/time/projects
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1632,7 +1654,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /reports/time/tasks
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1719,7 +1742,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /reports/time/team
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1806,7 +1830,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /reports/uninvoiced
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1894,7 +1919,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /estimates/{{stream_partition.id}}/messages
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1953,7 +1979,8 @@ streams:
                     url_base: https://api.harvestapp.com/v2/
                     path: /estimates
                     http_method: GET
-                    request_parameters: {}
+                    request_parameters:
+                      per_page: '50'
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
@@ -2040,7 +2067,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /invoices/{{stream_partition.id}}/messages
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -2099,7 +2127,8 @@ streams:
                     url_base: https://api.harvestapp.com/v2/
                     path: /invoices
                     http_method: GET
-                    request_parameters: {}
+                    request_parameters:
+                      per_page: '50'
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
@@ -2186,7 +2215,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /invoices/{{stream_partition.id}}/payments
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -2245,7 +2275,8 @@ streams:
                     url_base: https://api.harvestapp.com/v2/
                     path: /invoices
                     http_method: GET
-                    request_parameters: {}
+                    request_parameters:
+                      per_page: '50'
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
@@ -2332,7 +2363,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /users/{{stream_partition.id}}/project_assignments
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -2391,7 +2423,8 @@ streams:
                     url_base: https://api.harvestapp.com/v2/
                     path: /users
                     http_method: GET
-                    request_parameters: {}
+                    request_parameters:
+                      per_page: '50'
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
@@ -2478,7 +2511,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /users/{{stream_partition['id']}}/billable_rates
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -2537,7 +2571,8 @@ streams:
                     url_base: https://api.harvestapp.com/v2/
                     path: /users
                     http_method: GET
-                    request_parameters: {}
+                    request_parameters:
+                      per_page: '50'
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
@@ -2624,7 +2659,8 @@ streams:
         url_base: https://api.harvestapp.com/v2/
         path: /users/{{stream_partition.id}}/cost_rates
         http_method: GET
-        request_parameters: {}
+        request_parameters:
+          per_page: '50'
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -2683,7 +2719,8 @@ streams:
                     url_base: https://api.harvestapp.com/v2/
                     path: /users
                     http_method: GET
-                    request_parameters: {}
+                    request_parameters:
+                      per_page: '50'
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
