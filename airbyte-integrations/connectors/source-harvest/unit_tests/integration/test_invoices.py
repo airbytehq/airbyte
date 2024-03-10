@@ -66,6 +66,7 @@ class InvoicesTest(TestCase):
             HttpRequest(
                 url="https://api.harvestapp.com/v2/invoices",
                 query_params={
+                    "per_page": "50",
                     "updated_since": string_formatted_start_date,
                 },
                 headers={

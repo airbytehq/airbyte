@@ -85,6 +85,7 @@ class InvoicesTest(TestCase):
             HttpRequest(
                 url="https://api.harvestapp.com/v2/invoices",
                 query_params={
+                    "per_page": "50",
                     "updated_since": self._string_formatted_start_date,
                 },
             ),
@@ -94,6 +95,7 @@ class InvoicesTest(TestCase):
             HttpRequest(
                 url=f"https://api.harvestapp.com/v2/invoices/{_AN_INVOICE_ID}/messages",
                 query_params={
+                    "per_page": "50",
                     "updated_since": self._string_formatted_start_date,
                 },
             ),
