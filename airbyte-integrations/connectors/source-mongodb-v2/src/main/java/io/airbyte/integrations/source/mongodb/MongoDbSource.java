@@ -19,6 +19,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.*;
 import java.time.Instant;
@@ -169,6 +170,9 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                                          final MongoDbStateManager stateManager,
                                                                          final Instant emmitedAt) {
     final FullRefreshHandler fullRefreshHandler = new FullRefreshHandler();
+    if (stateManager.getCdcState() == null) {
+      stateManager.updateCdcState(new MongoDbCdcState(null, sourceConfig.getEnforceSchema()));
+    }
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators = fullRefreshHandler.getIterators(
             streams,
             stateManager,
