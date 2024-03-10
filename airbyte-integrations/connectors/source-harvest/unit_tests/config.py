@@ -9,15 +9,16 @@ class ConfigBuilder:
         self._config: Dict[str, Any] = {
             "account_id": "an account id",
             "start_date": "2021-01-01T00:00:00Z",
-            "api_token": "an api key"
+            "api_token": "an api key",
+            "auth_type": "api_token"
         }
 
     def with_account_id(self, account_id: str) -> "ConfigBuilder":
         self._config["account_id"] = account_id
         return self
 
-    def with_replication_start_date(self, start_date: datetime) -> "ConfigBuilder":
-        self._config["start_date"] = start_date.isoformat()[:-13]+"Z"
+    def with_start_date(self, start_date: datetime) -> "ConfigBuilder":
+        self._config["start_date"] = start_date.strftime('%Y-%m-%dT%H:%M:%SZ')
         return self
 
     def with_api_token(self, api_token: str) -> "ConfigBuilder":
@@ -26,6 +27,10 @@ class ConfigBuilder:
 
     def with_client_id(self, client_id: str) -> "ConfigBuilder":
         self._config["client_id"] = client_id
+        return self
+
+    def with_auth_type(self, auth_type: str) -> "ConfigBuilder":
+        self._config["auth_type"] = auth_type
         return self
 
     def build(self) -> Dict[str, Any]:
