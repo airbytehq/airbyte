@@ -166,6 +166,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
       }
       recordsLastSync++;
       recordsAllSyncs++;
+      LOGGER.info("Sequence for {} is {}: ", event.eventKeyAsJson().get("id").asText(), event.eventValueAsJson().get("source").get("sequence").asText());
       return eventConverter.toAirbyteMessage(event);
     }
 
