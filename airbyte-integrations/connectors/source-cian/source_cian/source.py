@@ -96,7 +96,7 @@ class SourceCian(AbstractSource):
         if date_range_type == "custom_date":
             date_from = datetime.strptime(date_range.get("date_from"), from_user_date_format)
             date_to = datetime.strptime(date_range.get("date_to"), from_user_date_format)
-        elif date_range_type == "from_date_from_to_today":
+        elif date_range_type == "from_start_date_to_today":
             date_from = datetime.strptime(date_range.get("date_from"), from_user_date_format)
             if date_range.get("should_load_today"):
                 date_to = today_date
