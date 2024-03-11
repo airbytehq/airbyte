@@ -271,7 +271,7 @@ definitions:
       - "#/definitions/transformer_remove_empty_fields"
     $parameters:
       name: "segment_members"
-      primary_key: "id"
+      primary_key: ["id", "segment_id"]
       path: "/lists/{{ stream_slice.parent_slice.id }}/segments/{{ stream_slice.id }}/members"
       data_field: "members"
       cursor_field: "last_changed"
