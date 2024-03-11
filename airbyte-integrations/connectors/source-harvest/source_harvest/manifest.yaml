@@ -17,7 +17,7 @@ streams:
         path: /clients
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -122,7 +122,7 @@ streams:
         path: /contacts
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -190,7 +190,7 @@ streams:
         path: /estimate_item_categories
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -258,7 +258,7 @@ streams:
         path: /estimates
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -326,7 +326,7 @@ streams:
         path: /expense_categories
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -394,7 +394,7 @@ streams:
         path: /expenses
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -462,7 +462,7 @@ streams:
         path: /invoice_item_categories
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -530,7 +530,7 @@ streams:
         path: /invoices
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -598,7 +598,7 @@ streams:
         path: /projects
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -666,7 +666,7 @@ streams:
         path: /roles
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -735,7 +735,7 @@ streams:
         path: /task_assignments
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -803,7 +803,7 @@ streams:
         path: /tasks
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -871,7 +871,7 @@ streams:
         path: /time_entries
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -939,7 +939,7 @@ streams:
         path: /user_assignments
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1007,7 +1007,7 @@ streams:
         path: /users
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1074,7 +1074,7 @@ streams:
         path: /reports/expenses/categories
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1162,7 +1162,7 @@ streams:
         path: /reports/expenses/clients
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1250,7 +1250,7 @@ streams:
         path: /reports/expenses/projects
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1338,7 +1338,7 @@ streams:
         path: /reports/expenses/team
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1426,7 +1426,7 @@ streams:
         path: /reports/project_budget
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1479,7 +1479,7 @@ streams:
         path: /reports/time/clients
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1567,7 +1567,7 @@ streams:
         path: /reports/time/projects
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1655,7 +1655,7 @@ streams:
         path: /reports/time/tasks
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1743,7 +1743,7 @@ streams:
         path: /reports/time/team
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1831,7 +1831,7 @@ streams:
         path: /reports/uninvoiced
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1920,7 +1920,7 @@ streams:
         path: /estimates/{{stream_partition.id}}/messages
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -1980,7 +1980,7 @@ streams:
                     path: /estimates
                     http_method: GET
                     request_parameters:
-                      per_page: '50'
+                      per_page: "50"
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
@@ -2068,7 +2068,7 @@ streams:
         path: /invoices/{{stream_partition.id}}/messages
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -2128,7 +2128,7 @@ streams:
                     path: /invoices
                     http_method: GET
                     request_parameters:
-                      per_page: '50'
+                      per_page: "50"
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
@@ -2216,7 +2216,7 @@ streams:
         path: /invoices/{{stream_partition.id}}/payments
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -2276,7 +2276,7 @@ streams:
                     path: /invoices
                     http_method: GET
                     request_parameters:
-                      per_page: '50'
+                      per_page: "50"
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
@@ -2364,7 +2364,7 @@ streams:
         path: /users/{{stream_partition.id}}/project_assignments
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -2424,7 +2424,7 @@ streams:
                     path: /users
                     http_method: GET
                     request_parameters:
-                      per_page: '50'
+                      per_page: "50"
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
@@ -2512,7 +2512,7 @@ streams:
         path: /users/{{stream_partition['id']}}/billable_rates
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -2572,7 +2572,7 @@ streams:
                     path: /users
                     http_method: GET
                     request_parameters:
-                      per_page: '50'
+                      per_page: "50"
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
@@ -2660,7 +2660,7 @@ streams:
         path: /users/{{stream_partition.id}}/cost_rates
         http_method: GET
         request_parameters:
-          per_page: '50'
+          per_page: "50"
         request_headers:
           Harvest-Account-Id: "{{ config['account_id'] }}"
         authenticator:
@@ -2720,7 +2720,7 @@ streams:
                     path: /users
                     http_method: GET
                     request_parameters:
-                      per_page: '50'
+                      per_page: "50"
                     request_headers:
                       Harvest-Account-Id: "{{ config['account_id'] }}"
                     authenticator:
