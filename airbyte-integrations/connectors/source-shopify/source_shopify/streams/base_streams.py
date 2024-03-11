@@ -43,7 +43,7 @@ class ShopifyStream(HttpStream, ABC):
         self._transformer = DataTypeEnforcer(self.get_json_schema())
         self.config = config
         # default value, if the start_date is empty.
-        self.default_start_date = "2018-01-01"
+        self.default_start_date = "2020-01-01"
 
     @property
     @abstractmethod

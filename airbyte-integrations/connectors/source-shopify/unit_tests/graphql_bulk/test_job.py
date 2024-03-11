@@ -270,7 +270,7 @@ def test_bulk_stream_parse_response(
     "stream, stream_state, with_start_date, expected",
     [
         (DiscountCodes, {}, True, "updated_at:>='2023-01-01T00:00:00+00:00'"),
-        (DiscountCodes, {}, False, "updated_at:>='2018-01-01T00:00:00+00:00'"),
+        (DiscountCodes, {}, False, "updated_at:>='2020-01-01T00:00:00+00:00'"),
         (DiscountCodes, {"updated_at": "2022-01-01T00:00:00Z"}, True, "updated_at:>='2022-01-01T00:00:00+00:00'"),
         (DiscountCodes, {"updated_at": "2021-01-01T00:00:00Z"}, False, "updated_at:>='2021-01-01T00:00:00+00:00'"),
     ],
