@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
@@ -50,35 +51,35 @@ class UserDict(_collections_abc.MutableMapping):  # type: ignore
     def __repr__(self) -> str:
         return repr(self.data)
 
-    def __or__(self, other: "UserDict" | dict) -> "UserDict":
+    def __or__(self, other: UserDict | dict) -> UserDict:
         if isinstance(other, UserDict):
             return self.__class__(self.data | other.data)  # type: ignore
         if isinstance(other, dict):
             return self.__class__(self.data | other)  # type: ignore
         return NotImplemented
 
-    def __ror__(self, other: "UserDict" | dict) -> "UserDict":
+    def __ror__(self, other: UserDict | dict) -> UserDict:
         if isinstance(other, UserDict):
             return self.__class__(other.data | self.data)  # type: ignore
         if isinstance(other, dict):
             return self.__class__(other | self.data)  # type: ignore
         return NotImplemented
 
-    def __ior__(self, other: "UserDict" | dict) -> "UserDict":
+    def __ior__(self, other: UserDict | dict) -> UserDict:
         if isinstance(other, UserDict):
             self.data |= other.data  # type: ignore
         else:
             self.data |= other  # type: ignore
         return self
 
-    def __copy__(self) -> "UserDict":
+    def __copy__(self) -> UserDict:
         inst = self.__class__.__new__(self.__class__)
         inst.__dict__.update(self.__dict__)
         # Create a copy and avoid triggering descriptors
         inst.__dict__["data"] = self.__dict__["data"].copy()
         return inst
 
-    def copy(self) -> "UserDict":
+    def copy(self) -> UserDict:
         if self.__class__ is UserDict:
             return UserDict(self.data.copy())  # type: ignore
         import copy
@@ -93,7 +94,7 @@ class UserDict(_collections_abc.MutableMapping):  # type: ignore
         return c
 
     @classmethod
-    def fromkeys(cls, iterable: Iterable, value: Optional[Any] = None) -> "UserDict":
+    def fromkeys(cls, iterable: Iterable, value: Optional[Any] = None) -> UserDict:
         d = cls()
         for key in iterable:
             d[key] = value
@@ -233,5 +234,12 @@ class ExecutionReport:
         # Make backends use customizable
         airbyte_messages_dir = final_dir / "airbyte_messages"
         airbyte_messages_dir.mkdir(parents=True, exist_ok=True)
-        await FileBackend(airbyte_messages_dir).write(self.execution_result.airbyte_messages)
+        FileBackend(airbyte_messages_dir).write(self.execution_result.airbyte_messages)
         self.saved_path = final_dir
+
+
+@dataclass(kw_only=True)
+class ConnectionObjects:
+    source_config: Optional[SecretDict]
+    catalog: Optional[ConfiguredAirbyteCatalog]
+    state: Optional[Dict]

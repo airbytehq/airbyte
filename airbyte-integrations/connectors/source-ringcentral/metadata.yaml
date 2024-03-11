@@ -5,7 +5,7 @@ data:
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-ringcentral
   githubIssueLabel: source-ringcentral
-  icon: ringcentral.svg
+  icon: icon.svg
   license: MIT
   name: Ringcentral
   remoteRegistries:
