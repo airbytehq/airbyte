@@ -36,7 +36,7 @@ export const PyAirbyteExample = ({
     <p>Then, execute a sync by loading the connector like this:</p>
     <CodeBlock
       language="python"
-    >{`import pyairbyte as ab
+    >{`import airbyte as ab
 
 config = ${fakeConfig}
 
