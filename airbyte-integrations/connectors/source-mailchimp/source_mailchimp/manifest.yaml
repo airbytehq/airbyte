@@ -94,7 +94,6 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      step: "P100Y"
       cursor_granularity: PT1S
 
   automations_stream:
@@ -261,7 +260,6 @@ definitions:
         # TODO: ref to use datetime as optional parameter if possible
         datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S.%fZ')) }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      step: "P100Y"
       cursor_granularity: "PT0.1S"
     transformations:
       - type: AddFields
@@ -303,7 +301,6 @@ definitions:
         # TODO: ref to use datetime as optional parameter if possible
         datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S.%fZ')) }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      step: "P100Y"
       cursor_granularity: "PT0.1S"
     $parameters:
       name: "unsubscribes"
@@ -342,7 +339,6 @@ definitions:
         inject_into: request_parameter
         field_name: "since"
         type: RequestOption
-      step: "P100Y"
       cursor_granularity: "PT0.1S"
     $parameters:
       name: "email_activity"
