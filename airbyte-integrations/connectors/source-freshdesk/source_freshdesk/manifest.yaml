@@ -71,7 +71,7 @@ definitions:
       type: CursorPagination
       cursor_value: "{{ headers['link']['next']['url'] }}"
       stop_condition: "{{ 'next' not in headers['link'] }}"
-      page_size: 2
+      page_size: 100
     page_size_option:
       field_name: "per_page"
       inject_into: "request_parameter"
@@ -82,13 +82,14 @@ definitions:
     type: CompositeErrorHandler
     error_handlers:
       - type: DefaultErrorHandler
-        backoff_strategies:
-          - type: WaitTimeFromHeader
-            header: Retry-After
         response_filters:
           - http_codes: [401]
             action: FAIL
             error_message: "The endpoint to access stream '{{ parameters['name'] }}' returned 401: Unauthorized. This is most likely due to wrong credentials."
+      - type: DefaultErrorHandler
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: Retry-After
 
   requester:
     # This requester is used to count call credits used for requests to Freshdesk
@@ -298,7 +299,7 @@ definitions:
       name: "satisfaction_ratings"
       primary_key: "id"
       path: "surveys/satisfaction_ratings"
-      cursor_field: "created_at"
+      cursor_field: "updated_at"
       cursor_filter: "created_since"
 
   tickets:
