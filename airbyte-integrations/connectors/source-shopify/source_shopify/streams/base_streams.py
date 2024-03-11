@@ -620,7 +620,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     def default_state_comparison_value(self) -> Union[int, str]:
         # certain streams are using `id` field as `cursor_field`, which requires to use `int` type,
         # but many other use `str` values for this, we determine what to use based on `cursor_field` value
-        return 0 if self.cursor_field == "id" else (self.config.get("start_date") or "")
+        return 0 if self.cursor_field == "id" else self.config.get("start_date")
 
     # CDK OVERIDES
     @property
