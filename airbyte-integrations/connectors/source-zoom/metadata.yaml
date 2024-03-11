@@ -30,8 +30,7 @@ data:
         upgradeDeadline: 2023-09-08
         scopedImpact:
           - scopeType: stream
-            impactedScopes:
-              ["meeting_registration_questions"]
+            impactedScopes: ["meeting_registration_questions"]
   remoteRegistries:
     pypi:
       enabled: true
