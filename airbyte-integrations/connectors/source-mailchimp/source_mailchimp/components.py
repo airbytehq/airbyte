@@ -91,12 +91,8 @@ class MailChimpRecordFilter(RecordFilter):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> List[Mapping[str, Any]]:
         current_state = [x for x in stream_state.get("states", []) if x["partition"]["id"] == stream_slice.partition["id"]]
-        # TODO: REF what to do if no start_date mentioned (see manifest)
-        #  implement the same logic
         cursor_value = self.get_filter_date(self.config.get("start_date"), current_state)
-        if cursor_value:
-            return [record for record in records if record[self.parameters["cursor_field"]] > cursor_value]
-        return records
+        return [record for record in records if record[self.parameters["cursor_field"]] > cursor_value] if cursor_value else records
 
     def get_filter_date(self, start_date: str, state_value: list) -> str:
         """
