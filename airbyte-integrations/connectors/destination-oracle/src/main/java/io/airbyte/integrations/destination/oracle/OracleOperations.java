@@ -66,15 +66,17 @@ public class OracleOperations implements SqlOperations {
           CREATE TABLE %s.%s (
           %s VARCHAR(64) PRIMARY KEY,
           %s NCLOB,
-          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-          %s TIMESTAMP WITH TIME ZONE DEFAULT NULL
+          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          %s TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+          %s NCLOB
           )
         """,
         schemaName, tableName,
         upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
         upperQuoted(JavaBaseConstants.COLUMN_NAME_DATA),
         upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
-        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT));
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_META));
   }
 
   private boolean tableExists(final JdbcDatabase database, final String schemaName, final String tableName) throws Exception {
