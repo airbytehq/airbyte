@@ -46,7 +46,7 @@ from live_tests.commons.backends import FileBackend
                     '{"status": "SUCCEEDED", "message": null}\n',
                 ),
                 (
-                    "test_stream_records.jsonl",
+                    "records.jsonl",
                     '{"namespace": null, "stream": "test_stream", "data": {}, "meta": null}\n',
                 ),
                 (

@@ -54,6 +54,7 @@ It will write artifacts to an output directory:
 * `stdout.log`: The collected standard output following the command execution
 * `stderr.log`: The collected standard error following the c
 * `http_dump.txt`: An `mitmproxy` http stream log. Can be consumed with `mitmweb` (version `9.0.1`) for debugging.
+* `airbyte_messages.db`: A DuckDB database containing the messages produced by the connector.
 * `airbyte_messages`: A directory containing `.jsonl` files for each message type (logs, records, traces, controls, states etc.) produced by the connector.
 
 #### Example
@@ -76,18 +77,20 @@ live_tests_debug_reports
         └── read
             ├── dev
             │   ├── airbyte_messages
+            |   │   ├── duck.db # DuckDB database
             │   │   ├── logs.jsonl
-            │   │   ├── pokemon_records.jsonl
+            │   │   ├── records.jsonl
             │   │   └── traces.jsonl
-            │   ├── http_dump.mitm
+            │   ├── http_dump.mitm # Consume it with mitmweb --rfile http_dump.mitm
             │   ├── stderr.log
             │   └── stdout.log
             └── latest
                 ├── airbyte_messages
+                │   ├── duck.db # DuckDB database
                 │   ├── logs.jsonl
-                │   ├── pokemon_records.jsonl
+                │   ├── records.jsonl
                 │   └── traces.jsonl
-                ├── http_dump.mitm
+                ├── http_dump.mitm # Consume it with mitmweb --rfile http_dump.mitm
                 ├── stderr.log
                 └── stdout.log
 
@@ -143,6 +146,9 @@ You can also pass local connection objects path to override the live connection 
 
 
 ## Changelog
+
+### 0.4.0
+Introduce DuckDB to store the messages produced by the connector.
 
 ### 0.3.0
 Pass connection id to the regression tests suite.
