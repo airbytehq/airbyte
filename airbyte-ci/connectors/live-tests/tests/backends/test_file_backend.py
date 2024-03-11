@@ -16,7 +16,6 @@ from airbyte_protocol.models import Type as AirbyteMessageType
 from live_tests.commons.backends import FileBackend
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "messages, expected_writes",
     [
@@ -62,9 +61,9 @@ from live_tests.commons.backends import FileBackend
         ),
     ],
 )
-async def test_write(tmp_path, messages, expected_writes):
+def test_write(tmp_path, messages, expected_writes):
     backend = FileBackend(tmp_path)
-    await backend.write(messages)
+    backend.write(messages)
     for expected_file, expected_content in expected_writes:
         expected_path = Path(tmp_path / expected_file)
         assert expected_path.exists()
