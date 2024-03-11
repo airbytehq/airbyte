@@ -314,7 +314,7 @@ Then, ensure your access key is tied to an IAM user with the [following policies
 ```
 
 </TabItem>
-<TabItem value="GCS" label="GCS" default> 
+<TabItem value="GCS" label="GCS" default>
 
 
 ```yaml
