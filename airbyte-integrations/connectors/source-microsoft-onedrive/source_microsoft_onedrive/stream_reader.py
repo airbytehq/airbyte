@@ -113,6 +113,28 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceMicrosoftOneDriveSpec)
         self._config = value
 
+    @property
+    @lru_cache(maxsize=None)
+    def drives(self):
+        """
+        Retrieves and caches OneDrive drives, including the user's drive based on authentication type.
+        """
+        drives = self.one_drive_client.drives.get().execute_query()
+
+        if self.config.credentials.auth_type == "Client":
+            my_drive = self.one_drive_client.me.drive.get().execute_query()
+        else:
+            my_drive = (
+                self.one_drive_client.users.get_by_principal_name(self.config.credentials.user_principal_name).drive.get().execute_query()
+            )
+
+        drives.add_child(my_drive)
+
+        # filter only onedrive drives
+        drives = list(filter(lambda drive: drive.drive_type in ["personal", "business"], drives))
+
+        return drives
+
     def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> List[Tuple[str, str, datetime]]:
         """
         Retrieves a list of all nested files under the specified object.
@@ -132,7 +154,8 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         def get_files(url: str, path: str) -> List[Tuple[str, str, datetime]]:
             response = requests.get(url, headers=headers)
             if response.status_code != 200:
-                raise RuntimeError(f"Error retrieving shared files: {response.status_code}")
+                error_info = response.json().get("error", {}).get("message", "No additional error information provided.")
+                raise RuntimeError(f"Failed to retrieve files from URL '{url}'. HTTP status: {response.status_code}. Error: {error_info}")
 
             data = response.json()
             for child in data.get("value", []):
@@ -149,7 +172,11 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         item_url = f"{base_url}/items/{object_id}"
         item_response = requests.get(item_url, headers=headers)
         if item_response.status_code != 200:
-            raise RuntimeError(f"Error retrieving shared object: {item_response.status_code}")
+            error_info = item_response.json().get("error", {}).get("message", "No additional error information provided.")
+            raise RuntimeError(
+                f"Failed to retrieve the initial shared object with ID '{object_id}' from drive '{drive_id}'. "
+                f"HTTP status: {item_response.status_code}. Error: {error_info}"
+            )
 
         # Check if the object is a file or a folder
         item_data = item_response.json()
@@ -173,18 +200,18 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
                 found_items.extend(self.list_directories_and_files(item, item_path))
         return found_items
 
-    def get_files_by_drive_name(self, drives, drive_name, folder_path):
+    def get_files_by_drive_name(self, drive_name, folder_path):
         """Yields files from the specified drive."""
         path_levels = [level for level in folder_path.split("/") if level]
         folder_path = "/".join(path_levels)
 
-        for drive in drives:
+        for drive in self.drives:
             if drive.name == drive_name:
                 folder = drive.root if folder_path in self.ROOT_PATH else drive.root.get_by_path(folder_path).get().execute_query()
                 yield from self.list_directories_and_files(folder)
 
-    def _get_shared_files_from_all_drives(self, drives):
-        drive_ids = [drive.id for drive in drives]
+    def _get_shared_files_from_all_drives(self):
+        drive_ids = [drive.id for drive in self.drives]
 
         shared_drive_items = self.one_drive_client.me.drive.shared_with_me().execute_query()
         for drive_item in shared_drive_items:
@@ -194,28 +221,15 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
             if parent_reference and parent_reference["driveId"] not in drive_ids:
                 yield from self._get_shared_drive_object(parent_reference["driveId"], drive_item.id, drive_item.web_url)
 
-    def get_all_files(self, drives):
-        yield from self.get_files_by_drive_name(drives, self.config.drive_name, self.config.folder_path)
-        yield from self._get_shared_files_from_all_drives(drives)
+    def get_all_files(self):
+        yield from self.get_files_by_drive_name(self.config.drive_name, self.config.folder_path)
+        yield from self._get_shared_files_from_all_drives()
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Retrieve all files matching the specified glob patterns in OneDrive.
         """
-        drives = self.one_drive_client.drives.get().execute_query()
-
-        if self.config.credentials.auth_type == "Client":
-            my_drive = self.one_drive_client.me.drive.get().execute_query()
-        else:
-            my_drive = (
-                self.one_drive_client.users.get_by_principal_name(self.config.credentials.user_principal_name).drive.get().execute_query()
-            )
-
-        drives.add_child(my_drive)
-        # filter only onedrive drives
-        drives = list(filter(lambda drive: drive.drive_type in ["personal", "business"], drives))
-
-        files = self.get_all_files(drives)
+        files = self.get_all_files()
 
         try:
             path, download_url, last_modified = next(files)
