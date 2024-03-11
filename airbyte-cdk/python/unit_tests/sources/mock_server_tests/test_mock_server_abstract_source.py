@@ -205,6 +205,7 @@ class FullRefreshStreamTest(TestCase):
         validate_message_order([Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
         assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_full_refresh_state_message": True}
+        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2
 
     @HttpMocker()
     def test_full_refresh_with_slices(self, http_mocker):
@@ -232,6 +233,7 @@ class FullRefreshStreamTest(TestCase):
         validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "dividers"
         assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_full_refresh_state_message": True}
+        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 4
 
 
 @freezegun.freeze_time(_NOW)
@@ -264,8 +266,10 @@ class IncrementalStreamTest(TestCase):
         validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[0].state.stream.stream_state == {"created_at": last_record_date_0}
+        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 3
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_1}
+        assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2
 
     @HttpMocker()
     def test_incremental_running_as_full_refresh(self, http_mocker):
@@ -295,6 +299,7 @@ class IncrementalStreamTest(TestCase):
         validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[0].state.stream.stream_state == {"created_at": last_record_date_1}
+        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 5
 
     @HttpMocker()
     def test_legacy_incremental_sync(self, http_mocker):
@@ -324,8 +329,10 @@ class IncrementalStreamTest(TestCase):
         validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "legacies"
         assert actual_messages.state_messages[0].state.stream.stream_state == {"created_at": last_record_date_0}
+        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 3
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "legacies"
         assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_1}
+        assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2
 
 
 @freezegun.freeze_time(_NOW)
@@ -395,12 +402,16 @@ class MultipleStreamTest(TestCase):
         ], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
         assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_full_refresh_state_message": True}
+        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_0}
+        assert actual_messages.state_messages[1].state.sourceStats.recordCount == 3
         assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[2].state.stream.stream_state == {"created_at": last_record_date_1}
+        assert actual_messages.state_messages[2].state.sourceStats.recordCount == 2
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "dividers"
         assert actual_messages.state_messages[3].state.stream.stream_state == {"__ab_full_refresh_state_message": True}
+        assert actual_messages.state_messages[3].state.sourceStats.recordCount == 4
 
 
 def emits_successful_sync_status_messages(status_messages: List[AirbyteStreamStatus]) -> bool:
