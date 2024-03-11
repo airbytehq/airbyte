@@ -4,7 +4,28 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - pages
+    - users
+
+definitions:
+
+  token_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['token'] }}"
+
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    grant_type: "authorization_code"
+    access_token_name: "access_token"
+    token_refresh_endpoint: "https://api.notion.com/v1/oauth/token"
+  
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      token: '#/definitions/token_authenticator'
+      OAuth2.0: '#/definitions/oauth_authenticator'
 
 streams:
   - type: DeclarativeStream
@@ -16,14 +37,13 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://api.notion.com/v1/
+        authenticator:
+          $ref: "#/definitions/authenticator"
         path: users
         http_method: GET
         request_parameters: {}
         request_headers:
           Notion-Version: '2022-06-28'
-        authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''credentials''][''token''] }}'
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -85,8 +105,7 @@ streams:
         request_headers:
           Notion-Version: '2022-06-28'
         authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''credentials''][''token''] }}'
+          $ref: "#/definitions/authenticator"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -161,8 +180,7 @@ streams:
         request_headers:
           Notion-Version: '2022-06-28'
         authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''credentials''][''token''] }}'
+          $ref: "#/definitions/authenticator"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -246,8 +264,7 @@ streams:
         request_headers:
           Notion-Version: '2022-06-28'
         authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''credentials''][''token''] }}'
+          $ref: "#/definitions/authenticator"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -402,8 +419,7 @@ streams:
         request_headers:
           Notion-Version: '2022-06-28'
         authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''credentials''][''token''] }}'
+          $ref: "#/definitions/authenticator"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
