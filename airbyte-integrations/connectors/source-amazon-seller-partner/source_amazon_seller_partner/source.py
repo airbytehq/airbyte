@@ -64,6 +64,8 @@ from source_amazon_seller_partner.streams import (
     StrandedInventoryUiReport,
     VendorDirectFulfillmentShipping,
     VendorInventoryReports,
+    VendorForecastingFreshReport,
+    VendorForecastingRetailReport,
     VendorOrders,
     VendorSalesReports,
     VendorTrafficReport,
@@ -184,6 +186,8 @@ class SourceAmazonSellerPartner(AbstractSource):
             LedgerSummaryViewReport,
             FbaReimbursementsReports,
             VendorOrders,
+            VendorForecastingFreshReport,
+            VendorForecastingRetailReport,
         ]
 
         # TODO: Remove after Brand Analytics will be enabled in CLOUD: https://github.com/airbytehq/airbyte/issues/32353

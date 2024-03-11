@@ -135,10 +135,11 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Unshipped Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
 - [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference) \(incremental\)
 - [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Forecasting Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
-- [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 
 ## Report options
 

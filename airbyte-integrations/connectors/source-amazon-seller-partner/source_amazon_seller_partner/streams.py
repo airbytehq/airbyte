@@ -891,6 +891,52 @@ class VendorSalesReports(IncrementalAnalyticsStream):
     availability_sla_days = 4  # Data is only available after 4 days
 
 
+class VendorForecastingReport(AnalyticsStream, ABC):
+    """
+    Field definitions:
+    https://github.com/amzn/selling-partner-api-models/blob/main/schemas/reports/vendorForecastingReport.json
+    Docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports
+    """
+
+    result_key = "forecastByAsin"
+
+    @property
+    @abstractmethod
+    def selling_program(self) -> str:
+        pass
+
+    @property
+    def name(self) -> str:
+        return f"GET_VENDOR_FORECASTING_{self.selling_program}_REPORT"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [None]
+
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        # This report supports the `sellingProgram` parameter only
+        return {
+            "reportType": "GET_VENDOR_FORECASTING_REPORT",
+            "marketplaceIds": [self.marketplace_id],
+            "reportOptions": {"sellingProgram": self.selling_program},
+        }
+
+
+class VendorForecastingFreshReport(VendorForecastingReport):
+    selling_program = "FRESH"
+
+
+class VendorForecastingRetailReport(VendorForecastingReport):
+    selling_program = "RETAIL"
+
+
 class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
