@@ -30,7 +30,7 @@ public class CdcStateManager {
     this.initialStreamsSynced = initialStreamsSynced;
 
     this.rawStateMessage = stateMessage;
-    LOGGER.info("Initialized CDC state with: {}", serialized);
+    LOGGER.info("Initialized CDC state");
   }
 
   public void setCdcState(final CdcState state) {

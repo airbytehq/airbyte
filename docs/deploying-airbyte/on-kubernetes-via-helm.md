@@ -135,7 +135,7 @@ helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 
 Starting from `0.39.37-alpha` we've revisited helm charts structure and separated all components of airbyte into their own independent charts, thus by allowing our developers to test single component without deploying airbyte as a whole and by upgrading single component at a time.
 
-In most cases upgrade from older monolith chart to a new one should go without any issue, but if you've configured custom logging or specified custom configuration of DB or Logging then follow the instructions listed bellow
+In most cases upgrade from older monolith chart to a new one should go without any issue, but if you've configured custom logging or specified custom configuration of DB or Logging then follow the instructions listed below
 
 ### Minio migration
 
