@@ -6,10 +6,10 @@ from typing import List, Optional
 
 import asyncclick as click
 import dagger
-from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
+from live_tests.commons.connection_objects_retrieval import COMMAND_TO_REQUIRED_OBJECT_TYPES, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner
 from live_tests.commons.models import Command, ExecutionInputs, ExecutionReport
-from live_tests.commons.utils import get_connector_config, get_connector_under_test, get_state
+from live_tests.commons.utils import get_connector_under_test
 from live_tests.debug import DAGGER_CONFIG
 
 
@@ -21,6 +21,25 @@ from live_tests.debug import DAGGER_CONFIG
     "command",
     type=click.Choice([c.value for c in Command]),
     callback=lambda _, __, value: Command(value),
+)
+@click.option("--connection-id", type=str, required=False, default=None)
+@click.option(
+    "--config-path",
+    type=click.Path(file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path),
+    required=False,
+    default=None,
+)
+@click.option(
+    "--catalog-path",
+    type=click.Path(file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path),
+    required=False,
+    default=None,
+)
+@click.option(
+    "--state-path",
+    type=click.Path(file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path),
+    required=False,
+    default=None,
 )
 @click.option(
     "-c",
@@ -39,21 +58,6 @@ from live_tests.debug import DAGGER_CONFIG
     type=click.Path(file_okay=False, dir_okay=True, resolve_path=True, path_type=Path),
 )
 @click.option(
-    "--config-path",
-    help="Path to the connector config.",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True, path_type=Path),
-)
-@click.option(
-    "--catalog-path",
-    help="Path to the connector catalog.",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True, path_type=Path),
-)
-@click.option(
-    "--state-path",
-    help="Path to the connector state.",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True, path_type=Path),
-)
-@click.option(
     "-hc",
     "--http-cache",
     "enable_http_cache",
@@ -67,24 +71,41 @@ from live_tests.debug import DAGGER_CONFIG
 async def debug_cmd(
     ctx: click.Context,
     command: Command,
+    connection_id: Optional[str],
+    config_path: Optional[Path],
+    catalog_path: Optional[Path],
+    state_path: Optional[Path],
     connector_images: List[str],
     output_directory: Path,
-    config_path: Optional[str],
-    catalog_path: Optional[str],
-    state_path: Optional[str],
     enable_http_cache: bool,
 ) -> None:
     output_directory.mkdir(parents=True, exist_ok=True)
     debug_session_start_time = int(time.time())
+    if connection_id:
+        retrieval_reason = click.prompt("👮‍♂️ Please provide a reason for accessing the connection objects. This will be logged")
+    else:
+        retrieval_reason = None
+
+    try:
+        connection_objects = get_connection_objects(
+            COMMAND_TO_REQUIRED_OBJECT_TYPES[command],
+            connection_id,
+            config_path,
+            catalog_path,
+            state_path,
+            retrieval_reason,
+        )
+    except ValueError as e:
+        raise click.UsageError(str(e))
     async with dagger.Connection(config=DAGGER_CONFIG) as dagger_client:
         for connector_image in connector_images:
             try:
                 execution_inputs = ExecutionInputs(
                     connector_under_test=await get_connector_under_test(dagger_client, connector_image),
                     command=command,
-                    config=get_connector_config(config_path),
-                    catalog=ConfiguredAirbyteCatalog.parse_file(catalog_path) if catalog_path else None,
-                    state=get_state(state_path) if state_path else None,
+                    config=connection_objects.source_config,
+                    catalog=connection_objects.catalog,
+                    state=connection_objects.state,
                     environment_variables=None,
                     enable_http_cache=enable_http_cache,
                 )

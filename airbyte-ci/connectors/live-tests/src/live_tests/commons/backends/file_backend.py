@@ -33,7 +33,7 @@ class FileBackend(BaseBackend):
     def __init__(self, output_directory: Path):
         self._output_directory = output_directory
 
-    async def write(self, airbyte_messages: Iterable[AirbyteMessage]) -> None:
+    def write(self, airbyte_messages: Iterable[AirbyteMessage]) -> None:
         """
         Write AirbyteMessages to the appropriate file.
 

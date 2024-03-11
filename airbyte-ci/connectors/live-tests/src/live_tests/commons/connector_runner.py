@@ -205,6 +205,7 @@ class ConnectorRunner:
             container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, contents=self.catalog.json())
         if self.enable_http_cache:
             container = await self._bind_connector_container_to_proxy(container)
+
         executed_container = await container.with_exec(self.full_command).sync()
 
         return ExecutionResult(
