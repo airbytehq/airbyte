@@ -4,7 +4,10 @@
 
 package io.airbyte.integrations.source.postgres.cdc;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.PgLsn;
 import io.airbyte.cdk.db.PostgresUtils;
@@ -14,6 +17,7 @@ import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.SnapshotMetadata;
 import io.airbyte.commons.json.Jsons;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -107,8 +111,22 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
     final String offset_lsn =
         offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : String.valueOf(offsetJson.get("lsn"));
-    final String event_lsn = String.valueOf(event.eventValueAsJson().get("source").get("lsn"));
-    return Long.parseLong(event_lsn) > Long.parseLong(offset_lsn);
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+      TypeReference<List<String>> listType = new TypeReference<>() {};
+      final JsonNode lsnSequenceNode = event.eventValueAsJson().get("source").get("sequence");
+      List<String> lsnSequence = objectMapper.readValue(lsnSequenceNode.asText(), listType);
+      // The sequence field is a pair of [lsn_commit, lsn_processed]. We want to make sure lsn_commit(event) is compared against
+      // lsn_commit(state_offset). For the event, either of the lsn values can be null.
+      String eventLsnCommit = lsnSequence.get(0);
+      if (eventLsnCommit == null) {
+        return false;
+      }
+      return Long.parseLong(eventLsnCommit) > Long.parseLong(offset_lsn);
+    } catch (Exception e) {
+      LOGGER.info("Encountered an error while attempting to parse event's LSN sequence {}", e.getCause());
+      return false;
+    }
   }
 
   @Override
