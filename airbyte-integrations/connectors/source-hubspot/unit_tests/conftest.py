@@ -7,7 +7,7 @@ from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API
 
 NUMBER_OF_PROPERTIES = 2000
-
+from airbyte_cdk.test.mock_http import HttpMocker
 
 @pytest.fixture(name="oauth_config")
 def oauth_config_fixture():
@@ -85,3 +85,8 @@ def fake_properties_list():
 @pytest.fixture(name="api")
 def api(some_credentials):
     return API(some_credentials)
+
+
+@pytest.fixture
+def http_mocker():
+    return None
