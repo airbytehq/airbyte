@@ -207,6 +207,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| 2.0.1   | 2024-03-11 | [35952](https://github.com/airbytehq/airbyte/pull/35952) | Fixed the issue when `start date` is missing but the `stream` required it |
 | 2.0.0   | 2024-02-12 | [32345](https://github.com/airbytehq/airbyte/pull/32345) | Fixed the issue with `state` causing the `substreams` to skip the records, made `metafield_*`: `collections, customers, draft_orders, locations, orders, product_images, product_variants, products`, and `fulfillment_orders, collections, discount_codes, inventory_levels, inventory_items, transactions_graphql, customer_address` streams to use `BULK Operations` instead of `REST`|
 | 1.1.8 | 2024-02-12 | [35166](https://github.com/airbytehq/airbyte/pull/35166) | Manage dependencies with Poetry. |
 | 1.1.7   | 2024-01-19 | [33804](https://github.com/airbytehq/airbyte/pull/33804) | Updated documentation with list of all supported streams |
