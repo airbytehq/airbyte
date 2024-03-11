@@ -94,7 +94,7 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      step: P1M
+      step: "P100Y"
       cursor_granularity: PT1S
 
   automations_stream:
