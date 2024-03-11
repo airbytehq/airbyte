@@ -12,7 +12,6 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.commons.json.Jsons;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -65,10 +64,10 @@ public class OracleOperations implements SqlOperations {
         """
           CREATE TABLE %s.%s (
           %s VARCHAR(64) PRIMARY KEY,
-          %s NCLOB,
+          %s JSON,
           %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           %s TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-          %s NCLOB
+          %s JSON
           )
         """,
         schemaName, tableName,
@@ -110,11 +109,12 @@ public class OracleOperations implements SqlOperations {
                             final String tempTableName)
       throws Exception {
     final String tableName = String.format("%s.%s", schemaName, tempTableName);
-    final String columns = String.format("(%s, %s, %s, %s)",
+    final String columns = String.format("(%s, %s, %s, %s, %s)",
         upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
         upperQuoted(JavaBaseConstants.COLUMN_NAME_DATA),
         upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
-        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT));
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_META));
     insertRawRecordsInSingleQuery(tableName, columns, database, records, UUID::randomUUID);
   }
 
@@ -152,9 +152,11 @@ public class OracleOperations implements SqlOperations {
           // 1-indexed
           final JsonNode formattedData = StandardNameTransformer.formatJsonPath(message.getRecord().getData());
           statement.setString(i++, uuidSupplier.get().toString());
-          statement.setString(i++, Jsons.serialize(formattedData));
+          statement.setObject(i++, formattedData);
+//          statement.setString(i++, Jsons.serialize(formattedData));
           statement.setTimestamp(i++, Timestamp.from(Instant.ofEpochMilli(message.getRecord().getEmittedAt())));
           statement.setNull(i++, Types.TIMESTAMP);
+          statement.setObject(i++, "");
         }
 
         statement.execute();
