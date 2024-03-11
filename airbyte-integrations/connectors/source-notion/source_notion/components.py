@@ -97,8 +97,8 @@ class NotionSemiIncrementalFilter(RecordFilter):
       """
       Filters a list of records, returning only those with a cursor_value greater than the current value in state.
       """
-      current_state = [x for x in stream_state.get(
-            "states", []) if x["partition"]["id"] == stream_slice.partition["id"]]
+      current_state = [state_value for state_value in stream_state.get(
+            "states", []) if state_value["partition"]["id"] == stream_slice.partition["id"]]
       cursor_value = self.get_filter_date(
             self.config.get("start_date"), current_state)
       if cursor_value:

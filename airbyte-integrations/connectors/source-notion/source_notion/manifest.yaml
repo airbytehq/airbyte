@@ -4,7 +4,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - users
+    - pages
 
 definitions:
 
@@ -19,7 +19,7 @@ definitions:
     grant_type: "authorization_code"
     access_token_name: "access_token"
     token_refresh_endpoint: "https://api.notion.com/v1/oauth/token"
-  
+
   authenticator:
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
