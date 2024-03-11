@@ -431,14 +431,14 @@ class ModelToComponentFactory:
         return custom_component_class(**kwargs)
 
     @staticmethod
-    def _get_class_from_fully_qualified_class_name(class_name: str) -> Any:
-        split = class_name.split(".")
+    def _get_class_from_fully_qualified_class_name(full_qualified_class_name: str) -> Any:
+        split = full_qualified_class_name.split(".")
         module = ".".join(split[:-1])
         class_name = split[-1]
         try:
             return getattr(importlib.import_module(module), class_name)
         except AttributeError:
-            raise ValueError(f"Class {class_name} could not be found.")
+            raise ValueError(f"Could not load class {full_qualified_class_name}.")
 
     @staticmethod
     def _derive_component_type_from_type_hints(field_type: Any) -> Optional[str]:
