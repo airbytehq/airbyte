@@ -21,7 +21,7 @@ function generateFakeConfig(spec) {
   return "{ ... }";
 }
 
-export const AirbyteLibExample = ({
+export const PyAirbyteExample = ({
   specJSON,
   connector,
 }) => {
@@ -32,11 +32,11 @@ export const AirbyteLibExample = ({
       Install the Python library via:
     </p>
     <CodeBlock
-        language="bash">{"pip install airbyte-lib"}</CodeBlock>
+        language="bash">{"pip install pyairbyte"}</CodeBlock>
     <p>Then, execute a sync by loading the connector like this:</p>
     <CodeBlock
       language="python"
-    >{`import airbyte_lib as ab
+    >{`import pyairbyte as ab
 
 config = ${fakeConfig}
 
