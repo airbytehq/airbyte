@@ -28,6 +28,10 @@ data:
           migrate, users will need to create a new server-to-server OAuth app and
           update their credentials in the Airbyte UI.
         upgradeDeadline: 2023-09-08
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              ["meeting_registration_questions"]
   remoteRegistries:
     pypi:
       enabled: true
