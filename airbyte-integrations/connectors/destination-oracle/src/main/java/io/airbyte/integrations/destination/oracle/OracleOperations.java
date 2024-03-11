@@ -153,7 +153,7 @@ public class OracleOperations implements SqlOperations {
           final JsonNode formattedData = StandardNameTransformer.formatJsonPath(message.getRecord().getData());
           statement.setString(i++, uuidSupplier.get().toString());
           statement.setObject(i++, formattedData);
-//          statement.setString(i++, Jsons.serialize(formattedData));
+          // statement.setString(i++, Jsons.serialize(formattedData));
           statement.setTimestamp(i++, Timestamp.from(Instant.ofEpochMilli(message.getRecord().getEmittedAt())));
           statement.setNull(i++, Types.TIMESTAMP);
           statement.setObject(i++, "");
