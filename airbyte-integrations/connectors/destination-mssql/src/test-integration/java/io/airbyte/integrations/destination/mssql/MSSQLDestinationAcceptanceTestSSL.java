@@ -34,9 +34,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
 
   private static MSSQLServerContainer<?> db;
   private final StandardNameTransformer namingResolver = new StandardNameTransformer();
-  private JsonNode configWithoutDbName;
   private JsonNode config;
-  private DSLContext dslContext;
 
   @Override
   protected String getImageName() {
@@ -143,9 +141,9 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
   // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @Override
   protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws SQLException {
-    configWithoutDbName = getConfig(db);
+    JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
-    dslContext = getDslContext(configWithoutDbName);
+    DSLContext dslContext = getDslContext(configWithoutDbName);
     final Database database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
@@ -162,7 +160,8 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
+    // no op, called in {@link
+    // io.airbyte.integrations.destination.mssql.MSSQLDestinationAcceptanceTestSSL.cleanUp}
   }
 
   @AfterAll
