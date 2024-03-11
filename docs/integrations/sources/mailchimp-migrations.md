@@ -2,6 +2,8 @@
 
 ## Upgrading to 2.0.0
 
+Version 2.0.0 introduces state changes to some incremental streams and new primary key for stream `Segment Members`.
+
 ### Refresh affected schemas and reset data
 
 1. Select **Connections** in the main nav bar.
