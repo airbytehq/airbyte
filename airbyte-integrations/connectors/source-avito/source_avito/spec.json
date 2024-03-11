@@ -104,7 +104,7 @@
                 "title": "Date Range Type",
                 "description": "Last N Days",
                 "const": "last_n_days",
-                "order": 1
+                "order": 2
               }
             }
           },
@@ -113,7 +113,7 @@
             "title": "From Start Date To Today",
             "description": "Load data from Start Date to Today. Only with this option you can use incremental sync.",
             "required": [
-              "last_days_count",
+              "date_from",
               "should_load_today",
               "date_range_type"
             ],
@@ -140,9 +140,9 @@
               "date_range_type": {
                 "type": "string",
                 "title": "Date Range Type",
-                "description": "Last N Days",
+                "description": "From start date to today",
                 "const": "from_start_date_to_today",
-                "order": 1
+                "order": 2
               }
             }
           }
