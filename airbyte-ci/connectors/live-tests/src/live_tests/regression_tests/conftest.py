@@ -10,9 +10,18 @@ from typing import TYPE_CHECKING, AsyncIterable, Callable, Dict, List, Optional
 import dagger
 import pytest
 from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
+from live_tests.commons.connection_objects_retrieval import ConnectionObject, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner
-from live_tests.commons.models import Command, ConnectorUnderTest, ExecutionInputs, ExecutionReport, ExecutionResult, SecretDict
-from live_tests.commons.utils import get_connector_config, get_connector_under_test, get_state
+from live_tests.commons.models import (
+    Command,
+    ConnectionObjects,
+    ConnectorUnderTest,
+    ExecutionInputs,
+    ExecutionReport,
+    ExecutionResult,
+    SecretDict,
+)
+from live_tests.commons.utils import get_connector_under_test
 
 if TYPE_CHECKING:
     from _pytest.config import Config
@@ -20,7 +29,10 @@ if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
     from pytest_sugar import SugarTerminalReporter  # type: ignore
 
+## CONSTS
 LOGGER = logging.getLogger("regression_tests")
+MAIN_OUTPUT_DIRECTORY = Path("/tmp/regression_tests_artifacts")
+
 # It's used by Dagger and its very verbose
 logging.getLogger("httpx").setLevel(logging.ERROR)
 
@@ -32,11 +44,6 @@ DAGGER_LOG_PATH = pytest.StashKey[Path]()
 
 ## PYTEST HOOKS
 def pytest_addoption(parser: Parser) -> None:
-    parser.addoption(
-        "--output-directory",
-        default="./regression_tests_artifacts",
-        help="Path to a directory where the test execution reports will be stored",
-    )
     parser.addoption(
         "--connector-image",
         help="The connector image name on which the regressions tests will run: e.g. airbyte/source-faker",
@@ -51,15 +58,20 @@ def pytest_addoption(parser: Parser) -> None:
         default="dev",
         help="The target version used for regression testing. Defaults to latest",
     )
+    parser.addoption(
+        "--deny-confirmation",
+        default=False,
+        help="Always deny confirmation prompts. Useful for test development. Defaults to False",
+    )
     parser.addoption("--config-path")
     parser.addoption("--catalog-path")
     parser.addoption("--state-path")
+    parser.addoption("--connection-id")
 
 
 def pytest_configure(config: Config) -> None:
     start_timestamp = int(time.time())
-    main_output_directory = Path(config.option.output_directory)
-    test_artifacts_directory = main_output_directory / f"session_{start_timestamp}"
+    test_artifacts_directory = MAIN_OUTPUT_DIRECTORY / f"session_{start_timestamp}"
     test_artifacts_directory.mkdir(parents=True, exist_ok=True)
     dagger_log_path = test_artifacts_directory / "dagger.log"
     config.stash[SESSION_START_TIMESTAMP] = start_timestamp
@@ -121,6 +133,14 @@ def get_option_or_fail(request: SubRequest, option: str) -> str:
     pytest.fail(f"Missing required option: {option}")
 
 
+def ask_for_confirmation(message: str, always_deny: bool = False) -> None:
+    if always_deny:
+        pytest.skip("Skipped by user.")
+    if not os.environ.get("CI"):
+        if not input(f"{message}. Do you want to continue? [y/N]: ").lower().strip() == "y":
+            pytest.skip("Skipped by user.")
+
+
 ## FIXTURES
 
 
@@ -140,6 +160,11 @@ def test_artifacts_directory(request: SubRequest) -> Path:
 
 
 @pytest.fixture(scope="session")
+def deny_confirmation(request: SubRequest) -> bool:
+    return bool(request.config.getoption("--deny-confirmation"))
+
+
+@pytest.fixture(scope="session")
 def connector_image(request: SubRequest) -> str:
     return get_option_or_fail(request, "--connector-image")
 
@@ -150,24 +175,88 @@ def control_version(request: SubRequest) -> str:
 
 
 @pytest.fixture(scope="session")
-def target_version(request: SubRequest) -> str:
-    return get_option_or_fail(request, "--target-version")
+def target_version(control_version: str, request: SubRequest) -> str:
+    target_version = get_option_or_fail(request, "--target-version")
+    if target_version == control_version:
+        pytest.fail(f"Control and target versions are the same: {control_version}. Please provide different versions.")
+    return target_version
 
 
 @pytest.fixture(scope="session")
-def catalog(request: SubRequest) -> Optional[ConfiguredAirbyteCatalog]:
-    catalog_path = get_option_or_fail(request, "--catalog-path")
-    return ConfiguredAirbyteCatalog.parse_file(catalog_path) if catalog_path else None
+def connection_id(request: SubRequest) -> Optional[str]:
+    return request.config.getoption("--connection-id")
 
 
 @pytest.fixture(scope="session")
-def connector_config(request: SubRequest) -> Optional[SecretDict]:
-    return get_connector_config(get_option_or_fail(request, "--config-path"))
+def custom_source_config_path(request: SubRequest) -> Optional[Path]:
+    if config_path := request.config.getoption("--config-path"):
+        return Path(config_path)
+    return None
 
 
 @pytest.fixture(scope="session")
-def state(request: SubRequest) -> Optional[dict]:
-    return get_state(get_option_or_fail(request, "--state-path"))
+def custom_catalog_path(request: SubRequest) -> Optional[Path]:
+    if catalog_path := request.config.getoption("--catalog-path"):
+        return Path(catalog_path)
+    return None
+
+
+@pytest.fixture(scope="session")
+def custom_state_path(request: SubRequest) -> Optional[Path]:
+    if state_path := request.config.getoption("--state-path"):
+        return Path(state_path)
+    return None
+
+
+@pytest.fixture(scope="session")
+def retrieval_reason(
+    connection_id: Optional[str],
+    connector_image: str,
+    control_version: str,
+    target_version: str,
+) -> Optional[str]:
+    if connection_id:
+        return f"Running regression tests on connection {connection_id} for connector {connector_image} on the control ({control_version}) and target versions ({target_version})."
+    return None
+
+
+@pytest.fixture(scope="session")
+def connection_objects(
+    connection_id: Optional[str],
+    custom_source_config_path: Optional[Path],
+    custom_catalog_path: Optional[Path],
+    custom_state_path: Optional[Path],
+    retrieval_reason: Optional[str],
+) -> ConnectionObjects:
+    return get_connection_objects(
+        {
+            ConnectionObject.SOURCE_CONFIG,
+            ConnectionObject.CONFIGURED_CATALOG,
+            ConnectionObject.STATE,
+        },
+        connection_id,
+        custom_source_config_path,
+        custom_catalog_path,
+        custom_state_path,
+        retrieval_reason,
+    )
+
+
+@pytest.fixture(scope="session")
+def connector_config(connection_objects: ConnectionObjects) -> Optional[SecretDict]:
+    return connection_objects.source_config
+
+
+@pytest.fixture(scope="session")
+def catalog(
+    connection_objects: ConnectionObjects,
+) -> Optional[ConfiguredAirbyteCatalog]:
+    return connection_objects.catalog
+
+
+@pytest.fixture(scope="session")
+def state(connection_objects: ConnectionObjects) -> Optional[Dict]:
+    return connection_objects.state
 
 
 @pytest.fixture(scope="session")
@@ -449,7 +538,12 @@ async def read_control_execution_result(
     read_control_execution_inputs: ExecutionInputs,
     read_control_connector_runner: ConnectorRunner,
     session_start_timestamp: int,
+    deny_confirmation: bool,
 ) -> ExecutionResult:
+    ask_for_confirmation(
+        f"{request.node.name} will run a full refresh read on control connector. It might induce rate limits or costs on source",
+        deny_confirmation,
+    )
     logging.info(f"Running read for control connector {read_control_execution_inputs.connector_under_test.name}")
     execution_result = await read_control_connector_runner.run()
     execution_report = await persist_report(
@@ -477,7 +571,12 @@ async def read_target_execution_result(
     read_target_execution_inputs: ExecutionInputs,
     read_target_connector_runner: ConnectorRunner,
     session_start_timestamp: int,
+    deny_confirmation: bool,
 ) -> ExecutionResult:
+    ask_for_confirmation(
+        f"{request.node.name} will run a full refresh read on target connector. It might induce rate limits or costs on source",
+        deny_confirmation,
+    )
     logging.info(f"Running read for target connector {read_target_execution_inputs.connector_under_test.name}")
     execution_result = await read_target_connector_runner.run()
     execution_report = await persist_report(
@@ -539,7 +638,12 @@ async def read_with_state_control_execution_result(
     read_with_state_control_execution_inputs: ExecutionInputs,
     read_with_state_control_connector_runner: ConnectorRunner,
     session_start_timestamp: int,
+    deny_confirmation: bool,
 ) -> ExecutionResult:
+    ask_for_confirmation(
+        f"{request.node.name} will run an incremental read on control connector. It might induce rate limits or costs on source",
+        deny_confirmation,
+    )
     logging.info(f"Running read with state for control connector {read_with_state_control_execution_inputs.connector_under_test.name}")
     execution_result = await read_with_state_control_connector_runner.run()
     execution_report = await persist_report(
@@ -570,7 +674,12 @@ async def read_with_state_target_execution_result(
     read_with_state_target_execution_inputs: ExecutionInputs,
     read_with_state_target_connector_runner: ConnectorRunner,
     session_start_timestamp: int,
+    deny_confirmation: bool,
 ) -> ExecutionResult:
+    ask_for_confirmation(
+        f"{request.node.name} will run an incremental read on target connector. It might induce rate limits or costs on source",
+        deny_confirmation,
+    )
     logging.info(f"Running read with state for target connector {read_with_state_target_execution_inputs.connector_under_test.name}")
     execution_result = await read_with_state_target_connector_runner.run()
     execution_report = await persist_report(

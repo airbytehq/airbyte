@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "live-tests"
-version = "0.2.0"
+version = "0.3.0"
 description = "Contains utilities for testing connectors against live data."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -24,6 +24,7 @@ pytest-asyncio = "~=0.23.5"
 pydash = "~=7.0.7"
 docker = ">=6,<7"
 asyncclick = "^8.1.7.1"
+connection-retriever = {git = "https://github.com/airbytehq/airbyte-platform-internal.git", rev = "augustin/03-06-create_connection-retriever_tool", subdirectory = "tools/connection-retriever"}
 
 [tool.poetry.scripts]
 live-tests = "live_tests.cli:live_tests"
@@ -32,13 +33,14 @@ live-tests = "live_tests.cli:live_tests"
 ruff = "^0.3.0"
 mypy = "^1.8.0"
 types-cachetools = "^5.3.0.7"
+pandas-stubs = "^2.2.0.240218"
 
 [tool.poe.tasks]
 test = "pytest tests"
 lint = "ruff check src"
-format = "ruff format src"
 type_check = "mypy src --disallow-untyped-defs"
-pre-push = ["format", "lint", "test", "type_check"]
+pre-push = ["lint", "test", "type_check"]
 
-[tool.airbyte_ci]
-poe_tasks = ["test", "lint", "type_check"]
+# Can't run CI at the moment because connection-retriever is not public
+# [tool.airbyte_ci]
+#poe_tasks = ["test", "lint", "type_check"]
