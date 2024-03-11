@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.69.0
+Include recordCount in stream state messages and final state message for full refresh syncs
+
 ## 0.68.4
 low-code: update cartesian stream slice to emit typed StreamSlice
 

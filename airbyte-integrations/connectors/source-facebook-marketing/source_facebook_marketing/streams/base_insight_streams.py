@@ -192,18 +192,6 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         self._next_cursor_values = self._get_start_date()
 
-    def get_updated_state(
-        self,
-        current_stream_state: MutableMapping[str, Any],
-        latest_record: Mapping[str, Any],
-    ):
-        """Update stream state from latest record
-
-        :param current_stream_state: latest state returned
-        :param latest_record: latest record that we read
-        """
-        return self.state
-
     def _date_intervals(self, account_id: str) -> Iterator[pendulum.Date]:
         """Get date period to sync"""
         if self._end_date < self._next_cursor_values[account_id]:
@@ -232,7 +220,10 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         self._next_cursor_values = self._get_start_date()
         for ts_start in self._date_intervals(account_id):
-            if ts_start in self._completed_slices.get(account_id, []):
+            if (
+                ts_start in self._completed_slices.get(account_id, [])
+                and ts_start < self._next_cursor_values.get(account_id, self._start_date) - self.insights_lookback_period
+            ):
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
@@ -309,22 +300,18 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         today = pendulum.today().date()
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
-        refresh_date = today - self.insights_lookback_period
 
         start_dates_for_account = {}
         for account_id in self._account_ids:
             cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
             if cursor_value:
-                start_date = cursor_value + pendulum.duration(days=self.time_increment)
+                start_date = cursor_value
+                refresh_date: pendulum.Date = cursor_value - self.insights_lookback_period
                 if start_date > refresh_date:
                     logger.info(
                         f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."
                     )
                 start_date = min(start_date, refresh_date)
-
-                if start_date < self._start_date:
-                    logger.warning(f"Ignore provided state and start sync from start_date ({self._start_date}).")
-                start_date = max(start_date, self._start_date)
             else:
                 start_date = self._start_date
             if start_date < oldest_date:
@@ -332,7 +319,6 @@ class AdsInsights(FBMarketingIncrementalStream):
                     f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible. Start sync from {oldest_date}."
                 )
             start_dates_for_account[account_id] = max(oldest_date, start_date)
-
         return start_dates_for_account
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
