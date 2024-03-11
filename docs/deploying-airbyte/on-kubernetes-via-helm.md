@@ -130,43 +130,6 @@ After specifying your own configuration, run the following command:
 ```text
 helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
-
-## Migrate from old charts to new ones
-
-Starting from `0.39.37-alpha` we've revisited helm charts structure and separated all components of airbyte into their own independent charts, thus by allowing our developers to test single component without deploying airbyte as a whole and by upgrading single component at a time.
-
-In most cases upgrade from older monolith chart to a new one should go without any issue, but if you've configured custom logging or specified custom configuration of DB or Logging then follow the instructions listed below
-
-### Minio migration
-
-Since the latest release of bitnami/minio chart, they've changed the way of setting up the credentials for accessing the minio. (written mid-2022)
-
-Going forward in new version you need to specify the following values in values yaml for user/password instead old one
-
-Before:
-
-```text
-minio:
-  rootUser: airbyte-user
-  rootPassword: airbyte-password-123
-```
-
-After:
-
-```text
-minio:
-  auth:
-    rootUser: minio
-    rootPassword: minio123
-
-```
-
-Before upgrading the chart update values.yaml as stated above and then run:
-
-- Get the old rootPassword by running `export ROOT_PASSWORD=$(kubectl get secret --namespace "default" %release_name%-minio -o jsonpath="{.data.root-password}" | base64 -d)`
-- Perform upgrade of chart by running `helm upgrade %release_name% airbyte/airbyte --set auth.rootPassword=$ROOT_PASSWORD`
-  - If you get an error about setting the auth.rootPassword, then you forgot to update the `values.yaml` file
-
 ### External Logs with S3
 
 ::info
@@ -437,3 +400,164 @@ Upgrade the chart by running:
 ```shell
 helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.50.13
 ```
+
+## Migrate from old chart to Airbyte v0.52.0 and latest chart version
+
+To assist with upgrading to Airbyte App version 0.52.0 and higher with the latest Helm Charts, we've simplified and consolidated several configuration options. Here's a breakdown of the changes:
+
+**Application.yaml Updates**:
+- We've streamlined the configuration for logs and state storage.
+- Instead of separate configurations for logs and state, we now have a unified storage configuration.
+- The proposed changes involve specifying the storage type and bucket names directly, along with credentials where necessary.
+  
+**Helm Configuration Updates:**
+- The global configuration now includes a simplified storage section specifying the type and bucket names for logs, state, and workload output.
+- Credentials for MinIO are now set directly in the Helm values, ensuring smoother integration.
+- Unused configurations have been removed, and configurations have been aligned with the simplified application.yaml.
+  
+**Technical Details and Renaming:**
+- We've renamed or consolidated several environment variables for clarity and consistency.
+- Unused methods and classes have been removed, ensuring a cleaner codebase.
+- Some configurations have been split into separate files for better management and compatibility with different storage options.
+  
+**Additional Changes:**
+- We've added support for workload output storage explicitly, improving flexibility and clarity in configuration.
+- The Helm charts have been updated to reflect these changes, removing or replacing old environment variables for storage configuration.
+- These changes aim to simplify configuration management and improve the overall user experience during upgrades. Please review these updates and let us know if you have any questions or need further assistance.
+
+### **Migration Steps**
+
+This guide aims to assist customers upgrading to the latest version of the Airbyte Helm charts, specifically those using custom configurations for external logging and databases with AWS (S3) and GCS (Google Cloud Buckets).
+
+### **For AWS S3 Users**
+
+#### **Prerequisites**
+
+- Access to your Kubernetes cluster where Airbyte is deployed.
+- Helm and kubectl installed and configured on your machine.
+- Existing Airbyte deployment using AWS S3 for storage and AWS Secrets Manager for secret management.
+
+#### **Migration Steps**
+
+1. **Creating or Updating Kubernetes Secrets**
+
+   If using AWS access keys, create a Kubernetes secret to store these credentials. If relying on an IAM role from an instance profile, this step can be skipped.
+   
+   Apply the following Kubernetes manifest, replacing `<YOUR_AWS_ACCESS_KEY_ID>` and `<YOUR_AWS_SECRET_ACCESS_KEY>` with your actual AWS credentials:
+
+   ```yaml
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: airbyte-config-secrets
+   type: Opaque
+   stringData:
+     aws-secret-manager-access-key-id: <YOUR_AWS_ACCESS_KEY_ID>
+     aws-secret-manager-secret-access-key: <YOUR_AWS_SECRET_ACCESS_KEY>
+   ```
+
+2. **Update Airbyte Configuration**
+
+   In your `airbyte.yml` configuration file, add the following configuration, adjusting `<aws-region>` to match your AWS region:
+
+   ```yaml
+   global:
+     storage:
+       type: s3
+       storageSecretName: airbyte-config-secrets
+       bucket:
+         log: airbyte-storage
+         state: airbyte-storage
+         workloadOutput: airbyte-storage
+       s3:
+         region: <aws-region>
+         authenticationType: credentials # Use "credentials" or "instanceProfile"
+         accessKeyIdSecretKey: aws-secret-manager-access-key-id # Omit if using instanceProfile
+         secretAccessKeySecretKey: aws-secret-manager-secret-access-key # Omit if using instanceProfile
+
+     secretsManager:
+       type: awsSecretManager
+       storageSecretName: airbyte-config-secrets
+       awsSecretManager:
+         region: <aws-region>
+         authenticationType: credentials # Use "credentials" or "instanceProfile"
+         accessKeyIdSecretKey: aws-secret-manager-access-key-id # Omit if using instanceProfile
+         secretAccessKeySecretKey: aws-secret-manager-secret-access-key # Omit if using instanceProfile
+         tags:
+           - key: team
+             value: deployment
+           - key: business-unit
+             value: engineering
+   ```
+
+3. **Remove Deprecated Configuration from `values.yaml`**
+
+   Edit your `values.yaml` or `airbyte-pro-values.yaml` files to remove any deprecated storage and secrets manager environment variables related to S3 and AWS Secrets Manager. Ensure configurations like `state.storage.type: "S3"` and AWS access keys under `server.extraEnv` and `worker.extraEnv` are removed.
+
+### **For GCS Users**
+
+#### **Prerequisites**
+
+- Access to your Kubernetes cluster where Airbyte is deployed.
+- Helm and kubectl installed and configured on your machine.
+- Existing Airbyte deployment using Google Cloud Storage (GCS) and Google Secret Manager (GSM) for secret management.
+
+#### **Migration Steps**
+
+1. **Setting Up or Updating Kubernetes Secrets**
+
+   For Google Secret Manager, you may use existing credentials or create new ones. Apply a Kubernetes manifest like below, replacing `<CREDENTIALS_JSON_BLOB>` with your GCP credentials JSON blob:
+
+   ```yaml
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: gcp-cred-secrets
+   type: Opaque
+   stringData:
+     gcp.json: <CREDENTIALS_JSON_BLOB>
+   ```
+
+   Or use `kubectl` to create the secret directly from a file:
+
+   ```sh
+   kubectl create secret generic gcp-cred-secrets --from-file=gcp.json=<path-to-your-credentials-file>.json
+   ```
+
+2. **Update Airbyte Configuration**
+
+   In your `airbyte.yml` configuration file, add the following configuration, adjusting `<project-id>` to match your GCP project ID:
+
+   ```yaml
+   global:
+     storage:
+       type: gcs
+       storageSecretName: gcp-cred-secrets
+       bucket:
+         log: airbyte-storage
+         state: airbyte-storage
+         workloadOutput: airbyte-storage
+       gcs:
+         authenticationType: credentials
+         projectId: <project-id>
+         credentialsPath: /secrets/gcs-log-creds/gcp.json
+
+     secretsManager:
+       type: googleSecretManager
+       storageSecretName: gcp-cred-secrets
+       googleSecretManager:
+         authenticationType: credentials
+         projectId: <project-id>
+         credentialsSecretKey: gcp-creds.json
+   ```
+
+3. **Remove Deprecated Configuration from `values.yaml`**
+
+   Edit your `values.yaml` files to remove any deprecated storage and secrets manager environment variables related to GCS. Ensure configurations like `global.state.storage.type: "GCS"` and GCS credentials paths under `extraEnv` are removed.
+
+This guide ensures that you leverage the latest Helm chart configurations for Airbyte, aligning with best practices for managing storage and secrets in Kubernetes environments for AWS and GCS users.
+
+
+
+  
+
