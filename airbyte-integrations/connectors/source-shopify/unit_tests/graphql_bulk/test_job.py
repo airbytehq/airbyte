@@ -270,6 +270,7 @@ def test_bulk_stream_parse_response(
     "stream, stream_state, with_start_date, expected",
     [
         (DiscountCodes, {}, True, "updated_at:>='2023-01-01T00:00:00+00:00'"),
+        # here the config migration is applied and the value should be "2020-01-01"
         (DiscountCodes, {}, False, "updated_at:>='2020-01-01T00:00:00+00:00'"),
         (DiscountCodes, {"updated_at": "2022-01-01T00:00:00Z"}, True, "updated_at:>='2022-01-01T00:00:00+00:00'"),
         (DiscountCodes, {"updated_at": "2021-01-01T00:00:00Z"}, False, "updated_at:>='2021-01-01T00:00:00+00:00'"),
@@ -288,9 +289,9 @@ def test_stream_slices(
     with_start_date, 
     expected, 
 ) -> None:
-    # simulating `None` for `start_date`
+    # simulating `None` for `start_date` and `config migration`
     if not with_start_date:
-        auth_config.pop("start_date")
+        auth_config["start_date"] = "2020-01-01"
 
     stream = stream(auth_config)
     test_result = list(stream.stream_slices(stream_state=stream_state))

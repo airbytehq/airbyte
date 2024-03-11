@@ -42,8 +42,6 @@ class ShopifyStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self._transformer = DataTypeEnforcer(self.get_json_schema())
         self.config = config
-        # default value, if the start_date is empty.
-        self.default_start_date = "2020-01-01"
 
     @property
     @abstractmethod
@@ -673,18 +671,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             updated_state[self.parent_stream.name] = {self.parent_stream.cursor_field: latest_record.get(self.parent_stream.cursor_field)}
         return updated_state
 
-    def fallback_to_default_start_date_value(self, config: Mapping[str, Any]) -> str:
-        start_date_value = self.config.get("start_date")
-        if not start_date_value:
-            # sometimes the Customers don't provide the `start date` leaving it empty, which may cause unexpected issues overall
-            # in this case, we fallback to the default value of `2028-01-01` as a major starting point.
-            self.logger.info(
-                f"Stream: `{self.name}` the `Start Date` config option was not provided, falling back to the default value: {self.default_start_date}."
-            )
-            return self.default_start_date
-        else:
-            return start_date_value
-
     def get_stream_state_value(self, stream_state: Optional[Mapping[str, Any]]) -> str:
         if self.parent_stream_class:
             # get parent stream state from the stream_state object.
@@ -700,7 +686,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             return self.get_stream_state_value(stream_state)
         else:
             # for majority of cases we fallback to start_date, otherwise.
-            return self.fallback_to_default_start_date_value(self.config)
+            return self.config.get("start_date")
 
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
