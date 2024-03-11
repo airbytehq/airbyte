@@ -86,7 +86,7 @@ Follow these instructions to add the Airbyte helm repository:
 <summary>Template airbyte.yml file</summary>
 
 ```
-webapp-url: # example: localhost:8080
+webapp-url: # example: http://localhost:8080
 
 initial-user:
   email: 
@@ -219,8 +219,46 @@ For Self-Managed Enterprise deployments, we recommend spinning up standalone log
 <details>
 <summary>External log storage setup steps</summary>
 
-To do this, add external log storage details to your `airbyte.yml` file. This disables the default internal Minio instance (`airbyte/minio`), and configures the external log database:
+If using credentials such as aws access keys, the keys are required to be in the kube secrets. They secret store and secret keys will be referenced in the `airbyte.yml` file. Here is an example of a kube secret manifest to you can apply to your kube cluster.
 
+<Tabs>
+<TabItem value="S3" label="S3" default>
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-config-secrets
+type: Opaque
+stringData:
+## Storage Secrets
+  # S3
+  aws-secret-manager-access-key-id: AKIMSOSBNEOQ6SLTQSP
+  aws-secret-manager-secret-access-key: 3MQU9CIk8LhHTEA1sd69KoKW+le93UmAz/i/N6fk
+```
+
+</TabItem>
+<TabItem value="GCS" label="GCS" default> 
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gcp-cred-secrets
+type: Opaque
+stringData:
+  gcp.json: <CREDENTIALS_JSON_BLOB>
+```
+
+or use `kubectl` to create the secret directly from the credentials json file.
+```
+kubectl create secret generic gcp-cred-secrets --from-file=gcp.json=<path-to-your-credentials-file>.json
+```
+
+</TabItem>
+</Tabs>
+
+Next, add external log storage details to your `airbyte.yml` file. This disables the default internal Minio instance (`airbyte/minio`), and configures the external log database:
 
 <Tabs>
 <TabItem value="S3" label="S3" default>
@@ -230,31 +268,19 @@ minio:
   enabled: false
 
 global:
-    log4jConfig: "log4j2-no-minio.xml"
-    logs:
-        storage:
-            type: "S3"
-        
-        minio:
-            enabled: false
-
-        s3:
-            enabled: true
-            bucket: "" ## S3 bucket name that you've created.
-            bucketRegion: "" ## e.g. us-east-1
-
-        accessKey: ## AWS Access Key.
-            password: ""
-            existingSecret: "" ## The name of an existing Kubernetes secret containing the AWS Access Key.
-            existingSecretKey: "" ## The Kubernetes secret key containing the AWS Access Key.
-
-        secretKey: ## AWS Secret Access Key
-            password:
-            existingSecret: "" ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
-            existingSecretKey: "" ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
+  storage:
+    type: "S3"
+    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+    storageSecretName: airbyte-config-secrets # name of the kube secret ref
+    s3:
+      region: "" ## Default region required. e.g. us-east-1
+      authenticationType: credentials # credentials | instanceProfile
+      accessKeyIdSecretKey: aws-secret-manager-access-key-id # not necessary if using instanceProfile creds
+      secretAccessKeySecretKey: aws-secret-manager-secret-access-key # not necessary if using instanceProfile creds
 ```
-
-For each of `accessKey` and `secretKey`, the `password` and `existingSecret` fields are mutually exclusive.
 
 Then, ensure your access key is tied to an IAM user with the [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-policies-s3.html#iam-policy-ex0), allowing the user access to S3 storage:
 
@@ -288,7 +314,7 @@ Then, ensure your access key is tied to an IAM user with the [following policies
 ```
 
 </TabItem>
-<TabItem value="GKE" label="GKE" default> 
+<TabItem value="GCS" label="GCS" default>
 
 
 ```yaml
@@ -296,18 +322,17 @@ minio:
   enabled: false
 
 global:
-    log4jConfig: "log4j2-no-minio.xml"
-    logs:
-        storage:
-            type: "GCS"
-        
-        minio:
-            enabled: false
-            
-        gcs:
-            bucket: airbyte-dev-logs # GCS bucket name that you've created.
-            credentials: ""
-            credentialsJson: "" ## Base64 encoded json GCP credentials file contents
+  storage:
+    type: "GCS"
+    bucket: ## GCS bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+    storageSecretName: gcp-cred-secrets
+    gcs:
+      authenticationType: credentials
+      project: <gcp-project>
+      credentialsPath: /secrets/gcs-log-creds/gcp.json
 ```
 
 Note that the `credentials` and `credentialsJson` fields are mutually exclusive.
@@ -436,6 +461,7 @@ helm install \
 "airbyte-enterprise" \ 
 "airbyte/airbyte" \
 --set-file airbyteYml="./airbyte.yml"
+--values ./airbyte.yml
 ```
 
 The default release name is `airbyte-enterprise`. You can change this by modifying the above `helm upgrade` command.
@@ -453,6 +479,7 @@ helm upgrade \
 --install "airbyte-enterprise" \ 
 "airbyte/airbyte" \
 --set-file airbyteYml="./airbyte.yml"
+--values ./airbyte.yml
 ```
 
 ## Customizing your Deployment
@@ -468,6 +495,7 @@ helm upgrade \
 "airbyte/airbyte" \
  --set-file airbyteYml="./airbyte.yml" \
  --values path/to/values.yaml
+ --values ./airbyte.yml
 ```
 
 ### Customizing your Service Account

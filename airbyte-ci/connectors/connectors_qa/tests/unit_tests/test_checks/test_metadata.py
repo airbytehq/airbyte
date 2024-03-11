@@ -155,3 +155,56 @@ class TestCheckConnectorLanguageTag:
         # Assert
         assert result.status == CheckStatus.PASSED
         assert result.message == "Language tag language:java is present in the metadata file"
+
+class TestCheckConnectorCDKTag:
+
+    def test_fail_when_no_cdk_tags(self, mocker):
+        # Arrange
+        connector = mocker.MagicMock(metadata={"tags": []})
+
+        # Act
+        result = metadata.CheckConnectorCDKTag()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert result.message == "CDK tag is missing in the metadata file"
+
+    def test_fail_when_multiple_cdk_tags(self, mocker):
+        # Arrange
+        connector = mocker.MagicMock(metadata={"tags": ["cdk:low-code", "cdk:python"]})
+
+        # Act
+        result = metadata.CheckConnectorCDKTag()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert result.message == "Multiple CDK tags found in the metadata file: ['cdk:low-code', 'cdk:python']"
+    
+    def test_fail_when_low_code_tag_on_python_connector(self, mocker, tmp_path):
+        # Arrange
+        connector = mocker.MagicMock(metadata={"tags": ["cdk:low-code"]}, code_directory=tmp_path)
+        code_directory = tmp_path
+        (code_directory / consts.PYPROJECT_FILE_NAME).write_text("[tool.poetry.dependencies]\nairbyte-cdk = '^1.0.0'")
+
+        # Act
+        result = metadata.CheckConnectorCDKTag()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert "Expected CDK tag 'cdk:python'" in result.message
+        assert "but found 'cdk:low-code'" in result.message
+
+    def test_fail_when_python_tag_on_low_code_connector(self, mocker, tmp_path):
+        # Arrange
+        connector = mocker.MagicMock(technical_name="source-test", metadata={"tags": ["cdk:python"]}, code_directory=tmp_path)
+        code_directory = tmp_path
+        (code_directory / "source_test").mkdir()
+        (code_directory / "source_test"/ consts.LOW_CODE_MANIFEST_FILE_NAME).touch()
+
+        # Act
+        result = metadata.CheckConnectorCDKTag()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert "Expected CDK tag 'cdk:low-code'" in result.message
+        assert "but found 'cdk:python'" in result.message

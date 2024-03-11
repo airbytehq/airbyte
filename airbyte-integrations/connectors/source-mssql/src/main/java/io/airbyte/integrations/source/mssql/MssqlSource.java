@@ -224,6 +224,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     if (mssqlConfig.has("ssl_method")) {
       readSsl(mssqlConfig, additionalParameters);
+    } else {
+      additionalParameters.add("trustServerCertificate=true");
     }
 
     if (!additionalParameters.isEmpty()) {
