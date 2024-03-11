@@ -3,7 +3,6 @@
 #
 
 
-import traceback
 from os import getenv
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -63,9 +62,9 @@ from source_amazon_seller_partner.streams import (
     SellerFeedbackReports,
     StrandedInventoryUiReport,
     VendorDirectFulfillmentShipping,
-    VendorInventoryReports,
     VendorForecastingFreshReport,
     VendorForecastingRetailReport,
+    VendorInventoryReports,
     VendorOrders,
     VendorSalesReports,
     VendorTrafficReport,

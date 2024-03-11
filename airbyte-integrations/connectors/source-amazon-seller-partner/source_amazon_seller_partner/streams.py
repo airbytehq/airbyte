@@ -409,13 +409,13 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                 logging.error(f"Failed to retrieve the report result document for stream '{self.name}'. Exception: {e}")
                 error_response = "Failed to retrieve the report result document."
 
-            raise AirbyteTracedException(
-                internal_message=(
-                    f"Failed to retrieve the report '{self.name}' for period "
-                    f"{stream_slice['dataStartTime']}-{stream_slice['dataEndTime']}. "
+            exception_message = f"Failed to retrieve the report '{self.name}'"
+            if stream_slice and "dataStartTime" in stream_slice:
+                exception_message += (
+                    f" for period {stream_slice['dataStartTime']}-{stream_slice['dataEndTime']}. "
                     f"This will be read during the next sync. Error: {error_response}"
                 )
-            )
+            raise AirbyteTracedException(internal_message=exception_message)
         elif processing_status == ReportProcessingStatus.CANCELLED:
             logger.warning(f"The report for stream '{self.name}' was cancelled or there is no data to return.")
         else:
