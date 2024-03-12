@@ -14,4 +14,3 @@ echo "Done generating code generator image."
 echo "Generating component manifest files..."
 bin/generate-component-manifest-files.sh
 echo "Done generating component manifest files."
-
