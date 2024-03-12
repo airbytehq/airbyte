@@ -553,10 +553,6 @@ airbyte-enterprise \
 airbyte/airbyte
 ```
 
-helm install --namespace airbyte --values ./airbyte.yml --set-file airbyteYml="./airbyte.yml" --set keycloak-setup.env_vars.KEYCLOAK_RESET_REALM=true  airbyte-enterprise airbyte/airbyte 
-
-The default release name is `airbyte-enterprise`. You can change this by modifying the above `helm upgrade` command.
-
 ## Updating Self-Managed Enterprise
 
 Upgrade Airbyte Self-Managed Enterprise by:
