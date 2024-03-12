@@ -117,6 +117,23 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
     try {
       ObjectMapper objectMapper = new ObjectMapper();
       TypeReference<List<String>> listType = new TypeReference<>() {};
+      /* The event source structure is :
+          {
+             "version":"2.4.0.Final",
+             "connector":"postgresql",
+             "name":"db_pkgzzfnybb",
+             "ts_ms":1710283178042,
+             "snapshot":"false",
+             "db":"db_pkgzzfnybb",
+             "sequence":"[\"30660608\",\"30660608\"]",
+             "schema":"models_schema",
+             "table":"models",
+             "txId":777,
+             "lsn":30660608,
+             "xmin":null
+          }
+          See https://debezium.io/documentation/reference/2.4/connectors/postgresql.html#postgresql-create-events for the full event structure.
+       */
       final JsonNode lsnSequenceNode = event.eventValueAsJson().get("source").get("sequence");
       List<String> lsnSequence = objectMapper.readValue(lsnSequenceNode.asText(), listType);
       // The sequence field is a pair of [lsn_commit, lsn_processed]. We want to make sure lsn_commit(event) is compared against
