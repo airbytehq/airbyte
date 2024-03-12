@@ -16,7 +16,8 @@ To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL]
 6. For **API Key**, enter your [Freshdesk API key](https://support.freshdesk.com/support/solutions/articles/215517).
 7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 8. For **Requests per minute**, enter the number of requests per minute that this source allowed to use. The Freshdesk rate limit is 50 requests per minute per app per account.
-9. Click **Set up source**.
+9. For **Lookback Window**, you may specify a number of days back from the current stream state to re-read data for the **Satisfaction Ratings** stream. This helps capture updates made to existing ratings after their initial creation. However, keep in mind that records updated before (stream_state - lookback_window) won't be synced. To ensure no data loss, we recommend using a full refresh. The default lookback window is set to 14 days.
+10. Click **Set up source**.
 
 ## Supported sync modes
 
