@@ -186,7 +186,7 @@ jobs:
   publish-docker-image:
     timeout-minutes: 240
     needs:
-      - start-publish-docker-image-runner-0
+#      - start-publish-docker-image-runner-0
       - publish-cdk
     runs-on: runner-pool-${{ github.run_id }}
     steps:
