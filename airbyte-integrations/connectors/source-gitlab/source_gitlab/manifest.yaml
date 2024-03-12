@@ -7,14 +7,17 @@ definitions:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
   # TODO: oauth doesn't work
-  #  oauth_authenticator:
-  #    type: DeclarativeSingleUseRefreshTokenOauth2Authenticator
-  #    token_refresh_endpoint: "https://{{ config.get('api_url') or 'gitlab.com' }}/oauth/token"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    token_refresh_endpoint: "https://{{ config.get('api_url', 'gitlab.com') }}/oauth/token"
   authenticator:
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
     authenticators:
-      #      oauth2.0: "#/definitions/oauth_authenticator"
+      oauth2.0: "#/definitions/oauth_authenticator"
       access_token: "#/definitions/bearer_authenticator"
 
   # Requester
