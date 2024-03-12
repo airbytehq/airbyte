@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.69.2
+low-code: improve error message when a custom component cannot be found
+
 ## 0.69.1
 Update mock server test entrypoint wrapper to use per-stream state
 
