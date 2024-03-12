@@ -10,6 +10,7 @@ on:
   push:
     branches:
       - master
+      - ella/gut-gradle
   pull_request:
     types:
       - opened
@@ -51,8 +52,8 @@ jobs:
         run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3
       - name: Install Pyenv
         run: python3 -m pip install virtualenv --user
-      - name: Run Gradle Check on Python CDK
-        run: (cd airbyte-cdk/python && CI=true ./gradlew --no-daemon --no-build-cache --scan check)
+      - name: Check Python CDK
+        run: (cd airbyte-cdk/python && ./assemble.sh && ./check.sh)
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure

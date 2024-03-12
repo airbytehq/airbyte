@@ -5,18 +5,6 @@ plugins {
     id 'ru.vyarus.use-python' version '2.3.0'
 }
 
-def venvDirectoryName = '.venv'
-
-// Add a task that allows cleaning up venvs to every python project
-def cleanPythonVenv = tasks.register('cleanPythonVenv', Exec) {
-    commandLine 'rm'
-    args '-rf', "${projectDir.absolutePath}/${venvDirectoryName}"
-}
-
-tasks.named('clean').configure {
-    dependsOn cleanPythonVenv
-}
-
 // Configure gradle python plugin.
 python {
     envPath = venvDirectoryName
