@@ -1,0 +1,123 @@
+version: 0.69.1
+type: DeclarativeSource
+
+definitions:
+  # Authenticators
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  # TODO: oauth doesn't work
+  #  oauth_authenticator:
+  #    type: DeclarativeSingleUseRefreshTokenOauth2Authenticator
+  #    token_refresh_endpoint: "https://{{ config.get('api_url') or 'gitlab.com' }}/oauth/token"
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      #      oauth2.0: "#/definitions/oauth_authenticator"
+      access_token: "#/definitions/bearer_authenticator"
+
+  # Requester
+  requester:
+    type: HttpRequester
+    # TODO: align with config api_url
+    url_base: "https://gitlab.com/api/v4/"
+    http_method: GET
+    authenticator: "#/definitions/authenticator"
+    request_parameters:
+      per_page: "50"
+      # TODO: should be handled by paginator
+      page: "1"
+
+  # Selector:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  # Retrievers
+  retriever:
+    type: SimpleRetriever
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/requester"
+
+  group_child_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/groups_list_stream"
+          partition_field: "id"
+
+  # Service streams
+  base_full_refresh_stream:
+    type: DeclarativeStream
+    primary_key: "id"
+
+  groups_list_stream:
+    name: "groups_list"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/retriever"
+    $parameters:
+      path: "groups"
+
+  # Full refresh streams
+  groups_stream:
+    name: "groups"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            # TODO: check _get_group_list in source.py
+            stream: "#/definitions/groups_list_stream"
+            partition_field: "id"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}"
+
+  group_milestones_stream:
+    name: "group_milestones"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/group_child_streams_retriever"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/milestones"
+
+  group_members_stream:
+    name: "group_members"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/group_child_streams_retriever"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/members"
+
+  group_labels_stream:
+    name: "group_labels"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/group_child_streams_retriever"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/labels"
+
+  group_issue_boards_stream:
+    name: "group_issue_boards"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/group_child_streams_retriever"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/boards"
+
+streams:
+  - "#/definitions/groups_stream"
+  - "#/definitions/group_milestones_stream"
+  - "#/definitions/group_members_stream"
+  - "#/definitions/group_labels_stream"
+  - "#/definitions/group_issue_boards_stream"
+
+check:
+  # TODO: does not match the reality
+  type: CheckStream
+  stream_names:
+    - groups

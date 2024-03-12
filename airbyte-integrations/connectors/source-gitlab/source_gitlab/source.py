@@ -9,7 +9,7 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 import pendulum
 from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
@@ -93,9 +93,9 @@ def get_authenticator(config: MutableMapping) -> AuthBase:
     )
 
 
-class SourceGitlab(AbstractSource):
+class SourceGitlab(YamlDeclarativeSource):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
         self.__auth_params: Mapping[str, Any] = {}
         self.__groups_stream: Optional[GitlabStream] = None
         self.__projects_stream: Optional[GitlabStream] = None
