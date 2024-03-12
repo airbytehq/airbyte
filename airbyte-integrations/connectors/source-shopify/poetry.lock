@@ -313,6 +313,26 @@ files = [
 ]
 
 [[package]]
+name = "graphql-query"
+version = "1.1.1"
+description = "Complete GraphQL query string generation for python."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "graphql_query-1.1.1-py3-none-any.whl", hash = "sha256:c88e052d5739cbc0c20ed4597892025b2e3c363c75b44a06ea55005f09ecbd3d"},
+    {file = "graphql_query-1.1.1.tar.gz", hash = "sha256:b0f52b560977fdf48c5ca48bb35772d86632018e13e948b10681815a58945b07"},
+]
+
+[package.dependencies]
+jinja2 = ">=3.1,<3.2"
+pydantic = ">=1.10,<1.11"
+
+[package.extras]
+dev = ["black", "mypy", "pylint-pydantic", "ruff", "wheel"]
+docs = ["sphinx", "sphinx-argparse", "sphinx-rtd-theme", "sphinxcontrib-github"]
+test = ["pytest", "pytest-cov", "pytest-mock"]
+
+[[package]]
 name = "idna"
 version = "3.6"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -1037,4 +1057,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "71f6b166e4220683dea93a273110eca25f9680be5842ee802d78a9583f31ee2f"
+content-hash = "d5eb24b58b8ae8d10cc9f421ea1d125ef3833c69a1007e13624990a30bf2070a"

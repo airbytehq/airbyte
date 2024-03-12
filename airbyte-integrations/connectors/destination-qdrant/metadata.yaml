@@ -31,6 +31,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/qdrant
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100

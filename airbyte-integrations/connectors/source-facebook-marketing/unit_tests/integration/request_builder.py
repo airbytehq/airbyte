@@ -70,7 +70,7 @@ class RequestBuilder:
 
     def build(self) -> HttpRequest:
         return HttpRequest(
-            url=f"https://graph.facebook.com/v17.0/{self._account_sub_path()}{self._resource}",
+            url=f"https://graph.facebook.com/v19.0/{self._account_sub_path()}{self._resource}",
             query_params=self._query_params,
             body=self._body,
         )
