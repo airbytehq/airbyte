@@ -14,7 +14,16 @@ import freezegun
 import pendulum
 import pytest
 import requests_mock
-from airbyte_cdk.models import AirbyteStateBlob, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, StreamDescriptor, SyncMode, Type
+from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    StreamDescriptor,
+    SyncMode,
+    Type,
+)
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.entrypoint_wrapper import read

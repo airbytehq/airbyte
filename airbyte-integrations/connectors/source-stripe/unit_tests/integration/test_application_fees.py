@@ -19,7 +19,15 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStreamState, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
+from airbyte_protocol.models import (
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    FailureType,
+    StreamDescriptor,
+    SyncMode,
+)
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
