@@ -10,7 +10,9 @@ import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.commons.exceptions.SQLRuntimeException;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV1V2Migrator;
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -21,13 +23,18 @@ import lombok.SneakyThrows;
  * Largely based on
  * {@link io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator}.
  */
-public class JdbcV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinition> {
+public abstract class JdbcV1V2Migrator<DestinationState extends MinimumDestinationState>
+    extends BaseDestinationV1V2Migrator<TableDefinition, DestinationState> {
 
   private final NamingConventionTransformer namingConventionTransformer;
   private final JdbcDatabase database;
   private final String databaseName;
 
-  public JdbcV1V2Migrator(final NamingConventionTransformer namingConventionTransformer, final JdbcDatabase database, final String databaseName) {
+  public JdbcV1V2Migrator(final NamingConventionTransformer namingConventionTransformer,
+                          final SqlGenerator sqlGenerator,
+                          final JdbcDatabase database,
+                          final String databaseName) {
+    super(sqlGenerator);
     this.namingConventionTransformer = namingConventionTransformer;
     this.database = database;
     this.databaseName = databaseName;
@@ -72,5 +79,4 @@ public class JdbcV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinitio
         this.namingConventionTransformer.getIdentifier(streamConfig.id().originalNamespace()),
         tableName);
   }
-
 }

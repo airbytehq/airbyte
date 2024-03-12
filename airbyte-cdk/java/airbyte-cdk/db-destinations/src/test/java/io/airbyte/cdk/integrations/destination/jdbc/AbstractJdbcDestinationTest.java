@@ -16,7 +16,13 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinat
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -112,7 +118,7 @@ public class AbstractJdbcDestinationTest {
         () -> new TestJdbcDestination().getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam)));
   }
 
-  static class TestJdbcDestination extends AbstractJdbcDestination {
+  static class TestJdbcDestination extends AbstractJdbcDestination<MinimumDestinationState.Impl> {
 
     private final Map<String, String> defaultProperties;
 
@@ -137,13 +143,20 @@ public class AbstractJdbcDestinationTest {
 
     @Override
     protected JdbcSqlGenerator getSqlGenerator() {
-      // TODO do we need to populate this?
       return null;
     }
 
     @Override
-    protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database, String rawTableSchema) {
+    protected JdbcDestinationHandler<MinimumDestinationState.Impl> getDestinationHandler(String databaseName, JdbcDatabase database, String rawTableSchema) {
       return null;
+    }
+
+    @Override
+    protected List<Migration<MinimumDestinationState.Impl>> getMigrations(JdbcDatabase database,
+                                                                          String databaseName,
+                                                                          SqlGenerator sqlGenerator,
+                                                                          DestinationHandler<MinimumDestinationState.Impl> destinationHandler) {
+      return Collections.emptyList();
     }
 
   }

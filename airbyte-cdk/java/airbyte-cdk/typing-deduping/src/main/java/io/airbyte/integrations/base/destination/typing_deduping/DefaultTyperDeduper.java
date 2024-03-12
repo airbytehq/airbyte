@@ -61,9 +61,6 @@ public class DefaultTyperDeduper<DestinationState extends MinimumDestinationStat
 
   private final SqlGenerator sqlGenerator;
   private final DestinationHandler<DestinationState> destinationHandler;
-
-  private final DestinationV1V2Migrator v1V2Migrator;
-  private final V2TableMigrator v2TableMigrator;
   private final List<Migration<DestinationState>> migrations;
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
@@ -86,14 +83,10 @@ public class DefaultTyperDeduper<DestinationState extends MinimumDestinationStat
   public DefaultTyperDeduper(final SqlGenerator sqlGenerator,
                              final DestinationHandler<DestinationState> destinationHandler,
                              final ParsedCatalog parsedCatalog,
-                             final DestinationV1V2Migrator v1V2Migrator,
-                             final V2TableMigrator v2TableMigrator,
                              final List<Migration<DestinationState>> migrations) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
-    this.v1V2Migrator = v1V2Migrator;
-    this.v2TableMigrator = v2TableMigrator;
     this.migrations = migrations;
     this.initialRawTableStateByStream = new ConcurrentHashMap<>();
     this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams().size());
@@ -103,29 +96,12 @@ public class DefaultTyperDeduper<DestinationState extends MinimumDestinationStat
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
-  public DefaultTyperDeduper(
-                             final SqlGenerator sqlGenerator,
-                             final DestinationHandler<DestinationState> destinationHandler,
-                             final ParsedCatalog parsedCatalog,
-                             final DestinationV1V2Migrator v1V2Migrator,
-                             final List<Migration<DestinationState>> migrations) {
-    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator(), migrations);
-  }
-
   @Override
   public void prepareSchemasAndRunMigrations() throws Exception {
     // Technically kind of weird to call this here, but it's the best place we have.
     // Ideally, we'd create just airbyte_internal here, and defer creating the final table schemas
     // until prepareFinalTables... but it doesn't really matter.
     TyperDeduperUtil.prepareSchemas(sqlGenerator, destinationHandler, parsedCatalog);
-
-    TyperDeduperUtil.executeWeirdMigrations(
-        executorService,
-        sqlGenerator,
-        destinationHandler,
-        v1V2Migrator,
-        v2TableMigrator,
-        parsedCatalog);
 
     destinationInitialStatuses = TyperDeduperUtil.executeRawTableMigrations(
         executorService,

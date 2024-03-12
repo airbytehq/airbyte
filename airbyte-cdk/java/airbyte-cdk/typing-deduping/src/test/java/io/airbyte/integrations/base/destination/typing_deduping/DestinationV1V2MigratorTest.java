@@ -64,9 +64,10 @@ public class DestinationV1V2MigratorTest {
   public void testMismatchedSchemaThrowsException() throws Exception {
     final StreamConfig config = new StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null);
     final var migrator = makeMockMigrator(true, true, false, false, false);
-    final UnexpectedSchemaException exception = Assertions.assertThrows(UnexpectedSchemaException.class,
+    final RuntimeException exception = Assertions.assertThrows(RuntimeException.class,
         () -> migrator.shouldMigrate(config));
-    Assertions.assertEquals("Destination V2 Raw Table does not match expected Schema", exception.getMessage());
+    final UnexpectedSchemaException cause = (UnexpectedSchemaException) exception.getCause();
+    Assertions.assertEquals("Destination V2 Raw Table does not match expected Schema", cause.getMessage());
   }
 
   @SneakyThrows

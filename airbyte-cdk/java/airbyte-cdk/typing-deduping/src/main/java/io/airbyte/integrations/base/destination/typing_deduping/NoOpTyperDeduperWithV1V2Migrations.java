@@ -28,8 +28,6 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 @Slf4j
 public class NoOpTyperDeduperWithV1V2Migrations<DestinationState extends MinimumDestinationState> implements TyperDeduper {
 
-  private final DestinationV1V2Migrator v1V2Migrator;
-  private final V2TableMigrator v2TableMigrator;
   private final List<Migration<DestinationState>> migrations;
   private final ExecutorService executorService;
   private final ParsedCatalog parsedCatalog;
@@ -39,14 +37,10 @@ public class NoOpTyperDeduperWithV1V2Migrations<DestinationState extends Minimum
   public NoOpTyperDeduperWithV1V2Migrations(final SqlGenerator sqlGenerator,
                                             final DestinationHandler<DestinationState> destinationHandler,
                                             final ParsedCatalog parsedCatalog,
-                                            final DestinationV1V2Migrator v1V2Migrator,
-                                            final V2TableMigrator v2TableMigrator,
                                             final List<Migration<DestinationState>> migrations) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
-    this.v1V2Migrator = v1V2Migrator;
-    this.v2TableMigrator = v2TableMigrator;
     this.migrations = migrations;
     this.executorService = Executors.newFixedThreadPool(getCountOfTypeAndDedupeThreads(),
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
@@ -55,14 +49,6 @@ public class NoOpTyperDeduperWithV1V2Migrations<DestinationState extends Minimum
   @Override
   public void prepareSchemasAndRunMigrations() throws Exception {
     TyperDeduperUtil.prepareSchemas(sqlGenerator, destinationHandler, parsedCatalog);
-
-    TyperDeduperUtil.executeWeirdMigrations(
-        executorService,
-        sqlGenerator,
-        destinationHandler,
-        v1V2Migrator,
-        v2TableMigrator,
-        parsedCatalog);
 
     List<DestinationInitialStatus<DestinationState>> destinationInitialStatuses = TyperDeduperUtil.executeRawTableMigrations(
         executorService,

@@ -23,7 +23,6 @@ import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
-import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
@@ -34,9 +33,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDedu
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
-import io.airbyte.integrations.base.destination.typing_deduping.NoopV2TableMigrator;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -54,7 +54,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcDestination extends JdbcConnector implements Destination {
+public abstract class AbstractJdbcDestination<DestinationState extends MinimumDestinationState>
+    extends JdbcConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
@@ -254,9 +255,19 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
 
   protected abstract JdbcSqlGenerator getSqlGenerator();
 
-  protected abstract JdbcDestinationHandler<? extends MinimumDestinationState> getDestinationHandler(final String databaseName,
+  protected abstract JdbcDestinationHandler<DestinationState> getDestinationHandler(final String databaseName,
                                                                                                      final JdbcDatabase database,
                                                                                                      final String rawTableSchema);
+
+  /**
+   * Provide any migrations that the destination needs to run. Most destinations will need to provide an instande of
+   * {@link io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator} at minimum.
+   */
+  protected abstract List<Migration<DestinationState>> getMigrations(
+      final JdbcDatabase database,
+      final String databaseName,
+      final SqlGenerator sqlGenerator,
+      final DestinationHandler<DestinationState> destinationHandler);
 
   /**
    * "database" key at root of the config json, for any other variants in config, override this
@@ -319,17 +330,15 @@ public abstract class AbstractJdbcDestination extends JdbcConnector implements D
         .orElse(new CatalogParser(sqlGenerator))
         .parseCatalog(catalog);
     final String databaseName = getDatabaseName(config);
-    final var migrator = new JdbcV1V2Migrator(namingResolver, database, databaseName);
-    final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
-    final DestinationHandler<? extends MinimumDestinationState> destinationHandler =
+    final DestinationHandler<DestinationState> destinationHandler =
         getDestinationHandler(databaseName, database, rawNamespaceOverride.orElse(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
+    final List<Migration<DestinationState>> migrations = getMigrations(database, databaseName, sqlGenerator, destinationHandler);
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
     final TyperDeduper typerDeduper;
     if (disableTypeDedupe) {
-      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());
+      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, destinationHandler, parsedCatalog, migrations);
     } else {
-      typerDeduper =
-          new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());
+      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrations);
     }
     return typerDeduper;
   }
