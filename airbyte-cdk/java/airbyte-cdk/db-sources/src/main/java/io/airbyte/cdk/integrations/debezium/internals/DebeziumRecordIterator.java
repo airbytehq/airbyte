@@ -64,7 +64,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
     this.publisherStatusSupplier = publisherStatusSupplier;
     this.debeziumShutdownProcedure = debeziumShutdownProcedure;
     this.firstRecordWaitTime = firstRecordWaitTime;
-    this.subsequentRecordWaitTime = subsequentRecordWaitTime;
+    this.subsequentRecordWaitTime = firstRecordWaitTime.dividedBy(2);
     this.heartbeatEventSourceField = new HashMap<>(1);
 
     this.receivedFirstRecord = false;
