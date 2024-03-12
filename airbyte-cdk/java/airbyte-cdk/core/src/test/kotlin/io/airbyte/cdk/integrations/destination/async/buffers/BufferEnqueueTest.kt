@@ -10,27 +10,33 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordM
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.mockk.every
+import io.mockk.mockk
 import java.util.Optional
-import java.util.concurrent.ConcurrentHashMap
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 
 class BufferEnqueueTest {
-    private val RECORD_SIZE_20_BYTES = 20
-    private val DEFAULT_NAMESPACE = "foo_namespace"
+    companion object {
+        private const val RECORD_SIZE_20_BYTES = 20
+        private const val DEFAULT_NAMESPACE = "foo_namespace"
+    }
 
     @Test
     internal fun testAddRecordShouldAdd() {
         val twoMB = 2 * 1024 * 1024
-        val streamToBuffer = ConcurrentHashMap<StreamDescriptor, StreamAwareQueue>()
+        val streamToBuffer = AsyncBuffers()
+        val bufferMemory: BufferMemory = mockk()
+        val globalAsyncStateManager: GlobalAsyncStateManager = mockk()
+
+        every { bufferMemory.getMemoryLimit() } returns twoMB.toLong()
+        every { globalAsyncStateManager.getStateIdAndIncrementCounter(any()) } returns 1L
+
         val enqueue =
             BufferEnqueue(
-                GlobalMemoryManager(twoMB.toLong()),
-                streamToBuffer,
-                Mockito.mock(
-                    GlobalAsyncStateManager::class.java,
-                ),
+                globalMemoryManager = GlobalMemoryManager(bufferMemory),
+                asyncBuffers = streamToBuffer,
+                globalAsyncStateManager = globalAsyncStateManager,
             )
 
         val streamName = "stream"
@@ -43,21 +49,25 @@ class BufferEnqueueTest {
                 )
 
         enqueue.addRecord(record, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
-        Assertions.assertEquals(1, streamToBuffer[stream]!!.size())
-        Assertions.assertEquals(20L, streamToBuffer[stream]!!.currentMemoryUsage)
+        Assertions.assertEquals(1, streamToBuffer.buffers[stream]!!.size())
+        Assertions.assertEquals(20L, streamToBuffer.buffers[stream]!!.getCurrentMemoryUsage())
     }
 
     @Test
     internal fun testAddRecordShouldExpand() {
         val oneKb = 1024
-        val streamToBuffer = ConcurrentHashMap<StreamDescriptor, StreamAwareQueue>()
+        val streamToBuffer = AsyncBuffers()
+        val bufferMemory: BufferMemory = mockk()
+        val globalAsyncStateManager: GlobalAsyncStateManager = mockk()
+
+        every { bufferMemory.getMemoryLimit() } returns oneKb.toLong()
+        every { globalAsyncStateManager.getStateIdAndIncrementCounter(any()) } returns 1L
+
         val enqueue =
             BufferEnqueue(
-                GlobalMemoryManager(oneKb.toLong()),
-                streamToBuffer,
-                Mockito.mock(
-                    GlobalAsyncStateManager::class.java,
-                ),
+                globalMemoryManager = GlobalMemoryManager(bufferMemory),
+                asyncBuffers = streamToBuffer,
+                globalAsyncStateManager = globalAsyncStateManager,
             )
 
         val streamName = "stream"
@@ -71,7 +81,7 @@ class BufferEnqueueTest {
 
         enqueue.addRecord(record, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
         enqueue.addRecord(record, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
-        Assertions.assertEquals(2, streamToBuffer[stream]!!.size())
-        Assertions.assertEquals(40, streamToBuffer[stream]!!.currentMemoryUsage)
+        Assertions.assertEquals(2, streamToBuffer.buffers[stream]!!.size())
+        Assertions.assertEquals(40, streamToBuffer.buffers[stream]!!.getCurrentMemoryUsage())
     }
 }

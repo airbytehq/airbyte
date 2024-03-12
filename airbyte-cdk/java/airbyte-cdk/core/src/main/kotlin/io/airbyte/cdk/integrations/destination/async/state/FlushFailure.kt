@@ -30,6 +30,7 @@ class FlushFailure {
         return isFailed.get()
     }
 
-    val exception: Exception
-        get() = exceptionAtomicReference.get()
+    fun getException(): Exception {
+        return exceptionAtomicReference.get()
+    }
 }

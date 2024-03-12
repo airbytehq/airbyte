@@ -39,8 +39,7 @@ class CatalogValidatorTest {
         val validator =
             CatalogValidator(
                 connectorName = connectorName,
-                operationType = operationType.name.lowercase(),
-                airbyteConfiguredCatalog = catalog,
+                micronautConfiguredAirbyteCatalog = catalog,
                 operation = operation
             )
         val event: StartupEvent = mockk()
@@ -63,8 +62,7 @@ class CatalogValidatorTest {
         val validator =
             CatalogValidator(
                 connectorName = connectorName,
-                operationType = operationType.name.lowercase(),
-                airbyteConfiguredCatalog = catalog,
+                micronautConfiguredAirbyteCatalog = catalog,
                 operation = operation
             )
         val event: StartupEvent = mockk()
@@ -92,8 +90,7 @@ class CatalogValidatorTest {
         val validator =
             CatalogValidator(
                 connectorName = connectorName,
-                operationType = operationType.name.lowercase(),
-                airbyteConfiguredCatalog = catalog,
+                micronautConfiguredAirbyteCatalog = catalog,
                 operation = operation
             )
         val event: StartupEvent = mockk()

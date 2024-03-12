@@ -5,7 +5,11 @@
 package io.airbyte.cdk.integrations.destination.async.buffers
 
 import java.util.concurrent.TimeUnit
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -15,23 +19,20 @@ class MemoryBoundedLinkedBlockingQueueTest {
     @Throws(InterruptedException::class)
     internal fun offerAndTakeShouldReturn() {
         val queue = MemoryBoundedLinkedBlockingQueue<String>(1024)
-
         queue.offer("abc", 6)
-
         val item = queue.take()
 
-        Assertions.assertEquals("abc", item.item)
+        assertEquals("abc", item.item)
     }
 
     @Test
     @Throws(InterruptedException::class)
     internal fun testBlocksOnFullMemory() {
         val queue = MemoryBoundedLinkedBlockingQueue<String>(10)
-        Assertions.assertTrue(queue.offer("abc", 6))
-        Assertions.assertFalse(queue.offer("abc", 6))
-
-        Assertions.assertNotNull(queue.poll(1, TimeUnit.NANOSECONDS))
-        Assertions.assertNull(queue.poll(1, TimeUnit.NANOSECONDS))
+        assertTrue(queue.offer("abc", 6))
+        assertFalse(queue.offer("abc", 6))
+        assertNotNull(queue.poll(1, TimeUnit.NANOSECONDS))
+        assertNull(queue.poll(1, TimeUnit.NANOSECONDS))
     }
 
     @ParameterizedTest
@@ -39,15 +40,15 @@ class MemoryBoundedLinkedBlockingQueueTest {
     internal fun getMaxMemoryUsage(size: Long) {
         val queue = MemoryBoundedLinkedBlockingQueue<String>(size)
 
-        Assertions.assertEquals(0, queue.currentMemoryUsage)
-        Assertions.assertEquals(size, queue.maxMemoryUsage)
+        assertEquals(0, queue.getCurrentMemoryUsage())
+        assertEquals(size, queue.getMaxMemoryUsage())
 
         queue.addMaxMemory(-100)
 
-        Assertions.assertEquals(size - 100, queue.maxMemoryUsage)
+        assertEquals(size - 100, queue.getMaxMemoryUsage())
 
         queue.addMaxMemory(123)
 
-        Assertions.assertEquals(size - 100 + 123, queue.maxMemoryUsage)
+        assertEquals(size - 100 + 123, queue.getMaxMemoryUsage())
     }
 }

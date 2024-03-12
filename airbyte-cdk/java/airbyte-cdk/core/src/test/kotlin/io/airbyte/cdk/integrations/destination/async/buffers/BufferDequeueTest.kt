@@ -5,54 +5,87 @@
 package io.airbyte.cdk.integrations.destination.async.buffers
 
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
+import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager.Companion.BLOCK_SIZE_BYTES
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
+import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.mockk.every
+import io.mockk.mockk
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.Optional
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class BufferDequeueTest {
-    private val RECORD_SIZE_20_BYTES = 20
-    private val DEFAULT_NAMESPACE = "foo_namespace"
-    private val STREAM_NAME = "stream1"
-    private val STREAM_DESC: StreamDescriptor = StreamDescriptor().withName(STREAM_NAME)
-    private val RECORD_MSG_20_BYTES: PartialAirbyteMessage =
-        PartialAirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(
-                PartialAirbyteRecordMessage().withStream(STREAM_NAME),
-            )
+    companion object {
+        private const val RECORD_SIZE_20_BYTES = 20
+        private const val DEFAULT_NAMESPACE = "foo_namespace"
+        private const val STREAM_NAME = "stream1"
+        private const val MEMORY_LIMIT = BLOCK_SIZE_BYTES * 4
+        private val STREAM_DESC: StreamDescriptor = StreamDescriptor().withName(STREAM_NAME)
+        private val RECORD_MSG_20_BYTES: PartialAirbyteMessage =
+            PartialAirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(
+                    PartialAirbyteRecordMessage().withStream(STREAM_NAME),
+                )
+    }
+
+    private lateinit var asyncBuffers: AsyncBuffers
+
+    @BeforeEach
+    internal fun setup() {
+        asyncBuffers = AsyncBuffers()
+    }
 
     @Nested
     internal inner class Take {
         @Test
         internal fun testTakeShouldBestEffortRead() {
-            val bufferManager = BufferManager()
-            val enqueue = bufferManager.bufferEnqueue
-            val dequeue = bufferManager.bufferDequeue
+            val asyncBuffers = AsyncBuffers()
+            val globalMemoryManager: GlobalMemoryManager = mockk()
+            val globalAsyncStateManager: GlobalAsyncStateManager = mockk()
 
-            enqueue.addRecord(
+            every { globalMemoryManager.free(any()) } returns Unit
+            every { globalMemoryManager.requestMemory() } returns BLOCK_SIZE_BYTES
+            every { globalAsyncStateManager.getStateIdAndIncrementCounter(any()) } returns 1L
+
+            val bufferDequeue =
+                BufferDequeue(
+                    globalMemoryManager = globalMemoryManager,
+                    globalAsyncStateManager = globalAsyncStateManager,
+                    asyncBuffers = asyncBuffers,
+                )
+            val bufferEnqueue =
+                BufferEnqueue(
+                    globalMemoryManager = globalMemoryManager,
+                    globalAsyncStateManager = globalAsyncStateManager,
+                    asyncBuffers = asyncBuffers,
+                )
+
+            bufferEnqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
                 Optional.of(DEFAULT_NAMESPACE)
             )
-            enqueue.addRecord(
+            bufferEnqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
                 Optional.of(DEFAULT_NAMESPACE)
             )
-            enqueue.addRecord(
+            bufferEnqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
                 Optional.of(DEFAULT_NAMESPACE)
             )
-            enqueue.addRecord(
+            bufferEnqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
                 Optional.of(DEFAULT_NAMESPACE)
@@ -62,12 +95,12 @@ class BufferDequeueTest {
             // under-pull records
             // than over-pull).
             try {
-                dequeue.take(STREAM_DESC, 50).use { take ->
-                    Assertions.assertEquals(2, take.data.size)
+                bufferDequeue.take(STREAM_DESC, 50).use { take ->
+                    assertEquals(2, take.getData().size)
                     // verify it only took the records from the queue that it actually returned.
-                    Assertions.assertEquals(
+                    assertEquals(
                         2,
-                        dequeue.getQueueSizeInRecords(STREAM_DESC).orElseThrow(),
+                        bufferDequeue.getQueueSizeInRecords(STREAM_DESC).orElseThrow(),
                     )
                 }
             } catch (e: Exception) {
@@ -77,29 +110,45 @@ class BufferDequeueTest {
 
         @Test
         internal fun testTakeShouldReturnAllIfPossible() {
-            val bufferManager = BufferManager()
-            val enqueue = bufferManager.bufferEnqueue
-            val dequeue = bufferManager.bufferDequeue
+            val globalMemoryManager: GlobalMemoryManager = mockk()
+            val globalAsyncStateManager: GlobalAsyncStateManager = mockk()
 
-            enqueue.addRecord(
+            every { globalMemoryManager.free(any()) } returns Unit
+            every { globalMemoryManager.requestMemory() } returns BLOCK_SIZE_BYTES
+            every { globalAsyncStateManager.getStateIdAndIncrementCounter(any()) } returns 1L
+
+            val bufferDequeue =
+                BufferDequeue(
+                    globalMemoryManager = globalMemoryManager,
+                    globalAsyncStateManager = globalAsyncStateManager,
+                    asyncBuffers = asyncBuffers,
+                )
+            val bufferEnqueue =
+                BufferEnqueue(
+                    globalMemoryManager = globalMemoryManager,
+                    globalAsyncStateManager = globalAsyncStateManager,
+                    asyncBuffers = asyncBuffers,
+                )
+
+            bufferEnqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
                 Optional.of(DEFAULT_NAMESPACE)
             )
-            enqueue.addRecord(
+            bufferEnqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
                 Optional.of(DEFAULT_NAMESPACE)
             )
-            enqueue.addRecord(
+            bufferEnqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
                 Optional.of(DEFAULT_NAMESPACE)
             )
 
             try {
-                dequeue.take(STREAM_DESC, 60).use { take ->
-                    Assertions.assertEquals(3, take.data.size)
+                bufferDequeue.take(STREAM_DESC, 60).use { take ->
+                    assertEquals(3, take.getData().size)
                 }
             } catch (e: Exception) {
                 throw RuntimeException(e)
@@ -108,24 +157,40 @@ class BufferDequeueTest {
 
         @Test
         internal fun testTakeFewerRecordsThanSizeLimitShouldNotError() {
-            val bufferManager = BufferManager()
-            val enqueue = bufferManager.bufferEnqueue
-            val dequeue = bufferManager.bufferDequeue
+            val globalMemoryManager: GlobalMemoryManager = mockk()
+            val globalAsyncStateManager: GlobalAsyncStateManager = mockk()
 
-            enqueue.addRecord(
+            every { globalMemoryManager.free(any()) } returns Unit
+            every { globalMemoryManager.requestMemory() } returns BLOCK_SIZE_BYTES
+            every { globalAsyncStateManager.getStateIdAndIncrementCounter(any()) } returns 1L
+
+            val bufferDequeue =
+                BufferDequeue(
+                    globalMemoryManager = globalMemoryManager,
+                    globalAsyncStateManager = globalAsyncStateManager,
+                    asyncBuffers = asyncBuffers,
+                )
+            val bufferEnqueue =
+                BufferEnqueue(
+                    globalMemoryManager = globalMemoryManager,
+                    globalAsyncStateManager = globalAsyncStateManager,
+                    asyncBuffers = asyncBuffers,
+                )
+
+            bufferEnqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
                 Optional.of(DEFAULT_NAMESPACE)
             )
-            enqueue.addRecord(
+            bufferEnqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
                 Optional.of(DEFAULT_NAMESPACE)
             )
 
             try {
-                dequeue.take(STREAM_DESC, Long.MAX_VALUE).use { take ->
-                    Assertions.assertEquals(2, take.data.size)
+                bufferDequeue.take(STREAM_DESC, Long.MAX_VALUE).use { take ->
+                    assertEquals(2, take.getData().size)
                 }
             } catch (e: Exception) {
                 throw RuntimeException(e)
@@ -135,102 +200,148 @@ class BufferDequeueTest {
 
     @Test
     internal fun testMetadataOperationsCorrect() {
-        val bufferManager = BufferManager()
-        val enqueue = bufferManager.bufferEnqueue
-        val dequeue = bufferManager.bufferDequeue
+        val globalMemoryManager: GlobalMemoryManager = mockk()
+        val globalAsyncStateManager: GlobalAsyncStateManager = mockk()
 
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
+        every { globalMemoryManager.free(any()) } returns Unit
+        every { globalMemoryManager.requestMemory() } returns BLOCK_SIZE_BYTES
+        every { globalAsyncStateManager.getStateIdAndIncrementCounter(any()) } returns 1L
+
+        val bufferDequeue =
+            BufferDequeue(
+                globalMemoryManager = globalMemoryManager,
+                globalAsyncStateManager = globalAsyncStateManager,
+                asyncBuffers = asyncBuffers,
+            )
+        val bufferEnqueue =
+            BufferEnqueue(
+                globalMemoryManager = globalMemoryManager,
+                globalAsyncStateManager = globalAsyncStateManager,
+                asyncBuffers = asyncBuffers,
+            )
+
+        bufferEnqueue.addRecord(
+            RECORD_MSG_20_BYTES,
+            RECORD_SIZE_20_BYTES,
+            Optional.of(DEFAULT_NAMESPACE)
+        )
+        bufferEnqueue.addRecord(
+            RECORD_MSG_20_BYTES,
+            RECORD_SIZE_20_BYTES,
+            Optional.of(DEFAULT_NAMESPACE)
+        )
 
         val secondStream = StreamDescriptor().withName("stream_2")
         val recordFromSecondStream = Jsons.clone(RECORD_MSG_20_BYTES)
         recordFromSecondStream.record?.withStream(secondStream.name)
-        enqueue.addRecord(
+        bufferEnqueue.addRecord(
             recordFromSecondStream,
             RECORD_SIZE_20_BYTES,
             Optional.of(DEFAULT_NAMESPACE)
         )
 
-        Assertions.assertEquals(60, dequeue.totalGlobalQueueSizeBytes)
-
-        Assertions.assertEquals(2, dequeue.getQueueSizeInRecords(STREAM_DESC).get())
-        Assertions.assertEquals(1, dequeue.getQueueSizeInRecords(secondStream).get())
-
-        Assertions.assertEquals(40, dequeue.getQueueSizeBytes(STREAM_DESC).get())
-        Assertions.assertEquals(20, dequeue.getQueueSizeBytes(secondStream).get())
+        assertEquals(60, bufferDequeue.getTotalGlobalQueueSizeBytes())
+        assertEquals(2, bufferDequeue.getQueueSizeInRecords(STREAM_DESC).get())
+        assertEquals(1, bufferDequeue.getQueueSizeInRecords(secondStream).get())
+        assertEquals(40, bufferDequeue.getQueueSizeBytes(STREAM_DESC).get())
+        assertEquals(20, bufferDequeue.getQueueSizeBytes(secondStream).get())
 
         // Buffer of 3 sec to deal with test execution variance.
         val lastThreeSec = Instant.now().minus(3, ChronoUnit.SECONDS)
-        Assertions.assertTrue(lastThreeSec.isBefore(dequeue.getTimeOfLastRecord(STREAM_DESC).get()))
-        Assertions.assertTrue(
-            lastThreeSec.isBefore(dequeue.getTimeOfLastRecord(secondStream).get()),
-        )
+        assertTrue(lastThreeSec.isBefore(bufferDequeue.getTimeOfLastRecord(STREAM_DESC).get()))
+        assertTrue(lastThreeSec.isBefore(bufferDequeue.getTimeOfLastRecord(secondStream).get()))
     }
 
     @Test
     internal fun testMetadataOperationsError() {
-        val bufferManager = BufferManager()
-        val dequeue = bufferManager.bufferDequeue
+        val bufferMemory: BufferMemory = mockk()
+        every { bufferMemory.getMemoryLimit() } returns MEMORY_LIMIT
+        val globalMemoryManager = GlobalMemoryManager(bufferMemory)
+        val globalAsyncStateManager = GlobalAsyncStateManager(globalMemoryManager)
+        val bufferDequeue =
+            BufferDequeue(
+                globalMemoryManager = globalMemoryManager,
+                globalAsyncStateManager = globalAsyncStateManager,
+                asyncBuffers = asyncBuffers,
+            )
 
         val ghostStream = StreamDescriptor().withName("ghost stream")
-
-        Assertions.assertEquals(0, dequeue.totalGlobalQueueSizeBytes)
-
-        Assertions.assertTrue(dequeue.getQueueSizeInRecords(ghostStream).isEmpty)
-
-        Assertions.assertTrue(dequeue.getQueueSizeBytes(ghostStream).isEmpty)
-
-        Assertions.assertTrue(dequeue.getTimeOfLastRecord(ghostStream).isEmpty)
+        assertEquals(0, bufferDequeue.getTotalGlobalQueueSizeBytes())
+        assertTrue(bufferDequeue.getQueueSizeInRecords(ghostStream).isEmpty)
+        assertTrue(bufferDequeue.getQueueSizeBytes(ghostStream).isEmpty)
+        assertTrue(bufferDequeue.getTimeOfLastRecord(ghostStream).isEmpty)
     }
 
     @Test
     @Throws(Exception::class)
     internal fun cleansUpMemoryForEmptyQueues() {
-        val bufferManager = BufferManager()
-        val enqueue = bufferManager.bufferEnqueue
-        val dequeue = bufferManager.bufferDequeue
-        val memoryManager = bufferManager.memoryManager
+        val bufferMemory: BufferMemory = mockk()
+        every { bufferMemory.getMemoryLimit() } returns MEMORY_LIMIT
+        val globalMemoryManager = GlobalMemoryManager(bufferMemory)
+        val globalAsyncStateManager = GlobalAsyncStateManager(globalMemoryManager)
+        val bufferDequeue =
+            BufferDequeue(
+                globalMemoryManager = globalMemoryManager,
+                globalAsyncStateManager = globalAsyncStateManager,
+                asyncBuffers = asyncBuffers,
+            )
+        val bufferEnqueue =
+            BufferEnqueue(
+                globalMemoryManager = globalMemoryManager,
+                globalAsyncStateManager = globalAsyncStateManager,
+                asyncBuffers = asyncBuffers,
+            )
 
         // we initialize with a block for state
-        Assertions.assertEquals(
+        assertEquals(
             GlobalMemoryManager.BLOCK_SIZE_BYTES,
-            memoryManager.getCurrentMemoryBytes(),
+            globalMemoryManager.currentMemoryBytes.get()
         )
 
         // allocate a block for new stream
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
-        Assertions.assertEquals(
-            2 * GlobalMemoryManager.BLOCK_SIZE_BYTES,
-            memoryManager.getCurrentMemoryBytes(),
+        bufferEnqueue.addRecord(
+            RECORD_MSG_20_BYTES,
+            RECORD_SIZE_20_BYTES,
+            Optional.of(DEFAULT_NAMESPACE)
         )
+        assertEquals(2 * BLOCK_SIZE_BYTES, globalMemoryManager.currentMemoryBytes.get())
 
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
+        bufferEnqueue.addRecord(
+            RECORD_MSG_20_BYTES,
+            RECORD_SIZE_20_BYTES,
+            Optional.of(DEFAULT_NAMESPACE)
+        )
+        bufferEnqueue.addRecord(
+            RECORD_MSG_20_BYTES,
+            RECORD_SIZE_20_BYTES,
+            Optional.of(DEFAULT_NAMESPACE)
+        )
+        bufferEnqueue.addRecord(
+            RECORD_MSG_20_BYTES,
+            RECORD_SIZE_20_BYTES,
+            Optional.of(DEFAULT_NAMESPACE)
+        )
 
         // no re-allocates as we haven't breached block size
-        Assertions.assertEquals(
-            2 * GlobalMemoryManager.BLOCK_SIZE_BYTES,
-            memoryManager.getCurrentMemoryBytes(),
-        )
+        assertEquals(2 * BLOCK_SIZE_BYTES, globalMemoryManager.currentMemoryBytes.get())
 
         val totalBatchSize = RECORD_SIZE_20_BYTES * 4
 
-        dequeue.take(STREAM_DESC, totalBatchSize.toLong()).use { batch ->
+        bufferDequeue.take(STREAM_DESC, totalBatchSize.toLong()).use { batch ->
             // slop allocation gets cleaned up
-            Assertions.assertEquals(
-                GlobalMemoryManager.BLOCK_SIZE_BYTES + totalBatchSize,
-                memoryManager.getCurrentMemoryBytes(),
+            assertEquals(
+                BLOCK_SIZE_BYTES + totalBatchSize,
+                globalMemoryManager.currentMemoryBytes.get(),
             )
             batch.close()
             // back to initial state after flush clears the batch
-            Assertions.assertEquals(
-                GlobalMemoryManager.BLOCK_SIZE_BYTES,
-                memoryManager.getCurrentMemoryBytes(),
+            assertEquals(
+                BLOCK_SIZE_BYTES,
+                globalMemoryManager.currentMemoryBytes.get(),
             )
-            Assertions.assertEquals(
+            assertEquals(
                 0,
-                bufferManager.buffers[STREAM_DESC]!!.maxMemoryUsage,
+                asyncBuffers.buffers[STREAM_DESC]!!.getMaxMemoryUsage(),
             )
         }
     }

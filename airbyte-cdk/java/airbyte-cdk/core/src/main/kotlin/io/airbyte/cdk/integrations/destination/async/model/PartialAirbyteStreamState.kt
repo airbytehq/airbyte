@@ -9,12 +9,9 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.Objects
 
 class PartialAirbyteStreamState {
-    @get:JsonProperty("stream_descriptor")
-    @set:JsonProperty("stream_descriptor")
-    @JsonProperty("stream_descriptor")
-    var streamDescriptor: StreamDescriptor? = null
+    @JsonProperty("stream_descriptor") var streamDescriptor: StreamDescriptor? = null
 
-    fun withStreamDescriptor(streamDescriptor: StreamDescriptor): PartialAirbyteStreamState {
+    fun withStreamDescriptor(streamDescriptor: StreamDescriptor?): PartialAirbyteStreamState {
         this.streamDescriptor = streamDescriptor
         return this
     }

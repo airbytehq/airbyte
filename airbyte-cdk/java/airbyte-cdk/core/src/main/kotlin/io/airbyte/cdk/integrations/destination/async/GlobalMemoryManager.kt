@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.destination.async
 
 import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
+import io.airbyte.cdk.integrations.destination.async.buffers.BufferMemory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -43,11 +44,17 @@ private val logger = KotlinLogging.logger {}
     value = "write",
 )
 @Requires(env = ["destination"])
-class GlobalMemoryManager(val maxMemoryBytes: Long) {
-    val currentMemoryBytes = AtomicLong(0)
+class GlobalMemoryManager(bufferMemory: BufferMemory) {
+    val currentMemoryBytes: AtomicLong = AtomicLong(0)
+    val maxMemoryBytes = bufferMemory.getMemoryLimit()
 
-    fun getCurrentMemoryBytes(): Long {
-        return currentMemoryBytes.get()
+    companion object {
+        // In cases where a queue is rapidly expanding, a larger block size allows less allocation
+        // calls. On
+        // the flip size, a smaller block size allows more granular memory management. Since this
+        // overhead
+        // is minimal for now, err on a smaller block sizes.
+        const val BLOCK_SIZE_BYTES: Long = (10 * 1024 * 1024).toLong() // 10MB
     }
 
     /**
@@ -89,19 +96,7 @@ class GlobalMemoryManager(val maxMemoryBytes: Long) {
 
         val currentMemory = currentMemoryBytes.get()
         if (currentMemory < 0) {
-            logger.info { "Freed more memory than allocated ($bytes of ${currentMemory + bytes })" }
+            logger.info { "Freed more memory than allocated ($bytes of ${currentMemory + bytes})" }
         }
-    }
-
-    companion object {
-        // In cases where a queue is rapidly expanding, a larger block size allows less allocation
-        // calls. On
-        // the flip size, a smaller block size allows more granular memory management. Since this
-        // overhead
-        // is minimal for now, err on a smaller block sizes.
-        const val BLOCK_SIZE_BYTES: Long =
-            (10 * 1024 * 1024 // 10MB
-                )
-                .toLong()
     }
 }

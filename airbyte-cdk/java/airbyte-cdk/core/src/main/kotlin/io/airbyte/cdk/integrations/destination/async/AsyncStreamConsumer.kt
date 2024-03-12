@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.integrations.destination.async
 
-import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.google.common.base.Strings
 import io.airbyte.cdk.core.command.option.ConnectorConfiguration
@@ -13,9 +12,7 @@ import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferEnqueue
-import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
-import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
@@ -33,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.Collectors
-import kotlin.jvm.optionals.getOrNull
 
 private val logger = KotlinLogging.logger {}
 
@@ -45,23 +41,27 @@ private val logger = KotlinLogging.logger {}
  * memory limit governed by [GlobalMemoryManager]. Record writing is decoupled via [FlushWorkers].
  * See the other linked class for more detail.
  */
-class AsyncStreamConsumer
-@VisibleForTesting
-constructor(
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
+class AsyncStreamConsumer(
     private val onStart: OnStartFunction,
     private val onClose: OnCloseFunction,
-    private val catalog: MicronautConfiguredAirbyteCatalog,
-    private val bufferManager: BufferManager,
     private val connectorConfiguration: ConnectorConfiguration,
+    private val micronautConfiguredAirbyteCatalog: MicronautConfiguredAirbyteCatalog,
+    private val bufferEnqueue: BufferEnqueue,
     private val flushWorkers: FlushWorkers,
-    private val flushFailure: FlushFailure = FlushFailure(),
-    private val dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
-    private val deserializationUtil: DeserializationUtil = DeserializationUtil(),
+    private val flushFailure: FlushFailure,
+    private val dataTransformer: StreamAwareDataTransformer,
+    private val deserializationUtil: DeserializationUtil,
+    streamDescriptorUtils: StreamDescriptorUtils,
 ) : SerializedAirbyteMessageConsumer {
-    private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
     private val streamNames: Set<StreamDescriptor> =
-        StreamDescriptorUtils.fromConfiguredCatalog(
-            catalog.getConfiguredCatalog(),
+        streamDescriptorUtils.fromConfiguredCatalog(
+            micronautConfiguredAirbyteCatalog.getConfiguredCatalog()
         )
 
     // Note that this map will only be populated for streams with nonzero records.
@@ -71,18 +71,16 @@ constructor(
     private var hasClosed = false
     private var hasFailed = false
 
-    @Throws(Exception::class)
     override fun start() {
         Preconditions.checkState(!hasStarted, "Consumer has already been started.")
         hasStarted = true
 
         flushWorkers.start()
 
-        logger.info { "${AsyncStreamConsumer::class.java} started." }
+        logger.info { "${AsyncStreamConsumer::class.java.name} started." }
         onStart.call()
     }
 
-    @Throws(Exception::class)
     override fun accept(
         message: String,
         sizeInBytes: Int,
@@ -95,18 +93,17 @@ constructor(
          * to try to use a thread pool to partially deserialize to get record type and stream name, we can
          * do it without touching buffer manager.
          */
-        val airbyteMessage =
-            deserializationUtil.deserializeAirbyteMessage(
-                message,
-                dataTransformer,
-            )
+        val airbyteMessage = deserializationUtil.deserializeAirbyteMessage(message, dataTransformer)
         if (AirbyteMessage.Type.RECORD == airbyteMessage.type) {
             if (Strings.isNullOrEmpty(airbyteMessage.record?.namespace)) {
-                airbyteMessage.record?.namespace = connectorConfiguration.getDefaultNamespace().getOrNull()
+                airbyteMessage.record!!.namespace =
+                    connectorConfiguration.getDefaultNamespace().orElse(null)
             }
             validateRecord(airbyteMessage)
 
-            airbyteMessage.record?.streamDescriptor?.let { getRecordCounter(it).incrementAndGet() }
+            airbyteMessage.record?.let {
+                getRecordCounter(it.getStreamDescriptor()).incrementAndGet()
+            }
         }
         bufferEnqueue.addRecord(
             airbyteMessage,
@@ -115,7 +112,6 @@ constructor(
         )
     }
 
-    @Throws(Exception::class)
     override fun close() {
         Preconditions.checkState(hasStarted, "Cannot close; has not started.")
         Preconditions.checkState(!hasClosed, "Has already closed.")
@@ -125,8 +121,6 @@ constructor(
         // we need to close the workers before closing the bufferManagers (and underlying buffers)
         // or we risk in-memory data.
         flushWorkers.close()
-
-        bufferManager.close()
 
         val streamSyncSummaries =
             streamNames
@@ -145,22 +139,18 @@ constructor(
 
         // as this throws an exception, we need to be after all the other close functions.
         propagateFlushWorkerExceptionIfPresent()
-        logger.info { "${AsyncStreamConsumer::class.java} closed" }
+        logger.info { "${AsyncStreamConsumer::class.java.name} closed" }
     }
 
     private fun getRecordCounter(streamDescriptor: StreamDescriptor): AtomicLong {
-        return recordCounts.computeIfAbsent(
-            streamDescriptor,
-        ) {
-            AtomicLong()
-        }
+        return recordCounts.computeIfAbsent(streamDescriptor) { AtomicLong() }
     }
 
     @Throws(Exception::class)
     private fun propagateFlushWorkerExceptionIfPresent() {
         if (flushFailure.isFailed()) {
             hasFailed = true
-            throw flushFailure.exception
+            throw flushFailure.getException()
         }
     }
 
@@ -171,7 +161,10 @@ constructor(
                 .withName(message.record?.stream)
         // if stream is not part of list of streams to sync to then throw invalid stream exception
         if (!streamNames.contains(streamDescriptor)) {
-            throwUnrecognizedStream(catalog.getConfiguredCatalog(), message)
+            throwUnrecognizedStream(
+                micronautConfiguredAirbyteCatalog.getConfiguredCatalog(),
+                message
+            )
         }
     }
 

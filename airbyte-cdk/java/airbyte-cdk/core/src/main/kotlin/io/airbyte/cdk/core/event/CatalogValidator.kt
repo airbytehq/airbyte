@@ -26,8 +26,7 @@ private val logger = KotlinLogging.logger {}
 @Requires(property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION)
 class CatalogValidator(
     @Value("\${micronaut.application.name}") private val connectorName: String,
-    @Value("\${airbyte.connector.operation}") private val operationType: String,
-    private val airbyteConfiguredCatalog: MicronautConfiguredAirbyteCatalog,
+    private val micronautConfiguredAirbyteCatalog: MicronautConfiguredAirbyteCatalog,
     private val operation: Operation,
 ) : ApplicationEventListener<StartupEvent> {
     companion object {
@@ -36,7 +35,7 @@ class CatalogValidator(
 
     override fun onApplicationEvent(event: StartupEvent) {
         if (requiresCatalog()) {
-            if (emptyCatalog != airbyteConfiguredCatalog.getConfiguredCatalog()) {
+            if (emptyCatalog != micronautConfiguredAirbyteCatalog.getConfiguredCatalog()) {
                 logger.info { "$connectorName connector configured catalog is valid." }
             } else {
                 throw IllegalArgumentException("Configured catalog is not valid.")

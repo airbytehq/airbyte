@@ -11,27 +11,13 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.Objects
 
-// TODO: (ryankfu) remove this and test with low memory resources to ensure OOM is still not a
-// factor, shouldn't be
-// but weird things have happened
 class PartialAirbyteRecordMessage {
-    @get:JsonProperty("namespace")
-    @set:JsonProperty("namespace")
-    @JsonProperty("namespace")
-    var namespace: String? = null
+    @JsonProperty("namespace") var namespace: String? = null
 
-    @get:JsonProperty("stream")
-    @set:JsonProperty("stream")
-    @JsonProperty("stream")
-    var stream: String? = null
+    @JsonProperty("stream") var stream: String? = null
 
-    @get:JsonProperty("data")
-    @set:JsonProperty("data")
-    @JsonProperty("data")
-    var data: JsonNode? = null
+    @JsonProperty("data") var data: JsonNode? = null
 
-    @get:JsonProperty("emitted_at")
-    @set:JsonProperty("emitted_at")
     @JsonProperty("emitted_at")
     @JsonPropertyDescription("when the data was emitted from the source. epoch in millisecond.")
     var emittedAt: Long = 0
@@ -101,6 +87,7 @@ class PartialAirbyteRecordMessage {
             '}'
     }
 
-    val streamDescriptor: StreamDescriptor
-        get() = StreamDescriptor().withName(stream).withNamespace(namespace)
+    fun getStreamDescriptor(): StreamDescriptor {
+        return StreamDescriptor().withName(stream).withNamespace(namespace)
+    }
 }

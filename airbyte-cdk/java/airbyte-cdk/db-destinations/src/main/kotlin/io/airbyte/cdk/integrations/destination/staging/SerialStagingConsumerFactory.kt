@@ -119,7 +119,7 @@ open class SerialStagingConsumerFactory {
          * [ConfiguredAirbyteStream]
          * @return list of all write configs for each stream in a [ConfiguredAirbyteCatalog]
          */
-        private fun createWriteConfigs(
+        fun createWriteConfigs(
             namingResolver: NamingConventionTransformer,
             config: JsonNode,
             catalog: ConfiguredAirbyteCatalog,

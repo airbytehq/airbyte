@@ -15,11 +15,16 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
+import io.micronaut.scheduling.TaskExecutors
+import io.micronaut.scheduling.TaskScheduler
+import io.micronaut.scheduling.instrument.InstrumentedExecutorService
+import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.time.Duration
+import java.util.Optional
 import java.util.UUID
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
@@ -44,6 +49,8 @@ private val logger = KotlinLogging.logger {}
  * Within a worker thread, a worker best-effort reads a
  * [DestinationFlushFunction.optimalBatchSizeBytes] batch from the in-memory stream and calls
  * [DestinationFlushFunction.flush] on the returned data.
+ *
+ * Track the number of flush workers (and their size) that are currently running for a given stream.
  */
 @SuppressFBWarnings(value = ["NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE"])
 @Singleton
@@ -53,55 +60,60 @@ private val logger = KotlinLogging.logger {}
 )
 @Requires(env = ["destination"])
 class FlushWorkers(
-    private val stateManager: GlobalAsyncStateManager,
+    private val globalAsyncStateManager: GlobalAsyncStateManager,
     private val bufferDequeue: BufferDequeue,
-    private val flusher: DestinationFlushFunction,
-    private val outputRecordCollector: Consumer<AirbyteMessage>,
-    private val workerPool: ExecutorService,
+    private val destinationFlushFunction: DestinationFlushFunction,
+    @Named("outputRecordCollector") private val outputRecordCollector: Consumer<AirbyteMessage>,
+    @Named("destination-async-worker-pool-executor") private val workerPool: ExecutorService,
+    @Named(TaskExecutors.SCHEDULED) private val taskScheduler: TaskScheduler,
+    private val detectStreamToFlush: DetectStreamToFlush,
+    private val runningFlushWorkers: RunningFlushWorkers,
     private val flushFailure: FlushFailure,
+    private val airbyteFileUtils: AirbyteFileUtils,
 ) : AutoCloseable {
-    private val supervisorThread: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
-    private val debugLoop: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-    private val runningFlushWorkers = RunningFlushWorkers()
-    private val detectStreamToFlush: DetectStreamToFlush
+    private lateinit var supervisorFuture: ScheduledFuture<*>
+    private lateinit var debugLoopFuture: ScheduledFuture<*>
 
-    init {
-        detectStreamToFlush =
-            DetectStreamToFlush(
-                bufferDequeue,
-                runningFlushWorkers,
-                flusher,
-            )
+    companion object {
+        private const val SUPERVISOR_INITIAL_DELAY_SECS = 0L
+        private const val SUPERVISOR_PERIOD_SECS = 1L
+        private const val DEBUG_INITIAL_DELAY_SECS = 0L
+        private const val DEBUG_PERIOD_SECS = 60L
+
+        fun humanReadableFlushWorkerId(flushWorkerId: UUID): String {
+            return flushWorkerId.toString().substring(0, 5)
+        }
     }
 
     fun start() {
         logger.info { "Start async buffer supervisor" }
-        supervisorThread.scheduleAtFixedRate(
-            { this.retrieveWork() },
-            SUPERVISOR_INITIAL_DELAY_SECS,
-            SUPERVISOR_PERIOD_SECS,
-            TimeUnit.SECONDS,
-        )
-        debugLoop.scheduleAtFixedRate(
-            { this.printWorkerInfo() },
-            DEBUG_INITIAL_DELAY_SECS,
-            DEBUG_PERIOD_SECS,
-            TimeUnit.SECONDS,
-        )
+        supervisorFuture =
+            taskScheduler.scheduleAtFixedRate(
+                Duration.ofSeconds(SUPERVISOR_INITIAL_DELAY_SECS),
+                Duration.ofSeconds(SUPERVISOR_PERIOD_SECS),
+                this::retrieveWork,
+            )
+        debugLoopFuture =
+            taskScheduler.scheduleAtFixedRate(
+                Duration.ofSeconds(DEBUG_INITIAL_DELAY_SECS),
+                Duration.ofSeconds(DEBUG_PERIOD_SECS),
+                this::printWorkerInfo,
+            )
     }
 
     private fun retrieveWork() {
         try {
             // This will put a new log line every second which is too much, sampling it doesn't
-            // bring much value
+            // bring much value,
             // so it is set to debug
             logger.debug { "Retrieve Work -- Finding queues to flush" }
-            val threadPoolExecutor = workerPool as ThreadPoolExecutor
+            val threadPoolExecutor =
+                (workerPool as InstrumentedExecutorService).target as ThreadPoolExecutor
             var allocatableThreads =
                 threadPoolExecutor.maximumPoolSize - threadPoolExecutor.activeCount
 
             while (allocatableThreads > 0) {
-                val next = detectStreamToFlush.nextStreamToFlush
+                val next: Optional<StreamDescriptor> = detectStreamToFlush.getNextStreamToFlush()
 
                 if (next.isPresent) {
                     val desc = next.get()
@@ -116,7 +128,6 @@ class FlushWorkers(
         } catch (e: Exception) {
             logger.error(e) { "Flush worker error: " }
             flushFailure.propagateException(e)
-            throw RuntimeException(e)
         }
     }
 
@@ -149,14 +160,15 @@ class FlushWorkers(
                         )}) -- Attempting to read from queue namespace: ${desc.namespace}, stream: ${desc.name}."
                 }
 
-                bufferDequeue.take(desc, flusher.optimalBatchSizeBytes).use { batch ->
+                bufferDequeue.take(desc, destinationFlushFunction.optimalBatchSizeBytes).use { batch
+                    ->
                     runningFlushWorkers.registerBatchSize(
                         desc,
                         flushWorkerId,
                         batch.sizeInBytes,
                     )
                     val stateIdToCount =
-                        batch.data
+                        batch.batch
                             .stream()
                             .map(StreamAwareQueue.MessageWithMeta::stateId)
                             .collect(
@@ -168,14 +180,14 @@ class FlushWorkers(
                     logger.info {
                         "Flush Worker (${humanReadableFlushWorkerId(
                                 flushWorkerId,
-                            )}) -- Batch contains: ${batch.data.size} records, ${AirbyteFileUtils.byteCountToDisplaySize(
+                            )}) -- Batch contains: ${batch.batch.size} records, ${airbyteFileUtils.byteCountToDisplaySize(
                                 batch.sizeInBytes,
                             )} bytes."
                     }
 
-                    flusher.flush(
+                    destinationFlushFunction.flush(
                         desc,
-                        batch.data
+                        batch.batch
                             .stream()
                             .map(
                                 StreamAwareQueue.MessageWithMeta::message,
@@ -207,17 +219,22 @@ class FlushWorkers(
     @Throws(Exception::class)
     override fun close() {
         logger.info { "Closing flush workers -- waiting for all buffers to flush" }
-        detectStreamToFlush.isClosing.set(true)
+        detectStreamToFlush.flushAllStreams.set(true)
         // wait for all buffers to be flushed.
         while (true) {
             val streamDescriptorToRemainingRecords =
-                bufferDequeue.bufferedStreams
+                bufferDequeue
+                    .getBufferedStreams()
                     .stream()
                     .collect(
                         Collectors.toMap(
                             { desc: StreamDescriptor -> desc },
-                            { desc: StreamDescriptor ->
-                                bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()
+                            { desc: StreamDescriptor? ->
+                                bufferDequeue
+                                    .getQueueSizeInRecords(
+                                        desc!!,
+                                    )
+                                    .orElseThrow()
                             },
                         ),
                     )
@@ -256,12 +273,10 @@ class FlushWorkers(
         }
         logger.info { "Closing flush workers -- all buffers flushed" }
 
-        // before shutting down the supervisor, flush all state.
-        stateManager.flushStates(outputRecordCollector)
-        supervisorThread.shutdown()
-        while (!supervisorThread.awaitTermination(5L, TimeUnit.MINUTES)) {
-            logger.info { "Waiting for flush worker supervisor to shut down" }
-        }
+        // before shutting, flush all state.
+        globalAsyncStateManager.flushStates(outputRecordCollector)
+
+        supervisorFuture.cancel(true)
         logger.info { "Closing flush workers -- supervisor shut down" }
 
         logger.info { "Closing flush workers -- Starting worker pool shutdown.." }
@@ -271,17 +286,6 @@ class FlushWorkers(
         }
         logger.info { "Closing flush workers  -- workers shut down" }
 
-        debugLoop.shutdownNow()
-    }
-
-    companion object {
-        private const val SUPERVISOR_INITIAL_DELAY_SECS = 0L
-        private const val SUPERVISOR_PERIOD_SECS = 1L
-        private const val DEBUG_INITIAL_DELAY_SECS = 0L
-        private const val DEBUG_PERIOD_SECS = 60L
-
-        private fun humanReadableFlushWorkerId(flushWorkerId: UUID): String {
-            return flushWorkerId.toString().substring(0, 5)
-        }
+        debugLoopFuture.cancel(true)
     }
 }
