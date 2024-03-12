@@ -109,13 +109,10 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
     final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
 
-    final String offset_lsn = offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : null;
-    //final String offset_lsn = offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn")) : null;
-    if (offset_lsn == null) {
+    final String stateOffsetLsnCommit = offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : null;
+    if (stateOffsetLsnCommit == null) {
       return false;
     }
-    //final String event_lsn = String.valueOf(event.eventValueAsJson().get("source").get("lsn"));
-    //return Long.parseLong(event_lsn) > Long.parseLong(offset_lsn);
 
     try {
       ObjectMapper objectMapper = new ObjectMapper();
@@ -128,7 +125,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
       if (eventLsnCommit == null) {
         return false;
       }
-      return Long.parseLong(eventLsnCommit) > Long.parseLong(offset_lsn);
+      return Long.parseLong(eventLsnCommit) > Long.parseLong(stateOffsetLsnCommit);
     } catch (Exception e) {
       LOGGER.info("Encountered an error while attempting to parse event's LSN sequence {}", e.getCause());
       return false;

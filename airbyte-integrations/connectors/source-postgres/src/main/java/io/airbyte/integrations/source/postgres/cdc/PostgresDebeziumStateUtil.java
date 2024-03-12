@@ -201,7 +201,6 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
 
     final Map<String, ?> offset = previousOffset.getOffset();
 
-    // TODO : Should we return empty if LAST_COMMIT_LSN_KEY is null?
     if (offset.containsKey(LAST_COMMIT_LSN_KEY)) {
       return OptionalLong.of((long) offset.get(LAST_COMMIT_LSN_KEY));
     } else if (offset.containsKey(LSN_KEY)) {
