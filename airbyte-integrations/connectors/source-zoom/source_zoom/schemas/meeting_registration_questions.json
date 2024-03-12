@@ -13,17 +13,17 @@
           "answers": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           },
           "required": {
             "type": "boolean"
           },
           "title": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "type": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
@@ -34,7 +34,7 @@
         "type": "object",
         "properties": {
           "field_name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "required": {
             "type": "boolean"

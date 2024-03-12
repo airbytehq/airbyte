@@ -2,40 +2,40 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "assistant_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "host_email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "host_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
       "type": "number"
     },
     "uuid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "agenda": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "duration": {
       "type": "number"
     },
     "encrypted_password": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "h323_password": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "join_url": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "chat_join_url": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "occurrences": {
       "type": "array",
@@ -46,34 +46,34 @@
             "type": "number"
           },
           "occurrence_id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "start_time": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "status": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "password": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "pmi": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "pre_schedule": {
       "type": "boolean"
     },
     "pstn_password": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "recurrence": {
       "type": "object",
       "properties": {
         "end_date_time": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "end_times": {
           "type": "number"
@@ -94,7 +94,7 @@
           "type": "number"
         },
         "weekly_days": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -105,7 +105,7 @@
           "type": "boolean"
         },
         "alternative_hosts": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "alternative_hosts_email_notification": {
           "type": "boolean"
@@ -122,31 +122,31 @@
             "approved_list": {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             },
             "denied_list": {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             },
             "enable": {
               "type": "boolean"
             },
             "method": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "audio": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "audio_conference_info": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "authentication_domains": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "authentication_exception": {
           "type": "array",
@@ -154,25 +154,25 @@
             "type": "object",
             "properties": {
               "email": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "join_url": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }
         },
         "authentication_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "authentication_option": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "auto_recording": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "breakout_room": {
           "type": "object",
@@ -186,12 +186,12 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "participants": {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     }
                   }
                 }
@@ -209,10 +209,10 @@
           "type": "boolean"
         },
         "contact_email": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "contact_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "custom_keys": {
           "type": "array",
@@ -220,10 +220,10 @@
             "type": "object",
             "properties": {
               "key": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "value": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }
@@ -241,13 +241,13 @@
           "type": "boolean"
         },
         "encryption_type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "enforce_login": {
           "type": "boolean"
         },
         "enforce_login_domains": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "focus_mode": {
           "type": "boolean"
@@ -255,7 +255,7 @@
         "global_dial_in_countries": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
         "global_dial_in_numbers": {
@@ -264,19 +264,19 @@
             "type": "object",
             "properties": {
               "city": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "country": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "country_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "number": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "type": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }
@@ -305,10 +305,10 @@
                 "type": "object",
                 "properties": {
                   "email": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "languages": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   }
                 }
               }
@@ -333,13 +333,13 @@
             "type": "object",
             "properties": {
               "resource_type": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "resource_id": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "permission_level": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }
@@ -413,7 +413,7 @@
               "type": "boolean"
             },
             "channel_id": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
@@ -426,7 +426,7 @@
       }
     },
     "registration_url": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "resources": {
       "type": "array",
@@ -434,31 +434,31 @@
         "type": "object",
         "properties": {
           "resource_type": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "resource_id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "permission_level": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "start_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "start_url": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "timezone": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "topic": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "tracking_fields": {
       "type": "array",
@@ -466,10 +466,10 @@
         "type": "object",
         "properties": {
           "field": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "value": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "visible": {
             "type": "boolean"

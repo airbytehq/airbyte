@@ -3,13 +3,13 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "meeting_id": {
       "type": "number"
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "anonymous": {
       "type": "boolean"
@@ -34,14 +34,14 @@
           "answers": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           },
           "case_sensitive": {
             "type": "boolean"
           },
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "prompts": {
             "type": "array",
@@ -49,25 +49,25 @@
               "type": "object",
               "properties": {
                 "prompt_question": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "prompt_right_answers": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   }
                 }
               }              
             }
           },
           "rating_max_label": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "rating_max_value": {
             "type": "number"
           },
           "rating_min_label": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "rating_min_value": {
             "type": "number"
@@ -75,20 +75,20 @@
           "right_answers": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           },
           "show_as_dropdown": {
             "type": "boolean"
           },
           "type": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "title": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

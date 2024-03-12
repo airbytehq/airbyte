@@ -3,28 +3,28 @@
   "type": "object",
   "properties": {
     "host_email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "host_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
       "type": "number"
     },
     "uuid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "agenda": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "duration": {
       "type": "number"
     },
     "join_url": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "occurrences": {
       "type": "array",
@@ -35,25 +35,25 @@
             "type": "number"
           },
           "occurrence_id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "start_time": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "status": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "password": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "recurrence": {
       "type": "object",
       "properties": {
         "end_date_time": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "end_times": {
           "type": "number"
@@ -74,7 +74,7 @@
           "type": "number"
         },
         "weekly_days": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -85,7 +85,7 @@
           "type": "boolean"
         },
         "alternative_hosts": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "alternative_host_update_polls": {
           "type": "boolean"
@@ -105,31 +105,31 @@
           }
         },
         "audio": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "authentication_domains": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "authentication_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "authentication_option": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "auto_recording": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "close_registration": {
           "type": "boolean"
         },
         "contact_email": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "contact_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "email_language": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "follow_up_absentees_email_notification": {
           "type": "object",
@@ -156,7 +156,7 @@
         "global_dial_in_countries": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
         "hd_video": {
@@ -180,10 +180,10 @@
                 "type": "object",
                 "properties": {
                   "email": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "languages": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   }
                 }
               }
@@ -227,7 +227,7 @@
               "type": "boolean"
             },
             "answer_questions": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "attendees_can_comment": {
               "type": "boolean"
@@ -239,7 +239,7 @@
               "type": "boolean"
             },
             "auto_reply_text": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "enable": {
               "type": "boolean"
@@ -265,7 +265,7 @@
           "type": "boolean"
         },
         "survey_url": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "enable_session_branding": {
           "type": "boolean"
@@ -273,16 +273,16 @@
       }
     },
     "start_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "start_url": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "timezone": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "topic": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "tracking_fields": {
       "type": "array",
@@ -290,10 +290,10 @@
         "type": "object",
         "properties": {
           "field": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "value": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
@@ -305,7 +305,7 @@
       "type": "boolean"
     },
     "record_file_id": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

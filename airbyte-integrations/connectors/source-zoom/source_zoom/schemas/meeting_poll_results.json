@@ -3,22 +3,22 @@
   "type": "object",
   "properties": {
     "meeting_uuid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "meeting_id": {
       "type": "integer"
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "first_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "last_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "question_details": {
       "type": "array",
@@ -26,16 +26,16 @@
         "type": "object",
         "properties": {
           "answer": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "date_time": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "polling_id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "question": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }        
       }

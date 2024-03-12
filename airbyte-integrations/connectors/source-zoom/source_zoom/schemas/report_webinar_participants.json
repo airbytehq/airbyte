@@ -3,10 +3,10 @@
   "type": "object",
   "properties": {
     "webinar_uuid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customer_key": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "duration": {
       "type": "number"
@@ -15,28 +15,28 @@
       "type": "boolean"
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "join_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "leave_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "registrant_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "user_email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "user_id": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

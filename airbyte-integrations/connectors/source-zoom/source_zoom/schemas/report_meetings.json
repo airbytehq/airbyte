@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "meeting_uuid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "custom_keys": {
       "type": "array",
@@ -11,25 +11,25 @@
         "type": "object",
         "properties": {
           "key": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "value": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "dept": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "duration": {
       "type": "number"
     },
     "end_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "host_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
       "type": "number"
@@ -38,10 +38,10 @@
       "type": "number"
     },
     "start_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "topic": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_minutes": {
       "type": "number"
@@ -52,10 +52,10 @@
         "type": "object",
         "properties": {
           "field": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "value": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
@@ -64,13 +64,13 @@
       "type": "number"
     },
     "user_email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "user_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "uuid": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }
