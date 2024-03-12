@@ -2,35 +2,12 @@
   "streams": [
     {
       "stream": {
-        "name": "campaigns",
+        "name": "advertiser_reports",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["column_name"]
+        "supported_sync_modes": ["incremental"],
+        "sync_mode": "incremental"
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "creatives",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["column_name"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "targets",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["column_name"]
-      },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     }
   ]
