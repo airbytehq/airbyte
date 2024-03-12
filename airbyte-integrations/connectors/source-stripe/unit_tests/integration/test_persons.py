@@ -575,7 +575,7 @@ class PersonsTest(TestCase):
             state=state,
         )
 
-        assert len(actual_messages.errors) == 1
+        assert len(actual_messages.errors) == 2
 
     @HttpMocker()
     def test_server_error_parent_stream_accounts(self, http_mocker: HttpMocker) -> None:
