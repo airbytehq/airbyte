@@ -8,6 +8,18 @@ pip install ".[dev,tests]"
 pip install ".[main]"
 echo "Done installing dependencies."
 
+# more dev dependencies! from build.gradle
+# TODO: move these to setup.py/poetry
+pip install pip==23.2.1
+pip install mccabe==0.6.1
+# https://github.com/csachs/pyproject-flake8/issues/13
+pip install flake8==4.0.1
+# flake8 doesn't support pyproject.toml files
+# and thus there is the wrapper "pyproject-flake8" for this
+pip install pyproject-flake8==0.0.1a2
+pip install pytest==6.2.5
+pip install coverage[toml]==6.3.1
+
 # flakeCheck
 echo "Running flake check..."
 pflake8 --config pyproject.toml ./
