@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
@@ -99,10 +99,18 @@ class FreshdeskTicketsIncrementalSync(DatetimeBasedCursor):
         if type(next_page_token) == str:
             self.updated_slice = next_page_token
 
-        if self.updated_slice:
-            stream_slice[self.partition_field_start.eval(self.config)] = self.updated_slice
+        # _get_request_options is modified to return updated cursor filter if exist
+        option_type = RequestOptionType.request_parameter
+        options: MutableMapping[str, Any] = {}
+        if not stream_slice:
+            return options
 
-        return self._get_request_options(RequestOptionType.request_parameter, stream_slice)
+        if self.start_time_option and self.start_time_option.inject_into == option_type:
+            start_time = stream_slice.get(self._partition_field_start.eval(self.config)) if not self.updated_slice else self.updated_slice
+            options[self.start_time_option.field_name.eval(config=self.config)] = start_time  # type: ignore # field_name is always casted to an interpolated string
+        if self.end_time_option and self.end_time_option.inject_into == option_type:
+            options[self.end_time_option.field_name.eval(config=self.config)] = stream_slice.get(self._partition_field_end.eval(self.config))  # type: ignore # field_name is always casted to an interpolated string
+        return options
 
 
 @dataclass
@@ -115,7 +123,7 @@ class FreshdeskTicketsPaginationStrategy(PageIncrement):
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         # Stop paginating when there are fewer records than the page size or the current page has no records, or maximum page number is hit
-        if (self.page_size and len(last_records) < self.page_size) or len(last_records) == 0:
+        if (self._page_size and len(last_records) < self._page_size) or len(last_records) == 0:
             return None
         elif self._page >= self.PAGE_LIMIT:
             # reset page count as cursor parameter will be updated in the stream slicer

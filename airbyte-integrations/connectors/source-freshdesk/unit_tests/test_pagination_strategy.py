@@ -30,8 +30,8 @@ class TestFreshdeskTicketsPaginationStrategy:
             ),  # Page limit is hit
         ],
     )
-    def test_returns_none_when_fewer_records_than_page_size(self, response, current_page, last_records, expected):
-        pagination_strategy = FreshdeskTicketsPaginationStrategy(page_size=4, parameters={})
+    def test_returns_none_when_fewer_records_than_page_size(self, response, current_page, last_records, expected, config):
+        pagination_strategy = FreshdeskTicketsPaginationStrategy(config=config, page_size=4, parameters={})
         pagination_strategy.PAGE_LIMIT = 5
         pagination_strategy._page = current_page
         assert pagination_strategy.next_page_token(response, last_records) == expected

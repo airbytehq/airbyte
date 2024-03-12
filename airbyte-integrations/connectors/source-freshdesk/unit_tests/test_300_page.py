@@ -124,7 +124,7 @@ class Test300PageLimit:
         # in this test case values from: 1 - 4, assuming we want to switch state on this page.
         test_stream.retriever.paginator.pagination_strategy.PAGE_LIMIT = 2
         # This parameter mocks the "per_page" parameter in the API Call
-        test_stream.retriever.paginator.pagination_strategy.page_size = 1
+        test_stream.retriever.paginator.pagination_strategy._page_size = 1
 
         # Mocking Request
         for response in responses:
