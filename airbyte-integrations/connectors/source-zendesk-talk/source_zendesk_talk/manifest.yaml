@@ -1423,10 +1423,6 @@ streams:
             type:
               - string
               - "null"
-          greeting_id:
-            type:
-              - integer
-              - "null"
           menus:
             type:
               - array
@@ -1441,6 +1437,10 @@ streams:
                 name:
                   type:
                     - string
+                    - "null"
+                greeting_id:
+                  type:
+                    - integer
                     - "null"
                 routes:
                   type:
