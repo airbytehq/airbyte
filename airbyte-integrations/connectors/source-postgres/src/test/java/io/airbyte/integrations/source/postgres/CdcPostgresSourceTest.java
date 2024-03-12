@@ -871,7 +871,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         .toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    // We expect only one cdc state message, as all the records are inserted in a single transaction. Since
+    // We expect only one cdc state message, as all the records are inserted in a single transaction.
+    // Since
     // lsn_commit only increases with a new transaction, we expect only one state message.
     assertTrue(stateMessagesCDC.size() == 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
@@ -912,7 +913,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    // We expect only one cdc state message, as all the records are inserted in a single transaction. Since
+    // We expect only one cdc state message, as all the records are inserted in a single transaction.
+    // Since
     // lsn_commit only increases with a new transaction, we expect only one state message.
     assertTrue(stateMessagesCDC.size() == 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
