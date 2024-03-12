@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "survey_id": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "thank_you_message": {
+      "type": ["string", "null"]
+    },
+    "thank_you_page": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "properties": {
+        "is_enabled": {
+          "type": ["boolean", "null"]
+        },
+        "message": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "disqualification_message": {
+      "type": ["string", "null"]
+    },
+    "disqualification_url": {
+      "type": ["string", "null"]
+    },
+    "close_date": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "closed_page_message": {
+      "type": ["string", "null"]
+    },
+    "redirect_url": {
+      "type": ["string", "null"]
+    },
+    "display_survey_results": {
+      "type": ["boolean", "null"]
+    },
+    "edit_response_type": {
+      "type": ["string", "null"]
+    },
+    "anonymous_type": {
+      "type": ["string", "null"]
+    },
+    "allow_multiple_responses": {
+      "type": ["boolean", "null"]
+    },
+    "date_modified": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "sender_email": {
+      "type": ["string", "null"]
+    },
+    "password_enabled": {
+      "type": ["boolean", "null"]
+    },
+    "response_limit": {
+      "type": ["number", "null"]
+    },
+    "redirect_type": {
+      "type": ["string", "null"]
+    },
+    "respondent_authentication": {
+      "type": ["boolean", "null"]
+    },
+    "href": {
+      "type": ["string", "null"]
+    }
+  }
+}

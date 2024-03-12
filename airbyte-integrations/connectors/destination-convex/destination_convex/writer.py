@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import time
@@ -20,10 +20,10 @@ class ConvexWriter:
     def __init__(self, client: ConvexClient):
         self.client = client
 
-    def replace_streams(self, table_names: Mapping[str, str]) -> None:
+    def delete_tables(self, table_names: List[str]) -> None:
         """Deletes all the records belonging to the input stream"""
         if len(table_names) > 0:
-            self.client.replace_tables(table_names)
+            self.client.delete(table_names)
 
     def add_indexes(self, indexes: Mapping[str, List[List[str]]]) -> None:
         self.client.add_primary_key_indexes(indexes)

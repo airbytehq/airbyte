@@ -1,132 +1,133 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "properties": {
     "activeWorkspace": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customFields": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "defaultWorkspace": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "memberships": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "profilePicture": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "settings": {
       "properties": {
         "alerts": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "approval": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "collapseAllProjectLists": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "dashboardPinToTop": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "dashboardSelection": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "dashboardViewType": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "dateFormat": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "groupSimilarEntriesDisabled": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "isCompactViewOn": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "lang": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "longRunning": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "multiFactorEnabled": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "myStartOfDay": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "onboarding": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "projectListCollapse": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "projectPickerTaskFilter": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "pto": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "reminders": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "scheduledReports": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "scheduling": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "sendNewsletter": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "showOnlyWorkingDays": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "summaryReportSettings": {
           "properties": {
             "group": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "subgroup": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         },
         "theme": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "timeFormat": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "timeTrackingManual": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "timeZone": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "weekStart": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "weeklyUpdates": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
   "type": "object"

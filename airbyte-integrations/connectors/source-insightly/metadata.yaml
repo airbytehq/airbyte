@@ -1,0 +1,32 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-insightly
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 38f84314-fe6a-4257-97be-a8dcd942d693
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-insightly
+  githubIssueLabel: source-insightly
+  icon: insightly.svg
+  license: MIT
+  name: Insightly
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/insightly
+  tags:
+    - language:python
+    - cdk:low-code
+  ab_internal:
+    sl: 100
+    ql: 100
+metadataSpecVersion: "1.0"

@@ -5,6 +5,9 @@
     "author": {
       "type": ["null", "string"]
     },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
     "body_html": {
       "body_html": ["null", "string"]
     },
@@ -36,6 +39,16 @@
       "format": "date-time"
     },
     "shop_url": {
+      "type": ["null", "string"]
+    },
+    "deleted_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deleted_message": {
+      "type": ["null", "string"]
+    },
+    "deleted_description": {
       "type": ["null", "string"]
     }
   }

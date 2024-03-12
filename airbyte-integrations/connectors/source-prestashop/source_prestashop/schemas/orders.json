@@ -1,146 +1,146 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_address_delivery": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_address_invoice": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_cart": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_currency": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_lang": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_customer": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_carrier": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "current_state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "module": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoice_number": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoice_date": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "delivery_number": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "delivery_date": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "valid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "date_upd": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "shipping_number": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_shop_group": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_shop": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "secure_key": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "payment": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "recyclable": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "gift": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "gift_message": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "mobile_theme": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_discounts": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_discounts_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_discounts_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_paid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_paid_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_paid_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_paid_real": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_products": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_products_wt": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_shipping": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_shipping_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_shipping_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "carrier_tax_rate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_wrapping": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_wrapping_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_wrapping_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "round_mode": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "round_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "conversion_rate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "reference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "associations": {
       "type": "object",
@@ -151,43 +151,43 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "product_id": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "product_attribute_id": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "product_quantity": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "product_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "product_reference": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "product_ean13": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "product_isbn": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "product_upc": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "product_price": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "id_customization": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "unit_price_tax_incl": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "unit_price_tax_excl": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }

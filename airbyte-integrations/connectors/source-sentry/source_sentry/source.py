@@ -17,11 +17,13 @@ from .streams import Events, Issues, ProjectDetail, Projects, Releases
 class SourceSentry(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
-            projects_stream = Projects(
+            stream = ProjectDetail(
                 authenticator=TokenAuthenticator(token=config["auth_token"]),
                 hostname=config.get("hostname"),
+                organization=config.get("organization"),
+                project=config.get("project"),
             )
-            next(projects_stream.read_records(sync_mode=SyncMode.full_refresh))
+            next(stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
             return False, e

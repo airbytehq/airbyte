@@ -325,6 +325,90 @@
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "activity_feed",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "approvals",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "disciplines",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "schools",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "email_templates",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "offices",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "user_roles",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

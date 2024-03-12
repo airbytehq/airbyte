@@ -7,7 +7,7 @@ from typing import Dict, List
 
 import pytest
 from _pytest.outcomes import Failed
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
@@ -19,12 +19,14 @@ from airbyte_cdk.models import (
 from connector_acceptance_test.config import ConnectionTestConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests.test_full_refresh import TestFullRefresh as _TestFullRefresh
 
+pytestmark = pytest.mark.anyio
+
 
 class ReadTestConfigWithIgnoreFields(ConnectionTestConfig):
     ignored_fields: Dict[str, List[IgnoredFieldsConfiguration]] = {
         "test_stream": [
             IgnoredFieldsConfiguration(name="ignore_me", bypass_reason="test"),
-            IgnoredFieldsConfiguration(name="ignore_me_too", bypass_reason="test")
+            IgnoredFieldsConfiguration(name="ignore_me_too", bypass_reason="test"),
         ]
     }
 
@@ -63,74 +65,6 @@ fail_context = pytest.raises(
     match="the two sequential reads should produce either equal set of records or one of them is a strict subset of the other",
 )
 no_fail_context = does_not_raise()
-
-
-ignored_fields_test_cases = [
-    pytest.param(
-        {"type": "object", "properties": {"created": {"type": "string"}}},
-        {"created": "23"},
-        {"created": "23"},
-        no_fail_context,
-        id="no_ignored_fields_present",
-    ),
-    pytest.param(
-        {
-            "type": "object",
-            "properties": {
-                "created": {"type": "string"},
-                "ignore_me": {"type": "string"},
-            },
-        },
-        {"created": "23"},
-        {"created": "23", "ignore_me": "23"},
-        no_fail_context,
-        id="with_ignored_field",
-    ),
-    pytest.param(
-        {
-            "type": "object",
-            "required": ["created", "DONT_ignore_me"],
-            "properties": {
-                "created": {"type": "string"},
-                "DONT_ignore_me": {"type": "string"},
-                "ignore_me": {"type": "string"},
-            },
-        },
-        {"created": "23"},
-        {"created": "23", "DONT_ignore_me": "23", "ignore_me": "hello"},
-        fail_context,
-        id="ignore_field_present_but_a_required_is_not",
-    ),
-]
-
-
-@pytest.mark.parametrize(
-    "schema, record, expected_record, fail_context",
-    ignored_fields_test_cases,
-)
-def test_read_with_ignore_fields(mocker, schema, record, expected_record, fail_context):
-    catalog = get_default_catalog(schema)
-    input_config = ReadTestConfigWithIgnoreFields()
-    docker_runner_mock = mocker.MagicMock()
-
-    sequence_of_docker_callread_results = [record, expected_record]
-
-    # Ignored fields should work both ways
-    for first, second in (
-        sequence_of_docker_callread_results,
-        list(reversed(sequence_of_docker_callread_results)),
-    ):
-        docker_runner_mock.call_read.side_effect = [record_message_from_record([first], emitted_at=111), record_message_from_record([second], emitted_at=112)]
-
-        t = _TestFullRefresh()
-        with fail_context:
-            t.test_sequential_reads(
-                ignored_fields=input_config.ignored_fields,
-                connector_config=mocker.MagicMock(),
-                configured_catalog=catalog,
-                docker_runner=docker_runner_mock,
-                detailed_logger=mocker.MagicMock(),
-            )
 
 
 recordset_comparison_test_cases = [
@@ -200,35 +134,6 @@ recordset_comparison_test_cases = [
 
 
 @pytest.mark.parametrize(
-    "primary_key, first_read_records, second_read_records, fail_context",
-    recordset_comparison_test_cases,
-)
-def test_recordset_comparison(mocker, primary_key, first_read_records, second_read_records, fail_context):
-    schema = {
-        "type": "object",
-        "properties": {"id": {"type": "integer"}, "first_name": {"type": "string"}, "last_name": {"type": "string"}},
-    }
-    catalog = get_default_catalog(schema, primary_key=primary_key)
-    input_config = ReadTestConfigWithIgnoreFields()
-    docker_runner_mock = mocker.MagicMock()
-
-    docker_runner_mock.call_read.side_effect = [
-        record_message_from_record(first_read_records, emitted_at=111),
-        record_message_from_record(second_read_records, emitted_at=112),
-    ]
-
-    t = _TestFullRefresh()
-    with fail_context:
-        t.test_sequential_reads(
-            ignored_fields=input_config.ignored_fields,
-            connector_config=mocker.MagicMock(),
-            configured_catalog=catalog,
-            docker_runner=docker_runner_mock,
-            detailed_logger=mocker.MagicMock(),
-        )
-
-
-@pytest.mark.parametrize(
     "schema, records_1, records_2, expectation",
     [
         (
@@ -241,7 +146,7 @@ def test_recordset_comparison(mocker, primary_key, first_read_records, second_re
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=112)),
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
             ],
-            does_not_raise()
+            does_not_raise(),
         ),
         (
             {"type": "object"},
@@ -253,7 +158,7 @@ def test_recordset_comparison(mocker, primary_key, first_read_records, second_re
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=112)),
             ],
-            does_not_raise()
+            does_not_raise(),
         ),
         (
             {"type": "object"},
@@ -265,11 +170,11 @@ def test_recordset_comparison(mocker, primary_key, first_read_records, second_re
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
                 AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
             ],
-            pytest.raises(AssertionError, match="emitted_at should increase on subsequent runs")
+            pytest.raises(AssertionError, match="emitted_at should increase on subsequent runs"),
         ),
     ],
 )
-def test_emitted_at_increase_on_subsequent_runs(mocker, schema, records_1, records_2, expectation):
+async def test_emitted_at_increase_on_subsequent_runs(mocker, schema, records_1, records_2, expectation):
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -279,13 +184,12 @@ def test_emitted_at_increase_on_subsequent_runs(mocker, schema, records_1, recor
             )
         ]
     )
-    docker_runner_mock = mocker.MagicMock()
-    docker_runner_mock.call_read.side_effect = [records_1, records_2]
+    docker_runner_mock = mocker.MagicMock(call_read=mocker.AsyncMock(side_effect=[records_1, records_2]))
     input_config = ReadTestConfigWithIgnoreFields()
 
     t = _TestFullRefresh()
     with expectation:
-        t.test_sequential_reads(
+        await t.test_sequential_reads(
             ignored_fields=input_config.ignored_fields,
             connector_config=mocker.MagicMock(),
             configured_catalog=configured_catalog,

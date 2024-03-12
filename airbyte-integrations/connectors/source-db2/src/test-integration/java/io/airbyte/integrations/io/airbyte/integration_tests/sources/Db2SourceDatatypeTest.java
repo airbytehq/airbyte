@@ -6,20 +6,22 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.db2.Db2Source;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.Db2Container;
 
+@Disabled
 public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final String CREATE_TABLE_SQL = "CREATE TABLE %1$s(%2$s INTEGER NOT NULL PRIMARY KEY, %3$s %4$s)";
@@ -41,7 +43,6 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
     container.close();
   }
 

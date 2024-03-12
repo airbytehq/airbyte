@@ -15,7 +15,14 @@
       "type": ["null", "integer"]
     },
     "TimePeriod": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "type": ["null", "number"]
+    },
+    "TopImpressionRatePercent": {
+      "type": ["null", "number"]
     },
     "CurrencyCode": {
       "type": ["null", "string"]
@@ -42,6 +49,18 @@
       "type": ["null", "string"]
     },
     "DeliveredMatchType": {
+      "type": ["null", "string"]
+    },
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "CampaignName": {
+      "type": ["null", "string"]
+    },
+    "CampaignType": {
+      "type": ["null", "string"]
+    },
+    "AdGroupName": {
       "type": ["null", "string"]
     },
     "Impressions": {

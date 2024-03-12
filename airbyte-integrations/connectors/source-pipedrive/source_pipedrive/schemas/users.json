@@ -33,9 +33,7 @@
       "type": ["null", "string"]
     },
     "modified": {
-      "type": ["null", "string"],
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "type": ["null", "string"]
     },
     "signup_flow_variation": {
       "type": ["null", "string"]

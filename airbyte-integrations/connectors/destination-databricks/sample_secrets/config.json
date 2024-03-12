@@ -6,7 +6,7 @@
   "databricks_personal_access_token": "dapi0123456789abcdefghij0123456789AB",
   "database_schema": "public",
   "data_source": {
-    "data_source_type": "S3",
+    "data_source_type": "S3_STORAGE",
     "s3_bucket_name": "required",
     "s3_bucket_path": "required",
     "s3_bucket_region": "required",

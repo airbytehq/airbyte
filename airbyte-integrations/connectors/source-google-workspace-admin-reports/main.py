@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_google_workspace_admin_reports import SourceGoogleWorkspaceAdminReports
+from source_google_workspace_admin_reports.run import run
 
 if __name__ == "__main__":
-    source = SourceGoogleWorkspaceAdminReports()
-    launch(source, sys.argv[1:])
+    run()

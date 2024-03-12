@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": "string"
@@ -10,6 +11,24 @@
     },
     "last_name": {
       "type": ["null", "string"]
+    },
+    "birth_country": {
+      "type": ["null", "string"]
+    },
+    "birthdate": {
+      "type": ["null", "string"]
+    },
+    "nationality": {
+      "type": ["null", "string"]
+    },
+    "residence_country": {
+      "type": ["null", "string"]
+    },
+    "role": {
+      "type": ["null", "string"]
+    },
+    "ubo": {
+      "type": ["null", "boolean"]
     }
   }
 }

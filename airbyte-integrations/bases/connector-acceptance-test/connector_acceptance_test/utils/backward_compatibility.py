@@ -4,9 +4,10 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
+from typing import Any, Dict
 
 import jsonschema
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_protocol.models import ConnectorSpecification
 from connector_acceptance_test.utils import SecretDict
 from deepdiff import DeepDiff
 from hypothesis import HealthCheck, Verbosity, given, settings
@@ -50,14 +51,15 @@ class BaseDiffChecker(ABC):
     def assert_is_backward_compatible(self):  # pragma: no cover
         pass
 
-    def check_if_value_of_type_field_changed(self, diff: DeepDiff):
-        """Check if a type was changed on a property"""
-        # Detect type value change in case type field is declared as a string (e.g "str" -> "int"):
-        changes_on_property_type = [
-            change for change in diff.get("values_changed", []) if {"properties", "type"}.issubset(change.path(output_format="list"))
-        ]
-        if changes_on_property_type:
-            self._raise_error("The'type' field value was changed.", diff)
+    def check_if_value_of_a_field_changed(self, diff: DeepDiff, field: str):
+        """
+        Check if a type / airbyte_type / format was changed on a property.
+        Detect field value change: "str" -> "int" / "date-time" -> "date" / "timestamp_without_timezone" -> "timestamp_with_timezone"
+        """
+        diffs = diff.get("values_changed", set()) | diff.get("dictionary_item_added", set()) | diff.get("dictionary_item_removed", set())
+        field_value_changes = [change for change in diffs if {"properties", field}.issubset(change.path(output_format="list"))]
+        if field_value_changes:
+            self._raise_error(f"The '{field}' field value was changed.", diff)
 
     def check_if_new_type_was_added(self, diff: DeepDiff):  # pragma: no cover
         """Detect type value added to type list if new type value is not None (e.g ["str"] -> ["str", "int"])"""
@@ -128,7 +130,9 @@ class SpecDiffChecker(BaseDiffChecker):
     def assert_is_backward_compatible(self):
         self.check_if_declared_new_required_field(self.connection_specification_diff)
         self.check_if_added_a_new_required_property(self.connection_specification_diff)
-        self.check_if_value_of_type_field_changed(self.connection_specification_diff)
+        self.check_if_value_of_a_field_changed(self.connection_specification_diff, "type")
+        self.check_if_value_of_a_field_changed(self.connection_specification_diff, "airbyte_type")
+        self.check_if_value_of_a_field_changed(self.connection_specification_diff, "format")
         # self.check_if_new_type_was_added(self.connection_specification_diff) We want to allow type expansion atm
         self.check_if_type_of_type_field_changed(self.connection_specification_diff, allow_type_widening=True)
         self.check_if_field_was_made_not_nullable(self.connection_specification_diff)
@@ -180,17 +184,48 @@ class SpecDiffChecker(BaseDiffChecker):
             self._raise_error("An 'enum' field was declared on an existing property", diff)
 
 
+def remove_date_time_pattern_format(schema: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    This function traverses a JSON schema and removes the 'format' field for properties
+    that are of 'date-time' format and have a 'pattern' field.
+
+    The 'pattern' is often more restrictive than the 'date-time' format, and Hypothesis can't natively generate
+    date-times that match a specific pattern. Therefore, in this case, we've opted to
+    remove the 'date-time' format since the 'pattern' is more restrictive and more likely
+    to cause a breaking change if not adhered to.
+
+    On the otherside we also validate the output of hypothesis against the new schema to ensure
+    that the generated data matches the new schema. In this case we will catch whether or not the
+    date-time format is still being adhered to.
+
+    Args:
+        schema (Dict[str, Any]): The JSON schema to be processed.
+
+    Returns:
+        Dict[str, Any]: The processed JSON schema where 'date-time' format has been removed
+                        for properties that have a 'pattern'.
+    """
+    if isinstance(schema, dict):
+        for key, value in schema.items():
+            if isinstance(value, dict):
+                if value.get("format") == "date-time" and "pattern" in value:
+                    del value["format"]
+                remove_date_time_pattern_format(value)
+    return schema
+
+
 def validate_previous_configs(
     previous_connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, number_of_configs_to_generate=100
 ):
     """Use hypothesis and hypothesis-jsonschema to run property based testing:
     1. Generate fake previous config with the previous connector specification json schema.
     2. Validate a fake previous config against the actual connector specification json schema."""
+    prev_con_spec = previous_connector_spec.dict()["connectionSpecification"]
 
-    @given(from_schema(previous_connector_spec.dict()["connectionSpecification"]))
+    @given(from_schema(remove_date_time_pattern_format(prev_con_spec)))
     @settings(
         max_examples=number_of_configs_to_generate,
-        verbosity=Verbosity.quiet,
+        verbosity=Verbosity.verbose,
         suppress_health_check=(HealthCheck.too_slow, HealthCheck.filter_too_much),
     )
     def check_fake_previous_config_against_actual_spec(fake_previous_config):
@@ -225,9 +260,23 @@ class CatalogDiffChecker(BaseDiffChecker):
 
     def assert_is_backward_compatible(self):
         self.check_if_stream_was_removed(self.streams_json_schemas_diff)
-        self.check_if_value_of_type_field_changed(self.streams_json_schemas_diff)
         self.check_if_type_of_type_field_changed(self.streams_json_schemas_diff, allow_type_widening=False)
+        self.check_if_value_of_a_field_changed(self.streams_json_schemas_diff, "type")
+        self.check_if_value_of_a_field_changed(self.streams_json_schemas_diff, "format")
+        self.check_if_value_of_a_field_changed(self.streams_json_schemas_diff, "airbyte_type")
+        self.check_if_field_removed(self.streams_json_schemas_diff)
         self.check_if_cursor_field_was_changed(self.streams_cursor_fields_diff)
+
+    def check_if_field_removed(self, diff: DeepDiff):
+        """Check if a property was removed from the catalog."""
+        removed_properties = []
+        for removal in diff.get("dictionary_item_removed", []):
+            removal_path_parts = removal.path(output_format="list")
+            if "properties" in removal_path_parts:
+                removal_path_human_readable = ".".join(removal_path_parts)
+                removed_properties.append(removal_path_human_readable)
+        if removed_properties:
+            self._raise_error(f"The following properties were removed: {', '.join(removed_properties)}", diff)
 
     def check_if_stream_was_removed(self, diff: DeepDiff):
         """Check if a stream was removed from the catalog."""

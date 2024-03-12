@@ -13,7 +13,7 @@
           "path": {
             "type": "array"
           },
-          "type":{
+          "type": {
             "type": "string"
           },
           "tag": {
@@ -28,6 +28,5 @@
         }
       }
     }
-
   }
 }

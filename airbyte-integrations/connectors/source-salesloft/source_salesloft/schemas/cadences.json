@@ -124,6 +124,10 @@
           "type": ["null", "integer"]
         }
       }
+    },
+    "latest_active_date": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

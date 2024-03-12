@@ -1,6 +1,9 @@
 {
   "type": ["null", "object"],
   "properties": {
+    "userId": {
+      "type": ["null", "string"]
+    },
     "id": {
       "type": ["null", "string"]
     },
@@ -25,6 +28,9 @@
       "type": ["null", "string"]
     },
     "resource-set": {
+      "type": ["string", "null"]
+    },
+    "role": {
       "type": ["string", "null"]
     },
     "_links": {

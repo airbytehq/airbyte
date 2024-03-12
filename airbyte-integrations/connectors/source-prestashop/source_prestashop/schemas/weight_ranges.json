@@ -1,18 +1,18 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_carrier": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "delimiter1": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "delimiter2": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

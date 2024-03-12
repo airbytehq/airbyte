@@ -4,7 +4,7 @@
   "databricks_http_path": "test_http_path",
   "databricks_port": "443",
   "databricks_personal_access_token": "test_token",
-  "database" : "integration_test_catalog",
+  "database": "integration_test_catalog",
   "schema": "integration_test_external",
   "data_source": {
     "data_source_type": "AZURE_BLOB_STORAGE",

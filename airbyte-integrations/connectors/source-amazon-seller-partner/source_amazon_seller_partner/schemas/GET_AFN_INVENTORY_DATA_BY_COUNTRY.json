@@ -9,6 +9,7 @@
     "asin": { "type": ["null", "string"] },
     "condition-type": { "type": ["null", "string"] },
     "country": { "type": ["null", "string"] },
-    "quantity-for-local-fulfillment": { "type": ["null", "number"] }
+    "quantity-for-local-fulfillment": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

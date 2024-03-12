@@ -1,0 +1,29 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 21cc4a17-a011-4485-8a3e-e2341a91ab9f
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-smartengage
+  githubIssueLabel: source-smartengage
+  icon: smartengage.svg
+  license: MIT
+  name: SmartEngage
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-smartengage
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smartengage
+  tags:
+    - language:python
+    - cdk:low-code
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

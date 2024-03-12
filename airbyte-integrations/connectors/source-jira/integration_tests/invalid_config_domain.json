@@ -1,0 +1,5 @@
+{
+  "api_token": "some_token",
+  "domain": "https://withprotocol.atlassian.net",
+  "start_date": "2021-09-25T00:00:00Z"
+}

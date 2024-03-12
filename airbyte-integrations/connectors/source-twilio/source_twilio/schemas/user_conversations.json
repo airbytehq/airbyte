@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "User Conversation Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "notification_level": {
+      "type": ["null", "string"]
+    },
+    "unique_name": {
+      "type": ["null", "string"]
+    },
+    "user_sid": {
+      "type": ["null", "string"]
+    },
+    "friendly_name": {
+      "type": ["null", "string"]
+    },
+    "conversation_sid": {
+      "type": ["null", "string"]
+    },
+    "unread_messages_count": {
+      "type": ["null", "integer"]
+    },
+    "created_by": {
+      "type": ["null", "string"]
+    },
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "last_read_message_index": {
+      "type": ["null", "integer"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "timers": {
+      "type": ["null", "object"],
+      "properties": {
+        "chat_service_sid": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "string"]
+    },
+    "participant_sid": {
+      "type": ["null", "string"]
+    },
+    "conversation_state": {
+      "type": ["null", "string"]
+    },
+    "chat_service_sid": {
+      "type": ["null", "string"]
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "conversation": {
+          "type": ["null", "string"]
+        },
+        "participant": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

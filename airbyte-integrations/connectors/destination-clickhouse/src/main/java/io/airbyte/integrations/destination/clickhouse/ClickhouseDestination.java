@@ -7,16 +7,18 @@ package io.airbyte.integrations.destination.clickhouse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.RawOnlySqlGenerator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.ssh.SshWrappedDestination;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import java.util.Collections;
@@ -87,7 +89,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
       final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
       final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
+      attemptTableOperations(outputSchema, database, namingResolver, getSqlOperations(), false);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -113,6 +115,21 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     LOGGER.info("starting destination: {}", ClickhouseDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", ClickhouseDestination.class);
+  }
+
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator() {
+    return new RawOnlySqlGenerator(new ClickhouseSQLNameTransformer());
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
+  @Override
+  protected String getConfigSchemaKey() {
+    return "database";
   }
 
 }

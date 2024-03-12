@@ -316,4 +316,4 @@ class SponsoredProductsReportStream(ReportStream):
             },
         }
 
-        return body
+        yield body

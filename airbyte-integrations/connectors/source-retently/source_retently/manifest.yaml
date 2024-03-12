@@ -1,0 +1,165 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data", "{{ parameters.path_extractor }}"]
+  selector_data:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{ parameters.path_extractor }}"]
+
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://app.retently.com/api/oauth/token
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+  api_authenticator:
+    type: ApiKeyAuthenticator
+    header: "Authorization"
+    api_token: "api_key={{ config['credentials']['api_key']  }}"
+
+  requester:
+    type: HttpRequester
+    url_base: "https://app.retently.com/api/v2/"
+    http_method: "GET"
+    authenticator:
+      class_name: source_retently.components.AuthenticatorRetently
+      api_auth: "#/definitions/api_authenticator"
+      oauth: "#/definitions/oauth_authenticator"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "DefaultPaginator"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 20
+        start_from_page: 1
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  campaigns_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_data"
+      paginator:
+        type: NoPagination
+    name: "campaigns"
+    primary_key: "id"
+    $parameters:
+      path_extractor: "campaigns"
+      path: "campaigns"
+
+  companies_stream:
+    $ref: "#/definitions/base_stream"
+    name: "companies"
+    primary_key: "id"
+    $parameters:
+      path_extractor: "companies"
+      path: "companies"
+
+  customers_stream:
+    $ref: "#/definitions/base_stream"
+    name: "customers"
+    primary_key: "id"
+    $parameters:
+      path_extractor: "subscribers"
+      path: "nps/customers"
+
+  feedback_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 10
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    name: "feedback"
+    primary_key: "id"
+    $parameters:
+      path_extractor: "responses"
+      path: "feedback"
+
+  outbox_stream:
+    $ref: "#/definitions/base_stream"
+    name: "outbox"
+    $parameters:
+      path_extractor: "surveys"
+      path: "nps/outbox"
+
+  reports_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_data"
+      paginator:
+        type: NoPagination
+    name: "reports"
+    $parameters:
+      path_extractor: "data"
+      path: "reports"
+
+  nps_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_data"
+      paginator:
+        type: NoPagination
+    name: "nps"
+    $parameters:
+      path_extractor: "data"
+      path: "nps/score"
+
+  templates_stream:
+    $ref: "#/definitions/base_stream"
+    name: "templates"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_data"
+    primary_key: "id"
+    $parameters:
+      path_extractor: "data"
+      path: "templates"
+
+streams:
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/companies_stream"
+  - "#/definitions/customers_stream"
+  - "#/definitions/feedback_stream"
+  - "#/definitions/outbox_stream"
+  - "#/definitions/reports_stream"
+  - "#/definitions/nps_stream"
+  - "#/definitions/templates_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "customers"

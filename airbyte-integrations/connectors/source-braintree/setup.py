@@ -5,18 +5,38 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "braintree~=4.18.1", "pendulum~=1.5.1", "inflection~=0.5.1", "backoff~=1.11.0"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "braintree~=4.21.0"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "connector-acceptance-test", "freezegun~=1.1.0", "responses~=0.13.3"]
+TEST_REQUIREMENTS = [
+    "pytest~=6.2",
+    "pytest-mock~=3.6.1",
+]
 
 setup(
-    name="source_braintree",
-    description="Source implementation for Braintree.",
+    entry_points={
+        "console_scripts": [
+            "source-braintree=source_braintree.run:run",
+        ],
+    },
+    name="source_braintree_no_code",
+    description="Source implementation for Braintree No Code.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json"]},
+    package_data={
+        "": [
+            # Include yaml files in the package (if any)
+            "*.yml",
+            "*.yaml",
+            # Include all json files in the package, up to 4 levels deep
+            "*.json",
+            "*/*.json",
+            "*/*/*.json",
+            "*/*/*/*.json",
+            "*/*/*/*/*.json",
+        ]
+    },
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

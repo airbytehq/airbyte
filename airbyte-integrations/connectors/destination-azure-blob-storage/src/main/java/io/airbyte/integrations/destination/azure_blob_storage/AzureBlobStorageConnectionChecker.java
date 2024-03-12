@@ -10,7 +10,7 @@ import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
-import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;

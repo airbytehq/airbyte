@@ -40,6 +40,11 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             # without accounting for the case in which the parent stream is empty.
             reason = f"Cannot attempt to connect to stream {stream.name} - no stream slices were found, likely because the parent stream is empty."
             return False, reason
+        except HTTPError as error:
+            is_available, reason = self.handle_http_error(stream, logger, source, error)
+            if not is_available:
+                reason = f"Unable to get slices for {stream.name} stream, because of error in parent stream. {reason}"
+            return is_available, reason
 
         try:
             get_first_record_for_slice(stream, stream_slice)
@@ -48,7 +53,10 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
             return True, None
         except HTTPError as error:
-            return self.handle_http_error(stream, logger, source, error)
+            is_available, reason = self.handle_http_error(stream, logger, source, error)
+            if not is_available:
+                reason = f"Unable to read {stream.name} stream. {reason}"
+            return is_available, reason
 
     def handle_http_error(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
@@ -69,16 +77,19 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           for some reason and the str should describe what went wrong and how to
           resolve the unavailability, if possible.
         """
-        try:
-            status_code = error.response.status_code
-            reason = self.reasons_for_unavailable_status_codes(stream, logger, source, error)[status_code]
-            response_error_message = stream.parse_response_error_message(error.response)
-            if response_error_message:
-                reason += response_error_message
-            return False, reason
-        except KeyError:
-            # If the HTTPError is not in the dictionary of errors we know how to handle, don't except it
+        status_code = error.response.status_code
+        known_status_codes = self.reasons_for_unavailable_status_codes(stream, logger, source, error)
+        known_reason = known_status_codes.get(status_code)
+        if not known_reason:
+            # If the HTTPError is not in the dictionary of errors we know how to handle, don't except
             raise error
+
+        doc_ref = self._visit_docs_message(logger, source)
+        reason = f"The endpoint {error.response.url} returned {status_code}: {error.response.reason}. {known_reason}. {doc_ref} "
+        response_error_message = stream.parse_response_error_message(error.response)
+        if response_error_message:
+            reason += response_error_message
+        return False, reason
 
     def reasons_for_unavailable_status_codes(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
@@ -95,17 +106,16 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         why 'status code' may have occurred and how the user can resolve that
         error, if applicable.
         """
-        forbidden_error_message = f"The endpoint to access stream '{stream.name}' returned 403: Forbidden. "
-        forbidden_error_message += "This is most likely due to insufficient permissions on the credentials in use. "
-        forbidden_error_message += self._visit_docs_message(logger, source)
-
-        reasons_for_codes: Dict[int, str] = {requests.codes.FORBIDDEN: forbidden_error_message}
+        reasons_for_codes: Dict[int, str] = {
+            requests.codes.FORBIDDEN: "This is most likely due to insufficient permissions on the credentials in use. "
+            "Try to grant required permissions/scopes or re-authenticate"
+        }
         return reasons_for_codes
 
     @staticmethod
     def _visit_docs_message(logger: logging.Logger, source: Optional["Source"]) -> str:
         """
-        Creates a message indicicating where to look in the documentation for
+        Creates a message indicating where to look in the documentation for
         more information on a given source by checking the spec of that source
         (if provided) for a 'documentationUrl'.
 

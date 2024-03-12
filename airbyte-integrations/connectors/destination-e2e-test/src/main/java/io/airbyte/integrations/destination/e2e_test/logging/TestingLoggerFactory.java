@@ -17,11 +17,17 @@ public class TestingLoggerFactory {
   }
 
   public TestingLogger create(final AirbyteStreamNameNamespacePair streamNamePair) {
-    if (!config.has("logging_config")) {
+    if (!config.has("test_destination")) {
+      throw new IllegalArgumentException("Property test_destination is required, but not found");
+    }
+
+    final JsonNode testDestinationConfig = config.get("test_destination");
+
+    if (!testDestinationConfig.has("logging_config")) {
       throw new IllegalArgumentException("Property logging_config is required, but not found");
     }
 
-    final JsonNode logConfig = config.get("logging_config");
+    final JsonNode logConfig = testDestinationConfig.get("logging_config");
     final LoggingType loggingType = LoggingType.valueOf(logConfig.get("logging_type").asText());
     switch (loggingType) {
       case FirstN -> {

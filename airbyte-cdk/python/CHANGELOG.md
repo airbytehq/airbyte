@@ -1,5 +1,547 @@
 # Changelog
 
+## 0.70.0
+testing
+
+## 0.69.2
+low-code: improve error message when a custom component cannot be found
+
+## 0.69.1
+Update mock server test entrypoint wrapper to use per-stream state
+
+## 0.69.0
+Include recordCount in stream state messages and final state message for full refresh syncs
+
+## 0.68.4
+low-code: update cartesian stream slice to emit typed StreamSlice
+
+## 0.68.3
+Low-code: adding a default value if a stream slice is None during read_records
+
+## 0.68.2
+low-code: remove parent cursor compoent from incremental substreams' state message
+
+## 0.68.1
+no-op republish of 0.68.0
+
+## 0.68.0
+low-code: Allow page size to be defined with string interpolation
+
+## 0.67.3
+CDK: upgrade pyarrow
+
+## 0.67.2
+File CDK: Update parquet parser to handle values that resolve to None
+
+## 0.67.1
+Fix handling of tab-separated CSVs
+
+## 0.67.0
+Low-code: Add CustomRecordFilter
+
+## 0.66.0
+Low-code: Add interpolation for request options
+
+## 0.65.0
+low-code: Allow connectors to ignore stream slicer request options on paginated requests
+
+## 0.64.1
+
+
+## 0.64.0
+Low-code: Add filter to RemoveFields
+
+## 0.63.2
+Correct handling of custom max_records limits in connector_builder
+
+## 0.63.1
+File-based CDK:  fix record enqueuing
+
+## 0.63.0
+Per-stream error reporting and continue syncing on error by default
+
+## 0.62.2
+mask access key when logging refresh response
+
+## 0.62.1
+[ISSUE #34910] add headers to HttpResponse for test framework
+
+## 0.62.0
+File-based CDK: functionality to make incremental syncs concurrent
+
+## 0.61.2
+[ISSUE #34755] do not propagate parameters on JSON schemas
+
+## 0.61.1
+Align version in CDK Dockerfile to be consistent. Before this change, the docker images was mistakenly pinned to version 0.58.5.
+
+## 0.61.0
+File-based CDK: log warning on no sync mode instead of raising exception
+
+## 0.60.2
+Improve error messages for concurrent CDK
+
+## 0.60.1
+Emit state when no partitions are generated for ccdk and update StateBuilder
+
+## 0.60.0
+File-based CDK: run full refresh syncs with concurrency
+
+## 0.59.2
+Fix CCDK overlapping message due to print in entrypoint
+
+## 0.59.1
+Fix concurrent CDK deadlock
+
+## 0.59.0
+Fix state message handling when running concurrent syncs
+
+## 0.58.9
+concurrent-cdk: improve resource usage when reading from substreams
+
+## 0.58.8
+CDK: HttpRequester can accept http_method in str format, which is required by custom low code components
+
+## 0.58.7
+
+
+## 0.58.6
+File CDK: Added logic to emit logged `RecordParseError` errors and raise the single `AirbyteTracebackException` in the end of the sync, instead of silent skipping the parsing errors. PR: https://github.com/airbytehq/airbyte/pull/32589
+
+## 0.58.5
+Handle private network exception as config error
+
+## 0.58.4
+Add POST method to HttpMocker
+
+## 0.58.3
+fix declarative oauth initialization
+
+## 0.58.2
+Integration tests: adding debug mode to improve logging
+
+## 0.58.1
+Add schema normalization to declarative stream
+
+## 0.58.0
+Concurrent CDK: add state converter for ISO timestamps with millisecond granularity
+
+## 0.57.8
+add SelectiveAuthenticator
+
+## 0.57.7
+File CDK: Support raw txt file
+
+## 0.57.6
+Adding more tooling to cover source-stripe events stream
+
+## 0.57.5
+Raise error on passing unsupported value formats as query parameters
+
+## 0.57.4
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.3
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.2
+Update airbyte-protocol
+
+## 0.57.1
+Improve integration tests tooling
+
+## 0.57.0
+low-code: cache requests sent for parent streams
+File-based CDK: Add support for automatic primary key for document file type format
+File-based CDK: Add support for remote parsing of document file type format via API
+Vector DB CDK: Fix bug with embedding tokens with special meaning like `<|endoftext|>`
+
+## 0.56.1
+no-op to verify pypi publish flow
+
+## 0.56.0
+Allow for connectors to continue syncing when a stream fails
+
+## 0.55.5
+File-based CDK: hide source-defined primary key; users can define primary keys in the connection's configuration
+
+## 0.55.4
+Source Integration tests: decoupling entrypoint wrapper from pytest
+
+## 0.55.3
+First iteration of integration tests tooling (http mocker and response builder)
+
+## 0.55.2
+concurrent-cdk: factory method initializes concurrent source with default number of max tasks
+
+## 0.55.1
+Vector DB CDK: Add omit_raw_text flag
+
+## 0.55.0
+concurrent cdk: read multiple streams concurrently
+
+## 0.54.0
+low-code: fix injection of page token if first request
+
+## 0.53.9
+Fix of generate the error message using _try_get_error based on list of errors
+
+## 0.53.8
+Vector DB CDK: Remove CDC records, File CDK: Update unstructured parser
+
+## 0.53.7
+low-code: fix debug logging when using --debug flag
+
+## 0.53.6
+Increase maximum_attempts_to_acquire to avoid crashing in acquire_call
+
+## 0.53.5
+File CDK: Improve stream config appearance
+
+## 0.53.4
+Concurrent CDK: fix futures pruning
+
+## 0.53.3
+Fix spec schema generation for File CDK and Vector DB CDK and allow skipping invalid files in document file parser
+
+## 0.53.2
+Concurrent CDK: Increase connection pool size to allow for 20 max workers
+
+## 0.53.1
+Concurrent CDK: Improve handling of future to avoid memory leak and improve performances
+
+## 0.53.0
+Add call rate functionality
+
+## 0.52.10
+Fix class SessionTokenAuthenticator for CLASS_TYPES_REGISTRY mapper
+
+## 0.52.9
+File CDK: Improve file type detection in document file type parser
+
+## 0.52.8
+Concurrent CDK: incremental (missing state conversion). Outside of concurrent specific work, this includes the following changes:
+* Checkpointing state was acting on the number of records per slice. This has been changed to consider the number of records per syncs
+* `Source.read_state` and `Source._emit_legacy_state_format` are now classmethods to allow for developers to have access to the state before instantiating the source
+
+## 0.52.7
+File CDK: Add pptx support
+
+## 0.52.6
+make  parameter as not required for default backoff handler
+
+## 0.52.5
+use in-memory cache if no file path is provided
+
+## 0.52.4
+File CDK: Add unstructured parser
+
+## 0.52.3
+Update source-declarative-manifest base image to update Linux alpine and Python
+
+## 0.52.2
+
+
+## 0.52.1
+Add max time for backoff handler
+
+## 0.52.0
+File CDK: Add CustomFileBasedException for custom errors
+
+## 0.51.44
+low-code: Allow connector developers to specify the type of an added field
+
+## 0.51.43
+concurrent cdk: fail fast if a partition raises an exception
+
+## 0.51.42
+File CDK: Avoid listing all files for check command
+
+## 0.51.41
+Vector DB CDK: Expose stream identifier logic, add field remapping to processing | File CDK: Emit analytics message for used streams
+
+## 0.51.40
+Add filters for base64 encode and decode in Jinja Interpolation 
+
+## 0.51.39
+Few bug fixes for concurrent cdk
+
+## 0.51.38
+Add ability to wrap HTTP errors with specific status codes occurred during access token refresh into AirbyteTracedException
+
+## 0.51.37
+Enable debug logging when running availability check
+
+## 0.51.36
+Enable debug logging when running availability check
+
+## 0.51.35
+File CDK: Allow configuring number of tested files for schema inference and parsability check
+
+## 0.51.34
+Vector DB CDK: Fix OpenAI compatible embedder when used without api key
+
+## 0.51.33
+Vector DB CDK: Improve batching process
+
+## 0.51.32
+Introduce experimental ThreadBasedConcurrentStream
+
+## 0.51.31
+Fix initialize of token_expiry_is_time_of_expiration field
+
+## 0.51.30
+Add new token_expiry_is_time_of_expiration property for AbstractOauth2Authenticator for indicate that token's expiry_in is a time of expiration
+
+## 0.51.29
+Coerce read_records to iterable in http availabilty strategy
+
+## 0.51.28
+Add functionality enabling Page Number/Offset to be set on the first request
+
+## 0.51.27
+Fix parsing of UUID fields in avro files
+
+## 0.51.26
+Vector DB CDK: Fix OpenAI embedder batch size
+
+## 0.51.25
+Add  configurable OpenAI embedder to cdk and add cloud environment helper
+
+## 0.51.24
+Fix previous version of request_cache clearing
+
+## 0.51.23
+Fix request_cache clearing and move it to tmp folder
+
+## 0.51.22
+Vector DB CDK: Adjust batch size for Azure embedder to current limits
+
+## 0.51.21
+Change Error message if Stream is not found
+
+## 0.51.20
+Vector DB CDK: Add text splitting options to document processing
+
+## 0.51.19
+Ensuring invalid user-provided urls does not generate sentry issues
+
+## 0.51.18
+Vector DB CDK adjustments: Prevent failures with big records and OpenAI embedder
+
+## 0.51.17
+[ISSUE #30353] File-Based CDK: remove file_type from stream config
+
+## 0.51.16
+Connector Builder: fix datetime format inference for str parsable as int but not isdecimal
+
+## 0.51.15
+Vector DB CDK: Add Azure OpenAI embedder
+
+## 0.51.14
+File-based CDK: improve error message for CSV parsing error
+
+## 0.51.13
+File-based CDK: migrated parsing error to config error to avoid sentry alerts
+
+## 0.51.12
+Add from-field embedder to vector db CDK
+
+## 0.51.11
+FIle-based CDK: Update spec and fix autogenerated headers with skip after
+
+## 0.51.10
+Vector DB CDK adjustments: Fix id generation, improve config spec, add base test case
+
+## 0.51.9
+[Issue #29660] Support empty keys with record selection
+
+## 0.51.8
+Add vector db CDK helpers
+
+## 0.51.7
+File-based CDK: allow user to provided column names for CSV files
+
+## 0.51.6
+File-based CDK: allow for extension mismatch
+
+## 0.51.5
+File-based CDK: Remove CSV noisy log
+
+## 0.51.4
+Source-S3 V4: feature parity rollout
+
+## 0.51.3
+File-based CDK: Do not stop processing files in slice on error
+
+## 0.51.2
+Check config against spec in embedded sources and remove list endpoint from connector builder module
+
+## 0.51.1
+low-code: allow formatting datetime as milliseconds since unix epoch
+
+## 0.51.0
+File-based CDK: handle legacy options
+
+## 0.50.2
+Fix title and description of datetime_format fields
+
+## 0.50.1
+File-based CDK cursor and entrypoint updates
+
+## 0.50.0
+Low code CDK: Decouple SimpleRetriever and HttpStream
+
+## 0.49.0
+Add utils for embedding sources in other Python applications
+
+## 0.48.0
+Relax pydantic version requirement and update to protocol models version 0.4.0
+
+## 0.47.5
+Support many format for cursor datetime
+
+## 0.47.4
+File-based CDK updates
+
+## 0.47.3
+Connector Builder: Ensure we return when there are no slices
+
+## 0.47.2
+low-code: deduplicate query params if they are already encoded in the URL
+
+## 0.47.1
+Fix RemoveFields transformation issue
+
+## 0.47.0
+Breaking change: Rename existing SessionTokenAuthenticator to LegacySessionTokenAuthenticator and make SessionTokenAuthenticator more generic
+
+## 0.46.1
+Connector builder: warn if the max number of records was reached
+
+## 0.46.0
+Remove pyarrow from main dependency and add it to extras
+
+## 0.45.0
+Fix pyyaml and cython incompatibility
+
+## 0.44.4
+Connector builder: Show all request/responses as part of the testing panel
+
+## 0.44.3
+[ISSUE #27494] allow for state to rely on transformed field
+
+## 0.44.2
+Ensuring the state value format matches the cursor value from the record
+
+## 0.44.1
+Fix issue with incremental sync following data feed release
+
+## 0.44.0
+Support data feed like incremental syncs
+
+## 0.43.3
+Fix return type of RecordFilter: changed from generator to list
+
+## 0.43.2
+Connector builder module: serialize request body as string
+
+## 0.43.1
+Fix availability check to handle HttpErrors which happen during slice extraction
+
+## 0.43.0
+Refactoring declarative state management
+
+## 0.42.1
+Error message on state per partition state discrepancy
+
+## 0.42.0
+Supporting state per partition given incremental sync and partition router
+
+## 0.41.0
+Use x-www-urlencoded for access token refresh requests
+
+## 0.40.5
+Replace  with  when making oauth calls
+
+## 0.40.4
+Emit messages using message repository
+
+## 0.40.3
+Add utils for inferring datetime formats
+
+## 0.40.2
+Add a metadata field to the declarative component schema
+
+## 0.40.1
+make DatetimeBasedCursor.end_datetime optional
+
+## 0.40.0
+Remove SingleUseRefreshTokenOAuthAuthenticator from low code CDK and add generic injection capabilities to ApiKeyAuthenticator
+
+## 0.39.4
+Connector builder: add latest connector config control message to read calls
+
+## 0.39.3
+Add refresh token update capabilities to OAuthAuthenticator
+
+## 0.39.2
+Make step and cursor_granularity optional
+
+## 0.39.1
+Improve connector builder error messages
+
+## 0.39.0
+Align schema generation in SchemaInferrer with Airbyte platform capabilities
+
+## 0.38.0
+Allow nested objects in request_body_json
+
+## 0.37.0
+low-code: Make refresh token in oauth authenticator optional
+
+## 0.36.5
+Unfreeze requests version and test new pipeline
+
+## 0.36.4
+low-code: use jinja sandbox and restrict some methods
+
+## 0.36.3
+pin the version of the requests library
+
+## 0.36.2
+Support parsing non UTC dates and Connector Builder set slice descriptor
+
+## 0.36.1
+low-code: fix add field transformation when running from the connector builder
+
+## 0.36.0
+Emit stream status messages
+
+## 0.35.4
+low-code: remove now_local() macro because it's too unpredictable
+
+## 0.35.3
+low-code: alias stream_interval and stream_partition to stream_slice in jinja context
+
+## 0.35.2
+Connector builder scrubs secrets from raw request and response
+
+## 0.35.1
+low-code: Add title, description, and examples for all fields in the manifest schema
+
+## 0.35.0
+low-code: simplify session token authenticator interface
+
+## 0.34.3
+low-code: fix typo in ManifestDeclarativeSource
+
+## 0.34.2
+Emit slice log messages when running the connector builder
+
+## 0.34.1
+set slice and pages limit when reading from the connector builder module
+
 ## 0.34.0
 Low-Code CDK: Enable use of SingleUseRefreshTokenAuthenticator
 

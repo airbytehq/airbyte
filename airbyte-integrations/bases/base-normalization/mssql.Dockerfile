@@ -4,7 +4,7 @@ COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 # Install curl & gnupg dependencies
 USER root
 WORKDIR /tmp
-RUN apt-get update && apt-get install -y \
+RUN apt-get update --allow-insecure-repositories && apt-get install -y \
     wget \
     curl \
     unzip \
@@ -49,6 +49,11 @@ COPY dbt-project-template-mssql/* ./dbt-template/
 
 # Install python dependencies
 WORKDIR /airbyte/base_python_structs
+
+# workaround for https://github.com/yaml/pyyaml/issues/601
+# this should be fixed in the airbyte/base-airbyte-protocol-python image
+RUN pip install "Cython<3.0" "pyyaml==5.4" --no-build-isolation
+
 RUN pip install .
 
 WORKDIR /airbyte/normalization_code

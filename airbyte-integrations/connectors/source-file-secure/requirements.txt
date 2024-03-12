@@ -1,3 +1,0 @@
--e ../../bases/connector-acceptance-test
--e ../source-file
--e .

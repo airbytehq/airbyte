@@ -5,11 +5,16 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
+from airbyte_cdk.sources.declarative.interpolation.interpolated_nested_mapping import NestedMapping
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nested_request_input_provider import (
+    InterpolatedNestedRequestInputProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 RequestInput = Union[str, Mapping[str, str]]
+ValidRequestTypes = (str, list)
 
 
 @dataclass
@@ -30,7 +35,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
     request_parameters: Optional[RequestInput] = None
     request_headers: Optional[RequestInput] = None
     request_body_data: Optional[RequestInput] = None
-    request_body_json: Optional[RequestInput] = None
+    request_body_json: Optional[NestedMapping] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         if self.request_parameters is None:
@@ -54,7 +59,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         self._body_data_interpolator = InterpolatedRequestInputProvider(
             config=self.config, request_inputs=self.request_body_data, parameters=parameters
         )
-        self._body_json_interpolator = InterpolatedRequestInputProvider(
+        self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
             config=self.config, request_inputs=self.request_body_json, parameters=parameters
         )
 
@@ -65,7 +70,9 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        interpolated_value = self._parameter_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        interpolated_value = self._parameter_interpolator.eval_request_inputs(
+            stream_state, stream_slice, next_page_token, valid_key_types=(str,), valid_value_types=ValidRequestTypes
+        )
         if isinstance(interpolated_value, dict):
             return interpolated_value
         return {}
@@ -86,7 +93,13 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping, str]]:
-        return self._body_data_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        return self._body_data_interpolator.eval_request_inputs(
+            stream_state,
+            stream_slice,
+            next_page_token,
+            valid_key_types=(str,),
+            valid_value_types=ValidRequestTypes,
+        )
 
     def get_request_body_json(
         self,

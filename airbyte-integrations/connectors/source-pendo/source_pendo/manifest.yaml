@@ -41,7 +41,7 @@ streams:
               items:
                 type:
                   - array
-                  - 'null'
+                  - "null"
               length:
                 type: integer
               createdAt:
@@ -194,7 +194,7 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           header: x-pendo-integration-key
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -238,7 +238,7 @@ streams:
               items:
                 type:
                   - array
-                  - 'null'
+                  - "null"
               length:
                 type: integer
               createdAt:
@@ -409,7 +409,7 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           header: x-pendo-integration-key
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -569,7 +569,7 @@ streams:
                       type:
                         type: string
                   secondaryDateRange:
-                    type: 'null'
+                    type: "null"
                   useSecondaryDateRange:
                     type: boolean
               timeSeries:
@@ -591,7 +591,7 @@ streams:
                       period:
                         type: string
                   secondaryTimeSeries:
-                    type: 'null'
+                    type: "null"
               singleSource:
                 type: object
                 properties:
@@ -666,7 +666,7 @@ streams:
                                         properties:
                                           count:
                                             type:
-                                              - 'null'
+                                              - "null"
                                               - string
                             limit:
                               type: integer
@@ -734,7 +734,7 @@ streams:
                             type: object
                             properties:
                               cat:
-                                type: 'null'
+                                type: "null"
                               eval:
                                 type: object
                                 properties:
@@ -888,7 +888,7 @@ streams:
                                         items:
                                           type: object
                                           properties:
-                                            '==':
+                                            "==":
                                               type: integer
                                             value:
                                               type: string
@@ -1072,7 +1072,7 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           header: x-pendo-integration-key
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1247,7 +1247,7 @@ streams:
                       type: string
                     advanceActions:
                       anyOf:
-                        - type: 'null'
+                        - type: "null"
                         - type: object
                           properties:
                             elementClick:
@@ -1314,7 +1314,7 @@ streams:
                   properties:
                     visitors:
                       anyOf:
-                        - type: 'null'
+                        - type: "null"
                         - type: object
                           properties:
                             identified:
@@ -1357,7 +1357,7 @@ streams:
                 type: string
               badge:
                 anyOf:
-                  - type: 'null'
+                  - type: "null"
                   - type: object
                     properties:
                       name:
@@ -1439,7 +1439,7 @@ streams:
                                 actions:
                                   type: array
                                 layoutId:
-                                  type: 'null'
+                                  type: "null"
                                 properties:
                                   type: array
                                   items:
@@ -1466,13 +1466,13 @@ streams:
                                         defaultActions:
                                           type: object
                                 templateName:
-                                  type: 'null'
+                                  type: "null"
                           widget:
                             type: string
                           actions:
                             type: array
                           layoutId:
-                            type: 'null'
+                            type: "null"
                           properties:
                             type: array
                             items:
@@ -1499,7 +1499,7 @@ streams:
                                   defaultActions:
                                     type: object
                           templateName:
-                            type: 'null'
+                            type: "null"
                       height:
                         type: integer
                       domJson:
@@ -1723,7 +1723,7 @@ streams:
                 type: integer
               activation:
                 anyOf:
-                  - type: 'null'
+                  - type: "null"
                   - type: object
                     properties:
                       event:
@@ -1938,7 +1938,7 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           header: x-pendo-integration-key
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -2235,7 +2235,7 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           header: x-pendo-integration-key
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -2951,7 +2951,7 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           header: x-pendo-integration-key
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:

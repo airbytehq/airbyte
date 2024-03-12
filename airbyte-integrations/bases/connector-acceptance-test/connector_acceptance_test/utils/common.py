@@ -16,7 +16,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,

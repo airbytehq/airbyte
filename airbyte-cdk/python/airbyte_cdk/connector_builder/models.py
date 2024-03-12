@@ -3,7 +3,6 @@
 #
 
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 
@@ -18,9 +17,9 @@ class HttpResponse:
 class HttpRequest:
     url: str
     parameters: Optional[Dict[str, Any]]
-    body: Optional[Dict[str, Any]]
     headers: Optional[Dict[str, Any]]
     http_method: str
+    body: Optional[str] = None
 
 
 @dataclass
@@ -31,23 +30,10 @@ class StreamReadPages:
 
 
 @dataclass
-class StreamReadSlicesInnerPagesInner:
-    records: List[object]
-    request: Optional[HttpRequest]
-    response: Optional[HttpResponse]
-
-
-@dataclass
-class StreamReadSlicesInnerSliceDescriptor:
-    start_datetime: Optional[datetime]
-    list_item: Optional[str]
-
-
-@dataclass
-class StreamReadSlicesInner:
-    pages: List[StreamReadSlicesInnerPagesInner]
-    slice_descriptor: Optional[StreamReadSlicesInnerSliceDescriptor]
-    state: Optional[Dict[str, Any]]
+class StreamReadSlices:
+    pages: List[StreamReadPages]
+    slice_descriptor: Optional[Dict[str, Any]]
+    state: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -57,11 +43,22 @@ class LogMessage:
 
 
 @dataclass
+class AuxiliaryRequest:
+    title: str
+    description: str
+    request: HttpRequest
+    response: HttpResponse
+
+
+@dataclass
 class StreamRead(object):
     logs: List[LogMessage]
-    slices: List[StreamReadSlicesInner]
+    slices: List[StreamReadSlices]
     test_read_limit_reached: bool
+    auxiliary_requests: List[AuxiliaryRequest]
     inferred_schema: Optional[Dict[str, Any]]
+    inferred_datetime_formats: Optional[Dict[str, str]]
+    latest_config_update: Optional[Dict[str, Any]]
 
 
 @dataclass
@@ -71,16 +68,3 @@ class StreamReadRequestBody:
     config: Dict[str, Any]
     state: Optional[Dict[str, Any]]
     record_limit: Optional[int]
-
-
-@dataclass
-class StreamReadSliceDescriptor:
-    start_datetime: Optional[datetime] = None
-    list_item: Optional[str] = None
-
-
-@dataclass
-class StreamReadSlices:
-    pages: List[StreamReadPages]
-    slice_descriptor: Optional[StreamReadSliceDescriptor] = None
-    state: Optional[Dict[str, Any]] = None

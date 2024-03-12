@@ -1,70 +1,37 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": ["null", "object"],
   "properties": {
     "TaxGroup": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "PurchaseTaxRateList": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {}
     },
     "Hidden": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "domain": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "SyncToken": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Active": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "Taxable": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "Description": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "SalesTaxRateList": {
       "properties": {
@@ -72,87 +39,48 @@
           "items": {
             "properties": {
               "TaxOrder": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               },
               "TaxTypeApplicable": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "TaxRateRef": {
                 "properties": {
                   "name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   },
                   "value": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   }
                 },
-                "type": [
-                  "null",
-                  "object"
-                ]
+                "type": ["null", "object"]
               }
             },
-            "type": [
-              "null",
-              "object"
-            ]
+            "type": ["null", "object"]
           },
-          "type": [
-            "null",
-            "array"
-          ]
+          "type": ["null", "array"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "MetaData": {
       "properties": {
         "CreateTime": {
           "format": "date-time",
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "LastUpdatedTime": {
           "format": "date-time",
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "sparse": {
-      "type":  [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "airbyte_cursor": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     }
   }
 }

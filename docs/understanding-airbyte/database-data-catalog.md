@@ -7,7 +7,7 @@
   * Each record represents a connector that Airbyte supports, e.g. Postgres. This table represents all the connectors that is supported by the current running platform.
   * The `actor_type` column tells us whether the record represents a Source or a Destination.
   * The `spec` column is a JSON blob. The schema of this JSON blob matches the [spec](airbyte-protocol.md#actor-specification) model in the Airbyte Protocol. Because the protocol object is JSON, this has to be a JSON blob.
-  * The `release_stage` describes the certification level of the connector (e.g. Alpha, Beta, Generally Available).
+  * The `support_level` describes the support level of the connector (e.g. community, certified).
   * The `docker_repository` field is the name of the docker image associated with the connector definition. `docker_image_tag` is the tag of the docker image and the version of the connector definition.
   * The `source_type` field is only used for Sources, and represents the category of the connector definition (e.g. API, Database).
   * The `resource_requirements` field sets a default resource requirement for any connector of this type. This overrides the default we set for all connector definitions, and it can be overridden by a connection-specific resource requirement. The column is a JSON blob with the schema defined in [ActorDefinitionResourceRequirements.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/ActorDefinitionResourceRequirements.yaml)
@@ -34,7 +34,7 @@
 * `connection`
   * Each record in this table configures a connection (`source_id`, `destination_id`, and relevant configuration).
   * The `resource_requirements` field sets a default resource requirement for the connection. This overrides the default we set for all connector definitions and the default set for the connector definitions. The column is a JSON blob with the schema defined in [ResourceRequirements.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/ResourceRequirements.yaml).
-  * The `source_catalog_id` column is a foreign key to the `sourc_catalog` table and represents the catalog that was used to configure the connection. This should not be confused with the `catalog` column which contains the [ConfiguredCatalog](airbyte-protocol.md#catalog) for the connection.
+  * The `source_catalog_id` column is a foreign key that refers to `id` column in `actor_catalog` table and represents the catalog that was used to configure the connection. This should not be confused with the `catalog` column which contains the [ConfiguredCatalog](airbyte-protocol.md#catalog) for the connection.
   * The `schedule_type` column defines what type of schedule is being used. If the `type` is manual, then `schedule_data` will be null. Otherwise, `schedule_data` column is a JSON blob with the schema of [StandardSync#scheduleData](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/StandardSync.yaml#L74) that defines the actual schedule. The columns `manual` and `schedule` are deprecated and should be ignored (they will be dropped soon).
   * The `namespace_type` column configures whether the namespace for the connection should use that defined by the source, the destination, or a user-defined format (`custom`). If `custom` the `namespace_format` column defines the string that will be used as the namespace.
   * The `status` column describes the activity level of the connector: `active` - current schedule is respected, `inactive` - current schedule is ignored (the connection does not run) but it could be switched back to active, and `deprecated` - the connection is permanently off (cannot be moved to active or inactive).
@@ -55,11 +55,11 @@
   * If the `operation` is `normalization`, then the `operator_dbt` column will be populated with a JSON blob with the scehma from [OperatorNormalization](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/OperatorNormalization.yaml).
   * Operations are scoped by workspace, using the `workspace_id` column.
 * `connection_operation`
-  * This table joins the `operation` table to the `connection` for which it is configured. 
+  * This table joins the `operation` table to the `connection` for which it is configured.
 * `workspace_service_account`
   * This table is a WIP for an unfinished feature.
 * `actor_oauth_parameter`
-  * The name of this table is misleading. It refers to parameters to be used for any instance of an `actor_definition` (not an `actor`) within a given workspace. For OAuth, the model is that a user is provisioning access to their data to a third party tool (in this case the Airbyte Platform). Each record represents information (e.g. client id, client secret) for that third party that is getting access. 
+  * The name of this table is misleading. It refers to parameters to be used for any instance of an `actor_definition` (not an `actor`) within a given workspace. For OAuth, the model is that a user is provisioning access to their data to a third party tool (in this case the Airbyte Platform). Each record represents information (e.g. client id, client secret) for that third party that is getting access.
   * These parameters can be scoped by workspace. If `workspace_id` is not present, then the scope of the parameters is to the whole deployment of the platform (e.g. all workspaces).
   * The `actor_type` column tells us whether the record represents a Source or a Destination.
   * The `configuration` column is a JSON blob. The schema of this JSON blob matches the schema specified in the `spec` column in the `advanced_auth` field of the JSON blob. Keep in mind this schema is specific to each connector (e.g. the schema of Hubspot and Salesforce are different), which is why this column has to be a JSON blob.

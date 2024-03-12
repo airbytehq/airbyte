@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "repository": {
-      "type": ["string"]
+      "type": "string"
     },
     "url": {
       "type": ["null", "string"]
@@ -128,11 +128,11 @@
           "type": ["null", "integer"]
         },
         "created_at": {
-          "type": ["null", "string"],
+          "type": "string",
           "format": "date-time"
         },
         "updated_at": {
-          "type": ["null", "string"],
+          "type": "string",
           "format": "date-time"
         },
         "closed_at": {
@@ -149,11 +149,11 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "closed_at": {
@@ -244,6 +244,9 @@
         },
         "repo_id": {
           "type": ["null", "integer"]
+        },
+        "user": {
+          "$ref": "user.json"
         }
       }
     },
@@ -264,6 +267,12 @@
         },
         "repo_id": {
           "type": ["null", "integer"]
+        },
+        "repo": {
+          "type": ["null", "object"]
+        },
+        "user": {
+          "$ref": "user.json"
         }
       }
     },

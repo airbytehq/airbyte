@@ -12,8 +12,7 @@
       "type": ["null", "string"]
     },
     "price": {
-      "type": ["null", "number"],
-      "format": "float"
+      "type": ["null", "number"]
     },
     "sku": {
       "type": ["null", "string"]
@@ -63,8 +62,7 @@
       "type": ["null", "integer"]
     },
     "weight": {
-      "type": ["null", "number"],
-      "format": "float"
+      "type": ["null", "number"]
     },
     "weight_unit": {
       "type": ["null", "string"]

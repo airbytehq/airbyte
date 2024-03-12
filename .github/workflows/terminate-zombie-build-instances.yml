@@ -28,7 +28,7 @@ jobs:
 
           # See https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/describe-instances.html for describe command.
           # Since the AWS cli returns an ISO HH:MM timestamp, and Jq only accepts Z timestamps, we define a function toZ to convert this.
-          export to_terminate=$(aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge Name=instance-state-name,Values=running \
+          export to_terminate=$(aws ec2 describe-instances --no-paginate --filters --filters 'Name=tag:Repository,Values=airbytehq/airbyte-platform-internal,airbytehq/airbyte-platform,airbytehq/airbyte' Name=instance-state-name,Values=running \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json \
           | jq 'def toZ(str): str | (split("+")[0] + "Z") | fromdate ;
               flatten | map( { InstanceId: .Instance, LaunchTime: toZ(.LaunchTime) } ) | map( select ( .LaunchTime < (now - (env.TIME_LIMIT|tonumber)) ) )')

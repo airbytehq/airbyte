@@ -1,4 +1,8 @@
-from .client import Client
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+
 from .source import SourceDrift
 
-__all__ = ["SourceDrift", "Client"]
+__all__ = ["SourceDrift"]

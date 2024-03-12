@@ -1,121 +1,131 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoiceNumber": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "string"]
+    },
+    "invoiceDeliveryMethod": {
+      "type": ["null", "string"]
+    },
+    "modified": {
+      "type": ["null", "string"]
     },
     "account": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "accountNumber": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalERPId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalCRMId": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "notes": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoiceDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "dueDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "daysPastDue": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "nrOfReminders": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "paymentTerm": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "days": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "currency": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "subtotal": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "tax": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "totalAmount": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "totalRoundingAmount": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "settledAmount": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "balancedAmount": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "taxIncluded": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "invoiceAddress": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "description": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "street": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "street2": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "city": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "county": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "state": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "zip": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "country": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -123,39 +133,39 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "description": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "street": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "street2": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "city": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "county": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "state": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "zip": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "country": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "invoiceBatchId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoiceLines": {
       "type": "array",
@@ -163,96 +173,96 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "invoiceLineNumber": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "productNumber": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "productName": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "chargeDescription": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "chargeNumber": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "quantity": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "unitOfMeasure": {
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "unitCode": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "displayName": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           },
           "price": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "subtotal": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "total": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "tax": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "servicePeriodStartDate": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "servicePeriodEndDate": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "notes": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "orderChargeId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "orderId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "accountId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "customFields": {
-            "type": "object"
+            "type": ["null", "object"]
           },
           "accountsReceivable": {
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "code": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "description": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "externalERPId": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "externalCRMId": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           },
@@ -260,22 +270,22 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "code": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "description": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "externalERPId": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "externalCRMId": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           },
@@ -283,104 +293,104 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "code": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "description": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "externalERPId": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "externalCRMId": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           },
           "externalERPId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "externalCRMId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "taxCategoryName": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "taxRate": {
-            "type": "number"
+            "type": ["null", "number"]
           }
         }
       }
     },
     "yourReference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ourReference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "yourOrderNumber": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "buyerReference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoiceType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "sendMethod": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "exchangeRate": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "settledNotes": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "invoiceTemplateId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "disableAutomaticInvoiceReminder": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "onlinePaymentLink": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "accountsReceivable": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "code": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "description": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalERPId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "externalCRMId": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "customFields": {
-      "type": "object"
+      "type": ["null", "object"]
     },
     "externalERPId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalCRMId": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

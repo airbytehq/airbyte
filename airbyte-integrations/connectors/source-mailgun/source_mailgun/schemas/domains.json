@@ -1,11 +1,13 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "dkim_key_size": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "force_dkim_authority": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "ips": {
       "type": ["null", "array"],
@@ -14,7 +16,7 @@
       }
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "pool": {
       "type": ["null", "string"]
@@ -26,10 +28,37 @@
       "type": ["null", "string"]
     },
     "web_scheme": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "wildcard": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "skip_verification": {
+      "type": ["null", "boolean"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "require_tls": {
+      "type": ["null", "boolean"]
+    },
+    "is_disabled": {
+      "type": ["null", "boolean"]
+    },
+    "smtp_login": {
+      "type": ["null", "string"]
+    },
+    "web_prefix": {
+      "type": ["null", "string"]
     }
   }
 }

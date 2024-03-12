@@ -1,8 +1,11 @@
 plugins {
-    id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-connector-acceptance-test'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
 }
 
 application {
@@ -11,12 +14,9 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
+    implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.15.2'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
 
     // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
@@ -30,20 +30,5 @@ dependencies {
 
     //  MIT
     //  https://www.testcontainers.org/
-    testImplementation libs.connectors.testcontainers.elasticsearch
-    integrationTestJavaImplementation libs.connectors.testcontainers.elasticsearch
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-elasticsearch')
-}
-
-repositories {
-    maven {
-        name = "ESSnapshots"
-        url = "https://snapshots.elastic.co/maven/"
-    }
-    maven {
-        name = "ESJavaGithubPackages"
-        url = "https://maven.pkg.github.com/elastic/elasticsearch-java"
-    }
+    testImplementation 'org.testcontainers:elasticsearch:1.19.4'
 }

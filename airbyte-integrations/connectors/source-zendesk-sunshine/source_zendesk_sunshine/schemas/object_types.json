@@ -1,31 +1,32 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "key": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "schema": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "properties": {
-          "type": "object"
+          "type": ["null", "object"],
+          "additionalProperties": true
         },
         "required": {
-          "type": "array",
+          "type": ["null", "array"],
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
-        },
-        "additionalProperties": {
-          "type": "boolean"
         }
       }
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

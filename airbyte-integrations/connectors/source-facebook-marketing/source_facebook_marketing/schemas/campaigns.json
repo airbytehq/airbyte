@@ -28,6 +28,9 @@
     "bid_strategy": {
       "type": ["null", "string"]
     },
+    "boosted_object_id": {
+      "type": ["null", "string"]
+    },
     "budget_rebalance_flag": {
       "type": ["null", "boolean"]
     },
@@ -43,6 +46,9 @@
     "created_time": {
       "type": "string",
       "format": "date-time"
+    },
+    "configured_status": {
+      "type": ["null", "string"]
     },
     "effective_status": {
       "type": ["null", "string"]
@@ -103,6 +109,9 @@
     "start_time": {
       "type": "string",
       "format": "date-time"
+    },
+    "status": {
+      "type": ["null", "string"]
     },
     "stop_time": {
       "type": "string",

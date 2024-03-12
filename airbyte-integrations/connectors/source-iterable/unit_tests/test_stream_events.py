@@ -7,7 +7,6 @@ import json
 import pytest
 import requests
 import responses
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_iterable.streams import Events
 
 
@@ -193,7 +192,7 @@ def test_events_parse_response(response_objects, expected_objects, jsonl_body):
         response_body = json.dumps(response_objects)
     responses.add(responses.GET, "https://example.com", body=response_body)
     response = requests.get("https://example.com")
-    stream = Events(authenticator=NoAuth())
+    stream = Events(authenticator=None)
 
     if jsonl_body:
         records = [record for record in stream.parse_response(response)]

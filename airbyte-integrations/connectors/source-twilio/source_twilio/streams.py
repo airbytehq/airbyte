@@ -19,11 +19,15 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.datetime import DateTime
 from requests.auth import AuthBase
 
+TWILIO_CHAT_BASE = "https://chat.twilio.com/v2/"
+TWILIO_CONVERSATION_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
 TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
 TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
+TWILIO_TRUNKING_URL_BASE = "https://trunking.twilio.com/v1/"
+TWILIO_VERIFY_BASE_V2 = "https://verify.twilio.com/v2/"
 
 
 class TwilioStream(HttpStream, ABC):
@@ -67,8 +71,9 @@ class TwilioStream(HttpStream, ABC):
             for record in records:
                 for field in self.changeable_fields:
                     record.pop(field, None)
-                    yield record
-        yield from records
+                yield record
+        else:
+            yield from records
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """This method is called if we run into the rate limit.
@@ -428,6 +433,23 @@ class Executions(TwilioNestedStream):
         return {"flow_sid": record["sid"]}
 
 
+class Step(TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources
+    """
+
+    parent_stream = Executions
+    url_base = TWILIO_STUDIO_API_BASE
+    uri_from_subresource = False
+    data_field = "steps"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Flows/{stream_slice['flow_sid']}/Executions/{stream_slice['execution_sid']}/Steps"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}
+
+
 class OutgoingCallerIds(TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource"""
 
@@ -443,10 +465,62 @@ class Recordings(IncrementalTwilioStream, TwilioNestedStream):
     cursor_field = "date_created"
 
 
+class Services(TwilioStream):
+    """
+    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
+    """
+
+    url_base = TWILIO_CHAT_BASE
+
+    def path(self, **kwargs):
+        return "Services"
+
+
+class VerifyServices(TwilioStream):
+    """
+    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
+    """
+
+    # Unlike other endpoints, this one won't accept requests where pageSize >100
+    page_size = 100
+    data_field = "services"
+    url_base = TWILIO_VERIFY_BASE_V2
+
+    def path(self, **kwargs):
+        return "Services"
+
+
+class Roles(TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources
+    """
+
+    parent_stream = Services
+    url_base = TWILIO_CHAT_BASE
+    uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"Services/{ stream_slice['service_sid'] }/Roles"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"service_sid": record["sid"]}
+
+
 class Transcriptions(TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources"""
 
     parent_stream = Accounts
+
+
+class Trunks(TwilioStream):
+    """
+    https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties
+    """
+
+    url_base = TWILIO_TRUNKING_URL_BASE
+
+    def path(self, **kwargs):
+        return "Trunks"
 
 
 class Queues(TwilioNestedStream):
@@ -542,6 +616,21 @@ class Conversations(TwilioStream):
         return self.name.title()
 
 
+class ConversationParticipants(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-participant-resource"""
+
+    parent_stream = Conversations
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    data_field = "participants"
+    uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Conversations/{stream_slice['conversation_sid']}/Participants"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"conversation_sid": record["sid"]}
+
+
 class ConversationMessages(TwilioNestedStream):
     """https://www.twilio.com/docs/conversations/api/conversation-message-resource#list-all-conversation-messages"""
 
@@ -555,3 +644,28 @@ class ConversationMessages(TwilioNestedStream):
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"conversation_sid": record["sid"]}
+
+
+class Users(TwilioStream):
+    """https://www.twilio.com/docs/conversations/api/user-resource"""
+
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+
+    def path(self, **kwargs):
+        return self.name.title()
+
+
+class UserConversations(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations"""
+
+    parent_stream = Users
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    uri_from_subresource = False
+    data_field = "conversations"
+    primary_key = ["account_sid"]
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Users/{stream_slice['user_sid']}/Conversations"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"user_sid": record["sid"]}

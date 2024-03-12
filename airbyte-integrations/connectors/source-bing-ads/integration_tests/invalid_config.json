@@ -4,6 +4,7 @@
   "client_id": "123",
   "developer_token": "asgag4gwag3",
   "reports_start_date": "2018-11-13",
+  "lookback_window": 0,
   "hourly_reports": false,
   "daily_reports": false,
   "weekly_reports": true,

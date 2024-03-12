@@ -40,6 +40,10 @@ acceptance_tests:
             bypass_reason: "very volatile data"
           - name: "usage_records"
             bypass_reason: "very volatile data"
+          - name: step
+            bypass_reason: "No data for this stream currently"
+          - name: executions
+            bypass_reason: "No data for this stream currently"
         timeout_seconds: 600
         fail_on_extra_columns: false
   incremental:
@@ -53,7 +57,6 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
-        threshold_days: 30
         timeout_seconds: 3600
   full_refresh:
     tests:
@@ -62,4 +65,10 @@ acceptance_tests:
           # `constant_records_catalog.json` does not contain the available phone numbers streams,
           # as they may change on each request
         configured_catalog_path: "integration_tests/constant_records_catalog.json"
+        ignored_fields:
+          transcriptions:
+            - name: "date_created"
+              bypass_reason: "Floating data"
+            - name: "date_updated"
+              bypass_reason: "Floating data"
         timeout_seconds: 3600

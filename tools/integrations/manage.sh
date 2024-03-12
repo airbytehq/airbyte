@@ -64,14 +64,14 @@ cmd_build() {
 
   if [ "$run_tests" = false ] ; then
     echo "Building and skipping unit tests + integration tests..."
-    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)" -x test
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)" -x check
   else
     echo "Building and running unit tests + integration tests..."
     ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)"
 
     if test "$path" == "airbyte-integrations/bases/base-normalization"; then
       export RANDOM_TEST_SCHEMA="true"
-      ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:airbyteDocker
+      ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:assemble
     fi
 
     ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" integrationTest)"
@@ -107,86 +107,6 @@ cmd_test() {
   # TODO: needs to know to use alternate image tag from cmd_build_experiment
   echo "Running integration tests..."
   ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" integrationTest)"
-}
-
-# Bumps connector version in Dockerfile, definitions.yaml file, and updates seeds with gradle.
-# This does not build or test, it solely manages the versions of connectors to be +1'd.
-#
-# NOTE: this does NOT update changelogs because the changelog markdown files do not have a reliable machine-readable
-# format to automatically handle this. Someday it could though: https://github.com/airbytehq/airbyte/issues/12031
-cmd_bump_version() {
-  # Take params
-  local connector_path
-  local bump_version
-  connector_path="$1" # Should look like airbyte-integrations/connectors/source-X
-  bump_version="$2" || bump_version="patch"
-
-  # Set local constants
-  connector=${connector_path#airbyte-integrations/connectors/}
-  if [[ "$connector" =~ "source-" ]]; then
-    connector_type="source"
-  elif [[ "$connector" =~ "destination-" ]]; then
-    connector_type="destination"
-  else
-    echo "Invalid connector_type from $connector"
-    exit 1
-  fi
-  definitions_path="./airbyte-config-oss/init-oss/src/main/resources/seed/${connector_type}_definitions.yaml"
-  dockerfile="$connector_path/Dockerfile"
-  master_dockerfile="/tmp/master_${connector}_dockerfile"
-  # This allows getting the contents of a file without checking it out
-  git --no-pager show "origin/master:$dockerfile" > "$master_dockerfile"
-
-  # Current version always comes from master, this way we can always bump correctly relative to master
-  # verses a potentially stale local branch
-  current_version=$(_get_docker_image_version "$master_dockerfile")
-  local image_name; image_name=$(_get_docker_image_name "$dockerfile")
-  rm "$master_dockerfile"
-
-  ## Create bumped version
-  IFS=. read -r major_version minor_version patch_version <<<"${current_version##*-}"
-  case "$bump_version" in
-    "major")
-      ((major_version++))
-      minor_version=0
-      patch_version=0
-      ;;
-    "minor")
-      ((minor_version++))
-      patch_version=0
-      ;;
-    "patch")
-      ((patch_version++))
-      ;;
-    *)
-      echo "Invalid bump_version option: $bump_version. Valid options are major, minor, patch"
-      exit 1
-  esac
-
-  bumped_version="$major_version.$minor_version.$patch_version"
-  # This image should not already exist, if it does, something weird happened
-  _error_if_tag_exists "$image_name:$bumped_version"
-  echo "$connector:$current_version will be bumped to $connector:$bumped_version"
-
-  ## Write new version to files
-  # 1) Dockerfile
-  sed -i "s/$current_version/$bumped_version/g" "$dockerfile"
-
-  # 2) Definitions YAML file
-  definitions_check=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitions_path")
-
-  if [[ (-z "$definitions_check") ]]; then
-    echo "Could not find $connector in $definitions_path, exiting 1"
-    exit 1
-  fi
-
-  connector_name=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitions_path")
-  yq e "(.[] | select(.name == \"$connector_name\").dockerImageTag)|=\"$bumped_version\"" -i "$definitions_path"
-
-  # 3) Seed files
-  ./gradlew :airbyte-config:init:processResources
-
-  echo "Woohoo! Successfully bumped $connector:$current_version to $connector:$bumped_version"
 }
 
 cmd_publish() {
@@ -271,7 +191,10 @@ cmd_publish() {
   _error_if_tag_exists "$versioned_image"
 
   # building the connector
-  cmd_build "$path" "$run_tests"
+  if [ "$path" != "airbyte-cdk/python" ]; then
+    # The python CDK will already have been built and tested earlier in the github workflow.
+    cmd_build "$path" "$run_tests"
+  fi
 
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
@@ -308,11 +231,26 @@ cmd_publish() {
     # Alternative local approach @ https://github.com/docker/buildx/issues/301#issuecomment-755164475
     # We need to use the regular docker buildx driver (not docker container) because we need this intermediate contaiers to be available for later build steps
 
+
+    echo Installing arm64 docker emulation
+    docker run --privileged --rm tonistiigi/binfmt --install arm64
+
     for arch in $(echo $build_arch | sed "s/,/ /g")
     do
-      echo "building base images for $arch"
-      docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
-      docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
+      # These images aren't needed for the CDK
+      if [ "$path" != "airbyte-cdk/python" ]; then
+        echo "building base images for $arch"
+        docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
+        docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
+      fi
+
+      # For a short while (https://github.com/airbytehq/airbyte/pull/25034), destinations rely on the normalization image to build
+      # Thanks to gradle, destinstaions which need normalization will already have built base-normalization's "build" artifacts
+      if [[ "$image_name" == *"destination-"* ]]; then
+        if [ -f "airbyte-integrations/bases/base-normalization/build/sshtunneling.sh" ]; then
+          docker buildx build -t airbyte/normalization:dev --platform $arch --load airbyte-integrations/bases/base-normalization
+        fi
+      fi
 
       local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
       echo "Publishing new version ($arch_versioned_image) from $path"

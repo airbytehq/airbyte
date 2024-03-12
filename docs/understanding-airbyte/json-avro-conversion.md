@@ -623,8 +623,8 @@ Its corresponding Avro schema will be:
 }
 ```
 
-More examples can be found in the Json to Avro conversion [test cases](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-s3/src/test/resources/parquet/json_schema_converter/json_conversion_test_cases.json).
+More examples can be found in the Json to Avro conversion [test cases](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/bases/base-java-s3/src/test/resources/parquet/json_schema_converter).
 
 ## Implementation
-- Schema conversion: [JsonToAvroSchemaConverter](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-s3/src/main/java/io/airbyte/integrations/destination/s3/avro/JsonToAvroSchemaConverter.java)
+- Schema conversion: [JsonToAvroSchemaConverter](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-java-s3/src/main/java/io/airbyte/integrations/destination/s3/avro/JsonToAvroSchemaConverter.java)
 - Object conversion: [airbytehq/json-avro-converter](https://github.com/airbytehq/json-avro-converter) (forked and modified from [allegro/json-avro-converter](https://github.com/allegro/json-avro-converter)).

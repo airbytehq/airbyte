@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Attribute Definitions",
+  "type": ["null", "object"],
+  "properties": {
+    "title": {
+      "type": ["null", "string"]
+    },
+    "subject": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "group": {
+      "type": ["null", "string"]
+    },
+    "nullable": {
+      "type": ["null", "boolean"]
+    },
+    "repeatable": {
+      "type": ["null", "boolean"]
+    },
+    "operators": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "value": {
+            "type": ["null", "string"]
+          },
+          "title": {
+            "type": ["null", "string"]
+          },
+          "terminal": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    },
+    "values": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "value": {
+            "type": ["null", "string"]
+          },
+          "title": {
+            "type": ["null", "string"]
+          },
+          "enabled": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    },
+    "condition": {
+      "type": ["null", "string"]
+    },
+    "confition": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "collection_key": {
+          "type": ["null", "string"]
+        },
+        "item_key": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

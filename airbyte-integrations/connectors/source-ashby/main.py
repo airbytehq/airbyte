@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_ashby import SourceAshby
+from source_ashby.run import run
 
 if __name__ == "__main__":
-    source = SourceAshby()
-    launch(source, sys.argv[1:])
+    run()

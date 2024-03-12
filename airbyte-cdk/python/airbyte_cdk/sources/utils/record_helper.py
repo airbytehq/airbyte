@@ -20,8 +20,8 @@ def stream_data_to_airbyte_message(
     if schema is None:
         schema = {}
 
-    if isinstance(data_or_message, dict):
-        data = data_or_message
+    if isinstance(data_or_message, Mapping):
+        data = dict(data_or_message)
         now_millis = int(datetime.datetime.now().timestamp() * 1000)
         # Transform object fields according to config. Most likely you will
         # need it to normalize values against json schema. By default no action

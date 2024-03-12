@@ -86,5 +86,544 @@
         "date": "20990101"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_acquisition_first_user_medium_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_acquisition_first_user_source_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_acquisition_first_user_source_medium_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_acquisition_first_user_source_platform_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_acquisition_first_user_campaign_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_acquisition_first_user_google_ads_ad_network_type_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_acquisition_first_user_google_ads_ad_group_name_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "traffic_acquisition_session_source_medium_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "traffic_acquisition_session_medium_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "traffic_acquisition_session_source_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "traffic_acquisition_session_campaign_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "traffic_acquisition_session_default_channel_grouping_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "traffic_acquisition_session_source_platform_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "events_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "conversions_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "pages_title_and_screen_class_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "pages_path_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "pages_title_and_screen_name_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "content_group_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_id_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographic_country_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographic_region_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographic_city_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographic_language_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tech_browser_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tech_device_category_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tech_device_model_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tech_screen_resolution_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tech_app_version_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tech_platform_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tech_platform_device_category_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tech_operating_system_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tech_os_with_version_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographic_interest_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_report_combined"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_3_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "publisher_ads_ad_unit_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographic_age_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "publisher_ads_ad_format_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_4_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_5_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_2_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_name_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "publisher_ads_page_path_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographic_gender_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_brand_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "publisher_ads_ad_source_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "weekly_events_report"
+      },
+      "stream_state": {
+        "yearWeek": "209915"
+      }
+    }
   }
 ]

@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "repository": {
-      "type": ["string"]
+      "type": "string"
     },
     "id": {
       "type": ["null", "integer"]
@@ -125,11 +125,11 @@
           "type": ["null", "integer"]
         },
         "created_at": {
-          "type": ["null", "string"],
+          "type": "string",
           "format": "date-time"
         },
         "updated_at": {
-          "type": ["null", "string"],
+          "type": "string",
           "format": "date-time"
         },
         "closed_at": {
@@ -152,6 +152,7 @@
       "type": ["null", "integer"]
     },
     "pull_request": {
+      "type": ["null", "object"],
       "properties": {
         "url": {
           "type": ["null", "string"]
@@ -164,23 +165,116 @@
         },
         "patch_url": {
           "type": ["null", "string"]
+        },
+        "merged_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
         }
-      },
-      "type": ["null", "object"]
+      }
     },
     "closed_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "author_association": {
+      "type": ["null", "string"]
+    },
+    "draft": {
+      "type": ["null", "boolean"]
+    },
+    "reactions": {
+      "$ref": "reactions.json"
+    },
+    "timeline_url": {
+      "type": ["null", "string"]
+    },
+    "performed_via_github_app": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "slug": {
+          "type": ["null", "string"]
+        },
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "owner": {
+          "$ref": "user.json"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "external_url": {
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "permissions": {
+          "type": ["null", "object"],
+          "properties": {
+            "issues": {
+              "type": ["null", "string"]
+            },
+            "metadata": {
+              "type": ["null", "string"]
+            },
+            "pull_requests": {
+              "type": ["null", "string"]
+            },
+            "actions": {
+              "type": ["null", "string"]
+            },
+            "checks": {
+              "type": ["null", "string"]
+            },
+            "contents": {
+              "type": ["null", "string"]
+            },
+            "deployments": {
+              "type": ["null", "string"]
+            },
+            "discussions": {
+              "type": ["null", "string"]
+            },
+            "repository_projects": {
+              "type": ["null", "string"]
+            },
+            "statuses": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "state_reason": {
       "type": ["null", "string"]
     }
   }

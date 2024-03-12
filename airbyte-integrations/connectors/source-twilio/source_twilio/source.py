@@ -24,6 +24,7 @@ from source_twilio.streams import (
     ConferenceParticipants,
     Conferences,
     ConversationMessages,
+    ConversationParticipants,
     Conversations,
     DependentPhoneNumbers,
     Executions,
@@ -35,9 +36,16 @@ from source_twilio.streams import (
     OutgoingCallerIds,
     Queues,
     Recordings,
+    Roles,
+    Services,
+    Step,
     Transcriptions,
+    Trunks,
     UsageRecords,
     UsageTriggers,
+    UserConversations,
+    Users,
+    VerifyServices,
 )
 
 RETENTION_WINDOW_LIMIT = 400
@@ -98,6 +106,7 @@ class SourceTwilio(AbstractSource):
             Conferences(**incremental_stream_kwargs),
             Conversations(**full_refresh_stream_kwargs),
             ConversationMessages(**full_refresh_stream_kwargs),
+            ConversationParticipants(**full_refresh_stream_kwargs),
             DependentPhoneNumbers(**full_refresh_stream_kwargs),
             Flows(**full_refresh_stream_kwargs),
             Executions(**full_refresh_stream_kwargs),
@@ -108,8 +117,15 @@ class SourceTwilio(AbstractSource):
             OutgoingCallerIds(**full_refresh_stream_kwargs),
             Queues(**full_refresh_stream_kwargs),
             Recordings(**incremental_stream_kwargs),
+            Roles(**full_refresh_stream_kwargs),
+            Services(**full_refresh_stream_kwargs),
+            Step(**full_refresh_stream_kwargs),
             Transcriptions(**full_refresh_stream_kwargs),
+            Trunks(**full_refresh_stream_kwargs),
             UsageRecords(**incremental_stream_kwargs),
             UsageTriggers(**full_refresh_stream_kwargs),
+            Users(**full_refresh_stream_kwargs),
+            UserConversations(**full_refresh_stream_kwargs),
+            VerifyServices(**full_refresh_stream_kwargs),
         ]
         return streams

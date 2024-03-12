@@ -5,7 +5,7 @@
         "name": "transactions",
         "json_schema": {},
         "source_defined_cursor": true,
-        "default_cursor_field": ["transaction_initiation_date"],
+        "default_cursor_field": ["transaction_updated_date"],
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",

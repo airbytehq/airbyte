@@ -75,7 +75,7 @@ class HarvestStream(HttpStream, ABC):
 class IncrementalHarvestStream(HarvestStream, ABC):
     cursor_field = "updated_at"
 
-    def __init__(self, replication_start_date: pendulum.datetime = None, **kwargs):
+    def __init__(self, replication_start_date: Optional[pendulum.DateTime] = None, **kwargs) -> None:
         super().__init__(**kwargs)
         self._replication_start_date = replication_start_date
 
@@ -96,7 +96,12 @@ class IncrementalHarvestStream(HarvestStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        replication_start_date = stream_state.get(self.cursor_field) or self._replication_start_date
+
+        replication_start_date = None
+        if stream_state.get(self.cursor_field):
+            replication_start_date = stream_state.get(self.cursor_field)
+        elif self._replication_start_date:
+            replication_start_date = self._replication_start_date.format("YYYY-MM-DDTHH:mm:ssZ")
         params.update({"updated_since": replication_start_date})
         return params
 
@@ -299,7 +304,7 @@ class ReportsBase(HarvestStream, ABC):
         super().__init__(**kwargs)
 
         current_date = pendulum.now().date()
-        self._from_date = from_date or current_date.subtract(years=1)
+        self._from_date = from_date or current_date.subtract(days=365)
         self._to_date = to_date or current_date
         # `to` date greater than `from` date causes an exception on Harvest
         if self._from_date > current_date:
@@ -353,9 +358,9 @@ class IncrementalReportsBase(ReportsBase, ABC):
             start_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
 
         while start_date < end_date:
-            # Max size of date chunks is 1 year
+            # Max size of date chunks is 365 days
             # Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/
-            end_date_slice = end_date if start_date >= end_date.subtract(years=1) else start_date.add(years=1)
+            end_date_slice = end_date if start_date >= end_date.subtract(days=365) else start_date.add(days=365)
             date_slice = {"from": start_date.strftime(self.date_param_template), "to": end_date_slice.strftime(self.date_param_template)}
 
             start_date = end_date_slice

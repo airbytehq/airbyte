@@ -1,0 +1,30 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${domain_name}/api/v2
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-freshservice
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9bb85338-ea95-4c93-b267-6be89125b267
+  dockerImageTag: 1.3.1
+  dockerRepository: airbyte/source-freshservice
+  githubIssueLabel: source-freshservice
+  icon: freshservice.svg
+  license: MIT
+  name: Freshservice
+  releaseDate: "2021-10-29"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/freshservice
+  tags:
+    - language:python
+    - cdk:low-code
+metadataSpecVersion: "1.0"

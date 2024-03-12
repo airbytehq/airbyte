@@ -1,6 +1,9 @@
 {
   "type": ["null", "object"],
   "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
     "type": {
       "type": ["null", "string"]
     },
@@ -48,6 +51,9 @@
     },
     "updated_at": {
       "type": ["null", "integer"]
+    },
+    "messenger_writable": {
+      "type": ["null", "boolean"]
     }
   }
 }

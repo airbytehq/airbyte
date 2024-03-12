@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Application Fees Refunds Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "number"]
+    },
+    "balance_transaction": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "number"]
+    },
+    "updated": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "fee": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "fee": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

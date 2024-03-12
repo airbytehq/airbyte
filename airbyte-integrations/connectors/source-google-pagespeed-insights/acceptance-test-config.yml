@@ -25,9 +25,7 @@ acceptance_tests:
         # really works and produces multiple category request params
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: yes
           exact_order: yes
-          extra_records: no
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
@@ -35,4 +33,8 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         ignored_fields:
-          pagespeed: ["lighthouseResult", "analysisUTCTimestamp"] # This differs between two runs, as they are newly generated per run
+          pagespeed:
+            - name: lighthouseResult
+              bypass_reason: "This differs between two runs, as they are newly generated per run"
+            - name: analysisUTCTimestamp
+              bypass_reason: "This differs between two runs, as they are newly generated per run"

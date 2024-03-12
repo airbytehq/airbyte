@@ -8,11 +8,12 @@ import static io.airbyte.integrations.source.elasticsearch.typemapper.Elasticsea
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.BaseConnector;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -100,11 +101,12 @@ public class ElasticsearchSource extends BaseConnector implements Source {
         .map(ConfiguredAirbyteStream::getStream)
         .forEach(stream -> {
           AutoCloseableIterator<JsonNode> data = ElasticsearchUtils.getDataIterator(connection, stream);
-          AutoCloseableIterator<AirbyteMessage> messageIterator = ElasticsearchUtils.getMessageIterator(data, stream.getName());
+          AutoCloseableIterator<AirbyteMessage> messageIterator =
+              ElasticsearchUtils.getMessageIterator(data, stream.getName(), stream.getNamespace());
           iteratorList.add(messageIterator);
         });
     return AutoCloseableIterators
-        .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList), () -> {
+        .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace), () -> {
           LOGGER.info("Closing server connection.");
           connection.close();
           LOGGER.info("Closed server connection.");

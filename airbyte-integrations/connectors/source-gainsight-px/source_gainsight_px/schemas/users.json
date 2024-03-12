@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Users Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "aptrinsicId": {
+      "type": ["null", "string"]
+    },
+    "identifyId": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"],
+      "enum": ["LEAD", "USER", "VISITOR", "EMPTY_USER_TYPE"]
+    },
+    "gender": {
+      "type": ["null", "string"],
+      "enum": ["MALE", "FEMALE", "OTHER", "EMPTY_GENDER"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "firstName": {
+      "type": ["null", "string"]
+    },
+    "lastName": {
+      "type": ["null", "string"]
+    },
+    "lastSeenDate": {
+      "type": ["null", "integer"],
+      "format": "int64"
+    },
+    "signUpDate": {
+      "type": ["null", "integer"],
+      "format": "int64"
+    },
+    "firstVisitDate": {
+      "type": ["null", "integer"],
+      "format": "int64"
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "score": {
+      "type": ["null", "integer"],
+      "format": "int64"
+    },
+    "role": {
+      "type": ["null", "string"]
+    },
+    "subscriptionId": {
+      "type": ["null", "string"]
+    },
+    "accountId": {
+      "type": ["null", "string"]
+    },
+    "numberOfVisits": {
+      "type": ["null", "integer"],
+      "format": "int32"
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "propertyKeys": {
+      "type": ["null", "array"],
+      "description": "Aptrinsic Tag Key, at least one is required",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "examples": [["AP-XXXXXXXXXX-2"]]
+    },
+    "createDate": {
+      "type": ["null", "integer"],
+      "format": "int64"
+    },
+    "lastModifiedDate": {
+      "type": ["null", "integer"],
+      "format": "int64"
+    },
+    "globalUnsubscribe": {
+      "type": ["null", "boolean"]
+    },
+    "sfdcContactId": {
+      "type": ["null", "string"]
+    },
+    "lastVisitedUserAgentData": {
+      "type": ["null", "array"],
+      "items": {
+        "propertyKey": {
+          "type": ["null", "string"]
+        },
+        "userAgent": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "rawUserAgent": {
+              "type": ["null", "string"]
+            },
+            "device": {
+              "type": ["null", "string"]
+            },
+            "platformType": {
+              "type": ["null", "string"]
+            },
+            "platformVersion": {
+              "type": ["null", "string"]
+            },
+            "browserType": {
+              "type": ["null", "string"]
+            },
+            "browserVersion": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "id": {
+      "type": ["null", "string"],
+      "description": "Synonym for identifyId, output only, not filterable"
+    },
+    "lastInferredLocation": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "countryName": {
+          "type": ["null", "string"]
+        },
+        "countryCode": {
+          "type": ["null", "string"]
+        },
+        "stateName": {
+          "type": ["null", "string"]
+        },
+        "stateCode": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "street": {
+          "type": ["null", "string"]
+        },
+        "postalCode": {
+          "type": ["null", "string"]
+        },
+        "continent": {
+          "type": ["null", "string"]
+        },
+        "regionName": {
+          "type": ["null", "string"]
+        },
+        "timeZone": {
+          "type": ["null", "string"]
+        },
+        "coordinates": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "latitude": {
+              "type": ["null", "number"]
+            },
+            "longitude": {
+              "type": ["null", "number"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -137,9 +137,6 @@
         }
       }
     },
-    "has_advertiser_opted_in_odax": {
-      "type": ["null", "boolean"]
-    },
     "has_migrated_permissions": {
       "type": ["null", "boolean"]
     },

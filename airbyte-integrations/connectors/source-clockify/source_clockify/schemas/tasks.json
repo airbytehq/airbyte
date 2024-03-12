@@ -1,17 +1,21 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "properties": {
+    "budgetEstimate": {
+      "type": ["null", "number"]
+    },
     "assigneeId": {
       "type": ["null", "string"]
     },
     "assigneeIds": {
       "items": {
-        "type": "string"
+        "type": ["null", "string"]
       },
-      "type": "array"
+      "type": ["null", "array"]
     },
     "billable": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "costRate": {
       "anyOf": [
@@ -30,7 +34,7 @@
               "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         }
       ]
     },
@@ -38,7 +42,7 @@
       "type": ["null", "string"]
     },
     "estimate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "hourlyRate": {
       "anyOf": [
@@ -48,30 +52,30 @@
         {
           "properties": {
             "amount": {
-              "type": "integer"
+              "type": ["null", "integer"]
             },
             "currency": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         }
       ]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "projectId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "userGroupIds": {
-      "type": "array"
+      "type": ["null", "array"]
     }
   },
   "type": "object"

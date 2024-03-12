@@ -1,8 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
       "type": ["null", "string"]
     },
     "reference_num": {
@@ -15,7 +19,7 @@
       "type": ["null", "string"]
     },
     "workflow_status": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
           "type": ["null", "string"]
@@ -35,7 +39,7 @@
       }
     },
     "description": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
           "type": ["null", "string"]

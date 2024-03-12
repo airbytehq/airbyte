@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import csv
 import io
 import logging
 import os
@@ -168,15 +169,25 @@ class SFTPClient:
 
         return sorted_files
 
+    def peek_line(self, f):
+        pos = f.tell()
+        line = f.readline()
+        f.seek(pos)
+        return line
+
     @backoff.on_exception(backoff.expo, (socket.timeout), max_tries=5, factor=2)
-    def fetch_file(self, fn: Mapping[str, Any], file_type="csv") -> pd.DataFrame:
+    def fetch_file(self, fn: Mapping[str, Any], separator, file_type="csv") -> pd.DataFrame:
         try:
-            with self._connection.open(fn["filepath"], "rb") as f:
+            with self._connection.open(fn["filepath"], "r") as f:
                 df: pd.DataFrame = None
+
+                if not separator:
+                    dialect = csv.Sniffer().sniff(self.peek_line(f=f))
+                    separator = dialect.delimiter
 
                 # Using pandas to make reading files in different formats easier
                 if file_type == "csv":
-                    df = pd.read_csv(f)
+                    df = pd.read_csv(f, engine="python", sep=separator)
                 elif file_type == "json":
                     df = pd.read_json(f, lines=True)
                 else:
@@ -196,10 +207,10 @@ class SFTPClient:
 
             raise Exception("Unable to read file: %s" % e) from e
 
-    def fetch_files(self, files, file_type="csv") -> Tuple[datetime, Dict[str, Any]]:
+    def fetch_files(self, files, separator, file_type="csv") -> Tuple[datetime, Dict[str, Any]]:
         logger.info("Fetching %s files", len(files))
         for fn in files:
-            records = self.fetch_file(fn, file_type)
+            records = self.fetch_file(fn=fn, separator=separator, file_type=file_type)
             yield (fn["last_modified"], records.to_dict("records"))
 
         self.close()

@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.destination.databricks;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
@@ -53,7 +53,8 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
   public void insertRecordsInternal(final JdbcDatabase database,
                                     final List<AirbyteRecordMessage> records,
                                     final String schemaName,
-                                    final String tmpTableName) throws SQLException {
+                                    final String tmpTableName)
+      throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
     final String insertQueryComponent = String.format(
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",

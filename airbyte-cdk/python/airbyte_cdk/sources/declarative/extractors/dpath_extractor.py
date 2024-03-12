@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config, Record
+from airbyte_cdk.sources.declarative.types import Config
 
 
 @dataclass
@@ -63,7 +63,7 @@ class DpathExtractor(RecordExtractor):
             if isinstance(self.field_path[path_index], str):
                 self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
         response_body = self.decoder.decode(response)
         if len(self.field_path) == 0:
             extracted = response_body

@@ -3,10 +3,13 @@
   "type": "object",
   "properties": {
     "repository": {
-      "type": ["string"]
+      "type": "string"
+    },
+    "branch": {
+      "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "url": {
@@ -37,7 +40,7 @@
               "type": ["null", "string"]
             },
             "date": {
-              "type": ["null", "string"],
+              "type": "string",
               "format": "date-time"
             }
           }
@@ -52,7 +55,7 @@
               "type": ["null", "string"]
             },
             "date": {
-              "type": ["null", "string"],
+              "type": "string",
               "format": "date-time"
             }
           }
