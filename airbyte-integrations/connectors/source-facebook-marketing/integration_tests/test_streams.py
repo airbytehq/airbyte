@@ -60,7 +60,7 @@ class TestFacebookMarketingSource:
         account_id = config_with_include_deleted["account_id"]
 
         assert states, "incremental read should produce states"
-        for name, state in states[-1].state.data.items():
+        for name, state in states[-1].state.stream.stream_state.dict():
             assert "filter_statuses" in state[account_id], f"State for {name} should include `filter_statuses` flag"
 
         assert deleted_records, f"{stream_name} stream should have deleted records returned"
