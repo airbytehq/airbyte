@@ -456,6 +456,9 @@ class HttpRequester(Requester):
             json=self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json),
             data=self._request_body_data(stream_state, stream_slice, next_page_token, request_body_data),
         )
+        import time
+
+        time.sleep(1)
 
         response = self._send_with_retry(request, log_formatter=log_formatter)
         return self._validate_response(response)

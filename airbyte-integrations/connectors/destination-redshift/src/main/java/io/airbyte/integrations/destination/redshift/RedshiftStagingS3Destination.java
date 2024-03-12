@@ -20,6 +20,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
@@ -50,6 +51,7 @@ import io.airbyte.integrations.destination.redshift.operations.RedshiftS3Staging
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState;
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -58,6 +60,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -176,8 +179,10 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
-    return new RedshiftDestinationHandler(databaseName, database);
+  protected JdbcDestinationHandler<RedshiftState> getDestinationHandler(final String databaseName,
+                                                                        final JdbcDatabase database,
+                                                                        String rawTableSchema) {
+    return new RedshiftDestinationHandler(databaseName, database, rawTableSchema);
   }
 
   @Override
@@ -217,22 +222,26 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final TyperDeduper typerDeduper;
     final JdbcDatabase database = getDatabase(getDataSource(config));
     final String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-    final RedshiftDestinationHandler redshiftDestinationHandler = new RedshiftDestinationHandler(databaseName, database);
     final CatalogParser catalogParser;
+    final String rawNamespace;
     if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent()) {
-      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get());
+      rawNamespace = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get();
+      catalogParser = new CatalogParser(sqlGenerator, rawNamespace);
     } else {
+      rawNamespace = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
       catalogParser = new CatalogParser(sqlGenerator);
     }
+    final RedshiftDestinationHandler redshiftDestinationHandler = new RedshiftDestinationHandler(databaseName, database, rawNamespace);
     parsedCatalog = catalogParser.parseCatalog(catalog);
     final JdbcV1V2Migrator migrator = new JdbcV1V2Migrator(getNamingResolver(), database, databaseName);
     final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
     if (disableTypeDedupe) {
-      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator);
+      typerDeduper =
+          new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());
     } else {
       typerDeduper =
-          new DefaultTyperDeduper(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator);
+          new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());
     }
     return StagingConsumerFactory.builder(
         outputRecordCollector,
@@ -252,7 +261,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   /**
    * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
    * file buffers and sets the minimum number to the default
-   *
+   * <p>
    * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
    * not been thoroughly load tested across all instance sizes
    *
