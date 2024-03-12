@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.70.0
+testing
+
 ## 0.69.2
 low-code: improve error message when a custom component cannot be found
 
