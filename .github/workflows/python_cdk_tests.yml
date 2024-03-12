@@ -10,7 +10,7 @@ on:
   push:
     branches:
       - master
-      - ella/gut-gradle
+#      - ella/gut-gradle
   pull_request:
     types:
       - opened
