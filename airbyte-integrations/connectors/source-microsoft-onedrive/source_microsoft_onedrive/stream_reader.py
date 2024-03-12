@@ -223,7 +223,8 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
 
     def get_all_files(self):
         yield from self.get_files_by_drive_name(self.config.drive_name, self.config.folder_path)
-        yield from self._get_shared_files_from_all_drives()
+        if self.config.include_shared_items:
+            yield from self._get_shared_files_from_all_drives()
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """

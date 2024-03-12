@@ -22,15 +22,16 @@ This page contains the setup guide and reference information for the Microsoft O
 4. Enter the name for the Microsoft OneDrive connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
 6. Enter **Folder Path**. 
-7. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft OneDrive account**. Log in and authorize your Microsoft account.
-8. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
-9. Add a stream:
-   1. Write the **File Type**
-   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
-   3. Give a **Name** to the stream
-   4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
-   5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-10. Click **Set up source**
+7. Toggle the **Include Shared Items** button to search within shared items for files matching the defined stream pattern. Note that drive name and folder path are only relevant for your personal OneDrive and won't affect shared items.
+8. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft OneDrive account**. Log in and authorize your Microsoft account. 
+9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
+10. Add a stream:
+    1. Write the **File Type**
+    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
+    3. Give a **Name** to the stream
+    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
+    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below. 
+11. Click **Set up source**
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -80,18 +81,19 @@ This source requires **Application permissions**. Follow these [instructions](ht
 3. On the **Set up** the source page, select **Microsoft OneDrive** from the Source type dropdown.
 4. Enter the name for the Microsoft OneDrive connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
-6. Enter **Folder Path**. 
-7. Switch to **Service Key Authentication** 
-8. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. 
-9. Enter **Tenant ID**, **Client ID** and **Client secret**. 
-10. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
-11. Add a stream:
+6. Enter **Folder Path**.
+7. Toggle the **Include Shared Items** button to search within shared items for files matching the defined stream pattern. Note that drive name and folder path are only relevant for your personal OneDrive and won't affect shared items.
+8. Switch to **Service Key Authentication**
+9. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. 
+10. Enter **Tenant ID**, **Client ID** and **Client secret**. 
+11. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
+12. Add a stream:
     1. Write the **File Type**
     2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
     3. Give a **Name** to the stream
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
     5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below. 
-12. Click **Set up source**
+13. Click **Set up source**
 
 <!-- /env:oss -->
 

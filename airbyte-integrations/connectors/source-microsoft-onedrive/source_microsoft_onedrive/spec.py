@@ -92,6 +92,13 @@ class SourceMicrosoftOneDriveSpec(AbstractFileBasedSpec, BaseModel):
     folder_path: str = Field(
         title="Folder Path", description="Path to folder of the Microsoft OneDrive drive where the file(s) exist.", order=3
     )
+    include_shared_items: bool = Field(
+        title="Include Shared Items",
+        description="Whether to search within shared items for files matching the defined stream pattern. Drive name and folder path are "
+        "only relevant for your personal OneDrive and won't affect shared items.",
+        default=False,
+        order=4,
+    )
 
     @classmethod
     def documentation_url(cls) -> str:
