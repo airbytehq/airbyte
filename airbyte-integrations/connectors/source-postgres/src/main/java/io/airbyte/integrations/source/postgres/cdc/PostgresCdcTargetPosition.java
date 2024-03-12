@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres.cdc;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.PgLsn;
 import io.airbyte.cdk.db.PostgresUtils;
@@ -108,26 +109,34 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
     final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
 
-    final String stateOffsetLsnCommit = offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : null;
-    if (stateOffsetLsnCommit == null) {
+    if (offsetJson.get("lsn_commit") == null) {
       return false;
     }
+    final String stateOffsetLsnCommit = String.valueOf(offsetJson.get("lsn_commit"));
 
     try {
       ObjectMapper objectMapper = new ObjectMapper();
       TypeReference<List<String>> listType = new TypeReference<>() {};
-      /*
-       * The event source structure is : { "version":"2.4.0.Final", "connector":"postgresql",
-       * "name":"db_pkgzzfnybb", "ts_ms":1710283178042, "snapshot":"false", "db":"db_pkgzzfnybb",
-       * "sequence":"[\"30660608\",\"30660608\"]", "schema":"models_schema", "table":"models", "txId":777,
-       * "lsn":30660608, "xmin":null } See
-       * https://debezium.io/documentation/reference/2.4/connectors/postgresql.html#postgresql-create-
-       * events for the full event structure.
+      /* The event source structure is :
+          {
+             "version":"2.4.0.Final",
+             "connector":"postgresql",
+             "name":"db_pkgzzfnybb",
+             "ts_ms":1710283178042,
+             "snapshot":"false",
+             "db":"db_pkgzzfnybb",
+             "sequence":"[\"30660608\",\"30660608\"]",
+             "schema":"models_schema",
+             "table":"models",
+             "txId":777,
+             "lsn":30660608,
+             "xmin":null
+          }
+          See https://debezium.io/documentation/reference/2.4/connectors/postgresql.html#postgresql-create-events for the full event structure.
        */
       final JsonNode lsnSequenceNode = event.eventValueAsJson().get("source").get("sequence");
       List<String> lsnSequence = objectMapper.readValue(lsnSequenceNode.asText(), listType);
-      // The sequence field is a pair of [lsn_commit, lsn_processed]. We want to make sure
-      // lsn_commit(event) is compared against
+      // The sequence field is a pair of [lsn_commit, lsn_processed]. We want to make sure lsn_commit(event) is compared against
       // lsn_commit(state_offset). For the event, either of the lsn values can be null.
       String eventLsnCommit = lsnSequence.get(0);
       if (eventLsnCommit == null) {
