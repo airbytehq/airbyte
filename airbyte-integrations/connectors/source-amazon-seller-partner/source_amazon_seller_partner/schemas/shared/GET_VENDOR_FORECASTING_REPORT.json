@@ -1,0 +1,33 @@
+{
+  "forecastGenerationDate": {
+    "type": ["null", "string"],
+    "format": "date"
+  },
+  "asin": {
+    "type": ["null", "string"]
+  },
+  "startDate": {
+    "type": ["null", "string"],
+    "format": "date"
+  },
+  "endDate": {
+    "type": ["null", "string"],
+    "format": "date"
+  },
+  "meanForecastUnits": {
+    "type": ["null", "number"]
+  },
+  "p70ForecastUnits": {
+    "type": ["null", "number"]
+  },
+  "p80ForecastUnits": {
+    "type": ["null", "number"]
+  },
+  "p90ForecastUnits": {
+    "type": ["null", "number"]
+  },
+  "dataEndTime": {
+    "type": ["null", "string"],
+    "format": "date"
+  }
+}
