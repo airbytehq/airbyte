@@ -142,7 +142,7 @@ public class AbstractJdbcDestinationTest {
     }
 
     @Override
-    protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database) {
+    protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database, String rawTableSchema) {
       return null;
     }
 

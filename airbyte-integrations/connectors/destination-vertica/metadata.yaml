@@ -1,9 +1,9 @@
 data:
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   connectorSubtype: database
   connectorType: destination
   definitionId: ca81ee7c-3163-9678-af40-094cc31e5e42
@@ -20,5 +20,5 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
 metadataSpecVersion: "1.0"
