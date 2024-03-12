@@ -254,7 +254,7 @@ cmd_publish() {
 
       local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
       echo "Publishing new version ($arch_versioned_image) from $path"
-      docker buildx build -t $arch_versioned_image --platform $arch --push $path
+      docker buildx build -t $arch_versioned_image --platform $arch
       docker manifest create $versioned_image --amend $arch_versioned_image
 
       if [ "$pre_release" != "true" ]; then
