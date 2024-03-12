@@ -19,7 +19,7 @@ include = "destination_pinecone"
 [tool.poetry.dependencies]
 python = "^3.10"
 airbyte-cdk = {version = "0.57.0", extras = ["vector-db-based"]}
-pinecone-client = {version = "<3.0", extras = ["grpc"]}
+pinecone-client = {version = "2.2.4", extras = ["grpc"]}
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=6.2,<7.0"
