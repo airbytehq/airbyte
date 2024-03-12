@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Set root to airbyte-cdk: needed for 2,
 ROOT_DIR=$(cd ../../ && pwd)
 export ROOT_DIR
