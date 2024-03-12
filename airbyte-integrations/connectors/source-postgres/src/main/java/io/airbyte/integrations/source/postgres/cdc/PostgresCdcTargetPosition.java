@@ -109,8 +109,14 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
     final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
 
-    final String offset_lsn =
-        offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : String.valueOf(offsetJson.get("lsn"));
+    final String offset_lsn = offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : null;
+    //final String offset_lsn = offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn")) : null;
+    if (offset_lsn == null) {
+      return false;
+    }
+    //final String event_lsn = String.valueOf(event.eventValueAsJson().get("source").get("lsn"));
+    //return Long.parseLong(event_lsn) > Long.parseLong(offset_lsn);
+
     try {
       ObjectMapper objectMapper = new ObjectMapper();
       TypeReference<List<String>> listType = new TypeReference<>() {};
