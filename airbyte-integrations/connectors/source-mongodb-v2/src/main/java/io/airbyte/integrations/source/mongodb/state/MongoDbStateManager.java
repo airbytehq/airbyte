@@ -308,13 +308,13 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
         updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
       }
     } else {
-      //deleteStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
-      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-      var lastId = streamPairToLastIdMap.get(pair);
-      final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
-              .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
-      updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
-              new MongoDbStreamState(null, FULL_REFRESH, idType));
+      deleteStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
+//      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+//      var lastId = streamPairToLastIdMap.get(pair);
+//      final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
+//              .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+//      updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
+//              new MongoDbStreamState(null, FULL_REFRESH, idType));
     }
     return toState();
   }
