@@ -1,3 +1,7 @@
+#!/bin/bash
+
+set -e
+
 # installReqs
 echo "Installing dependencies..."
 pip install ".[dev,tests]"
