@@ -441,20 +441,21 @@ This guide aims to assist customers upgrading to the latest version of the Airby
 
 1. **Creating or Updating Kubernetes Secrets**
 
-   If using AWS access keys, create a Kubernetes secret to store these credentials. If relying on an IAM role from an instance profile, this step can be skipped.
-   
-   Apply the following Kubernetes manifest, replacing `<aws-s3-access-key-id>` and `<aws-s3-secret-access-key>` with your actual AWS credentials:
+If using AWS access keys, create a Kubernetes secret to store these credentials. If relying on an IAM role from an instance profile, this step can be skipped.
 
-   ```yaml
-   apiVersion: v1
-   kind: Secret
-   metadata:
-     name: airbyte-config-secrets
-   type: Opaque
-   stringData:
-     aws-s3-access-key-id: <aws-s3-access-key-id>
-     aws-s3-secret-access-key: <aws-s3-secret-access-key>
-   ```
+Apply the following Kubernetes manifest, replacing the example AWS credentials with your actual credentials:
+
+```yaml
+# Replace the example AWS credentials below with your actual credentials.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-config-secrets
+type: Opaque
+stringData:
+  s3-access-key-id: AKIAIOSFODNN7EXAMPLE # Enter your AWS Access Key ID here
+  s3-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY # Enter your AWS Secret Access Key here
+```
 
 2. **Update Airbyte Configuration**
 
