@@ -224,7 +224,6 @@ class TestIncremental(TestCase):
         )
 
         output = self._read(config().with_account_ids([account_id]))
-        cursor_value_from_state_message = output.most_recent_state.get(_STREAM_NAME, {}).get(account_id, {}).get(_CURSOR_FIELD)
         cursor_value_from_state_message = output.most_recent_state.stream_state.dict().get(account_id, {}).get(_CURSOR_FIELD)
         assert cursor_value_from_state_message == max_cursor_value
 
