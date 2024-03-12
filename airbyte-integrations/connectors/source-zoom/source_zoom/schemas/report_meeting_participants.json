@@ -50,6 +50,5 @@
     "attentiveness_score": {
       "type": "string"
     }
-  },
-  "required": []
+  }
 }

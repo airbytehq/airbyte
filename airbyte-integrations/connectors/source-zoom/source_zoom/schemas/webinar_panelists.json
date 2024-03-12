@@ -32,6 +32,5 @@
     "name_tag_description": {
       "type": "string"
     }
-  },
-  "required": []
+  }
 }

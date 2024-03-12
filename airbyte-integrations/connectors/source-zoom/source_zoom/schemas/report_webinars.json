@@ -16,8 +16,7 @@
           "value": {
             "type": "string"
           }
-        },
-        "required": []
+        }
       }
     },
     "dept": {
@@ -55,8 +54,7 @@
           "value": {
             "type": "string"
           }
-        },
-        "required": []
+        }
       }
     },
     "type": {
@@ -71,6 +69,5 @@
     "uuid": {
       "type": "string"
     }
-  },
-  "required": []
+  }
 }

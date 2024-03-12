@@ -43,8 +43,7 @@
           "status": {
             "type": "string"
           }
-        },
-        "required": []
+        }
       }
     },
     "password": {
@@ -77,8 +76,7 @@
         "weekly_days": {
           "type": "string"
         }
-      },
-      "required": []
+      }
     },
     "settings": {
       "type": "object",
@@ -104,8 +102,7 @@
             "type": {
               "type": "number"
             }
-          },
-          "required": []
+          }
         },
         "audio": {
           "type": "string"
@@ -143,8 +140,7 @@
             "type": {
               "type": "number"
             }
-          },
-          "required": []
+          }
         },
         "follow_up_attendees_email_notification": {
           "type": "object",
@@ -155,8 +151,7 @@
             "type": {
               "type": "number"
             }
-          },
-          "required": []
+          }
         },
         "global_dial_in_countries": {
           "type": "array",
@@ -190,12 +185,10 @@
                   "languages": {
                     "type": "string"
                   }
-                },
-                "required": []
+                }
               }
             }
-          },
-          "required": []
+          }
         },
         "panelist_authentication": {
           "type": "boolean"
@@ -251,8 +244,7 @@
             "enable": {
               "type": "boolean"
             }
-          },
-          "required": []
+          }
         },
         "registrants_confirmation_email": {
           "type": "boolean"
@@ -278,8 +270,7 @@
         "enable_session_branding": {
           "type": "boolean"
         }
-      },
-      "required": []
+      }
     },
     "start_time": {
       "type": "string"
@@ -304,8 +295,7 @@
           "value": {
             "type": "string"
           }
-        },
-        "required": []
+        }
       }
     },
     "type": {
@@ -317,6 +307,5 @@
     "record_file_id": {
       "type": "string"
     }
-  },
-  "required": []
+  }
 }

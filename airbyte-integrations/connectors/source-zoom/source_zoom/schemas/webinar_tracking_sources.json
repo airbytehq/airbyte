@@ -20,6 +20,5 @@
     "visitor_count": {
       "type": "number"
     }
-  },
-  "required": []
+  }
 }

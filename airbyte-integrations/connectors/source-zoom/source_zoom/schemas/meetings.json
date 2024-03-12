@@ -54,8 +54,7 @@
           "status": {
             "type": "string"
           }
-        },
-        "required": []
+        }
       }
     },
     "password": {
@@ -97,8 +96,7 @@
         "weekly_days": {
           "type": "string"
         }
-      },
-      "required": []
+      }
     },
     "settings": {
       "type": "object",
@@ -139,8 +137,7 @@
             "method": {
               "type": "string"
             }
-          },
-          "required": []
+          }
         },
         "audio": {
           "type": "string"
@@ -165,8 +162,7 @@
               "join_url": {
                 "type": "string"
               }
-            },
-            "required": []
+            }
           }
         },
         "authentication_name": {
@@ -198,12 +194,10 @@
                       "type": "string"
                     }
                   }
-                },
-                "required": []
+                }
               }
             }
-          },
-          "required": []
+          }
         },
         "calendar_type": {
           "type": "number"
@@ -231,8 +225,7 @@
               "value": {
                 "type": "string"
               }
-            },
-            "required": []
+            }
           }
         },
         "email_notification": {
@@ -285,8 +278,7 @@
               "type": {
                 "type": "string"
               }
-            },
-            "required": []
+            }
           }
         },
         "host_video": {
@@ -318,12 +310,10 @@
                   "languages": {
                     "type": "string"
                   }
-                },
-                "required": []
+                }
               }
             }
-          },
-          "required": []
+          }
         },
         "meeting_authentication": {
           "type": "boolean"
@@ -402,8 +392,7 @@
             "internal_user_auto_admit": {
               "type": "number"
             }
-          },
-          "required": []
+          }
         },
         "watermark": {
           "type": "boolean"
@@ -434,8 +423,7 @@
         "push_change_to_calendar": {
           "type": "boolean"
         }
-      },
-      "required": []
+      }
     },
     "registration_url": {
       "type": "string"
@@ -486,13 +474,11 @@
           "visible": {
             "type": "boolean"
           }
-        },
-        "required": []
+        }
       }
     },
     "type": {
       "type": "number"
     }
-  },
-  "required": []
+  }
 }

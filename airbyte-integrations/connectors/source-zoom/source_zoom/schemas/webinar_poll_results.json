@@ -28,10 +28,8 @@
           "question": {
             "type": "string"
           }
-        },
-        "required": []
+        }
       }
     }
-  },
-  "required": []
+  }
 }

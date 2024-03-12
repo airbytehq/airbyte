@@ -31,8 +31,7 @@
           "value": {
             "type": "string"
           }
-        },
-        "required": []
+        }
       }
     },
     "email": {
@@ -80,6 +79,5 @@
     "join_url": {
       "type": "string"
     }
-  },
-  "required": []
+  }
 }

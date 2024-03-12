@@ -21,8 +21,7 @@
           "value": {
             "type": "string"
           }
-        },
-        "required": []
+        }
       }
     },
     "dept": {
@@ -89,6 +88,5 @@
       "type": "number"
     },
     "display_name": { "type": "string" }
-  },
-  "required": []
+  }
 }

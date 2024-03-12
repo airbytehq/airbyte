@@ -25,8 +25,7 @@
           "type": {
             "type": "string"
           }
-        },
-        "required": []
+        }
       }
     },
     "questions": {
@@ -40,10 +39,8 @@
           "required": {
             "type": "boolean"
           }
-        },
-        "required": []
+        }
       }
     }
-  },
-  "required": []
+  }
 }

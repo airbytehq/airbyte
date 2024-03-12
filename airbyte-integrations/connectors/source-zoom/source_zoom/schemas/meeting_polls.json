@@ -57,8 +57,7 @@
                     "type": "string"
                   }
                 }
-              },
-              "required": []
+              }              
             }
           },
           "rating_max_label": {
@@ -85,8 +84,7 @@
           "type": {
             "type": "string"
           }
-        },
-        "required": []
+        }
       }
     },
     "title": {
