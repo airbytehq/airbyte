@@ -9,7 +9,7 @@
       "type": ["null", "string"]
     },
     "duration": {
-      "type":["null", "number"]
+      "type": ["null", "number"]
     },
     "failover": {
       "type": ["null", "boolean"]

@@ -23,16 +23,16 @@
       "type": ["null", "string"]
     },
     "duration": {
-      "type":["null", "number"]
+      "type": ["null", "number"]
     },
     "end_time": {
       "type": ["null", "string"]
     },
     "id": {
-      "type":["null", "number"]
+      "type": ["null", "number"]
     },
     "participants_count": {
-      "type":["null", "number"]
+      "type": ["null", "number"]
     },
     "start_time": {
       "type": ["null", "string"]
@@ -41,7 +41,7 @@
       "type": ["null", "string"]
     },
     "total_minutes": {
-      "type":["null", "number"]
+      "type": ["null", "number"]
     },
     "tracking_fields": {
       "type": ["null", "array"],
@@ -58,7 +58,7 @@
       }
     },
     "type": {
-      "type":["null", "number"]
+      "type": ["null", "number"]
     },
     "user_email": {
       "type": ["null", "string"]

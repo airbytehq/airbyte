@@ -37,7 +37,7 @@
           "question": {
             "type": ["null", "string"]
           }
-        }        
+        }
       }
     }
   }
