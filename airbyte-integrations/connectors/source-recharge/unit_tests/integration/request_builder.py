@@ -34,6 +34,7 @@ class RequestBuilder:
 
     def with_updated_at_min(self, value: str) -> RequestBuilder:
         self._query_params["updated_at_min"] = dt.datetime.strptime(value, DATE_TIME_FORMAT).strftime(DATE_TIME_FORMAT)
+        self._query_params["sort_by"] = "updated_at-asc"
         return self
 
     def with_next_page_token(self, next_page_token: str) -> RequestBuilder:

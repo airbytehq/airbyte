@@ -78,6 +78,7 @@ class Orders(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         params.update(
             {
+                "sort_by": "updated_at-asc",
                 "updated_at_min": (stream_slice or {}).get("start_date"),
                 "updated_at_max": (stream_slice or {}).get("end_date"),
             }
