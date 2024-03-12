@@ -219,41 +219,7 @@ For Self-Managed Enterprise deployments, we recommend spinning up standalone log
 <details>
 <summary>External log storage setup steps</summary>
 
-If using credentials such as aws access keys, the keys are required to be in the kube secrets. They secret store and secret keys will be referenced in the `airbyte.yml` file. Here is an example of a kube secret manifest to you can apply to your kube cluster.
-
-<Tabs>
-<TabItem value="S3" label="S3" default>
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: airbyte-config-secrets
-type: Opaque
-stringData:
-## Storage Secrets
-  # S3
-  aws-secret-manager-access-key-id: AKIMSOSBNEOQ6SLTQSP
-  aws-secret-manager-secret-access-key: 3MQU9CIk8LhHTEA1sd69KoKW+le93UmAz/i/N6fk
-```
-
-</TabItem>
-<TabItem value="GCS" label="GCS" default> 
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: gcp-cred-secrets
-type: Opaque
-stringData:
-  gcp.json: <CREDENTIALS_JSON_BLOB>
-```
-
-or use `kubectl` to create the secret directly from the credentials json file.
-```
-kubectl create secret generic gcp-cred-secrets --from-file=gcp.json=<path-to-your-credentials-file>.json
-```
+If using credentials such as aws access keys, the keys are required to be in the kube secrets. They secret store and secret keys will be referenced in the `airbyte.yml` file.
 
 </TabItem>
 </Tabs>
@@ -334,8 +300,6 @@ global:
       project: <gcp-project>
       credentialsPath: /secrets/gcs-log-creds/gcp.json
 ```
-
-Note that the `credentials` and `credentialsJson` fields are mutually exclusive.
 
 </TabItem>
 </Tabs>
