@@ -32,10 +32,6 @@ class TestAccountsStream(BaseTest):
         # Our account doesn't have configured Tax certificate.
         self.auth_client(http_mocker)
         output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config)
-        assert output.records[0].record.data["TaxCertificate"] == {
-            "TaxCertificateBlobContainerName": "Test Container Name",
-            "TaxCertificates": {
-                "KeyValuePairOfstringbase64Binary": [{"key": "test_key", "value": "test_value"}]
-            },
-            "Status": "Active"
-        }
+        assert output.records[0].record.data["TaxCertificate"] == {"Status": "Active",
+                                                                   "TaxCertificateBlobContainerName": "Test Container Name",
+                                                                   "TaxCertificates": [{"key": "test_key", "value": "test_value"}]}
