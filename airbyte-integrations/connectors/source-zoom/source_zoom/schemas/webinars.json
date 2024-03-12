@@ -9,7 +9,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "uuid": {
       "type": ["null", "string"]
@@ -21,18 +21,18 @@
       "type": ["null", "string"]
     },
     "duration": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "join_url": {
       "type": ["null", "string"]
     },
     "occurrences": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "duration": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "occurrence_id": {
             "type": ["null", "string"]
@@ -50,28 +50,28 @@
       "type": ["null", "string"]
     },
     "recurrence": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "end_date_time": {
           "type": ["null", "string"]
         },
         "end_times": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "monthly_day": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "monthly_week": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "monthly_week_day": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "repeat_interval": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "type": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "weekly_days": {
           "type": ["null", "string"]
@@ -79,28 +79,28 @@
       }
     },
     "settings": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "allow_multiple_devices": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "alternative_hosts": {
           "type": ["null", "string"]
         },
         "alternative_host_update_polls": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "approval_type": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "attendees_and_panelists_reminder_email_notification": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "enable": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             },
             "type": {
-              "type": "number"
+              "type": ["null", "number"]
             }
           }
         },
@@ -120,7 +120,7 @@
           "type": ["null", "string"]
         },
         "close_registration": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "contact_email": {
           "type": ["null", "string"]
@@ -132,52 +132,52 @@
           "type": ["null", "string"]
         },
         "follow_up_absentees_email_notification": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "enable": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             },
             "type": {
-              "type": "number"
+              "type": ["null", "number"]
             }
           }
         },
         "follow_up_attendees_email_notification": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "enable": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             },
             "type": {
-              "type": "number"
+              "type": ["null", "number"]
             }
           }
         },
         "global_dial_in_countries": {
-          "type": "array",
+          "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "hd_video": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "hd_video_for_attendees": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "host_video": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "language_interpretation": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "enable": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             },
             "interpreters": {
-              "type": "array",
+              "type": ["null", "array"],
               "items": {
-                "type": "object",
+                "type": ["null", "object"],
                 "properties": {
                   "email": {
                     "type": ["null", "string"]
@@ -191,84 +191,84 @@
           }
         },
         "panelist_authentication": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "meeting_authentication": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "add_watermark": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "add_audio_watermark": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "notify_registrants": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "on_demand": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "panelists_invitation_email_notification": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "panelists_video": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "post_webinar_survey": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "practice_session": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "question_and_answer": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "allow_anonymous_questions": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             },
             "answer_questions": {
               "type": ["null", "string"]
             },
             "attendees_can_comment": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             },
             "attendees_can_upvote": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             },
             "allow_auto_reply": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             },
             "auto_reply_text": {
               "type": ["null", "string"]
             },
             "enable": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             }
           }
         },
         "registrants_confirmation_email": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "registrants_email_notification": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "registrants_restrict_number": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "registration_type": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "send_1080p_video_to_attendees": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "show_share_button": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "survey_url": {
           "type": ["null", "string"]
         },
         "enable_session_branding": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         }
       }
     },
@@ -285,9 +285,9 @@
       "type": ["null", "string"]
     },
     "tracking_fields": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "field": {
             "type": ["null", "string"]
@@ -299,10 +299,10 @@
       }
     },
     "type": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "is_simulive": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "record_file_id": {
       "type": ["null", "string"]

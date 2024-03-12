@@ -1,8 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
     "meeting_id": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "id": {
       "type": ["null", "string"]
@@ -20,9 +21,9 @@
       "type": ["null", "string"]
     },
     "custom_questions": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "title": {
             "type": ["null", "string"]

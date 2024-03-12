@@ -12,47 +12,47 @@
       "type": ["null", "string"]
     },
     "anonymous": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "poll_type": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "questions": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "answer_max_character": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "answer_min_character": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "answer_required": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           },
           "answers": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "case_sensitive": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           },
           "name": {
             "type": ["null", "string"]
           },
           "prompts": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "prompt_question": {
                   "type": ["null", "string"]
                 },
                 "prompt_right_answers": {
-                  "type": "array",
+                  "type": ["null", "array"],
                   "items": {
                     "type": ["null", "string"]
                   }
@@ -64,22 +64,22 @@
             "type": ["null", "string"]
           },
           "rating_max_value": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "rating_min_label": {
             "type": ["null", "string"]
           },
           "rating_min_value": {
-            "type": "number"
+            "type": ["null", "number"]
           },
           "right_answers": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "show_as_dropdown": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           },
           "type": {
             "type": ["null", "string"]

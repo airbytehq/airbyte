@@ -8,7 +8,7 @@
       "type": ["null", "string"]
     },
     "custom_attributes": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
@@ -37,7 +37,7 @@
       "type": ["null", "string"]
     },
     "group_ids": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
@@ -46,7 +46,7 @@
       "type": ["null", "string"]
     },
     "im_group_ids": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
@@ -70,7 +70,7 @@
       "type": ["null", "string"]
     },
     "pmi": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "role_id": {
       "type": ["null", "string"]
@@ -82,10 +82,10 @@
       "type": ["null", "string"]
     },
     "type": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "verified": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "display_name": { "type": ["null", "string"] }
   }

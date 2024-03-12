@@ -21,9 +21,9 @@
       "type": ["null", "string"]
     },
     "custom_questions": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "title": {
             "type": ["null", "string"]

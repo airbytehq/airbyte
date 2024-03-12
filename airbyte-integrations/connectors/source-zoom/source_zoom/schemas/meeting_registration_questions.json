@@ -3,21 +3,21 @@
   "type": "object",
   "properties": {
     "meeting_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "custom_questions": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "answers": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "required": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           },
           "title": {
             "type": ["null", "string"]
@@ -29,15 +29,15 @@
       }
     },
     "questions": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "field_name": {
             "type": ["null", "string"]
           },
           "required": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           }
         }
       }

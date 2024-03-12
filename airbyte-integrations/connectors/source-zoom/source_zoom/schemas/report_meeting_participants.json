@@ -6,16 +6,16 @@
       "type": ["null", "string"]
     },
     "meeting_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "customer_key": {
       "type": ["null", "string"]
     },
     "duration": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "failover": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "id": {
       "type": ["null", "string"]

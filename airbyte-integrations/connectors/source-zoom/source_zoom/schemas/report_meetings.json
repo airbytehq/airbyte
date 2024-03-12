@@ -6,9 +6,9 @@
       "type": ["null", "string"]
     },
     "custom_keys": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "key": {
             "type": ["null", "string"]
@@ -23,7 +23,7 @@
       "type": ["null", "string"]
     },
     "duration": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "end_time": {
       "type": ["null", "string"]
@@ -32,10 +32,10 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "participants_count": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "start_time": {
       "type": ["null", "string"]
@@ -44,12 +44,12 @@
       "type": ["null", "string"]
     },
     "total_minutes": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "tracking_fields": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "field": {
             "type": ["null", "string"]
@@ -61,7 +61,7 @@
       }
     },
     "type": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "user_email": {
       "type": ["null", "string"]

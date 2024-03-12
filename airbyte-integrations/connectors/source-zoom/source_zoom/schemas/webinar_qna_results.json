@@ -12,9 +12,9 @@
       "type": ["null", "string"]
     },
     "question_details": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "answer": {
             "type": ["null", "string"]
