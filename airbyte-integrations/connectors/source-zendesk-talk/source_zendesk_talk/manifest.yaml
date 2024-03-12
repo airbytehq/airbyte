@@ -148,7 +148,7 @@ spec:
 check:
   type: CheckStream
   stream_names:
-    - addresses
+    - account_overview
 
 streams:
   - name: addresses
