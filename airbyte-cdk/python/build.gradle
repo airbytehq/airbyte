@@ -5,20 +5,6 @@ plugins {
     id 'ru.vyarus.use-python' version '2.3.0'
 }
 
-def generateCodeGeneratorImage = tasks.register('generateCodeGeneratorImage', Exec) {
-    commandLine 'bin/build_code_generator_image.sh'
-}
-def generateComponentManifestClassFiles = tasks.register('generateComponentManifestClassFiles', Exec) {
-    environment 'ROOT_DIR', rootDir.parentFile.parentFile.absolutePath
-    commandLine 'bin/generate-component-manifest-files.sh'
-}
-generateComponentManifestClassFiles.configure {
-    dependsOn generateCodeGeneratorImage
-}
-tasks.named('assemble').configure {
-    dependsOn generateComponentManifestClassFiles
-}
-
 tasks.register('validateSourceYamlManifest', Exec) {
     environment 'ROOT_DIR', rootDir.parentFile.parentFile.absolutePath
     commandLine 'bin/validate-yaml-schema.sh'

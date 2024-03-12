@@ -33,7 +33,9 @@ function main() {
     # We can revisit this if there is movement on a fix.
     temp_file=$(mktemp)
     sed 's/ _parameters:/ parameters:/g' "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py" > "${temp_file}"
-    mv "${temp_file}" "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py"
+    output_file="$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py"
+    mv "${temp_file}" "${output_file}"
+    echo "Generated component manifest files into '${output_file}'."
   done
 }
 
