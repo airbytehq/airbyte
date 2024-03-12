@@ -145,23 +145,24 @@ allprojects {
         testFixturesAnnotationProcessor lombok
 
         // JUnit dependencies.
-        def vAssertJ = "3.21.0"
-        def vJUnit = "5.9.1"
-        def vJUnitJupiter = "5.10.0"
-        def vJUnitPioneer = "1.7.1"
+        def vAssertJ = "3.25.3"
+        def vJUnit = "5.10.2"
+        def vJUnitJupiter = "5.11.0"
 
+
+        testFixturesImplementation platform("org.junit:junit-bom:${vJUnit}")
         testFixturesImplementation "org.junit.jupiter:junit-jupiter-api:${vJUnit}"
         testFixturesImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
         testFixturesImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
         testFixturesImplementation "org.assertj:assertj-core:${vAssertJ}"
-        testFixturesImplementation "org.junit-pioneer:junit-pioneer:${vJUnitPioneer}"
 
+        testImplementation platform("org.junit:junit-bom:${vJUnit}")
         testImplementation "org.junit.jupiter:junit-jupiter-api:${vJUnit}"
         testImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
         testImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
         testImplementation "org.assertj:assertj-core:${vAssertJ}"
-        testImplementation  "org.junit-pioneer:junit-pioneer:${vJUnitPioneer}"
 
+        testRuntimeOnly platform("org.junit:junit-bom:${vJUnit}")
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"
 
         // Spotbugs dependencies.
