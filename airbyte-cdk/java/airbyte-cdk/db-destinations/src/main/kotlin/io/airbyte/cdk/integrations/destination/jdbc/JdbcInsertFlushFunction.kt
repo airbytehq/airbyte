@@ -4,7 +4,7 @@
 package io.airbyte.cdk.integrations.destination.jdbc
 
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter
 import io.airbyte.cdk.integrations.destination.jdbc.constants.GlobalDataSizeConstants
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair

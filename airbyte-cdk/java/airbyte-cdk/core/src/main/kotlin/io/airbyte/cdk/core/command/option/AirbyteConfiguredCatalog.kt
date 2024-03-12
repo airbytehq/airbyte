@@ -18,10 +18,10 @@ import io.micronaut.context.annotation.ConfigurationProperties
     value = ["NP_NONNULL_RETURN_VIOLATION"],
     justification = "Uses dependency injection",
 )
-class AirbyteConfiguredCatalog {
+open class AirbyteConfiguredCatalog {
     lateinit var json: String
 
-    fun getConfiguredCatalog(): ConfiguredAirbyteCatalog {
+    open fun getConfiguredCatalog(): ConfiguredAirbyteCatalog {
         return if (json.isNotBlank()) {
             Jsons.deserialize(
                 json,

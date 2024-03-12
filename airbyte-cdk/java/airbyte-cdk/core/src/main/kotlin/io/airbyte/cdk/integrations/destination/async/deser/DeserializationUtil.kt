@@ -3,10 +3,19 @@
  */
 package io.airbyte.cdk.integrations.destination.async.deser
 
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
 class DeserializationUtil {
     /**
      * Deserializes to a [PartialAirbyteMessage] which can represent both a Record or a State
@@ -36,7 +45,7 @@ class DeserializationUtil {
             // Transform data provided by destination.
             val transformedData =
                 dataTransformer.transform(
-                    partial.record?.streamDescriptor,
+                    partial.record?.getStreamDescriptor(),
                     partial.record?.data,
                     partial.record?.meta,
                 )
