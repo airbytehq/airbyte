@@ -1,4 +1,4 @@
-version: 0.69.1
+version: 0.58.8
 type: DeclarativeSource
 
 definitions:
@@ -20,27 +20,42 @@ definitions:
   # Requester
   requester:
     type: HttpRequester
-    # TODO: align with config api_url
-    url_base: "https://gitlab.com/api/v4/"
+    url_base: >-
+      {% set parts = config.get('api_url', 'gitlab.com').split('://') %}
+      {{ parts[0] if parts|length > 1 else 'https' }}://{{ parts[1] if parts[1] else parts[0] }}/api/v4/
     http_method: GET
     authenticator: "#/definitions/authenticator"
-    request_parameters:
-      per_page: "50"
-      # TODO: should be handled by paginator
-      page: "1"
 
-  # Selector:
+  # Selector
   selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
       field_path: []
 
+  # Paginator
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 50
+      start_from_page: 1
+      inject_on_first_request: true
+    page_size_option:
+      type: RequestOption
+      field_name: per_page
+      inject_into: request_parameter
+    page_token_option:
+      type: RequestOption
+      field_name: page
+      inject_into: request_parameter
+
   # Retrievers
   retriever:
     type: SimpleRetriever
     record_selector: "#/definitions/selector"
     requester: "#/definitions/requester"
+    paginator: "#/definitions/paginator"
 
   group_child_streams_retriever:
     $ref: "#/definitions/retriever"
@@ -78,6 +93,18 @@ definitions:
             # TODO: check _get_group_list in source.py
             stream: "#/definitions/groups_list_stream"
             partition_field: "id"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - projects
+            value: >-
+              {% set projects = [] %}
+              {% for project in record.get('projects', []): %}
+              {% set _ = projects.append({'id': project['id'], 'path_with_namespace': project['path_with_namespace']}) %}
+              {% endfor %}
+              {{ projects }}
     $parameters:
       path: "groups/{{ stream_slice.id }}"
 
