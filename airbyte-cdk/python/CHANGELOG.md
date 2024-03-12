@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.69.1
+Update mock server test entrypoint wrapper to use per-stream state
+
+## 0.69.0
+Include recordCount in stream state messages and final state message for full refresh syncs
+
+## 0.68.4
+low-code: update cartesian stream slice to emit typed StreamSlice
+
+## 0.68.3
+Low-code: adding a default value if a stream slice is None during read_records
+
 ## 0.68.2
 low-code: remove parent cursor compoent from incremental substreams' state message
 
