@@ -5,16 +5,6 @@ plugins {
     id 'ru.vyarus.use-python' version '2.3.0'
 }
 
-tasks.register('validateSourceYamlManifest', Exec) {
-    environment 'ROOT_DIR', rootDir.parentFile.parentFile.absolutePath
-    commandLine 'bin/validate-yaml-schema.sh'
-}
-
-tasks.register('runLowCodeConnectorUnitTests', Exec) {
-    environment 'ROOT_DIR', rootDir.parentFile.parentFile.absolutePath
-    commandLine 'bin/low-code-unit-tests.sh'
-}
-
 def venvDirectoryName = '.venv'
 
 // Add a task that allows cleaning up venvs to every python project
