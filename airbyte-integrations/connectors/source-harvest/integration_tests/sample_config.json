@@ -1,6 +1,8 @@
 {
-  "api_token": "<API Token>",
-  "account_id": "<Account ID>",
-  "start_date": "2021-01-01T00:00:00Z",
-  "auth_type": "bearer"
+    "account_id": "<Account ID>",
+    "start_date": "2021-01-01T00:00:00Z",
+    "credentials": {
+        "auth_type": "bearer",
+        "api_token": "<API Token>"
+    }
 }
