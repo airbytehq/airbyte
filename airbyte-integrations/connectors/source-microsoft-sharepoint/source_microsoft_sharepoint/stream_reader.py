@@ -7,7 +7,6 @@ from datetime import datetime
 from functools import lru_cache
 from io import IOBase
 from typing import Iterable, List, Optional, Tuple
-from urllib.parse import urljoin
 
 import requests
 import smart_open
@@ -188,7 +187,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                     folder_path_url = drive.web_url
                 else:
                     folder = execute_query_with_retry(drive.root.get_by_path(folder_path).get())
-                    folder_path_url = urljoin(drive.web_url, folder_path)
+                    folder_path_url = drive.web_url + "/" + folder_path
 
                 yield from self._list_directories_and_files(folder, folder_path_url)
 
