@@ -69,7 +69,7 @@ kubectl create namespace airbyte
 
 ### Configure Kubernetes Secrets
 
-Sensitive credentials such as AWS access keys are required to be made available in Kubernetes Secrets during deployment. The Kubernetes secret store and secret keys are referenced in your `values.yml` file. We recommend ensuring all required secrets are configured before deploying Airbyte Self-Managed Enterprise.
+Sensitive credentials such as AWS access keys are required to be made available in Kubernetes Secrets during deployment. The Kubernetes secret store and secret keys are referenced in your `values.yml` file. Ensure all required secrets are configured before deploying Airbyte Self-Managed Enterprise.
 
 You may apply your Kubernetes secrets by applying the example manifests below to your cluster, or using `kubectl` directly. If your Kubernetes cluster already has permissions to make requests to an external entity via an instance profile, credentials are not required. For example, if your Amazon EKS cluster has been assigned a sufficient AWS IAM role to make requests to AWS S3, you do not need to specify access keys.
 
