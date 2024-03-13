@@ -47,7 +47,16 @@ class CustomFieldTransformation(RecordTransformation):
                 ...
             }
         """
-        record["custom_fields"] = [{"name": k, "value": v} for k, v in record.items() if k.startswith("cf_")]
+        record["custom_fields"] = []
+        keys_to_remove = []
+        for k, v in record.items():
+            if k.startswith("cf_"):
+                record["custom_fields"].append({"name": k, "value": v})
+                keys_to_remove.append(k)
+
+        for k in keys_to_remove:
+            record.pop(k, None)
+
         return record
 
 
