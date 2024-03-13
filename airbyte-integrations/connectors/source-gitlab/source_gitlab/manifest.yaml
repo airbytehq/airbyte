@@ -6,7 +6,7 @@ definitions:
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
-  # TODO: oauth doesn't work
+  # TODO: oauth doesn't work - see Typeform
   oauth_authenticator:
     type: OAuthAuthenticator
     client_id: "{{ config['credentials']['client_id'] }}"
@@ -33,10 +33,6 @@ definitions:
       response_filters:
         - type: HttpResponseFilter
           action: IGNORE
-          # TODO: the message is not being displayed
-          error_message: >-
-            Got {{ response.status_code }} error when accessing URL {{ response.url }}. 
-            Very likely the feature is disabled for this project and/or group. Please double check it, or report a bug otherwise.
           http_codes: [403, 404]
 
   # Selector
@@ -85,6 +81,16 @@ definitions:
           stream: "#/definitions/include_descendant_groups_stream"
           partition_field: "id"
 
+  group_child_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/groups_stream"
+          partition_field: "id"
+
   projects_streams_retriever:
     $ref: "#/definitions/retriever"
     partition_router:
@@ -96,14 +102,28 @@ definitions:
           stream: "#/definitions/groups_stream"
           partition_field: "id"
 
+  projects_child_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/projects_stream"
+          partition_field: "id"
+
   # Service streams
   base_full_refresh_stream:
     type: DeclarativeStream
     primary_key: "id"
 
-  base_groups_stream:
+  base_groups_child_stream:
     $ref: "#/definitions/base_full_refresh_stream"
-    retriever: "#/definitions/group_streams_retriever"
+    retriever: "#/definitions/group_child_streams_retriever"
+
+  base_projects_child_stream:
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/projects_child_streams_retriever"
 
   groups_list_stream:
     name: "groups_list"
@@ -130,15 +150,12 @@ definitions:
     $parameters:
       path: "{{ stream_slice.slice.path }}"
 
-  base_projects_stream:
-    $ref: "#/definitions/base_full_refresh_stream"
-    retriever: "#/definitions/projects_streams_retriever"
-
   # Full refresh streams
   ## Groups-based streams
   groups_stream:
     name: "groups"
-    $ref: "#/definitions/base_groups_stream"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/group_streams_retriever"
     transformations:
       - type: AddFields
         fields:
@@ -156,38 +173,38 @@ definitions:
 
   group_milestones_stream:
     name: "group_milestones"
-    $ref: "#/definitions/base_groups_stream"
+    $ref: "#/definitions/base_groups_child_stream"
     $parameters:
       path: "groups/{{ stream_slice.id }}/milestones"
 
   group_members_stream:
     name: "group_members"
-    $ref: "#/definitions/base_groups_stream"
+    $ref: "#/definitions/base_groups_child_stream"
     $parameters:
       path: "groups/{{ stream_slice.id }}/members"
 
   group_labels_stream:
     name: "group_labels"
-    $ref: "#/definitions/base_groups_stream"
+    $ref: "#/definitions/base_groups_child_stream"
     $parameters:
       path: "groups/{{ stream_slice.id }}/labels"
 
   group_issue_boards_stream:
     name: "group_issue_boards"
-    $ref: "#/definitions/base_groups_stream"
+    $ref: "#/definitions/base_groups_child_stream"
     $parameters:
       path: "groups/{{ stream_slice.id }}/boards"
 
   epics_stream:
     name: "epics"
-    $ref: "#/definitions/base_groups_stream"
+    $ref: "#/definitions/base_groups_child_stream"
     primary_key: "iid"
     $parameters:
       path: "groups/{{ stream_slice.id }}/epics"
 
   epic_issues_stream:
     name: "epic_issues"
-    $ref: "#/definitions/base_groups_stream"
+    $ref: "#/definitions/base_groups_child_stream"
     primary_key: "iid"
     retriever:
       $ref: "#/definitions/retriever"
@@ -204,60 +221,88 @@ definitions:
   ## Projects-based streams
   projects_stream:
     name: "projects"
-    $ref: "#/definitions/base_projects_stream"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/projects_streams_retriever"
     $parameters:
       path: "projects/{{ stream_slice.id }}"
 
   project_milestones_stream:
     name: "project_milestones"
-    $ref: "#/definitions/base_projects_stream"
+    $ref: "#/definitions/base_projects_child_stream"
     $parameters:
       path: "projects/{{ stream_slice.id }}/milestones"
 
   project_members_stream:
     name: "project_members"
-    $ref: "#/definitions/base_projects_stream"
+    $ref: "#/definitions/base_projects_child_stream"
     $parameters:
       path: "projects/{{ stream_slice.id }}/members"
 
   project_labels_stream:
     name: "project_labels"
-    $ref: "#/definitions/base_projects_stream"
+    $ref: "#/definitions/base_projects_child_stream"
     $parameters:
       path: "projects/{{ stream_slice.id }}/labels"
 
   branches_stream:
     name: "branches"
-    $ref: "#/definitions/base_projects_stream"
+    $ref: "#/definitions/base_projects_child_stream"
     primary_key: "name"
     $parameters:
       path: "projects/{{ stream_slice.id }}/repository/branches"
 
   releases_stream:
     name: "releases"
-    $ref: "#/definitions/base_projects_stream"
+    $ref: "#/definitions/base_projects_child_stream"
     primary_key: "name"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.id }}"
     $parameters:
       path: "projects/{{ stream_slice.id }}/releases"
 
   tags_stream:
     name: "tags"
-    $ref: "#/definitions/base_projects_stream"
+    $ref: "#/definitions/base_projects_child_stream"
     primary_key: "name"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.id }}"
     $parameters:
       path: "projects/{{ stream_slice.id }}/repository/tags"
 
   users_stream:
     name: "users"
-    $ref: "#/definitions/base_projects_stream"
+    $ref: "#/definitions/base_projects_child_stream"
     primary_key: "name"
     $parameters:
       path: "projects/{{ stream_slice.id }}/users"
 
   deployments_stream:
     name: "deployments"
-    $ref: "#/definitions/base_projects_stream"
+    $ref: "#/definitions/base_projects_child_stream"
     primary_key: "name"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["user_username"]
+            value: "{{ record.get('user', {}).get('username') }}"
+          - type: AddedFieldDefinition
+            path: ["user_full_name"]
+            value: "{{ record.get('user', {}).get('name') }}"
+          - type: AddedFieldDefinition
+            path: ["environment_name"]
+            value: "{{ record.get('environment', {}).get('name') }}"
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.id }}"
     $parameters:
       path: "projects/{{ stream_slice.id }}/deployments"
 
