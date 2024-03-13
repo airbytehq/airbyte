@@ -116,7 +116,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
     try {
       ObjectMapper objectMapper = new ObjectMapper();
       TypeReference<List<String>> listType = new TypeReference<>() {};
-      /* spotless:off
+      /* @formatter:off
        The event source structure is :
           {
              "version":"2.4.0.Final",
@@ -133,7 +133,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
              "xmin":null
           }
           See https://debezium.io/documentation/reference/2.4/connectors/postgresql.html#postgresql-create-events for the full event structure.
-          spotless:on
+          @formatter:on
        */
       final JsonNode lsnSequenceNode = event.eventValueAsJson().get("source").get("sequence");
       List<String> lsnSequence = objectMapper.readValue(lsnSequenceNode.asText(), listType);
