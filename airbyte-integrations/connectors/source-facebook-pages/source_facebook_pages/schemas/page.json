@@ -273,9 +273,6 @@
         "type": ["string", "null"]
       }
     },
-    "messenger_ads_default_page_welcome_message": {
-      "$ref": "messengerdestinationpagewelcomemessage.json"
-    },
     "messenger_ads_default_quick_replies": {
       "type": ["array", "null"],
       "items": {
