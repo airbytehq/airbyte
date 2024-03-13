@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.postgres.cdc;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.PgLsn;
 import io.airbyte.cdk.db.PostgresUtils;
@@ -139,7 +138,8 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
       final JsonNode lsnSequenceNode = event.eventValueAsJson().get("source").get("sequence");
       List<String> lsnSequence = objectMapper.readValue(lsnSequenceNode.asText(), listType);
       // The sequence field is a pair of [lsn_commit, lsn_processed]. We want to make sure
-      // lsn_commit(event) is compared against lsn_commit(state_offset). For the event, either of the lsn values can be null.
+      // lsn_commit(event) is compared against lsn_commit(state_offset). For the event, either of the lsn
+      // values can be null.
       String eventLsnCommit = lsnSequence.get(0);
       if (eventLsnCommit == null) {
         return false;
