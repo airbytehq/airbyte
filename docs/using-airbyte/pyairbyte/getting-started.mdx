@@ -48,6 +48,7 @@ for name, records in result.streams.items():
 * [Shopify](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Shopify_Demo.ipynb) 
 * [GitHub](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Github_Incremental_Demo.ipynb) 
 * [Postgres (cache)](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Postgres_Custom_Cache_Demo.ipynb)  
+* [RAG With Langchain](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Document_Creation_RAG_with_Langchain_Demo.ipynb)
 
 
 ## API Reference
@@ -70,3 +71,11 @@ PyAirbyte is a python library that can be run in any context that supports Pytho
 The following connectors are available:
 
 <AirbyteLibConnectors />
+
+## LangChain integration
+
+For those interested in using PyAirbyte to drive your LLM use cases, we provide two ways to integrate with LangChain:
+
+* **LangChain native integration**: This approach requires you to utilize the `langchain-airbyte` integration package. Refer to [LangChain Docs](https://python.langchain.com/docs/integrations/document_loaders/airbyte) or watch this [YouTube video](https://www.youtube.com/watch?v=zQU_1sCLSMU) to get started.
+
+* **PyAirbyte-centric integration**: You can also directly use PyAirbyte to create documents. With this approach, you do not need to import `langchain-airbyte`. Refer to [PyAirbyte Document Creation Demo](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Document_Creation_RAG_with_Langchain_Demo.ipynb) to get started.
