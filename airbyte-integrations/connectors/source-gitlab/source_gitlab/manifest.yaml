@@ -73,12 +73,16 @@ definitions:
   group_streams_retriever:
     $ref: "#/definitions/retriever"
     partition_router:
-      - type: SubstreamPartitionRouter
+      - type: CustomPartitionRouter
+        class_name: source_gitlab.components.partition_routers.GroupStreamsPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
             parent_key: "id"
-            # TODO: align with _get_group_list
             stream: "#/definitions/groups_list_stream"
+            partition_field: "id"
+          - type: ParentStreamConfig
+            parent_key: "id"
+            stream: "#/definitions/include_descendant_groups_stream"
             partition_field: "id"
 
   # Service streams
@@ -96,6 +100,24 @@ definitions:
     retriever: "#/definitions/retriever"
     $parameters:
       path: "groups"
+
+  include_descendant_groups_stream:
+    name: "include_descendant_groups"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: "slice"
+        values: >-
+          {% set slices = [] %}
+          {% for group_id in config.get('groups_list', []) %}
+          {% set _ = slices.append({'path': 'groups/' + group_id}) %}
+          {% set _ = slices.append({'path': 'groups/' + group_id + '/descendant_groups'}) %}
+          {% endfor %}
+          {{ slices }}
+    $parameters:
+      path: "{{ stream_slice.slice.path }}"
 
   # Full refresh streams
   ## Groups-based streams
