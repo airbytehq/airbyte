@@ -23,6 +23,8 @@ import requests
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateStats,
+    AirbyteStateType,
     AirbyteStream,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
@@ -1060,6 +1062,7 @@ class TestBasicRead(BaseTest):
         output = await docker_runner.call_read(connector_config, configured_catalog)
 
         records = [message.record for message in filter_output(output, Type.RECORD)]
+        state_messages = [message for message in filter_output(output, Type.STATE)]
 
         if certified_file_based_connector:
             self._file_types.update(self._get_actual_file_types(records))
@@ -1097,6 +1100,8 @@ class TestBasicRead(BaseTest):
                 if message.trace.type == TraceType.STREAM_STATUS
             ]
             self._validate_stream_statuses(configured_catalog=configured_catalog, statuses=all_statuses)
+
+        self._validate_state_messages(state_messages=state_messages)
 
     async def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
         if not inputs.expect_trace_message_on_failure:
@@ -1253,6 +1258,24 @@ class TestBasicRead(BaseTest):
             assert status_list[0] == AirbyteStreamStatus.STARTED
             assert status_list[-1] == AirbyteStreamStatus.COMPLETE
             assert all(x == AirbyteStreamStatus.RUNNING for x in status_list[1:-1])
+
+    @staticmethod
+    def _validate_state_messages(state_messages: List[AirbyteMessage]):
+        for state_message in state_messages:
+            state = state_message.state
+            stream_name = state.stream.stream_descriptor.name
+            state_type = state.type
+
+            # Ensure legacy state type is not emitted anymore
+            assert state_type != AirbyteStateType.LEGACY, (
+                f"Ensure that statuses from the {stream_name} stream are emitted using either "
+                "`STREAM` or `GLOBAL` state types, as the `LEGACY` state type is now deprecated."
+            )
+
+            # Check if stats are of the correct type and present in state message
+            assert isinstance(state.sourceStats, AirbyteStateStats), (
+                "Source stats should be in state message."
+            )
 
 
 @pytest.mark.default_timeout(TEN_MINUTES)
