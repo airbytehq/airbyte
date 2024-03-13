@@ -80,9 +80,6 @@ definitions:
       backoff_strategies:
         - type: WaitTimeFromHeader
           header: Retry-After
-    # additional request kwargs
-    request_parameters:
-      timeout: "60"
 
   # RETRIEVERS
   retriever_base:
@@ -133,7 +130,6 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          $ref: "#/definitions/requester/request_parameters"
           # add `fields=<stream_name>(*)` to the request_params
           fields: "{{ parameters['name'] + '(*)' }}"
 
@@ -192,7 +188,7 @@ definitions:
   routing_settings_stream:
     description: >-
       Routing Settings Stream: https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/base_stream_with_list_response_no_pagination"
     primary_key: ""
     $parameters:
       name: "routing_settings"

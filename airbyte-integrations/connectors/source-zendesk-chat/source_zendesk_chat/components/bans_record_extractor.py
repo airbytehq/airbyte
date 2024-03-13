@@ -18,7 +18,7 @@ class ZendeskChatBansRecordExtractor(RecordExtractor):
     Unnesting nested bans: `visitor`, `ip_address`.
     """
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
         response_data = response.json()
         ip_address: List[Mapping[str, Any]] = response_data.get("ip_address", [])
         visitor: List[Mapping[str, Any]] = response_data.get("visitor", [])
