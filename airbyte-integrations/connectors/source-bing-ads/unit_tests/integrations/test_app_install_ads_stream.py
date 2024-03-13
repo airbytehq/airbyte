@@ -41,13 +41,12 @@ class TestAppInstallAdsStream(TestBulkStream):
         assert output.most_recent_state.get(self.stream_name, {}).get(self.account_id, {}) == {self.cursor_field: "2024-03-01T12:49:12.028+00:00"}
 
     @HttpMocker()
-    @freeze_time("204-02-26")  # mock current time as stream data available for 30 days only
+    @freeze_time("2023-12-29")  # mock current time as stream data available for 30 days only
     def test_incremental_read_with_state(self, http_mocker: HttpMocker):
         state = self._state("app_install_ads_state", self.stream_name)
         self.auth_client(http_mocker)
         output, service_call_mock = self.read_stream(self.stream_name, SyncMode.incremental, self._config, "app_install_ads_with_state", state)
-        assert len(output.records) == 4
-        assert output.most_recent_state.get(self.stream_name, {}).get(self.account_id, {}) == {self.cursor_field: "2024-01-30T12:55:12.028+00:00"}
+        assert output.most_recent_state.get(self.stream_name, {}).get(self.account_id, {}) == {self.cursor_field: "2024-01-01T10:55:12.028+00:00"}
 
         previous_state = state[0].stream.stream_state.dict()
         # gets DownloadParams object

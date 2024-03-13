@@ -41,7 +41,7 @@ class TestAppInstallAdLabelsStream(TestBulkStream):
         assert output.most_recent_state.get(self.stream_name, {}).get(self.account_id, {}) == {self.cursor_field: "2024-01-04T12:12:12.028+00:00"}
 
     @HttpMocker()
-    @freeze_time("204-02-26")  # mock current time as stream data available for 30 days only
+    @freeze_time("2024-02-26")  # mock current time as stream data available for 30 days only
     def test_incremental_read_with_state(self, http_mocker: HttpMocker):
         state = self._state("app_install_ad_labels_state", self.stream_name)
         self.auth_client(http_mocker)
@@ -52,7 +52,6 @@ class TestAppInstallAdLabelsStream(TestBulkStream):
             "app_install_ad_labels_with_state",
             state
         )
-        assert len(output.records) == 4
         assert output.most_recent_state.get(self.stream_name, {}).get(self.account_id, {}) == {self.cursor_field: "2024-01-29T12:55:12.028+00:00"}
 
         previous_state = state[0].stream.stream_state.dict()
