@@ -12,12 +12,15 @@ import static io.airbyte.integrations.source.postgres.PostgresUtils.isDebugMode;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.components.ComponentRunner;
+import io.airbyte.cdk.components.debezium.DebeziumAirbyteMessageFactory;
+import io.airbyte.cdk.components.debezium.DebeziumRecord;
+import io.airbyte.cdk.components.debezium.DebeziumState;
+import io.airbyte.cdk.db.PgLsn;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
-import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
-import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
@@ -29,7 +32,6 @@ import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.PostgresType;
 import io.airbyte.integrations.source.postgres.PostgresUtils;
-import io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidUtils.CtidStreams;
 import io.airbyte.integrations.source.postgres.ctid.CtidGlobalStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.CdcMetadataInjector;
@@ -39,11 +41,11 @@ import io.airbyte.integrations.source.postgres.ctid.FileNodeHandler;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,7 +53,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -71,46 +72,25 @@ public class PostgresCdcCtidInitializer {
                                                                                      final JsonNode replicationSlot) {
     try {
       final JsonNode sourceConfig = database.getSourceConfig();
-      final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
-      final Duration subsequentRecordWaitTime = PostgresUtils.getSubsequentRecordWaitTime(sourceConfig);
-      final int queueSize = PostgresUtils.getQueueSize(sourceConfig);
-      LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
-      LOGGER.info("Queue size: {}", queueSize);
 
       if (isDebugMode(sourceConfig) && !PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
         throw new ConfigErrorException("WARNING: The config indicates that we are clearing the WAL while reading data. This will mutate the WAL" +
             " associated with the source being debugged and is not advised.");
       }
 
-      final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
+      final var messageFactory = new DebeziumAirbyteMessageFactory(stateManager, emittedAt, PostgresCdcCtidInitializer::toAirbyteRecordMessage);
+      final DebeziumState initialDebeziumState =
+          PostgresLsnMapper.makeSyntheticDebeziumState(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
+      final DebeziumState currentDebeziumState = messageFactory.stateFromManager().orElse(initialDebeziumState);
+      final PgLsn currentLsn = new PostgresLsnMapper().get(currentDebeziumState.offset());
 
-      final JsonNode initialDebeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database,
-          sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
-
-      final JsonNode state =
-          (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
-              ? initialDebeziumState
-              : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
-
-      final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(
-          Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(database)),
-          catalog,
-          state,
-          sourceConfig);
-
-      // We should always be able to extract offset out of state if it's not null
-      if (state != null && savedOffset.isEmpty()) {
-        throw new RuntimeException(
-            "Unable extract the offset out of state, State mutation might not be working. " + state.asText());
-      }
-
-      final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
+      final boolean savedOffsetAfterReplicationSlotLSN = PostgresLsnMapper.isSavedOffsetAfterReplicationSlotLSN(
           // We can assume that there will be only 1 replication slot cause before the sync starts for
           // Postgres CDC,
           // we run all the check operations and one of the check validates that the replication slot exists
           // and has only 1 entry
           replicationSlot,
-          savedOffset);
+          currentLsn);
 
       if (!savedOffsetAfterReplicationSlotLSN) {
         AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
@@ -122,16 +102,19 @@ public class PostgresCdcCtidInitializer {
         LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
       } else if (!isDebugMode(sourceConfig) && PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
         // We do not want to acknowledge the WAL logs in debug mode.
-        postgresDebeziumStateUtil.commitLSNToPostgresDatabase(database.getDatabaseConfig(),
-            savedOffset,
+        PostgresLsnMapper.commitLSNToPostgresDatabase(
+            database,
+            currentLsn,
             sourceConfig.get("replication_method").get("replication_slot").asText(),
             sourceConfig.get("replication_method").get("publication").asText(),
             PostgresUtils.getPluginValue(sourceConfig.get("replication_method")));
       }
-      final CdcState stateToBeUsed = (!savedOffsetAfterReplicationSlotLSN || stateManager.getCdcStateManager().getCdcState() == null
-          || stateManager.getCdcStateManager().getCdcState().getState() == null) ? new CdcState().withState(initialDebeziumState)
+      final CdcState stateToBeUsed = (!savedOffsetAfterReplicationSlotLSN
+          || stateManager.getCdcStateManager().getCdcState() == null
+          || stateManager.getCdcStateManager().getCdcState().getState() == null)
+              ? DebeziumAirbyteMessageFactory.toCdcState(initialDebeziumState)
               : stateManager.getCdcStateManager().getCdcState();
-      final CtidStreams ctidStreams = PostgresCdcCtidUtils.streamsToSyncViaCtid(stateManager.getCdcStateManager(), catalog,
+      final PostgresCdcCtidUtils.CtidStreams ctidStreams = PostgresCdcCtidUtils.streamsToSyncViaCtid(stateManager.getCdcStateManager(), catalog,
           savedOffsetAfterReplicationSlotLSN);
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>();
       final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = new ArrayList<>();
@@ -146,13 +129,14 @@ public class PostgresCdcCtidInitializer {
                     .toList();
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
         LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
-        final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
+        final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(
+            database,
             finalListOfStreamsToBeSyncedViaCtid,
             quoteString);
         final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodeHandler, stateToBeUsed, catalog);
         final CtidPostgresSourceOperations ctidPostgresSourceOperations = new CtidPostgresSourceOperations(
             Optional.of(new CdcMetadataInjector(
-                emittedAt.toString(), io.airbyte.cdk.db.PostgresUtils.getLsn(database).asLong(), new PostgresCdcConnectorMetadataInjector())));
+                emittedAt.toString(), io.airbyte.cdk.db.PostgresUtils.getLsn(database).asLong())));
         final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
             PostgresQueryUtils.getTableBlockSizeForStreams(
                 database,
@@ -178,21 +162,14 @@ public class PostgresCdcCtidInitializer {
         LOGGER.info("No streams will be synced via ctid");
       }
 
-      // Gets the target position.
-      final var targetPosition = PostgresCdcTargetPosition.targetPosition(database);
+      final ComponentRunner<DebeziumRecord, DebeziumState> debezium = PostgresDebeziumComponentUtils.runner(database, initialDebeziumState);
       // Attempt to advance LSN past the target position. For versions of Postgres before PG15, this
       // ensures that there is an event that debezium will
       // receive that is after the target LSN.
       PostgresUtils.advanceLsn(database);
-      final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
-          targetPosition, false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
-      final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
-      final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
-          PostgresCdcProperties.getDebeziumDefaultProperties(database), sourceConfig, catalog);
-      final var eventConverter = new RelationalDbDebeziumEventConverter(new PostgresCdcConnectorMetadataInjector(), emittedAt);
-
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
-          propertiesManager, eventConverter, new PostgresCdcSavedInfoFetcher(stateToBeUsed), postgresCdcStateHandler);
+      final var lazyDebeziumOutput = debezium.collectRepeatedly(currentDebeziumState, initialDebeziumState);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier =
+          () -> AutoCloseableIterators.fromIterator(messageFactory.apply(lazyDebeziumOutput).iterator());
 
       if (initialSyncCtidIterators.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
@@ -211,10 +188,32 @@ public class PostgresCdcCtidInitializer {
         LOGGER.warn("Streams are under vacuuming, not going to process WAL");
         return initialSyncCtidIterators;
       }
-
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }
+
+  static public AirbyteRecordMessage toAirbyteRecordMessage(DebeziumRecord debeziumRecord) {
+    final ObjectNode data;
+    final Instant transactionTimestamp = Instant.ofEpochMilli(debeziumRecord.source().get("ts_ms").asLong());
+    if (debeziumRecord.after().isNull()) {
+      data = (ObjectNode) Jsons.clone(debeziumRecord.before());
+      data.put(CDC_DELETED_AT, transactionTimestamp.toString());
+    } else {
+      data = (ObjectNode) Jsons.clone(debeziumRecord.after());
+      data.put(CDC_DELETED_AT, (String) null);
+    }
+    data.put(CDC_UPDATED_AT, transactionTimestamp.toString());
+    data.put(CDC_LSN, debeziumRecord.source().get("lsn").asLong());
+
+    return new AirbyteRecordMessage()
+        .withStream(debeziumRecord.source().get("table").asText())
+        .withNamespace(debeziumRecord.source().get("schema").asText())
+        .withData(data);
+  }
+
+  static public String CDC_LSN = "_ab_cdc_lsn";
+  static public String CDC_UPDATED_AT = "_ab_cdc_updated_at";
+  static public String CDC_DELETED_AT = "_ab_cdc_deleted_at";
 
 }

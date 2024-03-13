@@ -34,7 +34,6 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
-import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
@@ -42,7 +41,6 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
-import io.airbyte.integrations.source.postgres.cdc.PostgresCdcTargetPosition;
 import io.airbyte.integrations.source.postgres.cdc.PostgresReplicationConnection;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -457,28 +455,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   @Override
   protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
-    assertEquals(1, stateMessages.size());
+    if (stateMessages.size() != 1) {
+      assertEquals(1, stateMessages.size());
+    }
     assertNotNull(stateMessages.get(0).getData());
-  }
-
-  @Override
-  protected PostgresCdcTargetPosition cdcLatestTargetPosition() {
-    final JdbcDatabase database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config().get(JdbcUtils.USERNAME_KEY).asText(),
-            config().get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                config().get(JdbcUtils.HOST_KEY).asText(),
-                config().get(JdbcUtils.PORT_KEY).asInt(),
-                config().get(JdbcUtils.DATABASE_KEY).asText())));
-
-    return PostgresCdcTargetPosition.targetPosition(database);
-  }
-
-  @Override
-  protected PostgresCdcTargetPosition extractPosition(final JsonNode record) {
-    return new PostgresCdcTargetPosition(PgLsn.fromLong(record.get(CDC_LSN).asLong()));
   }
 
   @Override
@@ -711,16 +691,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(28, stateMessages.size());
     assertStateTypes(stateMessages, 25);
-  }
-
-  @Test
-  void testReachedTargetPosition() {
-    final PostgresCdcTargetPosition ctp = cdcLatestTargetPosition();
-    final PgLsn target = ctp.targetLsn;
-    assertTrue(ctp.reachedTargetPosition(target.asLong() + 1));
-    assertTrue(ctp.reachedTargetPosition(target.asLong()));
-    assertFalse(ctp.reachedTargetPosition(target.asLong() - 1));
-    assertFalse(ctp.reachedTargetPosition((Long) null));
   }
 
   @Test
@@ -969,21 +939,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         modelsSchema(), MODELS_STREAM_NAME,
         COL_ID, COL_MAKE_ID, COL_MODEL,
         recordsToCreate);
-  }
-
-  @Override
-  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition,
-                                                                                         final AirbyteRecordMessage record) {
-    // The LSN from records should be either equal or grater than the position value before the sync
-    // started.
-    // The current Write-Ahead Log (WAL) position can move ahead even without any data modifications
-    // (INSERT, UPDATE, DELETE)
-    // The start and end of transactions, even read-only ones, are recorded in the WAL. So, simply
-    // starting and committing a transaction can cause the WAL location to move forward.
-    // Periodic checkpoints, which write dirty pages from memory to disk to ensure database consistency,
-    // generate WAL records. Checkpoints happen even if there are no active data modifications
-    assert targetPosition instanceof PostgresCdcTargetPosition;
-    assertTrue(extractPosition(record.getData()).targetLsn.compareTo(((PostgresCdcTargetPosition) targetPosition).targetLsn) >= 0);
   }
 
   protected static BaseImage getServerImage() {
