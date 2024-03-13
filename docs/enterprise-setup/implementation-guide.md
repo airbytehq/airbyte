@@ -69,7 +69,7 @@ kubectl create namespace airbyte
 
 ### Configure Kubernetes Secrets
 
-Sensitive credentials such as AWS access keys are required to be made available in Kubernetes Secrets during deployment. The Kubernetes secret store and secret keys are referenced in your `airbyte.yml` file. We recommend ensuring all required secrets are configured before deploying Airbyte Self-Managed Enterprise.
+Sensitive credentials such as AWS access keys are required to be made available in Kubernetes Secrets during deployment. The Kubernetes secret store and secret keys are referenced in your `values.yml` file. We recommend ensuring all required secrets are configured before deploying Airbyte Self-Managed Enterprise.
 
 You may apply your Kubernetes secrets by applying the example manifests below to your cluster, or using `kubectl` directly. If your Kubernetes cluster already has permissions to make requests to an external entity via an instance profile, credentials are not required. For example, if your Amazon EKS cluster has been assigned a sufficient AWS IAM role to make requests to AWS S3, you do not need to specify access keys.
 
@@ -96,7 +96,7 @@ stringData:
   s3-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 ```
 
-Overriding `name`, `s3-access-key-id` or `s3-secret-access-key` allows you to store these secrets in the location of your choice. If you do this, you will also need to specify the secret location in the bucket config for your `airbyte.yml` file.
+Overriding `name`, `s3-access-key-id` or `s3-secret-access-key` allows you to store these secrets in the location of your choice. If you do this, you will also need to specify the secret location in the bucket config for your `values.yml` file.
 
 Using `kubectl` to create the secret directly:
 
@@ -184,7 +184,7 @@ stringData:
   aws-secret-manager-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 ```
 
-Overriding `name`, `aws-secret-manager-access-key-id` or `aws-secret-manager-secret-access-key` allows you to store these secrets in the location of your choice. If you do this, you will also need to specify the secret location in the secret manager config for your `airbyte.yml` file.
+Overriding `name`, `aws-secret-manager-access-key-id` or `aws-secret-manager-secret-access-key` allows you to store these secrets in the location of your choice. If you do this, you will also need to specify the secret location in the secret manager config for your `values.yml` file.
 
 Alternatively, you may choose to use `kubectl` to create the secret directly:
 
@@ -207,16 +207,16 @@ Follow these instructions to add the Airbyte helm repository:
 2. Perform the repo indexing process, and ensure your helm repository is up-to-date by running `helm repo update`.
 3. You can then browse all charts uploaded to your repository by running `helm search repo airbyte`.
 
-### Step 2: Create your Helm Values File
+### Step 2: Create your Enterprise License File
 
 1. Create a new `airbyte` directory. Inside, create an empty `airbyte.yml` file.
 
-2. Paste the following into your newly created `airbyte.yml` file. This is the minimal values file to be used to deploy Self-Managed Enterprise.
+2. Paste the following into your newly created `airbyte.yml` file:
 
 <details>
 <summary>Template airbyte.yml file</summary>
 
-```
+```yaml
 webapp-url: # example: http://localhost:8080
 
 initial-user:
@@ -226,27 +226,38 @@ initial-user:
   username: # your existing Airbyte instance username
   password: # your existing Airbyte instance password
 
-license-key: 
+license-key: # license key provided by Airbyte team
 ```
 
 </details>
 
+3. Fill in the contents of the `initial-user` block. The credentials grant an initial user with admin permissions. You should store these credentials in a secure location.
+
+4. Add your Airbyte Self-Managed Enterprise license key to your `airbyte.yml` in the `license-key` field.
+
 ### Step 3: Configure your Deployment
+
+1. Inside your `airbyte` directory, create an empty `values.yml` file.
+
+2. Paste the following into your newly created `values.yml` file. This is required to deploy Airbyte Self-Managed Enterprise:
+
+```yml
+global:
+  edition: enterprise
+```
+
+3. The following subsections help you customize your deployment to use SSO, an external database, log storage, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 4](#step-4-deploy-self-managed-enterprise). 
 
 #### Configure User Authentication
 
-1. Fill in the contents of the `initial-user` block. The credentials grant an initial user with admin permissions. You should store these credentials in a secure location.
-
-2. Add your Airbyte Self-Managed Enterprise license key to your `airbyte.yml` in the `license-key` field.
-
-3. To enable SSO authentication, add [SSO auth details](/access-management/sso) to your `airbyte.yml` file. 
+To enable SSO authentication, add [SSO auth details](/access-management/sso) to your `values.yml` file. 
 
 <details>
-    <summary>Configuring auth in your airbyte.yml file</summary>
+    <summary>Configuring auth in your values.yml file</summary>
 
 <Tabs>
 <TabItem value="Okta" label="Okta">
-To configure SSO with Okta, add the following at the end of your `airbyte.yml` file:
+To configure SSO with Okta, add the following at the end of your `values.yml` file:
 
 ```yaml
 auth:   
@@ -263,7 +274,7 @@ See the [following guide](/access-management/sso-providers/okta) on how to colle
 </TabItem>
 <TabItem value="Other" label="Other">
 
-To configure SSO with any identity provider via [OpenID Connect (OIDC)](https://openid.net/developers/how-connect-works/), such as Azure Entra ID (formerly ActiveDirectory), add the following at the end of your `airbyte.yml` file:
+To configure SSO with any identity provider via [OpenID Connect (OIDC)](https://openid.net/developers/how-connect-works/), such as Azure Entra ID (formerly ActiveDirectory), add the following at the end of your `values.yml` file:
 
 ```yaml
 auth:   
@@ -282,7 +293,7 @@ See the [following guide](/access-management/sso-providers/azure-entra-id) on ho
 
 To modify auth configurations on an existing deployment (after Airbyte has been installed at least once), you will need to `helm upgrade` Airbyte with the additional environment variable `--set keycloak-setup.env_vars.KEYCLOAK_RESET_REALM=true`. As this also resets the list of Airbyte users and permissions, please use this with caution.
 
-To deploy Self-Managed Enterprise without SSO, exclude the entire `auth:` section from your airbyte.yml config file. You will authenticate with the instance admin user and password included in your `airbyte.yml`. Without SSO, you cannot currently have unique logins for multiple users.
+To deploy Self-Managed Enterprise without SSO, exclude the entire `auth:` section from your values.yml config file. You will authenticate with the instance admin user and password included in your `values.yml`. Without SSO, you cannot currently have unique logins for multiple users.
 
 </details>
 
@@ -295,7 +306,7 @@ We assume in the following that you've already configured a Postgres instance:
 <details>
 <summary>External database setup steps</summary>
 
-1. Add external database details to your `airbyte.yml` file. This disables the default internal Postgres database (`airbyte/db`), and configures the external Postgres database:
+1. Add external database details to your `values.yml` file. This disables the default internal Postgres database (`airbyte/db`), and configures the external Postgres database:
 
 ```yaml
 postgresql:
@@ -333,7 +344,7 @@ For Self-Managed Enterprise deployments, we recommend spinning up standalone log
 <details>
 <summary>External log storage setup steps</summary>
 
-Add external log storage details to your `airbyte.yml` file. This disables the default internal Minio instance (`airbyte/minio`), and configures the external log database:
+Add external log storage details to your `values.yml` file. This disables the default internal Minio instance (`airbyte/minio`), and configures the external log database:
 
 <Tabs>
 <TabItem value="S3" label="S3" default>
@@ -485,7 +496,7 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 </Tabs>
 </details>
 
-Once this is complete, ensure that the value of the `webapp-url` field in your `airbyte.yml` is configured to match the ingress URL.
+Once this is complete, ensure that the value of the `webapp-url` field in your `values.yml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
@@ -547,11 +558,13 @@ Install Airbyte Self-Managed Enterprise on helm using the following command:
 ```sh
 helm install \
 --namespace airbyte \
---values ./airbyte.yml \
---set-file airbyteYml="./airbyte.yml" \
+--values ./values.yml \
+--set-file airbyteYml="./airbyte.yml"
 airbyte-enterprise \
 airbyte/airbyte
 ```
+
+To uninstall Self-Managed Enterprise, run `helm uninstall airbyte-enterprise`.
 
 ## Updating Self-Managed Enterprise
 
@@ -563,8 +576,8 @@ Upgrade Airbyte Self-Managed Enterprise by:
 ```sh
 helm upgrade \
 --namespace airbyte \
---values ./airbyte.yml \
---set-file airbyteYml="./airbyte.yml" \
+--values ./values.yml \
+--set-file airbyteYml="./airbyte.yml"
 --install airbyte-enterprise \
 airbyte/airbyte
 ```
@@ -579,8 +592,8 @@ After specifying your own configuration, run the following command:
 helm upgrade \ 
 --namespace airbyte \
 --values path/to/values.yaml
---values ./airbyte.yml \
---set-file airbyteYml="./airbyte.yml" \
+--values ./values.yml \
+--set-file airbyteYml="./airbyte.yml"
 --install airbyte-enterprise \
 airbyte/airbyte
 ```
@@ -589,7 +602,7 @@ airbyte/airbyte
 
 You may choose to use your own service account instead of the Airbyte default, `airbyte-sa`. This may allow for better audit trails and resource management specific to your organizational policies and requirements.
 
-To do this, add the following to your `airbyte.yml`:
+To do this, add the following to your `values.yml`:
 
 ```
 serviceAccount:
