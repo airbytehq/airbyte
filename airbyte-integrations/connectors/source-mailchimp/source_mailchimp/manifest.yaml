@@ -3,7 +3,6 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
-  # TODO: how to make simple ping ?
   stream_names:
     - "campaigns"
 
@@ -77,7 +76,6 @@ definitions:
       cursor_field: "{{ parameters['cursor_field'] }}"
       start_datetime:
         type: MinMaxDatetime
-        # TODO: ref to use datetime as optional parameter if possible
         datetime: "{{ config.get('start_date') or day_delta(-500, '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_time_option:
@@ -254,7 +252,6 @@ definitions:
       cursor_field: "{{ parameters['cursor_field'] }}"
       start_datetime:
         type: MinMaxDatetime
-        # TODO: ref to use datetime as optional parameter if possible
         datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S.%fZ')) }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     transformations:
@@ -294,7 +291,6 @@ definitions:
       cursor_field: "{{ parameters['cursor_field'] }}"
       start_datetime:
         type: MinMaxDatetime
-        # TODO: ref to use datetime as optional parameter if possible
         datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S.%fZ')) }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     $parameters:
@@ -327,7 +323,6 @@ definitions:
       cursor_field: "{{ parameters['cursor_field'] }}"
       start_datetime:
         type: MinMaxDatetime
-        # TODO: ref to use datetime as optional parameter if possible
         datetime: "{{ config.get('start_date', day_delta(-500, '%Y-%m-%dT%H:%M:%S%z')) }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       start_time_option:
