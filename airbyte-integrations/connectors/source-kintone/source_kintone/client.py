@@ -174,11 +174,11 @@ class Client:
             name=app_name,
             json_schema=json_schema,
             supported_sync_modes=["full_refresh", "incremental"],
-            #default_cursor_field=["update_date_time"],
+            default_cursor_field=["updated_at"],
         )
 
-def update_url(url, params):
-    url_parts = urllib.parse.urlparse(url)
-    query = dict(urllib.parse.parse_qsl(url_parts.query))
-    query.update(params)
-    return url_parts._replace(query=urllib.parse.urlencode(query)).geturl()
+    def update_url(url, params):
+        url_parts = urllib.parse.urlparse(url)
+        query = dict(urllib.parse.parse_qsl(url_parts.query))
+        query.update(params)
+        return url_parts._replace(query=urllib.parse.urlencode(query)).geturl()
