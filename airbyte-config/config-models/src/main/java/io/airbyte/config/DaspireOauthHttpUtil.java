@@ -24,6 +24,7 @@ public class DaspireOauthHttpUtil {
   private final static String WRITE_DASPIRE_OAUTH_CONFIG = "/oauth/config/save";
 
   public static String post(String uri, Map<String, Object> param) {
+    log.error("post function URL ----> {}", uri );
     CloseableHttpClient client = HttpClients.createDefault();
     try (client) {
       URIBuilder uriBuilder = new URIBuilder(uri);
