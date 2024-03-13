@@ -19,6 +19,7 @@ interface IProps {
   setCloudItemId?: any;
   setSelectedRegion?: any;
   setSelectedInstance?: any;
+  setIsCloud?: any;
 }
 
 const Title = styled.div`
@@ -47,6 +48,8 @@ const CloudProvider: React.FC<IProps> = ({
   setCloudItemId,
   setSelectedRegion,
   setSelectedInstance,
+  cloudItemId,
+  setIsCloud,
 }) => {
   return (
     <CardContainer>
@@ -68,7 +71,7 @@ const CloudProvider: React.FC<IProps> = ({
                   control={
                     <Radio
                       onChange={(e) => {
-                        // setIsCloud(true);
+                        setIsCloud(true);
                         setCloudProvider(e.target.value);
                         setCloudItemId(regions[0]?.cloudItemId);
                         handleInstanceSelect(regions[0]?.cloudItemId);
@@ -78,7 +81,7 @@ const CloudProvider: React.FC<IProps> = ({
                           color: "#4F46E5",
                         },
                       }}
-                      checked={cloudProvider === "AWS"}
+                      checked={cloudProvider === "AWS" && cloudItemId === regions[0]?.cloudItemId}
                     />
                   }
                   label={

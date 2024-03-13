@@ -9,7 +9,7 @@ interface IProps {
   productOptions?: ProductOptionItem[];
   product?: ProductOptionItem;
   setProduct?: (item: ProductOptionItem) => void;
-  selectedProduct?: any;
+  // selectedProduct?: any;
   mode?: boolean;
   setCloudProvider?: any;
   cloudProvider?: string;
@@ -27,6 +27,7 @@ interface IProps {
   setPrice?: any;
   instanceSelected?: boolean;
   setInstanceSelected?: any;
+  regionScrollRef?: any;
   setJobs?: any;
 }
 
@@ -65,15 +66,15 @@ const Instance: React.FC<IProps> = ({
   selectedInstance,
   cloudItemId,
   setCloudPackageId,
-  selectedProduct,
+  // selectedProduct,
   setInstanceSelected,
   setJobs,
-  // instanceSelected
+  regionScrollRef,
 }) => {
   const { formatMessage } = useIntl();
 
   return (
-    <CardContainer>
+    <CardContainer ref={regionScrollRef}>
       <Grid container spacing={2}>
         <Grid item lg={12} md={12} sm={12} xs={12}>
           <Box pl={1}>
@@ -119,6 +120,7 @@ const Instance: React.FC<IProps> = ({
                                   setJobs(inst?.noOfJobs);
                                   setPrice(selectedPackage?.price);
                                   setCloudPackageId(selectedPackage?.cloudPackageId);
+                                  setInstanceSelected(true);
                                 } else {
                                   setInstanceSelected(false);
                                 }
@@ -134,10 +136,10 @@ const Instance: React.FC<IProps> = ({
                                 },
                               }}
                               checked={selectedInstance === inst?.instanceItemId}
-                              disabled={
-                                selectedProduct?.instanceItemId === inst?.instanceItemId &&
-                                selectedProduct?.instanceItemId === selectedInstance
-                              }
+                              // disabled={
+                              //   selectedProduct?.instanceItemId === inst?.instanceItemId &&
+                              //   selectedProduct?.instanceItemId === selectedInstance
+                              // }
                             />
                           }
                           label={

@@ -23,6 +23,8 @@ interface IProps {
   instance?: any;
   setInstanceSelected?: any;
   setPrice?: any;
+  cloudRef?: any;
+  setRegionSelected?: any;
 }
 
 const Title = styled.div`
@@ -52,9 +54,11 @@ const Region: React.FC<IProps> = ({
   selectedProduct,
   setPrice,
   setInstanceSelected,
+  cloudRef,
+  setRegionSelected,
 }) => {
   return (
-    <CardContainer>
+    <CardContainer ref={cloudRef}>
       <Grid container spacing={2}>
         <Grid item lg={12} md={12} sm={12} xs={12}>
           <Box pl={1}>
@@ -79,7 +83,7 @@ const Region: React.FC<IProps> = ({
                             onChange={(e) => {
                               setSelectedRegion(e.target.value);
                               setSelectedInstance("");
-                              // setRegionSelected(true);
+                              setRegionSelected(true);
                               setPrice("");
                             }}
                             sx={{
@@ -91,10 +95,10 @@ const Region: React.FC<IProps> = ({
                               },
                             }}
                             checked={selectedRegion === region?.regionItemId}
-                            disabled={
-                              selectedProduct?.regionItemId === region?.regionItemId &&
-                              selectedProduct?.regionItemId === selectedRegion
-                            }
+                            // disabled={
+                            //   selectedProduct?.regionItemId === region?.regionItemId &&
+                            //   selectedProduct?.regionItemId === selectedRegion
+                            // }
                           />
                         }
                         label={
