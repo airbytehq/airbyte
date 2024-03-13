@@ -47,5 +47,4 @@ dependencies {
     testImplementation 'org.testcontainers:postgresql:1.19.0'
     testImplementation 'org.xbib.elasticsearch:joptsimple:6.3.2.1'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
-    testImplementation libs.mockk
 }
