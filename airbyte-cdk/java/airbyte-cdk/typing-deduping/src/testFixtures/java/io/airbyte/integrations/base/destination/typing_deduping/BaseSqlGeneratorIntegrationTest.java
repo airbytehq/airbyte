@@ -470,7 +470,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
                 {
                   "_airbyte_raw_id": "899d3bc3-7921-44f0-8517-c748a28fe338",
                   "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {}
+                  "_airbyte_data": {},
+                  "_airbyte_meta": {}
                 }
                 """),
             Jsons.deserialize(
@@ -478,7 +479,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
                 {
                   "_airbyte_raw_id": "47f46eb6-fcae-469c-a7fc-31d4b9ce7474",
                   "_airbyte_extracted_at": "2023-01-02T00:00:00Z",
-                  "_airbyte_data": {}
+                  "_airbyte_data": {},
+                  "_airbyte_meta": {}
                 }
                 """)));
     InitialRawTableStatus tableState = getInitialRawTableState(incrementalAppendStream);
@@ -617,7 +619,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
                   "_airbyte_extracted_at": "2022-01-01T00:00:00Z",
                   "_airbyte_data": {
                     "string": "foo"
-                  }
+                  },
+                  "_airbyte_meta": {}
                 }
                 """),
             Jsons.deserialize(
@@ -627,7 +630,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
                   "_airbyte_extracted_at": "2023-01-01T01:00:00Z",
                   "_airbyte_data": {
                     "string": "bar"
-                  }
+                  },
+                  "_airbyte_meta": {}
                 }
                 """)));
 
@@ -723,7 +727,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
                     "id1": 1,
                     "id2": 100,
                     "string": "foo"
-                  }
+                  },
+                  "_airbyte_meta": {}
                 }
                 """),
             Jsons.deserialize(
@@ -735,7 +740,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
                     "id1": 1,
                     "id2": 100,
                     "string": "bar"
-                  }
+                  },
+                  "_airbyte_meta": {}
                 }
                 """)));
 
@@ -811,7 +817,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
                 "id2": 100,
                 "updated_at": "2023-01-01T00:00:00Z",
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-              }
+              },
+              "_airbyte_meta": {}
             }
             """)));
 
@@ -844,7 +851,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
                 "id2": 100,
                 "updated_at": "2023-01-01T00:00:00Z",
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-              }
+              },
+              "_airbyte_meta": {}
             }
             """)));
 
@@ -968,7 +976,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
                 "id1": 1,
                 "id2": 100,
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-              }
+              },
+              "_airbyte_meta": {}
             }
             """)));
     insertFinalTableRecords(
@@ -1061,7 +1070,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
           List.of(Jsons.jsonNode(Map.of(
               "_airbyte_raw_id", "758989f2-b148-4dd3-8754-30d9c17d05fb",
               "_airbyte_extracted_at", "2023-01-01T00:00:00Z",
-              "_airbyte_data", Map.of(str, "bar")))));
+              "_airbyte_data", Map.of(str, "bar"),
+              "_airbyte_meta", Map.of()))));
       final StreamConfig stream = new StreamConfig(
           modifiedStreamId,
           SyncMode.INCREMENTAL,
@@ -1133,7 +1143,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
             {
               "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
               "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-              "_airbyte_data": {}
+              "_airbyte_data": {},
+              "_airbyte_meta": {}
             }
             """)));
     final StreamConfig stream = new StreamConfig(
