@@ -89,7 +89,7 @@
       "type": ["string", "null"]
     },
     "billing_month": {
-        "type": ["integer", "null"]
+      "type": ["integer", "null"]
     },
     "pii_cleared": {
       "type": ["string", "null"]

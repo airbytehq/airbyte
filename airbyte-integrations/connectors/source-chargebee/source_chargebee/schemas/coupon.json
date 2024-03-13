@@ -114,21 +114,21 @@
       }
     },
     "coupon_constraints": {
-        "type": ["array", "null"],
-        "items": {
-          "type": ["object", "null"],
-            "properties": {
-            "entity_type": {
-                "type": ["string", "null"]
-            },
-            "type": {
-                "type": ["string", "null"]
-            },
-            "vlaue": {
-                "type": ["string", "null"]
-            }
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "entity_type": {
+            "type": ["string", "null"]
+          },
+          "type": {
+            "type": ["string", "null"]
+          },
+          "vlaue": {
+            "type": ["string", "null"]
+          }
         }
-    }
+      }
     },
     "custom_fields": {
       "$ref": "_definitions.json#/definitions/custom_fields"
