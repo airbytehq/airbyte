@@ -25,7 +25,8 @@ class GreenHouseSlicer(Cursor):
         self._state = {}
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        yield {self.request_cursor_field: self._state.get(self.cursor_field, self.START_DATETIME)}
+        slice = StreamSlice(partition={}, cursor_slice={self.request_cursor_field: self._state.get(self.cursor_field, self.START_DATETIME)})
+        yield slice
 
     def _max_dt_str(self, *args: str) -> Optional[str]:
         new_state_candidates = list(map(lambda x: datetime.datetime.strptime(x, self.DATETIME_FORMAT), filter(None, args)))
@@ -109,10 +110,11 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
                 sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
             ):
                 parent_state_value = parent_record.get(self.parent_key)
-                yield {
-                    self.stream_slice_field: parent_state_value,
-                    self.request_cursor_field: self._state.get(str(parent_state_value), {}).get(self.cursor_field, self.START_DATETIME),
-                }
+
+                partition = {self.stream_slice_field: parent_state_value}
+                cursor_slice = {self.request_cursor_field: self._state.get(str(parent_state_value), {}).get(self.cursor_field, self.START_DATETIME)}
+
+                yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         if self.stream_slice_field in stream_state:
