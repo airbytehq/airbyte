@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination_async.partial_messages;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Objects;
 
@@ -26,6 +27,9 @@ public class PartialAirbyteRecordMessage {
   @JsonProperty("emitted_at")
   @JsonPropertyDescription("when the data was emitted from the source. epoch in millisecond.")
   private long emittedAt;
+
+  @JsonProperty("meta")
+  private AirbyteRecordMessageMeta meta;
 
   public PartialAirbyteRecordMessage() {}
 
@@ -87,6 +91,14 @@ public class PartialAirbyteRecordMessage {
   public PartialAirbyteRecordMessage withEmittedAt(final Long emittedAt) {
     this.emittedAt = emittedAt;
     return this;
+  }
+
+  public AirbyteRecordMessageMeta getMeta() {
+    return meta;
+  }
+
+  public void setMeta(AirbyteRecordMessageMeta meta) {
+    this.meta = meta;
   }
 
   @Override

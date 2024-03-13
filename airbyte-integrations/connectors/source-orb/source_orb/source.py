@@ -151,6 +151,8 @@ class Customers(IncrementalOrbStream):
     API Docs: https://docs.withorb.com/reference/list-customers
     """
 
+    use_cache = True
+
     def path(self, **kwargs) -> str:
         return "customers"
 
@@ -590,14 +592,11 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         # Build up a list of the subset of ledger entries we are expected
         # to enrich with event metadata.
         event_id_to_ledger_entries = {}
-        min_created_at_timestamp = pendulum.now()
-        max_created_at_timestamp = pendulum.now()
 
         for entry in ledger_entries:
             maybe_event_id: Optional[str] = entry.get("event_id")
             if maybe_event_id:
-                min_created_at_timestamp = min(min_created_at_timestamp, pendulum.parse(entry["created_at"]))
-                max_created_at_timestamp = max(max_created_at_timestamp, pendulum.parse(entry["created_at"]))
+                created_at_timestamp = pendulum.parse(entry.get("created_at", pendulum.now()))
                 # There can be multiple entries with the same event ID
                 event_id_to_ledger_entries[maybe_event_id] = event_id_to_ledger_entries.get(maybe_event_id, []) + [entry]
 
@@ -628,8 +627,8 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         # event_ids to filter on
         request_filter_json = {
             "event_ids": list(event_id_to_ledger_entries),
-            "timeframe_start": min_created_at_timestamp.to_iso8601_string(),
-            "timeframe_end": max_created_at_timestamp.add(minutes=1).to_iso8601_string(),
+            "timeframe_start": created_at_timestamp.to_iso8601_string(),
+            "timeframe_end": created_at_timestamp.add(days=30).to_iso8601_string(),
         }
 
         # Prepare request with self._session, which should
@@ -638,7 +637,11 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         prepared_request = self._session.prepare_request(requests.Request(**args))
         events_response: requests.Response = self._session.send(prepared_request)
         # Error for invalid responses
-        events_response.raise_for_status()
+        if events_response.status_code != 200:
+            self.logger.info(request_filter_json)
+            self.logger.error(events_response.text)
+            events_response.raise_for_status()
+
         paginated_events_response_body = events_response.json()
 
         if paginated_events_response_body["pagination_metadata"]["has_more"]:

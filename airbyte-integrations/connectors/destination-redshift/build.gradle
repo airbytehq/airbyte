@@ -1,7 +1,6 @@
 plugins {
     id 'application'
     id 'airbyte-java-connector'
-    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
 }
 
 airbyteJavaConnector {

@@ -19,6 +19,8 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.cdk.integrations.destination_async.deser.DeserializationUtil;
+import io.airbyte.cdk.integrations.destination_async.deser.IdentityDataTransformer;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.cdk.integrations.destination_async.state.FlushFailure;
@@ -252,7 +254,7 @@ class AsyncStreamConsumerTest {
             .withData(PAYLOAD));
     final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
     final String airbyteRecordString = Jsons.serialize(PAYLOAD);
-    final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    final PartialAirbyteMessage partial = DeserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, new IdentityDataTransformer());
     assertEquals(airbyteRecordString, partial.getSerialized());
   }
 
@@ -268,7 +270,7 @@ class AsyncStreamConsumerTest {
             .withData(payload));
     final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
     final String airbyteRecordString = Jsons.serialize(payload);
-    final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    final PartialAirbyteMessage partial = DeserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, new IdentityDataTransformer());
     assertEquals(airbyteRecordString, partial.getSerialized());
   }
 
@@ -282,7 +284,7 @@ class AsyncStreamConsumerTest {
             .withNamespace(SCHEMA_NAME)
             .withData(Jsons.jsonNode(emptyMap)));
     final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
-    final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    final PartialAirbyteMessage partial = DeserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, new IdentityDataTransformer());
     assertEquals(emptyMap.toString(), partial.getSerialized());
   }
 
@@ -292,13 +294,14 @@ class AsyncStreamConsumerTest {
         .withType(Type.LOG)
         .withLog(new AirbyteLogMessage());
     final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
-    assertThrows(RuntimeException.class, () -> AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage));
+    assertThrows(RuntimeException.class,
+        () -> DeserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, new IdentityDataTransformer()));
   }
 
   @Test
   void deserializeAirbyteMessageWithAirbyteState() {
     final String serializedAirbyteMessage = Jsons.serialize(STATE_MESSAGE1);
-    final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    final PartialAirbyteMessage partial = DeserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, new IdentityDataTransformer());
     assertEquals(serializedAirbyteMessage, partial.getSerialized());
   }
 
@@ -309,7 +312,8 @@ class AsyncStreamConsumerTest {
             .withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1))));
     final String serializedAirbyteMessage = Jsons.serialize(badState);
-    assertThrows(RuntimeException.class, () -> AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage));
+    assertThrows(RuntimeException.class,
+        () -> DeserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, new IdentityDataTransformer()));
   }
 
   @Nested
