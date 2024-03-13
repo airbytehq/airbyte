@@ -37,5 +37,6 @@ dependencies {
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
     testImplementation "org.mockito:mockito-inline:4.1.0"
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1-Beta")
 
 }
