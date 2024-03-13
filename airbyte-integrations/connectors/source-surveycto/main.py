@@ -2,7 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from source_surveycto.run import run
+
+import sys
+
+from airbyte_cdk.entrypoint import launch
+from source_surveycto import SourceSurveycto
 
 if __name__ == "__main__":
-    run()
+    source = SourceSurveycto()
+    launch(source, sys.argv[1:])
