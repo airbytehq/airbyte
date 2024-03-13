@@ -46,7 +46,7 @@ class Client:
                 method="GET",
             )
         else:
-            url = update_url(url, params)
+            url = self.update_url(url, params)
             req = urllib.request.Request(
                 url=url,
                 headers=headers,
