@@ -138,8 +138,8 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
        */
       final JsonNode lsnSequenceNode = event.eventValueAsJson().get("source").get("sequence");
       List<String> lsnSequence = objectMapper.readValue(lsnSequenceNode.asText(), listType);
-      // The sequence field is a pair of [lsn_commit, lsn_processed]. We want to make sure lsn_commit(event) is compared against
-      // lsn_commit(state_offset). For the event, either of the lsn values can be null.
+      // The sequence field is a pair of [lsn_commit, lsn_processed]. We want to make sure
+      // lsn_commit(event) is compared against lsn_commit(state_offset). For the event, either of the lsn values can be null.
       String eventLsnCommit = lsnSequence.get(0);
       if (eventLsnCommit == null) {
         return false;
