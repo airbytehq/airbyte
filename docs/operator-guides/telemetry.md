@@ -32,7 +32,7 @@ Also check our [privacy policy](https://airbyte.com/privacy-policy) for more det
     usage data is collected, along with a link to this page for more information.
 
     Anonymous usage tracking ("telemetry") helps us understand how PyAirbyte is being used,
-    including which connectors are working well, which connectors are frequently failing. This helps
+    including which connectors are working well and which connectors are frequently failing. This helps
     us to prioritize product improvements which benefit users of PyAirbyte as well as Airbyte Cloud,
     OSS, and Enterprise.
 
