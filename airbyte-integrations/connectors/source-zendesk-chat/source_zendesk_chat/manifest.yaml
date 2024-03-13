@@ -189,6 +189,12 @@ definitions:
     description: >-
       Routing Settings Stream: https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings
     $ref: "#/definitions/base_stream_with_list_response_no_pagination"
+    retriever:
+      $ref: "#/definitions/base_stream_with_list_response_no_pagination/retriever"
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["data"]
     primary_key: ""
     $parameters:
       name: "routing_settings"
