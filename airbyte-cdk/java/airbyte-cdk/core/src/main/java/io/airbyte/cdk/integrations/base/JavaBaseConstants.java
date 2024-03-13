@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.base;
 
 import java.util.List;
+import java.util.Set;
 
 public final class JavaBaseConstants {
 
@@ -34,7 +35,7 @@ public final class JavaBaseConstants {
 
   // Meta was introduced later, so to avoid triggering raw table soft-reset in v1->v2
   // use this column list.
-  public static final List<String> V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META = List.of(
+  public static final Set<String> V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META = Set.of(
       COLUMN_NAME_AB_RAW_ID,
       COLUMN_NAME_AB_EXTRACTED_AT,
       COLUMN_NAME_AB_LOADED_AT,
