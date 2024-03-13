@@ -8,7 +8,15 @@ import tempfile
 from typing import Any, List, MutableMapping, Set, Tuple
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, StreamDescriptor, SyncMode, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    StreamDescriptor,
+    SyncMode,
+    Type,
+)
 from source_facebook_marketing.source import SourceFacebookMarketing
 
 
