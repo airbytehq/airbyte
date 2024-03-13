@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "TimePeriod": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "AccountNumber": {
+      "type": ["null", "string"]
+    },
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "AdId": {
+      "type": ["null", "integer"]
+    },
+    "AdGroupId": {
+      "type": ["null", "integer"]
+    },
+    "AdGroupName": {
+      "type": ["null", "string"]
+    },
+    "CampaignId": {
+      "type": ["null", "integer"]
+    },
+    "CampaignName": {
+      "type": ["null", "string"]
+    },
+    "DestinationUrl": {
+      "type": ["null", "string"]
+    },
+    "DeviceType": {
+      "type": ["null", "string"]
+    },
+    "DeviceOS": {
+      "type": ["null", "string"]
+    },
+    "Language": {
+      "type": ["null", "string"]
+    },
+    "SearchQuery": {
+      "type": ["null", "string"]
+    },
+    "Network": {
+      "type": ["null", "string"]
+    },
+    "MerchantProductId": {
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "type": ["null", "string"]
+    },
+    "ClickTypeId": {
+      "type": ["null", "string"]
+    },
+    "TotalClicksOnAdElements": {
+      "type": ["null", "number"]
+    },
+    "ClickType": {
+      "type": ["null", "string"]
+    },
+    "AdGroupCriterionId": {
+      "type": ["null", "string"]
+    },
+    "ProductGroup": {
+      "type": ["null", "string"]
+    },
+    "PartitionType": {
+      "type": ["null", "string"]
+    },
+    "Impressions": {
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "type": ["null", "number"]
+    },
+    "Conversions": {
+      "type": ["null", "integer"]
+    },
+    "ConversionRate": {
+      "type": ["null", "number"]
+    },
+    "Assists": {
+      "type": ["null", "integer"]
+    },
+    "CostPerAssist": {
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerAssist": {
+      "type": ["null", "number"]
+    },
+    "CustomerId": {
+      "type": ["null", "integer"]
+    },
+    "CustomerName": {
+      "type": ["null", "string"]
+    },
+    "AssistedImpressions": {
+      "type": ["null", "integer"]
+    },
+    "AssistedClicks": {
+      "type": ["null", "integer"]
+    },
+    "AssistedConversions": {
+      "type": ["null", "integer"]
+    },
+    "AllConversions": {
+      "type": ["null", "integer"]
+    },
+    "AllRevenue": {
+      "type": ["null", "number"]
+    },
+    "AllConversionRate": {
+      "type": ["null", "number"]
+    },
+    "AllCostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "Goal": {
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "type": ["null", "string"]
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "type": ["null", "number"]
+    },
+    "AverageCpm": {
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "AssistedConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "AllConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "CampaignType": {
+      "type": ["null", "string"]
+    },
+    "AssetGroupId": {
+      "type": ["null", "integer"]
+    },
+    "AssetGroupName": {
+      "type": ["null", "string"]
+    }
+  }
+}

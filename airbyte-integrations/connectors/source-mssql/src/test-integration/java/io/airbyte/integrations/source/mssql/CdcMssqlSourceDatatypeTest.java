@@ -6,11 +6,24 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@TestInstance(Lifecycle.PER_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
+
+  private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
   @Override
   protected JsonNode getConfig() {
@@ -27,46 +40,35 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
     return testdb.getDatabase();
   }
 
-  @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    super.setupEnvironment(environment);
-    enableCdcOnAllTables();
+  protected void createTables() throws Exception {
+    List<Callable<MsSQLTestDatabase>> createTableTasks = new ArrayList<>();
+    List<Callable<MsSQLTestDatabase>> enableCdcForTableTasks = new ArrayList<>();
+    for (var test : testDataHolders) {
+      createTableTasks.add(() -> testdb.with(test.getCreateSqlQuery()));
+      enableCdcForTableTasks.add(() -> testdb.withCdcForTable(test.getNameSpace(), test.getNameWithTestPrefix(), null));
+    }
+    executor.invokeAll(createTableTasks);
+    executor.invokeAll(enableCdcForTableTasks);
   }
 
-  private void enableCdcOnAllTables() {
-    testdb.with("""
-                DECLARE @TableName VARCHAR(100)
-                DECLARE @TableSchema VARCHAR(100)
-                DECLARE CDC_Cursor CURSOR FOR
-                  SELECT * FROM (
-                   SELECT Name,SCHEMA_NAME(schema_id) AS TableSchema
-                   FROM   sys.objects
-                   WHERE  type = 'u'
-                   AND is_ms_shipped <> 1
-                   ) CDC
-                OPEN CDC_Cursor
-                FETCH NEXT FROM CDC_Cursor INTO @TableName,@TableSchema
-                WHILE @@FETCH_STATUS = 0
-                 BEGIN
-                   DECLARE @SQL NVARCHAR(1000)
-                   DECLARE @CDC_Status TINYINT
-                   SET @CDC_Status=(SELECT COUNT(*)
-                     FROM   cdc.change_tables
-                     WHERE  Source_object_id = OBJECT_ID(@TableSchema+'.'+@TableName))
-                   --IF CDC is not enabled on Table, Enable CDC
-                   IF @CDC_Status <> 1
-                     BEGIN
-                       SET @SQL='EXEC sys.sp_cdc_enable_table
-                         @source_schema = '''+@TableSchema+''',
-                         @source_name   = ''' + @TableName
-                                     + ''',
-                         @role_name     = null;'
-                       EXEC sp_executesql @SQL
-                     END
-                   FETCH NEXT FROM CDC_Cursor INTO @TableName,@TableSchema
-                END
-                CLOSE CDC_Cursor
-                DEALLOCATE CDC_Cursor""");
+  protected void populateTables() throws Exception {
+    List<Callable<MsSQLTestDatabase>> insertTasks = new ArrayList<>();
+    List<Callable<MsSQLTestDatabase>> waitForCdcRecordsTasks = new ArrayList<>();
+    for (var test : testDataHolders) {
+      insertTasks.add(() -> {
+        this.database.query((ctx) -> {
+          List<String> sql = test.getInsertSqlQueries();
+          Objects.requireNonNull(ctx);
+          sql.forEach(ctx::fetch);
+          return null;
+        });
+        return null;
+      });
+      waitForCdcRecordsTasks.add(() -> testdb.waitForCdcRecords(test.getNameSpace(), test.getNameWithTestPrefix(), test.getExpectedValues().size()));
+    }
+    // executor.invokeAll(insertTasks);
+    executor.invokeAll(insertTasks);
+    executor.invokeAll(waitForCdcRecordsTasks);
   }
 
   @Override

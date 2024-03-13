@@ -141,10 +141,21 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
   protected abstract void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages);
 
+  // TODO: this assertion should be added into test cases in this class, we will need to implement
+  // corresponding iterator for other connectors before
+  // doing so.
+  protected void assertExpectedStateMessageCountMatches(final List<AirbyteStateMessage> stateMessages, long totalCount) {
+    // Do nothing.
+  }
+
   @BeforeEach
   protected void setup() {
     testdb = createTestDatabase();
+    createTables();
+    populateTables();
+  }
 
+  protected void createTables() {
     // create and populate actual table
     final var actualColumns = ImmutableMap.of(
         COL_ID, "INTEGER",
@@ -153,11 +164,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     testdb
         .with(createSchemaSqlFmt(), modelsSchema())
         .with(createTableSqlFmt(), modelsSchema(), MODELS_STREAM_NAME, columnClause(actualColumns, Optional.of(COL_ID)));
-    for (final JsonNode recordJson : MODEL_RECORDS) {
-      writeModelRecord(recordJson);
-    }
 
-    // Create and populate random table.
+    // Create random table.
     // This table is not part of Airbyte sync. It is being created just to make sure the schemas not
     // being synced by Airbyte are not causing issues with our debezium logic.
     final var randomColumns = ImmutableMap.of(
@@ -168,6 +176,13 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
       testdb.with(createSchemaSqlFmt(), randomSchema());
     }
     testdb.with(createTableSqlFmt(), randomSchema(), RANDOM_TABLE_NAME, columnClause(randomColumns, Optional.of(COL_ID + "_random")));
+  }
+
+  protected void populateTables() {
+    for (final JsonNode recordJson : MODEL_RECORDS) {
+      writeModelRecord(recordJson);
+    }
+
     for (final JsonNode recordJson : MODEL_RECORDS_RANDOM) {
       writeRecords(recordJson, randomSchema(), RANDOM_TABLE_NAME,
           COL_ID + "_random", COL_MAKE_ID + "_random", COL_MODEL + "_random");
@@ -342,6 +357,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordMessages);
     assertExpectedStateMessages(stateMessages);
+    assertExpectedStateMessageCountMatches(stateMessages, MODEL_RECORDS.size());
   }
 
   protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition,
@@ -351,7 +367,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
   @Test
   // When a record is deleted, produces a deletion record.
-  void testDelete() throws Exception {
+  public void testDelete() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read1 = source()
         .read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
@@ -369,6 +385,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
         extractRecordMessages(actualRecords2));
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
     assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
+    assertExpectedStateMessageCountMatches(stateMessages2, 1);
     assertEquals(1, recordMessages2.size());
     assertEquals(11, recordMessages2.get(0).getData().get(COL_ID).asInt());
     assertCdcMetaData(recordMessages2.get(0).getData(), false);
@@ -380,7 +397,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
   @Test
   // When a record is updated, produces an update record.
-  void testUpdate() throws Exception {
+  public void testUpdate() throws Exception {
     final String updatedModel = "Explorer";
     final AutoCloseableIterator<AirbyteMessage> read1 = source()
         .read(config(), getConfiguredCatalog(), null);
@@ -403,6 +420,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     assertEquals(11, recordMessages2.get(0).getData().get(COL_ID).asInt());
     assertEquals(updatedModel, recordMessages2.get(0).getData().get(COL_MODEL).asText());
     assertCdcMetaData(recordMessages2.get(0).getData(), true);
+    assertExpectedStateMessageCountMatches(stateMessages2, 1);
   }
 
   @SuppressWarnings({"BusyWait", "CodeBlock2Expr"})
@@ -483,7 +501,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
   @Test
   // When both incremental CDC and full refresh are configured for different streams in a sync, the
   // data is replicated as expected.
-  void testCdcAndFullRefreshInSameSync() throws Exception {
+  public void testCdcAndFullRefreshInSameSync() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(getConfiguredCatalog());
 
     final List<JsonNode> MODEL_RECORDS_2 = ImmutableList.of(
@@ -526,6 +544,8 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final HashSet<String> names = new HashSet<>(STREAM_NAMES);
     names.add(MODELS_STREAM_NAME + "_2");
     assertExpectedStateMessages(stateMessages1);
+    // Full refresh does not get any state messages.
+    assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS_2.size());
     assertExpectedRecords(Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
         .collect(Collectors.toSet()),
         recordMessages1,
@@ -546,6 +566,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
     assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
+    assertExpectedStateMessageCountMatches(stateMessages2, 1);
     assertExpectedRecords(
         Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
             .collect(Collectors.toSet()),
@@ -568,6 +589,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
     assertExpectedRecords(Collections.emptySet(), recordMessages);
     assertExpectedStateMessagesForNoData(stateMessages);
+    assertExpectedStateMessageCountMatches(stateMessages, 0);
   }
 
   protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
@@ -592,6 +614,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
     assertExpectedRecords(Collections.emptySet(), recordMessages2);
     assertExpectedStateMessagesFromIncrementalSync(stateMessages2);
+    assertExpectedStateMessageCountMatches(stateMessages2, 0);
   }
 
   @Test
@@ -622,6 +645,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
         dataFromFirstBatch);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
     assertExpectedStateMessages(stateAfterFirstBatch);
+    assertExpectedStateMessageCountMatches(stateAfterFirstBatch, MODEL_RECORDS.size());
 
     final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterFirstSyncCompletion.getType());

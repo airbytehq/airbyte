@@ -62,7 +62,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
                                                           Set @res = 1
                                                       ELSE
                                                           Set @res = 0
-                                                      select @res as [included], @MIN_LSN as [min], @MAX_LSN as [max]
+                                                      select @res as [included], @min_lsn as [min], @max_lsn as [max]
                                                   """;
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlDebeziumStateUtil.class);
 
@@ -125,7 +125,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
     assert Objects.nonNull(schemaHistory.schema());
 
     final JsonNode asJson = serialize(offset, schemaHistory);
-    LOGGER.info("Initial Debezium state constructed: {}", asJson);
+    LOGGER.info("Initial Debezium state constructed. offset={}", Jsons.jsonNode(offset));
 
     if (asJson.get(MssqlCdcStateConstants.MSSQL_DB_HISTORY).asText().isBlank()) {
       throw new RuntimeException("Schema history snapshot returned empty history.");

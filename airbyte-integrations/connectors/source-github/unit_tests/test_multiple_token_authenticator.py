@@ -9,6 +9,7 @@ import pendulum
 import pytest
 import responses
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from freezegun import freeze_time
 from source_github import SourceGithub
 from source_github.streams import Organizations
@@ -89,6 +90,7 @@ def test_multiple_token_authenticator_with_rate_limiter():
     message = (
         "Stream: `organizations`, slice: `{'organization': 'org1'}`. Limits for all provided tokens are reached, please try again later"
     )
+    assert e.value.failure_type == FailureType.config_error
     assert e.value.internal_message == message
 
 
