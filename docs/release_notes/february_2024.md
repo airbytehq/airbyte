@@ -5,13 +5,13 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 
 ## ✨ Highlights
 
-Airbyte migrated our [Postgres destination](https://github.com/airbytehq/airbyte/pull/35042) on the [Destinations V2](./upgrading_to_destinations_v2) framework. This enables you to map tables one-to-one with your source, experience better error handling, and deliver data incrementally. 
+Airbyte migrated our [Postgres destination](https://github.com/airbytehq/airbyte/pull/35042) to the [Destinations V2](./upgrading_to_destinations_v2) framework. This enables you to map tables one-to-one with your source, experience better error handling, and deliver data incrementally. 
 
 ## Platform Releases
 
 - **Read-only Users** You can now enable read-only users in Airbyte Cloud (with Teams add-on) or Self-Managed Enterprise to administer read-only permissions in Airbyte. For access to this feature, reach out to our [Sales team](https://www.airbyte.com/company/talk-to-sales).
 
-- Our Slack and Email (for Cloud only) notifications have received a facelift! Additional contextual information about sync failures or schema changes are now included in the notification to ensure you can act on any pipeline changes quickly
+- Our Slack and Email (for Cloud only) notifications have received a facelift! Additional contextual information about sync failures or schema changes are now included in the notification to ensure you can act on any pipeline changes quickly.
 
 ## Connector Improvements
 
