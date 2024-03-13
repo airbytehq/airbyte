@@ -33,6 +33,10 @@ class MigrateToLowcodeConfig:
         """
         has_api = "apikey" in config
         has_time = "start_time" in config
+        has_newapi = "api_key" in config
+        has_newdate = "start_date" in config
+        if has_newapi and has_newdate:
+            return False
         return has_api or has_time
 
     @staticmethod
@@ -40,11 +44,9 @@ class MigrateToLowcodeConfig:
         # move api_secret inside credentials block
         if "apikey" in config:
             config["api_key"] = config["apikey"]
-            config.pop("apikey")
 
         if "start_time" in config:
             config["start_date"] = pendulum.parse(config["start_time"]).to_iso8601_string()
-            config.pop("start_time")
 
         if "start_date" not in config:
             config["start_date"] = "2009-08-01T00:00:00Z"
