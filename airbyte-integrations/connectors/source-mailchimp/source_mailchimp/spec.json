@@ -69,6 +69,12 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
         "pattern_descriptor": "YYYY-MM-DDTHH:MM:SS.000Z",
         "examples": ["2020-01-01T00:00:00.000Z"]
+      },
+      "data_center": {
+        "title": "DataCenter",
+        "description": "Technical fields used to identify datacenter to send request to",
+        "type": "string",
+        "airbyte_hidden": true
       }
     }
   },

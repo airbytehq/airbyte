@@ -24,8 +24,7 @@ def _create_catalog(sync_mode: SyncMode = SyncMode.full_refresh):
 @freezegun.freeze_time("2023-01-31T23:59:59.001000Z")
 class AutomationsTest(TestCase):
     def setUp(self) -> None:
-        """Base setup for all tests. Enter test mocker.
-        """
+        """Base setup for all tests. Enter test mocker."""
 
         self.r_mock = HttpMocker()
         self.r_mock.__enter__()
