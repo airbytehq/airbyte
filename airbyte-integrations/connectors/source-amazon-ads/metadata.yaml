@@ -52,5 +52,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

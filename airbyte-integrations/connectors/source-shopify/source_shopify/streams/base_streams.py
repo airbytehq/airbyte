@@ -89,7 +89,9 @@ class ShopifyStream(HttpStream, ABC):
                 self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
                 yield {}
 
-    def produce_records(self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]] = None) -> Mapping[str, Any]:
+    def produce_records(
+        self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]] = None
+    ) -> Iterable[Mapping[str, Any]]:
         # transform method was implemented according to issue 4841
         # Shopify API returns price fields as a string and it should be converted to number
         # this solution designed to convert string into number, but in future can be modified for general purpose
@@ -139,7 +141,7 @@ class ShopifyDeletedEventsStream(ShopifyStream):
         """
         return {}
 
-    def produce_deleted_records_from_events(self, delete_events: Iterable[Mapping[str, Any]] = []) -> Mapping[str, Any]:
+    def produce_deleted_records_from_events(self, delete_events: Iterable[Mapping[str, Any]] = []) -> Iterable[Mapping[str, Any]]:
         for event in delete_events:
             yield {
                 "id": event["subject_id"],
@@ -218,7 +220,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     ) -> Iterable:
         # Getting records >= state
         if stream_state:
-            state_value = stream_state.get(self.cursor_field)
+            state_value = stream_state.get(self.cursor_field, self.default_state_comparison_value)
             for record in records_slice:
                 if self.cursor_field in record:
                     record_value = record.get(self.cursor_field, self.default_state_comparison_value)
@@ -669,16 +671,19 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             updated_state[self.parent_stream.name] = {self.parent_stream.cursor_field: latest_record.get(self.parent_stream.cursor_field)}
         return updated_state
 
+    def get_stream_state_value(self, stream_state: Optional[Mapping[str, Any]]) -> str:
+        if self.parent_stream_class:
+            # get parent stream state from the stream_state object.
+            parent_state = stream_state.get(self.parent_stream.name, {})
+            if parent_state:
+                return parent_state.get(self.parent_stream.cursor_field, self.default_state_comparison_value)
+        else:
+            # get the stream state, if no `parent_stream_class` was assigned.
+            return stream_state.get(self.cursor_field, self.default_state_comparison_value)
+
     def get_state_value(self, stream_state: Mapping[str, Any] = None) -> Optional[Union[str, int]]:
         if stream_state:
-            if self.parent_stream_class:
-                # get parent stream state from the stream_state object.
-                parent_state = stream_state.get(self.parent_stream.name, {})
-                if parent_state:
-                    return parent_state.get(self.parent_stream.cursor_field, self.default_state_comparison_value)
-            else:
-                # get the stream state, if no `parent_stream_class` was assigned.
-                return stream_state.get(self.cursor_field, self.default_state_comparison_value)
+            return self.get_stream_state_value(stream_state)
         else:
             # for majority of cases we fallback to start_date, otherwise.
             return self.config.get("start_date")
