@@ -105,10 +105,6 @@ class HttpRequester(Requester):
         """
         return f"{self.name}.sqlite"
 
-    @property
-    def max_retries(self) -> Optional[int]:
-        return self.error_handler.max_retries
-
     def request_cache(self) -> requests.Session:
         if self.use_cache:
             cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
