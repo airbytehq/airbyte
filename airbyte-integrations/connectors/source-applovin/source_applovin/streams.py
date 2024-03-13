@@ -197,6 +197,8 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         default_start_date = self.config["start_date"]
+        if stream_state is None:
+            return self.generate_dummy_record()
 
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             record_date = record[self.cursor_field]
