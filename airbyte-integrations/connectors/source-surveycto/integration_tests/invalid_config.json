@@ -1,7 +1,16 @@
 {
-  "form_id": "wrong form_id",
-  "server_name": "This has the wrong server_name",
-  "username": "This has the wrong format (email)",
-  "password": "This has the wrong password",
-  "start_date": "This has the wrong format"
+  "form_id": "wrong_form_id",
+  "server_name": "wrong_server_name",
+  "username": "username",
+  "password": "password",
+  "start_date": "Jan 01, 5000 30:00:00 AM",
+  "key": "key",
+  "dataset_id": ["test_dataset"],
+  "media_files": {
+    "storage": "LOCAL",
+    "file_path": "path_to_mediafiles",
+    "file_name": "media_files.csv",
+    "file_name_column": "file_name",
+    "file_type_column": "file_type"
+  }
 }

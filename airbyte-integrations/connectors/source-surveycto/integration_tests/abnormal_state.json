@@ -1,5 +1,9 @@
-{
-  "baseline_ig": {
-    "CompletionDate": "2022-11-11T13:30:59+00:00"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "CompletionDate": "Jan 01, 2099 12:00:00 AM" },
+      "stream_descriptor": { "name": "form_data" }
+    }
   }
-}
+]
