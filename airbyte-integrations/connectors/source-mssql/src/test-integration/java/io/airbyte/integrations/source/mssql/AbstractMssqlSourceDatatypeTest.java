@@ -345,13 +345,13 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     }
 
     addDataTypeTestData(
-            TestDataHolder.builder()
-                    .sourceType("int")
-                    .airbyteType(JsonSchemaType.INTEGER)
-                    .addInsertValues("null", "1234", "7878")
-                    .addExpectedValues(null, "1234", "7878")
-                    .createTablePatternSql("CREATE TABLE %1$s(%2$s INTEGER DEFAULT ((7878)) NULL, %3$s %4$s)")
-                    .build());
+        TestDataHolder.builder()
+            .sourceType("int")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .addInsertValues("null", "1234", "7878")
+            .addExpectedValues(null, "1234", "7878")
+            .createTablePatternSql("CREATE TABLE %1$s(%2$s INTEGER DEFAULT ((7878)) NULL, %3$s %4$s)")
+            .build());
   }
 
 }
