@@ -1273,9 +1273,7 @@ class TestBasicRead(BaseTest):
             )
 
             # Check if stats are of the correct type and present in state message
-            assert isinstance(state.sourceStats, AirbyteStateStats), (
-                "Source stats should be in state message."
-            )
+            assert isinstance(state.sourceStats, AirbyteStateStats), "Source stats should be in state message."
 
 
 @pytest.mark.default_timeout(TEN_MINUTES)
