@@ -206,7 +206,7 @@ class SourceFile(Source):
     def selected_fields(catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]) -> Iterable:
         for configured_stream in catalog.streams:
             fields = configured_stream.stream.json_schema["properties"].keys()
-            if config["reader_options"].get("header", {}) is None:
+            if config["reader_options"].get("header", {}) is None and config["reader_options"].get("names", None) is None:
                 fields = [int(str_col_idx) for str_col_idx in fields]
 
             yield from fields
