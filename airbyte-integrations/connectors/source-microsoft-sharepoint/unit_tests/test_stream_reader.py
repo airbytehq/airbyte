@@ -33,6 +33,7 @@ def setup_reader_class():
     config.credentials = Mock()
     config.folder_path = "."
     config.credentials.auth_type = "Client"
+    config.search_scope = "ALL"
     reader.config = config  # Set up the necessary configuration
 
     # Mock the client creation
@@ -222,10 +223,13 @@ def test_list_directories_and_files():
 
     stream_reader = SourceMicrosoftSharePointStreamReader()
 
-    result = stream_reader._list_directories_and_files(mock_root_folder)
+    result = list(stream_reader._list_directories_and_files(mock_root_folder, "https://example.com/root"))
 
     assert len(result) == 2
-    assert result == [("folder1/file1.txt", "test_url", "1991-08-24"), ("file2.txt", "test_url", "1991-08-24")]
+    assert result == [
+        ("https://example.com/root/folder1/file1.txt", "test_url", "1991-08-24"),
+        ("https://example.com/root/file2.txt", "test_url", "1991-08-24"),
+    ]
 
 
 @pytest.mark.parametrize(
@@ -240,6 +244,7 @@ def test_get_files_by_drive_name(mock_list_directories_and_files, drive_type, fi
     # Helper function usage
     mock_drive = Mock()
     mock_drive.name = "testDrive"
+    mock_drive.web_url = "https://example.com/testDrive"
     mock_drive.drive_type = drive_type
     mock_drive.root.get_by_path.return_value.get().execute_query_with_incremental_retry.return_value = create_mock_drive_item(
         is_file=False, name="root"
@@ -306,14 +311,13 @@ def test_get_shared_files_from_all_drives(
         with patch.object(SourceMicrosoftSharePointStreamReader, "one_drive_client", new_callable=PropertyMock) as mock_one_drive_client:
             mock_one_drive_client.return_value.me.drive.shared_with_me.return_value = shared_drive_items
 
-            with patch.object(SourceMicrosoftSharePointStreamReader, "drives", new_callable=PropertyMock) as mock_drives:
-                mock_drives.return_value = [Mock(id=drive_id) for drive_id in drive_ids]
+            mock_drives = [Mock(id=drive_id) for drive_id in drive_ids]
 
-                # Execute the method under test
-                list(stream_reader._get_shared_files_from_all_drives())
+            # Execute the method under test
+            list(stream_reader._get_shared_files_from_all_drives(mock_drives))
 
-                # Assert _get_shared_drive_object was called correctly
-                mock_get_shared_drive_object.assert_has_calls(expected_calls, any_order=True)
+            # Assert _get_shared_drive_object was called correctly
+            mock_get_shared_drive_object.assert_has_calls(expected_calls, any_order=True)
 
 
 # Sample data for mocking responses

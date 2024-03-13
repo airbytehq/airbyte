@@ -7,6 +7,7 @@ from datetime import datetime
 from functools import lru_cache
 from io import IOBase
 from typing import Iterable, List, Optional, Tuple
+from urllib.parse import urljoin
 
 import requests
 import smart_open
@@ -162,17 +163,16 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             # Initial object is a folder, start file retrieval
             yield from get_files(f"{item_url}/children", path)
 
-    def _list_directories_and_files(self, root_folder, path=None):
+    def _list_directories_and_files(self, root_folder, path):
         """Enumerates folders and files starting from a root folder."""
         drive_items = execute_query_with_retry(root_folder.children.get())
-        found_items = []
         for item in drive_items:
             item_path = path + "/" + item.name if path else item.name
             if item.is_file:
-                found_items.append((item_path, item.properties["@microsoft.graph.downloadUrl"], item.properties["lastModifiedDateTime"]))
+                yield (item_path, item.properties["@microsoft.graph.downloadUrl"], item.properties["lastModifiedDateTime"])
             else:
-                found_items.extend(self._list_directories_and_files(item, item_path))
-        return found_items
+                yield from self._list_directories_and_files(item, item_path)
+        yield from []
 
     def _get_files_by_drive_name(self, drives, folder_path):
         """Yields files from the specified drive."""
@@ -182,10 +182,15 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         for drive in drives:
             is_sharepoint = drive.drive_type == "documentLibrary"
             if is_sharepoint:
-                folder = (
-                    drive.root if folder_path in self.ROOT_PATH else execute_query_with_retry(drive.root.get_by_path(folder_path).get())
-                )
-                yield from self._list_directories_and_files(folder)
+                # Define base path for drive files to differentiate files between drives
+                if folder_path in self.ROOT_PATH:
+                    folder = drive.root
+                    folder_path_url = drive.web_url
+                else:
+                    folder = execute_query_with_retry(drive.root.get_by_path(folder_path).get())
+                    folder_path_url = urljoin(drive.web_url, folder_path)
+
+                yield from self._list_directories_and_files(folder, folder_path_url)
 
     @property
     @lru_cache(maxsize=None)
@@ -206,8 +211,8 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
         return drives
 
-    def _get_shared_files_from_all_drives(self):
-        drive_ids = [drive.id for drive in self.drives]
+    def _get_shared_files_from_all_drives(self, parsed_drives):
+        drive_ids = [drive.id for drive in parsed_drives]
 
         shared_drive_items = execute_query_with_retry(self.one_drive_client.me.drive.shared_with_me())
         for drive_item in shared_drive_items:
@@ -218,8 +223,15 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 yield from self._get_shared_drive_object(parent_reference["driveId"], drive_item.id, drive_item.web_url)
 
     def get_all_files(self):
-        yield from self._get_files_by_drive_name(self.drives, self.config.folder_path)
-        yield from self._get_shared_files_from_all_drives()
+        if self.config.search_scope in ("ACCESSIBLE_DRIVES", "ALL"):
+            # Get files from accessible drives
+            yield from self._get_files_by_drive_name(self.drives, self.config.folder_path)
+
+        if self.config.search_scope in ("SHARED_ITEMS", "ALL"):
+            parsed_drives = [] if self.config.search_scope == "SHARED_ITEMS" else self.drives
+
+            # Get files from shared items
+            yield from self._get_shared_files_from_all_drives(parsed_drives)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
