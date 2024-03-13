@@ -109,10 +109,13 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
             for parent_record in self.parent_stream.read_records(
                 sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
             ):
-                parent_key = parent_record.get(self.parent_key)
+                parent_primary_key = parent_record.get(self.parent_key)
 
-                partition = {self.stream_slice_field: parent_key}
-                cursor_slice = {self.request_cursor_field: self._state.get(str(parent_key), {}).get(self.cursor_field, self.START_DATETIME)}
+                partition = {self.stream_slice_field: parent_primary_key}
+                print(self.stream_slice_field)
+                cursor_slice = {
+                    self.request_cursor_field: self._state.get(str(parent_primary_key), {}).get(self.cursor_field, self.START_DATETIME)
+                }
 
                 yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
 
