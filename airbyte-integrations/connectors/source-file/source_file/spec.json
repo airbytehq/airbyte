@@ -72,6 +72,22 @@
             }
           },
           {
+            "title": "HTTP: Public Web",
+            "required": ["storage"],
+            "properties": {
+              "storage": {
+                "type": "string",
+                "const": "HTTP"
+              },
+              "user_agent": {
+                "type": "boolean",
+                "title": "User-Agent",
+                "default": false,
+                "description": "Add User-Agent to request"
+              }
+            }
+          },
+          {
             "title": "GCS: Google Cloud Storage",
             "required": ["storage"],
             "properties": {
@@ -234,6 +250,17 @@
                 "title": "Port",
                 "default": "22",
                 "description": ""
+              }
+            }
+          },
+          {
+            "title": "FTP: Anonymous File Transfer Protocol",
+            "required": ["storage"],
+            "properties": {
+              "storage": {
+                "type": "string",
+                "title": "Storage",
+                "const": "FTP"
               }
             }
           },

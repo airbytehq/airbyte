@@ -3,12 +3,14 @@
 #
 
 
+import ftplib
 import json
 import logging
 import os
 import sys
 import tempfile
 import traceback
+import types
 import urllib
 import zipfile
 from os import environ
@@ -154,6 +156,8 @@ class URLFile:
                 transport_params = {"headers": {"Accept-Encoding": "identity", "User-Agent": f"Airbyte/{airbyte_version}"}}
             logger.info(f"TransportParams: {transport_params}")
             return smart_open.open(self.full_url, transport_params=transport_params, **self.args)
+        elif storage == "ftp://":
+            return self._open_ftp_url()
         return smart_open.open(self.full_url, **self.args)
 
     @property
@@ -183,8 +187,12 @@ class URLFile:
             return "azure://"
         elif storage_name == "HTTPS":
             return "https://"
+        elif storage_name == "HTTP":
+            return "http://"
         elif storage_name == "SSH" or storage_name == "SCP":
             return "scp://"
+        elif storage_name == "FTP":
+            return "ftp://"
         elif storage_name == "SFTP":
             return "sftp://"
         elif storage_name == "WEBHDFS":
@@ -250,6 +258,38 @@ class URLFile:
         url = f"{self.storage_scheme}{self.url}"
         return smart_open.open(url, transport_params=dict(client=client), **self.args)
 
+    def _open_ftp_url(self):
+        """
+        Open a file from an FTP server. Copied partly from https://github.com/piskvorky/smart_open/pull/723/files
+        :return: the file object that can be read from
+        """
+        # parse the URL
+        parse_result = urlparse(f"{self.storage_scheme}{self.url}")
+
+        # connect to the FTP server and log in
+        conn = ftplib.FTP(parse_result.netloc)
+        conn.login()
+
+        # change to the correct directory and retrieve the file
+        path, file = os.path.split(parse_result.path)
+        conn.cwd(path)
+
+        # issue the RETR command to retrieve the file
+        socket = conn.transfercmd(f"RETR {file}")
+        fobj = socket.makefile("r")
+
+        # ensure all resources are closed when the file is closed
+        def full_close(self):
+            self.orig_close()
+            self.socket.close()
+            self.conn.close()
+
+        fobj.orig_close = fobj.close
+        fobj.socket = socket
+        fobj.conn = conn
+        fobj.close = types.MethodType(full_close, fobj)
+
+        return fobj
 
 class Client:
     """Class that manages reading and parsing data from streams"""
