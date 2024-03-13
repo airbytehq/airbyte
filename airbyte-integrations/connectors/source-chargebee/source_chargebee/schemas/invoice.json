@@ -736,6 +736,10 @@
         }
       }
     },
+    "is_vat_moss_registered": {
+        "type": ["boolean", "null"],
+        "$comment": "Only available for accounts which have enabled taxes for EU Region for taxes."
+      },
     "custom_fields": {
       "$ref": "_definitions.json#/definitions/custom_fields"
     }
