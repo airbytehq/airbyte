@@ -350,7 +350,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
             .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("null", "1234", "7878")
             .addExpectedValues(null, "1234", "7878")
-            .createTablePatternSql("CREATE TABLE %1$s(%2$s INTEGER DEFAULT ((7878)) NULL, %3$s %4$s)")
+            .createTablePatternSql("CREATE TABLE %1$s(%2$s INTEGER NULL DEFAULT ((7878)), %3$s %4$s)")
             .build());
   }
 
