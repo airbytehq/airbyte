@@ -5,9 +5,9 @@
 package io.airbyte.cdk.integrations.destination.async
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.apache.commons.io.FileUtils
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.min
+import org.apache.commons.io.FileUtils
 
 private val logger = KotlinLogging.logger {}
 

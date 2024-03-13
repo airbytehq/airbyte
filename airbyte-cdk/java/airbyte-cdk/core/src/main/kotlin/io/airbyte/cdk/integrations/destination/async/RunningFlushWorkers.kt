@@ -15,7 +15,8 @@ import java.util.concurrent.ConcurrentMap
  * Track the number of flush workers (and their size) that are currently running for a given stream.
  */
 class RunningFlushWorkers {
-    private val streamToFlushWorkerToBatchSize: ConcurrentMap<StreamDescriptor, ConcurrentMap<UUID, Optional<Long>>> =
+    private val streamToFlushWorkerToBatchSize:
+        ConcurrentMap<StreamDescriptor, ConcurrentMap<UUID, Optional<Long>>> =
         ConcurrentHashMap()
 
     /**
@@ -86,6 +87,8 @@ class RunningFlushWorkers {
      * @return bytes in batches currently being processed
      */
     fun getSizesOfRunningWorkerBatches(stream: StreamDescriptor): List<Optional<Long>> {
-        return ArrayList(streamToFlushWorkerToBatchSize.getOrDefault(stream, ConcurrentHashMap()).values)
+        return ArrayList(
+            streamToFlushWorkerToBatchSize.getOrDefault(stream, ConcurrentHashMap()).values,
+        )
     }
 }

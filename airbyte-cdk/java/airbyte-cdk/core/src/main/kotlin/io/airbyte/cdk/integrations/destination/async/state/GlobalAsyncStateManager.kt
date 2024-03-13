@@ -14,11 +14,6 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.apache.commons.io.FileUtils
-import org.apache.commons.lang3.tuple.ImmutablePair
-import org.apache.mina.util.ConcurrentHashSet
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.Optional
 import java.util.UUID
@@ -27,6 +22,11 @@ import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
+import org.apache.commons.io.FileUtils
+import org.apache.commons.lang3.tuple.ImmutablePair
+import org.apache.mina.util.ConcurrentHashSet
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 private val logger = KotlinLogging.logger {}
 
@@ -63,7 +63,8 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     private val memoryUsed: AtomicLong = AtomicLong()
 
     private var preState: Boolean = true
-    private val descToStateIdQ: ConcurrentMap<StreamDescriptor, LinkedBlockingDeque<Long>?> = ConcurrentHashMap()
+    private val descToStateIdQ: ConcurrentMap<StreamDescriptor, LinkedBlockingDeque<Long>?> =
+        ConcurrentHashMap()
 
     /**
      * Both [stateIdToCounter] and [stateIdToCounterForPopulatingDestinationStats] are used
@@ -80,8 +81,10 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * state message has been emitted.
      */
     private val stateIdToCounter: ConcurrentMap<Long, AtomicLong> = ConcurrentHashMap()
-    private val stateIdToCounterForPopulatingDestinationStats: ConcurrentMap<Long, AtomicLong> = ConcurrentHashMap()
-    private val stateIdToState: ConcurrentMap<Long, ImmutablePair<StateMessageWithArrivalNumber, Long>> =
+    private val stateIdToCounterForPopulatingDestinationStats: ConcurrentMap<Long, AtomicLong> =
+        ConcurrentHashMap()
+    private val stateIdToState:
+        ConcurrentMap<Long, ImmutablePair<StateMessageWithArrivalNumber, Long>> =
         ConcurrentHashMap()
 
     // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to one
@@ -318,7 +321,9 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         }
     }
 
-    private fun extractStateType(message: PartialAirbyteMessage): AirbyteStateMessage.AirbyteStateType {
+    private fun extractStateType(
+        message: PartialAirbyteMessage,
+    ): AirbyteStateMessage.AirbyteStateType {
         return if (message.state?.type == null) {
             // Treated the same as GLOBAL.
             AirbyteStateMessage.AirbyteStateType.LEGACY
@@ -373,7 +378,9 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                         FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
                         FileUtils.byteCountToDisplaySize(memoryUsed.get()),
                         FileUtils.byteCountToDisplaySize(sizeInBytes),
-                        FileUtils.byteCountToDisplaySize(sizeInBytes - (memoryAllocated.get() - memoryUsed.get())),
+                        FileUtils.byteCountToDisplaySize(
+                            sizeInBytes - (memoryAllocated.get() - memoryUsed.get()),
+                        ),
                     )
                     Thread.sleep(1000)
                 } catch (e: InterruptedException) {
@@ -438,7 +445,10 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(GlobalAsyncStateManager::class.java)
 
-        private val SENTINEL_GLOBAL_DESC: StreamDescriptor = StreamDescriptor().withName(UUID.randomUUID().toString())
+        private val SENTINEL_GLOBAL_DESC: StreamDescriptor =
+            StreamDescriptor().withName(
+                UUID.randomUUID().toString(),
+            )
 
         /**
          * If the user has selected the Destination Namespace as the Destination default while setting up
@@ -462,7 +472,9 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                 val streamDescriptor: StreamDescriptor? = message.state?.stream?.streamDescriptor
                 if (Strings.isNullOrEmpty(streamDescriptor?.namespace)) {
                     return Optional.of(
-                        StreamDescriptor().withName(streamDescriptor?.name).withNamespace(defaultNamespace),
+                        StreamDescriptor().withName(
+                            streamDescriptor?.name,
+                        ).withNamespace(defaultNamespace),
                     )
                 }
                 return streamDescriptor?.let { Optional.of(it) } ?: Optional.empty()

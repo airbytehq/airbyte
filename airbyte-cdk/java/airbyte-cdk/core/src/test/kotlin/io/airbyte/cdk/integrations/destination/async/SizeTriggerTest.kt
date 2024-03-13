@@ -7,12 +7,12 @@ package io.airbyte.cdk.integrations.destination.async
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import java.util.Optional
+import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import java.util.Optional
-import java.util.concurrent.atomic.AtomicBoolean
 
 class SizeTriggerTest {
     private val SIZE_10MB = (10 * 1024 * 1024).toLong()

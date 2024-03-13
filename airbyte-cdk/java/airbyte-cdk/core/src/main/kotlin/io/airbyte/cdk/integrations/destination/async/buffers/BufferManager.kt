@@ -10,14 +10,14 @@ import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.apache.commons.io.FileUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import org.apache.commons.io.FileUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,14 +44,22 @@ class BufferManager
          * reading unnecessarily, but small enough we apply back pressure before OOMing.
          */
         init {
-            LOGGER.info("Max 'memory' available for buffer allocation {}", FileUtils.byteCountToDisplaySize(maxMemory))
+            LOGGER.info(
+                "Max 'memory' available for buffer allocation {}",
+                FileUtils.byteCountToDisplaySize(maxMemory),
+            )
             memoryManager = GlobalMemoryManager(maxMemory)
             this.stateManager = GlobalAsyncStateManager(memoryManager)
             buffers = ConcurrentHashMap()
             bufferEnqueue = BufferEnqueue(memoryManager, buffers, stateManager)
             bufferDequeue = BufferDequeue(memoryManager, buffers, stateManager)
             debugLoop = Executors.newSingleThreadScheduledExecutor()
-            debugLoop.scheduleAtFixedRate({ this.printQueueInfo() }, 0, DEBUG_PERIOD_SECS, TimeUnit.SECONDS)
+            debugLoop.scheduleAtFixedRate(
+                { this.printQueueInfo() },
+                0,
+                DEBUG_PERIOD_SECS,
+                TimeUnit.SECONDS,
+            )
         }
 
         /**
@@ -74,7 +82,9 @@ class BufferManager
                     String.format(
                         "Global: max: %s, allocated: %s (%s MB), %% used: %s",
                         AirbyteFileUtils.byteCountToDisplaySize(memoryManager.maxMemoryBytes),
-                        AirbyteFileUtils.byteCountToDisplaySize(memoryManager.currentMemoryBytes.get()),
+                        AirbyteFileUtils.byteCountToDisplaySize(
+                            memoryManager.currentMemoryBytes.get(),
+                        ),
                         memoryManager.currentMemoryBytes.toDouble() / 1024 / 1024,
                         memoryManager.currentMemoryBytes.toDouble() / memoryManager.maxMemoryBytes,
                     ),

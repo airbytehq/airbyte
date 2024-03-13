@@ -10,10 +10,10 @@ import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAir
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import java.util.concurrent.ConcurrentHashMap
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import java.util.concurrent.ConcurrentHashMap
 
 class BufferEnqueueTest {
     private val RECORD_SIZE_20_BYTES = 20

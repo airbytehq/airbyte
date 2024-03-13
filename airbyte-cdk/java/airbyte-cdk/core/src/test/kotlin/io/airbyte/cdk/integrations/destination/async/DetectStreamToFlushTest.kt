@@ -7,15 +7,15 @@ package io.airbyte.cdk.integrations.destination.async
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicBoolean
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 
 class DetectStreamToFlushTest {
     val NOW: Instant = Instant.now()
@@ -83,7 +83,9 @@ class DetectStreamToFlushTest {
             Mockito.mock(
                 RunningFlushWorkers::class.java,
             )
-        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any())).thenReturn(
+        Mockito.`when`(
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        ).thenReturn(
             listOf(
                 Optional.of(SIZE_10MB),
             ),
@@ -107,7 +109,9 @@ class DetectStreamToFlushTest {
             Mockito.mock(
                 RunningFlushWorkers::class.java,
             )
-        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any())).thenReturn(
+        Mockito.`when`(
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        ).thenReturn(
             listOf(
                 Optional.of(SIZE_10MB),
             ),

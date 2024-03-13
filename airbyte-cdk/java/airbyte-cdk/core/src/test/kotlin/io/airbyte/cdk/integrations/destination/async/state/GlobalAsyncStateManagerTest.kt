@@ -18,12 +18,12 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.stream.Collectors
 
 class GlobalAsyncStateManagerTest {
     private val TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES =
@@ -517,7 +517,10 @@ class GlobalAsyncStateManagerTest {
                 ),
                 stateWithStats2.keys.stream().toList(),
             )
-            assertEquals(listOf(expectedDestinationStats2), stateWithStats2.values.stream().toList())
+            assertEquals(
+                listOf(expectedDestinationStats2),
+                stateWithStats2.values.stream().toList(),
+            )
             emittedStatesFromDestination.clear()
 
             val afterConvertId2: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
@@ -755,7 +758,10 @@ class GlobalAsyncStateManagerTest {
                 ),
                 stateWithStats2.keys.stream().toList(),
             )
-            assertEquals(listOf(expectedDestinationStats2), stateWithStats2.values.stream().toList())
+            assertEquals(
+                listOf(expectedDestinationStats2),
+                stateWithStats2.values.stream().toList(),
+            )
         }
 
         @Test
@@ -827,7 +833,10 @@ class GlobalAsyncStateManagerTest {
                 ),
                 stateWithStats2.keys.stream().toList(),
             )
-            assertEquals(listOf(expectedDestinationStats2), stateWithStats2.values.stream().toList())
+            assertEquals(
+                listOf(expectedDestinationStats2),
+                stateWithStats2.values.stream().toList(),
+            )
             emittedStatesFromDestination.clear()
 
             stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
@@ -861,7 +870,10 @@ class GlobalAsyncStateManagerTest {
                 ),
                 stateWithStats3.keys.stream().toList(),
             )
-            assertEquals(listOf(expectedDestinationStats3), stateWithStats3.values.stream().toList())
+            assertEquals(
+                listOf(expectedDestinationStats3),
+                stateWithStats3.values.stream().toList(),
+            )
         }
 
         @Test
@@ -944,7 +956,10 @@ class GlobalAsyncStateManagerTest {
                 ),
                 stateWithStats2.keys.stream().toList(),
             )
-            assertEquals(listOf(expectedDestinationStats2), stateWithStats2.values.stream().toList())
+            assertEquals(
+                listOf(expectedDestinationStats2),
+                stateWithStats2.values.stream().toList(),
+            )
         }
     }
 
@@ -981,6 +996,9 @@ class GlobalAsyncStateManagerTest {
             )
         }
         assertEquals(1, emittedStatesFromDestination.size)
-        assertEquals(6.0, emittedStatesFromDestination.first()?.state?.destinationStats?.recordCount)
+        assertEquals(
+            6.0,
+            emittedStatesFromDestination.first()?.state?.destinationStats?.recordCount,
+        )
     }
 }

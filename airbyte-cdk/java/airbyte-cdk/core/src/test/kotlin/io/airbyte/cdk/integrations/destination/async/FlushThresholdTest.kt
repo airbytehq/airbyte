@@ -6,11 +6,11 @@ package io.airbyte.cdk.integrations.destination.async
 
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
+import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import java.util.concurrent.atomic.AtomicBoolean
 
 class FlushThresholdTest {
     private val SIZE_10MB = (10 * 1024 * 1024).toLong()
@@ -30,7 +30,13 @@ class FlushThresholdTest {
             Mockito.mock(
                 BufferDequeue::class.java,
             )
-        val detect = DetectStreamToFlush(bufferDequeue, Mockito.mock(RunningFlushWorkers::class.java), isClosing, flusher)
+        val detect =
+            DetectStreamToFlush(
+                bufferDequeue,
+                Mockito.mock(RunningFlushWorkers::class.java),
+                isClosing,
+                flusher,
+            )
         Assertions.assertEquals(SIZE_10MB, detect.computeQueueThreshold())
     }
 
@@ -41,7 +47,13 @@ class FlushThresholdTest {
             Mockito.mock(
                 BufferDequeue::class.java,
             )
-        val detect = DetectStreamToFlush(bufferDequeue, Mockito.mock(RunningFlushWorkers::class.java), isClosing, flusher)
+        val detect =
+            DetectStreamToFlush(
+                bufferDequeue,
+                Mockito.mock(RunningFlushWorkers::class.java),
+                isClosing,
+                flusher,
+            )
         Assertions.assertEquals(0, detect.computeQueueThreshold())
     }
 
@@ -54,7 +66,13 @@ class FlushThresholdTest {
             )
         Mockito.`when`(bufferDequeue.totalGlobalQueueSizeBytes).thenReturn(8L)
         Mockito.`when`(bufferDequeue.maxQueueSizeBytes).thenReturn(10L)
-        val detect = DetectStreamToFlush(bufferDequeue, Mockito.mock(RunningFlushWorkers::class.java), isClosing, flusher)
+        val detect =
+            DetectStreamToFlush(
+                bufferDequeue,
+                Mockito.mock(RunningFlushWorkers::class.java),
+                isClosing,
+                flusher,
+            )
         Assertions.assertEquals(SIZE_10MB, detect.computeQueueThreshold())
     }
 
@@ -67,7 +85,13 @@ class FlushThresholdTest {
             )
         Mockito.`when`(bufferDequeue.totalGlobalQueueSizeBytes).thenReturn(9L)
         Mockito.`when`(bufferDequeue.maxQueueSizeBytes).thenReturn(10L)
-        val detect = DetectStreamToFlush(bufferDequeue, Mockito.mock(RunningFlushWorkers::class.java), isClosing, flusher)
+        val detect =
+            DetectStreamToFlush(
+                bufferDequeue,
+                Mockito.mock(RunningFlushWorkers::class.java),
+                isClosing,
+                flusher,
+            )
         Assertions.assertEquals(0, detect.computeQueueThreshold())
     }
 }

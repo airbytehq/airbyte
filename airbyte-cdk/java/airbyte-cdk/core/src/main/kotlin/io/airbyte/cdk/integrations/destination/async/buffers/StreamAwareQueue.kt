@@ -13,7 +13,8 @@ import java.util.concurrent.atomic.AtomicReference
 class StreamAwareQueue(maxMemoryUsage: Long) {
     private val timeOfLastMessage: AtomicReference<Instant> = AtomicReference()
 
-    private val memoryAwareQueue: MemoryBoundedLinkedBlockingQueue<MessageWithMeta> = MemoryBoundedLinkedBlockingQueue(maxMemoryUsage)
+    private val memoryAwareQueue: MemoryBoundedLinkedBlockingQueue<MessageWithMeta> =
+        MemoryBoundedLinkedBlockingQueue(maxMemoryUsage)
 
     val currentMemoryUsage: Long
         get() = memoryAwareQueue.currentMemoryUsage

@@ -6,11 +6,11 @@ package io.airbyte.cdk.integrations.destination.async
 
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
+import java.time.Clock
+import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import java.time.Clock
-import java.util.concurrent.atomic.AtomicBoolean
 
 class TimeTriggerTest {
     private val NOW_MS = System.currentTimeMillis()
@@ -33,7 +33,14 @@ class TimeTriggerTest {
         Mockito.`when`(mockedNowProvider.millis())
             .thenReturn(NOW_MS)
 
-        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher, mockedNowProvider)
+        val detect =
+            DetectStreamToFlush(
+                bufferDequeue,
+                runningFlushWorkers,
+                AtomicBoolean(false),
+                flusher,
+                mockedNowProvider,
+            )
         Assertions.assertEquals(false, detect.isTimeTriggered(NOW_MS).getLeft())
         Assertions.assertEquals(false, detect.isTimeTriggered(NOW_MS - ONE_SEC).getLeft())
         Assertions.assertEquals(true, detect.isTimeTriggered(NOW_MS - FIVE_MIN).getLeft())

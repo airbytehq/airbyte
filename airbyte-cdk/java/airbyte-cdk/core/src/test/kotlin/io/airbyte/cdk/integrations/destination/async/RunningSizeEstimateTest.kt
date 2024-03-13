@@ -7,12 +7,12 @@ package io.airbyte.cdk.integrations.destination.async
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import java.util.Optional
+import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import java.util.Optional
-import java.util.concurrent.atomic.AtomicBoolean
 
 class RunningSizeEstimateTest {
     private val SIZE_10MB = (10 * 1024 * 1024).toLong()
@@ -35,10 +35,13 @@ class RunningSizeEstimateTest {
             Mockito.mock(
                 RunningFlushWorkers::class.java,
             )
-        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any())).thenReturn(
+        Mockito.`when`(
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        ).thenReturn(
             emptyList(),
         )
-        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect =
+            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         Assertions.assertEquals(0, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB))
     }
 
@@ -49,12 +52,15 @@ class RunningSizeEstimateTest {
             Mockito.mock(
                 RunningFlushWorkers::class.java,
             )
-        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any())).thenReturn(
+        Mockito.`when`(
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        ).thenReturn(
             listOf(
                 Optional.of(SIZE_20MB),
             ),
         )
-        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect =
+            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         Assertions.assertEquals(SIZE_20MB, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB))
     }
 
@@ -65,12 +71,15 @@ class RunningSizeEstimateTest {
             Mockito.mock(
                 RunningFlushWorkers::class.java,
             )
-        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any())).thenReturn(
+        Mockito.`when`(
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        ).thenReturn(
             listOf(
                 Optional.empty(),
             ),
         )
-        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect =
+            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         Assertions.assertEquals(SIZE_10MB, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB))
     }
 
@@ -81,12 +90,18 @@ class RunningSizeEstimateTest {
             Mockito.mock(
                 RunningFlushWorkers::class.java,
             )
-        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any())).thenReturn(
+        Mockito.`when`(
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        ).thenReturn(
             listOf(
                 Optional.empty(),
             ),
         )
-        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
-        Assertions.assertEquals(SIZE_200MB, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_200MB + 1))
+        val detect =
+            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        Assertions.assertEquals(
+            SIZE_200MB,
+            detect.estimateSizeOfRunningWorkers(DESC1, SIZE_200MB + 1),
+        )
     }
 }

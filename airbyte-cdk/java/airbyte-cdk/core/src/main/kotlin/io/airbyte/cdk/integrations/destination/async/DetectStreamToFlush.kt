@@ -9,7 +9,6 @@ import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.apache.commons.lang3.tuple.ImmutablePair
 import java.time.Clock
 import java.time.Instant
 import java.util.Optional
@@ -18,6 +17,7 @@ import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.stream.Collectors
 import kotlin.math.min
+import org.apache.commons.lang3.tuple.ImmutablePair
 
 private val logger = KotlinLogging.logger {}
 
@@ -33,7 +33,8 @@ class DetectStreamToFlush
         private val flusher: DestinationFlushFunction,
         private val nowProvider: Clock,
     ) {
-        private val latestFlushTimeMsPerStream: ConcurrentMap<StreamDescriptor, Long> = ConcurrentHashMap()
+        private val latestFlushTimeMsPerStream: ConcurrentMap<StreamDescriptor, Long> =
+            ConcurrentHashMap()
 
         constructor(
             bufferDequeue: BufferDequeue,
@@ -167,7 +168,8 @@ class DetectStreamToFlush
             queueSizeThresholdBytes: Long,
         ): ImmutablePair<Boolean, String> {
             val currentQueueSize = bufferDequeue.getQueueSizeBytes(stream).orElseThrow()
-            val sizeOfRunningWorkersEstimate = estimateSizeOfRunningWorkers(stream, currentQueueSize)
+            val sizeOfRunningWorkersEstimate =
+                estimateSizeOfRunningWorkers(stream, currentQueueSize)
             val queueSizeAfterRunningWorkers = currentQueueSize - sizeOfRunningWorkersEstimate
             val isSizeTriggered = queueSizeAfterRunningWorkers > queueSizeThresholdBytes
 
@@ -201,7 +203,10 @@ class DetectStreamToFlush
             stream: StreamDescriptor,
             currentQueueSize: Long,
         ): Long {
-            val runningWorkerBatchesSizes = runningFlushWorkers.getSizesOfRunningWorkerBatches(stream)
+            val runningWorkerBatchesSizes =
+                runningFlushWorkers.getSizesOfRunningWorkerBatches(
+                    stream,
+                )
             val workersWithBatchesSize =
                 runningWorkerBatchesSizes.stream().filter { obj: Optional<Long> -> obj.isPresent }
                     .mapToLong { obj: Optional<Long> -> obj.get() }.sum()

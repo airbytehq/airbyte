@@ -10,9 +10,9 @@ import io.airbyte.protocol.models.AirbyteStreamState
 import io.airbyte.protocol.models.StreamDescriptor
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import java.time.Instant
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.time.Instant
 
 class PartialAirbyteMessageTest {
     @Test

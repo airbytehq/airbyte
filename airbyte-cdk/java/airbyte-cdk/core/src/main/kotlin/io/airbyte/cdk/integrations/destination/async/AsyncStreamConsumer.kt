@@ -20,8 +20,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -30,6 +28,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import java.util.stream.Collectors
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Async version of the
@@ -64,7 +64,10 @@ class AsyncStreamConsumer
                 bufferManager.stateManager,
                 workerPool,
             )
-        private val streamNames: Set<StreamDescriptor> = StreamDescriptorUtils.fromConfiguredCatalog(catalog)
+        private val streamNames: Set<StreamDescriptor> =
+            StreamDescriptorUtils.fromConfiguredCatalog(
+                catalog,
+            )
 
         // Note that this map will only be populated for streams with nonzero records.
         private val recordCounts: ConcurrentMap<StreamDescriptor, AtomicLong> = ConcurrentHashMap()
@@ -88,7 +91,16 @@ class AsyncStreamConsumer
             catalog: ConfiguredAirbyteCatalog,
             bufferManager: BufferManager,
             defaultNamespace: String,
-        ) : this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, FlushFailure(), defaultNamespace)
+        ) : this(
+            outputRecordCollector,
+            onStart,
+            onClose,
+            flusher,
+            catalog,
+            bufferManager,
+            FlushFailure(),
+            defaultNamespace,
+        )
 
         constructor(
             outputRecordCollector: Consumer<AirbyteMessage?>,
@@ -165,7 +177,11 @@ class AsyncStreamConsumer
 
                 message.record?.streamDescriptor?.let { getRecordCounter(it).incrementAndGet() }
             }
-            bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES, defaultNamespace)
+            bufferEnqueue.addRecord(
+                message,
+                sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES,
+                defaultNamespace,
+            )
         }
 
         @Throws(Exception::class)

@@ -27,13 +27,6 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import org.apache.commons.lang3.RandomStringUtils
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
 import java.io.IOException
 import java.math.BigDecimal
 import java.time.Instant
@@ -44,6 +37,13 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import java.util.stream.Stream
+import org.apache.commons.lang3.RandomStringUtils
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito
 
 class AsyncStreamConsumerTest {
     private val RECORD_SIZE_20_BYTES = 20
@@ -90,7 +90,11 @@ class AsyncStreamConsumerTest {
             .withState(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1))),
+                    .withStream(
+                        AirbyteStreamState().withStreamDescriptor(
+                            STREAM1_DESC,
+                        ).withStreamState(Jsons.jsonNode(1)),
+                    ),
             )
     private val STATE_MESSAGE2: AirbyteMessage =
         AirbyteMessage()
@@ -98,7 +102,11 @@ class AsyncStreamConsumerTest {
             .withState(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(2))),
+                    .withStream(
+                        AirbyteStreamState().withStreamDescriptor(
+                            STREAM1_DESC,
+                        ).withStreamState(Jsons.jsonNode(2)),
+                    ),
             )
 
     private lateinit var consumer: AsyncStreamConsumer
@@ -155,9 +163,13 @@ class AsyncStreamConsumerTest {
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
-                            AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1)),
+                            AirbyteStreamState().withStreamDescriptor(
+                                STREAM1_DESC,
+                            ).withStreamState(Jsons.jsonNode(1)),
                         )
-                        .withDestinationStats(AirbyteStateStats().withRecordCount(expectedRecords.size.toDouble())),
+                        .withDestinationStats(
+                            AirbyteStateStats().withRecordCount(expectedRecords.size.toDouble()),
+                        ),
                 )
 
         Mockito.verify(outputRecordCollector).accept(stateMessageWithDestinationStatsUpdated)
@@ -185,12 +197,17 @@ class AsyncStreamConsumerTest {
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
-                            AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(2)),
+                            AirbyteStreamState().withStreamDescriptor(
+                                STREAM1_DESC,
+                            ).withStreamState(Jsons.jsonNode(2)),
                         )
                         .withDestinationStats(AirbyteStateStats().withRecordCount(0.0)),
                 )
 
-        Mockito.verify(outputRecordCollector, Mockito.times(1)).accept(stateMessageWithDestinationStatsUpdated)
+        Mockito.verify(
+            outputRecordCollector,
+            Mockito.times(1),
+        ).accept(stateMessageWithDestinationStatsUpdated)
     }
 
     @Test
@@ -253,7 +270,9 @@ class AsyncStreamConsumerTest {
                                             .withStream(STREAM_NAME)
                                             .withNamespace(SCHEMA_NAME)
                                             .withEmittedAt(Instant.now().toEpochMilli())
-                                            .withData(Jsons.jsonNode(recordCount.getAndIncrement())),
+                                            .withData(
+                                                Jsons.jsonNode(recordCount.getAndIncrement()),
+                                            ),
                                     ),
                             ),
                             RECORD_SIZE_20_BYTES,
@@ -272,7 +291,10 @@ class AsyncStreamConsumerTest {
         }
         executor.shutdownNow()
 
-        Assertions.assertTrue(recordCount.get() < 1000, String.format("Record count was %s", recordCount.get()))
+        Assertions.assertTrue(
+            recordCount.get() < 1000,
+            String.format("Record count was %s", recordCount.get()),
+        )
     }
 
     @Test
@@ -364,7 +386,9 @@ class AsyncStreamConsumerTest {
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
-                            AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1)),
+                            AirbyteStreamState().withStreamDescriptor(
+                                STREAM1_DESC,
+                            ).withStreamState(Jsons.jsonNode(1)),
                         ),
                 )
         val serializedAirbyteMessage = Jsons.serialize(badState)

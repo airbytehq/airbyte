@@ -55,7 +55,8 @@ class BufferDequeue(
 
             val output: MutableList<StreamAwareQueue.MessageWithMeta> = LinkedList()
             while (queue!!.size() > 0) {
-                val memoryItem: MemoryBoundedLinkedBlockingQueue.MemoryItem<StreamAwareQueue.MessageWithMeta?>? =
+                val memoryItem:
+                    MemoryBoundedLinkedBlockingQueue.MemoryItem<StreamAwareQueue.MessageWithMeta?>? =
                     queue.peek().orElseThrow()
 
                 // otherwise pull records until we hit the memory limit.
@@ -106,7 +107,10 @@ class BufferDequeue(
 
     val totalGlobalQueueSizeBytes: Long
         get() =
-            buffers.values.stream().map { obj: StreamAwareQueue -> obj.currentMemoryUsage }.mapToLong { obj: Long -> obj }
+            buffers.values.stream().map {
+                    obj: StreamAwareQueue ->
+                obj.currentMemoryUsage
+            }.mapToLong { obj: Long -> obj }
                 .sum()
 
     fun getQueueSizeInRecords(streamDescriptor: StreamDescriptor): Optional<Long> {
@@ -117,11 +121,17 @@ class BufferDequeue(
     }
 
     fun getQueueSizeBytes(streamDescriptor: StreamDescriptor): Optional<Long> {
-        return getBuffer(streamDescriptor).map { obj: StreamAwareQueue? -> obj!!.currentMemoryUsage }
+        return getBuffer(streamDescriptor).map {
+                obj: StreamAwareQueue? ->
+            obj!!.currentMemoryUsage
+        }
     }
 
     fun getTimeOfLastRecord(streamDescriptor: StreamDescriptor): Optional<Instant> {
-        return getBuffer(streamDescriptor).flatMap { obj: StreamAwareQueue? -> obj!!.getTimeOfLastMessage() }
+        return getBuffer(streamDescriptor).flatMap {
+                obj: StreamAwareQueue? ->
+            obj!!.getTimeOfLastMessage()
+        }
     }
 
     private fun getBuffer(streamDescriptor: StreamDescriptor): Optional<StreamAwareQueue> {

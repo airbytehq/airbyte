@@ -10,11 +10,11 @@ import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAir
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 class BufferDequeueTest {
     private val RECORD_SIZE_20_BYTES = 20
@@ -121,7 +121,9 @@ class BufferDequeueTest {
         // Buffer of 3 sec to deal with test execution variance.
         val lastThreeSec = Instant.now().minus(3, ChronoUnit.SECONDS)
         Assertions.assertTrue(lastThreeSec.isBefore(dequeue.getTimeOfLastRecord(STREAM_DESC).get()))
-        Assertions.assertTrue(lastThreeSec.isBefore(dequeue.getTimeOfLastRecord(secondStream).get()))
+        Assertions.assertTrue(
+            lastThreeSec.isBefore(dequeue.getTimeOfLastRecord(secondStream).get()),
+        )
     }
 
     @Test
@@ -149,18 +151,27 @@ class BufferDequeueTest {
         val memoryManager = bufferManager.memoryManager
 
         // we initialize with a block for state
-        Assertions.assertEquals(GlobalMemoryManager.BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes())
+        Assertions.assertEquals(
+            GlobalMemoryManager.BLOCK_SIZE_BYTES,
+            memoryManager.getCurrentMemoryBytes(),
+        )
 
         // allocate a block for new stream
         enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
-        Assertions.assertEquals(2 * GlobalMemoryManager.BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes())
+        Assertions.assertEquals(
+            2 * GlobalMemoryManager.BLOCK_SIZE_BYTES,
+            memoryManager.getCurrentMemoryBytes(),
+        )
 
         enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
         enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
         enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
 
         // no re-allocates as we haven't breached block size
-        Assertions.assertEquals(2 * GlobalMemoryManager.BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes())
+        Assertions.assertEquals(
+            2 * GlobalMemoryManager.BLOCK_SIZE_BYTES,
+            memoryManager.getCurrentMemoryBytes(),
+        )
 
         val totalBatchSize = RECORD_SIZE_20_BYTES * 4
 
